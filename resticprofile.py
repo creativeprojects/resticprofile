@@ -183,11 +183,17 @@ def build_argument_list_from_section(restic, global_config, profiles_section):
             elif isinstance(profiles_section[key], str):
                 restic.set_argument("--" + key + '=' + value)
 
-        elif key in ('exclude-caches', 'one-file-system', 'no-cache'):
+        elif key in ('exclude-caches', 'one-file-system'):
             # expecting boolean value
             if isinstance(profiles_section[key], bool):
                 if profiles_section[key]:
                     restic.set_argument("--" + key)
+
+        elif key in ('no-cache'):
+            # expecting boolean value
+            if isinstance(profiles_section[key], bool):
+                if profiles_section[key]:
+                    restic.set_common_argument("--" + key)
 
         elif key == 'repository':
             # expecting single string (and later on, and array of strings!)
