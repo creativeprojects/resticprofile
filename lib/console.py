@@ -8,11 +8,14 @@ class Console:
 
     def debug(self, message):
         if (self.verbose):
-            print(Fore.GREEN + message)
+            print(Fore.LIGHTGREEN_EX + message)
 
     def info(self, message):
         if (not self.quiet):
-            print(Fore.YELLOW + message)
+            print(Fore.LIGHTYELLOW_EX + message)
     
+    def warning(self, message):
+        print(Fore.LIGHTRED_EX + message)
+
     def error(self, message):
-        print(Fore.RED + message)
+        print(Fore.LIGHTRED_EX + message)

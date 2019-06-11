@@ -6,46 +6,8 @@ from sys import argv, exit
 from subprocess import call
 from ast import literal_eval
 from lib.console import Console
-import configparser
-
-defaults = {
-    'config_file': 'profiles.conf',
-    'profile': 'default',
-    'global': 'global',
-    'separator': '.',
-    'environment': 'env',
-}
-
-arguments_definition = {
-    'help': {
-        'short': 'h',
-        'long': 'help',
-        'argument': False,
-    },
-    'quiet': {
-        'short': 'q',
-        'long': 'quiet',
-        'argument': False,
-    },
-    'verbose': {
-        'short': 'v',
-        'long': 'verbose',
-        'argument': False,
-    },
-    'config': {
-        'short': 'c',
-        'long': 'config',
-        'argument': True,
-        'argument_name': 'configuration_file'
-    },
-    'name': {
-        'short': 'n',
-        'long': 'name',
-        'argument': True,
-        'argument_name': 'profile_name'
-    }
-}
-
+from lib.config import defaults, arguments_definition
+import toml
 
 def get_options_help():
     for name, options in arguments_definition.items():
@@ -91,8 +53,12 @@ def main():
 
     configuration_file = defaults['config_file']
     configuration_name = defaults['profile']
-    verbose = None
-    quiet = None
+    verbose = defaults['verbose']
+    quiet = defaults['quiet']
+    global_config = {}
+    global_config['ionice'] = defaults['ionice']
+    global_config['default-command'] = defaults['default-command']
+    global_config['initialize'] = defaults['initialize']
 
     for option, argument in opts:
         if option in get_possible_options_for('help'):
@@ -131,25 +97,29 @@ def main():
             chdir(dirname(valid_configuration_file))
             break
 
-    config = configparser.ConfigParser()
-    if valid_configuration_file != None:
-        print("Using configuration file " + valid_configuration_file)
-        config.read(valid_configuration_file)
-    else:
-        print("Configuration file '" + configuration_file + "' was not found in '" + current_directory + "' and '" + script_directory + "'")
-        config[configuration_name] = {}
 
+    if valid_configuration_file != None:
+        console.debug("Using configuration file " + valid_configuration_file)
+        profiles = toml.load(valid_configuration_file)
+    else:
+        console.warning("Configuration file '" + configuration_file + "' was not found in either current or script directory.")
+        exit(2)
+
+    repository = ""
     restic_arguments = []
     backup_paths = []
     # Build list of arguments to pass to restic
-    if configuration_name in config:
-        build_argument_list_from_section(restic_arguments, backup_paths, config[configuration_name])
+    if defaults['global'] in profiles:
+        build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles[defaults['global']])
 
-    if configuration_name + defaults['separator'] + restic_command in config:
-        build_argument_list_from_section(restic_arguments, backup_paths, config[configuration_name + defaults['separator'] + restic_command])
+    if configuration_name in profiles:
+        build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles[configuration_name])
 
-    if configuration_name + defaults['separator'] + defaults['environment'] in config:
-        env_config = config[configuration_name + defaults['separator'] + defaults['environment']]
+    if configuration_name + defaults['separator'] + restic_command in profiles:
+        build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles[configuration_name + defaults['separator'] + restic_command])
+
+    if configuration_name + defaults['separator'] + defaults['environment'] in profiles:
+        env_config = profiles[configuration_name + defaults['separator'] + defaults['environment']]
         for key in env_config:
             environ[key.upper()] = env_config[key]
             print("Setting environment variable {}".format(key.upper()))
@@ -158,6 +128,11 @@ def main():
         restic_arguments.append('--quiet')
     elif verbose:
         restic_arguments.append('--verbose')
+
+    # check that we have the minimum information we need
+    if not repository:
+        console.error("A repository is needed in the configuration.")
+        exit(2)
 
     restic_arguments.extend(args[1:])
 
@@ -171,28 +146,58 @@ def main():
     console.debug(full_command)
     call(full_command, shell=True)
 
-def build_argument_list_from_section(restic_arguments, backup_paths, config_section):
-    for key in config_section:
-        if key in ('exclude-file', 'password-file'):
-            value = abspath(config_section[key])
-            restic_arguments.append("--" + key + '=' + value)
-        elif key in ('tag'):
-            values = literal_eval(config_section[key])
-            for value in values:
+def build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles_section):
+    for key in profiles_section:
+        if key in ('password-file'):
+            # expecting simple string
+            if profiles_section[key] is str:
+                value = abspath(profiles_section[key])
                 restic_arguments.append("--" + key + '=' + value)
+
+        elif key in ('exclude-file', 'tag'):
+            # expecting either single string or array of strings
+            if profiles_section[key] is list:
+                for value in profiles_section[key]:
+                    restic_arguments.append("--" + key + '=' + value)
+            elif profiles_section[key] is str:
+                restic_arguments.append("--" + key + '=' + value)
+
         elif key in ('exclude-caches', 'one-file-system', 'no-cache'):
-            value = config_section.getboolean(key)
-            if value:
-                restic_arguments.append("--" + key)
+            # expecting boolean value
+            if profiles_section[key] is bool:
+                if profiles_section[key]:
+                    restic_arguments.append("--" + key)
+
         elif key == 'repository':
-            restic_arguments.append("-r=" + config_section[key])
+            # expecting single string (and later on, and array of strings!)
+            if profiles_section[key] is str:
+                repository = profiles_section[key]
+                restic_arguments.append("-r=" + profiles_section[key])
+
         elif key == 'backup':
-            values = literal_eval(config_section[key])
-            for value in values:
-                backup_paths.append(value)
+            # expecting either single string or array of strings
+            if profiles_section[key] is str:
+                backup_paths.append(profiles_section[key])
+            elif profiles_section[key] is list:
+                for value in profiles_section[key]:
+                    backup_paths.append(value)
+
+        elif key in ('initialize', 'ionice'):
+            # expecting boolean value
+            if profiles_section[key] is bool:
+                global_config[key] = profiles_section[key]
+
+        elif key == 'default-command':
+            # expecting single string
+            if profiles_section[key] is str:
+                global_config[key] = profiles_section[key]
+
         else:
-            value = config_section[key]
-            restic_arguments.append("--" + key + '=' + value)
+            value = profiles_section[key]
+            if value is str:
+                restic_arguments.append("--" + key + '=' + value)
+            elif value is int:
+                restic_arguments.append("--" + key + '=' + value)
 
 if __name__ == "__main__":
     main()
