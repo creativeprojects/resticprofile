@@ -3,10 +3,11 @@ from os.path import abspath, isfile, dirname
 from os import chdir, getcwd, environ
 from getopt import getopt, GetoptError
 from sys import argv, exit
-from subprocess import call
+from subprocess import call, DEVNULL
 from ast import literal_eval
 from lib.console import Console
 from lib.config import defaults, arguments_definition
+from lib.restic import Restic
 import toml
 
 def get_options_help():
@@ -82,8 +83,6 @@ def main():
     console = Console(quiet, verbose)
 
     restic_command = "snapshots"
-    if len(args) > 0:
-        restic_command = args[0]
 
     # Current directory where the script was started from
     current_directory = getcwd()
@@ -105,36 +104,42 @@ def main():
         console.warning("Configuration file '" + configuration_file + "' was not found in either current or script directory.")
         exit(2)
 
-    repository = ""
-    restic_arguments = []
-    backup_paths = []
+    restic = Restic()
+    if len(args) > 0:
+        # A command was passed as an argument (it has to be the first one after the options)
+        restic.command = args[0]
+
     # Build list of arguments to pass to restic
     if defaults['global'] in profiles:
-        build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles[defaults['global']])
+        build_argument_list_from_section(restic, global_config, profiles[defaults['global']])
 
     if configuration_name in profiles:
-        build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles[configuration_name])
+        build_argument_list_from_section(restic, global_config, profiles[configuration_name])
 
-    if configuration_name + defaults['separator'] + restic_command in profiles:
-        build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles[configuration_name + defaults['separator'] + restic_command])
+        # there's no default command yet
+        if not restic.command:
+            restic.command = defaults['default-command']
 
-    if configuration_name + defaults['separator'] + defaults['environment'] in profiles:
-        env_config = profiles[configuration_name + defaults['separator'] + defaults['environment']]
-        for key in env_config:
-            environ[key.upper()] = env_config[key]
-            print("Setting environment variable {}".format(key.upper()))
+        if restic.command in profiles[configuration_name]:
+            build_argument_list_from_section(restic, global_config, profiles[configuration_name][restic.command])
+
+        if defaults['environment'] in profiles[configuration_name]:
+            env_config = profiles[configuration_name][defaults['environment']]
+            for key in env_config:
+                environ[key.upper()] = env_config[key]
+                console.debug("Setting environment variable {}".format(key.upper()))
 
     if quiet:
-        restic_arguments.append('--quiet')
+        restic.set_common_argument('--quiet')
     elif verbose:
-        restic_arguments.append('--verbose')
+        restic.set_common_argument('--verbose')
 
     # check that we have the minimum information we need
-    if not repository:
+    if not restic.repository:
         console.error("A repository is needed in the configuration.")
         exit(2)
 
-    restic_arguments.extend(args[1:])
+    restic.extend_arguments(args[1:])
 
     restic_cmd = ""
     for path in ('/usr/bin', '/usr/local/bin', '/opt/local/bin'):
@@ -142,62 +147,91 @@ def main():
             restic_cmd = path + '/restic'
             break
 
-    full_command = restic_cmd + " " + restic_command + " " + ' '.join(restic_arguments) + " " + ' '.join(backup_paths)
-    console.debug(full_command)
-    call(full_command, shell=True)
+    if global_config['initialize']:
+        init_command = restic_cmd + " " + restic.get_init_command()
+        console.debug(init_command)
+        # captures only stdout when we create a new repository; otherwise don't display the error when it exists
+        call(init_command, shell = True, stdin = DEVNULL, stderr = DEVNULL)
 
-def build_argument_list_from_section(repository, restic_arguments, backup_paths, global_config, profiles_section):
+    if restic.prune_before:
+        prune_command = restic_cmd + " " + restic.get_prune_command()
+        console.debug(prune_command)
+        call(prune_command, shell = True, stdin = DEVNULL)
+
+    full_command = restic_cmd + " " + restic.get_command()
+    console.debug(full_command)
+    call(full_command, shell = True, stdin = DEVNULL)
+
+    if restic.prune_after:
+        prune_command = restic_cmd + " " + restic.get_prune_command()
+        console.debug(prune_command)
+        call(prune_command, shell = True, stdin = DEVNULL)
+
+def build_argument_list_from_section(restic, global_config, profiles_section):
     for key in profiles_section:
         if key in ('password-file'):
             # expecting simple string
-            if profiles_section[key] is str:
+            if isinstance(profiles_section[key], str):
                 value = abspath(profiles_section[key])
-                restic_arguments.append("--" + key + '=' + value)
+                restic.set_common_argument("--" + key + '=' + value)
 
         elif key in ('exclude-file', 'tag'):
             # expecting either single string or array of strings
-            if profiles_section[key] is list:
+            if isinstance(profiles_section[key], list):
                 for value in profiles_section[key]:
-                    restic_arguments.append("--" + key + '=' + value)
-            elif profiles_section[key] is str:
-                restic_arguments.append("--" + key + '=' + value)
+                    restic.set_argument("--" + key + '=' + value)
+            elif isinstance(profiles_section[key], str):
+                restic.set_argument("--" + key + '=' + value)
 
         elif key in ('exclude-caches', 'one-file-system', 'no-cache'):
             # expecting boolean value
-            if profiles_section[key] is bool:
+            if isinstance(profiles_section[key], bool):
                 if profiles_section[key]:
-                    restic_arguments.append("--" + key)
+                    restic.set_argument("--" + key)
 
         elif key == 'repository':
             # expecting single string (and later on, and array of strings!)
-            if profiles_section[key] is str:
-                repository = profiles_section[key]
-                restic_arguments.append("-r=" + profiles_section[key])
+            if isinstance(profiles_section[key], str):
+                restic.repository = profiles_section[key]
+                restic.set_common_argument("-r=" + profiles_section[key])
 
         elif key == 'backup':
             # expecting either single string or array of strings
-            if profiles_section[key] is str:
-                backup_paths.append(profiles_section[key])
-            elif profiles_section[key] is list:
+            if isinstance(profiles_section[key], str):
+                restic.backup_paths.append(profiles_section[key])
+            elif isinstance(profiles_section[key], list):
                 for value in profiles_section[key]:
-                    backup_paths.append(value)
+                    restic.backup_paths.append(value)
 
         elif key in ('initialize', 'ionice'):
             # expecting boolean value
-            if profiles_section[key] is bool:
+            if isinstance(profiles_section[key], bool):
                 global_config[key] = profiles_section[key]
 
         elif key == 'default-command':
             # expecting single string
-            if profiles_section[key] is str:
+            if isinstance(profiles_section[key], str):
                 global_config[key] = profiles_section[key]
+                if not restic.command:
+                    # also sets the current default command
+                    restic.command = profiles_section[key]
+
+        elif key == 'prune-before':
+            # expecting boolean value
+            if isinstance(profiles_section[key], bool):
+                restic.prune_before = profiles_section[key]
+
+        elif key == 'prune-after':
+            # expecting boolean value
+            if isinstance(profiles_section[key], bool):
+                restic.prune_after = profiles_section[key]
 
         else:
             value = profiles_section[key]
-            if value is str:
-                restic_arguments.append("--" + key + '=' + value)
-            elif value is int:
-                restic_arguments.append("--" + key + '=' + value)
+            if isinstance(value, str):
+                restic.set_argument("--" + key + '=' + value)
+            elif isinstance(value, int):
+                restic.set_argument("--" + key + '=' + value)
 
 if __name__ == "__main__":
     main()

@@ -15,13 +15,13 @@ default-command = "snapshots" # when no command is specified when invoking resti
 
 # Default profile when not specified (-n or --name)
 [default]
-repository = "/Volumes/RAMDisk"
+repository = "/backup/default"
 no-cache = true
 initialize = false
 
 # New profile named 'root'
 [root]
-repository = "/Volumes/RAMDisk"
+repository = "/backup/root"
 password-file = "key"
 initialize = true
 
@@ -33,7 +33,7 @@ one-file-system = false
 tag = [ "test", "dev" ]
 backup = [ "." ]
 prune-before = false
-prune-after = false
+prune-after = true
 
 # Environment variables of profile 'root'
 [root.env]
