@@ -1,5 +1,5 @@
 import unittest
-from lib.nice import Nice
+from src.lib.nice import Nice
 
 class TestNice(unittest.TestCase):
 

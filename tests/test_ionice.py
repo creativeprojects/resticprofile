@@ -1,5 +1,5 @@
 import unittest
-from lib.ionice import IONice
+from src.lib.ionice import IONice
 
 class TestIONice(unittest.TestCase):
 
