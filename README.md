@@ -10,7 +10,7 @@ Try [restic](https://restic.net/) and you'll understand why we need a configurat
 Here's a configuration file example:
 
 ```ini
-# This is the global configuration used by all profiles
+# Global configuration section
 [global]
 ionice = false # Linux only
 ionice-class = 2
