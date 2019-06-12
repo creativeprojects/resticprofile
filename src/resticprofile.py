@@ -41,10 +41,6 @@ def main():
         exit(2)
 
     context = Context()
-    global_config = {}
-    global_config['ionice'] = defaults['ionice']
-    global_config['default-command'] = defaults['default-command']
-    global_config['initialize'] = defaults['initialize']
 
     for option, argument in opts:
         if option in get_possible_options_for('help'):
@@ -94,17 +90,17 @@ def main():
 
     # Build list of arguments to pass to restic
     if defaults['global'] in profiles:
-        build_argument_list_from_section(restic, context, global_config, profiles[defaults['global']])
+        context.set_global_context(profiles[defaults['global']])
 
     if context.profile_name in profiles:
-        build_argument_list_from_section(restic, context, global_config, profiles[context.profile_name])
+        build_argument_list_from_section(restic, context, profiles[context.profile_name])
 
         # there's no default command yet
         if not restic.command:
-            restic.command = defaults['default-command']
+            restic.command = context.default_command
 
         if restic.command in profiles[context.profile_name]:
-            build_argument_list_from_section(restic, context, global_config, profiles[context.profile_name][restic.command])
+            build_argument_list_from_section(restic, context, profiles[context.profile_name][restic.command])
 
         if defaults['environment'] in profiles[context.profile_name]:
             env_config = profiles[context.profile_name][defaults['environment']]
@@ -134,7 +130,7 @@ def main():
     if context.nice:
         command_prefix += context.nice.get_command() + ' '
 
-    if global_config['initialize']:
+    if context.initialize:
         init_command = command_prefix + restic_cmd + " " + restic.get_init_command()
         console.debug(init_command)
         # captures only stdout when we create a new repository; otherwise don't display the error when it exists
@@ -154,7 +150,7 @@ def main():
         console.debug(prune_command)
         call(prune_command, shell = True, stdin = DEVNULL)
 
-def build_argument_list_from_section(restic, context, global_config, profiles_section):
+def build_argument_list_from_section(restic, context, profiles_section):
     for key in profiles_section:
         if key in ('password-file'):
             # expecting simple string
@@ -196,15 +192,15 @@ def build_argument_list_from_section(restic, context, global_config, profiles_se
                 for value in profiles_section[key]:
                     restic.backup_paths.append(value)
 
-        elif key in ('initialize', 'ionice'):
+        elif key in ('initialize'):
             # expecting boolean value
             if isinstance(profiles_section[key], bool):
-                global_config[key] = profiles_section[key]
+                context.initialize = profiles_section[key]
 
         elif key == 'default-command':
             # expecting single string
             if isinstance(profiles_section[key], str):
-                global_config[key] = profiles_section[key]
+                context.default_command = profiles_section[key]
                 if not restic.command:
                     # also sets the current default command
                     restic.command = profiles_section[key]
@@ -220,38 +216,14 @@ def build_argument_list_from_section(restic, context, global_config, profiles_se
                 restic.prune_after = profiles_section[key]
 
         elif key == 'nice':
-            # expecting boolean or integer
-            value = profiles_section[key]
-            if isinstance(value, bool):
-                if value:
-                    context.nice = Nice()
-                else:
-                    context.nice = None
-            elif isinstance(value, int):
-                context.nice = Nice(value)
+            context.set_nice(profiles_section)
 
         elif key == 'ionice':
-            # expecting boolean
-            value = profiles_section[key]
-            if isinstance(value, bool):
-                if value:
-                    context.ionice = IONice()
-                else:
-                    context.ionice = None
+            context.set_ionice(profiles_section)
 
-        elif key == 'ionice-class':
-            # expecting integer
-            value = profiles_section[key]
-            if isinstance(value, int):
-                if value and context.ionice:
-                    context.ionice.io_class = value
-
-        elif key == 'ionice-level':
-            # expecting integer
-            value = profiles_section[key]
-            if isinstance(value, int):
-                if value and context.ionice:
-                    context.ionice.io_level = value
+        elif key in ('ionice-class', 'ionice-level'):
+            # these values are ignored
+            None
 
         else:
             value = profiles_section[key]

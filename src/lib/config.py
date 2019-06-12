@@ -5,7 +5,7 @@ defaults = {
     'global': 'global',
     'separator': '.',
     'environment': 'env',
-    'default-command': 'snapshots',
+    'default_command': 'snapshots',
     'ionice': False,
     'initialize': False,
     'verbose': None,
@@ -48,6 +48,7 @@ global_flags = {
     'ionice-level': { 'type': 'int' },
     'nice': { 'type': [ 'bool', 'int' ] },
     'default-command': { 'type': 'str' },
+    'initialize': { 'type': 'bool' },
 }
 
 restic_flags = {
