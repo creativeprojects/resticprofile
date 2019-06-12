@@ -8,15 +8,8 @@ from ast import literal_eval
 from lib.console import Console
 from lib.config import defaults, arguments_definition
 from lib.restic import Restic
+from lib.context import Context
 import toml
-
-def get_options_help():
-    for name, options in arguments_definition.items():
-        option_help = "[-" + options['short']
-        option_help += "|--" + options['long']
-        option_help += " <" + options['argument_name'] + ">" if options['argument'] else ""
-        option_help += "]"
-        yield option_help
 
 def get_short_options():
     short_options = ""
@@ -33,14 +26,6 @@ def get_long_options():
 def get_possible_options_for(option):
     return [ "-" + arguments_definition[option]['short'], "--" + arguments_definition[option]['long'] ]
 
-def usage():
-    print("Usage:")
-    print(" " + argv[0] + " " + "\n   ".join(get_options_help()) + " COMMAND")
-    print
-    print("Default configuration file is: '{}' (in the current folder)".format(defaults['config_file']))
-    print("Default configuration profile is: {}".format(defaults['profile']))
-    print
-
 def main():
     try:
         short_options = get_short_options()
@@ -48,14 +33,12 @@ def main():
         opts, args = getopt(argv[1:], short_options, long_options)
 
     except GetoptError as err:
-        Console().error("Error in the command arguments: " + err.msg) # will print something like "option -a not recognized"
-        usage()
+        console = Console()
+        console.error("Error in the command arguments: " + err.msg)
+        console.usage(argv[0])
         exit(2)
 
-    configuration_file = defaults['config_file']
-    configuration_name = defaults['profile']
-    verbose = defaults['verbose']
-    quiet = defaults['quiet']
+    context = Context()
     global_config = {}
     global_config['ionice'] = defaults['ionice']
     global_config['default-command'] = defaults['default-command']
@@ -63,26 +46,24 @@ def main():
 
     for option, argument in opts:
         if option in get_possible_options_for('help'):
-            usage()
+            Console().usage(argv[0])
             exit()
         elif option in get_possible_options_for('quiet'):
-            quiet = True
+            context.quiet = True
 
         elif option in get_possible_options_for('verbose'):
-            verbose = True
+            context.verbose = True
 
         elif option in get_possible_options_for('config'):
-            configuration_file = argument
+            context.configuration_file = argument
 
         elif option in get_possible_options_for('name'):
-            configuration_name = argument
+            context.profile_name = argument
 
         else:
             assert False, "unhandled option"
     
-    console = Console(quiet, verbose)
-
-    restic_command = "snapshots"
+    console = Console(context.quiet, context.verbose)
 
     # Current directory where the script was started from
     current_directory = getcwd()
@@ -90,7 +71,7 @@ def main():
     script_directory = dirname(abspath(getsourcefile(lambda:0)))     # Who said python reads like English?
 
     valid_configuration_file = None
-    for file in (current_directory + "/" + configuration_file, script_directory + "/" + configuration_file):
+    for file in (current_directory + "/" + context.configuration_file, script_directory + "/" + context.configuration_file):
         if isfile(file):
             valid_configuration_file = file
             chdir(dirname(valid_configuration_file))
@@ -101,7 +82,7 @@ def main():
         console.debug("Using configuration file " + valid_configuration_file)
         profiles = toml.load(valid_configuration_file)
     else:
-        console.warning("Configuration file '" + configuration_file + "' was not found in either current or script directory.")
+        console.warning("Configuration file '" + context.configuration_file + "' was not found in either current or script directory.")
         exit(2)
 
     restic = Restic()
@@ -113,25 +94,25 @@ def main():
     if defaults['global'] in profiles:
         build_argument_list_from_section(restic, global_config, profiles[defaults['global']])
 
-    if configuration_name in profiles:
-        build_argument_list_from_section(restic, global_config, profiles[configuration_name])
+    if context.profile_name in profiles:
+        build_argument_list_from_section(restic, global_config, profiles[context.profile_name])
 
         # there's no default command yet
         if not restic.command:
             restic.command = defaults['default-command']
 
-        if restic.command in profiles[configuration_name]:
-            build_argument_list_from_section(restic, global_config, profiles[configuration_name][restic.command])
+        if restic.command in profiles[context.profile_name]:
+            build_argument_list_from_section(restic, global_config, profiles[context.profile_name][restic.command])
 
-        if defaults['environment'] in profiles[configuration_name]:
-            env_config = profiles[configuration_name][defaults['environment']]
+        if defaults['environment'] in profiles[context.profile_name]:
+            env_config = profiles[context.profile_name][defaults['environment']]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting environment variable {}".format(key.upper()))
 
-    if quiet:
+    if context.quiet:
         restic.set_common_argument('--quiet')
-    elif verbose:
+    elif context.verbose:
         restic.set_common_argument('--verbose')
 
     # check that we have the minimum information we need

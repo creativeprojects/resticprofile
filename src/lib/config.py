@@ -1,7 +1,7 @@
 
 defaults = {
-    'config_file': 'profiles.conf',
-    'profile': 'default',
+    'configuration_file': 'profiles.conf',
+    'profile_name': 'default',
     'global': 'global',
     'separator': '.',
     'environment': 'env',
