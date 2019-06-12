@@ -186,7 +186,7 @@ def build_argument_list_from_section(restic, context, global_config, profiles_se
             # expecting single string (and later on, and array of strings!)
             if isinstance(profiles_section[key], str):
                 restic.repository = profiles_section[key]
-                restic.set_common_argument("-r={}".format(profiles_section[key]))
+                restic.set_common_argument("--repo={}".format(profiles_section[key]))
 
         elif key == 'backup':
             # expecting either single string or array of strings
