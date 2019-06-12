@@ -17,6 +17,7 @@ ionice-class = 2
 ionice-level = 6
 nice = 10 # All unix-like
 default-command = "snapshots" # when no command is specified when invoking resticprofile
+initialize = false # initialize a repository if none exist at location
 
 # Default profile when not specified (-n or --name)
 [default]
