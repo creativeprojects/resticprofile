@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/creativeprojects/resticprofile.svg?branch=master)](https://travis-ci.com/creativeprojects/resticprofile)
+
 # resticprofile
 Configuration profiles for restic backup
 
