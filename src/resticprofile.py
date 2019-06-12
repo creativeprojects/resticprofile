@@ -9,6 +9,8 @@ from lib.console import Console
 from lib.config import defaults, arguments_definition
 from lib.restic import Restic
 from lib.context import Context
+from lib.nice import Nice
+from lib.ionice import IONice
 import toml
 
 def get_short_options():
@@ -92,17 +94,17 @@ def main():
 
     # Build list of arguments to pass to restic
     if defaults['global'] in profiles:
-        build_argument_list_from_section(restic, global_config, profiles[defaults['global']])
+        build_argument_list_from_section(restic, context, global_config, profiles[defaults['global']])
 
     if context.profile_name in profiles:
-        build_argument_list_from_section(restic, global_config, profiles[context.profile_name])
+        build_argument_list_from_section(restic, context, global_config, profiles[context.profile_name])
 
         # there's no default command yet
         if not restic.command:
             restic.command = defaults['default-command']
 
         if restic.command in profiles[context.profile_name]:
-            build_argument_list_from_section(restic, global_config, profiles[context.profile_name][restic.command])
+            build_argument_list_from_section(restic, context, global_config, profiles[context.profile_name][restic.command])
 
         if defaults['environment'] in profiles[context.profile_name]:
             env_config = profiles[context.profile_name][defaults['environment']]
@@ -128,59 +130,63 @@ def main():
             restic_cmd = path + '/restic'
             break
 
+    command_prefix = ""
+    if context.nice:
+        command_prefix += context.nice.get_command() + ' '
+
     if global_config['initialize']:
-        init_command = restic_cmd + " " + restic.get_init_command()
+        init_command = command_prefix + restic_cmd + " " + restic.get_init_command()
         console.debug(init_command)
         # captures only stdout when we create a new repository; otherwise don't display the error when it exists
         call(init_command, shell = True, stdin = DEVNULL, stderr = DEVNULL)
 
     if restic.prune_before:
-        prune_command = restic_cmd + " " + restic.get_prune_command()
+        prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
         console.debug(prune_command)
         call(prune_command, shell = True, stdin = DEVNULL)
 
-    full_command = restic_cmd + " " + restic.get_command()
+    full_command = command_prefix + restic_cmd + " " + restic.get_command()
     console.debug(full_command)
     call(full_command, shell = True, stdin = DEVNULL)
 
     if restic.prune_after:
-        prune_command = restic_cmd + " " + restic.get_prune_command()
+        prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
         console.debug(prune_command)
         call(prune_command, shell = True, stdin = DEVNULL)
 
-def build_argument_list_from_section(restic, global_config, profiles_section):
+def build_argument_list_from_section(restic, context, global_config, profiles_section):
     for key in profiles_section:
         if key in ('password-file'):
             # expecting simple string
             if isinstance(profiles_section[key], str):
                 value = abspath(profiles_section[key])
-                restic.set_common_argument("--" + key + '=' + value)
+                restic.set_common_argument("--{}={}".format(key, value))
 
         elif key in ('exclude-file', 'tag'):
             # expecting either single string or array of strings
             if isinstance(profiles_section[key], list):
                 for value in profiles_section[key]:
-                    restic.set_argument("--" + key + '=' + value)
+                    restic.set_argument("--{}={}".format(key, value))
             elif isinstance(profiles_section[key], str):
-                restic.set_argument("--" + key + '=' + value)
+                restic.set_argument("--{}={}".format(key, value))
 
         elif key in ('exclude-caches', 'one-file-system'):
             # expecting boolean value
             if isinstance(profiles_section[key], bool):
                 if profiles_section[key]:
-                    restic.set_argument("--" + key)
+                    restic.set_argument("--{}".format(key))
 
         elif key in ('no-cache'):
             # expecting boolean value
             if isinstance(profiles_section[key], bool):
                 if profiles_section[key]:
-                    restic.set_common_argument("--" + key)
+                    restic.set_common_argument("--{}".format(key))
 
         elif key == 'repository':
             # expecting single string (and later on, and array of strings!)
             if isinstance(profiles_section[key], str):
                 restic.repository = profiles_section[key]
-                restic.set_common_argument("-r=" + profiles_section[key])
+                restic.set_common_argument("-r={}".format(profiles_section[key]))
 
         elif key == 'backup':
             # expecting either single string or array of strings
@@ -213,12 +219,48 @@ def build_argument_list_from_section(restic, global_config, profiles_section):
             if isinstance(profiles_section[key], bool):
                 restic.prune_after = profiles_section[key]
 
+        elif key == 'nice':
+            # expecting boolean or integer
+            value = profiles_section[key]
+            if isinstance(value, bool):
+                if value:
+                    context.nice = Nice()
+                else:
+                    context.nice = None
+            elif isinstance(value, int):
+                context.nice = Nice(value)
+
+        elif key == 'ionice':
+            # expecting boolean
+            value = profiles_section[key]
+            if isinstance(value, bool):
+                if value:
+                    context.ionice = IONice()
+                else:
+                    context.ionice = None
+
+        elif key == 'ionice-class':
+            # expecting integer
+            value = profiles_section[key]
+            if isinstance(value, int):
+                if value and context.ionice:
+                    context.ionice.io_class = value
+
+        elif key == 'ionice-level':
+            # expecting integer
+            value = profiles_section[key]
+            if isinstance(value, int):
+                if value and context.ionice:
+                    context.ionice.io_level = value
+
         else:
             value = profiles_section[key]
             if isinstance(value, str):
-                restic.set_argument("--" + key + '=' + value)
+                restic.set_argument("--{}={}".format(key, value))
             elif isinstance(value, int):
-                restic.set_argument("--" + key + '=' + value)
+                restic.set_argument("--{}={}".format(key, value))
+            elif isinstance(value, bool) and value:
+                restic.set_argument("--{}".format(key))
 
 if __name__ == "__main__":
     main()

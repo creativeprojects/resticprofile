@@ -13,6 +13,9 @@ Here's a configuration file example:
 # This is the global configuration used by all profiles
 [global]
 ionice = false # Linux only
+ionice-class = 2
+ionice-level = 6
+nice = 10 # All unix-like
 default-command = "snapshots" # when no command is specified when invoking resticprofile
 
 # Default profile when not specified (-n or --name)
@@ -28,6 +31,7 @@ password-file = "key"
 initialize = true
 
 # 'backup' command of profile 'root'
+
 [root.backup]
 exclude-file = [ "root-excludes", "excludes" ]
 exclude-caches = true
@@ -40,5 +44,23 @@ prune-after = true
 # Environment variables of profile 'root'
 [root.env]
 EXAMPLE="some value"
+
+# New profile named 'src'
+[src]
+repository = "/backup/sources"
+password-file = "key"
+initialize = true
+
+# 'backup' command of profile 'src'
+[src.backup]
+exclude-file = [ "excludes" ]
+tag = [ "src" ]
+backup = [ "src" ]
+
+# profile that represents a group: when called all the profiles will be running
+[full-backup]
+group = [ "root", "src" ]
+prune-before = true
+prune-after = false
 
 ```

@@ -7,3 +7,5 @@ class Context:
         self.profile_name = defaults['profile_name']
         self.verbose = defaults['verbose']
         self.quiet = defaults['quiet']
+        self.nice = None
+        self.ionice = None
