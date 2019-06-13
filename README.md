@@ -32,7 +32,6 @@ password-file = "key"
 initialize = true
 
 # 'backup' command of profile 'root'
-
 [root.backup]
 exclude-file = [ "root-excludes", "excludes" ]
 exclude-caches = true

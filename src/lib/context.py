@@ -1,6 +1,7 @@
 from .config import defaults, global_flags, validate_configuration_option
 from .ionice import IONice
 from .nice import Nice
+from . import constants
 
 class Context:
 
@@ -25,15 +26,27 @@ class Context:
         self.set_initialize(configuration_section)
 
     def set_ionice(self, configuration_section):
-        if 'ionice' in configuration_section:
-            ionice = validate_configuration_option(global_flags, 'ionice', configuration_section['ionice'])
+        if constants.PARAMETER_IONICE in configuration_section:
+            ionice = validate_configuration_option(
+                global_flags,
+                constants.PARAMETER_IONICE,
+                configuration_section[constants.PARAMETER_IONICE]
+            )
             if ionice and ionice['value']:
                 io_class = None
                 io_level = None
-                if 'ionice-class' in configuration_section:
-                    io_class = validate_configuration_option(global_flags, 'ionice-class', configuration_section['ionice-class'])
-                if 'ionice-level' in configuration_section:
-                    io_level = validate_configuration_option(global_flags, 'ionice-level', configuration_section['ionice-level'])
+                if constants.PARAMETER_IONICE_CLASS in configuration_section:
+                    io_class = validate_configuration_option(
+                        global_flags,
+                        constants.PARAMETER_IONICE_CLASS,
+                        configuration_section[constants.PARAMETER_IONICE_CLASS]
+                    )
+                if constants.PARAMETER_IONICE_LEVEL in configuration_section:
+                    io_level = validate_configuration_option(
+                        global_flags,
+                        constants.PARAMETER_IONICE_LEVEL,
+                        configuration_section[constants.PARAMETER_IONICE_LEVEL]
+                    )
 
                 if io_class and io_level:
                     self.ionice = IONice(io_class['value'], io_level['value'])
@@ -45,8 +58,12 @@ class Context:
                     self.ionice = IONice()
 
     def set_nice(self, configuration_section):
-        if 'nice' in configuration_section:
-            nice = validate_configuration_option(global_flags, 'nice', configuration_section['nice'])
+        if constants.PARAMETER_NICE in configuration_section:
+            nice = validate_configuration_option(
+                global_flags,
+                constants.PARAMETER_NICE,
+                configuration_section[constants.PARAMETER_NICE]
+            )
             if nice and (nice['value'] and nice['type'] == 'bool') or (nice['type'] == 'int'):
                 if nice['type'] == 'int':
                     self.nice = Nice(nice['value'])
@@ -54,13 +71,21 @@ class Context:
                     self.nice = Nice()
 
     def set_default_command(self, configuration_section):
-        if 'default-command' in configuration_section:
-            default_command = validate_configuration_option(global_flags, 'default-command', configuration_section['default-command'])
+        if constants.PARAMETER_DEFAULT_COMMAND in configuration_section:
+            default_command = validate_configuration_option(
+                global_flags,
+                constants.PARAMETER_DEFAULT_COMMAND,
+                configuration_section[constants.PARAMETER_DEFAULT_COMMAND]
+            )
             if default_command:
                 self.default_command = default_command['value']
 
     def set_initialize(self, configuration_section):
-        if 'initialize' in configuration_section:
-            initialize = validate_configuration_option(global_flags, 'initialize', configuration_section['initialize'])
+        if constants.PARAMETER_INITIALIZE in configuration_section:
+            initialize = validate_configuration_option(
+                global_flags,
+                constants.PARAMETER_INITIALIZE,
+                configuration_section[constants.PARAMETER_INITIALIZE]
+            )
             if initialize:
                 self.initialize = initialize['value']

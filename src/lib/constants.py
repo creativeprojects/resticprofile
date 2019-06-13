@@ -1,0 +1,12 @@
+
+SECTION_GLOBAL = 'global'
+
+SUBSECTION_BACKUP = 'backup'
+
+PARAMETER_IONICE = 'ionice'
+PARAMETER_IONICE_CLASS = 'ionice-class'
+PARAMETER_IONICE_LEVEL = 'ionice-level'
+
+PARAMETER_NICE = 'nice'
+PARAMETER_DEFAULT_COMMAND = 'default-command'
+PARAMETER_INITIALIZE = 'initialize'
