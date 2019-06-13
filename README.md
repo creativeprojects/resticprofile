@@ -39,12 +39,25 @@ exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
 backup = [ "." ]
-prune-before = false
-prune-after = true
 
 # Environment variables of profile 'root'
 [root.env]
 EXAMPLE="some value"
+
+# retention policy for profile root
+[root.retention]
+before-backup = false
+after-backup = true
+keep-last = 3
+keep-hourly = 1
+keep-daily = 1
+keep-weekly = 1
+keep-monthly = 1
+keep-yearly = 1
+keep-within = 3h
+keep-tag = [ "forever" ]
+compact = false
+prune = false
 
 # New profile named 'src'
 [src]
@@ -58,10 +71,16 @@ exclude-file = [ "excludes" ]
 tag = [ "src" ]
 backup = [ "src" ]
 
+# retention policy for profile src
+[src.retention]
+before-backup = false
+after-backup = true
+keep-within = 30d
+compact = false
+prune = true
+
 # profile that represents a group: when called all the profiles will be running
 [full-backup]
-group = [ "root", "src" ]
-prune-before = true
-prune-after = false
+backup-group = [ "root", "src" ]
 
 ```
