@@ -78,7 +78,12 @@ def main():
 
     if valid_configuration_file != None:
         console.debug("Using configuration file " + valid_configuration_file)
-        profiles = toml.load(valid_configuration_file)
+        try:
+            profiles = toml.load(valid_configuration_file)
+        except toml.decoder.TomlDecodeError as err:
+            console.error("An error occured while loading the configuration file:")
+            console.error(str(err))
+            exit(2)
     else:
         console.warning("Configuration file '" + context.configuration_file + "' was not found in either current or script directory.")
         exit(2)
@@ -129,6 +134,8 @@ def main():
     command_prefix = ""
     if context.nice:
         command_prefix += context.nice.get_command() + ' '
+    if context.ionice:
+        command_prefix += context.ionice.get_command() + ' '
 
     if context.initialize:
         init_command = command_prefix + restic_cmd + " " + restic.get_init_command()

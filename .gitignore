@@ -1,3 +1,4 @@
 /.vscode
 /examples/private
+/scripts/deploy.sh
 *.pyc
