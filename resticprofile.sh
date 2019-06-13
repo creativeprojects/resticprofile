@@ -3,4 +3,4 @@
 BASE_DIR=$(cd $(dirname "$0") && pwd)
 cd ${BASE_DIR}
 
-python3 resticprofile.py $@
+python3 src/resticprofile.py --config examples/profiles.conf $@

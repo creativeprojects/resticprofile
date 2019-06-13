@@ -1,4 +1,5 @@
 /.vscode
+/.pytest_cache
 /examples/private
 /scripts/deploy.sh
 *.pyc
