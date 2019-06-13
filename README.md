@@ -83,3 +83,36 @@ prune = true
 backup-group = [ "root", "src" ]
 
 ```
+
+Here are a few examples how to run restic (using the example configuration file)
+
+See all snapshots:
+
+```
+python resticprofile.py
+```
+
+Backup root & src profiles (using full-backup group)
+
+```
+python resticprofile.py --name "full-backup" backup
+```
+
+Display quick help
+
+```
+python resticprofile.py --help
+
+Usage:
+ resticprofile.py
+   [-c|--config <configuration_file>]
+   [-h|--help]
+   [-n|--name <profile_name>]
+   [-q|--quiet]
+   [-v|--verbose]
+   [command]
+
+Default configuration file is: 'profiles.conf' (in the current folder)
+Default configuration profile is: default
+
+```

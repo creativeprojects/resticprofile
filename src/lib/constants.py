@@ -1,4 +1,6 @@
 
+DEFINITION_FLAG = 'flag'
+
 SECTION_GLOBAL = 'global'
 
 SUBSECTION_BACKUP = 'backup'

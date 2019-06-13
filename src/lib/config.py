@@ -1,3 +1,4 @@
+from . import constants
 
 defaults = {
     'configuration_file': 'profiles.conf',
@@ -127,13 +128,13 @@ def validate_configuration_option(definition, key, value):
                 for expected_type in definition[key]['type']:
                     success = check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
                     if success:
-                        return {'key': key, 'value': value, 'type': expected_type}
+                        return valid_flag(definition[key], key, value, expected_type)
                 return False
             else:
                 expected_type = definition[key]['type']
                 success = check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
                 if success:
-                    return {'key': key, 'value': value, 'type': expected_type}
+                    return valid_flag(definition[key], key, value, expected_type)
                 return False
         else:
             return False
@@ -156,3 +157,9 @@ def check_type(expected_type, value, expect_list = False):
         return isinstance(value, str)
     else:
         raise Exception("Unknown type '{}'".format(expected_type))
+
+def valid_flag(definition, key, value, expected_type):
+    if constants.DEFINITION_FLAG in definition:
+        # the restic flag has a different name than the configuration file flag
+        key = definition[constants.DEFINITION_FLAG]
+    return {'key': key, 'value': value, 'type': expected_type}

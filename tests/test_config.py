@@ -98,3 +98,8 @@ class TestConfig(unittest.TestCase):
         definition = { 'key': {'type': 'str', 'list': True } }
         result = validate_configuration_option(definition, 'key', ["1", 2])
         self.assertFalse(result)
+
+    def test_flag_with_different_name_betwen_configuration_file_and_restic_command_line(self):
+        definition = { 'key': {'type': 'str', 'flag': 'other-key' } }
+        result = validate_configuration_option(definition, 'key', "value")
+        self.assertEqual(result, {'key': 'other-key', 'value': "value", 'type': 'str'})
