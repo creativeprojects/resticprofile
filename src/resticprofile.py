@@ -171,6 +171,7 @@ def build_argument_list_from_section(restic, context, profiles_section):
                 for value in profiles_section[key]:
                     restic.set_argument("--{}={}".format(key, value))
             elif isinstance(profiles_section[key], str):
+                value = profiles_section[key]
                 restic.set_argument("--{}={}".format(key, value))
 
         elif key in ('exclude-caches', 'one-file-system'):
@@ -191,7 +192,7 @@ def build_argument_list_from_section(restic, context, profiles_section):
                 restic.repository = profiles_section[key]
                 restic.set_common_argument("--repo={}".format(profiles_section[key]))
 
-        elif key == 'backup':
+        elif key == 'source':
             # expecting either single string or array of strings
             if isinstance(profiles_section[key], str):
                 restic.backup_paths.append(profiles_section[key])

@@ -38,7 +38,7 @@ exclude-file = [ "root-excludes", "excludes" ]
 exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
-backup = [ "." ]
+source = [ "." ]
 
 # Environment variables of profile 'root'
 [root.env]
@@ -54,7 +54,7 @@ keep-daily = 1
 keep-weekly = 1
 keep-monthly = 1
 keep-yearly = 1
-keep-within = 3h
+keep-within = "3h"
 keep-tag = [ "forever" ]
 compact = false
 prune = false
@@ -69,13 +69,13 @@ initialize = true
 [src.backup]
 exclude-file = [ "excludes" ]
 tag = [ "src" ]
-backup = [ "src" ]
+source = [ "src" ]
 
 # retention policy for profile src
 [src.retention]
 before-backup = false
 after-backup = true
-keep-within = 30d
+keep-within = "30d"
 compact = false
 prune = true
 
