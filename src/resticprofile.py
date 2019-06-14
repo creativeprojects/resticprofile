@@ -11,6 +11,7 @@ from lib.restic import Restic
 from lib.context import Context
 from lib.nice import Nice
 from lib.ionice import IONice
+from lib.backup import Backup
 import toml
 
 def get_short_options():
@@ -88,6 +89,7 @@ def main():
         console.warning("Configuration file '" + context.configuration_file + "' was not found in either current or script directory.")
         exit(2)
 
+    backup = Backup(context.profile_name)
     restic = Restic()
     if len(args) > 0:
         # A command was passed as an argument (it has to be the first one after the options)
@@ -98,6 +100,7 @@ def main():
         context.set_global_context(profiles[defaults['global']])
 
     if context.profile_name in profiles:
+        backup.set_global_configuration(profiles[context.profile_name])
         build_argument_list_from_section(restic, context, profiles[context.profile_name])
 
         # there's no default command yet
@@ -112,6 +115,9 @@ def main():
             for key in env_config:
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting environment variable {}".format(key.upper()))
+
+    # Clears common arguments and forces them from backup instance
+    restic.common_arguments = backup.global_flags
 
     if context.quiet:
         restic.set_common_argument('--quiet')

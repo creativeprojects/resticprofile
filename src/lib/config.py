@@ -63,6 +63,7 @@ restic_flags = {
         'limit-upload': { 'type': 'int' },
         'no-cache': { 'type': 'bool' },
         'no-lock': { 'type': 'bool' },
+        'option': { 'type': 'str', 'list': True },
         'password-command': { 'type': 'str' },
         'password-file': { 'type': 'str' },
         'quiet': { 'type': 'bool' },
@@ -123,15 +124,16 @@ restic_flags = {
 
 def validate_configuration_option(definition, key, value):
     if key in definition:
-        if 'type' in definition[key]:
-            if isinstance(definition[key]['type'], list):
-                for expected_type in definition[key]['type']:
+        if constants.DEFINITION_TYPE in definition[key]:
+            if isinstance(definition[key][constants.DEFINITION_TYPE], list):
+                # this flag can be different types (exemple: boolean or string)
+                for expected_type in definition[key][constants.DEFINITION_TYPE]:
                     success = check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
                     if success:
                         return valid_flag(definition[key], key, value, expected_type)
                 return False
             else:
-                expected_type = definition[key]['type']
+                expected_type = definition[key][constants.DEFINITION_TYPE]
                 success = check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
                 if success:
                     return valid_flag(definition[key], key, value, expected_type)

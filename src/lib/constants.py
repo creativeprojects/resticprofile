@@ -1,4 +1,5 @@
 
+DEFINITION_TYPE = 'type'
 DEFINITION_FLAG = 'flag'
 
 SECTION_GLOBAL = 'global'
