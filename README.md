@@ -7,7 +7,26 @@ This is not production ready, it's only a small script I'm making for my own bac
 
 Try [restic](https://restic.net/) and you'll understand why we need a configuration profile wrapper :)
 
-Here's a configuration file example:
+Here's a simple configuration file using a Microsoft Azure backend:
+
+```ini
+[default]
+repository = "azure:restic:/"
+password-file = "key"
+
+[default.env]
+AZURE_ACCOUNT_NAME = "my_storage_account"
+AZURE_ACCOUNT_KEY = "my_super_secret_key"
+
+[default.backup]
+exclude-file = "excludes"
+exclude-caches = true
+one-file-system = true
+tag = [ "root" ]
+source = [ "/", "/var" ]
+```
+
+Here's a more complex comfiguration file showing profile inheritance and two backup profiles using the same repository:
 
 ```ini
 # Global configuration section
@@ -19,16 +38,28 @@ nice = 10 # All unix-like
 default-command = "snapshots" # when no command is specified when invoking resticprofile
 initialize = false # initialize a repository if none exist at location
 
+# a group is a profile that will call all profiles one by one
+[groups]
+full-backup = [ "root", "src" ] # when starting a backup on profile "full-backup", it will run the "root" and "src" backup profiles
+
 # Default profile when not specified (-n or --name)
+# Please note there's no default inheritance from the 'default' profile (you can use the 'inherit' flag if needed)
 [default]
-repository = "/backup/default"
+repository = "/backup"
+password-file = "key"
+initialize = false
+
+[default.env]
+TMPDIR= "/tmp"
+
+[no-cache]
+inherit = "default"
 no-cache = true
 initialize = false
 
 # New profile named 'root'
 [root]
-repository = "/backup/root"
-password-file = "key"
+inherit = "default"
 initialize = true
 
 # 'backup' command of profile 'root'
@@ -38,10 +69,6 @@ exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
 source = [ "." ]
-
-# Environment variables of profile 'root'
-[root.env]
-EXAMPLE="some value"
 
 # retention policy for profile root
 [root.retention]
@@ -60,15 +87,16 @@ prune = false
 
 # New profile named 'src'
 [src]
-repository = "/backup/sources"
-password-file = "key"
+inherit = "default"
 initialize = true
 
 # 'backup' command of profile 'src'
 [src.backup]
-exclude-file = [ "excludes" ]
-tag = [ "src" ]
-source = [ "src" ]
+exclude-file = [ "src-excludes", "excludes" ]
+exclude-caches = true
+one-file-system = false
+tag = [ "test", "dev" ]
+source = [ "./src" ]
 
 # retention policy for profile src
 [src.retention]
@@ -77,10 +105,6 @@ after-backup = true
 keep-within = "30d"
 compact = false
 prune = true
-
-# profile that represents a group: when called all the profiles will be running
-[full-backup]
-backup-group = [ "root", "src" ]
 
 ```
 

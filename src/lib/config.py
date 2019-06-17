@@ -1,4 +1,5 @@
 from . import constants
+from .flag import Flag
 
 defaults = {
     'configuration_file': 'profiles.conf',
@@ -52,8 +53,9 @@ global_flags = {
     'initialize': { 'type': 'bool' },
 }
 
-restic_flags = {
+configuration_flags = {
     'global': {
+        'inherit': { 'type': 'str', 'flag': None },
         'cacert': { 'type': 'file' },
         'cache-dir': { 'type': 'str' },
         'cleanup-cache': { 'type': 'bool' },
@@ -123,6 +125,7 @@ restic_flags = {
 }
 
 def validate_configuration_option(definition, key, value):
+    # type: (...) -> Flag
     if key in definition:
         if constants.DEFINITION_TYPE in definition[key]:
             if isinstance(definition[key][constants.DEFINITION_TYPE], list):
@@ -161,7 +164,8 @@ def check_type(expected_type, value, expect_list = False):
         raise Exception("Unknown type '{}'".format(expected_type))
 
 def valid_flag(definition, key, value, expected_type):
+    # type: (...) -> Flag
     if constants.DEFINITION_FLAG in definition:
         # the restic flag has a different name than the configuration file flag
         key = definition[constants.DEFINITION_FLAG]
-    return {'key': key, 'value': value, 'type': expected_type}
+    return Flag(key, value, expected_type)

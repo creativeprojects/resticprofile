@@ -1,5 +1,6 @@
-from .config import restic_flags, validate_configuration_option
+from .config import configuration_flags, validate_configuration_option
 from . import constants
+from .flag import Flag
 
 class Profile:
 
@@ -11,64 +12,51 @@ class Profile:
         self.verbose = None
         self.profile_name = profile_name
         self.repository = ""
-        self._global_flags = []
+        self._global_flags = {} # type: Dict[str, Flag]
         self.source = []
 
     def set_global_configuration(self, configuration_section):
         if not configuration_section:
             return
 
-        for flag in restic_flags[constants.SECTION_GLOBAL]:
+        for flag in configuration_flags[constants.SECTION_GLOBAL]:
             if flag in configuration_section:
-                result = validate_configuration_option(restic_flags[constants.SECTION_GLOBAL], flag, configuration_section[flag])
-                # populate the context with special flags (like repository and such)
-                self.set_context_of_special_flag(result)
-                # then create a restic argument for it
-                arguments = self.get_flags(result)
-                if arguments:
-                    self._global_flags.extend(arguments)
+                option = validate_configuration_option(configuration_flags[constants.SECTION_GLOBAL], flag, configuration_section[flag])
+                if option:
+                    self.set_flag(option)
 
     def get_global_flags(self):
-        return self._global_flags
-
-    def get_flags(self, result):
-        if not result: return ''
-
         flags = []
-        if isinstance(result['value'], list):
-            for value in result['value']:
-                flag = self.get_single_flag(result['key'], value, result['type'])
-                if flag:
-                    flags.append(flag)
+        # add the specific flags
+        if self.repository:
+            flags.extend(Flag('repo', self.repository, 'str').getFlags())
+        flags.extend(Flag('quiet', self.quiet, 'bool').getFlags())
+        if isinstance(self.verbose, bool):
+            flags.extend(Flag('verbose', self.verbose, 'bool').getFlags())
+        elif isinstance(self.verbose, int):
+            flags.extend(Flag('verbose', self.verbose, 'int').getFlags())
 
-        else:
-            # still return a list but with one element
-            flag = self.get_single_flag(result['key'], result['value'], result['type'])
-            if flag:
-                flags.append(flag)
-
+        for _, flag in self._global_flags.items():
+            # create a restic argument for it
+            arguments = flag.getFlags()
+            if arguments:
+                flags.extend(arguments)
         return flags
 
-    def get_single_flag(self, key, value, type_value):
-        if type_value == 'bool':
-            if value:
-                return "--{}".format(key)
-            else:
-                return ''
-        else:
-            return "--{} {}".format(key, value)
-
-    def set_context_of_special_flag(self, option):
+    def set_flag(self, option):
         if not option: return
-        if option['key'] == 'repo':
-            if isinstance(option['value'], str) and option['value']:
-                self.repository = option['value']
+        if option.key == 'repo':
+            if isinstance(option.value, str) and option.value:
+                self.repository = option.value
 
-        elif option['key'] == 'quiet':
-            if isinstance(option['value'], bool):
-                self.quiet = option['value']
+        elif option.key == 'quiet':
+            if isinstance(option.value, bool):
+                self.quiet = option.value
 
-        elif option['key'] == 'verbose':
-            if isinstance(option['value'], bool) or isinstance(option['value'], int):
-                self.verbose = option['value']
+        elif option.key == 'verbose':
+            if isinstance(option.value, bool) or isinstance(option.value, int):
+                self.verbose = option.value
+
+        else:
+            self._global_flags[option.key] = option
 

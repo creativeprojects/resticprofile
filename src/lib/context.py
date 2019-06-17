@@ -1,4 +1,5 @@
 from .config import defaults, global_flags, validate_configuration_option
+from .flag import Flag
 from .ionice import IONice
 from .nice import Nice
 from . import constants
@@ -31,7 +32,7 @@ class Context:
                 constants.PARAMETER_IONICE,
                 configuration_section[constants.PARAMETER_IONICE]
             )
-            if ionice and ionice['value']:
+            if ionice and ionice.value:
                 io_class = None
                 io_level = None
                 if constants.PARAMETER_IONICE_CLASS in configuration_section:
@@ -48,11 +49,11 @@ class Context:
                     )
 
                 if io_class and io_level:
-                    self.ionice = IONice(io_class['value'], io_level['value'])
+                    self.ionice = IONice(io_class.value, io_level.value)
                 elif io_class:
-                    self.ionice = IONice(io_class = io_class['value'])
+                    self.ionice = IONice(io_class = io_class.value)
                 elif io_level:
-                    self.ionice = IONice(io_level = io_level['value'])
+                    self.ionice = IONice(io_level = io_level.value)
                 else:
                     self.ionice = IONice()
 
@@ -63,9 +64,9 @@ class Context:
                 constants.PARAMETER_NICE,
                 configuration_section[constants.PARAMETER_NICE]
             )
-            if nice and (nice['value'] and nice['type'] == 'bool') or (nice['type'] == 'int'):
-                if nice['type'] == 'int':
-                    self.nice = Nice(nice['value'])
+            if nice and (nice.value and nice.type == 'bool') or (nice.type == 'int'):
+                if nice.type == 'int':
+                    self.nice = Nice(nice.value)
                 else:
                     self.nice = Nice()
 
@@ -77,7 +78,7 @@ class Context:
                 configuration_section[constants.PARAMETER_DEFAULT_COMMAND]
             )
             if default_command:
-                self.default_command = default_command['value']
+                self.default_command = default_command.value
 
     def set_initialize(self, configuration_section):
         if constants.PARAMETER_INITIALIZE in configuration_section:
@@ -87,4 +88,4 @@ class Context:
                 configuration_section[constants.PARAMETER_INITIALIZE]
             )
             if initialize:
-                self.initialize = initialize['value']
+                self.initialize = initialize.value

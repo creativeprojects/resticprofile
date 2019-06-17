@@ -21,11 +21,29 @@ class TestProfile(unittest.TestCase):
         profile.set_global_configuration(configuration_section)
         self.assertEqual(profile.get_global_flags(), [])
 
+    def test_configuration_with_one_zero_int_flag(self):
+        profile = Profile('test')
+        configuration_section = { 'limit-upload': 0 }
+        profile.set_global_configuration(configuration_section)
+        self.assertEqual(profile.get_global_flags(), [ "--limit-upload 0" ])
+
+    def test_configuration_with_one_positive_int_flag(self):
+        profile = Profile('test')
+        configuration_section = { 'limit-upload': 10 }
+        profile.set_global_configuration(configuration_section)
+        self.assertEqual(profile.get_global_flags(), [ "--limit-upload 10" ])
+
+    def test_configuration_with_one_negative_int_flag(self):
+        profile = Profile('test')
+        configuration_section = { 'limit-upload': -10 }
+        profile.set_global_configuration(configuration_section)
+        self.assertEqual(profile.get_global_flags(), [ "--limit-upload -10" ])
+
     def test_configuration_with_repository(self):
         profile = Profile('test')
         configuration_section = { 'repository': "/backup" }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.get_global_flags(), [ "--repo /backup" ])
+        self.assertEqual(profile.get_global_flags(), [ "--repo '/backup'" ])
 
     def test_configuration_with_boolean_true_as_multiple_type_flag(self):
         profile = Profile('test')
@@ -55,13 +73,13 @@ class TestProfile(unittest.TestCase):
         profile = Profile('test')
         configuration_section = { 'option': "a=b" }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.get_global_flags(), [ "--option a=b" ])
+        self.assertEqual(profile.get_global_flags(), [ "--option 'a=b'" ])
 
     def test_configuration_with_two_items_in_list_flag(self):
         profile = Profile('test')
         configuration_section = { 'option': [ "a=b", "b=c" ] }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.get_global_flags(), [ "--option a=b", "--option b=c" ])
+        self.assertEqual(profile.get_global_flags(), [ "--option 'a=b'", "--option 'b=c'" ])
 
     def test_configuration_with_empty_repository(self):
         profile = Profile('test')
