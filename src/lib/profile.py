@@ -22,7 +22,7 @@ class Profile:
         for flag in restic_flags[constants.SECTION_GLOBAL]:
             if flag in configuration_section:
                 result = validate_configuration_option(restic_flags[constants.SECTION_GLOBAL], flag, configuration_section[flag])
-                # populate the context with special flags (like reposiroty and such)
+                # populate the context with special flags (like repository and such)
                 self.set_context_of_special_flag(result)
                 # then create a restic argument for it
                 arguments = self.get_flags(result)

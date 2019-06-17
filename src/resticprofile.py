@@ -11,7 +11,7 @@ from lib.restic import Restic
 from lib.context import Context
 from lib.nice import Nice
 from lib.ionice import IONice
-from lib.backup import Backup
+from lib.profile import Profile
 import toml
 
 def get_short_options():
@@ -89,7 +89,7 @@ def main():
         console.warning("Configuration file '" + context.configuration_file + "' was not found in either current or script directory.")
         exit(2)
 
-    backup = Backup(context.profile_name)
+    backup = Profile(context.profile_name)
     restic = Restic()
     if len(args) > 0:
         # A command was passed as an argument (it has to be the first one after the options)
