@@ -16,7 +16,6 @@ class Context:
         self.ionice = None
 
     def set_global_context(self, configuration_section):
-
         if not configuration_section:
             return
 

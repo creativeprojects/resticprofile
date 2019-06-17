@@ -13,55 +13,55 @@ class TestProfile(unittest.TestCase):
         profile = Profile('test')
         configuration_section = { 'no-cache': True }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ "--no-cache" ])
+        self.assertEqual(profile.get_global_flags(), [ "--no-cache" ])
 
     def test_configuration_with_one_bool_false_flag(self):
         profile = Profile('test')
         configuration_section = { 'no-cache': False }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [])
+        self.assertEqual(profile.get_global_flags(), [])
 
     def test_configuration_with_repository(self):
         profile = Profile('test')
         configuration_section = { 'repository': "/backup" }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ "--repo /backup" ])
+        self.assertEqual(profile.get_global_flags(), [ "--repo /backup" ])
 
     def test_configuration_with_boolean_true_as_multiple_type_flag(self):
         profile = Profile('test')
         configuration_section = { 'verbose': True }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ "--verbose" ])
+        self.assertEqual(profile.get_global_flags(), [ "--verbose" ])
 
     def test_configuration_with_boolean_false_as_multiple_type_flag(self):
         profile = Profile('test')
         configuration_section = { 'verbose': False }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ ])
+        self.assertEqual(profile.get_global_flags(), [ ])
 
     def test_configuration_with_integer_as_multiple_type_flag(self):
         profile = Profile('test')
         configuration_section = { 'verbose': 1 }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ "--verbose 1" ])
+        self.assertEqual(profile.get_global_flags(), [ "--verbose 1" ])
 
     def test_configuration_with_wrong_type_as_multiple_type_flag(self):
         profile = Profile('test')
         configuration_section = { 'verbose': "toto" }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ ])
+        self.assertEqual(profile.get_global_flags(), [ ])
 
     def test_configuration_with_one_item_in_list_flag(self):
         profile = Profile('test')
         configuration_section = { 'option': "a=b" }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ "--option a=b" ])
+        self.assertEqual(profile.get_global_flags(), [ "--option a=b" ])
 
     def test_configuration_with_two_items_in_list_flag(self):
         profile = Profile('test')
         configuration_section = { 'option': [ "a=b", "b=c" ] }
         profile.set_global_configuration(configuration_section)
-        self.assertEqual(profile.global_flags, [ "--option a=b", "--option b=c" ])
+        self.assertEqual(profile.get_global_flags(), [ "--option a=b", "--option b=c" ])
 
     def test_configuration_with_empty_repository(self):
         profile = Profile('test')

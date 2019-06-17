@@ -117,7 +117,7 @@ def main():
                 console.debug("Setting environment variable {}".format(key.upper()))
 
     # Clears common arguments and forces them from backup instance
-    restic.common_arguments = backup.global_flags
+    restic.common_arguments = backup.get_global_flags()
 
     if context.quiet:
         restic.set_common_argument('--quiet')

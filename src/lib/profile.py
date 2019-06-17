@@ -11,8 +11,7 @@ class Profile:
         self.verbose = None
         self.profile_name = profile_name
         self.repository = ""
-        self.global_flags = []
-        self.command_flags = []
+        self._global_flags = []
         self.source = []
 
     def set_global_configuration(self, configuration_section):
@@ -27,7 +26,10 @@ class Profile:
                 # then create a restic argument for it
                 arguments = self.get_flags(result)
                 if arguments:
-                    self.global_flags.extend(arguments)
+                    self._global_flags.extend(arguments)
+
+    def get_global_flags(self):
+        return self._global_flags
 
     def get_flags(self, result):
         if not result: return ''
