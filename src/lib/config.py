@@ -20,7 +20,7 @@ DEFAULTS = {
     'quiet': None,
 }
 
-arguments_definition = {
+ARGUMENTS_DEFINITION = {
     'help': {
         'short': 'h',
         'long': 'help',

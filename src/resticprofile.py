@@ -1,70 +1,21 @@
 from inspect import getsourcefile
 from os.path import abspath, isfile, dirname
 from os import chdir, getcwd, environ
-from getopt import getopt, GetoptError
 from sys import argv, exit
 from subprocess import call, DEVNULL
 import toml
 
 from lib.console import Console
-from lib.config import DEFAULTS, arguments_definition, Config
+from lib.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
 from lib.restic import Restic
 from lib.context import Context
 from lib.profile import Profile
 
 
-def get_short_options():
-    short_options = ""
-    for name, options in arguments_definition.items():
-        short_options += options['short'] + \
-            (":" if options['argument'] else "")
-    return short_options
-
-
-def get_long_options():
-    long_options = []
-    for name, options in arguments_definition.items():
-        long_options.append(
-            options['long'] + ("=" if options['argument'] else ""))
-    return long_options
-
-
-def get_possible_options_for(option):
-    return ["-" + arguments_definition[option]['short'], "--" + arguments_definition[option]['long']]
-
-
 def main():
-    try:
-        short_options = get_short_options()
-        long_options = get_long_options()
-        opts, args = getopt(argv[1:], short_options, long_options)
 
-    except GetoptError as err:
-        console = Console()
-        console.error("Error in the command arguments: " + err.msg)
-        console.usage(argv[0])
-        exit(2)
-
-    context = Context()
-
-    for option, argument in opts:
-        if option in get_possible_options_for('help'):
-            Console().usage(argv[0])
-            exit()
-        elif option in get_possible_options_for('quiet'):
-            context.quiet = True
-
-        elif option in get_possible_options_for('verbose'):
-            context.verbose = True
-
-        elif option in get_possible_options_for('config'):
-            context.configuration_file = argument
-
-        elif option in get_possible_options_for('name'):
-            context.profile_name = argument
-
-        else:
-            assert False, "unhandled option"
+    context = Context(ARGUMENTS_DEFINITION)
+    context.load_context_from_command_line(argv)
 
     console = Console(context.quiet, context.verbose)
 
@@ -97,9 +48,9 @@ def main():
     config = Config(profiles)
     profile = Profile(config, context.profile_name)
     restic = Restic()
-    if args:
+    if context.args:
         # A command was passed as an argument (it has to be the first one after the options)
-        restic.command = args[0]
+        restic.command = context.args[0]
 
     # Build list of arguments to pass to restic
     if DEFAULTS['global'] in profiles:
@@ -138,7 +89,7 @@ def main():
         console.error("A repository is needed in the configuration.")
         exit(2)
 
-    restic.extend_arguments(args[1:])
+    restic.extend_arguments(context.args[1:])
 
     restic_cmd = ""
     for path in ('/usr/bin', '/usr/local/bin', '/opt/local/bin'):
