@@ -2,6 +2,7 @@
 Class Flag
 '''
 from typing import List, Union
+from os.path import abspath
 
 class Flag:
     '''
@@ -36,8 +37,11 @@ class Flag:
             if value:
                 return "--{}".format(self.key)
             return ''
-        elif self.type in ('str', 'file'):
-            return "--{} '{}'".format(self.key, value)
+        elif self.type == 'str':
+            return "--{} '{}'".format(self.key, value.replace("'", "\'"))
+        elif self.type == 'file':
+            value = abspath(value)
+            return "--{} '{}'".format(self.key, value.replace("'", "\'"))
         elif self.type == 'int':
             return "--{} {}".format(self.key, value)
 

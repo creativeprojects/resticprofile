@@ -58,23 +58,20 @@ def main():
 
     if context.profile_name in profiles:
         profile.set_common_configuration()
-        build_argument_list_from_section(
-            restic, context, profiles[context.profile_name])
+        build_argument_list_from_section(restic, context, profiles[context.profile_name])
 
         # there's no default command yet
         if not restic.command:
             restic.command = context.default_command
 
         if restic.command in profiles[context.profile_name]:
-            build_argument_list_from_section(
-                restic, context, profiles[context.profile_name][restic.command])
+            build_argument_list_from_section(restic, context, profiles[context.profile_name][restic.command])
 
         if DEFAULTS['environment'] in profiles[context.profile_name]:
             env_config = profiles[context.profile_name][DEFAULTS['environment']]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
-                console.debug(
-                    "Setting environment variable {}".format(key.upper()))
+                console.debug("Setting environment variable {}".format(key.upper()))
 
     # Clears common arguments and forces them from profile instance
     restic.common_arguments = profile.get_global_flags()
