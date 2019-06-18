@@ -64,8 +64,19 @@ def main():
         if not restic.command:
             restic.command = context.default_command
 
+        # adds inherited profile (only one at this stage)
+        if profile.inherit and restic.command in profiles[profile.inherit]:
+            build_argument_list_from_section(restic, context, profiles[profile.inherit][restic.command])
+
         if restic.command in profiles[context.profile_name]:
             build_argument_list_from_section(restic, context, profiles[context.profile_name][restic.command])
+
+        # inherited environment
+        if profile.inherit and DEFAULTS['environment'] in profiles[profile.inherit]:
+            env_config = profiles[profile.inherit][DEFAULTS['environment']]
+            for key in env_config:
+                environ[key.upper()] = env_config[key]
+                console.debug("Setting inherited environment variable {}".format(key.upper()))
 
         if DEFAULTS['environment'] in profiles[context.profile_name]:
             env_config = profiles[context.profile_name][DEFAULTS['environment']]
