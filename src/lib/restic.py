@@ -20,10 +20,10 @@ class Restic:
         return self._get_command(self.command)
 
     def _get_command(self, command_name):
-        command = [ command_name ]
+        command = [command_name]
         if self.common_arguments:
             command.extend(self.common_arguments)
-    
+
         if command_name in self.arguments:
             command.extend(self.arguments[command_name])
 

@@ -1,33 +1,44 @@
+'''
+Class Flag
+'''
+from typing import List
 
 class Flag:
-    def __init__(self, key, value, type_value):
+    '''
+    Holds flag definition
+    '''
+    def __init__(self, key: str, value: str, type_value: str):
         self.key = key
         self.value = value
         self.type = type_value
 
-    def getFlags(self):
+    def get_flags(self) -> List[str]:
+        '''
+        Retreive the associated restic flags from the definition
+        '''
         flags = []
         if isinstance(self.value, list):
             for value in self.value:
-                flag = self._getFlagWithValue(value)
+                flag = self.__get_flag_with_value(value)
                 if flag:
                     flags.append(flag)
 
         else:
             # still return a list but with one element
-            flag = self._getFlagWithValue(self.value)
+            flag = self.__get_flag_with_value(self.value)
             if flag:
                 flags.append(flag)
 
         return flags
 
-    def _getFlagWithValue(self, value):
+    def __get_flag_with_value(self, value) -> str:
         if self.type == 'bool':
             if value:
                 return "--{}".format(self.key)
-            else:
-                return ''
+            return ''
         elif self.type in ('str', 'file'):
             return "--{} '{}'".format(self.key, value)
         elif self.type == 'int':
             return "--{} {}".format(self.key, value)
+
+        return ''

@@ -29,16 +29,16 @@ class Profile:
         flags = []
         # add the specific flags
         if self.repository:
-            flags.extend(Flag('repo', self.repository, 'str').getFlags())
-        flags.extend(Flag('quiet', self.quiet, 'bool').getFlags())
+            flags.extend(Flag('repo', self.repository, 'str').get_flags())
+        flags.extend(Flag('quiet', self.quiet, 'bool').get_flags())
         if isinstance(self.verbose, bool):
-            flags.extend(Flag('verbose', self.verbose, 'bool').getFlags())
+            flags.extend(Flag('verbose', self.verbose, 'bool').get_flags())
         elif isinstance(self.verbose, int):
-            flags.extend(Flag('verbose', self.verbose, 'int').getFlags())
+            flags.extend(Flag('verbose', self.verbose, 'int').get_flags())
 
         for _, flag in self._global_flags.items():
             # create a restic argument for it
-            arguments = flag.getFlags()
+            arguments = flag.get_flags()
             if arguments:
                 flags.extend(arguments)
         return flags
