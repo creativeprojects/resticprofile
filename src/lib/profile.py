@@ -1,6 +1,9 @@
+from typing import List
+
 from .config import Config
 from . import constants
 from .flag import Flag
+
 
 class Profile:
 
@@ -9,8 +12,9 @@ class Profile:
         self.verbose = None
         self.config = config
         self.profile_name = profile_name
+        self.inherit = None
         self.repository = ""
-        self.__common_flags = {} # type: Dict[str, Flag]
+        self.__common_flags = {}  # type: Dict[str, Flag]
         self.source = []
 
     def set_common_configuration(self):
@@ -23,13 +27,9 @@ class Profile:
     def get_global_flags(self):
         flags = []
         # add the specific flags
-        if self.repository:
-            flags.extend(Flag(constants.PARAMETER_REPO, self.repository, 'str').get_flags())
-        flags.extend(Flag(constants.PARAMETER_QUIET, self.quiet, 'bool').get_flags())
-        if isinstance(self.verbose, bool):
-            flags.extend(Flag(constants.PARAMETER_VERBOSE, self.verbose, 'bool').get_flags())
-        elif isinstance(self.verbose, int):
-            flags.extend(Flag(constants.PARAMETER_VERBOSE, self.verbose, 'int').get_flags())
+        flags.extend(self.__get_repository_flag())
+        flags.extend(self.__get_quiet_flag())
+        flags.extend(self.__get_verbose_flag())
 
         for _, flag in self.__common_flags.items():
             # create a restic argument for it
@@ -38,10 +38,29 @@ class Profile:
                 flags.extend(arguments)
         return flags
 
+    def __get_repository_flag(self) -> List[str]:
+        if self.repository:
+            return Flag(constants.PARAMETER_REPO, self.repository, 'str').get_flags()
+        return []
+
+    def __get_quiet_flag(self) -> List[str]:
+        return Flag(constants.PARAMETER_QUIET, self.quiet, 'bool').get_flags()
+
+    def __get_verbose_flag(self) -> List[str]:
+        if isinstance(self.verbose, bool):
+            return Flag(constants.PARAMETER_VERBOSE, self.verbose, 'bool').get_flags()
+        elif isinstance(self.verbose, int):
+            return Flag(constants.PARAMETER_VERBOSE, self.verbose, 'int').get_flags()
+        return []
+
     def set_flag(self, option):
         if not option:
             return
-        if option.key == constants.PARAMETER_REPO:
+        if option.key == constants.PARAMETER_INHERIT:
+            if isinstance(option.value, str) and option.value:
+                self.inherit = option.value
+
+        elif option.key == constants.PARAMETER_REPO:
             if isinstance(option.value, str) and option.value:
                 self.repository = option.value
 
@@ -54,5 +73,10 @@ class Profile:
                 self.verbose = option.value
 
         # adds it to the list of flags
-        if option.key not in (constants.PARAMETER_REPO, constants.PARAMETER_QUIET, constants.PARAMETER_VERBOSE):
+        if option.key not in (
+                constants.PARAMETER_REPO,
+                constants.PARAMETER_QUIET,
+                constants.PARAMETER_VERBOSE,
+                constants.PARAMETER_INHERIT
+            ):
             self.__common_flags[option.key] = option

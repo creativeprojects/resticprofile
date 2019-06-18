@@ -246,8 +246,8 @@ class Config:
                         parent_options = self.get_common_options_for_section(option.value)
                         if parent_options:
                             options.extend(parent_options)
-                    else:
-                        options.append(option)
+
+                    options.append(option)
 
         return options
 

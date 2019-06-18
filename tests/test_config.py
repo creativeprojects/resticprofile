@@ -232,7 +232,9 @@ class TestConfig(unittest.TestCase):
             'test': {'inherit': 'parent'}
         }
         options = Config(configuration).get_common_options_for_section('test')
-        self.assertEqual(len(options), 0)
+        # at that stage, config is keeping the inherit flag because it will be needed up the line
+        self.assertEqual(len(options), 1)
+        self.assertIsInstance(options[0], Flag)
 
     def test_loading_inherited_common_options(self):
         configuration = {
@@ -240,8 +242,10 @@ class TestConfig(unittest.TestCase):
             'test': {'inherit': 'parent'}
         }
         options = Config(configuration).get_common_options_for_section('test')
-        self.assertEqual(len(options), 1)
+        # at that stage, config is keeping the inherit flag because it will be needed up the line
+        self.assertEqual(len(options), 2)
         self.assertIsInstance(options[0], Flag)
+        self.assertIsInstance(options[1], Flag)
 
     def test_loading_twice_inherited_common_options(self):
         configuration = {
@@ -250,6 +254,9 @@ class TestConfig(unittest.TestCase):
             'test': {'inherit': 'parent'}
         }
         options = Config(configuration).get_common_options_for_section('test')
-        self.assertEqual(len(options), 2)
+        # at that stage, config is keeping both the inherit flags because they will be needed up the line
+        self.assertEqual(len(options), 4)
         self.assertIsInstance(options[0], Flag)
         self.assertIsInstance(options[1], Flag)
+        self.assertIsInstance(options[2], Flag)
+        self.assertIsInstance(options[3], Flag)
