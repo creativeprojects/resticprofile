@@ -4,30 +4,34 @@ from os import chdir, getcwd, environ
 from getopt import getopt, GetoptError
 from sys import argv, exit
 from subprocess import call, DEVNULL
-from ast import literal_eval
+import toml
+
 from lib.console import Console
-from lib.config import defaults, arguments_definition
+from lib.config import DEFAULTS, arguments_definition, Config
 from lib.restic import Restic
 from lib.context import Context
-from lib.nice import Nice
-from lib.ionice import IONice
 from lib.profile import Profile
-import toml
+
 
 def get_short_options():
     short_options = ""
     for name, options in arguments_definition.items():
-        short_options += options['short'] + (":" if options['argument'] else "")
+        short_options += options['short'] + \
+            (":" if options['argument'] else "")
     return short_options
+
 
 def get_long_options():
     long_options = []
     for name, options in arguments_definition.items():
-        long_options.append(options['long'] + ("=" if options['argument'] else ""))
+        long_options.append(
+            options['long'] + ("=" if options['argument'] else ""))
     return long_options
 
+
 def get_possible_options_for(option):
-    return [ "-" + arguments_definition[option]['short'], "--" + arguments_definition[option]['long'] ]
+    return ["-" + arguments_definition[option]['short'], "--" + arguments_definition[option]['long']]
+
 
 def main():
     try:
@@ -61,13 +65,13 @@ def main():
 
         else:
             assert False, "unhandled option"
-    
+
     console = Console(context.quiet, context.verbose)
 
     # Current directory where the script was started from
     current_directory = getcwd()
     # Directory where the script is located
-    script_directory = dirname(abspath(getsourcefile(lambda:0)))     # Who said python reads like English?
+    script_directory = dirname(abspath(getsourcefile(lambda: 0)))
 
     valid_configuration_file = None
     for file in (current_directory + "/" + context.configuration_file, script_directory + "/" + context.configuration_file):
@@ -76,48 +80,53 @@ def main():
             chdir(dirname(valid_configuration_file))
             break
 
-
-    if valid_configuration_file != None:
+    if valid_configuration_file is not None:
         console.debug("Using configuration file " + valid_configuration_file)
         try:
             profiles = toml.load(valid_configuration_file)
         except toml.decoder.TomlDecodeError as err:
-            console.error("An error occured while loading the configuration file:")
+            console.error(
+                "An error occured while loading the configuration file:")
             console.error(str(err))
             exit(2)
     else:
-        console.warning("Configuration file '" + context.configuration_file + "' was not found in either current or script directory.")
+        console.warning("Configuration file '" + context.configuration_file +
+                        "' was not found in either current or script directory.")
         exit(2)
 
-    backup = Profile(context.profile_name)
+    config = Config(profiles)
+    profile = Profile(config, context.profile_name)
     restic = Restic()
-    if len(args) > 0:
+    if args:
         # A command was passed as an argument (it has to be the first one after the options)
         restic.command = args[0]
 
     # Build list of arguments to pass to restic
-    if defaults['global'] in profiles:
-        context.set_global_context(profiles[defaults['global']])
+    if DEFAULTS['global'] in profiles:
+        context.set_global_context(config)
 
     if context.profile_name in profiles:
-        backup.set_global_configuration(profiles[context.profile_name])
-        build_argument_list_from_section(restic, context, profiles[context.profile_name])
+        profile.set_common_configuration()
+        build_argument_list_from_section(
+            restic, context, profiles[context.profile_name])
 
         # there's no default command yet
         if not restic.command:
             restic.command = context.default_command
 
         if restic.command in profiles[context.profile_name]:
-            build_argument_list_from_section(restic, context, profiles[context.profile_name][restic.command])
+            build_argument_list_from_section(
+                restic, context, profiles[context.profile_name][restic.command])
 
-        if defaults['environment'] in profiles[context.profile_name]:
-            env_config = profiles[context.profile_name][defaults['environment']]
+        if DEFAULTS['environment'] in profiles[context.profile_name]:
+            env_config = profiles[context.profile_name][DEFAULTS['environment']]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
-                console.debug("Setting environment variable {}".format(key.upper()))
+                console.debug(
+                    "Setting environment variable {}".format(key.upper()))
 
-    # Clears common arguments and forces them from backup instance
-    restic.common_arguments = backup.get_global_flags()
+    # Clears common arguments and forces them from profile instance
+    restic.common_arguments = profile.get_global_flags()
 
     if context.quiet:
         restic.set_common_argument('--quiet')
@@ -125,7 +134,7 @@ def main():
         restic.set_common_argument('--verbose')
 
     # check that we have the minimum information we need
-    if not restic.repository:
+    if not profile.repository:
         console.error("A repository is needed in the configuration.")
         exit(2)
 
@@ -147,21 +156,22 @@ def main():
         init_command = command_prefix + restic_cmd + " " + restic.get_init_command()
         console.debug(init_command)
         # captures only stdout when we create a new repository; otherwise don't display the error when it exists
-        call(init_command, shell = True, stdin = DEVNULL, stderr = DEVNULL)
+        call(init_command, shell=True, stdin=DEVNULL, stderr=DEVNULL)
 
     if restic.prune_before:
         prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
         console.debug(prune_command)
-        call(prune_command, shell = True, stdin = DEVNULL)
+        call(prune_command, shell=True, stdin=DEVNULL)
 
     full_command = command_prefix + restic_cmd + " " + restic.get_command()
     console.debug(full_command)
-    call(full_command, shell = True, stdin = DEVNULL)
+    call(full_command, shell=True, stdin=DEVNULL)
 
     if restic.prune_after:
         prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
         console.debug(prune_command)
-        call(prune_command, shell = True, stdin = DEVNULL)
+        call(prune_command, shell=True, stdin=DEVNULL)
+
 
 def build_argument_list_from_section(restic, context, profiles_section):
     for key in profiles_section:
@@ -196,7 +206,8 @@ def build_argument_list_from_section(restic, context, profiles_section):
             # expecting single string (and later on, and array of strings!)
             if isinstance(profiles_section[key], str):
                 restic.repository = profiles_section[key]
-                restic.set_common_argument("--repo={}".format(profiles_section[key]))
+                restic.set_common_argument(
+                    "--repo={}".format(profiles_section[key]))
 
         elif key == 'source':
             # expecting either single string or array of strings
@@ -235,9 +246,9 @@ def build_argument_list_from_section(restic, context, profiles_section):
         elif key == 'ionice':
             context.set_ionice(profiles_section)
 
-        elif key in ('ionice-class', 'ionice-level'):
+        elif key in ('ionice-class', 'ionice-level', 'inherit'):
             # these values are ignored
-            None
+            pass
 
         else:
             value = profiles_section[key]
@@ -247,6 +258,7 @@ def build_argument_list_from_section(restic, context, profiles_section):
                 restic.set_argument("--{}={}".format(key, value))
             elif isinstance(value, bool) and value:
                 restic.set_argument("--{}".format(key))
+
 
 if __name__ == "__main__":
     main()

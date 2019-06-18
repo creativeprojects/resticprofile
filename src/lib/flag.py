@@ -1,13 +1,13 @@
 '''
 Class Flag
 '''
-from typing import List
+from typing import List, Union
 
 class Flag:
     '''
     Holds flag definition
     '''
-    def __init__(self, key: str, value: str, type_value: str):
+    def __init__(self, key: str, value: Union[str, int, bool, list], type_value: str):
         self.key = key
         self.value = value
         self.type = type_value
@@ -31,7 +31,7 @@ class Flag:
 
         return flags
 
-    def __get_flag_with_value(self, value) -> str:
+    def __get_flag_with_value(self, value: Union[str, int, bool]) -> str:
         if self.type == 'bool':
             if value:
                 return "--{}".format(self.key)
