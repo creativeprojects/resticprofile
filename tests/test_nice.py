@@ -28,5 +28,10 @@ class TestNice(unittest.TestCase):
         command = nice.get_command()
         self.assertEqual(command, "nice -n 20")
 
+    def test_can_get_command_will_not_throw_exception_and_return_empty_string(self):
+        nice = Nice(10, ignore_failure=True)
+        command = nice.get_command('Windows')
+        self.assertEqual(command, "")
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,6 @@
 import unittest
 from os import getcwd
+from pathlib import Path
 from resticprofile.flag import Flag
 
 class TestProfile(unittest.TestCase):
@@ -52,4 +53,4 @@ class TestProfile(unittest.TestCase):
     def test_can_get_file_value(self):
         flag = Flag('name', "some.file", 'file')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--name '{}/some.file'".format(getcwd())])
+        self.assertEqual(argument, ["--name '{}'".format(str(Path(getcwd()) / 'some.file'))])
