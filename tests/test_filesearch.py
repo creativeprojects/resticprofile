@@ -43,3 +43,19 @@ class TestFileSearch(fake_filesystem_unittest.TestCase):
             filepath = find_configuration_file(TEST_FILE)
             self.assertEqual(test_file, filepath)
             os.remove(test_file)
+
+
+    def test_find_rooted_file(self):
+        search = FileSearch('/folder')
+        filepath = search.find('/file')
+        self.assertEqual('/file', filepath)
+
+    def test_find_single_file(self):
+        search = FileSearch('/folder')
+        filepath = search.find('file')
+        self.assertEqual('/folder/file', filepath)
+
+    def test_find_file_with_path(self):
+        search = FileSearch('/folder')
+        filepath = search.find('subfolder/file')
+        self.assertEqual('/folder/subfolder/file', filepath)
