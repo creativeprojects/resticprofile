@@ -16,4 +16,5 @@ install:
   - pip install -r requirements.txt
 
 script:
+  - pytest --version || pip install pytest
   - PYTHONPATH=./src pytest
