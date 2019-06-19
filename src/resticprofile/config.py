@@ -58,6 +58,7 @@ GLOBAL_FLAGS_DEFINITION = {
     'nice': {'type': ['bool', 'int']},
     'default-command': {'type': 'str'},
     'initialize': {'type': 'bool'},
+    'restic-binary': {'type': 'str'},
 }
 
 CONFIGURATION_FLAGS_DEFINITION = {
@@ -141,7 +142,7 @@ class Config:
         self.configuration = configuration
         self.file_search = file_search
 
-    def get_ionice(self, section="global") -> IONice:
+    def get_ionice(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> IONice:
         if section not in self.configuration:
             return None
 
@@ -179,7 +180,7 @@ class Config:
 
         return option
 
-    def get_nice(self, section="global") -> Nice:
+    def get_nice(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> Nice:
         if section not in self.configuration:
             return None
 
@@ -198,7 +199,7 @@ class Config:
 
         return option
 
-    def get_default_command(self, section="global") -> str:
+    def get_default_command(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> str:
         if section not in self.configuration:
             return DEFAULTS['default_command']
 
@@ -213,7 +214,7 @@ class Config:
 
         return DEFAULTS['default_command']
 
-    def get_initialize(self, section="global") -> bool:
+    def get_initialize(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> bool:
         if section not in self.configuration:
             return DEFAULTS['initialize']
 
@@ -228,16 +229,31 @@ class Config:
 
         return DEFAULTS['initialize']
 
+    def get_restic_binary_path(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> bool:
+        if section not in self.configuration:
+            return None
+
+        configuration = self.configuration[section]
+        if constants.PARAMETER_RESTIC_BINARY in configuration:
+            path = self.validate_global_configuration_option(
+                constants.PARAMETER_RESTIC_BINARY,
+                configuration[constants.PARAMETER_RESTIC_BINARY]
+            )
+            if path:
+                return path.value
+
+        return None
+
     def get_common_options_for_section(self, section: str) -> List[Flag]:
         if section not in self.configuration:
             return []
 
         options = []
         configuration_section = self.configuration[section]
-        for flag in CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_COMMON]:
+        for flag in CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON]:
             if flag in configuration_section:
                 option = self.validate_configuration_option(
-                    CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_COMMON],
+                    CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON],
                     flag,
                     configuration_section[flag]
                 )

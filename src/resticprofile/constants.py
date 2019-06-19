@@ -4,7 +4,9 @@ All resticprofile constants here
 DEFINITION_TYPE = 'type'
 DEFINITION_FLAG = 'flag'
 
-SECTION_COMMON = 'common'
+SECTION_CONFIGURATION_GLOBAL = 'global'
+
+SECTION_DEFINITION_COMMON = 'common'
 
 SUBSECTION_BACKUP = 'backup'
 
@@ -20,3 +22,4 @@ PARAMETER_REPOSITORY = 'repository'
 PARAMETER_REPO = 'repo'
 PARAMETER_QUIET = 'quiet'
 PARAMETER_VERBOSE = 'verbose'
+PARAMETER_RESTIC_BINARY = 'restic-binary'

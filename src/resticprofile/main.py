@@ -92,11 +92,12 @@ def main():
 
     restic.extend_arguments(context.args[1:])
 
-    restic_cmd = ""
-    for path in ('/usr/bin', '/usr/local/bin', '/opt/local/bin'):
-        if isfile(path + '/restic'):
-            restic_cmd = path + '/restic'
-            break
+    restic_cmd = context.restic_path
+    if not restic_cmd:
+        for path in ('/usr/bin', '/usr/local/bin', '/opt/local/bin'):
+            if isfile(path + '/restic'):
+                restic_cmd = path + '/restic'
+                break
 
     command_prefix = ""
     if context.nice:

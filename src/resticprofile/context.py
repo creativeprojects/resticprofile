@@ -7,6 +7,7 @@ class Context:
 
     def __init__(self, arguments_definition: dict):
         self.arguments_definition = arguments_definition
+        self.restic_path = None
         self.configuration_file = DEFAULTS['configuration_file']
         self.profile_name = DEFAULTS['profile_name']
         self.default_command = DEFAULTS['default_command']
@@ -76,3 +77,4 @@ class Context:
         self.nice = config.get_nice()
         self.default_command = config.get_default_command()
         self.initialize = config.get_initialize()
+        self.restic_path = config.get_restic_binary_path()
