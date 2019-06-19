@@ -1,6 +1,6 @@
 from inspect import getsourcefile
 from os.path import abspath, isfile, dirname
-from os import chdir, getcwd, environ
+from os import environ
 from sys import argv, exit
 from subprocess import call, DEVNULL
 import toml
@@ -10,6 +10,7 @@ from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
 from resticprofile.restic import Restic
 from resticprofile.context import Context
 from resticprofile.profile import Profile
+from resticprofile.filesearch import FileSearch, find_configuration_file, DEFAULT_SEARCH_LOCATIONS
 
 
 def main():
@@ -19,18 +20,7 @@ def main():
 
     console = Console(context.quiet, context.verbose)
 
-    # Current directory where the script was started from
-    current_directory = getcwd()
-    # Directory where the script is located
-    script_directory = dirname(abspath(getsourcefile(lambda: 0)))
-
-    valid_configuration_file = None
-    for file in (current_directory + "/" + context.configuration_file, script_directory + "/" + context.configuration_file):
-        if isfile(file):
-            valid_configuration_file = file
-            chdir(dirname(valid_configuration_file))
-            break
-
+    valid_configuration_file = find_configuration_file(context.configuration_file)
     if valid_configuration_file is not None:
         console.debug("Using configuration file " + valid_configuration_file)
         try:
@@ -41,11 +31,14 @@ def main():
             console.error(str(err))
             exit(2)
     else:
-        console.warning("Configuration file '" + context.configuration_file +
-                        "' was not found in either current or script directory.")
+        console.warning(
+            "Configuration file '{}' was not found in either the current directory or these default locations: {}"
+            .format(context.configuration_file, DEFAULT_SEARCH_LOCATIONS)
+        )
         exit(2)
 
-    config = Config(profiles)
+    file_search = FileSearch(dirname(valid_configuration_file))
+    config = Config(profiles, file_search)
     profile = Profile(config, context.profile_name)
     restic = Restic()
     if context.args:

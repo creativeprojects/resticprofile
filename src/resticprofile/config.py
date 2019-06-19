@@ -6,6 +6,7 @@ from resticprofile import constants
 from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
 from resticprofile.nice import Nice
+from resticprofile.filesearch import FileSearch
 
 DEFAULTS = {
     'configuration_file': 'profiles.conf',
@@ -136,8 +137,9 @@ class Config:
     Manage configuration information from configuration dictionnary
     '''
 
-    def __init__(self, configuration: dict):
+    def __init__(self, configuration: dict, file_search: FileSearch):
         self.configuration = configuration
+        self.file_search = file_search
 
     def get_ionice(self, section="global") -> IONice:
         if section not in self.configuration:
@@ -270,15 +272,13 @@ class Config:
         if isinstance(definition[key][constants.DEFINITION_TYPE], list):
             # this flag can be different types (exemple: boolean or string)
             for expected_type in definition[key][constants.DEFINITION_TYPE]:
-                success = self.__check_type(expected_type, value, expect_list=(
-                    'list' in definition[key] and definition[key]['list']))
+                success = self.__check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
                 if success:
                     return self.__valid_flag(definition[key], key, value, expected_type)
 
         else:
             expected_type = definition[key][constants.DEFINITION_TYPE]
-            success = self.__check_type(expected_type, value, expect_list=(
-                'list' in definition[key] and definition[key]['list']))
+            success = self.__check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
             if success:
                 return self.__valid_flag(definition[key], key, value, expected_type)
 
@@ -306,4 +306,8 @@ class Config:
         if constants.DEFINITION_FLAG in definition:
             # the restic flag has a different name than the configuration file flag
             key = definition[constants.DEFINITION_FLAG]
+
+        if expected_type == 'file' and value:
+            value = self.file_search.find(value)
+
         return Flag(key, value, expected_type)

@@ -1,11 +1,18 @@
 [![Build Status](https://travis-ci.com/creativeprojects/resticprofile.svg?branch=master)](https://travis-ci.com/creativeprojects/resticprofile)
 
 # resticprofile
-Configuration profiles for restic backup
+Configuration profiles manager for [restic backup](https://restic.net/)
 
-This is not production ready, it's only a small script I'm making for my own backups.
+This is _almost_ production ready: I'll build a PyPi package soon.
 
-Try [restic](https://restic.net/) and you'll understand why we need a configuration profile wrapper :)
+## Requirements
+
+resticprofile needs python version 3.5 minimum installed on your machine
+
+It's been actively tested on macOs X and Linux.
+I suspect it's **not** going to work for Windows out of the box.
+
+## Configuration examples
 
 Here's a simple configuration file using a Microsoft Azure backend:
 
@@ -29,18 +36,22 @@ source = [ "/", "/var" ]
 Here's a more complex comfiguration file showing profile inheritance and two backup profiles using the same repository:
 
 ```ini
-# Global configuration section
 [global]
-ionice = false # Linux only
+# ionice is available on Linux only
+ionice = false
 ionice-class = 2
 ionice-level = 6
-nice = 10 # All unix-like
-default-command = "snapshots" # when no command is specified when invoking resticprofile
-initialize = false # initialize a repository if none exist at location
+# nice is available on all unixes (macOs X included)
+nice = 10
+# run 'snapshots' when no command is specified when invoking resticprofile
+default-command = "snapshots"
+# initialize a repository if none exist at location
+initialize = false
 
 # a group is a profile that will call all profiles one by one
 [groups]
-full-backup = [ "root", "src" ] # when starting a backup on profile "full-backup", it will run the "root" and "src" backup profiles
+# when starting a backup on profile "full-backup", it will run the "root" and "src" backup profiles
+full-backup = [ "root", "src" ]
 
 # Default profile when not specified (-n or --name)
 # Please note there's no default inheritance from the 'default' profile (you can use the 'inherit' flag if needed)
@@ -108,24 +119,26 @@ prune = true
 
 ```
 
-Here are a few examples how to run restic (using the example configuration file)
+## Using resticprofile
+
+Here are a few examples how to run resticprofile (using the example configuration file)
 
 See all snapshots:
 
 ```
-python resticprofile.py
+python -m resticprofile
 ```
 
 Backup root & src profiles (using full-backup group)
 
 ```
-python resticprofile.py --name "full-backup" backup
+python -m resticprofile --name "full-backup" backup
 ```
 
 Display quick help
 
 ```
-python resticprofile.py --help
+python -m resticprofile --help
 
 Usage:
  resticprofile.py
