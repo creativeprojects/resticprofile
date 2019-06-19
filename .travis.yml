@@ -1,9 +1,16 @@
 language: python
 
-python:
-  - "3.5"
-  - "3.6"
-  - "3.7"
+matrix:
+  include:
+    - name: "Python 3.5 on Linux"
+      python: 3.5
+    - name: "Python 3.6 on Linux"
+      python: 3.6
+    - name: "Python 3.7 on Linux"
+      python: 3.7
+    - name: "Default Python on macOS X"
+      os: osx
+      language: shell
 
 install:
   - pip install -r requirements.txt
