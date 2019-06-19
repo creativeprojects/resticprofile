@@ -1,5 +1,5 @@
 import unittest
-from src.lib.restic import Restic
+from resticprofile.restic import Restic
 
 class TestRestic(unittest.TestCase):
 

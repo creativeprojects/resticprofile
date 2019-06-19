@@ -2,10 +2,10 @@
 resticprofile configuration
 '''
 from typing import Union, List
-from . import constants
-from .flag import Flag
-from .ionice import IONice
-from .nice import Nice
+from resticprofile import constants
+from resticprofile.flag import Flag
+from resticprofile.ionice import IONice
+from resticprofile.nice import Nice
 
 DEFAULTS = {
     'configuration_file': 'profiles.conf',

@@ -1,11 +1,11 @@
 from getopt import getopt, GetoptError
 
-from . import constants
-from .config import DEFAULTS, ARGUMENTS_DEFINITION, Config
-from .console import Console
-from .flag import Flag
-from .ionice import IONice
-from .nice import Nice
+from resticprofile import constants
+from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
+from resticprofile.console import Console
+from resticprofile.flag import Flag
+from resticprofile.ionice import IONice
+from resticprofile.nice import Nice
 
 class Context:
 

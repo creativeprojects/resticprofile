@@ -1,6 +1,6 @@
 from colorama import Fore, Back, Style, init
-from .config import DEFAULTS, ARGUMENTS_DEFINITION
-from .help import get_options_help
+from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION
+from resticprofile.help import get_options_help
 
 class Console:
     def __init__(self, quiet = False, verbose = False):

@@ -1,7 +1,7 @@
 import unittest
-from src.lib.config import Config, DEFAULTS
-from src.lib.flag import Flag
-from src.lib.ionice import IONice
+from resticprofile.config import Config, DEFAULTS
+from resticprofile.flag import Flag
+from resticprofile.ionice import IONice
 
 
 class TestConfig(unittest.TestCase):

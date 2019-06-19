@@ -5,11 +5,11 @@ from sys import argv, exit
 from subprocess import call, DEVNULL
 import toml
 
-from lib.console import Console
-from lib.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
-from lib.restic import Restic
-from lib.context import Context
-from lib.profile import Profile
+from resticprofile.console import Console
+from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
+from resticprofile.restic import Restic
+from resticprofile.context import Context
+from resticprofile.profile import Profile
 
 
 def main():

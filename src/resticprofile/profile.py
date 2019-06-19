@@ -1,8 +1,8 @@
 from typing import List
 
-from .config import Config
-from . import constants
-from .flag import Flag
+from resticprofile import constants
+from resticprofile.config import Config
+from resticprofile.flag import Flag
 
 
 class Profile:

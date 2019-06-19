@@ -1,6 +1,6 @@
 import unittest
-from src.lib.config import Config
-from src.lib.profile import Profile
+from resticprofile.config import Config
+from resticprofile.profile import Profile
 
 
 class TestProfile(unittest.TestCase):

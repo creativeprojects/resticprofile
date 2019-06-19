@@ -1,6 +1,6 @@
 import unittest
 from os import getcwd
-from src.lib.flag import Flag
+from resticprofile.flag import Flag
 
 class TestProfile(unittest.TestCase):
 

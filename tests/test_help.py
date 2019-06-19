@@ -1,5 +1,5 @@
 import unittest
-from src.lib.help import get_options_help
+from resticprofile.help import get_options_help
 
 mock_ARGUMENTS_DEFINITION = {
     'help': {
