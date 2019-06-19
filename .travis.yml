@@ -13,8 +13,8 @@ matrix:
       language: shell
 
 install:
-  - pip install -r requirements.txt
+  - pip3 install -r requirements.txt
 
 script:
-  - pytest --version || pip install pytest
-  - PYTHONPATH=./src pytest
+  - python3 -m pytest --version || pip3 install pytest
+  - PYTHONPATH=./src python3 -m pytest
