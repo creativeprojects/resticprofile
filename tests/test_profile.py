@@ -92,8 +92,7 @@ class TestProfile(unittest.TestCase):
         configuration = {'test': {'option': ["a=b", "b=c"]}}
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
-        self.assertEqual(profile.get_global_flags(), [
-                         "--option 'a=b'", "--option 'b=c'"])
+        self.assertCountEqual(profile.get_global_flags(), ["--option 'a=b'", "--option 'b=c'"])
 
     def test_configuration_with_empty_repository(self):
         configuration = {'test': {'repository': ''}}
@@ -200,7 +199,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder'"])
 
 
     def test_overridden_command_configuration(self):
@@ -222,7 +221,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder2'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder2'"])
 
     def test_twice_inherited_command_configuration(self):
         configuration = {
@@ -246,4 +245,30 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertEqual(profile.get_command_flags('backup'), ["--tag 'grand-parent'", "--source 'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'grand-parent'", "--source 'folder'"])
+
+    def test_twice_overridden_command_configuration(self):
+        configuration = {
+            'grand-parent': {
+                'backup': {
+                    'tag': 'grand-parent'
+                }
+            },
+            'parent': {
+                'inherit': 'grand-parent',
+                'backup': {
+                    'tag': 'parent'
+                }
+            },
+            'test': {
+                'inherit': 'parent',
+                'backup': {
+                    'source': 'folder'
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_command_configuration('backup')
+
+        self.assertEqual(profile.get_global_flags(), [])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder'"])
