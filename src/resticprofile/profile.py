@@ -15,6 +15,7 @@ class Profile:
         self.inherit = None
         self.repository = ""
         self.__common_flags = {}  # type: Dict[str, Flag]
+        self.__command_flags = {}  # type: Dict[str, Flag]
         self.source = []
 
     def set_common_configuration(self):
@@ -22,9 +23,16 @@ class Profile:
 
         if options:
             for option in options:
-                self.set_flag(option)
+                self.__set_common_flag(option)
 
-    def get_global_flags(self):
+    def set_command_configuration(self, command: str):
+        options = self.config.get_options_for_section(self.profile_name, command)
+
+        if options:
+            for option in options:
+                self.__set_command_flag(option, command)
+
+    def get_global_flags(self) -> List[str]:
         flags = []
         # add the specific flags
         flags.extend(self.__get_repository_flag())
@@ -36,6 +44,20 @@ class Profile:
             arguments = flag.get_flags()
             if arguments:
                 flags.extend(arguments)
+
+        return flags
+
+    def get_command_flags(self, command: str) -> List[str]:
+        if command not in self.__command_flags:
+            return []
+
+        flags = []
+        for _, flag in self.__command_flags[command].items():
+            # create a restic argument for it
+            arguments = flag.get_flags()
+            if arguments:
+                flags.extend(arguments)
+
         return flags
 
     def __get_repository_flag(self) -> List[str]:
@@ -53,7 +75,7 @@ class Profile:
             return Flag(constants.PARAMETER_VERBOSE, self.verbose, 'int').get_flags()
         return []
 
-    def set_flag(self, option):
+    def __set_common_flag(self, option: Flag):
         if not option:
             return
         if option.key == constants.PARAMETER_INHERIT:
@@ -80,3 +102,10 @@ class Profile:
                 constants.PARAMETER_INHERIT
             ):
             self.__common_flags[option.key] = option
+
+    def __set_command_flag(self, option: Flag, command: str):
+        if not option:
+            return
+        self.__command_flags[command] = {}
+        self.__command_flags[command][option.key] = option
+

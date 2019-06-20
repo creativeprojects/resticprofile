@@ -137,3 +137,47 @@ class TestProfile(unittest.TestCase):
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
         self.assertEqual(profile.get_global_flags(), ["--repo '/backup'"])
+
+    def test_empty_command_configuration(self):
+        configuration = {
+            'test': {
+                'backup': {}
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_command_configuration('backup')
+
+        self.assertEqual(profile.get_command_flags('backup'), [])
+
+    def test_empty_section_command_configuration(self):
+        configuration = {
+            'test': {
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_command_configuration('backup')
+
+        self.assertEqual(profile.get_command_flags('backup'), [])
+
+    def test_empty_configuration_command_configuration(self):
+        configuration = {}
+        profile = self.new_profile(configuration)
+        profile.set_command_configuration('backup')
+
+        self.assertEqual(profile.get_command_flags('backup'), [])
+
+
+    def test_command_configuration(self):
+        configuration = {
+            'test': {
+                'backup': {
+                    'source': 'folder'
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_command_configuration('backup')
+
+        self.assertEqual(profile.get_global_flags(), [])
+        self.assertEqual(profile.get_command_flags('backup'), ["--source 'folder'"])
+
