@@ -15,7 +15,7 @@ class Profile:
         self.inherit = None
         self.repository = ""
         self.__common_flags = {}  # type: Dict[str, Flag]
-        self.__command_flags = {}  # type: Dict[str, Flag]
+        self.__command_flags = {}  # type: Dict[str, Dict[str, Flag]]
         self.source = []
 
     def set_common_configuration(self):

@@ -251,15 +251,46 @@ class Config:
         With no command parameter, it returns the common section of the profile
         With a command parameter, it returns the command section of the profile
         '''
+        # starts by common section
+        options, inherit = self.__get_options_for_common_section(section)
+        if command:
+            print(len(inherit), inherit)
+            options.extend(self.__get_options_for_command_section(section, command))
+
+        return options
+
+    def __get_options_for_common_section(self, section: str, inherit=[]) -> (List[Flag], List[str]):
+        if section not in self.configuration:
+            return ([], inherit)
+
+        section_definition = constants.SECTION_DEFINITION_COMMON
+        options = []
+        configuration_section = self.configuration[section]
+        for flag in CONFIGURATION_FLAGS_DEFINITION[section_definition]:
+            if flag in configuration_section:
+                option = self.validate_configuration_option(
+                    CONFIGURATION_FLAGS_DEFINITION[section_definition],
+                    flag,
+                    configuration_section[flag]
+                )
+                if option:
+                    # special case for inherit flag
+                    if option.key == constants.PARAMETER_INHERIT and option.value:
+                        inherit.append(option.value)
+                        # run the common configuration for the parent
+                        parent_options, inherit = self.__get_options_for_common_section(option.value, inherit)
+                        if parent_options:
+                            options.extend(parent_options)
+
+                    options.append(option)
+
+        return (options, inherit)
+
+    def __get_options_for_command_section(self, section: str, command: str) -> List[Flag]:
         if section not in self.configuration:
             return []
 
-        # default section definition
-        section_definition = constants.SECTION_DEFINITION_COMMON
-        # if we need the commands option, we target the command section definition
-        if command:
-            section_definition = command
-        
+        section_definition = command
         if section_definition not in CONFIGURATION_FLAGS_DEFINITION:
             # unknown command
             return []
@@ -277,13 +308,6 @@ class Config:
                     configuration_section[flag]
                 )
                 if option:
-                    # special case for inherit flag
-                    if option.key == constants.PARAMETER_INHERIT and option.value:
-                        # run the common configuration for the parent
-                        parent_options = self.get_options_for_section(option.value)
-                        if parent_options:
-                            options.extend(parent_options)
-
                     options.append(option)
 
         return options
