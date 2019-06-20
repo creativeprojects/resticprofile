@@ -178,7 +178,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertEqual(profile.get_command_flags('backup'), ["--source 'folder'"])
+        self.assertEqual(profile.get_command_flags('backup'), ["'folder'"])
 
 
     def test_inherited_command_configuration(self):
@@ -199,7 +199,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "'folder'"])
 
 
     def test_overridden_command_configuration(self):
@@ -221,7 +221,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder2'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "'folder1'", "'folder2'"])
 
     def test_twice_inherited_command_configuration(self):
         configuration = {
@@ -245,7 +245,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'grand-parent'", "--source 'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'grand-parent'", "'folder'"])
 
     def test_twice_overridden_command_configuration(self):
         configuration = {
@@ -271,4 +271,25 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "'folder'"])
+
+
+    def test_removing_duplicates_command_configuration(self):
+        configuration = {
+            'parent': {
+                'backup': {
+                    'source': 'folder'
+                }
+            },
+            'test': {
+                'inherit': 'parent',
+                'backup': {
+                    'source': 'folder'
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_command_configuration('backup')
+
+        self.assertEqual(profile.get_global_flags(), [])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["'folder'"])

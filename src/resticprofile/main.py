@@ -51,18 +51,12 @@ def main():
 
     if context.profile_name in profiles:
         profile.set_common_configuration()
-        build_argument_list_from_section(restic, context, profiles[context.profile_name])
 
         # there's no default command yet
         if not restic.command:
             restic.command = context.default_command
 
-        # adds inherited profile (only one at this stage)
-        if profile.inherit and restic.command in profiles[profile.inherit]:
-            build_argument_list_from_section(restic, context, profiles[profile.inherit][restic.command])
-
-        if restic.command in profiles[context.profile_name]:
-            build_argument_list_from_section(restic, context, profiles[context.profile_name][restic.command])
+        profile.set_command_configuration(restic.command)
 
         # inherited environment
         if profile.inherit and DEFAULTS['environment'] in profiles[profile.inherit]:
@@ -77,8 +71,7 @@ def main():
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting environment variable {}".format(key.upper()))
 
-    # Clears common arguments and forces them from profile instance
-    restic.common_arguments = profile.get_global_flags()
+    restic.extend_arguments(profile.get_command_flags(restic.command))
 
     if context.quiet:
         restic.set_common_argument('--quiet')
@@ -125,92 +118,6 @@ def main():
         console.debug(prune_command)
         call(prune_command, shell=True, stdin=DEVNULL)
 
-
-def build_argument_list_from_section(restic, context, profiles_section):
-    for key in profiles_section:
-        if key in ('password-file'):
-            # expecting simple string
-            if isinstance(profiles_section[key], str):
-                value = abspath(profiles_section[key])
-                restic.set_common_argument("--{}={}".format(key, value))
-
-        elif key in ('exclude-file', 'tag'):
-            # expecting either single string or array of strings
-            if isinstance(profiles_section[key], list):
-                for value in profiles_section[key]:
-                    restic.set_argument("--{}={}".format(key, value))
-            elif isinstance(profiles_section[key], str):
-                value = profiles_section[key]
-                restic.set_argument("--{}={}".format(key, value))
-
-        elif key in ('exclude-caches', 'one-file-system'):
-            # expecting boolean value
-            if isinstance(profiles_section[key], bool):
-                if profiles_section[key]:
-                    restic.set_argument("--{}".format(key))
-
-        elif key in ('no-cache'):
-            # expecting boolean value
-            if isinstance(profiles_section[key], bool):
-                if profiles_section[key]:
-                    restic.set_common_argument("--{}".format(key))
-
-        elif key == 'repository':
-            # expecting single string (and later on, and array of strings!)
-            if isinstance(profiles_section[key], str):
-                restic.repository = profiles_section[key]
-                restic.set_common_argument(
-                    "--repo={}".format(profiles_section[key]))
-
-        elif key == 'source':
-            # expecting either single string or array of strings
-            if isinstance(profiles_section[key], str):
-                restic.backup_paths.append(profiles_section[key])
-            elif isinstance(profiles_section[key], list):
-                for value in profiles_section[key]:
-                    restic.backup_paths.append(value)
-
-        elif key in ('initialize'):
-            # expecting boolean value
-            if isinstance(profiles_section[key], bool):
-                context.initialize = profiles_section[key]
-
-        elif key == 'default-command':
-            # expecting single string
-            if isinstance(profiles_section[key], str):
-                context.default_command = profiles_section[key]
-                if not restic.command:
-                    # also sets the current default command
-                    restic.command = profiles_section[key]
-
-        elif key == 'prune-before':
-            # expecting boolean value
-            if isinstance(profiles_section[key], bool):
-                restic.prune_before = profiles_section[key]
-
-        elif key == 'prune-after':
-            # expecting boolean value
-            if isinstance(profiles_section[key], bool):
-                restic.prune_after = profiles_section[key]
-
-        elif key == 'nice':
-            context.set_nice(profiles_section)
-
-        elif key == 'ionice':
-            context.set_ionice(profiles_section)
-
-        elif key in ('ionice-class', 'ionice-level', 'inherit'):
-            # these values are ignored
-            pass
-
-        else:
-            value = profiles_section[key]
-            if isinstance(value, str):
-                restic.set_argument("--{}={}".format(key, value))
-            elif isinstance(value, int):
-                restic.set_argument("--{}={}".format(key, value))
-            elif isinstance(value, bool) and value:
-                restic.set_argument("--{}".format(key))
 
 
 if __name__ == "__main__":

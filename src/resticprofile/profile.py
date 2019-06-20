@@ -33,12 +33,7 @@ class Profile:
                 self.__set_command_flag(option, command)
 
     def get_global_flags(self) -> List[str]:
-        flags = []
-        # add the specific flags
-        flags.extend(self.__get_repository_flag())
-        flags.extend(self.__get_quiet_flag())
-        flags.extend(self.__get_verbose_flag())
-
+        flags = self.__get_specific_flags()
         for _, flag in self.__common_flags.items():
             # create a restic argument for it
             arguments = flag.get_flags()
@@ -51,13 +46,34 @@ class Profile:
         if command not in self.__command_flags:
             return []
 
-        flags = []
+        flags = self.__get_specific_flags()
         for _, flag in self.__command_flags[command].items():
             # create a restic argument for it
             arguments = flag.get_flags()
             if arguments:
                 flags.extend(arguments)
 
+        if command == constants.COMMAND_BACKUP:
+            flags.extend(self.get_backup_source())
+
+        return flags
+
+    def get_backup_source(self) -> List[str]:
+        '''
+        Returns a list of unique backup location
+        '''
+        sources = []
+        for source in self.source:
+            sources.append("'{}'".format(source.replace("'", "\'")))
+        return list(set(sources))
+
+
+    def __get_specific_flags(self) -> List[str]:
+        flags = []
+        # add the specific flags
+        flags.extend(self.__get_repository_flag())
+        flags.extend(self.__get_quiet_flag())
+        flags.extend(self.__get_verbose_flag())
         return flags
 
     def __get_repository_flag(self) -> List[str]:
@@ -101,6 +117,14 @@ class Profile:
     def __set_command_flag(self, option: Flag, command: str):
         if not option:
             return
+
+        # command specific flags
+        if option.key == constants.PARAMETER_SOURCE:
+            if isinstance(option.value, str) and option.value:
+                self.source.append(option.value)
+            elif isinstance(option.value, list) and option.value:
+                self.source.extend(option.value)
+
         if command not in self.__command_flags:
             self.__command_flags[command] = {}
 
@@ -113,5 +137,6 @@ class Profile:
                 constants.PARAMETER_REPO,
                 constants.PARAMETER_QUIET,
                 constants.PARAMETER_VERBOSE,
-                constants.PARAMETER_INHERIT
+                constants.PARAMETER_INHERIT,
+                constants.PARAMETER_SOURCE,
                 )

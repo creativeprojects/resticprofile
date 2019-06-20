@@ -23,3 +23,6 @@ PARAMETER_REPO = 'repo'
 PARAMETER_QUIET = 'quiet'
 PARAMETER_VERBOSE = 'verbose'
 PARAMETER_RESTIC_BINARY = 'restic-binary'
+PARAMETER_SOURCE = 'source'
+
+COMMAND_BACKUP = 'backup'

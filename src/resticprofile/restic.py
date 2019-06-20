@@ -1,31 +1,32 @@
+from typing import List
 
 class Restic:
     def __init__(self):
         # set instance variables
         self.command = ""
         self.repository = ""
-        self.common_arguments = []
-        self.arguments = {}
+        self.__common_arguments = [] # type: List[str]
+        self.__arguments = {} # type: Dict[str, List[str]]
         self.backup_paths = []
         self.prune_before = False
         self.prune_after = False
 
-    def get_init_command(self):
-        return self._get_command("init")
+    def get_init_command(self) -> str:
+        return self.__get_command("init")
 
-    def get_prune_command(self):
-        return self._get_command("prune")
+    def get_prune_command(self) -> str:
+        return self.__get_command("prune")
 
-    def get_command(self):
-        return self._get_command(self.command)
+    def get_command(self) -> str:
+        return self.__get_command(self.command)
 
-    def _get_command(self, command_name):
+    def __get_command(self, command_name: str) -> str:
         command = [command_name]
-        if self.common_arguments:
-            command.extend(self.common_arguments)
+        if self.__common_arguments:
+            command.extend(self.__common_arguments)
 
-        if command_name in self.arguments:
-            command.extend(self.arguments[command_name])
+        if command_name in self.__arguments:
+            command.extend(self.__arguments[command_name])
 
         if command_name == "backup" and self.backup_paths:
             command.extend(self.backup_paths)
@@ -33,14 +34,14 @@ class Restic:
         return ' '.join(command)
 
     def set_common_argument(self, arg):
-        self.common_arguments.append(arg)
+        self.__common_arguments.append(arg)
 
-    def set_argument(self, arg):
-        if self.command not in self.arguments:
-            self.arguments[self.command] = []
-        self.arguments[self.command].append(arg)
+    def set_argument(self, arg: str):
+        if self.command not in self.__arguments:
+            self.__arguments[self.command] = []
+        self.__arguments[self.command].append(arg)
 
-    def extend_arguments(self, args):
-        if self.command not in self.arguments:
-            self.arguments[self.command] = []
-        self.arguments[self.command].extend(args)
+    def extend_arguments(self, args: List[str]):
+        if self.command not in self.__arguments:
+            self.__arguments[self.command] = []
+        self.__arguments[self.command].extend(args)
