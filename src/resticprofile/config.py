@@ -252,14 +252,15 @@ class Config:
         With a command parameter, it returns the command section of the profile
         '''
         # starts by common section
-        options, inherit = self.__get_options_for_common_section(section)
+        options, inherit = self.__get_options_for_common_section(section, [])
         if command:
+            inherit.reverse()
             print(len(inherit), inherit)
             options.extend(self.__get_options_for_command_section(section, command))
 
         return options
 
-    def __get_options_for_common_section(self, section: str, inherit=[]) -> (List[Flag], List[str]):
+    def __get_options_for_common_section(self, section: str, inherit: List[str]) -> (List[Flag], List[str]):
         if section not in self.configuration:
             return ([], inherit)
 
