@@ -22,4 +22,4 @@ install:
 
 script:
   - python3 -m pytest --version || pip3 install pytest
-  - PYTHONPATH=./src python3 -m pytest
+  - PYTHONPATH=./src python3 -m pytest || PYTHONPATH=./src python3 -m pytest
