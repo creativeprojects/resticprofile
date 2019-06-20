@@ -14,6 +14,7 @@ class Profile:
         self.profile_name = profile_name
         self.inherit = None
         self.repository = ""
+        self.initialize = False
         self.__common_flags = {}  # type: Dict[str, Flag]
         self.__command_flags = {}  # type: Dict[str, Dict[str, Flag]]
         self.source = []

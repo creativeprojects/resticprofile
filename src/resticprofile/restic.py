@@ -1,21 +1,24 @@
 from typing import List
 
+from resticprofile import constants
+
 class Restic:
-    def __init__(self):
+    def __init__(self, command=''):
         # set instance variables
-        self.command = ""
+        self.command = command
         self.repository = ""
         self.__common_arguments = [] # type: List[str]
         self.__arguments = {} # type: Dict[str, List[str]]
         self.backup_paths = []
-        self.prune_before = False
-        self.prune_after = False
 
     def get_init_command(self) -> str:
-        return self.__get_command("init")
+        return self.__get_command(constants.COMMAND_INIT)
 
-    def get_prune_command(self) -> str:
-        return self.__get_command("prune")
+    def get_check_command(self) -> str:
+        return self.__get_command(constants.COMMAND_CHECK)
+
+    def get_forget_command(self) -> str:
+        return self.__get_command(constants.COMMAND_FORGET)
 
     def get_command(self) -> str:
         return self.__get_command(self.command)
@@ -35,11 +38,6 @@ class Restic:
 
     def set_common_argument(self, arg):
         self.__common_arguments.append(arg)
-
-    def set_argument(self, arg: str):
-        if self.command not in self.__arguments:
-            self.__arguments[self.command] = []
-        self.__arguments[self.command].append(arg)
 
     def extend_arguments(self, args: List[str]):
         if self.command not in self.__arguments:

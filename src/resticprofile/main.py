@@ -5,6 +5,7 @@ from sys import argv, exit
 from subprocess import call, DEVNULL
 import toml
 
+from resticprofile import constants
 from resticprofile.console import Console
 from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
 from resticprofile.restic import Restic
@@ -56,6 +57,10 @@ def main():
         if not restic.command:
             restic.command = context.default_command
 
+        # we might need these commands so we prepare them
+        profile.set_command_configuration('init')
+        profile.set_command_configuration('forget')
+
         profile.set_command_configuration(restic.command)
 
         # inherited environment
@@ -99,24 +104,26 @@ def main():
         command_prefix += context.ionice.get_command() + ' '
 
     if context.initialize:
-        init_command = command_prefix + restic_cmd + " " + restic.get_init_command()
+        restic_init = Restic(constants.COMMAND_INIT)
+        restic_init.extend_arguments(profile.get_command_flags(constants.COMMAND_INIT))
+        init_command = command_prefix + restic_cmd + " " + restic_init.get_init_command()
         console.debug(init_command)
         # captures only stdout when we create a new repository; otherwise don't display the error when it exists
         call(init_command, shell=True, stdin=DEVNULL, stderr=DEVNULL)
 
-    if restic.prune_before:
-        prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
-        console.debug(prune_command)
-        call(prune_command, shell=True, stdin=DEVNULL)
+    # if restic.prune_before:
+    #     prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
+    #     console.debug(prune_command)
+    #     call(prune_command, shell=True, stdin=DEVNULL)
 
     full_command = command_prefix + restic_cmd + " " + restic.get_command()
     console.debug(full_command)
     call(full_command, shell=True, stdin=DEVNULL)
 
-    if restic.prune_after:
-        prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
-        console.debug(prune_command)
-        call(prune_command, shell=True, stdin=DEVNULL)
+    # if restic.prune_after:
+    #     prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
+    #     console.debug(prune_command)
+    #     call(prune_command, shell=True, stdin=DEVNULL)
 
 
 
