@@ -18,7 +18,7 @@ class Profile:
         self.source = []
 
     def set_common_configuration(self):
-        options = self.config.get_common_options_for_section(self.profile_name)
+        options = self.config.get_options_for_section(self.profile_name)
 
         if options:
             for option in options:

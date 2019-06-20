@@ -98,6 +98,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'tag': {'type': 'str', 'list': True},
         'time': {'type': 'str'},
         'with-atime': {'type': 'bool'},
+        'source': {'type': 'str', 'list': True},
     },
     'snapshots': {
         'compact': {'type': 'bool'},
@@ -244,16 +245,34 @@ class Config:
 
         return None
 
-    def get_common_options_for_section(self, section: str) -> List[Flag]:
+    def get_options_for_section(self, section: str, command='') -> List[Flag]:
+        '''
+        Returns the list of flags for the section.
+        With no command parameter, it returns the common section of the profile
+        With a command parameter, it returns the command section of the profile
+        '''
         if section not in self.configuration:
+            return []
+
+        # default section definition
+        section_definition = constants.SECTION_DEFINITION_COMMON
+        # if we need the commands option, we target the command section definition
+        if command:
+            section_definition = command
+        
+        if section_definition not in CONFIGURATION_FLAGS_DEFINITION:
+            # unknown command
             return []
 
         options = []
         configuration_section = self.configuration[section]
-        for flag in CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON]:
+        if command and command in configuration_section:
+            configuration_section = configuration_section[command]
+
+        for flag in CONFIGURATION_FLAGS_DEFINITION[section_definition]:
             if flag in configuration_section:
                 option = self.validate_configuration_option(
-                    CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON],
+                    CONFIGURATION_FLAGS_DEFINITION[section_definition],
                     flag,
                     configuration_section[flag]
                 )
@@ -261,7 +280,7 @@ class Config:
                     # special case for inherit flag
                     if option.key == constants.PARAMETER_INHERIT and option.value:
                         # run the common configuration for the parent
-                        parent_options = self.get_common_options_for_section(option.value)
+                        parent_options = self.get_options_for_section(option.value)
                         if parent_options:
                             options.extend(parent_options)
 

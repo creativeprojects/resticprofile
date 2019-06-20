@@ -214,21 +214,21 @@ class TestConfig(unittest.TestCase):
 
     def test_loading_no_common_options(self):
         configuration = {}
-        options = self.new_config(configuration).get_common_options_for_section('test')
+        options = self.new_config(configuration).get_options_for_section('test')
         self.assertEqual([], options)
 
     def test_loading_empty_common_options(self):
         configuration = {
             'test': {}
         }
-        options = self.new_config(configuration).get_common_options_for_section('test')
+        options = self.new_config(configuration).get_options_for_section('test')
         self.assertEqual([], options)
 
     def test_loading_simple_common_options(self):
         configuration = {
             'test': {'repository': '/backup'}
         }
-        options = self.new_config(configuration).get_common_options_for_section('test')
+        options = self.new_config(configuration).get_options_for_section('test')
         self.assertEqual(len(options), 1)
         self.assertIsInstance(options[0], Flag)
 
@@ -236,7 +236,7 @@ class TestConfig(unittest.TestCase):
         configuration = {
             'test': {'inherit': 'parent'}
         }
-        options = self.new_config(configuration).get_common_options_for_section('test')
+        options = self.new_config(configuration).get_options_for_section('test')
         # at that stage, config is keeping the inherit flag because it will be needed up the line
         self.assertEqual(len(options), 1)
         self.assertIsInstance(options[0], Flag)
@@ -246,7 +246,7 @@ class TestConfig(unittest.TestCase):
             'parent': {'repository': '/backup'},
             'test': {'inherit': 'parent'}
         }
-        options = self.new_config(configuration).get_common_options_for_section('test')
+        options = self.new_config(configuration).get_options_for_section('test')
         # at that stage, config is keeping the inherit flag because it will be needed up the line
         self.assertEqual(len(options), 2)
         self.assertIsInstance(options[0], Flag)
@@ -258,10 +258,24 @@ class TestConfig(unittest.TestCase):
             'parent': {'inherit': 'grand-parent', 'repository': '/backup'},
             'test': {'inherit': 'parent'}
         }
-        options = self.new_config(configuration).get_common_options_for_section('test')
+        options = self.new_config(configuration).get_options_for_section('test')
         # at that stage, config is keeping both the inherit flags because they will be needed up the line
         self.assertEqual(len(options), 4)
         self.assertIsInstance(options[0], Flag)
         self.assertIsInstance(options[1], Flag)
         self.assertIsInstance(options[2], Flag)
         self.assertIsInstance(options[3], Flag)
+
+    def test_loading_command_section(self):
+        configuration = {
+            'profile': {
+                'backup': {
+                    'source': 'folder'
+                }
+            },
+        }
+        options = self.new_config(configuration).get_options_for_section('profile', 'backup')
+        self.assertEqual(1, len(options))
+        self.assertIsInstance(options[0], Flag)
+        self.assertEqual('source', options[0].key)
+
