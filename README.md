@@ -9,8 +9,7 @@ This is _almost_ production ready: I'll build a PyPi package soon.
 
 resticprofile needs python version 3.5 minimum installed on your machine
 
-It's been actively tested on macOs X and Linux.
-I suspect it's **not** going to work for Windows out of the box.
+It's been actively tested on macOs X and Linux, and I'm working on making it compatible with Windows.
 
 ## Configuration examples
 
@@ -33,7 +32,7 @@ tag = [ "root" ]
 source = [ "/", "/var" ]
 ```
 
-Here's a more complex comfiguration file showing profile inheritance and two backup profiles using the same repository:
+Here's a more complex configuration file showing profile inheritance and two backup profiles using the same repository:
 
 ```ini
 [global]
