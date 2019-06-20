@@ -228,11 +228,11 @@ class TestProfile(unittest.TestCase):
         configuration = {
             'grand-parent': {
                 'backup': {
-                    'tag': 'grant-parent'
+                    'tag': 'grand-parent'
                 }
             },
             'parent': {
-                'inherit': 'grant-parent',
+                'inherit': 'grand-parent',
                 'backup': {}
             },
             'test': {
@@ -246,4 +246,4 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "--source 'folder'"])
+        self.assertEqual(profile.get_command_flags('backup'), ["--tag 'grand-parent'", "--source 'folder'"])

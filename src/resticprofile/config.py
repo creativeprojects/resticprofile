@@ -255,7 +255,9 @@ class Config:
         options, inherit = self.__get_options_for_common_section(section, [])
         if command:
             inherit.reverse()
-            print(len(inherit), inherit)
+            for inherit_profile in inherit:
+                options.extend(self.__get_options_for_command_section(inherit_profile, command))
+
             options.extend(self.__get_options_for_command_section(section, command))
 
         return options

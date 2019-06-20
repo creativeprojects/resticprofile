@@ -95,17 +95,23 @@ class Profile:
                 self.verbose = option.value
 
         # adds it to the list of flags
-        if option.key not in (
-                constants.PARAMETER_REPO,
-                constants.PARAMETER_QUIET,
-                constants.PARAMETER_VERBOSE,
-                constants.PARAMETER_INHERIT
-            ):
+        if not self.__is_special_flag(option.key):
             self.__common_flags[option.key] = option
 
     def __set_command_flag(self, option: Flag, command: str):
         if not option:
             return
-        self.__command_flags[command] = {}
-        self.__command_flags[command][option.key] = option
+        if command not in self.__command_flags:
+            self.__command_flags[command] = {}
 
+        if not self.__is_special_flag(option.key):
+            self.__command_flags[command][option.key] = option
+
+
+    def __is_special_flag(self, key: str):
+        return key in (
+                constants.PARAMETER_REPO,
+                constants.PARAMETER_QUIET,
+                constants.PARAMETER_VERBOSE,
+                constants.PARAMETER_INHERIT
+                )
