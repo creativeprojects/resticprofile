@@ -8,9 +8,14 @@ matrix:
       python: 3.6
     - name: "Python 3.7 on Linux"
       python: 3.7
-    - name: "Default Python on macOS X"
+    - name: "Python 3.6 on macOS X"
       os: osx
       language: shell
+    - name: "Python 3.7 on Windows"
+      os: windows
+      language: shell
+      before_install: choco install -y python
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 
 install:
   - pip3 install -r requirements.txt
