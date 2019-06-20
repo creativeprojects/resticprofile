@@ -12,7 +12,8 @@ class TestFileSearch(fake_filesystem_unittest.TestCase):
 
     def setUp(self):
         self.setUpPyfakefs()
-        for path in DEFAULT_SEARCH_LOCATIONS + [str(Path().home())]:
+        os.makedirs(str(Path().home()), exist_ok=True)
+        for path in DEFAULT_SEARCH_LOCATIONS:
             os.makedirs(path)
 
     def create_file(self, filename: str):
