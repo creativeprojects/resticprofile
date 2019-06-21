@@ -1,5 +1,7 @@
-from inspect import getsourcefile
-from os.path import abspath, isfile, dirname
+'''
+resticprofile main function
+'''
+from os.path import isfile, dirname
 from os import environ
 from sys import argv, exit
 from subprocess import call, DEVNULL
@@ -15,7 +17,9 @@ from resticprofile.filesearch import FileSearch, find_configuration_file, DEFAUL
 
 
 def main():
-
+    '''
+    This is main
+    '''
     context = Context(ARGUMENTS_DEFINITION)
     context.load_context_from_command_line(argv)
 
