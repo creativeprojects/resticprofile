@@ -3,3 +3,5 @@
 /examples/private
 /scripts/deploy.sh
 *.pyc
+/src/resticprofile.egg-info
+/dist
