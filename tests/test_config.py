@@ -279,3 +279,56 @@ class TestConfig(unittest.TestCase):
         self.assertIsInstance(options[0], Flag)
         self.assertEqual('source', options[0].key)
 
+
+    def test_can_get_initialize_flag_from_profile(self):
+        configuration = {
+            'profile': {
+                'initialize': True
+            },
+        }
+        options = self.new_config(configuration).get_options_for_section('profile')
+        self.assertEqual(1, len(options))
+        self.assertIsInstance(options[0], Flag)
+
+    def test_can_get_initialize_flag_from_command_profile(self):
+        configuration = {
+            'profile': {
+                'backup': {
+                    'initialize': True
+                }
+            },
+        }
+        options = self.new_config(configuration).get_options_for_section('profile', 'backup')
+        self.assertEqual(1, len(options))
+        self.assertIsInstance(options[0], Flag)
+
+    def test_can_get_initialize_flag_from_inherited_profile(self):
+        configuration = {
+            'parent': {
+                'initialize': True
+            },
+            'profile': {
+                'inherit': 'parent',
+            },
+        }
+        options = self.new_config(configuration).get_options_for_section('profile')
+        self.assertEqual(2, len(options))
+        self.assertIsInstance(options[0], Flag)
+        self.assertIsInstance(options[1], Flag)
+
+    def test_can_get_initialize_flag_from_inherited_command_profile(self):
+        configuration = {
+            'parent': {
+                'backup': {
+                    'initialize': True
+                }
+            },
+            'profile': {
+                'inherit': 'parent',
+                'backup': {}
+            },
+        }
+        options = self.new_config(configuration).get_options_for_section('profile', 'backup')
+        self.assertEqual(2, len(options))
+        self.assertIsInstance(options[0], Flag)
+        self.assertIsInstance(options[1], Flag)

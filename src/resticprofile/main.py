@@ -103,7 +103,7 @@ def main():
     if context.ionice:
         command_prefix += context.ionice.get_command() + ' '
 
-    if context.initialize:
+    if profile.initialize:
         restic_init = Restic(constants.COMMAND_INIT)
         restic_init.extend_arguments(profile.get_command_flags(constants.COMMAND_INIT))
         init_command = command_prefix + restic_cmd + " " + restic_init.get_init_command()

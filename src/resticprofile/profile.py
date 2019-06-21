@@ -107,6 +107,10 @@ class Profile:
             if isinstance(option.value, bool):
                 self.quiet = option.value
 
+        elif option.key == constants.PARAMETER_INITIALIZE:
+            if isinstance(option.value, bool):
+                self.initialize = option.value
+
         elif option.key == constants.PARAMETER_VERBOSE:
             if isinstance(option.value, bool) or isinstance(option.value, int):
                 self.verbose = option.value
@@ -126,6 +130,10 @@ class Profile:
             elif isinstance(option.value, list) and option.value:
                 self.source.extend(option.value)
 
+        elif option.key == constants.PARAMETER_INITIALIZE:
+            if isinstance(option.value, bool):
+                self.initialize = option.value
+
         if command not in self.__command_flags:
             self.__command_flags[command] = {}
 
@@ -135,9 +143,10 @@ class Profile:
 
     def __is_special_flag(self, key: str):
         return key in (
-                constants.PARAMETER_REPO,
-                constants.PARAMETER_QUIET,
-                constants.PARAMETER_VERBOSE,
-                constants.PARAMETER_INHERIT,
-                constants.PARAMETER_SOURCE,
-                )
+            constants.PARAMETER_REPO,
+            constants.PARAMETER_QUIET,
+            constants.PARAMETER_VERBOSE,
+            constants.PARAMETER_INHERIT,
+            constants.PARAMETER_SOURCE,
+            constants.PARAMETER_INITIALIZE,
+        )

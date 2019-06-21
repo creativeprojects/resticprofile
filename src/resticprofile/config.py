@@ -64,6 +64,7 @@ GLOBAL_FLAGS_DEFINITION = {
 CONFIGURATION_FLAGS_DEFINITION = {
     'common': {
         'inherit': {'type': 'str'},
+        'initialize': {'type': 'bool'},
         'cacert': {'type': 'file'},
         'cache-dir': {'type': 'str'},
         'cleanup-cache': {'type': 'bool'},
@@ -251,11 +252,14 @@ class Config:
         With no command parameter, it returns the common section of the profile
         With a command parameter, it returns the command section of the profile
         '''
-        # starts by common section
+        # common section
         options, inherit = self.__get_options_for_common_section(section, [])
+        # command section
         if command:
             inherit.reverse()
             for inherit_profile in inherit:
+                inherited_common_options, _ = self.__get_options_for_common_section(inherit_profile, [])
+                options.extend(inherited_common_options)
                 options.extend(self.__get_options_for_command_section(inherit_profile, command))
 
             options.extend(self.__get_options_for_command_section(section, command))
@@ -303,10 +307,14 @@ class Config:
         if command and command in configuration_section:
             configuration_section = configuration_section[command]
 
-        for flag in CONFIGURATION_FLAGS_DEFINITION[section_definition]:
+        # configuration flags can also be common flags, so we merge both sections (the dict merge syntax is kinda weird)
+        configuration_flags_definition = { **CONFIGURATION_FLAGS_DEFINITION[section_definition], \
+            **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON] }
+
+        for flag in configuration_flags_definition:
             if flag in configuration_section:
                 option = self.validate_configuration_option(
-                    CONFIGURATION_FLAGS_DEFINITION[section_definition],
+                    configuration_flags_definition,
                     flag,
                     configuration_section[flag]
                 )
