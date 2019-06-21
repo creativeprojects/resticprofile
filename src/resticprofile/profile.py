@@ -15,8 +15,11 @@ class Profile:
         self.inherit = None
         self.repository = ""
         self.initialize = False
+        self.forget_before = False
+        self.forget_after = False
         self.__common_flags = {}  # type: Dict[str, Flag]
         self.__command_flags = {}  # type: Dict[str, Dict[str, Flag]]
+        self.__retention_flags = {}  # type: Dict[str, Flag]
         self.source = []
 
     def set_common_configuration(self):
@@ -32,6 +35,13 @@ class Profile:
         if options:
             for option in options:
                 self.__set_command_flag(option, command)
+
+    def set_retention_configuration(self):
+        options = self.config.get_options_for_retention(self.profile_name)
+
+        if options:
+            for option in options:
+                self.__set_retention_flag(option)
 
     def get_global_flags(self) -> List[str]:
         flags = self.__get_specific_flags()
@@ -56,6 +66,16 @@ class Profile:
 
         if command == constants.COMMAND_BACKUP:
             flags.extend(self.get_backup_source())
+
+        return flags
+
+    def get_retention_flags(self) -> List[str]:
+        flags = self.get_global_flags()
+        for _, flag in self.__retention_flags.items():
+            # create a restic argument for it
+            arguments = flag.get_flags()
+            if arguments:
+                flags.extend(arguments)
 
         return flags
 
@@ -141,6 +161,22 @@ class Profile:
             self.__command_flags[command][option.key] = option
 
 
+    def __set_retention_flag(self, option: Flag):
+        if not option:
+            return
+        if option.key == constants.PARAMETER_FORGET_BEFORE_BACKUP:
+            if isinstance(option.value, bool):
+                self.forget_before = option.value
+
+        elif option.key == constants.PARAMETER_FORGET_AFTER_BACKUP:
+            if isinstance(option.value, bool):
+                self.forget_after = option.value
+
+        # adds it to the list of flags
+        if not self.__is_special_flag(option.key):
+            self.__common_flags[option.key] = option
+
+
     def __is_special_flag(self, key: str):
         return key in (
             constants.PARAMETER_REPO,
@@ -149,4 +185,6 @@ class Profile:
             constants.PARAMETER_INHERIT,
             constants.PARAMETER_SOURCE,
             constants.PARAMETER_INITIALIZE,
+            constants.PARAMETER_FORGET_BEFORE_BACKUP,
+            constants.PARAMETER_FORGET_AFTER_BACKUP,
         )

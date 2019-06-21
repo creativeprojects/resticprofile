@@ -332,3 +332,37 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(2, len(options))
         self.assertIsInstance(options[0], Flag)
         self.assertIsInstance(options[1], Flag)
+
+    def test_can_get_empty_retention(self):
+        configuration = {
+            'profile': {
+                'retention': {}
+            }
+        }
+        options = self.new_config(configuration).get_options_for_retention('profile')
+        self.assertEqual(0, len(options))
+
+    def test_can_get_retention_before(self):
+        configuration = {
+            'profile': {
+                'retention': {
+                    'before-backup': True,
+                }
+            }
+        }
+        options = self.new_config(configuration).get_options_for_retention('profile')
+        self.assertEqual(1, len(options))
+        self.assertIsInstance(options[0], Flag)
+
+    def test_can_get_retention_after(self):
+        configuration = {
+            'profile': {
+                'retention': {
+                    'after-backup': True,
+                }
+            }
+        }
+        options = self.new_config(configuration).get_options_for_retention('profile')
+        self.assertEqual(1, len(options))
+        self.assertIsInstance(options[0], Flag)
+

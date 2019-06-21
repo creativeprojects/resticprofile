@@ -82,6 +82,10 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'tls-client-cert': {'type': 'file'},
         'verbose': {'type': ['bool', 'int']},
     },
+    'retention': {
+        'before-backup': {'type': 'bool'},
+        'after-backup': {'type': 'bool'},
+    },
     'backup': {
         'exclude': {'type': 'str', 'list': True},
         'exclude-caches': {'type': 'bool'},
@@ -311,6 +315,32 @@ class Config:
         configuration_flags_definition = { **CONFIGURATION_FLAGS_DEFINITION[section_definition], \
             **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON] }
 
+        for flag in configuration_flags_definition:
+            if flag in configuration_section:
+                option = self.validate_configuration_option(
+                    configuration_flags_definition,
+                    flag,
+                    configuration_section[flag]
+                )
+                if option:
+                    options.append(option)
+
+        return options
+
+    def get_options_for_retention(self, section: str) -> List[Flag]:
+        if section not in self.configuration:
+            return []
+
+        configuration_section = self.configuration[section]
+        if constants.SECTION_CONFIGURATION_RETENTION not in configuration_section:
+            return []
+        configuration_section = configuration_section[constants.SECTION_CONFIGURATION_RETENTION]
+
+        # configuration flags are the specific ones to 'retention' + the ones from the 'forget' command
+        configuration_flags_definition = { **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_CONFIGURATION_RETENTION], \
+            **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_FORGET] }
+
+        options = []
         for flag in configuration_flags_definition:
             if flag in configuration_section:
                 option = self.validate_configuration_option(

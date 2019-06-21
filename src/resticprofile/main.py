@@ -57,9 +57,12 @@ def main():
         if not restic.command:
             restic.command = context.default_command
 
-        # we might need these commands so we prepare them
+        # we might need the init command so we prepare it
         profile.set_command_configuration('init')
-        profile.set_command_configuration('forget')
+
+        # if the command is backup, we need to load the retention model
+        if restic.command == constants.COMMAND_BACKUP:
+            profile.set_retention_configuration()
 
         profile.set_command_configuration(restic.command)
 
@@ -111,19 +114,23 @@ def main():
         # captures only stdout when we create a new repository; otherwise don't display the error when it exists
         call(init_command, shell=True, stdin=DEVNULL, stderr=DEVNULL)
 
-    # if restic.prune_before:
-    #     prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
-    #     console.debug(prune_command)
-    #     call(prune_command, shell=True, stdin=DEVNULL)
+    if profile.forget_before:
+        restic_retention = Restic(constants.COMMAND_FORGET)
+        restic_retention.extend_arguments(profile.get_retention_flags())
+        forget_command = command_prefix + restic_cmd + " " + restic_retention.get_forget_command()
+        console.debug(forget_command)
+        call(forget_command, shell=True, stdin=DEVNULL)
 
     full_command = command_prefix + restic_cmd + " " + restic.get_command()
     console.debug(full_command)
     call(full_command, shell=True, stdin=DEVNULL)
 
-    # if restic.prune_after:
-    #     prune_command = command_prefix + restic_cmd + " " + restic.get_prune_command()
-    #     console.debug(prune_command)
-    #     call(prune_command, shell=True, stdin=DEVNULL)
+    if profile.forget_after:
+        restic_retention = Restic(constants.COMMAND_FORGET)
+        restic_retention.extend_arguments(profile.get_retention_flags())
+        forget_command = command_prefix + restic_cmd + " " + restic_retention.get_forget_command()
+        console.debug(forget_command)
+        call(forget_command, shell=True, stdin=DEVNULL)
 
 
 

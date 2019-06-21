@@ -293,3 +293,122 @@ class TestProfile(unittest.TestCase):
 
         self.assertEqual(profile.get_global_flags(), [])
         self.assertCountEqual(profile.get_command_flags('backup'), ["'folder'"])
+
+    def test_direct_false_initialize_flag(self):
+        configuration = {
+            'test': {
+                'initialize': False,
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+
+        self.assertFalse(profile.initialize)
+
+    def test_direct_true_initialize_flag(self):
+        configuration = {
+            'test': {
+                'initialize': True,
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+
+        self.assertTrue(profile.initialize)
+
+    def test_direct_command_false_initialize_flag(self):
+        configuration = {
+            'test': {
+                'initialize': True,
+                'backup': {
+                    'initialize': False,
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+
+        self.assertFalse(profile.initialize)
+
+    def test_direct_command_true_initialize_flag(self):
+        configuration = {
+            'test': {
+                'initialize': False,
+                'backup': {
+                    'initialize': True,
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+
+        self.assertTrue(profile.initialize)
+
+
+    def test_inherited_false_initialize_flag(self):
+        configuration = {
+            'parent': {
+                'initialize': False,
+            },
+            'test': {
+                'inherit': 'parent',
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+
+        self.assertFalse(profile.initialize)
+
+    def test_inherited_true_initialize_flag(self):
+        configuration = {
+            'parent': {
+                'initialize': True,
+            },
+            'test': {
+                'inherit': 'parent',
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+
+        self.assertTrue(profile.initialize)
+
+    def test_inherited_command_false_initialize_flag(self):
+        configuration = {
+            'parent': {
+                'initialize': True,
+                'backup': {
+                    'initialize': False,
+                }
+            },
+            'test': {
+                'inherit': 'parent',
+                'backup': {},
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+
+        self.assertFalse(profile.initialize)
+
+    def test_inherited_command_true_initialize_flag(self):
+        configuration = {
+            'parent': {
+                'initialize': False,
+                'backup': {
+                    'initialize': True,
+                }
+            },
+            'test': {
+                'inherit': 'parent',
+                'backup': {},
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+
+        self.assertTrue(profile.initialize)
