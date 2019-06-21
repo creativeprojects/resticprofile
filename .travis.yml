@@ -18,7 +18,7 @@ matrix:
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 
 install:
-  - pip3 install -r requirements.txt
+  - pip3 install -r tests-requirements.txt
 
 script:
   - python3 -m pytest --version || pip3 install pytest

@@ -40,6 +40,11 @@ setup(
             'resticprofile=resticprofile.main:main',
         ],
     },
+    tests_require=[
+    # setup_requires=[
+        'pytest',
+        'pyfakefs',
+    ],
     # metadata to display on PyPI
     author="Fred",
     author_email="Fred@CreativeProjects.Tech",

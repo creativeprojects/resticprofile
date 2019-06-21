@@ -6,3 +6,4 @@
 /src/resticprofile.egg-info
 /build
 /dist
+/**/.eggs
