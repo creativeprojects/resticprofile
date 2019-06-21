@@ -1,3 +1,0 @@
-colorama==0.4.1
-toml==0.10.0
-pyfakefs==3.5.8

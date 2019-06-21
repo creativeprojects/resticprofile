@@ -37,7 +37,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'resticprofile=main:main',
+            'resticprofile=resticprofile.main:main',
         ],
     },
     # metadata to display on PyPI
