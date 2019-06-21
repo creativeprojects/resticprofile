@@ -33,7 +33,7 @@ def main():
             exit(2)
     else:
         console.warning(
-            "Configuration file '{}' was not found in either the current directory, home directory\n or any of these locations: {}"
+            "Configuration file '{}' was not found in either the current directory, home directory or any of these locations:\n{}"
             .format(context.configuration_file, DEFAULT_SEARCH_LOCATIONS)
         )
         exit(2)
