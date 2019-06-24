@@ -1,5 +1,6 @@
 import unittest
-from resticprofile.config import Config, DEFAULTS
+from resticprofile import constants
+from resticprofile.config import Config
 from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
 
@@ -175,14 +176,14 @@ class TestConfig(unittest.TestCase):
     def test_no_default_command(self):
         configuration = {}
         default_command = self.new_config(configuration).get_default_command()
-        self.assertEqual(DEFAULTS['default_command'], default_command)
+        self.assertEqual(constants.DEFAULT_COMMAND, default_command)
 
     def test_wrong_default_command(self):
         configuration = {
             'global': {'default-command': False}
         }
         default_command = self.new_config(configuration).get_default_command()
-        self.assertEqual(DEFAULTS['default_command'], default_command)
+        self.assertEqual(constants.DEFAULT_COMMAND, default_command)
 
     def test_default_command(self):
         configuration = {
@@ -195,14 +196,14 @@ class TestConfig(unittest.TestCase):
     def test_no_initialize(self):
         configuration = {}
         initialize = self.new_config(configuration).get_initialize()
-        self.assertEqual(DEFAULTS['initialize'], initialize)
+        self.assertEqual(constants.DEFAULT_INITIALIZE_FLAG, initialize)
 
     def test_wrong_initialize(self):
         configuration = {
             'global': {'initialize': 0}
         }
         initialize = self.new_config(configuration).get_initialize()
-        self.assertEqual(DEFAULTS['initialize'], initialize)
+        self.assertEqual(constants.DEFAULT_INITIALIZE_FLAG, initialize)
 
     def test_initialize(self):
         configuration = {

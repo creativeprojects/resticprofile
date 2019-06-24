@@ -1,30 +1,52 @@
+'''
+Display messages to the console
+'''
 from colorama import Fore, Back, Style, init
-from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION
+from resticprofile import constants
+from resticprofile.config import ARGUMENTS_DEFINITION
 from resticprofile.help import get_options_help
 
+
 class Console:
-    def __init__(self, quiet = False, verbose = False):
+    def __init__(self, quiet=False, verbose=False):
+        '''
+        Display messages to the console
+        '''
         self.quiet = quiet
         self.verbose = verbose
-        init(autoreset = True)
+        init(autoreset=True)
 
     def debug(self, message):
-        if (self.verbose):
+        '''
+        Display debug message to the console
+        '''
+        if self.verbose:
             print(Fore.LIGHTGREEN_EX + message)
 
     def info(self, message):
-        if (not self.quiet):
+        '''
+        Display info message to the console
+        '''
+        if not self.quiet:
             print(Fore.LIGHTYELLOW_EX + message)
-    
+
     def warning(self, message):
+        '''
+        Display warning message to the console
+        '''
         print(Fore.LIGHTRED_EX + message)
 
     def error(self, message):
+        '''
+        Display error message to the console
+        '''
         print(Fore.LIGHTRED_EX + message)
 
     def usage(self, name):
+        '''
+        Display usage to the console
+        '''
         print("\nUsage:")
         print(" " + name + "\n   " + "\n   ".join(get_options_help(ARGUMENTS_DEFINITION)) + "\n   [command]\n")
-        print
-        print("Default configuration file is: '{}' (in the current folder)".format(DEFAULTS['configuration_file']))
-        print("Default configuration profile is: {}\n".format(DEFAULTS['profile_name']))
+        print("Default configuration file is: '{}' (in the current folder)".format(constants.DEFAULT_CONFIGURATION_FILE))
+        print("Default configuration profile is: {}\n".format(constants.DEFAULT_PROFILE_NAME))

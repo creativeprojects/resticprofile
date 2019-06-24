@@ -8,19 +8,6 @@ from resticprofile.ionice import IONice
 from resticprofile.nice import Nice
 from resticprofile.filesearch import FileSearch
 
-DEFAULTS = {
-    'configuration_file': 'profiles.conf',
-    'profile_name': 'default',
-    'global': 'global',
-    'separator': '.',
-    'environment': 'env',
-    'default_command': 'snapshots',
-    'ionice': False,
-    'initialize': False,
-    'verbose': None,
-    'quiet': None,
-}
-
 ARGUMENTS_DEFINITION = {
     'help': {
         'short': 'h',
@@ -207,7 +194,7 @@ class Config:
 
     def get_default_command(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> str:
         if section not in self.configuration:
-            return DEFAULTS['default_command']
+            return constants.DEFAULT_COMMAND
 
         configuration = self.configuration[section]
         if constants.PARAMETER_DEFAULT_COMMAND in configuration:
@@ -218,11 +205,11 @@ class Config:
             if default_command:
                 return default_command.value
 
-        return DEFAULTS['default_command']
+        return constants.DEFAULT_COMMAND
 
     def get_initialize(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> bool:
         if section not in self.configuration:
-            return DEFAULTS['initialize']
+            return constants.DEFAULT_INITIALIZE_FLAG
 
         configuration = self.configuration[section]
         if constants.PARAMETER_INITIALIZE in configuration:
@@ -233,7 +220,7 @@ class Config:
             if initialize:
                 return initialize.value
 
-        return DEFAULTS['initialize']
+        return constants.DEFAULT_INITIALIZE_FLAG
 
     def get_restic_binary_path(self, section=constants.SECTION_CONFIGURATION_GLOBAL) -> bool:
         if section not in self.configuration:

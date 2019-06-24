@@ -1,6 +1,7 @@
 from getopt import getopt, GetoptError
 
-from resticprofile.config import DEFAULTS, Config
+from resticprofile import constants
+from resticprofile.config import Config
 from resticprofile.console import Console
 
 class Context:
@@ -8,12 +9,12 @@ class Context:
     def __init__(self, arguments_definition: dict):
         self.arguments_definition = arguments_definition
         self.restic_path = None
-        self.configuration_file = DEFAULTS['configuration_file']
-        self.profile_name = DEFAULTS['profile_name']
-        self.default_command = DEFAULTS['default_command']
-        self.initialize = DEFAULTS['initialize']
-        self.verbose = DEFAULTS['verbose']
-        self.quiet = DEFAULTS['quiet']
+        self.configuration_file = constants.DEFAULT_CONFIGURATION_FILE
+        self.profile_name = constants.DEFAULT_PROFILE_NAME
+        self.default_command = constants.DEFAULT_COMMAND
+        self.initialize = constants.DEFAULT_INITIALIZE_FLAG
+        self.verbose = constants.DEFAULT_VERBOSE_FLAG
+        self.quiet = constants.DEFAULT_QUIET_FLAG
         self.nice = None
         self.ionice = None
         self.opts = []

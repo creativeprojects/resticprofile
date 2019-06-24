@@ -9,7 +9,7 @@ import toml
 
 from resticprofile import constants
 from resticprofile.console import Console
-from resticprofile.config import DEFAULTS, ARGUMENTS_DEFINITION, Config
+from resticprofile.config import ARGUMENTS_DEFINITION, Config
 from resticprofile.restic import Restic
 from resticprofile.context import Context
 from resticprofile.profile import Profile
@@ -51,7 +51,7 @@ def main():
         restic.command = context.args[0]
 
     # Build list of arguments to pass to restic
-    if DEFAULTS['global'] in profiles:
+    if constants.SECTION_CONFIGURATION_GLOBAL in profiles:
         context.set_global_context(config)
 
     if context.profile_name in profiles:
@@ -71,14 +71,14 @@ def main():
         profile.set_command_configuration(restic.command)
 
         # inherited environment
-        if profile.inherit and DEFAULTS['environment'] in profiles[profile.inherit]:
-            env_config = profiles[profile.inherit][DEFAULTS['environment']]
+        if profile.inherit and constants.DEFAULT_CONFIGURATION_ENVIRONMENT in profiles[profile.inherit]:
+            env_config = profiles[profile.inherit][constants.DEFAULT_CONFIGURATION_ENVIRONMENT]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting inherited environment variable {}".format(key.upper()))
 
-        if DEFAULTS['environment'] in profiles[context.profile_name]:
-            env_config = profiles[context.profile_name][DEFAULTS['environment']]
+        if constants.DEFAULT_CONFIGURATION_ENVIRONMENT in profiles[context.profile_name]:
+            env_config = profiles[context.profile_name][constants.DEFAULT_CONFIGURATION_ENVIRONMENT]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting environment variable {}".format(key.upper()))
