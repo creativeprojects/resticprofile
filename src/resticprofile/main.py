@@ -139,27 +139,40 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
         restic_init.extend_arguments(profile.get_command_flags(constants.COMMAND_INIT))
         init_command = command_prefix + restic_cmd + " " + restic_init.get_init_command()
         console.debug(init_command)
-        # captures only stdout when we create a new repository; otherwise don't display the error when it exists
-        call(init_command, shell=True, stdin=DEVNULL, stderr=DEVNULL)
+        shell_command(init_command, display_stderr=False)
 
     if profile.forget_before:
         restic_retention = Restic(constants.COMMAND_FORGET)
         restic_retention.extend_arguments(profile.get_retention_flags())
         forget_command = command_prefix + restic_cmd + " " + restic_retention.get_forget_command()
         console.debug(forget_command)
-        call(forget_command, shell=True, stdin=DEVNULL)
+        shell_command(forget_command)
 
     full_command = command_prefix + restic_cmd + " " + restic.get_command()
     console.debug(full_command)
-    call(full_command, shell=True, stdin=DEVNULL)
+    shell_command(full_command)
+
 
     if profile.forget_after:
         restic_retention = Restic(constants.COMMAND_FORGET)
         restic_retention.extend_arguments(profile.get_retention_flags())
         forget_command = command_prefix + restic_cmd + " " + restic_retention.get_forget_command()
         console.debug(forget_command)
-        call(forget_command, shell=True, stdin=DEVNULL)
+        shell_command(forget_command)
 
+def shell_command(command: str, display_stderr=True, allow_stdin=False):
+    try:
+        stdin_ = DEVNULL
+        if allow_stdin:
+            stdin_ = None
+
+        stderr_ = None
+        if not display_stderr:
+            stderr_ = DEVNULL
+
+        call(command, shell=True, stdin=stdin_, stderr=stderr_)
+    except KeyboardInterrupt:
+        exit()
 
 
 if __name__ == "__main__":
