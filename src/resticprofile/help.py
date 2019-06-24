@@ -15,6 +15,6 @@ def get_options_help(args_definition):
             option_help = "[{}]".format('|'.join(args))
         if option_help:
             args_help.append(option_help)
-    # sort the list because fecking Python always builds it in random order
+    # sort the list because it's always built in random order for some reason
     args_help.sort()
     return args_help

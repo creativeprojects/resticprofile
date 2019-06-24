@@ -10,6 +10,36 @@ DEFAULT_INITIALIZE_FLAG = False
 DEFAULT_VERBOSE_FLAG = None
 DEFAULT_QUIET_FLAG = None
 
+ARGUMENTS_DEFINITION = {
+    'help': {
+        'short': 'h',
+        'long': 'help',
+        'argument': False,
+    },
+    'quiet': {
+        'short': 'q',
+        'long': 'quiet',
+        'argument': False,
+    },
+    'verbose': {
+        'short': 'v',
+        'long': 'verbose',
+        'argument': False,
+    },
+    'config': {
+        'short': 'c',
+        'long': 'config',
+        'argument': True,
+        'argument_name': 'configuration_file'
+    },
+    'name': {
+        'short': 'n',
+        'long': 'name',
+        'argument': True,
+        'argument_name': 'profile_name'
+    }
+}
+
 DEFINITION_TYPE = 'type'
 DEFINITION_FLAG = 'flag'
 

@@ -9,7 +9,7 @@ import toml
 
 from resticprofile import constants
 from resticprofile.console import Console
-from resticprofile.config import ARGUMENTS_DEFINITION, Config
+from resticprofile.config import Config
 from resticprofile.restic import Restic
 from resticprofile.context import Context
 from resticprofile.profile import Profile
@@ -20,7 +20,7 @@ def main():
     '''
     This is main
     '''
-    context = Context(ARGUMENTS_DEFINITION)
+    context = Context(constants.ARGUMENTS_DEFINITION)
     context.load_context_from_command_line(argv)
 
     console = Console(context.quiet, context.verbose)

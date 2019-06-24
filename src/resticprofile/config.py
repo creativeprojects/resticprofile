@@ -8,35 +8,6 @@ from resticprofile.ionice import IONice
 from resticprofile.nice import Nice
 from resticprofile.filesearch import FileSearch
 
-ARGUMENTS_DEFINITION = {
-    'help': {
-        'short': 'h',
-        'long': 'help',
-        'argument': False,
-    },
-    'quiet': {
-        'short': 'q',
-        'long': 'quiet',
-        'argument': False,
-    },
-    'verbose': {
-        'short': 'v',
-        'long': 'verbose',
-        'argument': False,
-    },
-    'config': {
-        'short': 'c',
-        'long': 'config',
-        'argument': True,
-        'argument_name': 'configuration_file'
-    },
-    'name': {
-        'short': 'n',
-        'long': 'name',
-        'argument': True,
-        'argument_name': 'profile_name'
-    }
-}
 
 GLOBAL_FLAGS_DEFINITION = {
     'ionice': {'type': 'bool'},
@@ -395,6 +366,12 @@ class Config:
             key = definition[constants.DEFINITION_FLAG]
 
         if expected_type == 'file' and value:
-            value = self.file_search.find(value)
+            if isinstance(value, str):
+                value = self.file_search.find(value)
+            elif isinstance(value, list):
+                parsed_values = []
+                for single_value in value:
+                    parsed_values.append(self.file_search.find(single_value))
+                value = parsed_values
 
         return Flag(key, value, expected_type)

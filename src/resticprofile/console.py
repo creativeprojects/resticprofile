@@ -3,7 +3,6 @@ Display messages to the console
 '''
 from colorama import Fore, Back, Style, init
 from resticprofile import constants
-from resticprofile.config import ARGUMENTS_DEFINITION
 from resticprofile.help import get_options_help
 
 
@@ -47,6 +46,6 @@ class Console:
         Display usage to the console
         '''
         print("\nUsage:")
-        print(" " + name + "\n   " + "\n   ".join(get_options_help(ARGUMENTS_DEFINITION)) + "\n   [command]\n")
+        print(" " + name + "\n   " + "\n   ".join(get_options_help(constants.ARGUMENTS_DEFINITION)) + "\n   [command]\n")
         print("Default configuration file is: '{}' (in the current folder)".format(constants.DEFAULT_CONFIGURATION_FILE))
         print("Default configuration profile is: {}\n".format(constants.DEFAULT_PROFILE_NAME))
