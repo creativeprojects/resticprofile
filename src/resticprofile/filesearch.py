@@ -29,23 +29,29 @@ class FileSearch:
     def __init__(self, configuration_directory: str):
         self.configuration_directory = configuration_directory
 
-    def find_file(self, filename: str) -> str:
+    def find_file(self, filename: str, resolve=False) -> str:
         '''
         Returns a full file path from the configuration file location
         '''
-        if Path(filename).is_absolute():
-            return filename
+        filepath = Path(filename)
+        if filepath.is_absolute():
+            return self._get_filepath(filepath, resolve)
 
         filepath = Path(self.configuration_directory) / filename
-        return str(filepath)
+        return self._get_filepath(filepath, resolve)
 
-    def find_dir(self, filename: str) -> str:
+    def find_dir(self, filename: str, resolve=False) -> str:
         '''
         Returns a directory path from the current active directory
         '''
         filepath = Path(filename)
         if filepath.is_absolute():
-            return str(filepath.resolve())
+            return self._get_filepath(filepath, resolve)
 
         filepath = Path(getcwd()) / filename
-        return str(filepath.absolute())
+        return self._get_filepath(filepath, resolve)
+
+    def _get_filepath(self, filepath: Path, resolve=False) -> str:
+        if resolve:
+            return str(filepath.resolve())
+        return str(filepath)

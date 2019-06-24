@@ -25,7 +25,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'inherit': {'type': 'str'},
         'initialize': {'type': 'bool'},
         'cacert': {'type': 'file'},
-        'cache-dir': {'type': 'dir'},
+        'cache-dir': {'type': 'file'},  # keep it as a 'file' type
         'cleanup-cache': {'type': 'bool'},
         'json': {'type': 'bool'},
         'key-hint': {'type': 'str'},
