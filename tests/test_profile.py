@@ -56,7 +56,7 @@ class TestProfile(unittest.TestCase):
         configuration = {'test': {'repository': "/backup"}}
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
-        self.assertEqual(profile.get_global_flags(), ["--repo '/backup'"])
+        self.assertEqual(profile.get_global_flags(), ["--repo \"/backup\""])
 
     def test_configuration_with_boolean_true_as_multiple_type_flag(self):
         configuration = {'test': {'verbose': True}}
@@ -86,13 +86,13 @@ class TestProfile(unittest.TestCase):
         configuration = {'test': {'option': "a=b"}}
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
-        self.assertEqual(profile.get_global_flags(), ["--option 'a=b'"])
+        self.assertEqual(profile.get_global_flags(), ["--option \"a=b\""])
 
     def test_configuration_with_two_items_in_list_flag(self):
         configuration = {'test': {'option': ["a=b", "b=c"]}}
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
-        self.assertCountEqual(profile.get_global_flags(), ["--option 'a=b'", "--option 'b=c'"])
+        self.assertCountEqual(profile.get_global_flags(), ["--option \"a=b\"", "--option \"b=c\""])
 
     def test_configuration_with_empty_repository(self):
         configuration = {'test': {'repository': ''}}
@@ -135,7 +135,7 @@ class TestProfile(unittest.TestCase):
         configuration = {'parent': {'repository': "/backup"}, 'test': {'inherit': 'parent'}}
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
-        self.assertEqual(profile.get_global_flags(), ["--repo '/backup'"])
+        self.assertEqual(profile.get_global_flags(), ["--repo \"/backup\""])
 
     def test_empty_command_configuration(self):
         configuration = {
@@ -178,7 +178,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertEqual(profile.get_command_flags('backup'), ["'folder'"])
+        self.assertEqual(profile.get_command_flags('backup'), ["\"folder\""])
 
 
     def test_inherited_command_configuration(self):
@@ -199,7 +199,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag \"parent\"", "\"folder\""])
 
 
     def test_overridden_command_configuration(self):
@@ -221,7 +221,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "'folder1'", "'folder2'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag \"parent\"", "\"folder1\"", "\"folder2\""])
 
     def test_twice_inherited_command_configuration(self):
         configuration = {
@@ -245,7 +245,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'grand-parent'", "'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag \"grand-parent\"", "\"folder\""])
 
     def test_twice_overridden_command_configuration(self):
         configuration = {
@@ -271,7 +271,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag 'parent'", "'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["--tag \"parent\"", "\"folder\""])
 
 
     def test_removing_duplicates_command_configuration(self):
@@ -292,7 +292,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertEqual(profile.get_global_flags(), [])
-        self.assertCountEqual(profile.get_command_flags('backup'), ["'folder'"])
+        self.assertCountEqual(profile.get_command_flags('backup'), ["\"folder\""])
 
     def test_direct_false_initialize_flag(self):
         configuration = {
@@ -429,7 +429,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
         profile.set_retention_configuration()
         retention_flags = profile.get_retention_flags()
-        self.assertCountEqual(["--keep-last 3", "--path '/source'"], retention_flags)
+        self.assertCountEqual(["--keep-last 3", "--path \"{}\"".format(str(Path('/source')))], retention_flags)
 
     def test_backup_profile_is_loading_retention_path_flags_without_path(self):
         configuration = {
@@ -448,7 +448,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
         profile.set_retention_configuration()
         retention_flags = profile.get_retention_flags()
-        self.assertCountEqual(["--keep-last 3", "--path '/other'"], retention_flags)
+        self.assertCountEqual(["--keep-last 3", "--path \"{}\"".format(str(Path('/other')))], retention_flags)
 
     def test_backup_profile_is_loading_retention_path_flags_with_empty_path(self):
         configuration = {

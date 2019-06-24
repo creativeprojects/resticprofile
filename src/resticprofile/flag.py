@@ -38,7 +38,7 @@ class Flag:
             return ''
 
         elif self.type in ('str', 'file', 'dir'):
-            return "--{} '{}'".format(self.key, value.replace("'", "\'"))
+            return "--{} \"{}\"".format(self.key, value.replace('"', '\"'))
 
         elif self.type == 'int':
             return "--{} {}".format(self.key, value)

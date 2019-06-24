@@ -8,12 +8,12 @@ class TestProfile(unittest.TestCase):
     def test_can_get_string_value(self):
         flag = Flag('key', 'value', 'str')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--key 'value'"])
+        self.assertEqual(argument, ["--key \"value\""])
 
     def test_can_get_empty_string_value(self):
         flag = Flag('key', '', 'str')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--key ''"])
+        self.assertEqual(argument, ["--key \"\""])
 
     def test_can_get_true_boolean_value(self):
         flag = Flag('key', True, 'bool')
@@ -43,19 +43,19 @@ class TestProfile(unittest.TestCase):
     def test_can_get_string_values(self):
         flag = Flag('key', ["1", "2"], 'str')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--key '1'", "--key '2'"])
+        self.assertEqual(argument, ["--key \"1\"", "--key \"2\""])
 
     def test_can_get_string_with_quote_value(self):
         flag = Flag('name', "o'irish", 'str')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--name 'o\'irish'"])
+        self.assertEqual(argument, ["--name \"o'irish\""])
 
     def test_can_get_file_value(self):
         flag = Flag('name', "some.file", 'file')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--name 'some.file'"])
+        self.assertEqual(argument, ["--name \"some.file\""])
 
     def test_can_get_dir_value(self):
         flag = Flag('name', "/some.dir", 'dir')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--name '/some.dir'"])
+        self.assertEqual(argument, ["--name \"/some.dir\""])

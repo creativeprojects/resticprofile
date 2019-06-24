@@ -94,7 +94,7 @@ class Profile:
         '''
         sources = []
         for source in self._source:
-            sources.append("'{}'".format(source.replace("'", "\'")))
+            sources.append("\"{}\"".format(source.replace('"', '\"')))
         return list(set(sources))
 
 
