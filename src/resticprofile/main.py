@@ -54,36 +54,40 @@ def main():
     if constants.SECTION_CONFIGURATION_GLOBAL in profiles:
         context.set_global_context(config)
 
-    if context.profile_name in profiles:
-        profile.set_common_configuration()
+    try:
+        if context.profile_name in profiles:
+            profile.set_common_configuration()
 
-        # there's no default command yet
-        if not restic.command:
-            restic.command = context.default_command
+            # there's no default command yet
+            if not restic.command:
+                restic.command = context.default_command
 
-        # we might need the init command so we prepare it
-        profile.set_command_configuration('init')
+            # we might need the init command so we prepare it
+            profile.set_command_configuration('init')
 
-        # if the command is backup, we need to load the retention model
-        if restic.command == constants.COMMAND_BACKUP:
-            profile.set_retention_configuration()
+            # if the command is backup, we need to load the retention model
+            if restic.command == constants.COMMAND_BACKUP:
+                profile.set_retention_configuration()
 
-        profile.set_command_configuration(restic.command)
+            profile.set_command_configuration(restic.command)
 
-        # inherited environment
-        if profile.inherit and constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[profile.inherit]:
-            env_config = profiles[profile.inherit][constants.SECTION_CONFIGURATION_ENVIRONMENT]
-            for key in env_config:
-                environ[key.upper()] = env_config[key]
-                console.debug("Setting inherited environment variable {}".format(key.upper()))
+            # inherited environment
+            if profile.inherit and constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[profile.inherit]:
+                env_config = profiles[profile.inherit][constants.SECTION_CONFIGURATION_ENVIRONMENT]
+                for key in env_config:
+                    environ[key.upper()] = env_config[key]
+                    console.debug("Setting inherited environment variable {}".format(key.upper()))
 
-        if constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[context.profile_name]:
-            env_config = profiles[context.profile_name][constants.SECTION_CONFIGURATION_ENVIRONMENT]
-            for key in env_config:
-                environ[key.upper()] = env_config[key]
-                console.debug("Setting environment variable {}".format(key.upper()))
+            if constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[context.profile_name]:
+                env_config = profiles[context.profile_name][constants.SECTION_CONFIGURATION_ENVIRONMENT]
+                for key in env_config:
+                    environ[key.upper()] = env_config[key]
+                    console.debug("Setting environment variable {}".format(key.upper()))
 
-    restic.extend_arguments(profile.get_command_flags(restic.command))
+        restic.extend_arguments(profile.get_command_flags(restic.command))
+    except FileNotFoundError as error:
+        console.error("Error in profile [{}]: {}".format(context.profile_name, str(error)))
+        exit(2)
 
     if context.quiet:
         restic.set_common_argument('--quiet')

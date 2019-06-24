@@ -7,6 +7,7 @@ from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
 from resticprofile.nice import Nice
 from resticprofile.filesearch import FileSearch
+from resticprofile.console import Console
 
 
 GLOBAL_FLAGS_DEFINITION = {
@@ -389,6 +390,7 @@ class Config:
         elif isinstance(value, list):
             parsed_value = []
             for single_value in value:
+                # this method can throw a file not found
                 parsed_value.append(self.file_search.find_dir(single_value))
 
         return parsed_value
