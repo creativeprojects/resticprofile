@@ -1,9 +1,7 @@
 import unittest
 from resticprofile.config import Config
 from resticprofile.profile import Profile
-
-class MockFileSearch:
-    pass
+from mock_filesearch import MockFileSearch
 
 class TestProfile(unittest.TestCase):
 
@@ -412,3 +410,59 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
 
         self.assertTrue(profile.initialize)
+
+    def test_backup_profile_is_loading_retention_flags_with_path(self):
+        configuration = {
+            'test': {
+                'backup': {
+                    'source': '/source',
+                },
+                'retention': {
+                    'keep-last': 3
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+        profile.set_retention_configuration()
+        retention_flags = profile.get_retention_flags()
+        self.assertListEqual(["--keep-last 3", "--path '/source'"], retention_flags)
+
+    def test_backup_profile_is_loading_retention_flags_without_path(self):
+        configuration = {
+            'test': {
+                'backup': {
+                    'source': '/source',
+                },
+                'retention': {
+                    'keep-last': 3,
+                    'path': '/other'
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+        profile.set_retention_configuration()
+        retention_flags = profile.get_retention_flags()
+        self.assertCountEqual(["--keep-last 3", "--path '/other'"], retention_flags)
+
+    def test_backup_profile_is_loading_retention_flags_with_empty_path(self):
+        configuration = {
+            'test': {
+                'backup': {
+                    'source': '/source',
+                },
+                'retention': {
+                    'keep-last': 3,
+                    'path': []
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+        profile.set_retention_configuration()
+        retention_flags = profile.get_retention_flags()
+        self.assertEqual(["--keep-last 3"], retention_flags)

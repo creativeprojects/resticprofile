@@ -39,7 +39,7 @@ class Flag:
             return ''
         elif self.type == 'str':
             return "--{} '{}'".format(self.key, value.replace("'", "\'"))
-        elif self.type == 'file':
+        elif self.type in('file', 'dir'):
             value = abspath(value)
             return "--{} '{}'".format(self.key, value.replace("'", "\'"))
         elif self.type == 'int':

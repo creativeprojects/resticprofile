@@ -24,7 +24,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'inherit': {'type': 'str'},
         'initialize': {'type': 'bool'},
         'cacert': {'type': 'file'},
-        'cache-dir': {'type': 'str'},
+        'cache-dir': {'type': 'dir'},
         'cleanup-cache': {'type': 'bool'},
         'json': {'type': 'bool'},
         'key-hint': {'type': 'str'},
@@ -61,14 +61,14 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'tag': {'type': 'str', 'list': True},
         'time': {'type': 'str'},
         'with-atime': {'type': 'bool'},
-        'source': {'type': 'str', 'list': True},
+        'source': {'type': 'dir', 'list': True},
     },
     'snapshots': {
         'compact': {'type': 'bool'},
         'group-by': {'type': 'str'},
         'host': {'type': 'str'},
         'last': {'type': 'bool'},
-        'path': {'type': 'str', 'list': True},
+        'path': {'type': 'dir', 'list': True},
         'tag': {'type': 'str', 'list': True},
     },
     "forget": {
@@ -82,7 +82,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'keep-tag': {'type': 'str', 'list': True},
         'host': {'type': 'str'},
         'tag': {'type': 'str', 'list': True},
-        'path': {'type': 'str', 'list': True},
+        'path': {'type': 'dir', 'list': True},
         'compact': {'type': 'bool'},
         'group-by': {'type': 'str'},
         'dry-run': {'type': 'bool'},
@@ -355,7 +355,7 @@ class Config:
             return isinstance(value, bool)
         elif expected_type == 'int':
             return isinstance(value, int)
-        elif expected_type in ('str', 'file'):
+        elif expected_type in ('str', 'file', 'dir'):
             return isinstance(value, str)
         else:
             raise Exception("Unknown type '{}'".format(expected_type))
@@ -365,13 +365,30 @@ class Config:
             # the restic flag has a different name than the configuration file flag
             key = definition[constants.DEFINITION_FLAG]
 
-        if expected_type == 'file' and value:
-            if isinstance(value, str):
-                value = self.file_search.find(value)
-            elif isinstance(value, list):
-                parsed_values = []
-                for single_value in value:
-                    parsed_values.append(self.file_search.find(single_value))
-                value = parsed_values
+        if value:
+            if expected_type == 'file':
+                value = self.__get_file_value(value)
+            elif expected_type == 'dir':
+                value = self.__get_dir_value(value)
 
         return Flag(key, value, expected_type)
+
+    def __get_file_value(self, value: Union[str, list]):
+        if isinstance(value, str):
+            parsed_value = self.file_search.find_file(value)
+        elif isinstance(value, list):
+            parsed_value = []
+            for single_value in value:
+                parsed_value.append(self.file_search.find_file(single_value))
+
+        return parsed_value
+
+    def __get_dir_value(self, value: Union[str, list]):
+        if isinstance(value, str):
+            parsed_value = self.file_search.find_dir(value)
+        elif isinstance(value, list):
+            parsed_value = []
+            for single_value in value:
+                parsed_value.append(self.file_search.find_dir(single_value))
+
+        return parsed_value

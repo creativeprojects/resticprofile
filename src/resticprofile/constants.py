@@ -66,6 +66,7 @@ PARAMETER_RESTIC_BINARY = 'restic-binary'
 PARAMETER_SOURCE = 'source'
 PARAMETER_FORGET_BEFORE_BACKUP = 'before-backup'
 PARAMETER_FORGET_AFTER_BACKUP = 'after-backup'
+PARAMETER_PATH = 'path'
 
 COMMAND_BACKUP = 'backup'
 COMMAND_CHECK = 'check'

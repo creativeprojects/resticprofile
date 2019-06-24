@@ -3,9 +3,7 @@ from resticprofile import constants
 from resticprofile.config import Config
 from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
-
-class MockFileSearch:
-    pass
+from mock_filesearch import MockFileSearch
 
 class TestConfig(unittest.TestCase):
 

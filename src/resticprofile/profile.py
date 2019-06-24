@@ -70,12 +70,21 @@ class Profile:
         return flags
 
     def get_retention_flags(self) -> List[str]:
+        path_not_present = True
         flags = self.get_global_flags()
-        for _, flag in self.__retention_flags.items():
+        for key, flag in self.__retention_flags.items():
             # create a restic argument for it
             arguments = flag.get_flags()
             if arguments:
                 flags.extend(arguments)
+            # flag if the 'path' flag was specified
+            if key == constants.PARAMETER_PATH:
+                path_not_present = False
+
+        # to make sure we only deal with the current backup, we add the backup source as 'path' argument
+        if path_not_present and self.source:
+            path_flag = Flag(constants.PARAMETER_PATH, self.source, 'dir')
+            flags.extend(path_flag.get_flags())
 
         return flags
 
@@ -174,7 +183,7 @@ class Profile:
 
         # adds it to the list of flags
         if not self.__is_special_flag(option.key):
-            self.__common_flags[option.key] = option
+            self.__retention_flags[option.key] = option
 
 
     def __is_special_flag(self, key: str):
