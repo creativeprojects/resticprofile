@@ -9,7 +9,7 @@ This is at _beta_ stage. Please don't use it in production yet.
 
 resticprofile needs python 3 (tested with version 3.5 minimum) installed on your machine
 
-It's been actively tested on macOs X and Linux, and I'm working on making it compatible with Windows.
+It's been actively tested on macOs X and Linux, and it _should_ be compatible with Windows.
 
 ## Install
 
