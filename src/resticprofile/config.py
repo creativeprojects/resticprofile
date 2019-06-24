@@ -79,7 +79,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'keep-weekly': {'type': 'int'},
         'keep-monthly': {'type': 'int'},
         'keep-yearly': {'type': 'int'},
-        'keep-within': {'type': 'int'},
+        'keep-within': {'type': 'str'},
         'keep-tag': {'type': 'str', 'list': True},
         'host': {'type': 'str'},
         'tag': {'type': 'str', 'list': True},

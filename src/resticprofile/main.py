@@ -14,6 +14,7 @@ from resticprofile.restic import Restic
 from resticprofile.context import Context
 from resticprofile.profile import Profile
 from resticprofile.filesearch import FileSearch, find_configuration_file, DEFAULT_SEARCH_LOCATIONS
+from resticprofile.groups import Groups
 
 
 def main():
@@ -42,7 +43,21 @@ def main():
         )
         exit(2)
 
-    file_search = FileSearch(dirname(valid_configuration_file))
+    base_dir = dirname(valid_configuration_file)
+    groups = Groups(profiles)
+    if groups.exists(context.profile_name):
+        group_name = context.profile_name
+        for profile_name in groups.get_profiles(context.profile_name):
+            console.debug("Starting profile [{}] from group [{}]".format(profile_name, group_name))
+            context.profile_name = profile_name
+            run_restic(base_dir, context, profiles, console)
+    else:
+        # single profile
+        run_restic(base_dir, context, profiles, console)
+
+
+def run_restic(base_dir: str, context: Context, profiles: dict, console: Console):
+    file_search = FileSearch(base_dir)
     config = Config(profiles, file_search)
     profile = Profile(config, context.profile_name)
     restic = Restic()
