@@ -71,14 +71,14 @@ def main():
         profile.set_command_configuration(restic.command)
 
         # inherited environment
-        if profile.inherit and constants.DEFAULT_CONFIGURATION_ENVIRONMENT in profiles[profile.inherit]:
-            env_config = profiles[profile.inherit][constants.DEFAULT_CONFIGURATION_ENVIRONMENT]
+        if profile.inherit and constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[profile.inherit]:
+            env_config = profiles[profile.inherit][constants.SECTION_CONFIGURATION_ENVIRONMENT]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting inherited environment variable {}".format(key.upper()))
 
-        if constants.DEFAULT_CONFIGURATION_ENVIRONMENT in profiles[context.profile_name]:
-            env_config = profiles[context.profile_name][constants.DEFAULT_CONFIGURATION_ENVIRONMENT]
+        if constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[context.profile_name]:
+            env_config = profiles[context.profile_name][constants.SECTION_CONFIGURATION_ENVIRONMENT]
             for key in env_config:
                 environ[key.upper()] = env_config[key]
                 console.debug("Setting environment variable {}".format(key.upper()))
