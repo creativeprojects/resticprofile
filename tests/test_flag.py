@@ -53,4 +53,9 @@ class TestProfile(unittest.TestCase):
     def test_can_get_file_value(self):
         flag = Flag('name', "some.file", 'file')
         argument = flag.get_flags()
-        self.assertEqual(argument, ["--name '{}'".format(str(Path(getcwd()) / 'some.file'))])
+        self.assertEqual(argument, ["--name 'some.file'"])
+
+    def test_can_get_dir_value(self):
+        flag = Flag('name', "/some.dir", 'dir')
+        argument = flag.get_flags()
+        self.assertEqual(argument, ["--name '/some.dir'"])

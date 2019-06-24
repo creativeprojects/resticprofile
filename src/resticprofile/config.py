@@ -215,20 +215,20 @@ class Config:
         With a command parameter, it returns the command section of the profile
         '''
         # common section
-        options, inherit = self.__get_options_for_common_section(section, [])
+        options, inherit = self._get_options_for_common_section(section, [])
         # command section
         if command:
             inherit.reverse()
             for inherit_profile in inherit:
-                inherited_common_options, _ = self.__get_options_for_common_section(inherit_profile, [])
+                inherited_common_options, _ = self._get_options_for_common_section(inherit_profile, [])
                 options.extend(inherited_common_options)
-                options.extend(self.__get_options_for_command_section(inherit_profile, command))
+                options.extend(self._get_options_for_command_section(inherit_profile, command))
 
-            options.extend(self.__get_options_for_command_section(section, command))
+            options.extend(self._get_options_for_command_section(section, command))
 
         return options
 
-    def __get_options_for_common_section(self, section: str, inherit: List[str]) -> (List[Flag], List[str]):
+    def _get_options_for_common_section(self, section: str, inherit: List[str]) -> (List[Flag], List[str]):
         if section not in self.configuration:
             return ([], inherit)
 
@@ -247,7 +247,7 @@ class Config:
                     if option.key == constants.PARAMETER_INHERIT and option.value:
                         inherit.append(option.value)
                         # run the common configuration for the parent
-                        parent_options, inherit = self.__get_options_for_common_section(option.value, inherit)
+                        parent_options, inherit = self._get_options_for_common_section(option.value, inherit)
                         if parent_options:
                             options.extend(parent_options)
 
@@ -255,7 +255,7 @@ class Config:
 
         return (options, inherit)
 
-    def __get_options_for_command_section(self, section: str, command: str) -> List[Flag]:
+    def _get_options_for_command_section(self, section: str, command: str) -> List[Flag]:
         if section not in self.configuration:
             return []
 
@@ -270,8 +270,8 @@ class Config:
             configuration_section = configuration_section[command]
 
         # configuration flags can also be common flags, so we merge both sections (the dict merge syntax is kinda weird)
-        configuration_flags_definition = { **CONFIGURATION_FLAGS_DEFINITION[section_definition], \
-            **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON] }
+        configuration_flags_definition = {**CONFIGURATION_FLAGS_DEFINITION[section_definition], \
+            **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_COMMON]}
 
         for flag in configuration_flags_definition:
             if flag in configuration_section:
@@ -330,22 +330,22 @@ class Config:
         if isinstance(definition[key][constants.DEFINITION_TYPE], list):
             # this flag can be different types (exemple: boolean or string)
             for expected_type in definition[key][constants.DEFINITION_TYPE]:
-                success = self.__check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
+                success = self._check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
                 if success:
-                    return self.__valid_flag(definition[key], key, value, expected_type)
+                    return self._valid_flag(definition[key], key, value, expected_type)
 
         else:
             expected_type = definition[key][constants.DEFINITION_TYPE]
-            success = self.__check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
+            success = self._check_type(expected_type, value, expect_list=('list' in definition[key] and definition[key]['list']))
             if success:
-                return self.__valid_flag(definition[key], key, value, expected_type)
+                return self._valid_flag(definition[key], key, value, expected_type)
 
         return False
 
-    def __check_type(self, expected_type: str, value: Union[str, int, bool, list], expect_list=False) -> bool:
+    def _check_type(self, expected_type: str, value: Union[str, int, bool, list], expect_list=False) -> bool:
         if expect_list and isinstance(value, list):
             for subvalue in value:
-                success = self.__check_type(
+                success = self._check_type(
                     expected_type, subvalue, expect_list=False)
                 if not success:
                     return False
@@ -360,20 +360,20 @@ class Config:
         else:
             raise Exception("Unknown type '{}'".format(expected_type))
 
-    def __valid_flag(self, definition, key: str, value: Union[str, int, bool, list], expected_type: str) -> Flag:
+    def _valid_flag(self, definition, key: str, value: Union[str, int, bool, list], expected_type: str) -> Flag:
         if constants.DEFINITION_FLAG in definition:
             # the restic flag has a different name than the configuration file flag
             key = definition[constants.DEFINITION_FLAG]
 
         if value:
             if expected_type == 'file':
-                value = self.__get_file_value(value)
+                value = self._get_file_value(value)
             elif expected_type == 'dir':
-                value = self.__get_dir_value(value)
+                value = self._get_dir_value(value)
 
         return Flag(key, value, expected_type)
 
-    def __get_file_value(self, value: Union[str, list]):
+    def _get_file_value(self, value: Union[str, list]):
         if isinstance(value, str):
             parsed_value = self.file_search.find_file(value)
         elif isinstance(value, list):
@@ -383,7 +383,7 @@ class Config:
 
         return parsed_value
 
-    def __get_dir_value(self, value: Union[str, list]):
+    def _get_dir_value(self, value: Union[str, list]):
         if isinstance(value, str):
             parsed_value = self.file_search.find_dir(value)
         elif isinstance(value, list):

@@ -11,7 +11,7 @@ class Groups:
 
     def _load_groups(self):
         if constants.SECTION_CONFIGURATION_GROUPS in self._configuration:
-            for group_name, profiles in self._configuration.items():
+            for group_name, profiles in self._configuration[constants.SECTION_CONFIGURATION_GROUPS].items():
                 if group_name and profiles and isinstance(profiles, list):
                     self._groups[group_name] = profiles
 

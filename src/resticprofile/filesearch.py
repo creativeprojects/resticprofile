@@ -43,8 +43,9 @@ class FileSearch:
         '''
         Returns a directory path from the current active directory
         '''
-        if Path(filename).is_absolute():
-            return filename
-
         filepath = Path(filename)
-        return str(filepath)
+        if filepath.is_absolute():
+            return str(filepath.resolve())
+
+        filepath = Path(getcwd()) / filename
+        return str(filepath.absolute())

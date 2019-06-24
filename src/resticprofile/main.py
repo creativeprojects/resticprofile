@@ -92,7 +92,7 @@ def main():
 
     # check that we have the minimum information we need
     if not profile.repository:
-        console.error("A repository is needed in the configuration.")
+        console.error("Error in profile [{}]: a repository is needed in the configuration.".format(context.profile_name))
         exit(2)
 
     restic.extend_arguments(context.args[1:])
