@@ -46,6 +46,5 @@ class Console:
         Display usage to the console
         '''
         print("\nUsage:")
-        print(" " + name + "\n   " + "\n   ".join(get_options_help(constants.ARGUMENTS_DEFINITION)) + "\n   [command]\n")
-        print("Default configuration file is: '{}' (in the current folder)".format(constants.DEFAULT_CONFIGURATION_FILE))
-        print("Default configuration profile is: {}\n".format(constants.DEFAULT_PROFILE_NAME))
+        print(" " + name + "\n   " + "\n   ".join(get_options_help(constants.ARGUMENTS_DEFINITION)))
+        print("   [restic command] [additional parameters to pass to restic]\n")

@@ -77,7 +77,7 @@ class Profile:
             arguments = flag.get_flags()
             if arguments:
                 flags.extend(arguments)
-            # flag if the 'path' flag was specified
+            # keep track of the 'path' flag
             if key == constants.PARAMETER_PATH:
                 path_not_present = False
 

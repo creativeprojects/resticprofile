@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+
 from resticprofile.config import Config
 from resticprofile.profile import Profile
 from mock_filesearch import MockFileSearch
@@ -446,7 +448,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
         profile.set_retention_configuration()
         retention_flags = profile.get_retention_flags()
-        self.assertCountEqual(["--keep-last 3", "--path '/other'"], retention_flags)
+        self.assertCountEqual(["--keep-last 3", "--path '{}'".format(str(Path('/other')))], retention_flags)
 
     def test_backup_profile_is_loading_retention_path_flags_with_empty_path(self):
         configuration = {

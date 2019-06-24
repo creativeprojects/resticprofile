@@ -13,7 +13,7 @@ It's been actively tested on macOs X and Linux, and I'm working on making it com
 
 ## Install
 
-The simpliest way to install resticprofile for now is via PyPi:
+The simpliest way to install resticprofile for now is via **pip**:
 ```
 python3 -m pip install --user --upgrade resticprofile
 ```
@@ -145,6 +145,12 @@ Backup root & src profiles (using full-backup group)
 python -m resticprofile --name "full-backup" backup
 ```
 
+Mount the default profile (_default_) in /mnt/restic:
+
+```
+python -m resticprofile mount /mnt/restic
+```
+
 Display quick help
 
 ```
@@ -157,9 +163,6 @@ Usage:
    [-n|--name <profile_name>]
    [-q|--quiet]
    [-v|--verbose]
-   [command]
-
-Default configuration file is: 'profiles.conf' (in the current folder)
-Default configuration profile is: default
+   [restic command] [additional parameters to pass to restic]
 
 ```
