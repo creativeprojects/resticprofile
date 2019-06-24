@@ -429,7 +429,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
         profile.set_retention_configuration()
         retention_flags = profile.get_retention_flags()
-        self.assertCountEqual(["--keep-last 3", "--path \"{}\"".format(str(Path('/source')))], retention_flags)
+        self.assertCountEqual(["--keep-last 3", "--path \"/source\""], retention_flags)
 
     def test_backup_profile_is_loading_retention_path_flags_without_path(self):
         configuration = {
@@ -448,7 +448,7 @@ class TestProfile(unittest.TestCase):
         profile.set_command_configuration('backup')
         profile.set_retention_configuration()
         retention_flags = profile.get_retention_flags()
-        self.assertCountEqual(["--keep-last 3", "--path \"{}\"".format(str(Path('/other')))], retention_flags)
+        self.assertCountEqual(["--keep-last 3", "--path \"/other\""], retention_flags)
 
     def test_backup_profile_is_loading_retention_path_flags_with_empty_path(self):
         configuration = {
