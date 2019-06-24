@@ -429,7 +429,7 @@ class TestProfile(unittest.TestCase):
         retention_flags = profile.get_retention_flags()
         self.assertListEqual(["--keep-last 3", "--path '/source'"], retention_flags)
 
-    def test_backup_profile_is_loading_retention_flags_without_path(self):
+    def test_backup_profile_is_loading_retention_path_flags_without_path(self):
         configuration = {
             'test': {
                 'backup': {
@@ -448,7 +448,7 @@ class TestProfile(unittest.TestCase):
         retention_flags = profile.get_retention_flags()
         self.assertCountEqual(["--keep-last 3", "--path '/other'"], retention_flags)
 
-    def test_backup_profile_is_loading_retention_flags_with_empty_path(self):
+    def test_backup_profile_is_loading_retention_path_flags_with_empty_path(self):
         configuration = {
             'test': {
                 'backup': {
@@ -457,6 +457,24 @@ class TestProfile(unittest.TestCase):
                 'retention': {
                     'keep-last': 3,
                     'path': []
+                }
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('backup')
+        profile.set_retention_configuration()
+        retention_flags = profile.get_retention_flags()
+        self.assertEqual(["--keep-last 3"], retention_flags)
+
+    def test_backup_profile_is_not_loading_retention_tag_flags_from_backup(self):
+        configuration = {
+            'test': {
+                'backup': {
+                    'tag': 'backup-tag',
+                },
+                'retention': {
+                    'keep-last': 3,
                 }
             }
         }

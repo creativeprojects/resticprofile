@@ -3,13 +3,20 @@
 # resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)
 
-This is _almost_ production ready: I'll build a PyPi package soon.
+This is at _beta_ stage. Please don't use it in production yet.
 
 ## Requirements
 
-resticprofile needs python version 3.5 minimum installed on your machine
+resticprofile needs python 3 (tested with version 3.5 minimum) installed on your machine
 
 It's been actively tested on macOs X and Linux, and I'm working on making it compatible with Windows.
+
+## Install
+
+The simpliest way to install resticprofile for now is via PyPi:
+```
+python3 -m pip install --user --upgrade resticprofile
+```
 
 ## Configuration examples
 
@@ -94,6 +101,10 @@ keep-within = "3h"
 keep-tag = [ "forever" ]
 compact = false
 prune = false
+# if path is NOT specified, it will be copied from the 'backup' source
+# path = []
+# the tags are NOT copied from the 'backup' command
+tag = [ "test", "dev" ]
 
 # New profile named 'src'
 [src]
