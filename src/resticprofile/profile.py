@@ -1,3 +1,6 @@
+'''
+Profile class
+'''
 from typing import List
 from socket import gethostname
 

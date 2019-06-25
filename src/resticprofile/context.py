@@ -1,3 +1,6 @@
+'''
+resticprofile global context
+'''
 from getopt import getopt, GetoptError
 
 from resticprofile import constants

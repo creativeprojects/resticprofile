@@ -1,3 +1,6 @@
+'''
+resticprofile file searching helpers
+'''
 from typing import List
 from os import getcwd
 from pathlib import Path, PosixPath, WindowsPath

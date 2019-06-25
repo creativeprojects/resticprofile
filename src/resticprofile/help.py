@@ -1,3 +1,6 @@
+'''
+resticprofile help
+'''
 
 def get_options_help(args_definition):
     args_help = []

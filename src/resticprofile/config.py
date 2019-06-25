@@ -7,7 +7,6 @@ from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
 from resticprofile.nice import Nice
 from resticprofile.filesearch import FileSearch
-from resticprofile.console import Console
 
 
 GLOBAL_FLAGS_DEFINITION = {

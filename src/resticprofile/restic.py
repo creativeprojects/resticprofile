@@ -1,3 +1,6 @@
+'''
+Generate restic command line
+'''
 from typing import List
 
 from resticprofile import constants

@@ -1,7 +1,7 @@
 '''
 Display messages to the console
 '''
-from colorama import Fore, Back, Style, init
+from colorama import Fore, init
 from resticprofile import constants
 from resticprofile.help import get_options_help
 

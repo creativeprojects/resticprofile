@@ -1,3 +1,6 @@
+'''
+Class for ionice command
+'''
 import platform
 
 
