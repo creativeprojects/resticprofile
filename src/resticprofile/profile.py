@@ -188,6 +188,12 @@ class Profile:
             if isinstance(option.value, bool):
                 self.forget_after = option.value
 
+        elif option.key == constants.PARAMETER_HOST:
+            # specific to 'host': if the value is a boolean True, then we replace it with the hostname
+            if isinstance(option.value, bool) and option.value:
+                option.value = self._gethostname()
+                option.type = 'str'
+
         # adds it to the list of flags
         if not self._is_special_flag(option.key):
             self._retention_flags[option.key] = option
