@@ -5,11 +5,22 @@ Configuration profiles manager for [restic backup](https://restic.net/)
 
 This is at _beta_ stage. Please don't use it in production yet.
 
+**resticprofile** is the missing link between a configuration file and restic backup. Creating a configuration file for restic has been [discussed before](https://github.com/restic/restic/issues/16), but seems to be a very low priority right now.
+
+The configuration file is [TOML](https://github.com/toml-lang/toml) format:
+
+* You can create multiple profiles inside a configuration file
+* A profile can inherit the options from another profile
+* You can run the forget command before or after a backup (in a section called *retention*)
+* You can check a repository before or after a backup
+* You can create groups of profiles that will run sequentially
+* You can run shell commands before or after a backup
+
 ## Requirements
 
-resticprofile needs python 3 (tested with version 3.5 minimum) installed on your machine
+**resticprofile** needs python 3 (tested with version 3.5 minimum) installed on your machine
 
-It's been actively tested on macOs X and Linux, and it _should_ be compatible with Windows.
+It's been actively tested on macOs X and Linux, and regularly tested on Windows.
 
 ## Install
 
@@ -115,11 +126,12 @@ initialize = true
 
 # 'backup' command of profile 'src'
 [src.backup]
-exclude-file = [ "src-excludes", "excludes" ]
+exclude = [ '/**/.git' ]
 exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
 source = [ "./src" ]
+check-before = true
 
 # retention policy for profile src
 [src.retention]
@@ -129,6 +141,31 @@ keep-within = "30d"
 compact = false
 prune = true
 
+```
+
+And another simple example for Windows:
+
+```ini
+[global]
+restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
+
+# Default profile when not specified (-n or --name)
+# Please note there's no default inheritance from the 'default' profile (you can use the 'inherit' flag if needed)
+[default]
+repository = "local:r:/"
+password-file = "key"
+initialize = false
+
+# New profile named 'test'
+[test]
+inherit = "default"
+initialize = true
+
+# 'backup' command of profile 'test'
+[test.backup]
+tag = [ "windows" ]
+source = [ "c:\\" ]
+check-after = true
 ```
 
 ## Using resticprofile
@@ -159,7 +196,7 @@ Display quick help
 python -m resticprofile --help
 
 Usage:
- resticprofile.py
+ resticprofile
    [-c|--config <configuration_file>]
    [-h|--help]
    [-n|--name <profile_name>]
