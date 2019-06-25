@@ -104,6 +104,6 @@ class Context:
         return command_prefix
 
     def _quote_path(self, path: str) -> str:
-        if path.find(' ') > -1:
+        if path and path.find(' ') > -1:
             path = '"{}"'.format(path)
         return path
