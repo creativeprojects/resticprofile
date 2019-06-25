@@ -1,10 +1,11 @@
 '''
 resticprofile main function
 '''
-from os.path import isfile, dirname
+from os.path import dirname
 from os import environ
 from sys import argv, exit
 from subprocess import call, DEVNULL
+from typing import Union
 import toml
 
 from resticprofile import constants
@@ -124,6 +125,9 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
     if profile.initialize:
         initialize_repository(context, profile, console)
 
+    if profile.run_before:
+        run_commands(profile.run_before, console)
+
     if profile.check_before:
         check(context, profile, console)
 
@@ -137,6 +141,10 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
 
     if profile.check_after:
         check(context, profile, console)
+
+    if profile.run_after:
+        run_commands(profile.run_after, console)
+
 
 def initialize_repository(context: Context, profile: Profile, console: Console):
     restic_init = Restic(constants.COMMAND_INIT)
@@ -163,6 +171,15 @@ def restic_command(context: Context, restic: Restic, console: Console):
     console.info("Starting '{}'".format(restic.command))
     full_command = context.get_command_prefix() + context.get_restic_path() + " " + restic.get_command()
     shell_command(full_command, console)
+
+def run_commands(command: Union[str, list], console: Console):
+    if isinstance(command, str):
+        shell_command(command, console)
+
+    elif isinstance(command, list):
+        for single_command in command:
+            shell_command(single_command, console)
+
 
 def shell_command(command: str, console: Console, exit_on_returncode=True, display_stderr=True, allow_stdin=False):
     try:

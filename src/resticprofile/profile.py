@@ -187,6 +187,14 @@ class Profile:
             if isinstance(option.value, bool) and option.value:
                 self.check_after = True
 
+        elif option.key == constants.PARAMETER_RUN_BEFORE:
+            if option.value:
+                self.run_before = option.value
+
+        elif option.key == constants.PARAMETER_RUN_AFTER:
+            if option.value:
+                self.run_after = option.value
+
         if command not in self._command_flags:
             self._command_flags[command] = {}
 

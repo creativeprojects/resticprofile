@@ -3,8 +3,6 @@
 # resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)
 
-This is at _beta_ stage. Please don't use it in production yet.
-
 **resticprofile** is the missing link between a configuration file and restic backup. Creating a configuration file for restic has been [discussed before](https://github.com/restic/restic/issues/16), but seems to be a very low priority right now.
 
 The configuration file is [TOML](https://github.com/toml-lang/toml) format:
@@ -21,6 +19,8 @@ The configuration file is [TOML](https://github.com/toml-lang/toml) format:
 **resticprofile** needs python 3 (tested with version 3.5 minimum) installed on your machine
 
 It's been actively tested on macOs X and Linux, and regularly tested on Windows.
+
+**This is at _beta_ stage. Please don't use it in production yet. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
 ## Install
 
