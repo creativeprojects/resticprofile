@@ -80,6 +80,9 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
             # we might need the init command so we prepare it
             profile.set_command_configuration('init')
 
+            # we might also need the check command
+            profile.set_command_configuration('check')
+
             # if the command is backup, we need to load the retention model
             if restic.command == constants.COMMAND_BACKUP:
                 profile.set_retention_configuration()
@@ -121,6 +124,9 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
     if profile.initialize:
         initialize_repository(context, profile, console)
 
+    if profile.check_before:
+        check(context, profile, console)
+
     if profile.forget_before:
         cleanup_old_backups(context, profile, console)
 
@@ -129,6 +135,8 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
     if profile.forget_after:
         cleanup_old_backups(context, profile, console)
 
+    if profile.check_after:
+        check(context, profile, console)
 
 def initialize_repository(context: Context, profile: Profile, console: Console):
     restic_init = Restic(constants.COMMAND_INIT)
@@ -143,6 +151,13 @@ def cleanup_old_backups(context: Context, profile: Profile, console: Console):
     forget_command = context.get_command_prefix() + context.get_restic_path() + " " + restic_retention.get_forget_command()
     console.info("Cleaning up repository using retention information")
     shell_command(forget_command, console)
+
+def check(context: Context, profile: Profile, console: Console):
+    restic_check = Restic(constants.COMMAND_CHECK)
+    restic_check.extend_arguments(profile.get_command_flags(constants.COMMAND_CHECK))
+    check_command = context.get_command_prefix() + context.get_restic_path() + " " + restic_check.get_check_command()
+    console.info("Checking repository consistency")
+    shell_command(check_command, console)
 
 def restic_command(context: Context, restic: Restic, console: Console):
     console.info("Starting '{}'".format(restic.command))

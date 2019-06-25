@@ -46,6 +46,10 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'after-backup': {'type': 'bool'},
     },
     'backup': {
+        'run-before': {'type': 'str', 'list': True},
+        'run-after': {'type': 'str', 'list': True},
+        'check-before': {'type': 'bool'},
+        'check-after': {'type': 'bool'},
         'exclude': {'type': 'str', 'list': True},
         'exclude-caches': {'type': 'bool'},
         'exclude-file': {'type': 'file', 'list': True},

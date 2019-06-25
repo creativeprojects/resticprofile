@@ -18,6 +18,10 @@ class Profile:
         self.initialize = False
         self.forget_before = False
         self.forget_after = False
+        self.check_before = False
+        self.check_after = False
+        self.run_before = None
+        self.run_after = None
         self._common_flags = {}  # type: Dict[str, Flag]
         self._command_flags = {}  # type: Dict[str, Dict[str, Flag]]
         self._retention_flags = {}  # type: Dict[str, Flag]
@@ -175,6 +179,14 @@ class Profile:
                 option.value = self._gethostname()
                 option.type = 'str'
 
+        elif option.key == constants.PARAMETER_CHECK_BEFORE:
+            if isinstance(option.value, bool) and option.value:
+                self.check_before = True
+
+        elif option.key == constants.PARAMETER_CHECK_AFTER:
+            if isinstance(option.value, bool) and option.value:
+                self.check_after = True
+
         if command not in self._command_flags:
             self._command_flags[command] = {}
 
@@ -214,6 +226,10 @@ class Profile:
             constants.PARAMETER_INITIALIZE,
             constants.PARAMETER_FORGET_BEFORE_BACKUP,
             constants.PARAMETER_FORGET_AFTER_BACKUP,
+            constants.PARAMETER_CHECK_BEFORE,
+            constants.PARAMETER_CHECK_AFTER,
+            constants.PARAMETER_RUN_BEFORE,
+            constants.PARAMETER_RUN_AFTER,
         )
 
     def _gethostname(self):
