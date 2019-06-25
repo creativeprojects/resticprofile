@@ -118,22 +118,17 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
     # this is the leftover on the command line
     restic.extend_arguments(context.args[1:])
 
-    command_prefix = ""
-    if context.nice:
-        command_prefix += context.nice.get_command() + ' '
-    if context.ionice:
-        command_prefix += context.ionice.get_command() + ' '
-
     if profile.initialize:
         initialize_repository(context, profile, console)
 
     if profile.forget_before:
         cleanup_old_backups(context, profile, console)
 
-    backup(context, restic, console)
+    restic_command(context, restic, console)
 
     if profile.forget_after:
         cleanup_old_backups(context, profile, console)
+
 
 def initialize_repository(context: Context, profile: Profile, console: Console):
     restic_init = Restic(constants.COMMAND_INIT)
@@ -149,8 +144,8 @@ def cleanup_old_backups(context: Context, profile: Profile, console: Console):
     console.info("Cleaning up repository using retention information")
     shell_command(forget_command, console)
 
-def backup(context: Context, restic: Restic, console: Console):
-    console.info("Starting backup")
+def restic_command(context: Context, restic: Restic, console: Console):
+    console.info("Starting '{}'".format(restic.command))
     full_command = context.get_command_prefix() + context.get_restic_path() + " " + restic.get_command()
     shell_command(full_command, console)
 

@@ -79,7 +79,7 @@ class Context:
         self.nice = config.get_nice()
         self.default_command = config.get_default_command()
         self.initialize = config.get_initialize()
-        self.restic_path = config.get_restic_binary_path()
+        self.restic_path = self._quote_path(config.get_restic_binary_path())
 
     def get_restic_path(self):
         if self.restic_path:
@@ -90,8 +90,7 @@ class Context:
             # if all fails, the shell might be able to find it?
             self.restic_path = get_restic_binary()
 
-        if self.restic_path.find(' ') > -1:
-            self.restic_path = '"{}"'.format(self.restic_path)
+        self.restic_path = self._quote_path(self.restic_path)
 
         return self.restic_path
 
@@ -103,3 +102,8 @@ class Context:
             command_prefix += self.ionice.get_command() + ' '
 
         return command_prefix
+
+    def _quote_path(self, path: str) -> str:
+        if path.find(' ') > -1:
+            path = '"{}"'.format(path)
+        return path
