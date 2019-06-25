@@ -67,7 +67,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
     'snapshots': {
         'compact': {'type': 'bool'},
         'group-by': {'type': 'str'},
-        'host': {'type': 'str'},
+        'host': {'type': ['bool', 'str']},
         'last': {'type': 'bool'},
         'path': {'type': 'dir', 'list': True},
         'tag': {'type': 'str', 'list': True},
@@ -81,7 +81,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'keep-yearly': {'type': 'int'},
         'keep-within': {'type': 'str'},
         'keep-tag': {'type': 'str', 'list': True},
-        'host': {'type': 'str'},
+        'host': {'type': ['bool', 'str'], 'default': True},
         'tag': {'type': 'str', 'list': True},
         'path': {'type': 'dir', 'list': True},
         'compact': {'type': 'bool'},

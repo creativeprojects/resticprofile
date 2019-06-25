@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from socket import gethostname
 
 from resticprofile.config import Config
 from resticprofile.profile import Profile
@@ -486,3 +487,31 @@ class TestProfile(unittest.TestCase):
         profile.set_retention_configuration()
         retention_flags = profile.get_retention_flags()
         self.assertEqual(["--keep-last 3"], retention_flags)
+
+    def test_can_replace_host(self):
+        configuration = {
+            'test': {
+                'snapshots': {
+                    'host': True,
+                },
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('snapshots')
+        flags = profile.get_command_flags('snapshots')
+        self.assertEqual(["--host \"{}\"".format(gethostname())], flags)
+
+    def test_can_specify_host(self):
+        configuration = {
+            'test': {
+                'snapshots': {
+                    'host': 'test-host',
+                },
+            }
+        }
+        profile = self.new_profile(configuration)
+        profile.set_common_configuration()
+        profile.set_command_configuration('snapshots')
+        flags = profile.get_command_flags('snapshots')
+        self.assertEqual(["--host \"test-host\""], flags)

@@ -1,4 +1,5 @@
 from typing import List
+from socket import gethostname
 
 from resticprofile import constants
 from resticprofile.config import Config
@@ -163,6 +164,12 @@ class Profile:
             if isinstance(option.value, bool):
                 self.initialize = option.value
 
+        elif option.key == constants.PARAMETER_HOST:
+            # specific to 'host': if the value is a boolean True, then we replace it with the hostname
+            if isinstance(option.value, bool) and option.value:
+                option.value = self._gethostname()
+                option.type = 'str'
+
         if command not in self._command_flags:
             self._command_flags[command] = {}
 
@@ -197,3 +204,6 @@ class Profile:
             constants.PARAMETER_FORGET_BEFORE_BACKUP,
             constants.PARAMETER_FORGET_AFTER_BACKUP,
         )
+
+    def _gethostname(self):
+        return gethostname()
