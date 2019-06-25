@@ -5,7 +5,11 @@ from pathlib import Path, PosixPath, WindowsPath
 # ==== If you guys need another location added to the default search paths, please make a PULL REQUEST ====
 DEFAULT_CONFIGURATION_LOCATIONS_POSIX = [
     '/usr/local/etc/',
+    '/usr/local/etc/restic/',
+    '/usr/local/etc/resticprofile/',
     '/etc/',
+    '/etc/restic/',
+    '/etc/resticprofile/',
 ]
 
 DEFAULT_CONFIGURATION_LOCATIONS_WINDOWS = [

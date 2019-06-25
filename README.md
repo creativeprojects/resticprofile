@@ -7,12 +7,14 @@ Configuration profiles manager for [restic backup](https://restic.net/)
 
 The configuration file is [TOML](https://github.com/toml-lang/toml) format:
 
+* You no longer need to remember command parameters and environment variables
 * You can create multiple profiles inside a configuration file
 * A profile can inherit the options from another profile
 * You can run the forget command before or after a backup (in a section called *retention*)
 * You can check a repository before or after a backup
 * You can create groups of profiles that will run sequentially
 * You can run shell commands before or after a backup
+* Allows to start the restic process using _nice_ (not available on Windows) and/or _ionice_ (only available on Linux)
 
 ## Requirements
 
@@ -126,6 +128,8 @@ initialize = true
 
 # 'backup' command of profile 'src'
 [src.backup]
+run-before = [ "echo Starting!", "ls -al ./src" ]
+run-after = "echo All Done!"
 exclude = [ '/**/.git' ]
 exclude-caches = true
 one-file-system = false
@@ -166,11 +170,14 @@ initialize = true
 tag = [ "windows" ]
 source = [ "c:\\" ]
 check-after = true
+run-before = "dir /l"
+run-after = "echo All Done!"
+
 ```
 
 ## Using resticprofile
 
-Here are a few examples how to run resticprofile (using the example configuration file)
+Here are a few examples how to run resticprofile (using the main example configuration file)
 
 See all snapshots:
 
