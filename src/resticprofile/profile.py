@@ -98,6 +98,11 @@ class Profile:
             sources.append("\"{}\"".format(source.replace('"', '\"')))
         return list(set(sources))
 
+    def set_verbosity(self, quiet=None, verbose=None):
+        if quiet is not None:
+            self.quiet = quiet
+        if verbose is not None:
+            self.verbose = verbose
 
     def _get_specific_flags(self) -> List[str]:
         flags = []

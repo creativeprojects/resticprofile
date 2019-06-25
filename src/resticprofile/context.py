@@ -94,3 +94,12 @@ class Context:
             self.restic_path = '"{}"'.format(self.restic_path)
 
         return self.restic_path
+
+    def get_command_prefix(self) -> str:
+        command_prefix = ""
+        if self.nice:
+            command_prefix += self.nice.get_command() + ' '
+        if self.ionice:
+            command_prefix += self.ionice.get_command() + ' '
+
+        return command_prefix

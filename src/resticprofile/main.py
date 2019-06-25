@@ -104,24 +104,20 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
                     environ[key.upper()] = env_config[key]
                     console.debug("Setting environment variable {}".format(key.upper()))
 
+        profile.set_verbosity(context.quiet, context.verbose)
         restic.extend_arguments(profile.get_command_flags(restic.command))
     except FileNotFoundError as error:
         console.error("Error in profile [{}]: {}".format(context.profile_name, str(error)))
         exit(2)
-
-    if context.quiet:
-        restic.set_common_argument('--quiet')
-    elif context.verbose:
-        restic.set_common_argument('--verbose')
 
     # check that we have the minimum information we need
     if not profile.repository:
         console.error("Error in profile [{}]: a repository is needed in the configuration.".format(context.profile_name))
         exit(2)
 
+    # this is the leftover on the command line
     restic.extend_arguments(context.args[1:])
 
-    restic_cmd = context.get_restic_path()
     command_prefix = ""
     if context.nice:
         command_prefix += context.nice.get_command() + ' '
@@ -129,32 +125,36 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
         command_prefix += context.ionice.get_command() + ' '
 
     if profile.initialize:
-        restic_init = Restic(constants.COMMAND_INIT)
-        restic_init.extend_arguments(profile.get_command_flags(constants.COMMAND_INIT))
-        init_command = command_prefix + restic_cmd + " " + restic_init.get_init_command()
-        console.debug(init_command)
-        shell_command(init_command, exit_on_returncode=False, display_stderr=False)
+        initialize_repository(context, profile, console)
 
     if profile.forget_before:
-        restic_retention = Restic(constants.COMMAND_FORGET)
-        restic_retention.extend_arguments(profile.get_retention_flags())
-        forget_command = command_prefix + restic_cmd + " " + restic_retention.get_forget_command()
-        console.debug(forget_command)
-        shell_command(forget_command)
+        cleanup_old_backups(context, profile, console)
 
-    full_command = command_prefix + restic_cmd + " " + restic.get_command()
-    console.debug(full_command)
-    shell_command(full_command)
-
+    backup(context, restic, console)
 
     if profile.forget_after:
-        restic_retention = Restic(constants.COMMAND_FORGET)
-        restic_retention.extend_arguments(profile.get_retention_flags())
-        forget_command = command_prefix + restic_cmd + " " + restic_retention.get_forget_command()
-        console.debug(forget_command)
-        shell_command(forget_command)
+        cleanup_old_backups(context, profile, console)
 
-def shell_command(command: str, exit_on_returncode=True, display_stderr=True, allow_stdin=False):
+def initialize_repository(context: Context, profile: Profile, console: Console):
+    restic_init = Restic(constants.COMMAND_INIT)
+    restic_init.extend_arguments(profile.get_command_flags(constants.COMMAND_INIT))
+    init_command = context.get_command_prefix() + context.get_restic_path() + " " + restic_init.get_init_command()
+    console.info("Initializing repository (if not existing)")
+    shell_command(init_command, console, exit_on_returncode=False, display_stderr=False)
+
+def cleanup_old_backups(context: Context, profile: Profile, console: Console):
+    restic_retention = Restic(constants.COMMAND_FORGET)
+    restic_retention.extend_arguments(profile.get_retention_flags())
+    forget_command = context.get_command_prefix() + context.get_restic_path() + " " + restic_retention.get_forget_command()
+    console.info("Cleaning up repository using retention information")
+    shell_command(forget_command, console)
+
+def backup(context: Context, restic: Restic, console: Console):
+    console.info("Starting backup")
+    full_command = context.get_command_prefix() + context.get_restic_path() + " " + restic.get_command()
+    shell_command(full_command, console)
+
+def shell_command(command: str, console: Console, exit_on_returncode=True, display_stderr=True, allow_stdin=False):
     try:
         stdin_ = DEVNULL
         if allow_stdin:
@@ -164,6 +164,7 @@ def shell_command(command: str, exit_on_returncode=True, display_stderr=True, al
         if not display_stderr:
             stderr_ = DEVNULL
 
+        console.debug("Starting shell command: " + command)
         returncode = call(command, shell=True, stdin=stdin_, stderr=stderr_)
         if returncode != 0 and exit_on_returncode:
             exit(returncode)
