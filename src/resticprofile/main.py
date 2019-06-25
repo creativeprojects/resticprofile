@@ -13,7 +13,7 @@ from resticprofile.config import Config
 from resticprofile.restic import Restic
 from resticprofile.context import Context
 from resticprofile.profile import Profile
-from resticprofile.filesearch import FileSearch, find_configuration_file, DEFAULT_SEARCH_LOCATIONS
+from resticprofile.filesearch import FileSearch, find_configuration_file, get_default_configuration_locations
 from resticprofile.groups import Groups
 
 
@@ -39,7 +39,7 @@ def main():
     else:
         console.warning(
             "Configuration file '{}' was not found in either the current directory, home directory or any of these locations:\n{}"
-            .format(context.configuration_file, DEFAULT_SEARCH_LOCATIONS)
+            .format(context.configuration_file, get_default_configuration_locations())
         )
         exit(2)
 
@@ -121,13 +121,7 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
 
     restic.extend_arguments(context.args[1:])
 
-    restic_cmd = context.restic_path
-    if not restic_cmd:
-        for path in ('/usr/bin', '/usr/local/bin', '/opt/local/bin'):
-            if isfile(path + '/restic'):
-                restic_cmd = path + '/restic'
-                break
-
+    restic_cmd = context.get_restic_path()
     command_prefix = ""
     if context.nice:
         command_prefix += context.nice.get_command() + ' '
@@ -139,7 +133,7 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
         restic_init.extend_arguments(profile.get_command_flags(constants.COMMAND_INIT))
         init_command = command_prefix + restic_cmd + " " + restic_init.get_init_command()
         console.debug(init_command)
-        shell_command(init_command, display_stderr=False)
+        shell_command(init_command, exit_on_returncode=False, display_stderr=False)
 
     if profile.forget_before:
         restic_retention = Restic(constants.COMMAND_FORGET)
@@ -160,7 +154,7 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
         console.debug(forget_command)
         shell_command(forget_command)
 
-def shell_command(command: str, display_stderr=True, allow_stdin=False):
+def shell_command(command: str, exit_on_returncode=True, display_stderr=True, allow_stdin=False):
     try:
         stdin_ = DEVNULL
         if allow_stdin:
@@ -170,7 +164,10 @@ def shell_command(command: str, display_stderr=True, allow_stdin=False):
         if not display_stderr:
             stderr_ = DEVNULL
 
-        call(command, shell=True, stdin=stdin_, stderr=stderr_)
+        returncode = call(command, shell=True, stdin=stdin_, stderr=stderr_)
+        if returncode != 0 and exit_on_returncode:
+            exit(returncode)
+
     except KeyboardInterrupt:
         exit()
 

@@ -2,6 +2,7 @@ from getopt import getopt, GetoptError
 
 from resticprofile import constants
 from resticprofile.config import Config
+from resticprofile.filesearch import find_restic_binary, get_restic_binary
 from resticprofile.console import Console
 
 class Context:
@@ -22,8 +23,8 @@ class Context:
 
     def load_context_from_command_line(self, argv: list):
         try:
-            short_options = self.__get_short_options()
-            long_options = self.__get_long_options()
+            short_options = self._get_short_options()
+            long_options = self._get_long_options()
             self.opts, self.args = getopt(argv[1:], short_options, long_options)
 
         except GetoptError as err:
@@ -33,40 +34,40 @@ class Context:
             exit(2)
 
         for option, argument in self.opts:
-            if option in self.__get_possible_options_for('help'):
+            if option in self._get_possible_options_for('help'):
                 Console().usage(argv[0])
                 exit()
 
-            elif option in self.__get_possible_options_for('quiet'):
+            elif option in self._get_possible_options_for('quiet'):
                 self.quiet = True
 
-            elif option in self.__get_possible_options_for('verbose'):
+            elif option in self._get_possible_options_for('verbose'):
                 self.verbose = True
 
-            elif option in self.__get_possible_options_for('config'):
+            elif option in self._get_possible_options_for('config'):
                 self.configuration_file = argument
 
-            elif option in self.__get_possible_options_for('name'):
+            elif option in self._get_possible_options_for('name'):
                 self.profile_name = argument
 
             else:
                 assert False, "unhandled option"
 
-    def __get_short_options(self):
+    def _get_short_options(self):
         short_options = ""
         for _, options in self.arguments_definition.items():
             short_options += options['short'] + (":" if options['argument'] else "")
         return short_options
 
 
-    def __get_long_options(self):
+    def _get_long_options(self):
         long_options = []
         for _, options in self.arguments_definition.items():
             long_options.append(options['long'] + ("=" if options['argument'] else ""))
         return long_options
 
 
-    def __get_possible_options_for(self, option):
+    def _get_possible_options_for(self, option):
         return [
             "-{}".format(self.arguments_definition[option]['short']),
             "--{}".format(self.arguments_definition[option]['long'])
@@ -79,3 +80,17 @@ class Context:
         self.default_command = config.get_default_command()
         self.initialize = config.get_initialize()
         self.restic_path = config.get_restic_binary_path()
+
+    def get_restic_path(self):
+        if self.restic_path:
+            return self.restic_path
+
+        self.restic_path = find_restic_binary()
+        if not self.restic_path:
+            # if all fails, the shell might be able to find it?
+            self.restic_path = get_restic_binary()
+
+        if self.restic_path.find(' ') > -1:
+            self.restic_path = '"{}"'.format(self.restic_path)
+
+        return self.restic_path

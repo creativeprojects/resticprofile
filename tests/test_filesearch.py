@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 from pyfakefs import fake_filesystem_unittest
 
-from resticprofile.filesearch import FileSearch, find_configuration_file, DEFAULT_SEARCH_LOCATIONS
+from resticprofile.filesearch import FileSearch, find_configuration_file, get_default_configuration_locations
 
 TEST_FILE = 'test.conf'
 
@@ -13,7 +13,7 @@ class TestFileSearch(fake_filesystem_unittest.TestCase):
     def setUp(self):
         self.setUpPyfakefs()
         os.makedirs(str(Path().home()), exist_ok=True)
-        for path in DEFAULT_SEARCH_LOCATIONS:
+        for path in get_default_configuration_locations():
             os.makedirs(path)
 
     def create_file(self, filename: str):
@@ -36,8 +36,8 @@ class TestFileSearch(fake_filesystem_unittest.TestCase):
         filepath = find_configuration_file(TEST_FILE)
         self.assertEqual(test_file, filepath)
 
-    def test_configuration_file_in_default_search_locations(self):
-        for path in DEFAULT_SEARCH_LOCATIONS:
+    def test_configuration_file_in_get_default_configuration_locations(self):
+        for path in get_default_configuration_locations():
             test_file = str(Path(path) / TEST_FILE)
             self.create_file(test_file)
             filepath = find_configuration_file(TEST_FILE)
