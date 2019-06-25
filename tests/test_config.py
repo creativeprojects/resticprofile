@@ -4,6 +4,7 @@ from resticprofile.config import Config
 from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
 from mock_filesearch import MockFileSearch
+from resticprofile.error import ConfigError
 
 class TestConfig(unittest.TestCase):
 
@@ -365,3 +366,57 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(1, len(options))
         self.assertIsInstance(options[0], Flag)
 
+    def test_can_load_environment_variables(self):
+        configuration = {
+            'profile': {
+                'env': {
+                    'var': 'value'
+                }
+            }
+        }
+        env = self.new_config(configuration).get_environment('profile')
+        self.assertEqual({'VAR': 'value'}, env)
+
+    def test_can_load_inherited_environment_variables(self):
+        configuration = {
+            'parent': {
+                'env': {
+                    'var': 'value'
+                }
+            },
+            'profile': {
+                'inherit': 'parent'
+            }
+        }
+        env = self.new_config(configuration).get_environment('profile')
+        self.assertEqual({'VAR': 'value'}, env)
+
+    def test_fail_to_load_inherited_environment_variables(self):
+        configuration = {
+            'profile': {
+                'inherit': 'parent'
+            }
+        }
+        with self.assertRaises(ConfigError):
+            self.new_config(configuration).get_environment('profile')
+
+    def test_can_load_twice_inherited_environment_variables(self):
+        configuration = {
+            'grand-parent': {
+                'env': {
+                    'var1': 'value1',
+                    'var2': 'value1'
+                }
+            },
+            'parent': {
+                'inherit': 'grand-parent',
+                'env': {
+                    'var2': 'value2'
+                }
+            },
+            'profile': {
+                'inherit': 'parent'
+            }
+        }
+        env = self.new_config(configuration).get_environment('profile')
+        self.assertCountEqual({'VAR1': 'value1', 'VAR2': 'value2'}, env)

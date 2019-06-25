@@ -16,6 +16,7 @@ from resticprofile.context import Context
 from resticprofile.profile import Profile
 from resticprofile.filesearch import FileSearch, find_configuration_file, get_default_configuration_locations
 from resticprofile.groups import Groups
+from resticprofile.error import ConfigError
 
 
 def main():
@@ -90,28 +91,21 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
 
             profile.set_command_configuration(restic.command)
 
-            # inherited environment
-            if profile.inherit:
-                if profile.inherit not in profiles:
-                    console.error("Error in profile [{}]: inherited profile [{}] was not found.".format(context.profile_name, profile.inherit))
-                    exit(2)
-
-                if constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[profile.inherit]:
-                    env_config = profiles[profile.inherit][constants.SECTION_CONFIGURATION_ENVIRONMENT]
-                    for key in env_config:
-                        environ[key.upper()] = env_config[key]
-                        console.debug("Setting inherited environment variable {}".format(key.upper()))
-
-            if constants.SECTION_CONFIGURATION_ENVIRONMENT in profiles[context.profile_name]:
-                env_config = profiles[context.profile_name][constants.SECTION_CONFIGURATION_ENVIRONMENT]
-                for key in env_config:
-                    environ[key.upper()] = env_config[key]
-                    console.debug("Setting environment variable {}".format(key.upper()))
+            # environment variables
+            env = config.get_environment(context.profile_name)
+            if env:
+                for key, value in env.items():
+                    console.debug("Setting environment variable {}".format(key))
+                    environ[key] = value
 
         profile.set_verbosity(context.quiet, context.verbose)
         restic.extend_arguments(profile.get_command_flags(restic.command))
     except FileNotFoundError as error:
         console.error("Error in profile [{}]: {}".format(context.profile_name, str(error)))
+        exit(2)
+
+    except ConfigError as error:
+        console.error("Error in profile [{}]: {}".format(error.section, error.message))
         exit(2)
 
     # check that we have the minimum information we need

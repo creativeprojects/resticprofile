@@ -1,12 +1,13 @@
 '''
 resticprofile configuration
 '''
-from typing import Union, List
+from typing import Union, List, Dict
 from resticprofile import constants
 from resticprofile.flag import Flag
 from resticprofile.ionice import IONice
 from resticprofile.nice import Nice
 from resticprofile.filesearch import FileSearch
+from resticprofile.error import ConfigError
 
 
 GLOBAL_FLAGS_DEFINITION = {
@@ -324,6 +325,27 @@ class Config:
                     options.append(option)
 
         return options
+
+    def get_environment(self, section: str) -> Dict[str, str]:
+        env = {}
+        # common section
+        _, inherit = self._get_options_for_common_section(section, [])
+        inherit.reverse()
+        for inherit_profile in inherit:
+            if not inherit_profile in self.configuration:
+                raise ConfigError(section, "Inherited profile [{}] was not found in the configuration".format(inherit_profile))
+
+            if constants.SECTION_CONFIGURATION_ENVIRONMENT in self.configuration[inherit_profile]:
+                env_config = self.configuration[inherit_profile][constants.SECTION_CONFIGURATION_ENVIRONMENT]
+                for key in env_config:
+                    env[key.upper()] = env_config[key]
+
+        if constants.SECTION_CONFIGURATION_ENVIRONMENT in self.configuration[section]:
+            env_config = self.configuration[section][constants.SECTION_CONFIGURATION_ENVIRONMENT]
+            for key in env_config:
+                env[key.upper()] = env_config[key]
+
+        return env
 
     def validate_global_configuration_option(self, key: str, value: Union[str, int, bool, list]) -> Flag:
         '''
