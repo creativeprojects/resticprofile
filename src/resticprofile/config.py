@@ -99,6 +99,16 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'read-data-subset': {'type': 'str'},
         'with-cache': {'type': 'bool'},
     },
+    "mount": {
+        'allow-other': {'type': 'bool'},
+        'allow-root': {'type': 'bool'},
+        'host': {'type': ['bool', 'str']},
+        'no-default-permissions': {'type': 'bool'},
+        'owner-root': {'type': 'bool'},
+        'path': {'type': 'str', 'list': True},
+        'snapshot-template': {'type': 'str'},
+        'tag': {'type': 'str', 'list': True},
+    }
 }
 
 
