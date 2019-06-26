@@ -116,7 +116,7 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
         console.error("Error in profile [{}]: a repository is needed in the configuration.".format(context.profile_name))
         exit(2)
 
-    # this is the leftover on the command line
+    # this is the leftover from the command line
     restic.extend_arguments(context.args[1:])
 
     if profile.initialize:
@@ -131,7 +131,7 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
     if profile.forget_before:
         cleanup_old_backups(context, profile, console)
 
-    restic_command(context, restic, console)
+    restic_command(context, restic, profile, console)
 
     if profile.forget_after:
         cleanup_old_backups(context, profile, console)
@@ -164,10 +164,10 @@ def check(context: Context, profile: Profile, console: Console):
     console.info("Checking repository consistency")
     shell_command(check_command, console)
 
-def restic_command(context: Context, restic: Restic, console: Console):
+def restic_command(context: Context, restic: Restic, profile: Profile, console: Console):
     console.info("Starting '{}'".format(restic.command))
     full_command = context.get_command_prefix() + context.get_restic_path() + " " + restic.get_command()
-    shell_command(full_command, console)
+    shell_command(full_command, console, allow_stdin=profile.stdin)
 
 def run_commands(command: Union[str, list], console: Console):
     if isinstance(command, str):

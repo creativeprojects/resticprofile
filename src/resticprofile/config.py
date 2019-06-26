@@ -62,7 +62,7 @@ CONFIGURATION_FLAGS_DEFINITION = {
         'one-file-system': {'type': 'bool'},
         'parent': {'type': 'str'},
         'stdin': {'type': 'bool'},
-        'stdin-filename': {'type': 'file'},
+        'stdin-filename': {'type': 'str'},
         'tag': {'type': 'str', 'list': True},
         'time': {'type': 'str'},
         'with-atime': {'type': 'bool'},

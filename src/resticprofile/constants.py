@@ -73,6 +73,7 @@ PARAMETER_CHECK_BEFORE = 'check-before'
 PARAMETER_CHECK_AFTER = 'check-after'
 PARAMETER_RUN_BEFORE = 'run-before'
 PARAMETER_RUN_AFTER = 'run-after'
+PARAMETER_STDIN = 'stdin'
 
 COMMAND_BACKUP = 'backup'
 COMMAND_CHECK = 'check'

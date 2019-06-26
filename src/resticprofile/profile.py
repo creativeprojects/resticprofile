@@ -24,6 +24,7 @@ class Profile:
         self.check_after = False
         self.run_before = None
         self.run_after = None
+        self.stdin = False
         self._common_flags = {}  # type: Dict[str, Flag]
         self._command_flags = {}  # type: Dict[str, Dict[str, Flag]]
         self._retention_flags = {}  # type: Dict[str, Flag]
@@ -71,7 +72,8 @@ class Profile:
             if arguments:
                 flags.extend(arguments)
 
-        if command == constants.COMMAND_BACKUP:
+        # adds backup source if not in stdin mode
+        if (not self.stdin) and (command == constants.COMMAND_BACKUP):
             flags.extend(self.get_backup_source())
 
         return flags
@@ -192,6 +194,10 @@ class Profile:
         elif option.key == constants.PARAMETER_RUN_AFTER:
             if option.value:
                 self.run_after = option.value
+
+        elif option.key == constants.PARAMETER_STDIN:
+            if option.value:
+                self.stdin = option.value
 
         if command not in self._command_flags:
             self._command_flags[command] = {}
