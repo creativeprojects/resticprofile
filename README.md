@@ -18,15 +18,16 @@ The configuration file is [TOML](https://github.com/toml-lang/toml) format:
 
 ## Requirements
 
-**resticprofile** needs python 3 (tested with version 3.5 minimum) installed on your machine
+**resticprofile** needs python >=3.5 installed on your machine.
 
-It's been actively tested on macOs X and Linux, and regularly tested on Windows.
+It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 **This is at _beta_ stage. Please don't use it in production yet. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
 ## Install
 
-The simpliest way to install resticprofile for now is via **pip**:
+**resticprofile** is published on [Python Package Index](https://pypi.org/project/resticprofile/).
+The easiest way to install resticprofile is using **pip**:
 ```
 python3 -m pip install --user --upgrade resticprofile
 ```
