@@ -259,14 +259,15 @@ class Config:
                 )
                 if option:
                     # special case for inherit flag
-                    if option.key == constants.PARAMETER_INHERIT and option.value:
-                        inherit.append(option.value)
-                        # run the common configuration for the parent
-                        parent_options, inherit = self._get_options_for_common_section(option.value, inherit)
-                        if parent_options:
-                            options.extend(parent_options)
-
-                    options.append(option)
+                    if option.key == constants.PARAMETER_INHERIT:
+                        if option.value:
+                            inherit.append(option.value)
+                            # run the common configuration for the parent
+                            parent_options, inherit = self._get_options_for_common_section(option.value, inherit)
+                            if parent_options:
+                                options.extend(parent_options)
+                    else:
+                        options.append(option)
 
         return (options, inherit)
 
@@ -301,6 +302,20 @@ class Config:
         return options
 
     def get_options_for_retention(self, section: str) -> List[Flag]:
+        # common section
+        options, inherit = self._get_options_for_common_section(section, [])
+        # retention section
+        inherit.reverse()
+        for inherit_profile in inherit:
+            inherited_common_options, _ = self._get_options_for_common_section(inherit_profile, [])
+            options.extend(inherited_common_options)
+            options.extend(self._get_options_for_retention(inherit_profile))
+
+        options.extend(self._get_options_for_retention(section))
+
+        return options
+
+    def _get_options_for_retention(self, section: str) -> List[Flag]:
         if section not in self.configuration:
             return []
 
@@ -310,8 +325,8 @@ class Config:
         configuration_section = configuration_section[constants.SECTION_CONFIGURATION_RETENTION]
 
         # configuration flags are the specific ones to 'retention' + the ones from the 'forget' command
-        configuration_flags_definition = { **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_CONFIGURATION_RETENTION], \
-            **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_FORGET] }
+        configuration_flags_definition = {**CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_CONFIGURATION_RETENTION], \
+            **CONFIGURATION_FLAGS_DEFINITION[constants.SECTION_DEFINITION_FORGET]}
 
         options = []
         for flag in configuration_flags_definition:

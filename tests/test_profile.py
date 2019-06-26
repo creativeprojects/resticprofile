@@ -130,7 +130,6 @@ class TestProfile(unittest.TestCase):
         profile = self.new_profile(configuration)
         profile.set_common_configuration()
         self.assertEqual(True, profile.verbose)
-        self.assertEqual(profile.inherit, 'parent')
 
     def test_configuration_with_inherited_repository(self):
         configuration = {'parent': {'repository': "/backup"}, 'test': {'inherit': 'parent'}}

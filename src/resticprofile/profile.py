@@ -16,7 +16,6 @@ class Profile:
         self.verbose = None
         self.config = config
         self.profile_name = profile_name
-        self.inherit = None
         self.repository = ""
         self.initialize = False
         self.forget_before = False
@@ -137,11 +136,7 @@ class Profile:
     def _set_common_flag(self, option: Flag):
         if not option:
             return
-        if option.key == constants.PARAMETER_INHERIT:
-            if isinstance(option.value, str) and option.value:
-                self.inherit = option.value
-
-        elif option.key == constants.PARAMETER_REPO:
+        if option.key == constants.PARAMETER_REPO:
             if isinstance(option.value, str) and option.value:
                 self.repository = option.value
 

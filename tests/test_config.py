@@ -237,9 +237,7 @@ class TestConfig(unittest.TestCase):
             'test': {'inherit': 'parent'}
         }
         options = self.new_config(configuration).get_options_for_section('test')
-        # at that stage, config is keeping the inherit flag because it will be needed up the line
-        self.assertEqual(len(options), 1)
-        self.assertIsInstance(options[0], Flag)
+        self.assertEqual(len(options), 0)
 
     def test_loading_inherited_common_options(self):
         configuration = {
@@ -247,10 +245,9 @@ class TestConfig(unittest.TestCase):
             'test': {'inherit': 'parent'}
         }
         options = self.new_config(configuration).get_options_for_section('test')
-        # at that stage, config is keeping the inherit flag because it will be needed up the line
-        self.assertEqual(len(options), 2)
-        self.assertIsInstance(options[0], Flag)
-        self.assertIsInstance(options[1], Flag)
+        self.assertEqual(len(options), 1)
+        for option in options:
+            self.assertIsInstance(option, Flag)
 
     def test_loading_twice_inherited_common_options(self):
         configuration = {
@@ -259,12 +256,9 @@ class TestConfig(unittest.TestCase):
             'test': {'inherit': 'parent'}
         }
         options = self.new_config(configuration).get_options_for_section('test')
-        # at that stage, config is keeping both the inherit flags because they will be needed up the line
-        self.assertEqual(len(options), 4)
-        self.assertIsInstance(options[0], Flag)
-        self.assertIsInstance(options[1], Flag)
-        self.assertIsInstance(options[2], Flag)
-        self.assertIsInstance(options[3], Flag)
+        self.assertEqual(len(options), 2)
+        for option in options:
+            self.assertIsInstance(option, Flag)
 
     def test_loading_command_section(self):
         configuration = {
@@ -312,9 +306,9 @@ class TestConfig(unittest.TestCase):
             },
         }
         options = self.new_config(configuration).get_options_for_section('profile')
-        self.assertEqual(2, len(options))
-        self.assertIsInstance(options[0], Flag)
-        self.assertIsInstance(options[1], Flag)
+        self.assertEqual(1, len(options))
+        for option in options:
+            self.assertIsInstance(option, Flag)
 
     def test_can_get_initialize_flag_from_inherited_command_profile(self):
         configuration = {
@@ -329,9 +323,9 @@ class TestConfig(unittest.TestCase):
             },
         }
         options = self.new_config(configuration).get_options_for_section('profile', 'backup')
-        self.assertEqual(2, len(options))
-        self.assertIsInstance(options[0], Flag)
-        self.assertIsInstance(options[1], Flag)
+        self.assertEqual(1, len(options))
+        for option in options:
+            self.assertIsInstance(option, Flag)
 
     def test_can_get_empty_retention(self):
         configuration = {
@@ -420,3 +414,41 @@ class TestConfig(unittest.TestCase):
         }
         env = self.new_config(configuration).get_environment('profile')
         self.assertCountEqual({'VAR1': 'value1', 'VAR2': 'value2'}, env)
+
+    def test_can_load_inherited_retention(self):
+        configuration = {
+            'parent': {
+                'retention': {
+                    'keep-within': '30d'
+                }
+            },
+            'profile': {
+                'inherit': 'parent'
+            }
+        }
+        options = self.new_config(configuration).get_options_for_retention('profile')
+        self.assertEqual(1, len(options))
+        for option in options:
+            self.assertIsInstance(option, Flag)
+
+    def test_can_load_twice_inherited_retention(self):
+        configuration = {
+            'grand-parent': {
+                'retention': {
+                    'keep-last': 3
+                }
+            },
+            'parent': {
+                'inherit': 'grand-parent',
+                'retention': {
+                    'keep-within': '30d'
+                }
+            },
+            'profile': {
+                'inherit': 'parent'
+            }
+        }
+        options = self.new_config(configuration).get_options_for_retention('profile')
+        # self.assertEqual(2, len(options))
+        for option in options:
+            self.assertIsInstance(option, Flag)

@@ -46,6 +46,7 @@ def main():
         exit(2)
 
     base_dir = dirname(valid_configuration_file)
+    # todo: allow group of groups
     groups = Groups(profiles)
     if groups.exists(context.profile_name):
         group_name = context.profile_name
@@ -96,10 +97,12 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
             if env:
                 for key, value in env.items():
                     console.debug("Setting environment variable {}".format(key))
+                    # When running a group of backups, we might want to put back/remove the environment variable after
                     environ[key] = value
 
         profile.set_verbosity(context.quiet, context.verbose)
         restic.extend_arguments(profile.get_command_flags(restic.command))
+
     except FileNotFoundError as error:
         console.error("Error in profile [{}]: {}".format(context.profile_name, str(error)))
         exit(2)
