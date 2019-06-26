@@ -239,3 +239,15 @@ Usage:
    [restic command] [additional parameters to pass to restic]
 
 ```
+
+## Command line reference ##
+
+There are not many options on the command line, most of the options are in the configuration file.
+
+* **[-h]**: Display quick help
+* **[-c | --config] configuration_file**: Specify a configuration file other than the default
+* **[-n | --name] profile_name**: Profile section to use from the configuration file
+* **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
+* **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
+* **[restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
+* **[additional flags]**: Any additional flags to pass to the restic command line
