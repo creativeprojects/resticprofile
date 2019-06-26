@@ -175,20 +175,47 @@ run-after = "echo All Done!"
 
 ```
 
+Simple example sending a file via stdin
+
+```ini
+
+[stdin]
+repository = "local:/backup/restic"
+password-file = "key"
+
+[stdin.backup]
+stdin = true
+stdin-filename = "stdin-test"
+tag = [ 'stdin' ]
+
+```
+
 ## Using resticprofile
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
 
-See all snapshots:
+See all snapshots (assuming your default python is python3):
 
 ```
 python -m resticprofile
 ```
 
-Backup root & src profiles (using full-backup group)
+Or if the folder `~/.local/bin/` is in your PATH, simply
+
+```
+resticprofile
+```
+
+Backup root & src profiles (using _full-backup_ group shown earlier)
 
 ```
 python -m resticprofile --name "full-backup" backup
+```
+
+Assuming the _stdin_ profile from the configuration file shown before, the command to send a mysqldump to the backup is as simple as:
+
+```
+mysqldump --all-databases | python3 -m resticprofile -n stdin backup
 ```
 
 Mount the default profile (_default_) in /mnt/restic:
