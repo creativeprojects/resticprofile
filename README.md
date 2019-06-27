@@ -295,3 +295,150 @@ There are not many options on the command line, most of the options are in the c
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
+
+## Configuration file reference
+
+`[global]`
+
+None of these flags are passed on the restic command line
+
+* **ionice**: true / false
+* **ionice-class**: integer
+* **ionice-level**: integer
+* **nice**: true / false OR integer
+* **default-command**: string
+* **initialize**: true / false
+* **restic-binary**: string
+
+`[profile]`
+
+Flags used by resticprofile only
+
+* ****inherit****: string
+* **initialize**: true / false
+
+Flags passed to the restic command line
+
+* **cacert**: string
+* **cache-dir**: string
+* **cleanup-cache**: true / false
+* **json**: true / false
+* **key-hint**: string
+* **limit-download**: integer
+* **limit-upload**: integer
+* **no-cache**: true / false
+* **no-lock**: true / false
+* **option**: string OR list of strings
+* **password-command**: string
+* **password-file**: string
+* **quiet**: true / false
+* **repository**: string **(will be passed as 'repo' to the command line)**
+* **tls-client-cert**: string
+* **verbose**: true / false OR integer
+
+`[profile.backup]`
+
+Flags used by resticprofile only
+
+* **run-before**: string OR list of strings
+* **run-after**: string OR list of strings
+* **check-before**: true / false
+* **check-after**: true / false
+
+Flags passed to the restic command line
+
+* **exclude**: string OR list of strings
+* **exclude-caches**: true / false
+* **exclude-file**: string OR list of strings
+* **exclude-if-present**: string OR list of strings
+* **files-from**: string OR list of strings
+* **force**: true / false
+* **host**: string
+* **iexclude**: string OR list of strings
+* **ignore-inode**: true / false
+* **one-file-system**: true / false
+* **parent**: string
+* **stdin**: true / false
+* **stdin-filename**: string
+* **tag**: string OR list of strings
+* **time**: string
+* **with-atime**: true / false
+* **source**: string OR list of strings
+
+`[profile.retention]`
+
+Flags used by resticprofile only
+
+* **before-backup**: true / false
+* **after-backup**: true / false
+
+Flags passed to the restic command line
+
+* **keep-last**: integer
+* **keep-hourly**: integer
+* **keep-daily**: integer
+* **keep-weekly**: integer
+* **keep-monthly**: integer
+* **keep-yearly**: integer
+* **keep-within**: string
+* **keep-tag**: string OR list of strings
+* **host**: true / false OR string
+* **tag**: string OR list of strings
+* **path**: string OR list of strings
+* **compact**: true / false
+* **group-by**: string
+* **dry-run**: true / false
+* **prune**: true / false
+
+`[profile.snapshots]`
+
+Flags passed to the restic command line
+
+* **compact**: true / false
+* **group-by**: string
+* **host**: true / false OR string
+* **last**: true / false
+* **path**: string OR list of strings
+* **tag**: string OR list of strings
+
+`[profile.forget]`
+
+Flags passed to the restic command line
+
+* **keep-last**: integer
+* **keep-hourly**: integer
+* **keep-daily**: integer
+* **keep-weekly**: integer
+* **keep-monthly**: integer
+* **keep-yearly**: integer
+* **keep-within**: string
+* **keep-tag**: string OR list of strings
+* **host**: true / false OR string
+* **tag**: string OR list of strings
+* **path**: string OR list of strings
+* **compact**: true / false
+* **group-by**: string
+* **dry-run**: true / false
+* **prune**: true / false
+
+`[profile.check]`
+
+Flags passed to the restic command line
+
+* **check-unused**: true / false
+* **read-data**: true / false
+* **read-data-subset**: string
+* **with-cache**: true / false
+
+`[profile.mount]`
+
+Flags passed to the restic command line
+
+* **allow-other**: true / false
+* **allow-root**: true / false
+* **host**: true / false OR string
+* **no-default-permissions**: true / false
+* **owner-root**: true / false
+* **path**: string OR list of strings
+* **snapshot-template**: string
+* **tag**: string OR list of strings
