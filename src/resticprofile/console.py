@@ -1,6 +1,7 @@
 '''
 Display messages to the console
 '''
+import time
 from colorama import Fore, init
 from resticprofile import constants
 from resticprofile.help import get_options_help
@@ -15,31 +16,37 @@ class Console:
         self.verbose = verbose
         init(autoreset=True)
 
+    def _msg(self, message):
+        '''
+        Low level display message
+        '''
+        print(time.asctime(), message)
+
     def debug(self, message):
         '''
         Display debug message to the console
         '''
         if self.verbose:
-            print(Fore.LIGHTGREEN_EX + message)
+            self._msg(Fore.LIGHTGREEN_EX + message)
 
     def info(self, message):
         '''
         Display info message to the console
         '''
         if not self.quiet:
-            print(Fore.LIGHTYELLOW_EX + message)
+            self._msg(Fore.LIGHTYELLOW_EX + message)
 
     def warning(self, message):
         '''
         Display warning message to the console
         '''
-        print(Fore.LIGHTRED_EX + message)
+        self._msg(Fore.LIGHTRED_EX + message)
 
     def error(self, message):
         '''
         Display error message to the console
         '''
-        print(Fore.LIGHTRED_EX + message)
+        self._msg(Fore.LIGHTRED_EX + message)
 
     def usage(self, name):
         '''

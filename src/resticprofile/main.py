@@ -168,6 +168,7 @@ def restic_command(context: Context, restic: Restic, profile: Profile, console: 
     console.info("Starting '{}'".format(restic.command))
     full_command = context.get_command_prefix() + context.get_restic_path() + " " + restic.get_command()
     shell_command(full_command, console, allow_stdin=profile.stdin)
+    console.info("Finished '{}'".format(restic.command))
 
 def run_commands(command: Union[str, list], console: Console):
     if isinstance(command, str):
