@@ -26,7 +26,7 @@ def main():
     context = Context(constants.ARGUMENTS_DEFINITION)
     context.load_context_from_command_line(argv)
 
-    console = Console(context.quiet, context.verbose)
+    console = Console(context.quiet, context.verbose, context.ansi)
 
     valid_configuration_file = find_configuration_file(context.configuration_file)
     if valid_configuration_file is not None:

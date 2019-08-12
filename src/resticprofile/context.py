@@ -19,6 +19,7 @@ class Context:
         self.initialize = constants.DEFAULT_INITIALIZE_FLAG
         self.verbose = constants.DEFAULT_VERBOSE_FLAG
         self.quiet = constants.DEFAULT_QUIET_FLAG
+        self.ansi = True
         self.nice = None
         self.ionice = None
         self.opts = []
@@ -53,28 +54,35 @@ class Context:
             elif option in self._get_possible_options_for('name'):
                 self.profile_name = argument
 
+            elif option in self._get_possible_options_for('no-ansi'):
+                self.ansi = False
+
             else:
                 assert False, "unhandled option"
 
     def _get_short_options(self):
         short_options = ""
         for _, options in self.arguments_definition.items():
-            short_options += options['short'] + (":" if options['argument'] else "")
+            if 'short' in options:
+                short_options += options['short'] + (":" if options['argument'] else "")
         return short_options
 
 
     def _get_long_options(self):
         long_options = []
         for _, options in self.arguments_definition.items():
-            long_options.append(options['long'] + ("=" if options['argument'] else ""))
+            if 'long' in options:
+                long_options.append(options['long'] + ("=" if options['argument'] else ""))
         return long_options
 
 
     def _get_possible_options_for(self, option):
-        return [
-            "-{}".format(self.arguments_definition[option]['short']),
-            "--{}".format(self.arguments_definition[option]['long'])
-        ]
+        options = []
+        if 'short' in self.arguments_definition[option]:
+            options.append("-{}".format(self.arguments_definition[option]['short']))
+        if 'long' in self.arguments_definition[option]:
+            options.append("--{}".format(self.arguments_definition[option]['long']))
+        return options
 
 
     def set_global_context(self, config: Config):

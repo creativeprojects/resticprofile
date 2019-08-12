@@ -37,6 +37,10 @@ ARGUMENTS_DEFINITION = {
         'long': 'name',
         'argument': True,
         'argument_name': 'profile_name'
+    },
+    'no-ansi': {
+        'long': 'no-ansi',
+        'argument': False,
     }
 }
 

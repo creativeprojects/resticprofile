@@ -275,6 +275,7 @@ python -m resticprofile --help
 
 Usage:
  resticprofile
+   [--no-ansi]
    [-c|--config <configuration_file>]
    [-h|--help]
    [-n|--name <profile_name>]
@@ -293,6 +294,7 @@ There are not many options on the command line, most of the options are in the c
 * **[-n | --name] profile_name**: Profile section to use from the configuration file
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
+* **[--no-ansi]**: Disable console colouring (to save output into a log file)
 * **[restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
 
