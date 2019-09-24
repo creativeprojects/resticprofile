@@ -34,8 +34,7 @@ def main():
         try:
             profiles = toml.load(valid_configuration_file)
         except toml.decoder.TomlDecodeError as err:
-            console.error(
-                "An error occured while loading the configuration file:")
+            console.error("An error occured while loading the configuration file:")
             console.error(str(err))
             sys.exit(2)
     else:
@@ -112,8 +111,8 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
         sys.exit(2)
 
     # check that we have the minimum information we need
-    if not profile.repository:
-        console.error("Error in profile [{}]: a repository is needed in the configuration.".format(context.profile_name))
+    if not profile.repository and 'RESTIC_REPOSITORY' not in environ:
+        console.error("Error in profile [{}]: a repository was not found in the configuration, or from the RESTIC_REPOSITORY environment variable.".format(context.profile_name))
         sys.exit(2)
 
     # this is the leftover from the command line
