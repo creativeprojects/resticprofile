@@ -3,7 +3,7 @@ resticprofile main function
 '''
 from os.path import dirname
 from os import environ
-from sys import argv, exit
+import sys
 from subprocess import call, DEVNULL
 from typing import Union
 import toml
@@ -24,7 +24,7 @@ def main():
     This is main
     '''
     context = Context(constants.ARGUMENTS_DEFINITION)
-    context.load_context_from_command_line(argv)
+    context.load_context_from_command_line(sys.argv)
 
     console = Console(context.quiet, context.verbose, context.ansi)
 
@@ -37,13 +37,13 @@ def main():
             console.error(
                 "An error occured while loading the configuration file:")
             console.error(str(err))
-            exit(2)
+            sys.exit(2)
     else:
         console.warning(
             "Configuration file '{}' was not found in either the current directory, home directory or any of these locations:\n{}"
             .format(context.configuration_file, get_default_configuration_locations())
         )
-        exit(2)
+        sys.exit(2)
 
     base_dir = dirname(valid_configuration_file)
     # todo: allow group of groups
@@ -105,16 +105,16 @@ def run_restic(base_dir: str, context: Context, profiles: dict, console: Console
 
     except FileNotFoundError as error:
         console.error("Error in profile [{}]: {}".format(context.profile_name, str(error)))
-        exit(2)
+        sys.exit(2)
 
     except ConfigError as error:
         console.error("Error in profile [{}]: {}".format(error.section, error.message))
-        exit(2)
+        sys.exit(2)
 
     # check that we have the minimum information we need
     if not profile.repository:
         console.error("Error in profile [{}]: a repository is needed in the configuration.".format(context.profile_name))
-        exit(2)
+        sys.exit(2)
 
     # this is the leftover from the command line
     restic.extend_arguments(context.args[1:])
@@ -192,10 +192,10 @@ def shell_command(command: str, console: Console, exit_on_returncode=True, displ
         console.debug("Starting shell command: " + command)
         returncode = call(command, shell=True, stdin=stdin_, stderr=stderr_)
         if returncode != 0 and exit_on_returncode:
-            exit(returncode)
+            sys.exit(returncode)
 
     except KeyboardInterrupt:
-        exit()
+        sys.exit()
 
 
 if __name__ == "__main__":
