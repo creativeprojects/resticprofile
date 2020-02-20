@@ -1,3 +1,11 @@
+# legacy python version
+/.vscode
+/.pytest_cache
+/scripts/deploy.sh
+*.pyc
+/src/resticprofile.egg-info
+/**/.eggs
+
 .DS_Store
 /examples/private
 /build
