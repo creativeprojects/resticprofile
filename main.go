@@ -2,15 +2,20 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
 	"os"
-	"os/exec"
+	"runtime"
+
+	"github.com/creativeprojects/resticprofile/constants"
 
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/priority"
 
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
+)
+
+const (
+	resticProfileVersion = "0.6.0"
 )
 
 func main() {
@@ -22,6 +27,8 @@ func main() {
 		return
 	}
 	clog.SetLevel(flags.quiet, flags.verbose)
+
+	banner()
 
 	configFile, err := filesearch.FindConfigurationFile(flags.config)
 	if err != nil {
@@ -40,40 +47,50 @@ func main() {
 		os.Exit(1)
 	}
 
+	err = setPriority(global.Nice, global.Priority)
+	if err != nil {
+		clog.Warning(err)
+	}
+
 	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
 	if err != nil {
 		clog.Error("Cannot find restic:", err)
 		clog.Warning("You can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
 		os.Exit(1)
 	}
-	fmt.Println(resticBinary)
 
-	// fmt.Println(flags)
-	// fmt.Println(flag.Args())
+	resticCommand := newCommand(resticBinary, flag.Args(), nil)
+	err = runCommand(resticCommand)
+	if err != nil {
+		clog.Error(err)
+		os.Exit(1)
+	}
 
 }
 
-func testRestic() {
-	path, err := exec.LookPath("restic")
-	if err != nil {
-		log.Fatal("restic is not available on your system")
-	}
-	fmt.Printf("restic is available at %s\n", path)
-
-	commands := []commandDefinition{
-		newCommand("restic", []string{"version"}, nil),
-		newCommand("restic", []string{"snapshots"}, []string{"RESTIC_REPOSITORY=/tmp"}),
-	}
-	err = runCommands(commands)
-	if err != nil {
-		log.Fatal(err)
-	}
+func banner() {
+	clog.Infof("resticprofile %s compiled with %s", resticProfileVersion, runtime.Version())
 }
 
-func testNice() {
-	command := newCommand("go", []string{"run", "./priority/check"}, nil)
-	err := runCommand(command)
-	if err != nil {
-		log.Fatal(err)
+func setPriority(nice int, class string) error {
+	var err error
+
+	if class != "" {
+		if classID, ok := constants.PriorityValues[class]; ok {
+			err = priority.SetClass(classID)
+			if err != nil {
+				return err
+			}
+		} else {
+			clog.Warningf("Incorrect value '%s' for priority in global section", class)
+		}
+		return nil
 	}
+	if nice != 0 {
+		err = priority.SetNice(nice)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
