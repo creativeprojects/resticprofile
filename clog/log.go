@@ -2,6 +2,8 @@ package clog
 
 import (
 	"log"
+
+	"github.com/fatih/color"
 )
 
 // LogLevel
@@ -15,15 +17,15 @@ const (
 var (
 	quiet   bool
 	verbose bool
-	Levels  [4]*Color
+	Levels  [4]*color.Color
 )
 
 func init() {
-	Levels = [4]*Color{
-		DebugLevel:   New(FgGreen),
-		InfoLevel:    New(FgYellow),
-		WarningLevel: New(FgRed),
-		ErrorLevel:   New(FgRed),
+	Levels = [4]*color.Color{
+		DebugLevel:   color.New(color.FgGreen),
+		InfoLevel:    color.New(color.FgYellow),
+		WarningLevel: color.New(color.FgRed),
+		ErrorLevel:   color.New(color.FgRed),
 	}
 }
 
@@ -76,14 +78,14 @@ func Errorf(format string, v ...interface{}) {
 	messagef(Levels[ErrorLevel], format, v...)
 }
 
-func message(color *Color, v ...interface{}) {
-	color.Set()
+func message(c *color.Color, v ...interface{}) {
+	c.Set()
 	log.Println(v...)
-	Unset()
+	color.Unset()
 }
 
-func messagef(color *Color, format string, v ...interface{}) {
-	color.Set()
+func messagef(c *color.Color, format string, v ...interface{}) {
+	c.Set()
 	log.Printf(format+"\n", v...)
-	Unset()
+	color.Unset()
 }
