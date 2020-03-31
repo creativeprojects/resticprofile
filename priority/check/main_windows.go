@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/creativeprojects/resticprofile/priority"
 	"golang.org/x/sys/windows"
 )
 
@@ -21,24 +22,5 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	switch class {
-	case windows.ABOVE_NORMAL_PRIORITY_CLASS:
-		fmt.Printf("Priority class: ABOVE_NORMAL")
-	case windows.BELOW_NORMAL_PRIORITY_CLASS:
-		fmt.Printf("Priority class: BELOW_NORMAL")
-	case windows.HIGH_PRIORITY_CLASS:
-		fmt.Printf("Priority class: HIGH")
-	case windows.IDLE_PRIORITY_CLASS:
-		fmt.Printf("Priority class: IDLE")
-	case windows.NORMAL_PRIORITY_CLASS:
-		fmt.Printf("Priority class: NORMAL")
-	case windows.PROCESS_MODE_BACKGROUND_BEGIN:
-		fmt.Printf("Priority class: PROCESS_MODE_BACKGROUND (begin)")
-	case windows.PROCESS_MODE_BACKGROUND_END:
-		fmt.Printf("Priority class: PROCESS_MODE_BACKGROUND (end)")
-	case windows.REALTIME_PRIORITY_CLASS:
-		fmt.Printf("Priority class: REALTIME")
-	default:
-		fmt.Printf("Priority class: 0x%x\n", class)
-	}
+	fmt.Printf("Priority class: %s\n", priority.GetPriorityClassName(class))
 }

@@ -55,10 +55,33 @@ func setPriorityClass(class uint32) error {
 	if err != nil {
 		return fmt.Errorf("Error getting current process handle: %v", err)
 	}
-	clog.Debugf("Setting priority class 0x%x", class)
+	clog.Debugf("Setting priority class %s", GetPriorityClassName(class))
 	err = windows.SetPriorityClass(handle, class)
 	if err != nil {
 		return fmt.Errorf("Error setting priority class: %v", err)
 	}
 	return nil
+}
+
+// GetPriorityClassName returns the name of the priority class
+func GetPriorityClassName(class uint32) string {
+	switch class {
+	case windows.ABOVE_NORMAL_PRIORITY_CLASS:
+		return "ABOVE_NORMAL"
+	case windows.BELOW_NORMAL_PRIORITY_CLASS:
+		return "BELOW_NORMAL"
+	case windows.HIGH_PRIORITY_CLASS:
+		return "HIGH"
+	case windows.IDLE_PRIORITY_CLASS:
+		return "IDLE"
+	case windows.NORMAL_PRIORITY_CLASS:
+		return "NORMAL"
+	case windows.PROCESS_MODE_BACKGROUND_BEGIN:
+		return "PROCESS_MODE_BACKGROUND (begin)"
+	case windows.PROCESS_MODE_BACKGROUND_END:
+		return "PROCESS_MODE_BACKGROUND (end)"
+	case windows.REALTIME_PRIORITY_CLASS:
+		return "REALTIME"
+	}
+	return fmt.Sprintf("0x%x", class)
 }
