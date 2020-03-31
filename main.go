@@ -1,12 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os/exec"
-
-	"github.com/creativeprojects/resticprofile/clog"
-	"github.com/creativeprojects/resticprofile/priority"
 
 	"github.com/spf13/viper"
 )
@@ -21,13 +19,20 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// testNice()
-	clog.SetLevel(false, true)
-	priority.SetNice(5)
-	testNice()
-	priority.SetClass(priority.Low)
-	testNice()
-	priority.SetClass(priority.Background)
-	testNice()
+	// clog.SetLevel(false, true)
+	// priority.SetNice(5)
+	// testNice()
+	// priority.SetClass(priority.Low)
+	// testNice()
+	// priority.SetClass(priority.Background)
+	// testNice()
+	flags := loadFlags()
+	if flags.help {
+		flag.Usage()
+		return
+	}
+	fmt.Println(flags)
+	fmt.Println(flag.Args())
 }
 
 func loadConfiguration() {
