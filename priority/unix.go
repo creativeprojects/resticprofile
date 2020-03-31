@@ -9,8 +9,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func setPriority(priority int) error {
-	if priority < 0 || priority > 19 {
+// SetNice sets the unix "nice" value of the current process
+func SetNice(priority int) error {
+	if priority < -20 || priority > 19 {
 		return fmt.Errorf("Unexpected priority value %d", priority)
 	}
 	pid := unix.Getpid()
@@ -20,4 +21,9 @@ func setPriority(priority int) error {
 		return fmt.Errorf("Error setting process priority: %v", err)
 	}
 	return nil
+}
+
+// SetClass sets the priority class of the current process
+func SetClass(class int) error {
+	return SetNice(class)
 }

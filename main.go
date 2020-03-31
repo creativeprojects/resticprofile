@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/resticprofile/priority"
 
 	"github.com/spf13/viper"
 )
@@ -21,7 +22,11 @@ func main() {
 	// }
 	// testNice()
 	clog.SetLevel(false, true)
-	priority.setPriority(10)
+	priority.SetNice(5)
+	testNice()
+	priority.SetClass(priority.Low)
+	testNice()
+	priority.SetClass(priority.Background)
 	testNice()
 }
 
