@@ -5,12 +5,24 @@ import (
 	"log"
 	"os/exec"
 
+	"github.com/creativeprojects/resticprofile/clog"
+
 	"github.com/spf13/viper"
 )
 
 func main() {
-	loadConfiguration()
-	testRestic()
+	// loadConfiguration()
+	// testRestic()
+	// testNice()
+	// var err error
+	// err = setNice(10)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// testNice()
+	clog.SetLevel(false, true)
+	setPriority(10)
+	testNice()
 }
 
 func loadConfiguration() {
@@ -35,6 +47,14 @@ func testRestic() {
 		newCommand("restic", []string{"snapshots"}, []string{"RESTIC_REPOSITORY=/tmp"}),
 	}
 	err = runCommands(commands)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func testNice() {
+	command := newCommand("go", []string{"run", "./priority"}, nil)
+	err := runCommand(command)
 	if err != nil {
 		log.Fatal(err)
 	}
