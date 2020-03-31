@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"runtime"
 
@@ -65,8 +66,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	resticCommand := newCommand(resticBinary, flag.Args(), nil)
-	err = runCommand(resticCommand)
+	// The remaining arguments are the command and the restic flags
+	resticArguments := flag.Args()
+	resticCommand := constants.DefaultCommand
+	if len(resticArguments) > 0 {
+		resticCommand = resticArguments[0]
+		if len(resticArguments) > 1 {
+			resticArguments = resticArguments[1:]
+		} else {
+			resticArguments = nil
+		}
+	}
+
+	if resticCommand == constants.CommandProfiles {
+		displayProfiles()
+		return
+	}
+
+	rCommand := newCommand(resticBinary, flag.Args(), nil)
+	err = runCommand(rCommand)
 	if err != nil {
 		clog.Error(err)
 		os.Exit(1)
@@ -99,4 +117,12 @@ func setPriority(nice int, class string) error {
 		}
 	}
 	return nil
+}
+
+func displayProfiles() {
+	fmt.Println("\nAvailable profiles in the configuration:")
+	for _, name := range config.ProfileKeys() {
+		fmt.Println("\t", name)
+	}
+	fmt.Println("")
 }

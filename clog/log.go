@@ -19,29 +19,27 @@ var (
 	verbose   bool
 	colorMaps map[string]([4]*color.Color)
 	levelMap  [4]*color.Color
-	bold      *color.Color
 )
 
 func init() {
-	bold = color.New(color.Bold)
 	colorMaps = map[string]([4]*color.Color){
 		"none": [4]*color.Color{
 			DebugLevel:   nil,
 			InfoLevel:    nil,
-			WarningLevel: nil,
-			ErrorLevel:   nil,
+			WarningLevel: color.New(color.Bold),
+			ErrorLevel:   color.New(color.Bold),
 		},
 		"light": [4]*color.Color{
 			DebugLevel:   color.New(color.FgGreen),
 			InfoLevel:    color.New(color.FgCyan),
-			WarningLevel: color.New(color.FgMagenta),
-			ErrorLevel:   color.New(color.FgRed),
+			WarningLevel: color.New(color.FgMagenta, color.Bold),
+			ErrorLevel:   color.New(color.FgRed, color.Bold),
 		},
 		"dark": [4]*color.Color{
 			DebugLevel:   color.New(color.FgHiGreen),
 			InfoLevel:    color.New(color.FgHiCyan),
-			WarningLevel: color.New(color.FgHiMagenta),
-			ErrorLevel:   color.New(color.FgHiRed),
+			WarningLevel: color.New(color.FgHiMagenta, color.Bold),
+			ErrorLevel:   color.New(color.FgHiRed, color.Bold),
 		},
 	}
 	levelMap = colorMaps["light"]
@@ -93,22 +91,18 @@ func Infof(format string, v ...interface{}) {
 }
 
 func Warning(v ...interface{}) {
-	setBold()
 	message(levelMap[WarningLevel], v...)
 }
 
 func Warningf(format string, v ...interface{}) {
-	setBold()
 	messagef(levelMap[WarningLevel], format, v...)
 }
 
 func Error(v ...interface{}) {
-	setBold()
 	message(levelMap[ErrorLevel], v...)
 }
 
 func Errorf(format string, v ...interface{}) {
-	setBold()
 	messagef(levelMap[ErrorLevel], format, v...)
 }
 
@@ -130,9 +124,6 @@ func setColor(c *color.Color) {
 	}
 }
 
-func setBold() {
-	bold.Set()
-}
 func unsetColor() {
 	color.Unset()
 }
