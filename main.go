@@ -4,45 +4,53 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 
-	"github.com/spf13/viper"
+	"github.com/creativeprojects/resticprofile/filesearch"
+
+	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/resticprofile/config"
 )
 
 func main() {
-	// loadConfiguration()
-	// testRestic()
-	// testNice()
-	// var err error
-	// err = setNice(10)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// testNice()
-	// clog.SetLevel(false, true)
-	// priority.SetNice(5)
-	// testNice()
-	// priority.SetClass(priority.Low)
-	// testNice()
-	// priority.SetClass(priority.Background)
-	// testNice()
+	var err error
+
 	flags := loadFlags()
 	if flags.help {
 		flag.Usage()
 		return
 	}
-	fmt.Println(flags)
-	fmt.Println(flag.Args())
-}
+	clog.SetLevel(flags.quiet, flags.verbose)
 
-func loadConfiguration() {
-	viper.SetConfigType("toml")
-	viper.SetConfigName("profiles.conf")
-	viper.AddConfigPath("./examples")
-	err := viper.ReadInConfig() // Find and read the config file
+	configFile, err := filesearch.FindConfigurationFile(flags.config)
 	if err != nil {
-		panic(err)
+		clog.Error(err)
+		os.Exit(1)
 	}
+
+	err = config.LoadConfiguration(configFile)
+	if err != nil {
+		clog.Error("Cannot load configuration file:", err)
+		os.Exit(1)
+	}
+	global, err := config.GetGlobalSection()
+	if err != nil {
+		clog.Error("Cannot load global configuration:", err)
+		os.Exit(1)
+	}
+
+	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
+	if err != nil {
+		clog.Error("Cannot find restic:", err)
+		clog.Warning("You can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
+		os.Exit(1)
+	}
+	fmt.Println(resticBinary)
+
+	// fmt.Println(flags)
+	// fmt.Println(flag.Args())
+
 }
 
 func testRestic() {
