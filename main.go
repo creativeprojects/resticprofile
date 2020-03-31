@@ -27,6 +27,12 @@ func main() {
 		return
 	}
 	clog.SetLevel(flags.quiet, flags.verbose)
+	if flags.theme != "" {
+		clog.SetTheme(flags.theme)
+	}
+	if flags.noAnsi {
+		clog.Colorize(false)
+	}
 
 	banner()
 

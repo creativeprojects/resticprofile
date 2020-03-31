@@ -14,6 +14,7 @@ type commandLineFlags struct {
 	config  string
 	name    string
 	noAnsi  bool
+	theme   string
 }
 
 func loadFlags() commandLineFlags {
@@ -42,7 +43,8 @@ func loadFlags() commandLineFlags {
 	flag.StringVar(&flags.name, "n", constants.DefaultProfileName, "profile name - shorthand")
 	flag.StringVar(&flags.name, "name", constants.DefaultProfileName, "profile name")
 
-	flag.BoolVar(&flags.noAnsi, "no-ansi", false, "disable console colouring")
+	flag.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (used for console colouring)")
+	flag.StringVar(&flags.theme, "theme", constants.DefaultTheme, "colouring theme (dark, light, none)")
 
 	flag.Parse()
 	return flags

@@ -15,18 +15,48 @@ const (
 )
 
 var (
-	quiet   bool
-	verbose bool
-	Levels  [4]*color.Color
+	quiet     bool
+	verbose   bool
+	colorMaps map[string]([4]*color.Color)
+	levelMap  [4]*color.Color
+	bold      *color.Color
 )
 
 func init() {
-	Levels = [4]*color.Color{
-		DebugLevel:   color.New(color.FgGreen),
-		InfoLevel:    color.New(color.FgYellow),
-		WarningLevel: color.New(color.FgRed),
-		ErrorLevel:   color.New(color.FgRed),
+	bold = color.New(color.Bold)
+	colorMaps = map[string]([4]*color.Color){
+		"none": [4]*color.Color{
+			DebugLevel:   nil,
+			InfoLevel:    nil,
+			WarningLevel: nil,
+			ErrorLevel:   nil,
+		},
+		"light": [4]*color.Color{
+			DebugLevel:   color.New(color.FgGreen),
+			InfoLevel:    color.New(color.FgCyan),
+			WarningLevel: color.New(color.FgMagenta),
+			ErrorLevel:   color.New(color.FgRed),
+		},
+		"dark": [4]*color.Color{
+			DebugLevel:   color.New(color.FgHiGreen),
+			InfoLevel:    color.New(color.FgHiCyan),
+			WarningLevel: color.New(color.FgHiMagenta),
+			ErrorLevel:   color.New(color.FgHiRed),
+		},
 	}
+	levelMap = colorMaps["light"]
+}
+
+func SetTheme(theme string) {
+	var ok bool
+	levelMap, ok = colorMaps[theme]
+	if !ok {
+		levelMap = colorMaps["none"]
+	}
+}
+
+func Colorize(colorize bool) {
+	color.NoColor = !colorize
 }
 
 func SetLevel(quietFlag, verboseFlag bool) {
@@ -38,54 +68,71 @@ func Debug(v ...interface{}) {
 	if !verbose {
 		return
 	}
-	message(Levels[DebugLevel], v...)
+	message(levelMap[DebugLevel], v...)
 }
 
 func Debugf(format string, v ...interface{}) {
 	if !verbose {
 		return
 	}
-	messagef(Levels[DebugLevel], format, v...)
+	messagef(levelMap[DebugLevel], format, v...)
 }
 
 func Info(v ...interface{}) {
 	if quiet {
 		return
 	}
-	message(Levels[InfoLevel], v...)
+	message(levelMap[InfoLevel], v...)
 }
 
 func Infof(format string, v ...interface{}) {
 	if quiet {
 		return
 	}
-	messagef(Levels[InfoLevel], format, v...)
+	messagef(levelMap[InfoLevel], format, v...)
 }
 
 func Warning(v ...interface{}) {
-	message(Levels[WarningLevel], v...)
+	setBold()
+	message(levelMap[WarningLevel], v...)
 }
 
 func Warningf(format string, v ...interface{}) {
-	messagef(Levels[WarningLevel], format, v...)
+	setBold()
+	messagef(levelMap[WarningLevel], format, v...)
 }
 
 func Error(v ...interface{}) {
-	message(Levels[ErrorLevel], v...)
+	setBold()
+	message(levelMap[ErrorLevel], v...)
 }
 
 func Errorf(format string, v ...interface{}) {
-	messagef(Levels[ErrorLevel], format, v...)
+	setBold()
+	messagef(levelMap[ErrorLevel], format, v...)
 }
 
 func message(c *color.Color, v ...interface{}) {
-	c.Set()
+	setColor(c)
 	log.Println(v...)
-	color.Unset()
+	unsetColor()
 }
 
 func messagef(c *color.Color, format string, v ...interface{}) {
-	c.Set()
+	setColor(c)
 	log.Printf(format+"\n", v...)
+	unsetColor()
+}
+
+func setColor(c *color.Color) {
+	if c != nil {
+		c.Set()
+	}
+}
+
+func setBold() {
+	bold.Set()
+}
+func unsetColor() {
 	color.Unset()
 }
