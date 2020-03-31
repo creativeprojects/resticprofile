@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// This is only displaying the priority of the current process (for testing)
 func main() {
 	pid := unix.Getpid()
 	pri, err := unix.Getpriority(unix.PRIO_PROCESS, pid)

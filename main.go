@@ -21,7 +21,7 @@ func main() {
 	// }
 	// testNice()
 	clog.SetLevel(false, true)
-	setPriority(10)
+	priority.setPriority(10)
 	testNice()
 }
 
@@ -53,7 +53,7 @@ func testRestic() {
 }
 
 func testNice() {
-	command := newCommand("go", []string{"run", "./priority"}, nil)
+	command := newCommand("go", []string{"run", "./priority/check"}, nil)
 	err := runCommand(command)
 	if err != nil {
 		log.Fatal(err)

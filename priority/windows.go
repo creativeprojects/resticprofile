@@ -1,6 +1,6 @@
 //+build windows
 
-package main
+package priority
 
 import (
 	"errors"
@@ -14,21 +14,21 @@ func setPriority(priority int) error {
 	if priority < 0 || priority > 19 {
 		return fmt.Errorf("Unexpected priority value %d", priority)
 	}
-	class := windows.NORMAL_PRIORITY_CLASS
+	var class uint32 = windows.NORMAL_PRIORITY_CLASS
 	if priority == 19 {
 		class = windows.IDLE_PRIORITY_CLASS
 	} else if priority == -20 {
 		class = windows.HIGH_PRIORITY_CLASS
 	} else if priority > 0 {
-		class = BELOW_NORMAL_PRIORITY_CLASS
+		class = windows.BELOW_NORMAL_PRIORITY_CLASS
 	} else if priority < 0 {
-		class = ABOVE_NORMAL_PRIORITY_CLASS
+		class = windows.ABOVE_NORMAL_PRIORITY_CLASS
 	}
 	handle, err := windows.GetCurrentProcess()
 	if err != nil {
 		return fmt.Errorf("Error getting current process handle: %v", err)
 	}
-	clog.Debugf("Setting priority class %d to handle %d", priority, handle)
+	clog.Debugf("Setting priority class 0x%x", class)
 	err = windows.SetPriorityClass(handle, class)
 	if err != nil {
 		return fmt.Errorf("Error setting priority class: %v", err)
