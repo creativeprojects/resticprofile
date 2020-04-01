@@ -28,8 +28,8 @@ matrix:
       go: "1.14.x"
       cache:
         directories:
-          - "%USERPROFILE%/AppData/Local/go-build"
-          - "%USERPROFILE%/gopath/pkg/mod"
+          - $USERPROFILE/AppData/Local/go-build
+          - $USERPROFILE/gopath/pkg/mod
 
 
 install:
