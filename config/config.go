@@ -1,6 +1,7 @@
 package config
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/constants"
@@ -11,7 +12,10 @@ import (
 )
 
 func LoadConfiguration(configFile string) error {
-	viper.SetConfigType("toml")
+	// For compatibility with the previous versions, a .conf file is TOML format
+	if filepath.Ext(configFile) == ".conf" {
+		viper.SetConfigType("toml")
+	}
 	viper.SetConfigFile(configFile)
 	err := viper.ReadInConfig()
 	if err != nil {
