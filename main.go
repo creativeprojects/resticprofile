@@ -69,7 +69,7 @@ func main() {
 		if len(resticArguments) > 1 {
 			resticArguments = resticArguments[1:]
 		} else {
-			resticArguments = nil
+			resticArguments = make([]string, 0)
 		}
 	}
 
@@ -79,26 +79,12 @@ func main() {
 		return
 	}
 
-	rCommand := newCommand(resticBinary, flag.Args(), nil)
+	rCommand := newCommand(resticBinary, append([]string{resticCommand}, resticArguments...), nil)
 	err = runCommand(rCommand)
 	if err != nil {
 		clog.Error(err)
 		os.Exit(1)
 	}
-
-	var section *config.Profile
-	section, err = config.LoadProfile("default")
-	if err != nil {
-		clog.Warning(err)
-	}
-	displayStruct("default", section)
-
-	section, err = config.LoadProfile("root")
-	if err != nil {
-		clog.Warning(err)
-	}
-	displayStruct("root", section)
-
 }
 
 func setLoggerFlags(flags commandLineFlags) {

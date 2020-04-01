@@ -76,3 +76,23 @@ func LoadProfile(profileKey string) (*Profile, error) {
 	}
 	return profile, nil
 }
+
+func (p *Profile) GetCommonFlags() []string {
+	flags := make([]string, 0)
+	return flags
+}
+
+func (p *Profile) GetCommandFlags(command string) []string {
+	flags := make([]string, 0)
+	return flags
+}
+
+func (p *Profile) GetRetentionFlags() []string {
+	flags := make([]string, 0)
+	return flags
+}
+
+func (p *Profile) GetBackupSource() []string {
+	sourcePaths := make([]string, 0)
+	return sourcePaths
+}
