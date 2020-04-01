@@ -11,11 +11,11 @@ matrix:
     - name: "Python 3.6 on macOS X"
       os: osx
       language: shell
-    - name: "Python 3.7 on Windows"
+    - name: "Python 3.8 on Windows"
       os: windows
       language: shell
       before_install: choco install -y python
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 install:
   - pip3 install -r tests-requirements.txt
