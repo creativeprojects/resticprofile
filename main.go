@@ -85,6 +85,12 @@ func main() {
 		clog.Error(err)
 		os.Exit(1)
 	}
+
+	profile, err := config.LoadProfile("root")
+	if err != nil {
+		clog.Warning(err)
+	}
+	fmt.Println(profile.GetCommonFlags())
 }
 
 func setLoggerFlags(flags commandLineFlags) {
