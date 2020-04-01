@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/creativeprojects/resticprofile/constants"
 
@@ -80,6 +81,7 @@ func main() {
 
 	if resticCommand == constants.CommandProfiles {
 		displayProfiles()
+		displayGroups()
 		return
 	}
 
@@ -120,9 +122,30 @@ func setPriority(nice int, class string) error {
 }
 
 func displayProfiles() {
-	fmt.Println("\nAvailable profiles in the configuration:")
-	for _, name := range config.ProfileKeys() {
-		fmt.Println("\t", name)
+	profileSections := config.ProfileSections()
+	if profileSections == nil || len(profileSections) == 0 {
+		fmt.Println("\nThere's no available profile in the configuration")
+	} else {
+		fmt.Println("\nProfiles available:")
+		for name, sections := range profileSections {
+			if sections == nil || len(sections) == 0 {
+				fmt.Printf("\t%s\n", name)
+			} else {
+				fmt.Printf("\t%s\t(%s)\n", name, strings.Join(sections, ", "))
+			}
+		}
+	}
+	fmt.Println("")
+}
+
+func displayGroups() {
+	groups := config.ProfileGroups()
+	if groups == nil || len(groups) == 0 {
+		return
+	}
+	fmt.Println("Groups available:")
+	for name, groupList := range groups {
+		fmt.Printf("\t%s: %s\n", name, strings.Join(groupList, ", "))
 	}
 	fmt.Println("")
 }

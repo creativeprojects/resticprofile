@@ -1,4 +1,4 @@
-package profile
+package config
 
 type Profile struct {
 	Quiet        bool                   `mapstructure:"quiet"`
@@ -14,6 +14,7 @@ type Profile struct {
 	UseStdin     bool                   `mapstructure:"stdin"`
 	Inherit      string                 `mapstructure:"inherit"`
 	Source       []string               `mapstructure:"source"`
+	Lock         bool                   `mapstructure:"bool"`
 	OtherFlags   map[string]interface{} `mapstructure:",remain"`
 
 	Name        string
@@ -24,4 +25,8 @@ func NewProfile(name string) *Profile {
 	return &Profile{
 		Name: name,
 	}
+}
+
+func MergeProfiles(parent, child *Profile) *Profile {
+	return nil
 }
