@@ -16,6 +16,8 @@ The configuration file is [TOML](https://github.com/toml-lang/toml) format:
 * You can run shell commands before or after a backup
 * Allows to start the restic process using _nice_ (not available on Windows) and/or _ionice_ (only available on Linux)
 
+The next version will include support for other file formats: JSON, TOML, YAML, HCL, INI, envfile or Java properties
+
 ## Requirements
 
 **resticprofile** needs python >=3.5 installed on your machine.
