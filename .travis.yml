@@ -1,15 +1,7 @@
 language: go
-sudo: false
 
 matrix:
   include:
-    - os: linux
-      go: "1.12.x"
-      cache:
-        directories:
-          - $HOME/.cache/go-build
-          - $HOME/gopath/pkg/mod
-
     - os: linux
       go: "1.13.x"
       cache:
@@ -31,6 +23,13 @@ matrix:
         directories:
           - $HOME/Library/Caches/go-build
           - $HOME/gopath/pkg/mod
+
+    - os: windows
+      go: "1.14.x"
+      cache:
+        directories:
+          - "%USERPROFILE%/AppData/Local/go-build"
+          - "%USERPROFILE%/gopath/pkg/mod"
 
 
 install:
