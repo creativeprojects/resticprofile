@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -28,14 +29,7 @@ func main() {
 		flag.Usage()
 		return
 	}
-	clog.SetLevel(flags.quiet, flags.verbose)
-	if flags.theme != "" {
-		clog.SetTheme(flags.theme)
-	}
-	if flags.noAnsi {
-		clog.Colorize(false)
-	}
-
+	setLoggerFlags(flags)
 	banner()
 
 	configFile, err := filesearch.FindConfigurationFile(flags.config)
@@ -69,7 +63,7 @@ func main() {
 
 	// The remaining arguments are the command and the restic flags
 	resticArguments := flag.Args()
-	resticCommand := constants.DefaultCommand
+	resticCommand := global.DefaultCommand
 	if len(resticArguments) > 0 {
 		resticCommand = resticArguments[0]
 		if len(resticArguments) > 1 {
@@ -92,6 +86,39 @@ func main() {
 		os.Exit(1)
 	}
 
+	var section *config.Profile
+	section, err = config.LoadProfile("default")
+	if err != nil {
+		clog.Warning(err)
+	}
+	displayStruct("default", section)
+
+	section, err = config.LoadProfile("root")
+	if err != nil {
+		clog.Warning(err)
+	}
+	displayStruct("root", section)
+
+}
+
+func setLoggerFlags(flags commandLineFlags) {
+	if flags.theme != "" {
+		clog.SetTheme(flags.theme)
+	}
+	if flags.noAnsi {
+		clog.Colorize(false)
+	}
+
+	if flags.quiet && flags.verbose {
+		clog.Warning("You specified -quiet (-q) and -verbose (-v) at the same time. Selection is verbose.")
+		flags.quiet = false
+	}
+	if flags.quiet {
+		clog.Quiet()
+	}
+	if flags.verbose {
+		clog.Verbose()
+	}
 }
 
 func banner() {
@@ -148,4 +175,9 @@ func displayGroups() {
 		fmt.Printf("\t%s: %s\n", name, strings.Join(groupList, ", "))
 	}
 	fmt.Println("")
+}
+
+func displayStruct(name string, value interface{}) {
+	s, _ := json.MarshalIndent(value, "", "\t")
+	fmt.Printf("%s:\n%s\n\n", name, s)
 }

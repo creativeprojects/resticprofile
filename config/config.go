@@ -11,6 +11,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	// profileSections is a cache of ProfileSections()
+	profileSections map[string][]string = nil
+)
+
 func LoadConfiguration(configFile string) error {
 	// For compatibility with the previous versions, a .conf file is TOML format
 	if filepath.Ext(configFile) == ".conf" {
@@ -60,11 +65,15 @@ func ProfileGroups() map[string][]string {
 
 // ProfileSections returns a list of profiles with all the sections defined inside each
 func ProfileSections() map[string][]string {
+	// Is the value cached?
+	if profileSections != nil {
+		return profileSections
+	}
 	allKeys := viper.AllKeys()
 	if allKeys == nil || len(allKeys) == 0 {
 		return nil
 	}
-	profiles := make(map[string][]string, 0)
+	profileSections = make(map[string][]string, 0)
 	for _, keys := range allKeys {
 		keyPath := strings.SplitN(keys, ".", 3)
 		if len(keyPath) > 0 {
@@ -73,10 +82,10 @@ func ProfileSections() map[string][]string {
 			}
 			var commands []string
 			var found bool
-			if commands, found = profiles[keyPath[0]]; !found {
+			if commands, found = profileSections[keyPath[0]]; !found {
 				commands = make([]string, 0)
 			} else {
-				commands = profiles[keyPath[0]]
+				commands = profileSections[keyPath[0]]
 			}
 			// If there's more than two keys, it means the second key is a group of keys, so it's a "command" definition
 			if len(keyPath) > 2 {
@@ -84,8 +93,8 @@ func ProfileSections() map[string][]string {
 					commands = append(commands, keyPath[1])
 				}
 			}
-			profiles[keyPath[0]] = commands
+			profileSections[keyPath[0]] = commands
 		}
 	}
-	return profiles
+	return profileSections
 }

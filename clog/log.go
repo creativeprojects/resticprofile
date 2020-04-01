@@ -57,9 +57,14 @@ func Colorize(colorize bool) {
 	color.NoColor = !colorize
 }
 
-func SetLevel(quietFlag, verboseFlag bool) {
-	quiet = quietFlag
-	verbose = verboseFlag
+func Quiet() {
+	quiet = true
+	verbose = false
+}
+
+func Verbose() {
+	verbose = true
+	quiet = false
 }
 
 func Debug(v ...interface{}) {

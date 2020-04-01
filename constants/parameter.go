@@ -9,4 +9,5 @@ const (
 	ParameterDefaultCommand = "default-command"
 	ParameterInitialize     = "initialize"
 	ParameterResticBinary   = "restic-binary"
+	ParameterInherit        = "inherit"
 )

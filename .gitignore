@@ -13,3 +13,6 @@
 
 # binary
 /resticprofile
+
+# test output
+/coverage.out
