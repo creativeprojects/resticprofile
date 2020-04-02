@@ -9,22 +9,25 @@ import (
 )
 
 type Profile struct {
-	Name         string
-	Quiet        bool                   `mapstructure:"quiet" argument:"quiet"`
-	Verbose      bool                   `mapstructure:"verbose" argument:"verbose"`
-	Repository   string                 `mapstructure:"repository" argument:"repo"`
-	PasswordFile string                 `mapstructure:"password-file" argument:"password-file"`
-	Initialize   bool                   `mapstructure:"initialize"`
-	Inherit      string                 `mapstructure:"inherit"`
-	Lock         bool                   `mapstructure:"lock"`
-	Environment  map[string]string      `mapstructure:"env"`
-	Backup       *BackupSection         `mapstructure:"backup"`
-	Retention    *RetentionSection      `mapstructure:"retention"`
-	Snapshots    map[string]interface{} `mapstructure:"snapshots"`
-	Forget       map[string]interface{} `mapstructure:"forget"`
-	Check        map[string]interface{} `mapstructure:"check"`
-	Mount        map[string]interface{} `mapstructure:"mount"`
-	OtherFlags   map[string]interface{} `mapstructure:",remain"`
+	Name          string
+	Quiet         bool                   `mapstructure:"quiet" argument:"quiet"`
+	Verbose       bool                   `mapstructure:"verbose" argument:"verbose"`
+	Repository    string                 `mapstructure:"repository" argument:"repo"`
+	PasswordFile  string                 `mapstructure:"password-file" argument:"password-file"`
+	CacheDir      string                 `mapstructure:"cache-dir" argument:"cache-dir"`
+	CACert        string                 `mapstructure:"cacert" argument:"cacert"`
+	TLSClientCert string                 `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
+	Initialize    bool                   `mapstructure:"initialize"`
+	Inherit       string                 `mapstructure:"inherit"`
+	Lock          bool                   `mapstructure:"lock"`
+	Environment   map[string]string      `mapstructure:"env"`
+	Backup        *BackupSection         `mapstructure:"backup"`
+	Retention     *RetentionSection      `mapstructure:"retention"`
+	Snapshots     map[string]interface{} `mapstructure:"snapshots"`
+	Forget        map[string]interface{} `mapstructure:"forget"`
+	Check         map[string]interface{} `mapstructure:"check"`
+	Mount         map[string]interface{} `mapstructure:"mount"`
+	OtherFlags    map[string]interface{} `mapstructure:",remain"`
 }
 
 type BackupSection struct {
@@ -34,6 +37,8 @@ type BackupSection struct {
 	RunAfter    []string               `mapstructure:"run-after"`
 	UseStdin    bool                   `mapstructure:"stdin"`
 	Source      []string               `mapstructure:"source"`
+	ExcludeFile []string               `mapstructure:"exclude-file" argument:"exclude-file"`
+	FilesFrom   []string               `mapstructure:"files-from" argument:"files-from"`
 	OtherFlags  map[string]interface{} `mapstructure:",remain"`
 }
 
@@ -85,7 +90,47 @@ func LoadProfile(profileKey string) (*Profile, error) {
 }
 
 func (p *Profile) SetRootPath(rootPath string) {
-	p.PasswordFile = filepath.Join(rootPath, p.PasswordFile)
+
+	if p.PasswordFile != "" && !filepath.IsAbs(p.PasswordFile) {
+		p.PasswordFile = filepath.Join(rootPath, p.PasswordFile)
+	}
+	if p.CacheDir != "" && !filepath.IsAbs(p.CacheDir) {
+		p.CacheDir = filepath.Join(rootPath, p.CacheDir)
+	}
+	if p.CACert != "" && !filepath.IsAbs(p.CACert) {
+		p.CACert = filepath.Join(rootPath, p.CACert)
+	}
+	if p.TLSClientCert != "" && !filepath.IsAbs(p.TLSClientCert) {
+		p.TLSClientCert = filepath.Join(rootPath, p.TLSClientCert)
+	}
+
+	if p.Backup.ExcludeFile != nil && len(p.Backup.ExcludeFile) > 0 {
+		for i := 0; i < len(p.Backup.ExcludeFile); i++ {
+			if filepath.IsAbs(p.Backup.ExcludeFile[i]) {
+				continue
+			}
+			p.Backup.ExcludeFile[i] = filepath.Join(rootPath, p.Backup.ExcludeFile[i])
+		}
+	}
+
+	if p.Backup.FilesFrom != nil && len(p.Backup.FilesFrom) > 0 {
+		for i := 0; i < len(p.Backup.FilesFrom); i++ {
+			if filepath.IsAbs(p.Backup.FilesFrom[i]) {
+				continue
+			}
+			p.Backup.FilesFrom[i] = filepath.Join(rootPath, p.Backup.FilesFrom[i])
+		}
+	}
+
+	// Do we need to do source files? (it wasn't the case before v0.6.0)
+	if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
+		for i := 0; i < len(p.Backup.Source); i++ {
+			if filepath.IsAbs(p.Backup.Source[i]) {
+				continue
+			}
+			p.Backup.Source[i] = filepath.Join(rootPath, p.Backup.Source[i])
+		}
+	}
 }
 
 func (p *Profile) GetCommonFlags() map[string][]string {
