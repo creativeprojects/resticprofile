@@ -96,6 +96,14 @@ inherit = "parent"
 	assert.Equal(t, false, profile.Initialize)
 }
 
+func TestUnknownParent(t *testing.T) {
+	testConfig := `[profile]
+inherit = "parent"
+`
+	_, err := getProfile(testConfig, "profile")
+	assert.Error(t, err)
+}
+
 func TestMultiInheritance(t *testing.T) {
 	testConfig := `
 [grand-parent]

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/viper"
 )
@@ -60,6 +62,9 @@ func LoadProfile(profileKey string) (*Profile, error) {
 			profile, err = LoadProfile(inherit)
 			if err != nil {
 				return nil, err
+			}
+			if profile == nil {
+				return nil, fmt.Errorf("Error in profile '%s': Parent profile '%s' not found", profileKey, inherit)
 			}
 			profile.Name = profileKey
 		}
