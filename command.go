@@ -1,12 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
-
-	"github.com/creativeprojects/resticprofile/clog"
 )
 
 type commandDefinition struct {
@@ -44,26 +43,14 @@ func runCommands(commands []commandDefinition) error {
 
 func runCommand(command commandDefinition) error {
 	var cmd *exec.Cmd
+	var err error
 
 	if !command.shell {
 		cmd = exec.Command(command.command, command.args...)
 	} else {
-		flatCommand := append([]string{command.command}, command.args...)
-		if runtime.GOOS == "windows" {
-			shell, err := exec.LookPath("cmd.exe")
-			if err != nil {
-				return err
-			}
-			clog.Debugf("Using shell %s", shell)
-			args := append([]string{"/C", command.command}, removeQuotes(command.args)...)
-			cmd = exec.Command(shell, args...)
-		} else {
-			shell, err := exec.LookPath("sh")
-			if err != nil {
-				return err
-			}
-			clog.Debugf("Using shell %s", shell)
-			cmd = exec.Command(shell, "-c", strings.Join(flatCommand, " "))
+		cmd, err = getShellCommand(command.command, command.args)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -81,20 +68,50 @@ func runCommand(command commandDefinition) error {
 		cmd.Env = append(cmd.Env, command.env...)
 	}
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+// getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
+func getShellCommand(command string, args []string) (*exec.Cmd, error) {
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "windows" {
+		shell, err := exec.LookPath("cmd.exe")
+		if err != nil {
+			return nil, fmt.Errorf("Cannot find shell executable (cmd.exe) in path")
+		}
+		args := append([]string{"/C", command}, removeQuotes(args)...)
+		cmd = exec.Command(shell, args...)
+	} else {
+		shell, err := exec.LookPath("sh")
+		if err != nil {
+			return nil, fmt.Errorf("Cannot find shell executable (sh) in path")
+		}
+		flatCommand := append([]string{command}, args...)
+		cmd = exec.Command(shell, "-c", strings.Join(flatCommand, " "))
+	}
+	return cmd, nil
+}
+
+// removeQuotes removes single and double quotes when the whole string is quoted
 func removeQuotes(args []string) []string {
 	if args == nil {
 		return nil
 	}
+
+	singleQuote := `'`
+	doubleQuote := `"`
+
 	for i := 0; i < len(args); i++ {
-		if strings.HasPrefix(args[i], `"`) && strings.HasSuffix(args[i], `"`) {
-			args[i] = strings.Trim(args[i], `"`)
+		if strings.HasPrefix(args[i], doubleQuote) && strings.HasSuffix(args[i], doubleQuote) {
+			args[i] = strings.Trim(args[i], doubleQuote)
+
+		} else if strings.HasPrefix(args[i], singleQuote) && strings.HasSuffix(args[i], singleQuote) {
+			args[i] = strings.Trim(args[i], singleQuote)
 		}
 	}
 	return args
