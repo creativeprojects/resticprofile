@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"github.com/creativeprojects/resticprofile/constants"
 
@@ -82,8 +85,20 @@ func main() {
 		clog.Errorf("Profile '%s' not found", flags.name)
 		os.Exit(1)
 	}
+
+	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
+	// So we need to fix all relative files
+	rootPath := filepath.Dir(viper.ConfigFileUsed())
+	clog.Debugf("File in configuration are relative to '%s'", rootPath)
+	profile.SetRootPath(rootPath)
+
+	// resticBinary = "/Users/gouarfig/go/bin/showenv"
 	wrapper := newResticWrapper(resticBinary, profile, resticArguments)
-	err = wrapper.command(resticCommand)
+	if (global.Initialize || profile.Initialize) && resticCommand != constants.CommandInit {
+		wrapper.runInitialize()
+		// it's ok for the initialize to error out when the repository exists
+	}
+	err = wrapper.runCommand(resticCommand)
 	if err != nil {
 		clog.Error(err)
 		os.Exit(1)

@@ -2,27 +2,29 @@ package config
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/viper"
 )
 
 type Profile struct {
-	Name        string
-	Quiet       bool                   `mapstructure:"quiet" argument:"quiet"`
-	Verbose     bool                   `mapstructure:"verbose" argument:"verbose"`
-	Repository  string                 `mapstructure:"repository" argument:"repo"`
-	Initialize  bool                   `mapstructure:"initialize"`
-	Inherit     string                 `mapstructure:"inherit"`
-	Lock        bool                   `mapstructure:"lock"`
-	Environment map[string]string      `mapstructure:"env"`
-	Backup      *BackupSection         `mapstructure:"backup"`
-	Retention   *RetentionSection      `mapstructure:"retention"`
-	Snapshots   map[string]interface{} `mapstructure:"snapshots"`
-	Forget      map[string]interface{} `mapstructure:"forget"`
-	Check       map[string]interface{} `mapstructure:"check"`
-	Mount       map[string]interface{} `mapstructure:"mount"`
-	OtherFlags  map[string]interface{} `mapstructure:",remain"`
+	Name         string
+	Quiet        bool                   `mapstructure:"quiet" argument:"quiet"`
+	Verbose      bool                   `mapstructure:"verbose" argument:"verbose"`
+	Repository   string                 `mapstructure:"repository" argument:"repo"`
+	PasswordFile string                 `mapstructure:"password-file" argument:"password-file"`
+	Initialize   bool                   `mapstructure:"initialize"`
+	Inherit      string                 `mapstructure:"inherit"`
+	Lock         bool                   `mapstructure:"lock"`
+	Environment  map[string]string      `mapstructure:"env"`
+	Backup       *BackupSection         `mapstructure:"backup"`
+	Retention    *RetentionSection      `mapstructure:"retention"`
+	Snapshots    map[string]interface{} `mapstructure:"snapshots"`
+	Forget       map[string]interface{} `mapstructure:"forget"`
+	Check        map[string]interface{} `mapstructure:"check"`
+	Mount        map[string]interface{} `mapstructure:"mount"`
+	OtherFlags   map[string]interface{} `mapstructure:",remain"`
 }
 
 type BackupSection struct {
@@ -82,25 +84,30 @@ func LoadProfile(profileKey string) (*Profile, error) {
 	return profile, nil
 }
 
+func (p *Profile) SetRootPath(rootPath string) {
+	p.PasswordFile = filepath.Join(rootPath, p.PasswordFile)
+}
+
 func (p *Profile) GetCommonFlags() map[string][]string {
 	// Flags from the profile fields
 	flags := convertStructToFlags(*p)
 
-	if p.OtherFlags == nil || len(p.OtherFlags) == 0 {
-		return flags
-	}
+	flags = addOtherFlags(flags, p.OtherFlags)
 
-	// Add other flags
-	for name, value := range p.OtherFlags {
-		if convert, ok := stringifyValueOf(value); ok {
-			flags[name] = convert
-		}
-	}
 	return flags
 }
 
-func (p *Profile) GetCommandFlags(command string) []string {
-	flags := make([]string, 0)
+func (p *Profile) GetCommandFlags(command string) map[string][]string {
+	flags := p.GetCommonFlags()
+
+	switch command {
+	case constants.CommandBackup:
+		commandFlags := convertStructToFlags(*p.Backup)
+		if commandFlags != nil && len(commandFlags) > 0 {
+			flags = mergeFlags(flags, commandFlags)
+		}
+		flags = addOtherFlags(flags, p.Backup.OtherFlags)
+	}
 	return flags
 }
 
@@ -110,6 +117,32 @@ func (p *Profile) GetRetentionFlags() []string {
 }
 
 func (p *Profile) GetBackupSource() []string {
-	sourcePaths := make([]string, 0)
-	return sourcePaths
+	return p.Backup.Source
+}
+
+func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{}) map[string][]string {
+	if otherFlags == nil || len(otherFlags) == 0 {
+		return flags
+	}
+
+	// Add other flags
+	for name, value := range otherFlags {
+		if convert, ok := stringifyValueOf(value); ok {
+			flags[name] = convert
+		}
+	}
+	return flags
+}
+
+func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
+	if (flags == nil || len(flags) == 0) && newFlags != nil {
+		return newFlags
+	}
+	if flags != nil && (newFlags == nil || len(newFlags) == 0) {
+		return flags
+	}
+	for key, value := range newFlags {
+		flags[key] = value
+	}
+	return flags
 }

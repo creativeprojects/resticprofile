@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type commandDefinition struct {
@@ -11,6 +12,7 @@ type commandDefinition struct {
 	env           []string
 	displayStderr bool
 	useStdin      bool
+	shell         bool
 }
 
 func newCommand(command string, args, env []string) commandDefinition {
@@ -23,6 +25,7 @@ func newCommand(command string, args, env []string) commandDefinition {
 		env:           env,
 		displayStderr: true,
 		useStdin:      false,
+		shell:         false,
 	}
 }
 
@@ -37,7 +40,14 @@ func runCommands(commands []commandDefinition) error {
 }
 
 func runCommand(command commandDefinition) error {
-	cmd := exec.Command(command.command, command.args...)
+	var cmd *exec.Cmd
+
+	if !command.shell {
+		cmd = exec.Command(command.command, command.args...)
+	} else {
+		flatCommand := append([]string{command.command}, command.args...)
+		cmd = exec.Command("/bin/sh", "-c", strings.Join(flatCommand, " "))
+	}
 
 	cmd.Stdout = os.Stdout
 	if command.displayStderr {
