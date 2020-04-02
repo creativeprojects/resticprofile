@@ -3,7 +3,10 @@ package main
 import (
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
+
+	"github.com/creativeprojects/resticprofile/clog"
 )
 
 type commandDefinition struct {
@@ -25,7 +28,7 @@ func newCommand(command string, args, env []string) commandDefinition {
 		env:           env,
 		displayStderr: true,
 		useStdin:      false,
-		shell:         false,
+		shell:         true,
 	}
 }
 
@@ -46,7 +49,21 @@ func runCommand(command commandDefinition) error {
 		cmd = exec.Command(command.command, command.args...)
 	} else {
 		flatCommand := append([]string{command.command}, command.args...)
-		cmd = exec.Command("/bin/sh", "-c", strings.Join(flatCommand, " "))
+		if runtime.GOOS == "windows" {
+			shell, err := exec.LookPath("cmd.exe")
+			if err != nil {
+				return err
+			}
+			clog.Debugf("Using shell %s", shell)
+			cmd = exec.Command(shell, "/C", strings.Join(flatCommand, " "))
+		} else {
+			shell, err := exec.LookPath("sh")
+			if err != nil {
+				return err
+			}
+			clog.Debugf("Using shell %s", shell)
+			cmd = exec.Command(shell, "-c", strings.Join(flatCommand, " "))
+		}
 	}
 
 	cmd.Stdout = os.Stdout
