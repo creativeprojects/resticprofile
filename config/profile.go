@@ -1,8 +1,6 @@
 package config
 
 import (
-	"reflect"
-
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/viper"
 )
@@ -80,24 +78,9 @@ func LoadProfile(profileKey string) (*Profile, error) {
 }
 
 func (p *Profile) GetCommonFlags() map[string][]string {
-	flags := make(map[string][]string, 0)
-	pt := reflect.TypeOf(*p)
+	// Flags from the profile fields
+	flags := convertStructToFlags(*p)
 
-	// NumField() will panic if pt is not a struct
-	if pt.Kind() != reflect.Struct {
-		return flags
-	}
-	for i := 0; i < pt.NumField(); i++ {
-		field := pt.Field(i)
-		if argument, ok := field.Tag.Lookup("argument"); ok {
-			if argument != "" {
-				convert, ok := stringifyValueOf("set") // <-- find value of field
-				if ok {
-					flags[argument] = convert
-				}
-			}
-		}
-	}
 	if p.OtherFlags == nil || len(p.OtherFlags) == 0 {
 		return flags
 	}

@@ -14,18 +14,25 @@ func init() {
 }
 
 func convertStructToFlags(orig interface{}) map[string][]string {
-	flags := make(map[string][]string, 0)
-	pt := reflect.TypeOf(orig)
+	typeOf := reflect.TypeOf(orig)
+	valueOf := reflect.ValueOf(orig)
 
-	// NumField() will panic if pt is not a struct
-	if pt.Kind() != reflect.Struct {
-		return flags
+	if typeOf.Kind() == reflect.Ptr {
+		// Deference the pointer
+		typeOf = typeOf.Elem()
+		valueOf = valueOf.Elem()
 	}
-	for i := 0; i < pt.NumField(); i++ {
-		field := pt.Field(i)
+
+	flags := make(map[string][]string, 0)
+	// NumField() will panic if typeOf is not a struct
+	if typeOf.Kind() != reflect.Struct {
+		panic(fmt.Errorf("Unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct))
+	}
+	for i := 0; i < typeOf.NumField(); i++ {
+		field := typeOf.Field(i)
 		if argument, ok := field.Tag.Lookup("argument"); ok {
 			if argument != "" {
-				convert, ok := stringifyValueOf("set") // <-- find value of field
+				convert, ok := stringifyValue(valueOf.Field(i))
 				if ok {
 					flags[argument] = convert
 				}

@@ -81,9 +81,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	profile, err := config.LoadProfile("root")
+	profile, err := config.LoadProfile(flags.name)
 	if err != nil {
 		clog.Warning(err)
+	}
+	if profile == nil {
+		clog.Errorf("Profile '%s' not found", flags.name)
+		os.Exit(1)
 	}
 	fmt.Println(profile.GetCommonFlags())
 }
