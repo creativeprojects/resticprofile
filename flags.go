@@ -1,51 +1,54 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/spf13/pflag"
 )
 
 type commandLineFlags struct {
-	help    bool
-	quiet   bool
-	verbose bool
-	config  string
-	name    string
-	noAnsi  bool
-	theme   string
+	help       bool
+	quiet      bool
+	verbose    bool
+	config     string
+	name       string
+	noAnsi     bool
+	theme      string
+	resticArgs []string
 }
 
-func loadFlags() commandLineFlags {
-	flag.Usage = func() {
+// loadFlags loads command line flags (before any command)
+func loadFlags() (*pflag.FlagSet, commandLineFlags) {
+	flagset := pflag.NewFlagSet("resticprofile", pflag.ExitOnError)
+
+	flagset.Usage = func() {
 		fmt.Println("\nUsage of resticprofile:")
 		fmt.Println("\tresticprofile [resticprofile flags] [command] [restic flags]")
 		fmt.Println("\nresticprofile flags:")
-		flag.PrintDefaults()
+		flagset.PrintDefaults()
 		fmt.Println("")
 	}
 
 	flags := commandLineFlags{}
 
-	flag.BoolVar(&flags.help, "h", false, "display this help - shorthand")
-	flag.BoolVar(&flags.help, "help", false, "display this help")
+	flagset.BoolVarP(&flags.help, "help", "h", false, "display this help")
+	flagset.BoolVarP(&flags.quiet, "quiet", "q", constants.DefaultQuietFlag, "display only warnings and errors")
+	flagset.BoolVarP(&flags.verbose, "verbose", "v", constants.DefaultVerboseFlag, "display all debugging information")
+	flagset.StringVarP(&flags.config, "config", "c", constants.DefaultConfigurationFile, "configuration file")
+	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
 
-	flag.BoolVar(&flags.quiet, "q", constants.DefaultQuietFlag, "display only warnings and errors - shorthand")
-	flag.BoolVar(&flags.quiet, "quiet", constants.DefaultQuietFlag, "display only warnings and errors")
+	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
+	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
 
-	flag.BoolVar(&flags.verbose, "v", constants.DefaultVerboseFlag, "display debugging information - shorthand")
-	flag.BoolVar(&flags.verbose, "verbose", constants.DefaultVerboseFlag, "display debugging information")
+	// stop at the first non flag found; the rest will be sent to the restic command line
+	flagset.SetInterspersed(false)
 
-	flag.StringVar(&flags.config, "c", constants.DefaultConfigurationFile, "configuration file - shorthand")
-	flag.StringVar(&flags.config, "config", constants.DefaultConfigurationFile, "configuration file")
+	flagset.Parse(os.Args[1:])
 
-	flag.StringVar(&flags.name, "n", constants.DefaultProfileName, "profile name - shorthand")
-	flag.StringVar(&flags.name, "name", constants.DefaultProfileName, "profile name")
+	// remaining flags
+	flags.resticArgs = flagset.Args()
 
-	flag.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (used for console colouring)")
-	flag.StringVar(&flags.theme, "theme", constants.DefaultTheme, "colouring theme (dark, light, none)")
-
-	flag.Parse()
-	return flags
+	return flagset, flags
 }

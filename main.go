@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
 	"runtime"
@@ -24,9 +23,9 @@ const (
 func main() {
 	var err error
 
-	flags := loadFlags()
+	flagset, flags := loadFlags()
 	if flags.help {
-		flag.Usage()
+		flagset.Usage()
 		return
 	}
 	setLoggerFlags(flags)
@@ -61,16 +60,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// The remaining arguments are the command and the restic flags
-	resticArguments := flag.Args()
+	// The remaining arguments are sent to the restic command line
+	resticArguments := flags.resticArgs
 	resticCommand := global.DefaultCommand
 	if len(resticArguments) > 0 {
 		resticCommand = resticArguments[0]
-		if len(resticArguments) > 1 {
-			resticArguments = resticArguments[1:]
-		} else {
-			resticArguments = make([]string, 0)
-		}
+		resticArguments = resticArguments[1:]
 	}
 
 	if resticCommand == constants.CommandProfiles {
