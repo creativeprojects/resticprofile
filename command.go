@@ -55,7 +55,8 @@ func runCommand(command commandDefinition) error {
 				return err
 			}
 			clog.Debugf("Using shell %s", shell)
-			cmd = exec.Command(shell, "/C", strings.Join(flatCommand, " "))
+			args := append([]string{"/C", command.command}, removeQuotes(command.args)...)
+			cmd = exec.Command(shell, args...)
 		} else {
 			shell, err := exec.LookPath("sh")
 			if err != nil {
@@ -85,4 +86,16 @@ func runCommand(command commandDefinition) error {
 		return err
 	}
 	return nil
+}
+
+func removeQuotes(args []string) []string {
+	if args == nil {
+		return nil
+	}
+	for i := 0; i < len(args); i++ {
+		if strings.HasPrefix(args[i], `"`) && strings.HasSuffix(args[i], `"`) {
+			args[i] = strings.Trim(args[i], `"`)
+		}
+	}
+	return args
 }
