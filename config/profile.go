@@ -79,8 +79,8 @@ func LoadProfile(profileKey string) (*Profile, error) {
 	return profile, nil
 }
 
-func (p *Profile) GetCommonFlags() map[string]string {
-	flags := make(map[string]string, 0)
+func (p *Profile) GetCommonFlags() map[string][]string {
+	flags := make(map[string][]string, 0)
 	pt := reflect.TypeOf(*p)
 
 	// NumField() will panic if pt is not a struct
@@ -91,7 +91,7 @@ func (p *Profile) GetCommonFlags() map[string]string {
 		field := pt.Field(i)
 		if argument, ok := field.Tag.Lookup("argument"); ok {
 			if argument != "" {
-				convert, ok := stringify("set") // <-- find value of field
+				convert, ok := stringifyValueOf("set") // <-- find value of field
 				if ok {
 					flags[argument] = convert
 				}
@@ -104,7 +104,7 @@ func (p *Profile) GetCommonFlags() map[string]string {
 
 	// Add other flags
 	for name, value := range p.OtherFlags {
-		if convert, ok := stringify(value); ok {
+		if convert, ok := stringifyValueOf(value); ok {
 			flags[name] = convert
 		}
 	}
@@ -124,17 +124,4 @@ func (p *Profile) GetRetentionFlags() []string {
 func (p *Profile) GetBackupSource() []string {
 	sourcePaths := make([]string, 0)
 	return sourcePaths
-}
-
-func stringify(value interface{}) (string, bool) {
-	if convert, ok := value.(string); ok {
-		if convert != "" {
-			return convert, true
-		}
-		return "", false
-	}
-	if convert, ok := value.(bool); ok && convert {
-		return "", true
-	}
-	return "", false
 }

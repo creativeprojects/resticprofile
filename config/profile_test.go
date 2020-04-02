@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -130,6 +131,70 @@ quiet = false
 	assert.Equal(t, int64(2), profile.OtherFlags["override-value"])
 	assert.Equal(t, false, profile.Quiet)
 	assert.Equal(t, true, profile.Verbose)
+}
+
+func TestProfileCommonFlags(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile]
+quiet = true
+verbose = false
+repository = "test"
+`
+	profile, err := getProfile(testConfig, "profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(profile)
+
+	flags := profile.GetCommonFlags()
+	assert.NotNil(flags)
+	assert.Contains(flags, "quiet")
+	assert.NotContains(flags, "verbose")
+	assert.Contains(flags, "repo")
+}
+
+func TestProfileOtherFlags(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile]
+bool-true = true
+bool-false = false
+string = "test"
+zero = 0
+empty = ""
+float = 4.2
+int = 42
+# comment
+array0 = []
+array1 = [1]
+array2 = ["one", "two"]
+`
+	profile, err := getProfile(testConfig, "profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(profile)
+
+	flags := profile.GetCommonFlags()
+	assert.NotNil(flags)
+	assert.Contains(flags, "bool-true")
+	assert.NotContains(flags, "bool-false")
+	assert.Contains(flags, "string")
+	assert.NotContains(flags, "zero")
+	assert.NotContains(flags, "empty")
+	assert.Contains(flags, "float")
+	assert.Contains(flags, "int")
+	assert.NotContains(flags, "array0")
+	assert.Contains(flags, "array1")
+	assert.Contains(flags, "array2")
+
+	assert.Equal([]string{}, flags["bool-true"])
+	assert.Equal([]string{"test"}, flags["string"])
+	assert.Equal([]string{fmt.Sprintf("%f", 4.2)}, flags["float"])
+	assert.Equal([]string{"42"}, flags["int"])
+	assert.Equal([]string{"1"}, flags["array1"])
+	assert.Equal([]string{"one", "two"}, flags["array2"])
 }
 
 func getProfile(configString, profileKey string) (*Profile, error) {
