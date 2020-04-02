@@ -74,13 +74,6 @@ func main() {
 		return
 	}
 
-	rCommand := newCommand(resticBinary, append([]string{resticCommand}, resticArguments...), nil)
-	err = runCommand(rCommand)
-	if err != nil {
-		clog.Error(err)
-		os.Exit(1)
-	}
-
 	profile, err := config.LoadProfile(flags.name)
 	if err != nil {
 		clog.Warning(err)
@@ -89,7 +82,12 @@ func main() {
 		clog.Errorf("Profile '%s' not found", flags.name)
 		os.Exit(1)
 	}
-	fmt.Println(profile.GetCommonFlags())
+	wrapper := newResticWrapper(resticBinary, profile, resticArguments)
+	err = wrapper.command(resticCommand)
+	if err != nil {
+		clog.Error(err)
+		os.Exit(1)
+	}
 }
 
 func setLoggerFlags(flags commandLineFlags) {
