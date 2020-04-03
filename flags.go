@@ -17,6 +17,7 @@ type commandLineFlags struct {
 	noAnsi     bool
 	theme      string
 	resticArgs []string
+	selfUpdate bool
 }
 
 // loadFlags loads command line flags (before any command)
@@ -41,6 +42,8 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
+	flagset.BoolVar(&flags.selfUpdate, "self-update", false, "auto update of resticprofile (does not update restic)")
+	flagset.MarkHidden("self-update")
 
 	// stop at the first non flag found; the rest will be sent to the restic command line
 	flagset.SetInterspersed(false)

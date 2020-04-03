@@ -34,6 +34,15 @@ func main() {
 	setLoggerFlags(flags)
 	banner()
 
+	if flags.selfUpdate {
+		err = confirmAndSelfUpdate(flags.verbose)
+		if err != nil {
+			clog.Error(err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	configFile, err := filesearch.FindConfigurationFile(flags.config)
 	if err != nil {
 		clog.Error(err)
