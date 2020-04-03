@@ -5,20 +5,29 @@ Configuration profiles manager for [restic backup](https://restic.net/)
 
 **resticprofile** is the missing link between a configuration file and restic backup. Creating a configuration file for restic has been [discussed before](https://github.com/restic/restic/issues/16), but seems to be a very low priority right now.
 
-The configuration file is [TOML](https://github.com/toml-lang/toml) format:
+With resticprofile:
 
 * You no longer need to remember command parameters and environment variables
-* You can create multiple profiles inside a configuration file
-* A profile can inherit the options from another profile
+* You can create multiple profiles inside one configuration file
+* A profile can inherit all the options from another profile
 * You can run the forget command before or after a backup (in a section called *retention*)
 * You can check a repository before or after a backup
 * You can create groups of profiles that will run sequentially
 * You can run shell commands before or after a backup
-* Allows to start the restic process using _nice_ (not available on Windows) and/or _ionice_ (only available on Linux)
+* You can send a backup stream via _stdin_
+* You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
+
+The configuration file accepts various formats:
+* [TOML](https://github.com/toml-lang/toml)
+* [JSON](https://en.wikipedia.org/wiki/JSON)
+* [YAML](https://en.wikipedia.org/wiki/YAML)
+* [HCL](https://github.com/hashicorp/hcl/blob/hcl2/hclsyntax/spec.md)
+
+For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 
 ## Requirements
 
-**resticprofile** needs python >=3.5 installed on your machine.
+**resticprofile** **not longer need** python installed on your machine.
 
 It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
@@ -104,8 +113,8 @@ Here's a more complex configuration file showing profile inheritance and two bac
 ionice = false
 ionice-class = 2
 ionice-level = 6
-# nice is available on all unixes (macOs X included)
-nice = 10
+# priority is using priority class on windows, and "nice" on unixes - it's acting on CPU usage only
+priority = "low"
 # run 'snapshots' when no command is specified when invoking resticprofile
 default-command = "snapshots"
 # initialize a repository if none exist at location
@@ -119,6 +128,7 @@ full-backup = [ "root", "src" ]
 # Default profile when not specified (-n or --name)
 # Please note there's no default inheritance from the 'default' profile (you can use the 'inherit' flag if needed)
 [default]
+# you can use a relative path, it will be relative to the configuration file
 repository = "/backup"
 password-file = "key"
 initialize = false
@@ -138,6 +148,7 @@ initialize = true
 
 # 'backup' command of profile 'root'
 [root.backup]
+# files with no path are relative to the configuration file
 exclude-file = [ "root-excludes", "excludes" ]
 exclude-caches = true
 one-file-system = false
@@ -238,40 +249,52 @@ tag = [ 'stdin' ]
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
 
-See all snapshots (assuming your default python is python3):
+See all snapshots of your `[default]` profile:
 
 ```
-python -m resticprofile
+$ resticprofile
 ```
 
-Or if the folder `~/.local/bin/` is in your PATH, simply
+See all available profiles in your configuration file (and the commands where some flags are defined):
 
 ```
-resticprofile
+$ resticprofile profiles
+
+Profiles available:
+	stdin	(snapshots, backup)
+	src	(retention, backup, snapshots)
+	root	(backup, retention)
+	documents	(snapshots, backup)
+	default	(env)
+	self	(backup, snapshots)
+
+Groups available:
+	full-backup: root, src
+
 ```
 
 Backup root & src profiles (using _full-backup_ group shown earlier)
 
 ```
-python -m resticprofile --name "full-backup" backup
+$ resticprofile --name "full-backup" backup
 ```
 
 Assuming the _stdin_ profile from the configuration file shown before, the command to send a mysqldump to the backup is as simple as:
 
 ```
-mysqldump --all-databases | python3 -m resticprofile -n stdin backup
+$ mysqldump --all-databases | resticprofile --name stdin backup
 ```
 
 Mount the default profile (_default_) in /mnt/restic:
 
 ```
-python -m resticprofile mount /mnt/restic
+$ resticprofile mount /mnt/restic
 ```
 
 Display quick help
 
 ```
-python -m resticprofile --help
+$ resticprofile --help
 
 Usage:
  resticprofile
