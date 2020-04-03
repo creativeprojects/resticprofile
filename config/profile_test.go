@@ -242,8 +242,9 @@ func TestFixWindowsPaths(t *testing.T) {
 	}{
 		{``, ``},
 		{`dir`, `prefix\dir`},
-		{`\dir`, `\dir`},
-		{`%TEMP_TEST_DIR%\dir`, `\home\dir`},
+		{`\dir`, `prefix\dir`},
+		{`c:\dir`, `c:\dir`},
+		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
 	}
 
 	os.Setenv("TEMP_TEST_DIR", "/home")
