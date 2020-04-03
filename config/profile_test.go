@@ -205,6 +205,21 @@ array2 = ["one", "two"]
 	assert.Equal([]string{"one", "two"}, flags["array2"])
 }
 
+func TestFixPaths(t *testing.T) {
+	paths := []struct {
+		source   string
+		expected string
+	}{
+		{"", ""},
+		{"dir", "prefix/dir"},
+		{"/dir", "/dir"},
+		{"~/dir", "~/dir"},
+	}
+	for _, testPath := range paths {
+		fixed := fixPath(testPath.source, "prefix")
+		assert.Equal(t, testPath.expected, fixed)
+	}
+}
 func getProfile(configString, profileKey string) (*Profile, error) {
 	viper.SetConfigType("toml")
 	err := viper.ReadConfig(bytes.NewBufferString(configString))

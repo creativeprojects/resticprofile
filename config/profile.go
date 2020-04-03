@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/viper"
@@ -91,34 +92,21 @@ func LoadProfile(profileKey string) (*Profile, error) {
 
 func (p *Profile) SetRootPath(rootPath string) {
 
-	if p.PasswordFile != "" && !filepath.IsAbs(p.PasswordFile) {
-		p.PasswordFile = filepath.Join(rootPath, p.PasswordFile)
-	}
-	if p.CacheDir != "" && !filepath.IsAbs(p.CacheDir) {
-		p.CacheDir = filepath.Join(rootPath, p.CacheDir)
-	}
-	if p.CACert != "" && !filepath.IsAbs(p.CACert) {
-		p.CACert = filepath.Join(rootPath, p.CACert)
-	}
-	if p.TLSClientCert != "" && !filepath.IsAbs(p.TLSClientCert) {
-		p.TLSClientCert = filepath.Join(rootPath, p.TLSClientCert)
-	}
+	p.Repository = fixPath(p.Repository, rootPath)
+	p.PasswordFile = fixPath(p.PasswordFile, rootPath)
+	p.CacheDir = fixPath(p.CacheDir, rootPath)
+	p.CACert = fixPath(p.CACert, rootPath)
+	p.TLSClientCert = fixPath(p.TLSClientCert, rootPath)
 
 	if p.Backup.ExcludeFile != nil && len(p.Backup.ExcludeFile) > 0 {
 		for i := 0; i < len(p.Backup.ExcludeFile); i++ {
-			if filepath.IsAbs(p.Backup.ExcludeFile[i]) {
-				continue
-			}
-			p.Backup.ExcludeFile[i] = filepath.Join(rootPath, p.Backup.ExcludeFile[i])
+			p.Backup.ExcludeFile[i] = fixPath(p.Backup.ExcludeFile[i], rootPath)
 		}
 	}
 
 	if p.Backup.FilesFrom != nil && len(p.Backup.FilesFrom) > 0 {
 		for i := 0; i < len(p.Backup.FilesFrom); i++ {
-			if filepath.IsAbs(p.Backup.FilesFrom[i]) {
-				continue
-			}
-			p.Backup.FilesFrom[i] = filepath.Join(rootPath, p.Backup.FilesFrom[i])
+			p.Backup.FilesFrom[i] = fixPath(p.Backup.FilesFrom[i], rootPath)
 		}
 	}
 
@@ -128,7 +116,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 			if filepath.IsAbs(p.Backup.Source[i]) {
 				continue
 			}
-			p.Backup.Source[i] = filepath.Join(rootPath, p.Backup.Source[i])
+			p.Backup.Source[i] = fixPath(p.Backup.Source[i], rootPath)
 		}
 	}
 }
@@ -152,7 +140,11 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 			flags = mergeFlags(flags, commandFlags)
 		}
 		flags = addOtherFlags(flags, p.Backup.OtherFlags)
+
+	case constants.CommandSnapshots:
+		flags = addOtherFlags(flags, p.Snapshots)
 	}
+
 	return flags
 }
 
@@ -190,4 +182,11 @@ func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
 		flags[key] = value
 	}
 	return flags
+}
+
+func fixPath(source, prefix string) string {
+	if source == "" || filepath.IsAbs(source) || strings.HasPrefix(source, "~") {
+		return source
+	}
+	return filepath.Join(prefix, source)
 }

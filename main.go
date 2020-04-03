@@ -92,6 +92,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Send the quiet/verbose down to restic as well (override profile configuration)
+	if flags.quiet {
+		profile.Quiet = true
+	}
+	if flags.verbose {
+		profile.Verbose = true
+	}
+
 	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(viper.ConfigFileUsed())
