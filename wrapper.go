@@ -69,6 +69,36 @@ func (r *resticWrapper) prepareCommand(command string) commandDefinition {
 	return rCommand
 }
 
+func (r *resticWrapper) runPreCommand(command string) error {
+	// Pre/Post commands are only supported for backup
+	if command != constants.CommandBackup {
+		return nil
+	}
+	if r.profile.Backup.RunBefore == nil || len(r.profile.Backup.RunBefore) == 0 {
+		return nil
+	}
+	for i, preCommand := range r.profile.Backup.RunBefore {
+		clog.Debugf("Starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
+		runShellCommand(preCommand)
+	}
+	return nil
+}
+
+func (r *resticWrapper) runPostCommand(command string) error {
+	// Pre/Post commands are only supported for backup
+	if command != constants.CommandBackup {
+		return nil
+	}
+	if r.profile.Backup.RunAfter == nil || len(r.profile.Backup.RunAfter) == 0 {
+		return nil
+	}
+	for i, postCommand := range r.profile.Backup.RunAfter {
+		clog.Debugf("Starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
+		runShellCommand(postCommand)
+	}
+	return nil
+}
+
 func (r *resticWrapper) getEnvironment() []string {
 	if r.profile.Environment == nil || len(r.profile.Environment) == 0 {
 		return nil

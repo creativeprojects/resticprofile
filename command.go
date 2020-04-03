@@ -98,6 +98,35 @@ func getShellCommand(command string, args []string) (*exec.Cmd, error) {
 	return cmd, nil
 }
 
+func runShellCommand(command string) error {
+	var cmd *exec.Cmd
+	var err error
+
+	if runtime.GOOS == "windows" {
+		shell, err := exec.LookPath("cmd.exe")
+		if err != nil {
+			return fmt.Errorf("Cannot find shell executable (sh) in path")
+		}
+		cmd = exec.Command(shell, "/C", command)
+
+	} else {
+		shell, err := exec.LookPath("sh")
+		if err != nil {
+			return fmt.Errorf("Cannot find shell executable (sh) in path")
+		}
+		cmd = exec.Command(shell, "-c", command)
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // removeQuotes removes single and double quotes when the whole string is quoted
 func removeQuotes(args []string) []string {
 	if args == nil {

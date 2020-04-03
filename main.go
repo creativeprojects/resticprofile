@@ -122,7 +122,17 @@ func main() {
 		wrapper.runInitialize()
 		// it's ok for the initialize to error out when the repository exists
 	}
+	err = wrapper.runPreCommand(resticCommand)
+	if err != nil {
+		clog.Error(err)
+		os.Exit(1)
+	}
 	err = wrapper.runCommand(resticCommand)
+	if err != nil {
+		clog.Error(err)
+		os.Exit(1)
+	}
+	err = wrapper.runPostCommand(resticCommand)
 	if err != nil {
 		clog.Error(err)
 		os.Exit(1)
