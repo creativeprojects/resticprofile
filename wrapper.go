@@ -45,12 +45,12 @@ func (r *resticWrapper) runCommand(command string) error {
 }
 
 func (r *resticWrapper) prepareCommand(command string) commandDefinition {
-	arguments := convertIntoArgs(r.profile.GetCommandFlags(command))
+	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
+	arguments := append([]string{command}, convertIntoArgs(r.profile.GetCommandFlags(command))...)
 
 	if r.moreArgs != nil && len(r.moreArgs) > 0 {
 		arguments = append(arguments, r.moreArgs...)
 	}
-	arguments = append(arguments, command)
 
 	// Special case for backup command
 	if command == constants.CommandBackup {
@@ -60,7 +60,13 @@ func (r *resticWrapper) prepareCommand(command string) commandDefinition {
 	env := append(os.Environ(), r.getEnvironment()...)
 
 	clog.Debugf("Starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
-	return newCommand(r.resticBinary, arguments, env)
+	rCommand := newCommand(r.resticBinary, arguments, env)
+
+	if command == constants.CommandBackup && r.profile.Backup.UseStdin {
+		clog.Debug("Redirecting stdin to the backup")
+		rCommand.useStdin = true
+	}
+	return rCommand
 }
 
 func (r *resticWrapper) getEnvironment() []string {
@@ -87,13 +93,21 @@ func convertIntoArgs(flags map[string][]string) []string {
 	}
 
 	for key, values := range flags {
-		if values == nil || len(values) == 0 {
+		if values == nil {
+			continue
+		}
+		if len(values) == 0 {
+			args = append(args, fmt.Sprintf("--%s", key))
 			continue
 		}
 		for _, value := range values {
 			args = append(args, fmt.Sprintf("--%s", key))
 			if value != "" {
-				args = append(args, fmt.Sprintf(`"%s"`, value))
+				if strings.Contains(value, " ") {
+					// quote the string containing spaces
+					value = fmt.Sprintf(`"%s"`, value)
+				}
+				args = append(args, value)
 			}
 		}
 	}

@@ -35,7 +35,7 @@ type BackupSection struct {
 	CheckAfter  bool                   `mapstructure:"check-after"`
 	RunBefore   []string               `mapstructure:"run-before"`
 	RunAfter    []string               `mapstructure:"run-after"`
-	UseStdin    bool                   `mapstructure:"stdin"`
+	UseStdin    bool                   `mapstructure:"stdin" argument:"stdin"`
 	Source      []string               `mapstructure:"source"`
 	ExcludeFile []string               `mapstructure:"exclude-file" argument:"exclude-file"`
 	FilesFrom   []string               `mapstructure:"files-from" argument:"files-from"`

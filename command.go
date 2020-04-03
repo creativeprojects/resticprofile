@@ -86,6 +86,7 @@ func getShellCommand(command string, args []string) (*exec.Cmd, error) {
 		}
 		args := append([]string{"/C", command}, removeQuotes(args)...)
 		cmd = exec.Command(shell, args...)
+
 	} else {
 		shell, err := exec.LookPath("sh")
 		if err != nil {
