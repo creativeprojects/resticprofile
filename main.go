@@ -51,6 +51,16 @@ func main() {
 		clog.Error("Cannot load configuration file:", err)
 		os.Exit(1)
 	}
+
+	if flags.saveConfigAs != "" {
+		err = config.SaveAs(flags.saveConfigAs)
+		if err != nil {
+			clog.Error("Cannot save configuration file:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	global, err := config.GetGlobalSection()
 	if err != nil {
 		clog.Error("Cannot load global configuration:", err)

@@ -31,6 +31,10 @@ func LoadConfiguration(configFile string) error {
 	return nil
 }
 
+func SaveAs(filename string) error {
+	return viper.SafeWriteConfigAs(filename)
+}
+
 func ProfileKeys() []string {
 	allKeys := viper.AllKeys()
 	if allKeys == nil || len(allKeys) == 0 {

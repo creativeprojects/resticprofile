@@ -99,25 +99,27 @@ func (p *Profile) SetRootPath(rootPath string) {
 	p.CACert = fixPath(p.CACert, rootPath)
 	p.TLSClientCert = fixPath(p.TLSClientCert, rootPath)
 
-	if p.Backup.ExcludeFile != nil && len(p.Backup.ExcludeFile) > 0 {
-		for i := 0; i < len(p.Backup.ExcludeFile); i++ {
-			p.Backup.ExcludeFile[i] = fixPath(p.Backup.ExcludeFile[i], rootPath)
-		}
-	}
-
-	if p.Backup.FilesFrom != nil && len(p.Backup.FilesFrom) > 0 {
-		for i := 0; i < len(p.Backup.FilesFrom); i++ {
-			p.Backup.FilesFrom[i] = fixPath(p.Backup.FilesFrom[i], rootPath)
-		}
-	}
-
-	// Do we need to do source files? (it wasn't the case before v0.6.0)
-	if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
-		for i := 0; i < len(p.Backup.Source); i++ {
-			if filepath.IsAbs(p.Backup.Source[i]) {
-				continue
+	if p.Backup != nil {
+		if p.Backup.ExcludeFile != nil && len(p.Backup.ExcludeFile) > 0 {
+			for i := 0; i < len(p.Backup.ExcludeFile); i++ {
+				p.Backup.ExcludeFile[i] = fixPath(p.Backup.ExcludeFile[i], rootPath)
 			}
-			p.Backup.Source[i] = fixPath(p.Backup.Source[i], rootPath)
+		}
+
+		if p.Backup.FilesFrom != nil && len(p.Backup.FilesFrom) > 0 {
+			for i := 0; i < len(p.Backup.FilesFrom); i++ {
+				p.Backup.FilesFrom[i] = fixPath(p.Backup.FilesFrom[i], rootPath)
+			}
+		}
+
+		// Do we need to do source files? (it wasn't the case before v0.6.0)
+		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
+			for i := 0; i < len(p.Backup.Source); i++ {
+				if filepath.IsAbs(p.Backup.Source[i]) {
+					continue
+				}
+				p.Backup.Source[i] = fixPath(p.Backup.Source[i], rootPath)
+			}
 		}
 	}
 }
