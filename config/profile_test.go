@@ -3,6 +3,8 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -205,7 +207,11 @@ array2 = ["one", "two"]
 	assert.Equal([]string{"one", "two"}, flags["array2"])
 }
 
-func TestFixPaths(t *testing.T) {
+func TestFixUnixPaths(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.SkipNow()
+	}
+
 	paths := []struct {
 		source   string
 		expected string
@@ -214,12 +220,40 @@ func TestFixPaths(t *testing.T) {
 		{"dir", "prefix/dir"},
 		{"/dir", "/dir"},
 		{"~/dir", "~/dir"},
+		{"$TEMP_TEST_DIR/dir", "/home/dir"},
 	}
+
+	os.Setenv("TEMP_TEST_DIR", "/home")
+
 	for _, testPath := range paths {
 		fixed := fixPath(testPath.source, "prefix")
 		assert.Equal(t, testPath.expected, fixed)
 	}
 }
+
+func TestFixWindowsPaths(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.SkipNow()
+	}
+
+	paths := []struct {
+		source   string
+		expected string
+	}{
+		{``, ``},
+		{`dir`, `prefix\dir`},
+		{`\dir`, `\dir`},
+		{`%TEMP_TEST_DIR%\dir`, `\home\dir`},
+	}
+
+	os.Setenv("TEMP_TEST_DIR", "/home")
+
+	for _, testPath := range paths {
+		fixed := fixPath(testPath.source, "prefix")
+		assert.Equal(t, testPath.expected, fixed)
+	}
+}
+
 func getProfile(configString, profileKey string) (*Profile, error) {
 	viper.SetConfigType("toml")
 	err := viper.ReadConfig(bytes.NewBufferString(configString))

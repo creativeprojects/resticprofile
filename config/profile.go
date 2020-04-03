@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -185,7 +186,14 @@ func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
 }
 
 func fixPath(source, prefix string) string {
-	if source == "" || filepath.IsAbs(source) || strings.HasPrefix(source, "~") {
+	if strings.Contains(source, "$") || strings.Contains(source, "%") {
+		source = os.ExpandEnv(source)
+	}
+	if source == "" ||
+		filepath.IsAbs(source) ||
+		strings.HasPrefix(source, "~") ||
+		strings.HasPrefix(source, "$") ||
+		strings.HasPrefix(source, "%") {
 		return source
 	}
 	return filepath.Join(prefix, source)
