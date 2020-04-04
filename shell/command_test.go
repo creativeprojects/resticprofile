@@ -1,6 +1,8 @@
 package shell
 
 import (
+	"bytes"
+	"io/ioutil"
 	"runtime"
 	"testing"
 
@@ -83,4 +85,19 @@ func TestShellCommand(t *testing.T) {
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
 		}, args)
 	}
+}
+
+func TestRunShellEcho(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	cmd := NewCommand("echo", []string{"TestRunShellEcho"})
+	cmd.Stdout = buffer
+	err := cmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := ioutil.ReadAll(buffer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "TestRunShellEcho\n", string(output))
 }

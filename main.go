@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/creativeprojects/resticprofile/lock"
+
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
@@ -122,17 +124,23 @@ func main() {
 		wrapper.runInitialize()
 		// it's ok for the initialize to error out when the repository exists
 	}
-	err = wrapper.runPreCommand(resticCommand)
-	if err != nil {
-		clog.Error(err)
-		os.Exit(1)
-	}
-	err = wrapper.runCommand(resticCommand)
-	if err != nil {
-		clog.Error(err)
-		os.Exit(1)
-	}
-	err = wrapper.runPostCommand(resticCommand)
+	err = lockRun(profile.Lock, func() error {
+		var err error
+
+		err = wrapper.runPreCommand(resticCommand)
+		if err != nil {
+			return err
+		}
+		err = wrapper.runCommand(resticCommand)
+		if err != nil {
+			return err
+		}
+		err = wrapper.runPostCommand(resticCommand)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		clog.Error(err)
 		os.Exit(1)
@@ -218,4 +226,17 @@ func displayGroups() {
 func displayStruct(name string, value interface{}) {
 	s, _ := json.MarshalIndent(value, "", "\t")
 	fmt.Printf("%s:\n%s\n\n", name, s)
+}
+
+func lockRun(filename string, run func() error) error {
+	if filename == "" {
+		// No lock
+		return run()
+	}
+	lock := lock.NewLock(filename)
+	if !lock.TryAcquire() {
+		return fmt.Errorf("Another process is already running this profile: %s", lock.Who())
+	}
+	defer lock.Release()
+	return run()
 }
