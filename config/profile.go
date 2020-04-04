@@ -21,7 +21,7 @@ type Profile struct {
 	TLSClientCert string                 `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
 	Initialize    bool                   `mapstructure:"initialize"`
 	Inherit       string                 `mapstructure:"inherit"`
-	Lock          bool                   `mapstructure:"lock"`
+	Lock          string                 `mapstructure:"lock"`
 	Environment   map[string]string      `mapstructure:"env"`
 	Backup        *BackupSection         `mapstructure:"backup"`
 	Retention     *RetentionSection      `mapstructure:"retention"`
