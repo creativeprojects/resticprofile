@@ -99,5 +99,6 @@ func TestRunShellEcho(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "TestRunShellEcho\n", string(output))
+
+	assert.Contains(t, string(output), "TestRunShellEcho")
 }
