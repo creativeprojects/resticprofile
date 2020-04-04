@@ -118,26 +118,65 @@ func main() {
 	clog.Debugf("File in configuration are relative to '%s'", rootPath)
 	profile.SetRootPath(rootPath)
 
-	// resticBinary = "/Users/gouarfig/go/bin/showenv"
 	wrapper := newResticWrapper(resticBinary, profile, resticArguments)
 	if (global.Initialize || profile.Initialize) && resticCommand != constants.CommandInit {
 		wrapper.runInitialize()
 		// it's ok for the initialize to error out when the repository exists
 	}
+
 	err = lockRun(profile.Lock, func() error {
 		var err error
 
-		err = wrapper.runPreCommand(resticCommand)
-		if err != nil {
-			return err
+		// pre-commands (for backup)
+		if resticCommand == constants.CommandBackup {
+			// Shell commands
+			err = wrapper.runPreCommand(resticCommand)
+			if err != nil {
+				return err
+			}
+			// Check
+			if profile.Backup.CheckBefore {
+				err = wrapper.runCheck()
+				if err != nil {
+					return err
+				}
+			}
+			// Retention
+			if profile.Retention.BeforeBackup {
+				err = wrapper.runRetention()
+				if err != nil {
+					return err
+				}
+			}
 		}
+
+		// Main command
 		err = wrapper.runCommand(resticCommand)
 		if err != nil {
 			return err
 		}
-		err = wrapper.runPostCommand(resticCommand)
-		if err != nil {
-			return err
+
+		// post-commands (for backup)
+		if resticCommand == constants.CommandBackup {
+			// Retention
+			if profile.Retention.AfterBackup {
+				err = wrapper.runRetention()
+				if err != nil {
+					return err
+				}
+			}
+			// Check
+			if profile.Backup.CheckAfter {
+				err = wrapper.runCheck()
+				if err != nil {
+					return err
+				}
+			}
+			// Shell commands
+			err = wrapper.runPostCommand(resticCommand)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})

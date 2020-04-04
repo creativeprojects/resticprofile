@@ -26,27 +26,33 @@ func newResticWrapper(resticBinary string, profile *config.Profile, moreArgs []s
 }
 
 func (r *resticWrapper) runInitialize() error {
-	rCommand := r.prepareCommand(constants.CommandInit)
+	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
+	rCommand := r.prepareCommand(constants.CommandInit, args)
 	rCommand.displayStderr = false
 	return runCommand(rCommand)
 }
 
-func (r *resticWrapper) runCleanup() {
-
-}
-
-func (r *resticWrapper) runCheck() {
-
-}
-
-func (r *resticWrapper) runCommand(command string) error {
-	rCommand := r.prepareCommand(command)
+func (r *resticWrapper) runCheck() error {
+	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
+	rCommand := r.prepareCommand(constants.CommandCheck, args)
 	return runCommand(rCommand)
 }
 
-func (r *resticWrapper) prepareCommand(command string) commandDefinition {
+func (r *resticWrapper) runRetention() error {
+	args := convertIntoArgs(r.profile.GetRetentionFlags())
+	rCommand := r.prepareCommand(constants.CommandForget, args)
+	return runCommand(rCommand)
+}
+
+func (r *resticWrapper) runCommand(command string) error {
+	args := convertIntoArgs(r.profile.GetCommandFlags(command))
+	rCommand := r.prepareCommand(command, args)
+	return runCommand(rCommand)
+}
+
+func (r *resticWrapper) prepareCommand(command string, args []string) commandDefinition {
 	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
-	arguments := append([]string{command}, convertIntoArgs(r.profile.GetCommandFlags(command))...)
+	arguments := append([]string{command}, args...)
 
 	if r.moreArgs != nil && len(r.moreArgs) > 0 {
 		arguments = append(arguments, r.moreArgs...)

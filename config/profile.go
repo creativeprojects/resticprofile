@@ -146,13 +146,17 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 
 	case constants.CommandSnapshots:
 		flags = addOtherFlags(flags, p.Snapshots)
+
+	case constants.CommandCheck:
+		flags = addOtherFlags(flags, p.Check)
 	}
 
 	return flags
 }
 
-func (p *Profile) GetRetentionFlags() []string {
-	flags := make([]string, 0)
+func (p *Profile) GetRetentionFlags() map[string][]string {
+	flags := p.GetCommonFlags()
+	flags = addOtherFlags(flags, p.Retention.OtherFlags)
 	return flags
 }
 
