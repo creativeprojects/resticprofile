@@ -377,7 +377,7 @@ Flags passed to the restic command line
 * **exclude-if-present**: string OR list of strings
 * **files-from**: string OR list of strings
 * **force**: true / false
-* **host**: string
+* **host**: true / false OR string
 * **iexclude**: string OR list of strings
 * **ignore-inode**: true / false
 * **one-file-system**: true / false

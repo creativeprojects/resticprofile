@@ -124,6 +124,25 @@ func (p *Profile) SetRootPath(rootPath string) {
 	}
 }
 
+// SetHost will replace any host value from a boolean to the hostname
+func (p *Profile) SetHost(hostname string) {
+	if p.Backup != nil && p.Backup.OtherFlags != nil {
+		replaceTrueValue(p.Backup.OtherFlags, constants.ParameterHost, hostname)
+	}
+	if p.Retention != nil && p.Retention.OtherFlags != nil {
+		replaceTrueValue(p.Retention.OtherFlags, constants.ParameterHost, hostname)
+	}
+	if p.Snapshots != nil {
+		replaceTrueValue(p.Snapshots, constants.ParameterHost, hostname)
+	}
+	if p.Forget != nil {
+		replaceTrueValue(p.Forget, constants.ParameterHost, hostname)
+	}
+	if p.Mount != nil {
+		replaceTrueValue(p.Mount, constants.ParameterHost, hostname)
+	}
+}
+
 func (p *Profile) GetCommonFlags() map[string][]string {
 	// Flags from the profile fields
 	flags := convertStructToFlags(*p)
@@ -203,4 +222,14 @@ func fixPath(source, prefix string) string {
 		return source
 	}
 	return filepath.Join(prefix, source)
+}
+
+func replaceTrueValue(source map[string]interface{}, key, replace string) {
+	if genericValue, ok := source[key]; ok {
+		if value, ok := genericValue.(bool); ok {
+			if value {
+				source[key] = replace
+			}
+		}
+	}
 }

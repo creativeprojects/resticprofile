@@ -115,8 +115,18 @@ func main() {
 	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(viper.ConfigFileUsed())
-	clog.Debugf("File in configuration are relative to '%s'", rootPath)
+	if rootPath != "." {
+		clog.Debugf("Files in configuration are relative to '%s'", rootPath)
+	}
 	profile.SetRootPath(rootPath)
+
+	// Specific case for the "host" flag where an empty value should be replaced by the hostname
+	hostname := "none"
+	currentHost, err := os.Hostname()
+	if err == nil {
+		hostname = currentHost
+	}
+	profile.SetHost(hostname)
 
 	wrapper := newResticWrapper(resticBinary, profile, resticArguments)
 	if (global.Initialize || profile.Initialize) && resticCommand != constants.CommandInit {

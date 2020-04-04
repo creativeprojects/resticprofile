@@ -10,4 +10,5 @@ const (
 	ParameterInitialize     = "initialize"
 	ParameterResticBinary   = "restic-binary"
 	ParameterInherit        = "inherit"
+	ParameterHost           = "host"
 )

@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/constants"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/spf13/viper"
@@ -253,6 +255,35 @@ func TestFixWindowsPaths(t *testing.T) {
 		fixed := fixPath(testPath.source, "prefix")
 		assert.Equal(t, testPath.expected, fixed)
 	}
+}
+
+func TestHostInProfile(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile]
+initialize = true
+[profile.backup]
+host = true
+[profile.snapshots]
+host = "ConfigHost"
+`
+	profile, err := getProfile(testConfig, "profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(profile)
+
+	profile.SetHost("TestHost")
+
+	flags := profile.GetCommandFlags(constants.CommandBackup)
+	assert.NotNil(flags)
+	assert.Contains(flags, "host")
+	assert.Equal([]string{"TestHost"}, flags["host"])
+
+	flags = profile.GetCommandFlags(constants.CommandSnapshots)
+	assert.NotNil(flags)
+	assert.Contains(flags, "host")
+	assert.Equal([]string{"ConfigHost"}, flags["host"])
 }
 
 func getProfile(configString, profileKey string) (*Profile, error) {
