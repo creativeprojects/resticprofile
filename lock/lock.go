@@ -57,10 +57,17 @@ func (l *Lock) lock() bool {
 	if err == nil {
 		username = currentUser.Username
 	}
+
+	hostname := "unknown hostname"
+	currentHost, err := os.Hostname()
+	if err == nil {
+		hostname = currentHost
+	}
+
 	now := time.Now().Format(time.RFC850)
 
 	// No error checking... it's not a big deal if we cannot write that
-	l.file.WriteString(fmt.Sprintf("%s on %s", username, now))
+	l.file.WriteString(fmt.Sprintf("%s on %s from %s", username, now, hostname))
 	return true
 }
 

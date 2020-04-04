@@ -31,16 +31,6 @@ func newCommand(command string, args, env []string) commandDefinition {
 	}
 }
 
-func runCommands(commands []commandDefinition) error {
-	for _, command := range commands {
-		err := runCommand(command)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func runCommand(command commandDefinition) error {
 	var cmd *exec.Cmd
 	var err error

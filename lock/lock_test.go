@@ -31,5 +31,7 @@ func TestLockIsNotAvailable(t *testing.T) {
 	defer other.Release()
 	assert.False(t, other.TryAcquire())
 
+	who := other.Who()
 	t.Log("File was locked by", other.Who())
+	assert.NotEmpty(t, who)
 }
