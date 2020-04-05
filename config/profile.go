@@ -50,12 +50,37 @@ type RetentionSection struct {
 	OtherFlags   map[string]interface{} `mapstructure:",remain"`
 }
 
+// NewProfile instantiates a new blank profile
 func NewProfile(name string) *Profile {
 	return &Profile{
 		Name: name,
 	}
 }
 
+// HasProfile returns true if the profile exists in the configuration
+func HasProfile(profileKey string) bool {
+	return viper.IsSet(profileKey)
+}
+
+// HasGroup returns true if the group of profiles exists in the configuration
+func HasGroup(groupKey string) bool {
+	if !viper.IsSet(constants.SectionConfigurationGroups) {
+		return false
+	}
+	return viper.IsSet(constants.SectionConfigurationGroups + "." + groupKey)
+}
+
+// LoadGroup returns the list of profiles in a group
+func LoadGroup(groupKey string) ([]string, error) {
+	group := make([]string, 0)
+	err := viper.UnmarshalKey(constants.SectionConfigurationGroups+"."+groupKey, &group)
+	if err != nil {
+		return nil, err
+	}
+	return group, nil
+}
+
+// LoadProfile from configuration
 func LoadProfile(profileKey string) (*Profile, error) {
 	var err error
 	var profile *Profile
@@ -91,6 +116,7 @@ func LoadProfile(profileKey string) (*Profile, error) {
 	return profile, nil
 }
 
+// SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
 
 	p.Repository = fixPath(p.Repository, rootPath)
@@ -143,6 +169,7 @@ func (p *Profile) SetHost(hostname string) {
 	}
 }
 
+// GetCommonFlags returns the flags common to all commands
 func (p *Profile) GetCommonFlags() map[string][]string {
 	// Flags from the profile fields
 	flags := convertStructToFlags(*p)
@@ -152,6 +179,7 @@ func (p *Profile) GetCommonFlags() map[string][]string {
 	return flags
 }
 
+// GetCommandFlags returns the flags specific to the command (backup, snapshots, etc.)
 func (p *Profile) GetCommandFlags(command string) map[string][]string {
 	flags := p.GetCommonFlags()
 
@@ -173,12 +201,14 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 	return flags
 }
 
+// GetRetentionFlags returns the flags specific to the "forget" command being run as part of a backup
 func (p *Profile) GetRetentionFlags() map[string][]string {
 	flags := p.GetCommonFlags()
 	flags = addOtherFlags(flags, p.Retention.OtherFlags)
 	return flags
 }
 
+// GetBackupSource returns the directories to backup
 func (p *Profile) GetBackupSource() []string {
 	return p.Backup.Source
 }
