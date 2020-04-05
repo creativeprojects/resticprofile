@@ -85,3 +85,8 @@ func GetPriorityClassName(class uint32) string {
 	}
 	return fmt.Sprintf("0x%x", class)
 }
+
+// SetIONice does nothing in Windows
+func SetIONice(class, value int) error {
+	return nil
+}

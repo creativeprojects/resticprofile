@@ -1,10 +1,9 @@
-//+build !windows
+//+build !windows,!linux
 
 package priority
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/creativeprojects/resticprofile/clog"
 	"golang.org/x/sys/unix"
@@ -20,15 +19,6 @@ func SetNice(priority int) error {
 		return fmt.Errorf("Unexpected priority value %d", priority)
 	}
 
-	if runtime.GOOS == "linux" {
-		// Move ourselves to a new process group so that we can use the process
-		// group variants of Setpriority etc to affect all of our threads in one go
-		err = unix.Setpgid(pid, 0)
-		if err != nil {
-			return fmt.Errorf("Error setting process group: %v", err)
-		}
-	}
-
 	clog.Debugf("Setting process priority to %d", priority)
 	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
 	if err != nil {
@@ -40,4 +30,9 @@ func SetNice(priority int) error {
 // SetClass sets the priority class of the current process
 func SetClass(class int) error {
 	return SetNice(class)
+}
+
+// SetIONice does nothing in non-linux OS
+func SetIONice(class, value int) error {
+	return nil
 }

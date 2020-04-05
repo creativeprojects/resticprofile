@@ -1,4 +1,4 @@
-//+build !windows
+//+build !windows,!linux
 
 package main
 
@@ -17,5 +17,5 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Printf("PID: %d, Priority: %d\n", pid, pri)
+	fmt.Printf("Priority: %d\n", pri)
 }

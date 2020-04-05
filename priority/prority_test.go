@@ -51,6 +51,20 @@ func TestStartProcessWithLowerPriority(t *testing.T) {
 	}
 }
 
+func TestStartProcessWithNormalIOPriority(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.SkipNow()
+	}
+
+	output, err := runChildProcess()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(output)
+	assert.Contains(t, output, "IOPriority:")
+
+}
+
 func runChildProcess() (string, error) {
 	cmd := exec.Command("go", "run", "./check")
 	buffer := &bytes.Buffer{}
