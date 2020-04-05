@@ -53,7 +53,7 @@ func getIOPriority() {
 	)
 	if err != 0 {
 		fmt.Println(err)
-		os.Exit(1)
+		return
 	}
 	class := r1 >> ioPrioClassShift
 	value := r1 & ioPrioMask
