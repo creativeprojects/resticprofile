@@ -10,7 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStartProcessWithNoChange(t *testing.T) {
+func TestStartProcessWithNormalPriority(t *testing.T) {
+	SetClass(Normal)
+
 	output, err := runChildProcess()
 	if err != nil {
 		t.Fatal(err)
