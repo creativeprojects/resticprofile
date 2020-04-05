@@ -3,15 +3,20 @@ package priority
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestStartProcessWithNormalPriority(t *testing.T) {
-	SetClass(Normal)
+	err := SetClass(Normal)
+	if err != nil {
+		t.Error(err)
+	}
 
 	output, err := runChildProcess()
 	if err != nil {
@@ -20,13 +25,19 @@ func TestStartProcessWithNormalPriority(t *testing.T) {
 	t.Log(output)
 	if runtime.GOOS == "windows" {
 		assert.Contains(t, output, "Priority class: NORMAL")
+	} else if hostname, err := os.Hostname(); err == nil && strings.Contains(hostname, "travis") {
+		// Some some reason go test run with default priority of 20 under Travis CI
+		assert.Contains(t, output, "Priority: 20")
 	} else {
 		assert.Contains(t, output, "Priority: 0")
 	}
 }
 
 func TestStartProcessWithLowerPriority(t *testing.T) {
-	SetClass(Low)
+	err := SetClass(Low)
+	if err != nil {
+		t.Error(err)
+	}
 
 	output, err := runChildProcess()
 	if err != nil {
