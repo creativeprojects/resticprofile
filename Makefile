@@ -38,4 +38,4 @@ docker: clean
 		bunzip2 restic_${RESTIC_VERSION}_linux_amd64.bz2
 		mv restic_${RESTIC_VERSION}_linux_amd64 ${BUILD}restic
 		chmod +x ${BUILD}restic
-		cd ${BUILD}; docker build --pull --tag resticprofile .
+		cd ${BUILD}; docker build --pull --tag creativeprojects/resticprofile .

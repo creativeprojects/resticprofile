@@ -254,7 +254,7 @@ See all snapshots of your `[default]` profile:
 $ resticprofile
 ```
 
-See all available profiles in your configuration file (and the commands where some flags are defined):
+See all available profiles in your configuration file (and the restic commands where some flags are defined):
 
 ```
 $ resticprofile profiles
@@ -306,6 +306,25 @@ Usage:
    [restic command] [additional parameters to pass to restic]
 
 ```
+
+## Using docker image ##
+
+You can run resticprofile inside a docker container. It is the easiest way to install resticprofile (and restic at the same time) and keep it updated.
+
+**But** be aware that you will need to mount your backup source (and destination if it's local) as a docker volume.
+Depending on your operating system, the backup might be **very slow**. Volumes mounted on a mac OS host are well known for being very slow.
+
+By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
+
+```
+$ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile
+```
+
+You can list your profiles:
+```
+$ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
+```
+
 
 ## Command line reference ##
 
