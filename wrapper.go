@@ -26,6 +26,7 @@ func newResticWrapper(resticBinary string, profile *config.Profile, moreArgs []s
 }
 
 func (r *resticWrapper) runInitialize() error {
+	clog.Info("Initializing repository (if not existing)")
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	rCommand.displayStderr = false
@@ -33,21 +34,26 @@ func (r *resticWrapper) runInitialize() error {
 }
 
 func (r *resticWrapper) runCheck() error {
+	clog.Info("Checking repository consistency")
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
 	rCommand := r.prepareCommand(constants.CommandCheck, args)
 	return runCommand(rCommand)
 }
 
 func (r *resticWrapper) runRetention() error {
+	clog.Info("Cleaning up repository using retention information")
 	args := convertIntoArgs(r.profile.GetRetentionFlags())
 	rCommand := r.prepareCommand(constants.CommandForget, args)
 	return runCommand(rCommand)
 }
 
 func (r *resticWrapper) runCommand(command string) error {
+	clog.Infof("Starting '%s'", command)
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	rCommand := r.prepareCommand(command, args)
-	return runCommand(rCommand)
+	err := runCommand(rCommand)
+	clog.Infof("Finished '%s'", command)
+	return err
 }
 
 func (r *resticWrapper) prepareCommand(command string, args []string) commandDefinition {
