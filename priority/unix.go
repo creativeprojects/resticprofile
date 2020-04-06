@@ -32,6 +32,15 @@ func SetClass(class int) error {
 	return SetNice(class)
 }
 
+// GetNice returns the scheduler priority of the current process
+func GetNice() (int, error) {
+	pri, err := unix.Getpriority(unix.PRIO_PROCESS, 0)
+	if err != nil {
+		return 0, err
+	}
+	return pri, nil
+}
+
 // SetIONice does nothing in non-linux OS
 func SetIONice(class, value int) error {
 	return nil
