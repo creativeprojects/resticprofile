@@ -10,58 +10,65 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStartProcessWithNormalPriority(t *testing.T) {
-	err := SetClass(Normal)
-	if err != nil {
-		t.Error(err)
+func TestStartProcessWithPriority(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
 	}
 
-	output, err := runChildProcess()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(output)
-	if runtime.GOOS == "windows" {
-		assert.Contains(t, output, "Priority class: NORMAL")
-	} else {
-		assert.Contains(t, output, "Priority: 0")
-	}
-}
+	// Run these 3 tests inside one test, so we don't have concurrency issue
+	t.Run("WithNormalPriority", func(t *testing.T) {
+		err := SetClass(Normal)
+		if err != nil {
+			t.Error(err)
+		}
 
-func TestStartProcessWithLowerPriority(t *testing.T) {
-	err := SetClass(Low)
-	if err != nil {
-		t.Error(err)
-	}
+		output, err := runChildProcess()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(output)
+		if runtime.GOOS == "windows" {
+			assert.Contains(t, output, "Priority class: NORMAL")
+		} else {
+			assert.Contains(t, output, "Priority: 0")
+		}
+	})
 
-	output, err := runChildProcess()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(output)
-	if runtime.GOOS == "windows" {
-		assert.Contains(t, output, "Priority class: BELOW_NORMAL")
-	} else {
-		assert.Contains(t, output, "Priority: 10")
-	}
-}
+	t.Run("WithLowerPriority", func(t *testing.T) {
+		err := SetClass(Low)
+		if err != nil {
+			t.Error(err)
+		}
 
-func TestStartProcessWithBackgroundPriority(t *testing.T) {
-	err := SetClass(Background)
-	if err != nil {
-		t.Error(err)
-	}
+		output, err := runChildProcess()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(output)
+		if runtime.GOOS == "windows" {
+			assert.Contains(t, output, "Priority class: BELOW_NORMAL")
+		} else {
+			assert.Contains(t, output, "Priority: 10")
+		}
+	})
 
-	output, err := runChildProcess()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(output)
-	if runtime.GOOS == "windows" {
-		assert.Contains(t, output, "Priority class: IDLE")
-	} else {
-		assert.Contains(t, output, "Priority: 15")
-	}
+	t.Run("WithBackgroundPriority", func(t *testing.T) {
+		err := SetClass(Background)
+		if err != nil {
+			t.Error(err)
+		}
+
+		output, err := runChildProcess()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(output)
+		if runtime.GOOS == "windows" {
+			assert.Contains(t, output, "Priority class: IDLE")
+		} else {
+			assert.Contains(t, output, "Priority: 15")
+		}
+	})
 }
 
 func runChildProcess() (string, error) {

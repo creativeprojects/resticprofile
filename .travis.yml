@@ -33,11 +33,10 @@ matrix:
 
 
 install:
-  - go version
   - export GOBIN="$GOPATH/bin"
   - export PATH="$PATH:$GOBIN"
   - go env
 
 script:
-  - go build -v .
-  - go test -v ./...
+  - make build
+  - make test-ci

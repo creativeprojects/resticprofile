@@ -26,6 +26,10 @@ build:
 test:
 		$(GOTEST) -v $(TESTS)
 
+test-ci:
+		$(GOTEST) -v -short ./...
+		$(GOTEST) -v ./priority
+
 coverage:
 		$(GOTEST) -coverprofile=$(COVERAGE_FILE) $(TESTS)
 		$(GOTOOL) cover -html=$(COVERAGE_FILE)
