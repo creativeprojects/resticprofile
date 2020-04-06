@@ -38,5 +38,6 @@ install:
   - go env
 
 script:
-  - make build
-  - make test-ci
+  - go build -v .
+  - go test -v -short ./...
+  - go test -v ./priority
