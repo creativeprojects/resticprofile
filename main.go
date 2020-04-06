@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/lock"
 
@@ -21,6 +23,10 @@ import (
 const (
 	resticProfileVersion = "0.6.0"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano() - time.Now().Unix())
+}
 
 func main() {
 	var err error
@@ -136,8 +142,15 @@ func setLoggerFlags(flags commandLineFlags) {
 	}
 
 	if flags.quiet && flags.verbose {
-		clog.Warning("You specified -quiet (-q) and -verbose (-v) at the same time. Selection is verbose.")
-		flags.quiet = false
+		coin := ""
+		if randomBool() {
+			coin = "verbose"
+			flags.quiet = false
+		} else {
+			coin = "quiet"
+			flags.verbose = false
+		}
+		clog.Warningf("You specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.", coin)
 	}
 	if flags.quiet {
 		clog.Quiet()
@@ -223,9 +236,11 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 	// Send the quiet/verbose down to restic as well (override profile configuration)
 	if flags.quiet {
 		profile.Quiet = true
+		profile.Verbose = false
 	}
 	if flags.verbose {
 		profile.Verbose = true
+		profile.Quiet = false
 	}
 
 	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
@@ -323,4 +338,9 @@ func lockRun(filename string, run func() error) error {
 	}
 	defer lock.Release()
 	return run()
+}
+
+// randomBool returns true for Heads and false for Tails
+func randomBool() bool {
+	return rand.Int31n(10000) < 5000
 }
