@@ -8,7 +8,7 @@
 
 .DS_Store
 /examples/private
-/build
+/build/restic*
 /dist
 
 # binary
