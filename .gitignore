@@ -13,6 +13,9 @@
 
 # binary
 /resticprofile
+/resticprofile_darwin
+/resticprofile_linux
+/resticprofile.exe
 
 # test output
 /coverage.out
