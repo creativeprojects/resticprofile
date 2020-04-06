@@ -40,4 +40,3 @@ install:
 script:
   - go build -v .
   - go test -v -short ./...
-  - go test -v ./priority
