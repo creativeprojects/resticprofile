@@ -20,7 +20,7 @@ func TestStartProcessWithNormalIOPriority(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(output)
-	// assert.Contains(t, output, "IOPriority:")
+	assert.Contains(t, output, "IOPriority: class = 0, value = 4")
 
 }
 
@@ -72,27 +72,9 @@ func TestStartProcessWithBackgroundPriority(t *testing.T) {
 	}
 	t.Log(output)
 	if runtime.GOOS == "windows" {
-		// assert.Contains(t, output, "Priority class: PROCESS_MODE_BACKGROUND (begin)")
+		assert.Contains(t, output, "Priority class: IDLE")
 	} else {
 		assert.Contains(t, output, "Priority: 15")
-	}
-}
-
-func TestStartProcessWithLowestPriority(t *testing.T) {
-	err := SetClass(Idle)
-	if err != nil {
-		t.Error(err)
-	}
-
-	output, err := runChildProcess()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(output)
-	if runtime.GOOS == "windows" {
-		// assert.Contains(t, output, "Priority class: IDLE")
-	} else {
-		assert.Contains(t, output, "Priority: 19")
 	}
 }
 
