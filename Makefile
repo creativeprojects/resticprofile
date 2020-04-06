@@ -33,10 +33,9 @@ clean:
 		rm -f $(BINARY) $(COVERAGE_FILE) restic_*_linux_amd64*
 
 docker: clean
-		CGO_ENABLED=0 $(GOBUILD) -v -o $(BINARY) .
-		mv resticprofile ${BUILD}
+		CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GOBUILD) -v -o ${BUILD}$(BINARY) .
 		curl -LO https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2
 		bunzip2 restic_${RESTIC_VERSION}_linux_amd64.bz2
 		mv restic_${RESTIC_VERSION}_linux_amd64 ${BUILD}restic
 		chmod +x ${BUILD}restic
-		cd ${BUILD}; docker build --tag resticprofile .
+		cd ${BUILD}; docker build --pull --tag resticprofile .
