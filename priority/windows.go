@@ -3,6 +3,7 @@
 package priority
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/creativeprojects/resticprofile/clog"
@@ -88,5 +89,5 @@ func GetPriorityClassName(class uint32) string {
 
 // SetIONice does nothing in Windows
 func SetIONice(class, value int) error {
-	return nil
+	return errors.New("IONice is only supported on Linux")
 }

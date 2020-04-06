@@ -3,6 +3,7 @@
 package priority
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/creativeprojects/resticprofile/clog"
@@ -43,5 +44,5 @@ func GetNice() (int, error) {
 
 // SetIONice does nothing in non-linux OS
 func SetIONice(class, value int) error {
-	return nil
+	return errors.New("IONice is only supported on Linux")
 }

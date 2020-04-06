@@ -74,6 +74,13 @@ func main() {
 		clog.Warning(err)
 	}
 
+	if global.IONice {
+		err = priority.SetIONice(global.IONiceClass, global.IONiceLevel)
+		if err != nil {
+			clog.Warning(err)
+		}
+	}
+
 	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
 	if err != nil {
 		clog.Error("Cannot find restic:", err)
@@ -154,7 +161,7 @@ func setPriority(nice int, class string) error {
 				return err
 			}
 		} else {
-			clog.Warningf("Incorrect value '%s' for priority in global section", class)
+			return fmt.Errorf("Incorrect value '%s' for priority in global section", class)
 		}
 		return nil
 	}

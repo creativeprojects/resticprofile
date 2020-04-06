@@ -77,6 +77,7 @@ func SetIONice(class, value int) error {
 	if value < 0 || value > 7 {
 		return fmt.Errorf("SetIONice: expected value from 0 to 7, found %d", value)
 	}
+	clog.Debugf("Setting IO priority class to %d, level %d", class, value)
 	// Try group of processes first
 	err := setIOPrio(IOPrioWhoPGRP, IOPrioClass(class), value)
 	if err != nil {
