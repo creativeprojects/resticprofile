@@ -27,13 +27,10 @@ func getPriority() {
 }
 
 func getIOPriority() {
-	class, value, err := priority.GetIOPrio(priority.IOPrioWhoPGRP)
+	class, value, err := priority.GetIONice()
 	if err != nil {
-		class, value, err = priority.GetIOPrio(priority.IOPrioWhoProcess)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		fmt.Println(err)
+		return
 	}
 	fmt.Printf("IOPriority: class = %d, value = %d\n", class, value)
 }

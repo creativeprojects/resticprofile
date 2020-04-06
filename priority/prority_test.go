@@ -10,20 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStartProcessWithNormalIOPriority(t *testing.T) {
-	if runtime.GOOS != "linux" {
-		t.SkipNow()
-	}
-
-	output, err := runChildProcess()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(output)
-	assert.Contains(t, output, "IOPriority: class = 0, value = 4")
-
-}
-
 func TestStartProcessWithNormalPriority(t *testing.T) {
 	err := SetClass(Normal)
 	if err != nil {

@@ -3,8 +3,10 @@
 package priority
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"syscall"
 
 	"github.com/creativeprojects/resticprofile/clog"
 	"golang.org/x/sys/unix"
@@ -16,7 +18,8 @@ const IOPrioMask = (1 << IOPrioClassShift) - 1
 type IOPrioClass int
 
 const (
-	IOPrioClassRT IOPrioClass = iota + 1
+	IOPrioNoClass IOPrioClass = iota
+	IOPrioClassRT
 	IOPrioClassBE
 	IOPrioClassIdle
 )
@@ -67,45 +70,70 @@ func GetNice() (int, error) {
 	return 20 - pri, nil
 }
 
-func SetIOPrio(class IOPrioClass, value int) error {
-	if class == IOPrioClassIdle {
-		// That's the only valid value for Idle
-		value = 0
-	}
-
-	_, _, err := unix.Syscall(
-		unix.SYS_IOPRIO_SET,
-		uintptr(IOPrioWhoPGRP),
-		uintptr(os.Getpid()),
-		uintptr(class)<<IOPrioClassShift|uintptr(value),
-	)
-	if err != 0 {
-		return err
-	}
-	return nil
-}
-
 func SetIONice(class, value int) error {
-	if class < 0 || class > 3 {
+	if class < 1 || class > 3 {
 		return fmt.Errorf("SetIONice: expected class to be 1, 2 or 3, found %d", class)
 	}
 	if value < 0 || value > 7 {
 		return fmt.Errorf("SetIONice: expected value from 0 to 7, found %d", value)
 	}
-	return SetIOPrio(IOPrioClass(class), value)
+	// Try group of processes first
+	err := setIOPrio(IOPrioWhoPGRP, IOPrioClass(class), value)
+	if err != nil {
+		// Try process only
+		return setIOPrio(IOPrioWhoProcess, IOPrioClass(class), value)
+	}
+	return nil
 }
 
-func GetIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
-	r1, _, err := unix.Syscall(
+func GetIONice() (IOPrioClass, int, error) {
+	class, value, err := getIOPrio(IOPrioWhoPGRP)
+	if err != nil {
+		class, value, err = getIOPrio(IOPrioWhoProcess)
+	}
+	return class, value, err
+}
+
+func getIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
+
+	r1, _, errno := unix.Syscall(
 		unix.SYS_IOPRIO_GET,
 		uintptr(who),
 		uintptr(os.Getpid()),
 		0,
 	)
-	if err != 0 {
-		return 0, 0, err
+	if errno != 0 {
+		return 0, 0, errnoToError(errno)
 	}
 	class := r1 >> IOPrioClassShift
 	value := r1 & IOPrioMask
 	return IOPrioClass(class), int(value), nil
+}
+
+func setIOPrio(who IOPrioWho, class IOPrioClass, value int) error {
+
+	_, _, errno := unix.Syscall(
+		unix.SYS_IOPRIO_SET,
+		uintptr(who),
+		uintptr(os.Getpid()),
+		uintptr(class)<<IOPrioClassShift|uintptr(value),
+	)
+	if errno != 0 {
+		return errnoToError(errno)
+	}
+	return nil
+}
+
+func errnoToError(errno syscall.Errno) error {
+	message := "Unspecified error"
+
+	switch errno {
+	case unix.EINVAL:
+		message = "Invalid class or value"
+	case unix.EPERM:
+		message = "Permission denied"
+	case unix.ESRCH:
+		message = "Process, group of processes, or user processes not found"
+	}
+	return errors.New(message)
 }
