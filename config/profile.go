@@ -119,6 +119,7 @@ func LoadProfile(profileKey string) (*Profile, error) {
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
 
+	p.Lock = fixPath(p.Lock, rootPath)
 	p.Repository = fixPath(p.Repository, rootPath)
 	p.PasswordFile = fixPath(p.PasswordFile, rootPath)
 	p.CacheDir = fixPath(p.CacheDir, rootPath)
@@ -141,9 +142,6 @@ func (p *Profile) SetRootPath(rootPath string) {
 		// Do we need to do source files? (it wasn't the case before v0.6.0)
 		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
 			for i := 0; i < len(p.Backup.Source); i++ {
-				if filepath.IsAbs(p.Backup.Source[i]) {
-					continue
-				}
 				p.Backup.Source[i] = fixPath(p.Backup.Source[i], rootPath)
 			}
 		}
