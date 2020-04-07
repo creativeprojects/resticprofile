@@ -11,4 +11,5 @@ const (
 	ParameterResticBinary   = "restic-binary"
 	ParameterInherit        = "inherit"
 	ParameterHost           = "host"
+	ParameterPath           = "path"
 )

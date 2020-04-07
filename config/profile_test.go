@@ -286,6 +286,54 @@ host = "ConfigHost"
 	assert.Equal([]string{"ConfigHost"}, flags["host"])
 }
 
+func TestKeepPathInRetention(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile]
+initialize = true
+
+[profile.backup]
+path = "/"
+
+[profile.retention]
+host = false
+`
+	profile, err := getProfile(testConfig, "profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(profile)
+
+	flags := profile.GetRetentionFlags()
+	assert.NotNil(flags)
+	assert.Contains(flags, "path")
+	assert.Equal([]string{"/"}, flags["path"])
+}
+
+func TestReplacePathInRetention(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile]
+initialize = true
+
+[profile.backup]
+path = "/some_other_path"
+
+[profile.retention]
+path = "/"
+`
+	profile, err := getProfile(testConfig, "profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(profile)
+
+	flags := profile.GetRetentionFlags()
+	assert.NotNil(flags)
+	assert.Contains(flags, "path")
+	assert.Equal([]string{"/"}, flags["path"])
+}
+
 func getProfile(configString, profileKey string) (*Profile, error) {
 	viper.SetConfigType("toml")
 	err := viper.ReadConfig(bytes.NewBufferString(configString))
