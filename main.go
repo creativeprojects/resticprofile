@@ -332,6 +332,15 @@ func lockRun(filename string, run func() error) error {
 		// No lock
 		return run()
 	}
+	// Make sure the path to the lock exists
+	dir := filepath.Dir(filename)
+	if dir != "" {
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			clog.Warningf("The profile will run without a lockfile: %v", err)
+			return run()
+		}
+	}
 	lock := lock.NewLock(filename)
 	if !lock.TryAcquire() {
 		return fmt.Errorf("Another process is already running this profile: %s", lock.Who())
