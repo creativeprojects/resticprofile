@@ -25,8 +25,6 @@ The configuration file accepts various formats:
 
 For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 
-The next version will include support for other file formats: JSON, TOML, YAML, HCL, INI, envfile or Java properties
-
 ## Requirements
 
 Since version 0.6.0, **resticprofile** **no longer needs** python installed on your machine. It is distributed as an executable (same as restic).
@@ -37,13 +35,11 @@ It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 ## Install
 
-**The version 0.6.0 is being finalized. In the meantime you can still use 0.5.2 available from the PyPI:**
+I'm going to prepare a shell script to help with the installation, but overall the installation is quite simple:
 
-**resticprofile** is published on [Python Package Index](https://pypi.org/project/resticprofile/).
-The easiest way to install resticprofile is using **pip**:
-```
-python3 -m pip install --user --upgrade resticprofile
-```
+- Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
+- Once downloaded you need to open the archive and copy the binary file `resticprofile` in your PATH.
+
 
 ## Configuration format
 
@@ -59,7 +55,7 @@ To set the flag `--password-file password.txt` you need to add a line like
 password-file = "password.txt"
 ```
 
-There's one **exception**: the flag `--repo` is named `repository` in the configuration
+There's **one exception**: the flag `--repo` is named `repository` in the configuration
 
 Let's say you normally use this command:
 
@@ -149,6 +145,9 @@ initialize = false
 [root]
 inherit = "default"
 initialize = true
+# this will add a LOCAL lockfile so you cannot run the same profile more than once at a time
+# (it's totally independent of the restic locks on the repository)
+lock = "/tmp/resticprofile-root.lock"
 
 # 'backup' command of profile 'root'
 [root.backup]
@@ -300,17 +299,21 @@ Display quick help
 ```
 $ resticprofile --help
 
-Usage:
- resticprofile
-   [--no-ansi]
-   [-c|--config <configuration_file>]
-   [-h|--help]
-   [-n|--name <profile_name>]
-   [-q|--quiet]
-   [-v|--verbose]
-   [restic command] [additional parameters to pass to restic]
+Usage of resticprofile:
+	resticprofile [resticprofile flags] [command] [restic flags]
+
+resticprofile flags:
+  -c, --config string   configuration file (default "profiles.conf")
+  -h, --help            display this help
+  -n, --name string     profile name (default "default")
+      --no-ansi         disable ansi control characters (disable console colouring)
+  -q, --quiet           display only warnings and errors
+      --theme string    console colouring theme (dark, light, none) (default "light")
+  -v, --verbose         display all debugging information
 
 ```
+
+A command is a restic command **except** for one command recognized by resticprofile only: `profiles`
 
 ## Using docker image ##
 
@@ -348,22 +351,28 @@ There are not many options on the command line, most of the options are in the c
 
 `[global]`
 
+`global` is a fixed name
+
 None of these flags are passed on the restic command line
 
 * **ionice**: true / false
 * **ionice-class**: integer
 * **ionice-level**: integer
 * **nice**: true / false OR integer
+* **priority**: string = `Idle`, `Background`, `Low`, `Normal`, `High`, `Highest`
 * **default-command**: string
 * **initialize**: true / false
 * **restic-binary**: string
 
 `[profile]`
 
+`profile` is the name of your profile
+
 Flags used by resticprofile only
 
 * ****inherit****: string
 * **initialize**: true / false
+* **lock**: string: specify a local lockfile
 
 Flags passed to the restic command line
 
@@ -490,3 +499,119 @@ Flags passed to the restic command line
 * **path**: string OR list of strings
 * **snapshot-template**: string
 * **tag**: string OR list of strings
+
+## Appendix
+
+As an example, here's a similar configuration file in YAML:
+
+```yaml
+global:
+    default-command: version
+    initialize: false
+    priority: low
+
+groups:
+    full-backup:
+    - root
+    - src
+
+default:
+    env:
+        tmp: /tmp
+    initialize: false
+    password-file: key
+    repository: /backup
+
+documents:
+    backup:
+        source: ~/Documents
+    initialize: false
+    repository: ~/backup
+    snapshots:
+        tag:
+        - documents
+
+root:
+    backup:
+        exclude-caches: true
+        exclude-file:
+        - root-excludes
+        - excludes
+        one-file-system: false
+        source:
+        - .
+        tag:
+        - test
+        - dev
+    inherit: default
+    initialize: true
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        host: true
+        keep-daily: 1
+        keep-hourly: 1
+        keep-last: 3
+        keep-monthly: 1
+        keep-tag:
+        - forever
+        keep-weekly: 1
+        keep-within: 3h
+        keep-yearly: 1
+        prune: false
+        tag:
+        - test
+        - dev
+
+self:
+    backup:
+        source: ./
+    initialize: false
+    repository: ../backup
+    snapshots:
+        tag:
+        - self
+
+src:
+    lock: "/tmp/resticprofile-profile-src.lock"
+    backup:
+        check-before: true
+        exclude:
+        - /**/.git
+        exclude-caches: true
+        one-file-system: false
+        run-after: echo All Done!
+        run-before:
+        - echo Starting!
+        - ls -al ~/go
+        source:
+        - ~/go
+        tag:
+        - test
+        - dev
+    inherit: default
+    initialize: true
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        keep-within: 30d
+        prune: true
+    snapshots:
+        tag:
+        - test
+        - dev
+        
+stdin:
+    backup:
+        stdin: true
+        stdin-filename: stdin-test
+        tag:
+        - stdin
+    inherit: default
+    snapshots:
+        tag:
+        - stdin
+
+```
