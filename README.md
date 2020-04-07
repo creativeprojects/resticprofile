@@ -40,6 +40,14 @@ I'm going to prepare a shell script to help with the installation, but overall t
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
 - Once downloaded you need to open the archive and copy the binary file `resticprofile` in your PATH.
 
+## Update
+
+Once installed, you can easily update resticprofile to the latest release using this command:
+
+```
+# resticprofile --self-update
+```
+
 
 ## Configuration format
 
@@ -308,6 +316,7 @@ resticprofile flags:
   -n, --name string     profile name (default "default")
       --no-ansi         disable ansi control characters (disable console colouring)
   -q, --quiet           display only warnings and errors
+      --self-update     auto update of resticprofile (does not update restic)
       --theme string    console colouring theme (dark, light, none) (default "light")
   -v, --verbose         display all debugging information
 

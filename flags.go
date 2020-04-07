@@ -45,7 +45,6 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
 	flagset.BoolVar(&flags.selfUpdate, "self-update", false, "auto update of resticprofile (does not update restic)")
 	flagset.StringVar(&flags.saveConfigAs, "save-config-as", "", "save configuration to a new file (file extension to choose which format)")
-	flagset.MarkHidden("self-update")
 	flagset.MarkHidden("save-config-as")
 
 	// stop at the first non flag found; the rest will be sent to the restic command line
