@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/creativeprojects/resticprofile.svg?branch=master)](https://travis-ci.com/creativeprojects/resticprofile)
+[![Go Report Card](https://goreportcard.com/badge/github.com/creativeprojects/resticprofile)](https://goreportcard.com/report/github.com/creativeprojects/resticprofile)
 
 # resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)
