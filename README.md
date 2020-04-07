@@ -34,6 +34,8 @@ It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 ## Install
 
+**The version 0.6.0 is being finalized. In the meantime you can still use 0.5.2 available from the PyPI:**
+
 **resticprofile** is published on [Python Package Index](https://pypi.org/project/resticprofile/).
 The easiest way to install resticprofile is using **pip**:
 ```
