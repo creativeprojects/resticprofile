@@ -120,7 +120,6 @@ func LoadProfile(profileKey string) (*Profile, error) {
 func (p *Profile) SetRootPath(rootPath string) {
 
 	p.Lock = fixPath(p.Lock, rootPath)
-	p.Repository = fixPath(p.Repository, rootPath)
 	p.PasswordFile = fixPath(p.PasswordFile, rootPath)
 	p.CacheDir = fixPath(p.CacheDir, rootPath)
 	p.CACert = fixPath(p.CACert, rootPath)
