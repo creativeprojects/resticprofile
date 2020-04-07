@@ -8,10 +8,8 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
-
-	"github.com/stretchr/testify/assert"
-
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNoProfile(t *testing.T) {

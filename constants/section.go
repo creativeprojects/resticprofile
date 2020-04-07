@@ -1,5 +1,6 @@
 package constants
 
+// Section
 const (
 	SectionConfigurationGlobal      = "global"
 	SectionConfigurationRetention   = "retention"

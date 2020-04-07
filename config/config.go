@@ -4,18 +4,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/constants"
-
 	"github.com/creativeprojects/resticprofile/array"
 	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/viper"
 )
 
 var (
 	// profileSections is a cache of ProfileSections()
-	profileSections map[string][]string = nil
+	profileSections map[string][]string
 )
 
+// LoadConfiguration loads configuration from file
 func LoadConfiguration(configFile string) error {
 	// For compatibility with the previous versions, a .conf file is TOML format
 	if filepath.Ext(configFile) == ".conf" {
@@ -31,10 +31,12 @@ func LoadConfiguration(configFile string) error {
 	return nil
 }
 
+// SaveAs saves the current configuration into the file in parameter
 func SaveAs(filename string) error {
 	return viper.SafeWriteConfigAs(filename)
 }
 
+// ProfileKeys returns all profiles in the configuration
 func ProfileKeys() []string {
 	allKeys := viper.AllKeys()
 	if allKeys == nil || len(allKeys) == 0 {
@@ -55,6 +57,7 @@ func ProfileKeys() []string {
 	return profiles
 }
 
+// ProfileGroups returns all groups from the configuration
 func ProfileGroups() map[string][]string {
 	groups := make(map[string][]string, 0)
 	if !viper.IsSet(constants.SectionConfigurationGroups) {

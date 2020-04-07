@@ -10,12 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/lock"
-
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/lock"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/spf13/viper"
 )

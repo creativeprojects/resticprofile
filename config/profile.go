@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Profile contains the whole profile configuration
 type Profile struct {
 	Name          string
 	Quiet         bool                   `mapstructure:"quiet" argument:"quiet"`
@@ -32,6 +33,7 @@ type Profile struct {
 	OtherFlags    map[string]interface{} `mapstructure:",remain"`
 }
 
+// BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
 	CheckBefore bool                   `mapstructure:"check-before"`
 	CheckAfter  bool                   `mapstructure:"check-after"`
@@ -44,6 +46,7 @@ type BackupSection struct {
 	OtherFlags  map[string]interface{} `mapstructure:",remain"`
 }
 
+// RetentionSection contains the specific configuration to the 'forget' command run as part of a backup
 type RetentionSection struct {
 	BeforeBackup bool                   `mapstructure:"before-backup"`
 	AfterBackup  bool                   `mapstructure:"after-backup"`

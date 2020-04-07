@@ -15,7 +15,7 @@ func TestPointerValueShouldPanic(t *testing.T) {
 }
 
 func TestNilValueFlag(t *testing.T) {
-	var value interface{} = nil
+	var value interface{}
 	argValue, hasValue := stringifyValueOf(value)
 	assert.False(t, hasValue)
 	assert.Equal(t, []string{}, argValue)

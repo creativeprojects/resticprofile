@@ -1,5 +1,6 @@
 package constants
 
+// Commands
 const (
 	CommandBackup    = "backup"
 	CommandCheck     = "check"

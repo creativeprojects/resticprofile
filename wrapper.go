@@ -5,10 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/constants"
-
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 type resticWrapper struct {

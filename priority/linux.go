@@ -17,6 +17,7 @@ const IOPrioMask = (1 << IOPrioClassShift) - 1
 
 type IOPrioClass int
 
+// IOPrioClass
 const (
 	IOPrioNoClass IOPrioClass = iota
 	IOPrioClassRT
@@ -26,6 +27,7 @@ const (
 
 type IOPrioWho int
 
+// IOPrioWho
 const (
 	IOPrioWhoProcess IOPrioWho = iota + 1
 	IOPrioWhoPGRP
@@ -62,6 +64,7 @@ func SetClass(class int) error {
 	return SetNice(class)
 }
 
+// GetNice returns the current nice value
 func GetNice() (int, error) {
 	pri, err := unix.Getpriority(unix.PRIO_PROCESS, 0)
 	if err != nil {
@@ -70,6 +73,7 @@ func GetNice() (int, error) {
 	return 20 - pri, nil
 }
 
+// SetIONice sets the io_prio class and value
 func SetIONice(class, value int) error {
 	if class < 1 || class > 3 {
 		return fmt.Errorf("SetIONice: expected class to be 1, 2 or 3, found %d", class)
@@ -87,6 +91,7 @@ func SetIONice(class, value int) error {
 	return nil
 }
 
+// GetIONice returns the io_prio class and value
 func GetIONice() (IOPrioClass, int, error) {
 	class, value, err := getIOPrio(IOPrioWhoPGRP)
 	if err != nil {

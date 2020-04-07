@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Global holds the configuration from the global section
 type Global struct {
 	IONice         bool   `mapstructure:"ionice"`
 	IONiceClass    int    `mapstructure:"ionice-class"`
@@ -16,6 +17,7 @@ type Global struct {
 	ResticBinary   string `mapstructure:"restic-binary"`
 }
 
+// GetGlobalSection returns the global configuration
 func GetGlobalSection() (*Global, error) {
 	global := &Global{
 		IONice:         constants.DefaultIONiceFlag,

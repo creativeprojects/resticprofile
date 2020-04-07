@@ -1,5 +1,6 @@
 package constants
 
+// Configuration defaults
 const (
 	DefaultConfigurationFile = "profiles.conf"
 	DefaultProfileName       = "default"

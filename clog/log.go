@@ -45,6 +45,7 @@ func init() {
 	levelMap = colorMaps["light"]
 }
 
+// SetTheme sets the dark or light theme
 func SetTheme(theme string) {
 	var ok bool
 	levelMap, ok = colorMaps[theme]
@@ -53,20 +54,24 @@ func SetTheme(theme string) {
 	}
 }
 
+// Colorize activate of deactivate colouring
 func Colorize(colorize bool) {
 	color.NoColor = !colorize
 }
 
+// Quiet will only display warnings and errors
 func Quiet() {
 	quiet = true
 	verbose = false
 }
 
+// Verbose will display debugging information
 func Verbose() {
 	verbose = true
 	quiet = false
 }
 
+// Debug sends debugging information
 func Debug(v ...interface{}) {
 	if !verbose {
 		return
@@ -74,6 +79,7 @@ func Debug(v ...interface{}) {
 	message(levelMap[DebugLevel], v...)
 }
 
+// Debugf sends debugging information
 func Debugf(format string, v ...interface{}) {
 	if !verbose {
 		return
@@ -81,6 +87,7 @@ func Debugf(format string, v ...interface{}) {
 	messagef(levelMap[DebugLevel], format, v...)
 }
 
+// Info logs some noticeable information
 func Info(v ...interface{}) {
 	if quiet {
 		return
@@ -88,6 +95,7 @@ func Info(v ...interface{}) {
 	message(levelMap[InfoLevel], v...)
 }
 
+// Infof logs some noticeable information
 func Infof(format string, v ...interface{}) {
 	if quiet {
 		return
@@ -95,18 +103,22 @@ func Infof(format string, v ...interface{}) {
 	messagef(levelMap[InfoLevel], format, v...)
 }
 
+// Warning send some important message to the console
 func Warning(v ...interface{}) {
 	message(levelMap[WarningLevel], v...)
 }
 
+// Warningf send some important message to the console
 func Warningf(format string, v ...interface{}) {
 	messagef(levelMap[WarningLevel], format, v...)
 }
 
+// Error sends error information to the console
 func Error(v ...interface{}) {
 	message(levelMap[ErrorLevel], v...)
 }
 
+// Errorf sends error information to the console
 func Errorf(format string, v ...interface{}) {
 	messagef(levelMap[ErrorLevel], format, v...)
 }
