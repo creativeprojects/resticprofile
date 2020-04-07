@@ -24,6 +24,8 @@ The configuration file accepts various formats:
 
 For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 
+The next version will include support for other file formats: JSON, TOML, YAML, HCL, INI, envfile or Java properties
+
 ## Requirements
 
 Since version 0.6.0, **resticprofile** **no longer needs** python installed on your machine. It is distributed as an executable (same as restic).
