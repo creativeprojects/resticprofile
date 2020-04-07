@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Command holds the configuration to run a shell command
 type Command struct {
 	Command   string
 	Arguments []string
@@ -19,6 +20,7 @@ type Command struct {
 	Stderr    io.Writer
 }
 
+// NewCommand instantiate a default Command
 func NewCommand(command string, args []string) *Command {
 	return &Command{
 		Command:   command,
@@ -27,6 +29,7 @@ func NewCommand(command string, args []string) *Command {
 	}
 }
 
+// Run the command
 func (c *Command) Run() error {
 	var err error
 
