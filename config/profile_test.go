@@ -293,7 +293,7 @@ func TestKeepPathInRetention(t *testing.T) {
 initialize = true
 
 [profile.backup]
-path = "/"
+source = "/"
 
 [profile.retention]
 host = false
@@ -317,7 +317,7 @@ func TestReplacePathInRetention(t *testing.T) {
 initialize = true
 
 [profile.backup]
-path = "/some_other_path"
+source = "/some_other_path"
 
 [profile.retention]
 path = "/"
