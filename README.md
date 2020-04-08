@@ -68,6 +68,26 @@ $ resticprofile --self-update
 ```
 
 
+## Using docker image ##
+
+You can run resticprofile inside a docker container. It is probably the easiest way to install resticprofile (and restic at the same time) and keep it updated.
+
+**But** be aware that you will need to mount your backup source (and destination if it's local) as a docker volume.
+Depending on your operating system, the backup might be **slower**. Volumes mounted on a mac OS host are well known for being quite slow.
+
+By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
+
+```
+$ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile
+```
+
+You can list your profiles:
+```
+$ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
+```
+
+
+
 ## Configuration format
 
 * A configuration is a set of _profiles_.
@@ -342,24 +362,6 @@ resticprofile flags:
 ```
 
 A command is a restic command **except** for one command recognized by resticprofile only: `profiles`
-
-## Using docker image ##
-
-You can run resticprofile inside a docker container. It is the easiest way to install resticprofile (and restic at the same time) and keep it updated.
-
-**But** be aware that you will need to mount your backup source (and destination if it's local) as a docker volume.
-Depending on your operating system, the backup might be **very slow**. Volumes mounted on a mac OS host are well known for being very slow.
-
-By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
-
-```
-$ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile
-```
-
-You can list your profiles:
-```
-$ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
-```
 
 
 ## Command line reference ##
