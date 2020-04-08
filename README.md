@@ -86,6 +86,20 @@ You can list your profiles:
 $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
 ```
 
+### Please note:
+
+Each time a container is started, it gets assigned a new random name. You should probably force a hostname to your container...
+
+```
+$ docker run -it --rm -v $PWD:/resticprofile -h my-machine creativeprojects/resticprofile -n profile backup
+```
+
+... or in your configuration:
+
+```ini
+[profile]
+host = "my-machine"
+```
 
 
 ## Configuration format
