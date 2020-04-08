@@ -35,17 +35,36 @@ It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 ## Install
 
-I'm going to prepare a shell script to help with the installation, but overall the installation is quite simple:
+Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux:
+
+```
+$ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
+```
+
+It should copy resticprofile in a `bin` directory under your current directory.
+
+If you need more control, you can save the shell script and run it manually:
+
+```
+$ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh
+$ chmod +x install.sh
+$ sudo ./install.sh -b /usr/local/bin
+```
+
+It will install resticprofile in `/usr/local/bin/`
+
+
+### Manual installation (Windows)
 
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
-- Once downloaded you need to open the archive and copy the binary file `resticprofile` in your PATH.
+- Once downloaded you need to open the archive and copy the binary file `resticprofile` (or `resticprofile.exe`) in your PATH.
 
 ## Update
 
 Once installed, you can easily update resticprofile to the latest release using this command:
 
 ```
-# resticprofile --self-update
+$ resticprofile --self-update
 ```
 
 
