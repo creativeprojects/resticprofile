@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/clog"
@@ -192,13 +193,15 @@ func displayProfiles() {
 		fmt.Println("\nThere's no available profile in the configuration")
 	} else {
 		fmt.Println("\nProfiles available:")
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		for name, sections := range profileSections {
 			if sections == nil || len(sections) == 0 {
-				fmt.Printf("\t%s\n", name)
+				fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
 			} else {
-				fmt.Printf("\t%s\t(%s)\n", name, strings.Join(sections, ", "))
+				fmt.Fprintf(w, "\t%s:\t(%s)\n", name, strings.Join(sections, ", "))
 			}
 		}
+		w.Flush()
 	}
 	fmt.Println("")
 }
@@ -209,9 +212,11 @@ func displayGroups() {
 		return
 	}
 	fmt.Println("Groups available:")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	for name, groupList := range groups {
-		fmt.Printf("\t%s: %s\n", name, strings.Join(groupList, ", "))
+		fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
 	}
+	w.Flush()
 	fmt.Println("")
 }
 
