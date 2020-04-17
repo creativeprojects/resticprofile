@@ -3,6 +3,7 @@ module github.com/creativeprojects/resticprofile
 go 1.13
 
 require (
+	github.com/adrg/xdg v0.2.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/fatih/color v1.9.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
