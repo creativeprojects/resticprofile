@@ -17,6 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/lock"
 	"github.com/creativeprojects/resticprofile/priority"
+	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/spf13/viper"
 )
 
@@ -109,6 +110,15 @@ func main() {
 	if resticCommand == constants.CommandProfiles {
 		displayProfiles()
 		displayGroups()
+		return
+	}
+	if resticCommand == constants.CommandSystemdUnit {
+		if len(resticArguments) != 1 {
+			clog.Error("OnCalendar argument required")
+			os.Exit(1)
+			return
+		}
+		systemd.Generate(flags.name, resticArguments[0])
 		return
 	}
 

@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/adrg/xdg"
 )
 
 var (
@@ -51,6 +53,13 @@ var (
 
 // FindConfigurationFile returns the path of the configuration file
 func FindConfigurationFile(configFile string) (string, error) {
+	xdgFilename, err := xdg.ConfigFile(filepath.Join("resticprofile", configFile))
+	if err == nil {
+		if fileExists(xdgFilename) {
+			return xdgFilename, nil
+		}
+	}
+
 	paths := getDefaultConfigurationLocations()
 	if home, err := os.UserHomeDir(); err == nil {
 		paths = append(paths, home)

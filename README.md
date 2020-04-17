@@ -659,3 +659,61 @@ stdin:
         - stdin
 
 ```
+
+## Using resticprofile and systemd
+
+systemd is a common service manager in use by many Linux distributions.
+resticprofile has the ability to autocreate systemd timer and service files.
+systemd can be used in place of cron to schedule backups.
+
+All systemd units are created under the user's systemd profile (~/.config/systemd/user).
+
+TODO: create system profiles
+
+### systemd calendars
+
+resticprofile uses systemd
+[OnCalendar](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events)
+format to schedule events.
+
+Testing systemd calendars can be done with the systemd-analyze application.
+systemd-analyze will display when the next trigger will happen:
+
+```
+$ systemd-analyze calendar 'daly'
+  Original form: daily
+Normalized form: *-*-* 00:00:00
+    Next elapse: Sat 2020-04-18 00:00:00 CDT
+       (in UTC): Sat 2020-04-18 05:00:00 UTC
+       From now: 10h left
+```
+
+### Configuring a systemd profile
+
+Running the following command will create a timer and systemd unit for the
+'configs' profile name within resticprofile. 
+
+```
+$ resticprofile -n configs systemd-unit daily
+2020/04/17 13:34:07 resticprofile 0.6.0 compiled with go1.14.2
+2020/04/17 13:34:07 Writing /home/<user>/.config/systemd/user/resticprofile-backup@configs.service
+2020/04/17 13:34:07 Writing /home/<user>/.config/systemd/user/resticprofile-backup@configs.timer
+```
+
+The service can be tested or run once with:
+
+```
+$ systemctl --user start resticprofile-backup@configs.service
+```
+
+Or, starting the timer will enable the schedule:
+```
+$ systemctl --user start resticprofile-backup@configs.timer
+```
+
+To persist the timer across reboots, replace `start` with enable:
+
+```
+$ systemctl --user enable resticprofile-backup@configs.timer
+```
+
