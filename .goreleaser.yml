@@ -14,6 +14,7 @@ builds:
       - freebsd
       - linux
       - openbsd
+      - windows
     goarch:
       - 386
       - amd64
@@ -29,6 +30,10 @@ builds:
       - goos: openbsd
         goarch: arm
       - goos: openbsd
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+      - goos: windows
         goarch: arm64
 
   - id: resticprofile_zip
