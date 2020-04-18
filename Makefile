@@ -22,7 +22,7 @@ BUILD=build/
 RESTIC_VERSION=0.9.6
 GO_VERSION=1.14
 
-.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker
+.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk
 
 all: test build
 
@@ -65,3 +65,8 @@ build-docker: clean
 		mv restic_${RESTIC_VERSION}_linux_amd64 ${BUILD}restic
 		chmod +x ${BUILD}restic
 		cd ${BUILD}; docker build --pull --tag creativeprojects/resticprofile .
+
+ramdisk: /Volumes/RAMDisk
+
+/Volumes/RAMDisk:
+		diskutil erasevolume HFS+ RAMDisk `hdiutil attach -nomount ram://4194304`
