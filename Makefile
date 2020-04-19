@@ -25,7 +25,7 @@ GO_VERSION=1.14
 BUILD_DATE=`date`
 BUILD_COMMIT=`git rev-parse HEAD`
 
-.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk
+.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server
 
 all: test build
 
@@ -73,3 +73,15 @@ ramdisk: /Volumes/RAMDisk
 
 /Volumes/RAMDisk:
 		diskutil erasevolume HFS+ RAMDisk `hdiutil attach -nomount ram://4194304`
+
+passphrase:
+		head -c 1024 /dev/urandom | base64
+
+rest-server:
+	REST_IMAGE=restic/rest-server
+	REST_CONTAINER=rest_server
+	REST_DATA=/tmp/restic
+	REST_OPTIONS=""
+
+	docker pull ${REST_IMAGE}
+	docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
