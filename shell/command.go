@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"syscall"
 )
 
 // Command holds the configuration to run a shell command
@@ -79,19 +78,7 @@ func (c *Command) Run() error {
 	defer func() {
 		close(c.done)
 	}()
-	go func() {
-		select {
-		case <-c.sigChan:
-			// In Windows, all hierarchy will receive the signal (which is good because we cannot send it)
-			// In all the other OS we resend the caught signal to the child process
-			if runtime.GOOS != "windows" {
-				syscall.Kill(cmd.Process.Pid, syscall.SIGINT)
-			}
-			return
-		case <-c.done:
-			return
-		}
-	}()
+	go c.propagateSignal(cmd.Process.Pid)
 	return cmd.Wait()
 }
 
