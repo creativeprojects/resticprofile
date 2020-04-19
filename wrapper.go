@@ -14,13 +14,15 @@ type resticWrapper struct {
 	resticBinary string
 	profile      *config.Profile
 	moreArgs     []string
+	sigChan      chan os.Signal
 }
 
-func newResticWrapper(resticBinary string, profile *config.Profile, moreArgs []string) *resticWrapper {
+func newResticWrapper(resticBinary string, profile *config.Profile, moreArgs []string, c chan os.Signal) *resticWrapper {
 	return &resticWrapper{
 		resticBinary: resticBinary,
 		profile:      profile,
 		moreArgs:     moreArgs,
+		sigChan:      c,
 	}
 }
 
@@ -72,6 +74,7 @@ func (r *resticWrapper) prepareCommand(command string, args []string) commandDef
 
 	clog.Debugf("Starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
 	rCommand := newCommand(r.resticBinary, arguments, env)
+	rCommand.sigChan = r.sigChan
 
 	if command == constants.CommandBackup && r.profile.Backup.UseStdin {
 		clog.Debug("Redirecting stdin to the backup")
@@ -92,6 +95,7 @@ func (r *resticWrapper) runPreCommand(command string) error {
 		clog.Debugf("Starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
 		env := append(os.Environ(), r.getEnvironment()...)
 		rCommand := newCommand(preCommand, nil, env)
+		rCommand.sigChan = r.sigChan
 		runCommand(rCommand)
 	}
 	return nil
@@ -109,6 +113,7 @@ func (r *resticWrapper) runPostCommand(command string) error {
 		clog.Debugf("Starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
 		env := append(os.Environ(), r.getEnvironment()...)
 		rCommand := newCommand(postCommand, nil, env)
+		rCommand.sigChan = r.sigChan
 		runCommand(rCommand)
 	}
 	return nil

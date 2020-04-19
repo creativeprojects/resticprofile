@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -267,7 +268,11 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 	}
 	profile.SetHost(hostname)
 
-	wrapper := newResticWrapper(resticBinary, profile, resticArguments)
+	// Catch CTR-C keypress
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+
+	wrapper := newResticWrapper(resticBinary, profile, resticArguments, sigChan)
 	if (global.Initialize || profile.Initialize) && resticCommand != constants.CommandInit {
 		wrapper.runInitialize()
 		// it's ok for the initialize to error out when the repository exists
