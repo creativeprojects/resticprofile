@@ -3,8 +3,12 @@ package shell
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -101,4 +105,50 @@ func TestRunShellEcho(t *testing.T) {
 	}
 
 	assert.Contains(t, string(output), "TestRunShellEcho")
+}
+
+func TestRunShellEchoWithSignalling(t *testing.T) {
+	buffer := &bytes.Buffer{}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	defer signal.Reset(os.Interrupt)
+
+	cmd := NewSignalledCommand("echo", []string{"TestRunShellEcho"}, c)
+	cmd.Stdout = buffer
+	err := cmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := ioutil.ReadAll(buffer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Contains(t, string(output), "TestRunShellEcho")
+}
+
+func TestInterruptShellCommand(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Test not running under Windows")
+	}
+	buffer := &bytes.Buffer{}
+
+	sigChan := make(chan os.Signal, 1)
+
+	cmd := NewSignalledCommand("sleep", []string{"3"}, sigChan)
+	cmd.Stdout = buffer
+
+	// Will ask us to stop in 100ms
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		sigChan <- syscall.Signal(syscall.SIGINT)
+	}()
+	start := time.Now()
+	err := cmd.Run()
+	if err != nil && err.Error() != "signal: interrupt" {
+		t.Fatal(err)
+	}
+
+	assert.WithinDuration(t, time.Now(), start, 1*time.Second)
 }
