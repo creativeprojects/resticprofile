@@ -20,9 +20,9 @@ func confirmAndSelfUpdate(debug bool) error {
 		return fmt.Errorf("Error occurred while detecting version: %v", err)
 	}
 
-	v := semver.MustParse(resticProfileVersion)
+	v := semver.MustParse(version)
 	if !found || latest.Version.LTE(v) {
-		clog.Infof("Current version (%s) is the latest", resticProfileVersion)
+		clog.Infof("Current version (%s) is the latest", version)
 		return nil
 	}
 

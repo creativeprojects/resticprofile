@@ -22,21 +22,24 @@ BUILD=build/
 RESTIC_VERSION=0.9.6
 GO_VERSION=1.14
 
+BUILD_DATE=`date`
+BUILD_COMMIT=`git rev-parse HEAD`
+
 .PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk
 
 all: test build
 
 build:
-		$(GOBUILD) -o $(BINARY) -v
+		$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-mac:
-		GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN) -v
+		GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-linux:
-		GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX) -v
+		GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-windows:
-		GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v
+		GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-all: build-mac build-linux build-windows
 

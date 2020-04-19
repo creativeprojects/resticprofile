@@ -20,8 +20,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	resticProfileVersion = "0.6.0"
+// These fields are populated by the goreleaser build
+var (
+	version = "0.6.1"
+	commit  = ""
+	date    = ""
+	builtBy = ""
 )
 
 func init() {
@@ -161,7 +165,7 @@ func setLoggerFlags(flags commandLineFlags) {
 }
 
 func banner() {
-	clog.Infof("resticprofile %s compiled with %s", resticProfileVersion, runtime.Version())
+	clog.Infof("resticprofile %s compiled with %s", version, runtime.Version())
 }
 
 func setPriority(nice int, class string) error {
