@@ -90,7 +90,9 @@ func (r *resticWrapper) runPreCommand(command string) error {
 	}
 	for i, preCommand := range r.profile.Backup.RunBefore {
 		clog.Debugf("Starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
-		runShellCommand(preCommand)
+		env := append(os.Environ(), r.getEnvironment()...)
+		rCommand := newCommand(preCommand, nil, env)
+		runCommand(rCommand)
 	}
 	return nil
 }
@@ -105,7 +107,9 @@ func (r *resticWrapper) runPostCommand(command string) error {
 	}
 	for i, postCommand := range r.profile.Backup.RunAfter {
 		clog.Debugf("Starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
-		runShellCommand(postCommand)
+		env := append(os.Environ(), r.getEnvironment()...)
+		rCommand := newCommand(postCommand, nil, env)
+		runCommand(rCommand)
 	}
 	return nil
 }

@@ -12,6 +12,7 @@ type commandDefinition struct {
 	env           []string
 	displayStderr bool
 	useStdin      bool
+	sigChan       chan os.Signal
 }
 
 func newCommand(command string, args, env []string) commandDefinition {
@@ -30,7 +31,7 @@ func newCommand(command string, args, env []string) commandDefinition {
 func runCommand(command commandDefinition) error {
 	var err error
 
-	cmd := shell.NewCommand(command.command, command.args)
+	cmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
 
 	cmd.Stdout = os.Stdout
 	if command.displayStderr {
@@ -46,19 +47,6 @@ func runCommand(command commandDefinition) error {
 		cmd.Environ = append(cmd.Environ, command.env...)
 	}
 
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func runShellCommand(command string) error {
-	var err error
-
-	cmd := shell.NewCommand(command, nil)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
 		return err
