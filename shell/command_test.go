@@ -128,16 +128,15 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 	assert.Contains(t, string(output), "TestRunShellEcho")
 }
 
-// TODO try to make this test pass under Linux
 func TestInterruptShellCommand(t *testing.T) {
-	if runtime.GOOS != "darwin" {
+	if runtime.GOOS == "windows" {
 		t.Skip("Test not running on this platform")
 	}
 	buffer := &bytes.Buffer{}
 
 	sigChan := make(chan os.Signal, 1)
 
-	cmd := NewSignalledCommand("sleep", []string{"3"}, sigChan)
+	cmd := NewSignalledCommand("sh", []string{"-c", "sleep 3"}, sigChan)
 	cmd.Stdout = buffer
 
 	// Will ask us to stop in 100ms
@@ -147,7 +146,7 @@ func TestInterruptShellCommand(t *testing.T) {
 	}()
 	start := time.Now()
 	err := cmd.Run()
-	if err != nil && err.Error() != "signal: interrupt" {
+	if err != nil && err.Error() != "exit status 1" {
 		t.Fatal(err)
 	}
 

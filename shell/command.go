@@ -78,7 +78,7 @@ func (c *Command) Run() error {
 	defer func() {
 		close(c.done)
 	}()
-	go c.propagateSignal(cmd.Process.Pid)
+	go c.propagateSignal(cmd.Process)
 	return cmd.Wait()
 }
 
