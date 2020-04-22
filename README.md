@@ -1,4 +1,3 @@
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/creativeprojects/resticprofile)
 [![Build Status](https://travis-ci.com/creativeprojects/resticprofile.svg?branch=master)](https://travis-ci.com/creativeprojects/resticprofile)
 [![Go Report Card](https://goreportcard.com/badge/github.com/creativeprojects/resticprofile)](https://goreportcard.com/report/github.com/creativeprojects/resticprofile)
 
