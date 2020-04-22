@@ -1,0 +1,74 @@
+[global]
+priority = "low"
+initialize = false
+ionice = true
+ionice-class = 2
+ionice-level = 6
+
+[groups]
+all = ["src", "self"]
+
+[default]
+repository = "/tmp/backup"
+password-file = "key"
+initialize = false
+no-cache = true
+
+[src]
+inherit = "default"
+initialize = true
+lock = "/tmp/backup/resticprofile-profile-src.lock"
+
+[src.snapshots]
+tag = [ "test", "dev" ]
+
+[src.backup]
+run-before = [ "echo Starting!", "ls -al ~/go" ]
+run-after = "echo All Done!"
+exclude = [ '/**/.git' ]
+exclude-caches = true
+one-file-system = false
+tag = [ "test", "dev" ]
+source = [ "~/go/src" ]
+check-before = true
+
+[src.retention]
+before-backup = false
+after-backup = true
+keep-last = 3
+compact = false
+prune = true
+
+[src.check]
+check-unused = true
+with-cache = false
+
+[stdin]
+inherit = "default"
+
+[stdin.snapshots]
+tag = [ "stdin" ]
+
+[stdin.backup]
+stdin = true
+stdin-filename = "stdin-test"
+tag = [ 'stdin' ]
+
+[self]
+inherit = "default"
+initialize = false
+
+[self.snapshots]
+tag = [ "self" ]
+
+[self.backup]
+source = "./"
+tag = [ "self" ]
+
+[repo-from-env]
+
+[repo-from-env.env]
+RESTIC_REPOSITORY="/tmp/backup"
+
+[repo-from-env.backup]
+source = "~/"
