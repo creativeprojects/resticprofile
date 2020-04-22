@@ -289,14 +289,14 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 				return err
 			}
 			// Check
-			if profile.Backup.CheckBefore {
+			if profile.Backup != nil && profile.Backup.CheckBefore {
 				err = wrapper.runCheck()
 				if err != nil {
 					return err
 				}
 			}
 			// Retention
-			if profile.Retention.BeforeBackup {
+			if profile.Retention != nil && profile.Retention.BeforeBackup {
 				err = wrapper.runRetention()
 				if err != nil {
 					return err
@@ -313,14 +313,14 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 		// post-commands (for backup)
 		if resticCommand == constants.CommandBackup {
 			// Retention
-			if profile.Retention.AfterBackup {
+			if profile.Retention != nil && profile.Retention.AfterBackup {
 				err = wrapper.runRetention()
 				if err != nil {
 					return err
 				}
 			}
 			// Check
-			if profile.Backup.CheckAfter {
+			if profile.Backup != nil && profile.Backup.CheckAfter {
 				err = wrapper.runCheck()
 				if err != nil {
 					return err
