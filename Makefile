@@ -67,7 +67,7 @@ coverage:
 
 clean:
 		$(GOCLEAN)
-		rm -f $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic*
+		rm -rf $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic* dist/*
 
 test-docker:
 		docker run --rm -v "${GOPATH}":/go -w /go/src/creativeprojects/resticprofile golang:${GO_VERSION} $(GOTEST) -v $(TESTS)
