@@ -25,6 +25,17 @@ GO_VERSION=1.14
 BUILD_DATE=`date`
 BUILD_COMMIT=`git rev-parse HEAD`
 
+TMP_MOUNT_LINUX=/tmp/backup
+TMP_MOUNT_DARWIN=/Volumes/RAMDisk
+TMP_MOUNT=
+UNAME := $(shell uname -s)
+ifeq ($(UNAME),Linux)
+	TMP_MOUNT=${TMP_MOUNT_LINUX}
+endif
+ifeq ($(UNAME),Darwin)
+	TMP_MOUNT=${TMP_MOUNT_DARWIN}
+endif
+
 .PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server
 
 all: test build
@@ -69,10 +80,17 @@ build-docker: clean
 		chmod +x ${BUILD}restic
 		cd ${BUILD}; docker build --pull --tag creativeprojects/resticprofile .
 
-ramdisk: /Volumes/RAMDisk
+ramdisk: ${TMP_MOUNT}
 
-/Volumes/RAMDisk:
+# Fixed size ramdisk for mac OS X
+${TMP_MOUNT_DARWIN}:
+		# blocks = 512B so it's creating a 2GB fixed size disk image
 		diskutil erasevolume HFS+ RAMDisk `hdiutil attach -nomount ram://4194304`
+
+# Mount tmpfs on linux
+${TMP_MOUNT_LINUX}:
+		mkdir -p ${TMP_MOUNT_LINUX}
+		sudo mount -t tmpfs -o "rw,relatime,size=2097152k" tmpfs ${TMP_MOUNT_LINUX}
 
 passphrase:
 		head -c 1024 /dev/urandom | base64
