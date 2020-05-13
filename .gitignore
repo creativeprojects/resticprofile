@@ -1,5 +1,4 @@
 # legacy python version
-/.vscode
 /.pytest_cache
 /scripts/deploy.sh
 *.pyc
