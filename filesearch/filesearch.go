@@ -61,7 +61,7 @@ func FindConfigurationFile(configFile string) (string, error) {
 			return filename, nil
 		}
 	}
-	return "", fmt.Errorf("Configuration file '%s' was not found in any of these locations: %s", configFile, strings.Join(paths, ", "))
+	return "", fmt.Errorf("configuration file '%s' was not found in any of these locations: %s", configFile, strings.Join(paths, ", "))
 }
 
 // FindResticBinary returns the path of restic executable

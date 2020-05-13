@@ -9,7 +9,7 @@ import (
 func TestPointerValueShouldPanic(t *testing.T) {
 	concrete := "test"
 	value := &concrete
-	assert.PanicsWithError(t, "Unexpected type ptr", func() {
+	assert.PanicsWithError(t, "unexpected type ptr", func() {
 		stringifyValueOf(value)
 	})
 }
@@ -79,7 +79,7 @@ func TestPositiveFloatFlag(t *testing.T) {
 
 func TestArrayOfArrayOfValueShouldPanic(t *testing.T) {
 	value := [][]string{{"one", "two"}, {"three", "four"}}
-	assert.PanicsWithError(t, "Array of array of values are not supported", func() {
+	assert.PanicsWithError(t, "array of array of values are not supported", func() {
 		stringifyValueOf(value)
 	})
 }

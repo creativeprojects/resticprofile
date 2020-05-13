@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -179,7 +178,7 @@ func setPriority(nice int, class string) error {
 				return err
 			}
 		} else {
-			return fmt.Errorf("Incorrect value '%s' for priority in global section", class)
+			return fmt.Errorf("incorrect value '%s' for priority in global section", class)
 		}
 		return nil
 	}
@@ -201,12 +200,12 @@ func displayProfiles() {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		for name, sections := range profileSections {
 			if sections == nil || len(sections) == 0 {
-				fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
+				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
 			} else {
-				fmt.Fprintf(w, "\t%s:\t(%s)\n", name, strings.Join(sections, ", "))
+				_, _ = fmt.Fprintf(w, "\t%s:\t(%s)\n", name, strings.Join(sections, ", "))
 			}
 		}
-		w.Flush()
+		_ = w.Flush()
 	}
 	fmt.Println("")
 }
@@ -219,15 +218,10 @@ func displayGroups() {
 	fmt.Println("Groups available:")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	for name, groupList := range groups {
-		fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
 	}
-	w.Flush()
+	_ = w.Flush()
 	fmt.Println("")
-}
-
-func displayStruct(name string, value interface{}) {
-	s, _ := json.MarshalIndent(value, "", "\t")
-	fmt.Printf("%s:\n%s\n\n", name, s)
 }
 
 func runProfile(global *config.Global, flags commandLineFlags, profileName string, resticBinary string, resticArguments []string, resticCommand string) {
@@ -274,7 +268,7 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 
 	wrapper := newResticWrapper(resticBinary, profile, resticArguments, sigChan)
 	if (global.Initialize || profile.Initialize) && resticCommand != constants.CommandInit {
-		wrapper.runInitialize()
+		_ = wrapper.runInitialize()
 		// it's ok for the initialize to error out when the repository exists
 	}
 
@@ -354,11 +348,11 @@ func lockRun(filename string, run func() error) error {
 			return run()
 		}
 	}
-	lock := lock.NewLock(filename)
-	if !lock.TryAcquire() {
-		return fmt.Errorf("Another process is already running this profile: %s", lock.Who())
+	runLock := lock.NewLock(filename)
+	if !runLock.TryAcquire() {
+		return fmt.Errorf("another process is already running this profile: %s", runLock.Who())
 	}
-	defer lock.Release()
+	defer runLock.Release()
 	return run()
 }
 

@@ -17,12 +17,12 @@ const (
 var (
 	quiet     bool
 	verbose   bool
-	colorMaps map[string]([4]*color.Color)
+	colorMaps map[string][4]*color.Color
 	levelMap  [4]*color.Color
 )
 
 func init() {
-	colorMaps = map[string]([4]*color.Color){
+	colorMaps = map[string][4]*color.Color{
 		"none": [4]*color.Color{
 			DebugLevel:   nil,
 			InfoLevel:    nil,

@@ -13,7 +13,7 @@ import (
 // SetNice sets the unix "nice" value
 func SetNice(priority int) error {
 	if priority < 0 || priority > 19 {
-		return fmt.Errorf("Unexpected priority value %d", priority)
+		return fmt.Errorf("unexpected priority value %d", priority)
 	}
 	var class uint32 = windows.NORMAL_PRIORITY_CLASS
 	if priority == 19 {
@@ -48,18 +48,15 @@ func SetClass(class int) error {
 	case Highest:
 		return setPriorityClass(windows.HIGH_PRIORITY_CLASS)
 	}
-	return fmt.Errorf("Unknown priority class %d", class)
+	return fmt.Errorf("unknown priority class %d", class)
 }
 
 func setPriorityClass(class uint32) error {
-	handle, err := windows.GetCurrentProcess()
-	if err != nil {
-		return fmt.Errorf("Error getting current process handle: %v", err)
-	}
+	handle := windows.CurrentProcess()
 	clog.Debugf("Setting priority class %s", GetPriorityClassName(class))
-	err = windows.SetPriorityClass(handle, class)
+	err := windows.SetPriorityClass(handle, class)
 	if err != nil {
-		return fmt.Errorf("Error setting priority class: %v", err)
+		return fmt.Errorf("error setting priority class: %v", err)
 	}
 	return nil
 }

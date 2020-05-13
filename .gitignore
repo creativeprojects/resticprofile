@@ -1,3 +1,5 @@
+/.idea
+
 # legacy python version
 /.pytest_cache
 /scripts/deploy.sh

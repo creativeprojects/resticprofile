@@ -96,7 +96,10 @@ func (r *resticWrapper) runPreCommand(command string) error {
 		env := append(os.Environ(), r.getEnvironment()...)
 		rCommand := newCommand(preCommand, nil, env)
 		rCommand.sigChan = r.sigChan
-		runCommand(rCommand)
+		err := runCommand(rCommand)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -114,7 +117,10 @@ func (r *resticWrapper) runPostCommand(command string) error {
 		env := append(os.Environ(), r.getEnvironment()...)
 		rCommand := newCommand(postCommand, nil, env)
 		rCommand.sigChan = r.sigChan
-		runCommand(rCommand)
+		err := runCommand(rCommand)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

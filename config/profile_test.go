@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"os"
 	"runtime"
 	"testing"
@@ -223,7 +224,8 @@ func TestFixUnixPaths(t *testing.T) {
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
 	}
 
-	os.Setenv("TEMP_TEST_DIR", "/home")
+	err := os.Setenv("TEMP_TEST_DIR", "/home")
+	require.NoError(t, err)
 
 	for _, testPath := range paths {
 		fixed := fixPath(testPath.source, "prefix")
@@ -247,7 +249,8 @@ func TestFixWindowsPaths(t *testing.T) {
 		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
 	}
 
-	os.Setenv("TEMP_TEST_DIR", "/home")
+	err := os.Setenv("TEMP_TEST_DIR", "/home")
+	require.NoError(t, err)
 
 	for _, testPath := range paths {
 		fixed := fixPath(testPath.source, "prefix")

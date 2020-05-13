@@ -26,7 +26,7 @@ func convertStructToFlags(orig interface{}) map[string][]string {
 	flags := make(map[string][]string, 0)
 	// NumField() will panic if typeOf is not a struct
 	if typeOf.Kind() != reflect.Struct {
-		panic(fmt.Errorf("Unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct))
+		panic(fmt.Errorf("unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct))
 	}
 	for i := 0; i < typeOf.NumField(); i++ {
 		field := typeOf.Field(i)
@@ -81,7 +81,7 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 		for i := 0; i < n; i++ {
 			v, _ := stringifyValue(value.Index(i))
 			if len(v) > 1 {
-				panic(fmt.Errorf("Array of array of values are not supported"))
+				panic(fmt.Errorf("array of array of values are not supported"))
 			}
 			sliceVal[i] = v[0]
 		}
@@ -91,6 +91,6 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 		return stringifyValue(value.Elem())
 
 	default:
-		panic(fmt.Errorf("Unexpected type %s", value.Kind()))
+		panic(fmt.Errorf("unexpected type %s", value.Kind()))
 	}
 }

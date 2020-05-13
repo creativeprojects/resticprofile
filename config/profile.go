@@ -101,7 +101,7 @@ func LoadProfile(profileKey string) (*Profile, error) {
 				return nil, err
 			}
 			if profile == nil {
-				return nil, fmt.Errorf("Error in profile '%s': Parent profile '%s' not found", profileKey, inherit)
+				return nil, fmt.Errorf("error in profile '%s': Parent profile '%s' not found", profileKey, inherit)
 			}
 			profile.Name = profileKey
 		}

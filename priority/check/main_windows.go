@@ -12,11 +12,7 @@ import (
 
 // This is only displaying the priority of the current process (for testing)
 func main() {
-	handle, err := windows.GetCurrentProcess()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	handle := windows.CurrentProcess()
 	class, err := windows.GetPriorityClass(handle)
 	if err != nil {
 		fmt.Println(err)

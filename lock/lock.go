@@ -29,7 +29,7 @@ func (l *Lock) TryAcquire() bool {
 // Release the lockfile
 func (l *Lock) Release() {
 	if l.file != nil {
-		l.file.Close()
+		_ = l.file.Close()
 	}
 	l.unlock()
 }
@@ -67,10 +67,10 @@ func (l *Lock) lock() bool {
 	now := time.Now().Format(time.RFC850)
 
 	// No error checking... it's not a big deal if we cannot write that
-	l.file.WriteString(fmt.Sprintf("%s on %s from %s", username, now, hostname))
+	_, _ = l.file.WriteString(fmt.Sprintf("%s on %s from %s", username, now, hostname))
 	return true
 }
 
 func (l *Lock) unlock() {
-	os.Remove(l.Lockfile)
+	_ = os.Remove(l.Lockfile)
 }
