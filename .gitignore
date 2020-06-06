@@ -16,6 +16,7 @@
 /resticprofile
 /resticprofile_darwin
 /resticprofile_linux
+/resticprofile_pi
 /resticprofile.exe
 
 # test output

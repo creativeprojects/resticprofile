@@ -13,6 +13,7 @@ GOPATH?=`$(GOCMD) env GOPATH`
 BINARY=resticprofile
 BINARY_DARWIN=$(BINARY)_darwin
 BINARY_LINUX=$(BINARY)_linux
+BINARY_PI=$(BINARY)_pi
 BINARY_WINDOWS=$(BINARY).exe
 
 TESTS=./...
@@ -49,6 +50,9 @@ build-mac:
 build-linux:
 		GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
+build-pi:
+		GOOS="linux" GOARCH="arm" GOARM="5" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+
 build-windows:
 		GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
@@ -67,7 +71,7 @@ coverage:
 
 clean:
 		$(GOCLEAN)
-		rm -rf $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic* dist/*
+		rm -rf $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_PI) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic* dist/*
 
 test-docker:
 		docker run --rm -v "${GOPATH}":/go -w /go/src/creativeprojects/resticprofile golang:${GO_VERSION} $(GOTEST) -v $(TESTS)
