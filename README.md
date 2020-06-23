@@ -680,7 +680,7 @@ Testing systemd calendars can be done with the systemd-analyze application.
 systemd-analyze will display when the next trigger will happen:
 
 ```
-$ systemd-analyze calendar 'daly'
+$ systemd-analyze calendar 'daily'
   Original form: daily
 Normalized form: *-*-* 00:00:00
     Next elapse: Sat 2020-04-18 00:00:00 CDT
