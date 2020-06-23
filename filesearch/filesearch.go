@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	defaultConfigurationLocationsPosix = []string{
+	defaultConfigurationLocationsUnix = []string{
 		"./",
 		"/usr/local/etc/",
 		"/usr/local/etc/restic/",
@@ -31,10 +31,10 @@ var (
 		"c:\\resticprofile\\",
 	}
 
-	resticBinaryPosix   = "restic"
+	resticBinaryUnix    = "restic"
 	resticBinaryWindows = "restic.exe"
 
-	defaultBinaryLocationsPosix = []string{
+	defaultBinaryLocationsUnix = []string{
 		"/usr/bin/",
 		"/usr/local/bin/",
 		"./",
@@ -53,6 +53,11 @@ var (
 
 // FindConfigurationFile returns the path of the configuration file
 func FindConfigurationFile(configFile string) (string, error) {
+	// Simple case: current folder (or rooted path)
+	if fileExists(configFile) {
+		return configFile, nil
+	}
+
 	xdgFilename, err := xdg.ConfigFile(filepath.Join("resticprofile", configFile))
 	if err == nil {
 		if fileExists(xdgFilename) {
@@ -102,21 +107,21 @@ func getDefaultConfigurationLocations() []string {
 	if runtime.GOOS == "windows" {
 		return defaultConfigurationLocationsWindows
 	}
-	return defaultConfigurationLocationsPosix
+	return defaultConfigurationLocationsUnix
 }
 
 func getDefaultBinaryLocations() []string {
 	if runtime.GOOS == "windows" {
 		return defaultBinaryLocationsWindows
 	}
-	return defaultBinaryLocationsPosix
+	return defaultBinaryLocationsUnix
 }
 
 func getResticBinary() string {
 	if runtime.GOOS == "windows" {
 		return resticBinaryWindows
 	}
-	return resticBinaryPosix
+	return resticBinaryUnix
 }
 
 func fileExists(filename string) bool {
