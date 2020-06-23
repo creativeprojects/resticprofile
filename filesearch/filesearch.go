@@ -13,7 +13,6 @@ import (
 
 var (
 	defaultConfigurationLocationsUnix = []string{
-		"./",
 		"/usr/local/etc/",
 		"/usr/local/etc/restic/",
 		"/usr/local/etc/resticprofile/",
@@ -26,7 +25,6 @@ var (
 	}
 
 	defaultConfigurationLocationsWindows = []string{
-		".\\",
 		"c:\\restic\\",
 		"c:\\resticprofile\\",
 	}
@@ -53,18 +51,20 @@ var (
 
 // FindConfigurationFile returns the path of the configuration file
 func FindConfigurationFile(configFile string) (string, error) {
-	// Simple case: current folder (or rooted path)
+	// 1. Simple case: current folder (or rooted path)
 	if fileExists(configFile) {
 		return configFile, nil
 	}
 
-	xdgFilename, err := xdg.ConfigFile(filepath.Join("resticprofile", configFile))
+	// 2. Next we try xdg as the "standard" for user configuration locations
+	xdgFilename, err := xdg.SearchConfigFile(filepath.Join("resticprofile", configFile))
 	if err == nil {
 		if fileExists(xdgFilename) {
 			return xdgFilename, nil
 		}
 	}
 
+	// 3. To keep compatibility with the older version in python, try the pre-selected locations
 	paths := getDefaultConfigurationLocations()
 	if home, err := os.UserHomeDir(); err == nil {
 		paths = append(paths, home)
@@ -75,7 +75,9 @@ func FindConfigurationFile(configFile string) (string, error) {
 			return filename, nil
 		}
 	}
-	return "", fmt.Errorf("configuration file '%s' was not found in any of these locations: %s", configFile, strings.Join(paths, ", "))
+	locations := append([]string{xdg.ConfigHome}, xdg.ConfigDirs...)
+	locations = append(locations, paths...)
+	return "", fmt.Errorf("configuration file '%s' was not found in the current directory nor any of these locations: %s", configFile, strings.Join(locations, ", "))
 }
 
 // FindResticBinary returns the path of restic executable

@@ -27,6 +27,19 @@ func TestSearchConfigFile(t *testing.T) {
 	assert.Error(t, err)
 }
 
+// Quick test to see the default xdg config on the build agents
+//
+// Linux:
+// ConfigHome: /home/travis/.config
+// ConfigDirs: [/etc/xdg]
+//
+// macOS:
+// ConfigHome: /Users/travis/Library/Preferences
+// ConfigDirs: [/Library/Preferences]
+//
+// Windows:
+// ConfigHome: C:\Users\travis\AppData\Local
+// ConfigDirs: [C:\ProgramData]
 func TestDefaultConfigDirs(t *testing.T) {
 	t.Log("ConfigHome:", xdg.ConfigHome)
 	t.Log("ConfigDirs:", xdg.ConfigDirs)
