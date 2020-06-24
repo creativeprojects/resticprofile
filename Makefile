@@ -110,4 +110,5 @@ rest-server:
 
 nightly:
 	go install github.com/goreleaser/goreleaser
+	go mod tidy
 	goreleaser --snapshot --skip-publish --rm-dist

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/viper"
 )
@@ -23,6 +24,8 @@ type Profile struct {
 	Initialize    bool                   `mapstructure:"initialize"`
 	Inherit       string                 `mapstructure:"inherit"`
 	Lock          string                 `mapstructure:"lock"`
+	RunBefore     []string               `mapstructure:"run-before"`
+	RunAfter      []string               `mapstructure:"run-after"`
 	Environment   map[string]string      `mapstructure:"env"`
 	Backup        *BackupSection         `mapstructure:"backup"`
 	Retention     *RetentionSection      `mapstructure:"retention"`
@@ -185,6 +188,10 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 
 	switch command {
 	case constants.CommandBackup:
+		if p.Backup == nil {
+			clog.Warning("No definition for backup command in this profile")
+			break
+		}
 		commandFlags := convertStructToFlags(*p.Backup)
 		if commandFlags != nil && len(commandFlags) > 0 {
 			flags = mergeFlags(flags, commandFlags)
@@ -192,10 +199,14 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 		flags = addOtherFlags(flags, p.Backup.OtherFlags)
 
 	case constants.CommandSnapshots:
-		flags = addOtherFlags(flags, p.Snapshots)
+		if p.Snapshots != nil {
+			flags = addOtherFlags(flags, p.Snapshots)
+		}
 
 	case constants.CommandCheck:
-		flags = addOtherFlags(flags, p.Check)
+		if p.Check != nil {
+			flags = addOtherFlags(flags, p.Check)
+		}
 	}
 
 	return flags
@@ -214,6 +225,9 @@ func (p *Profile) GetRetentionFlags() map[string][]string {
 
 // GetBackupSource returns the directories to backup
 func (p *Profile) GetBackupSource() []string {
+	if p.Backup == nil {
+		return nil
+	}
 	return p.Backup.Source
 }
 

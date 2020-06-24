@@ -76,7 +76,7 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 	rCommand := newShellCommand(r.resticBinary, arguments, env)
 	rCommand.sigChan = r.sigChan
 
-	if command == constants.CommandBackup && r.profile.Backup.UseStdin {
+	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.UseStdin {
 		clog.Debug("Redirecting stdin to the backup")
 		rCommand.useStdin = true
 	}
@@ -88,7 +88,7 @@ func (r *resticWrapper) runPreCommand(command string) error {
 	if command != constants.CommandBackup {
 		return nil
 	}
-	if r.profile.Backup.RunBefore == nil || len(r.profile.Backup.RunBefore) == 0 {
+	if r.profile.Backup == nil || r.profile.Backup.RunBefore == nil || len(r.profile.Backup.RunBefore) == 0 {
 		return nil
 	}
 	for i, preCommand := range r.profile.Backup.RunBefore {
@@ -109,11 +109,45 @@ func (r *resticWrapper) runPostCommand(command string) error {
 	if command != constants.CommandBackup {
 		return nil
 	}
-	if r.profile.Backup.RunAfter == nil || len(r.profile.Backup.RunAfter) == 0 {
+	if r.profile.Backup == nil || r.profile.Backup.RunAfter == nil || len(r.profile.Backup.RunAfter) == 0 {
 		return nil
 	}
 	for i, postCommand := range r.profile.Backup.RunAfter {
 		clog.Debugf("Starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
+		env := append(os.Environ(), r.getEnvironment()...)
+		rCommand := newShellCommand(postCommand, nil, env)
+		rCommand.sigChan = r.sigChan
+		err := runShellCommand(rCommand)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *resticWrapper) runProfilePreCommand() error {
+	if r.profile.RunBefore == nil || len(r.profile.RunBefore) == 0 {
+		return nil
+	}
+	for i, preCommand := range r.profile.RunBefore {
+		clog.Debugf("Starting 'run-before' profile command %d/%d", i+1, len(r.profile.RunBefore))
+		env := append(os.Environ(), r.getEnvironment()...)
+		rCommand := newShellCommand(preCommand, nil, env)
+		rCommand.sigChan = r.sigChan
+		err := runShellCommand(rCommand)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *resticWrapper) runProfilePostCommand() error {
+	if r.profile.RunAfter == nil || len(r.profile.RunAfter) == 0 {
+		return nil
+	}
+	for i, postCommand := range r.profile.RunAfter {
+		clog.Debugf("Starting 'run-after' profile command %d/%d", i+1, len(r.profile.RunAfter))
 		env := append(os.Environ(), r.getEnvironment()...)
 		rCommand := newShellCommand(postCommand, nil, env)
 		rCommand.sigChan = r.sigChan

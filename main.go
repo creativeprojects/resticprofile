@@ -244,6 +244,12 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 	err = lockRun(profile.Lock, func() error {
 		var err error
 
+		// pre-profile commands
+		err = wrapper.runProfilePreCommand()
+		if err != nil {
+			return err
+		}
+
 		// pre-commands (for backup)
 		if resticCommand == constants.CommandBackup {
 			// Shell commands
@@ -295,6 +301,13 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 				return err
 			}
 		}
+
+		// post-profile commands
+		err = wrapper.runProfilePostCommand()
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {

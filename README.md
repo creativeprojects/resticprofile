@@ -15,6 +15,7 @@ With resticprofile:
 * You can check a repository before or after a backup
 * You can create groups of profiles that will run sequentially
 * You can run shell commands before or after a backup
+* You can also run shell commands before or after running a profile (any command): useful if you need to mount your backup disk
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
 
@@ -33,7 +34,7 @@ It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 **This is at _beta_ stage. Please don't use it in production yet. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
-## Install
+## Installation
 
 Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux:
 
@@ -59,14 +60,19 @@ It will install resticprofile in `/usr/local/bin/`
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
 - Once downloaded you need to open the archive and copy the binary file `resticprofile` (or `resticprofile.exe`) in your PATH.
 
-## Update
+## Upgrade
 
-Once installed, you can easily update resticprofile to the latest release using this command:
+Once installed, you can easily upgrade resticprofile to the latest release using this flag:
 
 ```
 $ resticprofile --self-update
 ```
 
+Starting with version 0.7.0 you can also upgrade resticprofile using this command:
+
+```
+$ resticprofile self-update
+```
 
 ## Using docker image ##
 
@@ -193,6 +199,9 @@ full-backup = [ "root", "src" ]
 repository = "/backup"
 password-file = "key"
 initialize = false
+# will run these scripts before and after each command (including 'backup')
+run-before = "mount /backup"
+run-after = "umount /backup"
 
 [default.env]
 TMPDIR= "/tmp"
@@ -247,14 +256,15 @@ initialize = true
 
 # 'backup' command of profile 'src'
 [src.backup]
-run-before = [ "echo Starting!", "ls -al ./src" ]
-run-after = "echo All Done!"
 exclude = [ '/**/.git' ]
 exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
 source = [ "./src" ]
 check-before = true
+# will only run these scripts before and after a backup
+run-before = [ "echo Starting!", "ls -al ./src" ]
+run-after = "echo All Done!"
 
 # retention policy for profile src
 [src.retention]
@@ -325,15 +335,15 @@ See all available profiles in your configuration file (and the restic commands w
 $ resticprofile profiles
 
 Profiles available:
-	stdin	(snapshots, backup)
-	src	(retention, backup, snapshots)
-	root	(backup, retention)
-	documents	(snapshots, backup)
-	default	(env)
-	self	(backup, snapshots)
+  stdin:     (backup)
+  default:   (env)
+  root:      (retention, backup)
+  src:       (retention, backup)
+  linux:     (retention, backup, snapshots, env)
+  no-cache:  (n/a)
 
 Groups available:
-	full-backup: root, src
+  full-backup:  root, src
 
 ```
 
@@ -369,9 +379,13 @@ resticprofile flags:
   -n, --name string     profile name (default "default")
       --no-ansi         disable ansi control characters (disable console colouring)
   -q, --quiet           display only warnings and errors
-      --self-update     auto update of resticprofile (does not update restic)
       --theme string    console colouring theme (dark, light, none) (default "light")
   -v, --verbose         display all debugging information
+
+resticprofile own commands:
+   profiles       display profile names from the configuration file
+   self-update    update resticprofile to latest version (does not update restic)
+   systemd-unit   create a user systemd timer
 
 ```
 
@@ -417,6 +431,8 @@ Flags used by resticprofile only
 * ****inherit****: string
 * **initialize**: true / false
 * **lock**: string: specify a local lockfile
+* **run-before**: string OR list of strings
+* **run-after**: string OR list of strings
 
 Flags passed to the restic command line
 
