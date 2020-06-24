@@ -45,13 +45,13 @@ func TestEmptyConversionToArgs(t *testing.T) {
 
 func TestConversionToArgs(t *testing.T) {
 	flags := map[string][]string{
-		"bool1":   []string{},
-		"bool2":   []string{""},
-		"int1":    []string{"0"},
-		"int2":    []string{"-100"},
-		"string1": []string{"test"},
-		"string2": []string{"with space"},
-		"list":    []string{"test1", "test2", "test3"},
+		"bool1":   {},
+		"bool2":   {""},
+		"int1":    {"0"},
+		"int2":    {"-100"},
+		"string1": {"test"},
+		"string2": {"with space"},
+		"list":    {"test1", "test2", "test3"},
 	}
 	args := convertIntoArgs(flags)
 	assert.Len(t, args, 16)

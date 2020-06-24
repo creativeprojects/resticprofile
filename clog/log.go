@@ -23,19 +23,19 @@ var (
 
 func init() {
 	colorMaps = map[string][4]*color.Color{
-		"none": [4]*color.Color{
+		"none": {
 			DebugLevel:   nil,
 			InfoLevel:    nil,
 			WarningLevel: color.New(color.Bold),
 			ErrorLevel:   color.New(color.Bold),
 		},
-		"light": [4]*color.Color{
+		"light": {
 			DebugLevel:   color.New(color.FgGreen),
 			InfoLevel:    color.New(color.FgCyan),
 			WarningLevel: color.New(color.FgMagenta, color.Bold),
 			ErrorLevel:   color.New(color.FgRed, color.Bold),
 		},
-		"dark": [4]*color.Color{
+		"dark": {
 			DebugLevel:   color.New(color.FgHiGreen),
 			InfoLevel:    color.New(color.FgHiCyan),
 			WarningLevel: color.New(color.FgHiMagenta, color.Bold),

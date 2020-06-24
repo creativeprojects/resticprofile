@@ -128,9 +128,9 @@ func TestConvertStructToFlag(t *testing.T) {
 	flags := convertStructToFlags(testElement)
 	assert.NotNil(t, flags)
 	assert.Equal(t, map[string][]string{
-		"some-bool-1":   []string{},
-		"some-int-2":    []string{"10"},
-		"some-string-2": []string{"test"},
+		"some-bool-1":   {},
+		"some-int-2":    {"10"},
+		"some-string-2": {"test"},
 	}, flags)
 }
 
@@ -147,8 +147,8 @@ func TestConvertPointerStructToFlag(t *testing.T) {
 	flags := convertStructToFlags(testElement)
 	assert.NotNil(t, flags)
 	assert.Equal(t, map[string][]string{
-		"some-bool-1":   []string{},
-		"some-int-2":    []string{"10"},
-		"some-string-2": []string{"test"},
+		"some-bool-1":   {},
+		"some-int-2":    {"10"},
+		"some-string-2": {"test"},
 	}, flags)
 }
