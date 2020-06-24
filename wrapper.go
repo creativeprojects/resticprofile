@@ -31,33 +31,33 @@ func (r *resticWrapper) runInitialize() error {
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	rCommand.displayStderr = false
-	return runCommand(rCommand)
+	return runShellCommand(rCommand)
 }
 
 func (r *resticWrapper) runCheck() error {
 	clog.Infof("Profile '%s': Checking repository consistency", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
 	rCommand := r.prepareCommand(constants.CommandCheck, args)
-	return runCommand(rCommand)
+	return runShellCommand(rCommand)
 }
 
 func (r *resticWrapper) runRetention() error {
 	clog.Infof("Profile '%s': Cleaning up repository using retention information", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetRetentionFlags())
 	rCommand := r.prepareCommand(constants.CommandForget, args)
-	return runCommand(rCommand)
+	return runShellCommand(rCommand)
 }
 
 func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("Profile '%s': Starting '%s'", r.profile.Name, command)
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	rCommand := r.prepareCommand(command, args)
-	err := runCommand(rCommand)
+	err := runShellCommand(rCommand)
 	clog.Infof("Profile '%s': Finished '%s'", r.profile.Name, command)
 	return err
 }
 
-func (r *resticWrapper) prepareCommand(command string, args []string) commandDefinition {
+func (r *resticWrapper) prepareCommand(command string, args []string) shellCommandDefinition {
 	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
 	arguments := append([]string{command}, args...)
 
@@ -73,7 +73,7 @@ func (r *resticWrapper) prepareCommand(command string, args []string) commandDef
 	env := append(os.Environ(), r.getEnvironment()...)
 
 	clog.Debugf("Starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
-	rCommand := newCommand(r.resticBinary, arguments, env)
+	rCommand := newShellCommand(r.resticBinary, arguments, env)
 	rCommand.sigChan = r.sigChan
 
 	if command == constants.CommandBackup && r.profile.Backup.UseStdin {
@@ -94,9 +94,9 @@ func (r *resticWrapper) runPreCommand(command string) error {
 	for i, preCommand := range r.profile.Backup.RunBefore {
 		clog.Debugf("Starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newCommand(preCommand, nil, env)
+		rCommand := newShellCommand(preCommand, nil, env)
 		rCommand.sigChan = r.sigChan
-		err := runCommand(rCommand)
+		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
 		}
@@ -115,9 +115,9 @@ func (r *resticWrapper) runPostCommand(command string) error {
 	for i, postCommand := range r.profile.Backup.RunAfter {
 		clog.Debugf("Starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newCommand(postCommand, nil, env)
+		rCommand := newShellCommand(postCommand, nil, env)
 		rCommand.sigChan = r.sigChan
-		err := runCommand(rCommand)
+		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
 		}

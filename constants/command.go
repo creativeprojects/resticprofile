@@ -1,13 +1,11 @@
 package constants
 
-// Commands
+// Restic commands
 const (
-	CommandBackup      = "backup"
-	CommandCheck       = "check"
-	CommandForget      = "forget"
-	CommandInit        = "init"
-	CommandPrune       = "prune"
-	CommandSnapshots   = "snapshots"
-	CommandProfiles    = "profiles"
-	CommandSystemdUnit = "systemd-unit"
+	CommandBackup    = "backup"
+	CommandCheck     = "check"
+	CommandForget    = "forget"
+	CommandInit      = "init"
+	CommandPrune     = "prune"
+	CommandSnapshots = "snapshots"
 )

@@ -30,6 +30,8 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 		fmt.Println("\tresticprofile [resticprofile flags] [command] [restic flags]")
 		fmt.Println("\nresticprofile flags:")
 		flagset.PrintDefaults()
+		fmt.Println("\nresticprofile own commands:")
+		displayOwnCommands()
 		fmt.Println("")
 	}
 
@@ -44,7 +46,8 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
 	flagset.BoolVar(&flags.selfUpdate, "self-update", false, "auto update of resticprofile (does not update restic)")
-	flagset.StringVar(&flags.saveConfigAs, "save-config-as", "", "save configuration to a new file (file extension to choose which format)")
+	flagset.StringVar(&flags.saveConfigAs, "save-config-as", "", "save configuration to a new file (the file extension is used to decide the new format)")
+	_ = flagset.MarkHidden("self-update")
 	_ = flagset.MarkHidden("save-config-as")
 
 	// stop at the first non flag found; the rest will be sent to the restic command line

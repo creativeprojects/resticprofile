@@ -6,7 +6,7 @@ import (
 	"github.com/creativeprojects/resticprofile/shell"
 )
 
-type commandDefinition struct {
+type shellCommandDefinition struct {
 	command       string
 	args          []string
 	env           []string
@@ -15,11 +15,11 @@ type commandDefinition struct {
 	sigChan       chan os.Signal
 }
 
-func newCommand(command string, args, env []string) commandDefinition {
+func newShellCommand(command string, args, env []string) shellCommandDefinition {
 	if env == nil {
 		env = make([]string, 0)
 	}
-	return commandDefinition{
+	return shellCommandDefinition{
 		command:       command,
 		args:          args,
 		env:           env,
@@ -28,7 +28,7 @@ func newCommand(command string, args, env []string) commandDefinition {
 	}
 }
 
-func runCommand(command commandDefinition) error {
+func runShellCommand(command shellCommandDefinition) error {
 	var err error
 
 	cmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)

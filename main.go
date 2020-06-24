@@ -7,8 +7,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/clog"
@@ -17,7 +15,6 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/lock"
 	"github.com/creativeprojects/resticprofile/priority"
-	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/spf13/viper"
 )
 
@@ -107,18 +104,13 @@ func main() {
 		resticArguments = resticArguments[1:]
 	}
 
-	if resticCommand == constants.CommandProfiles {
-		displayProfiles()
-		displayGroups()
-		return
-	}
-	if resticCommand == constants.CommandSystemdUnit {
-		if len(resticArguments) != 1 {
-			clog.Error("OnCalendar argument required")
+	// resticprofile own commands
+	if isOwnCommand(resticCommand) {
+		err = runOwnCommand(resticCommand, flags, resticArguments)
+		if err != nil {
+			clog.Error(err)
 			os.Exit(1)
-			return
 		}
-		systemd.Generate(flags.name, resticArguments[0])
 		return
 	}
 
@@ -199,39 +191,6 @@ func setPriority(nice int, class string) error {
 		}
 	}
 	return nil
-}
-
-func displayProfiles() {
-	profileSections := config.ProfileSections()
-	if profileSections == nil || len(profileSections) == 0 {
-		fmt.Println("\nThere's no available profile in the configuration")
-	} else {
-		fmt.Println("\nProfiles available:")
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		for name, sections := range profileSections {
-			if sections == nil || len(sections) == 0 {
-				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
-			} else {
-				_, _ = fmt.Fprintf(w, "\t%s:\t(%s)\n", name, strings.Join(sections, ", "))
-			}
-		}
-		_ = w.Flush()
-	}
-	fmt.Println("")
-}
-
-func displayGroups() {
-	groups := config.ProfileGroups()
-	if groups == nil || len(groups) == 0 {
-		return
-	}
-	fmt.Println("Groups available:")
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	for name, groupList := range groups {
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
-	}
-	_ = w.Flush()
-	fmt.Println("")
 }
 
 func runProfile(global *config.Global, flags commandLineFlags, profileName string, resticBinary string, resticArguments []string, resticCommand string) {

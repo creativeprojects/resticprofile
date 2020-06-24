@@ -37,7 +37,7 @@ ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
 
-.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server
+.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server nightly
 
 all: test build
 
@@ -107,3 +107,7 @@ rest-server:
 
 	docker pull ${REST_IMAGE}
 	docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
+
+nightly:
+	go install github.com/goreleaser/goreleaser
+	goreleaser --snapshot --skip-publish --rm-dist
