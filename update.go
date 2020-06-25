@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/blang/semver"
 	"github.com/creativeprojects/resticprofile/clog"
@@ -19,19 +20,23 @@ func confirmAndSelfUpdate(debug bool) error {
 	if err != nil {
 		return fmt.Errorf("error occurred while detecting version: %v", err)
 	}
+	if !found {
+		return fmt.Errorf("latest version could not be found from github repository")
+	}
 
 	v := semver.MustParse(version)
-	if !found || latest.Version.LTE(v) {
+	if latest.Version.LTE(v) {
 		clog.Infof("Current version (%s) is the latest", version)
 		return nil
 	}
 
-	fmt.Print("Do you want to update to version ", latest.Version, "? (y/n): ")
-	input, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil || (input != "y\n" && input != "n\n") {
-		return errors.New("invalid input")
+	fmt.Print("Do you want to update to version ", latest.Version, "? (Y/n): ")
+	input := "n"
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		input = strings.ToLower(scanner.Text())
 	}
-	if input == "n\n" {
+	if input == "n" {
 		return nil
 	}
 
