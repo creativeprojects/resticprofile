@@ -9,7 +9,7 @@ import (
 
 func TestGetEmptyEnvironment(t *testing.T) {
 	profile := config.NewProfile("name")
-	wrapper := newResticWrapper("restic", profile, nil, nil)
+	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
 	assert.Empty(t, env)
 }
@@ -19,7 +19,7 @@ func TestGetSingleEnvironment(t *testing.T) {
 	profile.Environment = map[string]string{
 		"User": "me",
 	}
-	wrapper := newResticWrapper("restic", profile, nil, nil)
+	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
 	assert.Equal(t, []string{"USER=me"}, env)
 }
@@ -30,7 +30,7 @@ func TestGetMultipleEnvironment(t *testing.T) {
 		"User":     "me",
 		"Password": "secret",
 	}
-	wrapper := newResticWrapper("restic", profile, nil, nil)
+	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
 	assert.Len(t, env, 2)
 	assert.Contains(t, env, "USER=me")

@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
+	"text/tabwriter"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/clog"
@@ -32,6 +34,7 @@ func init() {
 
 func main() {
 	var err error
+	defer showPanicData()
 
 	flagset, flags := loadFlags()
 	if flags.help {
@@ -290,4 +293,25 @@ func lockRun(filename string, run func() error) error {
 // randomBool returns true for Heads and false for Tails
 func randomBool() bool {
 	return rand.Int31n(10000) < 5000
+}
+
+func showPanicData() {
+	if r := recover(); r != nil {
+		message := `
+==========================================================
+uh-oh! resticprofile crashed miserably :-(
+Please can you open an issue on github with these details:
+==========================================================
+`
+		fmt.Fprintf(os.Stderr, message)
+		w := tabwriter.NewWriter(os.Stderr, 0, 0, 3, ' ', 0)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "version", version)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "commit", commit)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "compiled", date)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "by", builtBy)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "error", r)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "stack", string(debug.Stack()))
+		w.Flush()
+		fmt.Fprint(os.Stderr, "==========================================================\n")
+	}
 }
