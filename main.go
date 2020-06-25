@@ -15,7 +15,6 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
-	"github.com/creativeprojects/resticprofile/lock"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/spf13/viper"
 )
@@ -265,29 +264,6 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 		clog.Error(err)
 		os.Exit(1)
 	}
-}
-
-// lockRun is making sure the function is only run once by putting a lockfile on the disk
-func lockRun(filename string, run func() error) error {
-	if filename == "" {
-		// No lock
-		return run()
-	}
-	// Make sure the path to the lock exists
-	dir := filepath.Dir(filename)
-	if dir != "" {
-		err := os.MkdirAll(dir, 0755)
-		if err != nil {
-			clog.Warningf("The profile will run without a lockfile: %v", err)
-			return run()
-		}
-	}
-	runLock := lock.NewLock(filename)
-	if !runLock.TryAcquire() {
-		return fmt.Errorf("another process is already running this profile: %s", runLock.Who())
-	}
-	defer runLock.Release()
-	return run()
 }
 
 // randomBool returns true for Heads and false for Tails

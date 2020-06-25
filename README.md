@@ -16,6 +16,7 @@ With resticprofile:
 * You can create groups of profiles that will run sequentially
 * You can run shell commands before or after a backup
 * You can also run shell commands before or after running a profile (any command): useful if you need to mount your backup disk
+* You can run a shell command if an error occurred (at any time)
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
 
@@ -202,6 +203,9 @@ initialize = false
 # will run these scripts before and after each command (including 'backup')
 run-before = "mount /backup"
 run-after = "umount /backup"
+# if a restic command fails, the run-after won't be running
+# add this parameter to run the script in case of a failure
+run-after-fail = "umount /backup"
 
 [default.env]
 TMPDIR= "/tmp"
@@ -433,6 +437,7 @@ Flags used by resticprofile only
 * **lock**: string: specify a local lockfile
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
+* **run-after-fail**: string OR list of strings
 
 Flags passed to the restic command line
 

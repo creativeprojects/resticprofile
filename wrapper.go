@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/lock"
 )
 
 type resticWrapper struct {
@@ -38,79 +40,88 @@ func newResticWrapper(
 }
 
 func (r *resticWrapper) runProfile() error {
-	if r.initialize && r.command != constants.CommandInit {
-		_ = r.runInitialize()
-		// it's ok for the initialize to error out when the repository exists
-	}
-
 	err := lockRun(r.profile.Lock, func() error {
-		var err error
+		return runOnFailure(
+			func() error {
+				var err error
 
-		// pre-profile commands
-		err = r.runProfilePreCommand()
-		if err != nil {
-			return err
-		}
-
-		// pre-commands (for backup)
-		if r.command == constants.CommandBackup {
-			// Shell commands
-			err = r.runPreCommand(r.command)
-			if err != nil {
-				return err
-			}
-			// Check
-			if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
-				err = r.runCheck()
+				// pre-profile commands
+				err = r.runProfilePreCommand()
 				if err != nil {
 					return err
 				}
-			}
-			// Retention
-			if r.profile.Retention != nil && r.profile.Retention.BeforeBackup {
-				err = r.runRetention()
+
+				// breaking change from 0.7.0 and 0.7.1:
+				// run the initialization after the pre-profile commands
+				if r.initialize && r.command != constants.CommandInit {
+					_ = r.runInitialize()
+					// it's ok for the initialize to error out when the repository exists
+				}
+
+				// pre-commands (for backup)
+				if r.command == constants.CommandBackup {
+					// Shell commands
+					err = r.runPreCommand(r.command)
+					if err != nil {
+						return err
+					}
+					// Check
+					if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
+						err = r.runCheck()
+						if err != nil {
+							return err
+						}
+					}
+					// Retention
+					if r.profile.Retention != nil && r.profile.Retention.BeforeBackup {
+						err = r.runRetention()
+						if err != nil {
+							return err
+						}
+					}
+				}
+
+				// Main command
+				err = r.runCommand(r.command)
 				if err != nil {
 					return err
 				}
-			}
-		}
 
-		// Main command
-		err = r.runCommand(r.command)
-		if err != nil {
-			return err
-		}
+				// post-commands (for backup)
+				if r.command == constants.CommandBackup {
+					// Retention
+					if r.profile.Retention != nil && r.profile.Retention.AfterBackup {
+						err = r.runRetention()
+						if err != nil {
+							return err
+						}
+					}
+					// Check
+					if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
+						err = r.runCheck()
+						if err != nil {
+							return err
+						}
+					}
+					// Shell commands
+					err = r.runPostCommand(r.command)
+					if err != nil {
+						return err
+					}
+				}
 
-		// post-commands (for backup)
-		if r.command == constants.CommandBackup {
-			// Retention
-			if r.profile.Retention != nil && r.profile.Retention.AfterBackup {
-				err = r.runRetention()
+				// post-profile commands
+				err = r.runProfilePostCommand()
 				if err != nil {
 					return err
 				}
-			}
-			// Check
-			if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
-				err = r.runCheck()
-				if err != nil {
-					return err
-				}
-			}
-			// Shell commands
-			err = r.runPostCommand(r.command)
-			if err != nil {
-				return err
-			}
-		}
 
-		// post-profile commands
-		err = r.runProfilePostCommand()
-		if err != nil {
-			return err
-		}
-
-		return nil
+				return nil
+			},
+			func() {
+				_ = r.runProfilePostFailCommand()
+			},
+		)
 	})
 	if err != nil {
 		return err
@@ -311,4 +322,36 @@ func convertIntoArgs(flags map[string][]string) []string {
 		}
 	}
 	return args
+}
+
+// lockRun is making sure the function is only run once by putting a lockfile on the disk
+func lockRun(filename string, run func() error) error {
+	if filename == "" {
+		// No lock
+		return run()
+	}
+	// Make sure the path to the lock exists
+	dir := filepath.Dir(filename)
+	if dir != "" {
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			clog.Warningf("The profile will run without a lockfile: %v", err)
+			return run()
+		}
+	}
+	runLock := lock.NewLock(filename)
+	if !runLock.TryAcquire() {
+		return fmt.Errorf("another process is already running this profile: %s", runLock.Who())
+	}
+	defer runLock.Release()
+	return run()
+}
+
+// runOnFailure will run the onFailure function if an error occurred in the run function
+func runOnFailure(run func() error, onFailure func()) error {
+	err := run()
+	if err != nil {
+		onFailure()
+	}
+	return err
 }

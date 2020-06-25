@@ -13,6 +13,9 @@ repository = "/tmp/backup"
 password-file = "key"
 initialize = false
 no-cache = true
+run-before = "echo Started!"
+run-after = "echo Finished!"
+run-after-fail = "echo An error occured!"
 
 [src]
 inherit = "default"

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
@@ -69,14 +70,46 @@ func TestConversionToArgs(t *testing.T) {
 func TestPreProfileScriptFail(t *testing.T) {
 	profile := config.NewProfile("name")
 	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
-	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
+	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.EqualError(t, err, "exit status 1")
 }
 
-func TestRunEmptyProfile(t *testing.T) {
+func TestPostProfileScriptFail(t *testing.T) {
+	profile := config.NewProfile("name")
+	profile.RunAfter = []string{"exit 1"} // this should both work on unix shell and windows batch
+	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
+	err := wrapper.runProfile()
+	assert.EqualError(t, err, "exit status 1")
+}
+
+func TestRunEchoProfile(t *testing.T) {
 	profile := config.NewProfile("name")
 	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
+}
+
+func TestPostProfileAfterFail(t *testing.T) {
+	testFile := "TestPostProfileAfterFail.txt"
+	_ = os.Remove(testFile)
+	profile := config.NewProfile("name")
+	profile.RunAfter = []string{"echo failed > " + testFile}
+	wrapper := newResticWrapper("exit", false, profile, "1", nil, nil)
+	err := wrapper.runProfile()
+	assert.EqualError(t, err, "exit status 1")
+	assert.NoFileExistsf(t, testFile, "the run-after script should not have been running")
+	_ = os.Remove(testFile)
+}
+
+func TestPostFailProfile(t *testing.T) {
+	testFile := "TestPostFailProfile.txt"
+	_ = os.Remove(testFile)
+	profile := config.NewProfile("name")
+	profile.RunAfterFail = []string{"echo failed > " + testFile}
+	wrapper := newResticWrapper("exit", false, profile, "1", nil, nil)
+	err := wrapper.runProfile()
+	assert.EqualError(t, err, "exit status 1")
+	assert.FileExistsf(t, testFile, "the run-after-fail script has not been running")
+	_ = os.Remove(testFile)
 }
