@@ -12,18 +12,110 @@ import (
 
 type resticWrapper struct {
 	resticBinary string
+	initialize   bool
 	profile      *config.Profile
+	command      string
 	moreArgs     []string
 	sigChan      chan os.Signal
 }
 
-func newResticWrapper(resticBinary string, profile *config.Profile, moreArgs []string, c chan os.Signal) *resticWrapper {
+func newResticWrapper(
+	resticBinary string,
+	initialize bool,
+	profile *config.Profile,
+	command string,
+	moreArgs []string,
+	c chan os.Signal,
+) *resticWrapper {
 	return &resticWrapper{
 		resticBinary: resticBinary,
+		initialize:   initialize,
 		profile:      profile,
+		command:      command,
 		moreArgs:     moreArgs,
 		sigChan:      c,
 	}
+}
+
+func (r *resticWrapper) runProfile() error {
+	if r.initialize && r.command != constants.CommandInit {
+		_ = r.runInitialize()
+		// it's ok for the initialize to error out when the repository exists
+	}
+
+	err := lockRun(r.profile.Lock, func() error {
+		var err error
+
+		// pre-profile commands
+		err = r.runProfilePreCommand()
+		if err != nil {
+			return err
+		}
+
+		// pre-commands (for backup)
+		if r.command == constants.CommandBackup {
+			// Shell commands
+			err = r.runPreCommand(r.command)
+			if err != nil {
+				return err
+			}
+			// Check
+			if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
+				err = r.runCheck()
+				if err != nil {
+					return err
+				}
+			}
+			// Retention
+			if r.profile.Retention != nil && r.profile.Retention.BeforeBackup {
+				err = r.runRetention()
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// Main command
+		err = r.runCommand(r.command)
+		if err != nil {
+			return err
+		}
+
+		// post-commands (for backup)
+		if r.command == constants.CommandBackup {
+			// Retention
+			if r.profile.Retention != nil && r.profile.Retention.AfterBackup {
+				err = r.runRetention()
+				if err != nil {
+					return err
+				}
+			}
+			// Check
+			if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
+				err = r.runCheck()
+				if err != nil {
+					return err
+				}
+			}
+			// Shell commands
+			err = r.runPostCommand(r.command)
+			if err != nil {
+				return err
+			}
+		}
+
+		// post-profile commands
+		err = r.runProfilePostCommand()
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *resticWrapper) runInitialize() error {
@@ -148,6 +240,23 @@ func (r *resticWrapper) runProfilePostCommand() error {
 	}
 	for i, postCommand := range r.profile.RunAfter {
 		clog.Debugf("Starting 'run-after' profile command %d/%d", i+1, len(r.profile.RunAfter))
+		env := append(os.Environ(), r.getEnvironment()...)
+		rCommand := newShellCommand(postCommand, nil, env)
+		rCommand.sigChan = r.sigChan
+		err := runShellCommand(rCommand)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *resticWrapper) runProfilePostFailCommand() error {
+	if r.profile.RunAfterFail == nil || len(r.profile.RunAfterFail) == 0 {
+		return nil
+	}
+	for i, postCommand := range r.profile.RunAfterFail {
+		clog.Debugf("Starting 'run-after-fail' profile command %d/%d", i+1, len(r.profile.RunAfterFail))
 		env := append(os.Environ(), r.getEnvironment()...)
 		rCommand := newShellCommand(postCommand, nil, env)
 		rCommand.sigChan = r.sigChan

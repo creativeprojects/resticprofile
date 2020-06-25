@@ -41,6 +41,8 @@ func main() {
 	setLoggerFlags(flags)
 	banner()
 
+	// Deprecated in version 0.7.0
+	// Keep for compatibility with version 0.6.1
 	if flags.selfUpdate {
 		err = confirmAndSelfUpdate(flags.verbose)
 		if err != nil {
@@ -48,6 +50,18 @@ func main() {
 			os.Exit(1)
 		}
 		return
+	}
+
+	// resticprofile own commands (configuration file NOT loaded)
+	if len(flags.resticArgs) > 0 {
+		if isOwnCommand(flags.resticArgs[0], false) {
+			err = runOwnCommand(flags.resticArgs[0], flags, flags.resticArgs[1:])
+			if err != nil {
+				clog.Error(err)
+				os.Exit(1)
+			}
+			return
+		}
 	}
 
 	configFile, err := filesearch.FindConfigurationFile(flags.config)
@@ -96,7 +110,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// The remaining arguments are sent to the restic command line
+	// The remaining arguments are going to be sent to the restic command line
 	resticArguments := flags.resticArgs
 	resticCommand := global.DefaultCommand
 	if len(resticArguments) > 0 {
@@ -104,8 +118,8 @@ func main() {
 		resticArguments = resticArguments[1:]
 	}
 
-	// resticprofile own commands
-	if isOwnCommand(resticCommand) {
+	// resticprofile own commands (with configuration file)
+	if isOwnCommand(resticCommand, true) {
 		err = runOwnCommand(resticCommand, flags, resticArguments)
 		if err != nil {
 			clog.Error(err)
@@ -233,89 +247,24 @@ func runProfile(global *config.Global, flags commandLineFlags, profileName strin
 
 	// Catch CTR-C keypress
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
+	signal.Notify(sigChan, os.Interrupt, os.Kill)
 
-	wrapper := newResticWrapper(resticBinary, profile, resticArguments, sigChan)
-	if (global.Initialize || profile.Initialize) && resticCommand != constants.CommandInit {
-		_ = wrapper.runInitialize()
-		// it's ok for the initialize to error out when the repository exists
-	}
-
-	err = lockRun(profile.Lock, func() error {
-		var err error
-
-		// pre-profile commands
-		err = wrapper.runProfilePreCommand()
-		if err != nil {
-			return err
-		}
-
-		// pre-commands (for backup)
-		if resticCommand == constants.CommandBackup {
-			// Shell commands
-			err = wrapper.runPreCommand(resticCommand)
-			if err != nil {
-				return err
-			}
-			// Check
-			if profile.Backup != nil && profile.Backup.CheckBefore {
-				err = wrapper.runCheck()
-				if err != nil {
-					return err
-				}
-			}
-			// Retention
-			if profile.Retention != nil && profile.Retention.BeforeBackup {
-				err = wrapper.runRetention()
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		// Main command
-		err = wrapper.runCommand(resticCommand)
-		if err != nil {
-			return err
-		}
-
-		// post-commands (for backup)
-		if resticCommand == constants.CommandBackup {
-			// Retention
-			if profile.Retention != nil && profile.Retention.AfterBackup {
-				err = wrapper.runRetention()
-				if err != nil {
-					return err
-				}
-			}
-			// Check
-			if profile.Backup != nil && profile.Backup.CheckAfter {
-				err = wrapper.runCheck()
-				if err != nil {
-					return err
-				}
-			}
-			// Shell commands
-			err = wrapper.runPostCommand(resticCommand)
-			if err != nil {
-				return err
-			}
-		}
-
-		// post-profile commands
-		err = wrapper.runProfilePostCommand()
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
+	wrapper := newResticWrapper(
+		resticBinary,
+		global.Initialize || profile.Initialize,
+		profile,
+		resticCommand,
+		resticArguments,
+		sigChan,
+	)
+	err = wrapper.runProfile()
 	if err != nil {
 		clog.Error(err)
 		os.Exit(1)
 	}
 }
 
+// lockRun is making sure the function is only run once by putting a lockfile on the disk
 func lockRun(filename string, run func() error) error {
 	if filename == "" {
 		// No lock

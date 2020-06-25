@@ -11,27 +11,31 @@ import (
 )
 
 type ownCommand struct {
-	name        string
-	description string
-	action      func(commandLineFlags, []string) error
+	name              string
+	description       string
+	action            func(commandLineFlags, []string) error
+	needConfiguration bool // true if the action needs a configuration file loaded
 }
 
 var (
 	ownCommands = []ownCommand{
 		{
-			name:        "profiles",
-			description: "display profile names from the configuration file",
-			action:      displayProfilesCommand,
+			name:              "profiles",
+			description:       "display profile names from the configuration file",
+			action:            displayProfilesCommand,
+			needConfiguration: true,
 		},
 		{
-			name:        "self-update",
-			description: "update resticprofile to latest version (does not update restic)",
-			action:      selfUpdate,
+			name:              "self-update",
+			description:       "update resticprofile to latest version (does not update restic)",
+			action:            selfUpdate,
+			needConfiguration: false,
 		},
 		{
-			name:        "systemd-unit",
-			description: "create a user systemd timer",
-			action:      createSystemdTimer,
+			name:              "systemd-unit",
+			description:       "create a user systemd timer",
+			action:            createSystemdTimer,
+			needConfiguration: true,
 		},
 	}
 )
@@ -44,9 +48,9 @@ func displayOwnCommands() {
 	_ = w.Flush()
 }
 
-func isOwnCommand(command string) bool {
+func isOwnCommand(command string, configurationLoaded bool) bool {
 	for _, commandDef := range ownCommands {
-		if commandDef.name == command {
+		if commandDef.name == command && commandDef.needConfiguration == configurationLoaded {
 			return true
 		}
 	}

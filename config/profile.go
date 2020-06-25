@@ -26,6 +26,7 @@ type Profile struct {
 	Lock          string                 `mapstructure:"lock"`
 	RunBefore     []string               `mapstructure:"run-before"`
 	RunAfter      []string               `mapstructure:"run-after"`
+	RunAfterFail  []string               `mapstructure:"run-after-fail"`
 	Environment   map[string]string      `mapstructure:"env"`
 	Backup        *BackupSection         `mapstructure:"backup"`
 	Retention     *RetentionSection      `mapstructure:"retention"`
