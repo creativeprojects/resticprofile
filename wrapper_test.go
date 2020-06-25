@@ -65,3 +65,18 @@ func TestConversionToArgs(t *testing.T) {
 	assert.Contains(t, args, "test2")
 	assert.Contains(t, args, "test3")
 }
+
+func TestPreProfileScriptFail(t *testing.T) {
+	profile := config.NewProfile("name")
+	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
+	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
+	err := wrapper.runProfile()
+	assert.EqualError(t, err, "exit status 1")
+}
+
+func TestRunEmptyProfile(t *testing.T) {
+	profile := config.NewProfile("name")
+	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
+	err := wrapper.runProfile()
+	assert.NoError(t, err)
+}
