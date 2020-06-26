@@ -60,10 +60,10 @@ func ProfileKeys() []string {
 // ProfileGroups returns all groups from the configuration
 func ProfileGroups() map[string][]string {
 	groups := make(map[string][]string, 0)
-	if !viper.IsSet(constants.SectionConfigurationGroups) {
+	if !isSet(constants.SectionConfigurationGroups) {
 		return nil
 	}
-	err := viper.UnmarshalKey(constants.SectionConfigurationGroups, &groups)
+	err := unmarshalKey(constants.SectionConfigurationGroups, &groups)
 	if err != nil {
 		return nil
 	}
@@ -94,7 +94,7 @@ func ProfileSections() map[string][]string {
 			} else {
 				commands = profileSections[keyPath[0]]
 			}
-			// If there's more than two keys, it means the second key is a group of keys, so it's a "command" definition
+			// If there are more than two keys, it means the second key is a group of keys, so it's a "command" definition
 			if len(keyPath) > 2 {
 				if _, found = array.FindString(commands, keyPath[1]); !found {
 					commands = append(commands, keyPath[1])
@@ -104,4 +104,13 @@ func ProfileSections() map[string][]string {
 		}
 	}
 	return profileSections
+}
+
+// isSet is a wrapper around the viper.isSet() method
+func isSet(key string) bool {
+	if strings.Contains(key, ".") {
+		clog.Warningf("isSet() should not search for a subkey: %s", key)
+	}
+	return viper.IsSet(key)
+
 }

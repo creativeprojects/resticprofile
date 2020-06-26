@@ -24,6 +24,7 @@ The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
 * [JSON](https://en.wikipedia.org/wiki/JSON) : configuration file with extension _.json_
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
+* HCL: **experimental support**, configuration file with extension _.hcl_
 
 For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 

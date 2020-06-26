@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/systemd"
+	"github.com/spf13/viper"
 )
 
 type ownCommand struct {
@@ -35,6 +37,12 @@ var (
 			name:              "systemd-unit",
 			description:       "create a user systemd timer",
 			action:            createSystemdTimer,
+			needConfiguration: true,
+		},
+		{
+			name:              "show",
+			description:       "(debug only) show all keys from the configuration file",
+			action:            allKeys,
 			needConfiguration: true,
 		},
 	}
@@ -118,5 +126,18 @@ func createSystemdTimer(flags commandLineFlags, args []string) error {
 		return fmt.Errorf("OnCalendar argument required")
 	}
 	systemd.Generate(flags.name, args[0])
+	return nil
+}
+
+func allKeys(flags commandLineFlags, args []string) error {
+	keys := viper.AllKeys()
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	for _, key := range keys {
+		_, _ = fmt.Fprintf(w, "\t%s\t%+v\n", key, viper.Get(key))
+	}
+	_ = w.Flush()
 	return nil
 }

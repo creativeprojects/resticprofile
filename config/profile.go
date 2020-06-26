@@ -8,7 +8,6 @@ import (
 
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/spf13/viper"
 )
 
 // Profile contains the whole profile configuration
@@ -66,21 +65,21 @@ func NewProfile(name string) *Profile {
 
 // HasProfile returns true if the profile exists in the configuration
 func HasProfile(profileKey string) bool {
-	return viper.IsSet(profileKey)
+	return isSet(profileKey)
 }
 
 // HasGroup returns true if the group of profiles exists in the configuration
 func HasGroup(groupKey string) bool {
-	if !viper.IsSet(constants.SectionConfigurationGroups) {
+	if !isSet(constants.SectionConfigurationGroups) {
 		return false
 	}
-	return viper.IsSet(constants.SectionConfigurationGroups + "." + groupKey)
+	return isSet(constants.SectionConfigurationGroups + "." + groupKey)
 }
 
 // LoadGroup returns the list of profiles in a group
 func LoadGroup(groupKey string) ([]string, error) {
 	group := make([]string, 0)
-	err := viper.UnmarshalKey(constants.SectionConfigurationGroups+"."+groupKey, &group)
+	err := unmarshalKey(constants.SectionConfigurationGroups+"."+groupKey, &group)
 	if err != nil {
 		return nil, err
 	}
@@ -92,33 +91,32 @@ func LoadProfile(profileKey string) (*Profile, error) {
 	var err error
 	var profile *Profile
 
-	if !viper.IsSet(profileKey) {
+	if !isSet(profileKey) {
 		return nil, nil
 	}
 
-	// Load parent profile first if it is inherited
-	if viper.IsSet(profileKey + "." + constants.ParameterInherit) {
-		inherit := viper.GetString(profileKey + "." + constants.ParameterInherit)
-		if inherit != "" {
-			profile, err = LoadProfile(inherit)
-			if err != nil {
-				return nil, err
-			}
-			if profile == nil {
-				return nil, fmt.Errorf("error in profile '%s': Parent profile '%s' not found", profileKey, inherit)
-			}
-			profile.Name = profileKey
-		}
-	}
-
-	// If profile is not inherited, create a blank one
-	if profile == nil {
-		profile = NewProfile(profileKey)
-	}
-
-	err = viper.UnmarshalKey(profileKey, profile)
+	profile = NewProfile(profileKey)
+	err = unmarshalKey(profileKey, profile)
 	if err != nil {
 		return nil, err
+	}
+	if profile.Inherit != "" {
+		inherit := profile.Inherit
+		// Load inherited profile
+		profile, err = LoadProfile(inherit)
+		if err != nil {
+			return nil, err
+		}
+		if profile == nil {
+			return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
+		}
+		// and reload this profile onto the inherited one
+		err = unmarshalKey(profileKey, profile)
+		if err != nil {
+			return nil, err
+		}
+		// make sure it has the right name
+		profile.Name = profileKey
 	}
 	return profile, nil
 }
