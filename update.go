@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/blang/semver"
@@ -21,7 +23,7 @@ func confirmAndSelfUpdate(debug bool) error {
 		return fmt.Errorf("error occurred while detecting version: %v", err)
 	}
 	if !found {
-		return fmt.Errorf("latest version could not be found from github repository")
+		return fmt.Errorf("latest version for %s/%s could not be found from github repository", runtime.GOOS, runtime.GOARCH)
 	}
 
 	v := semver.MustParse(version)
@@ -30,13 +32,8 @@ func confirmAndSelfUpdate(debug bool) error {
 		return nil
 	}
 
-	fmt.Print("Do you want to update to version ", latest.Version, "? (Y/n): ")
-	input := "n"
-	scanner := bufio.NewScanner(os.Stdin)
-	if scanner.Scan() {
-		input = strings.ToLower(scanner.Text())
-	}
-	if input == "n" {
+	if !askYesNo(os.Stdin, fmt.Sprint("Do you want to update to version ", latest.Version), true) {
+		fmt.Println("Never mind")
 		return nil
 	}
 
@@ -49,4 +46,36 @@ func confirmAndSelfUpdate(debug bool) error {
 	}
 	clog.Infof("Successfully updated to version %s", latest.Version)
 	return nil
+}
+
+func askYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
+	if !strings.HasSuffix(message, "?") {
+		message += "?"
+	}
+	question := ""
+	input := ""
+	if defaultAnswer {
+		question = "(Y/n)"
+		input = "y"
+	} else {
+		question = "(y/N)"
+		input = "n"
+	}
+	fmt.Printf("%s %s: ", message, question)
+	scanner := bufio.NewScanner(reader)
+	if scanner.Scan() {
+		input = strings.TrimSpace(strings.ToLower(scanner.Text()))
+		if len(input) > 1 {
+			// take only the first character
+			input = input[:1]
+		}
+	}
+
+	if input == "" {
+		return defaultAnswer
+	}
+	if input == "y" {
+		return true
+	}
+	return false
 }
