@@ -33,11 +33,6 @@ var (
 	))
 )
 
-// unmarshalKey is a wrapper around viper.UnmarshalKey with default decoder config options
-func unmarshalKey(key string, rawVal interface{}) error {
-	return viper.UnmarshalKey(key, rawVal, configOption)
-}
-
 // sliceOfMapsToMapHookFunc merges a slice of maps to a map
 func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {

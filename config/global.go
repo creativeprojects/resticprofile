@@ -27,9 +27,9 @@ func NewGlobal() *Global {
 }
 
 // GetGlobalSection returns the global configuration
-func GetGlobalSection() (*Global, error) {
+func GetGlobalSection(configuration *Config) (*Global, error) {
 	global := NewGlobal()
-	err := unmarshalKey(constants.SectionConfigurationGlobal, global)
+	err := configuration.unmarshalKey(constants.SectionConfigurationGlobal, global)
 	if err != nil {
 		return nil, err
 	}

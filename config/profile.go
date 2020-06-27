@@ -12,6 +12,7 @@ import (
 
 // Profile contains the whole profile configuration
 type Profile struct {
+	config        *Config
 	Name          string
 	Quiet         bool                   `mapstructure:"quiet" argument:"quiet"`
 	Verbose       bool                   `mapstructure:"verbose" argument:"verbose"`
@@ -57,29 +58,25 @@ type RetentionSection struct {
 }
 
 // NewProfile instantiates a new blank profile
-func NewProfile(name string) *Profile {
+func NewProfile(configuration *Config, name string) *Profile {
 	return &Profile{
-		Name: name,
+		Name:   name,
+		config: configuration,
 	}
-}
-
-// HasProfile returns true if the profile exists in the configuration
-func HasProfile(profileKey string) bool {
-	return isSet(profileKey)
 }
 
 // HasGroup returns true if the group of profiles exists in the configuration
-func HasGroup(groupKey string) bool {
-	if !isSet(constants.SectionConfigurationGroups) {
+func HasGroup(configuration *Config, groupKey string) bool {
+	if !configuration.IsSet(constants.SectionConfigurationGroups) {
 		return false
 	}
-	return isSet(constants.SectionConfigurationGroups + "." + groupKey)
+	return configuration.IsSet(constants.SectionConfigurationGroups + "." + groupKey)
 }
 
 // LoadGroup returns the list of profiles in a group
-func LoadGroup(groupKey string) ([]string, error) {
+func LoadGroup(configuration *Config, groupKey string) ([]string, error) {
 	group := make([]string, 0)
-	err := unmarshalKey(constants.SectionConfigurationGroups+"."+groupKey, &group)
+	err := configuration.unmarshalKey(constants.SectionConfigurationGroups+"."+groupKey, &group)
 	if err != nil {
 		return nil, err
 	}
@@ -87,23 +84,23 @@ func LoadGroup(groupKey string) ([]string, error) {
 }
 
 // LoadProfile from configuration
-func LoadProfile(profileKey string) (*Profile, error) {
+func LoadProfile(configuration *Config, profileKey string) (*Profile, error) {
 	var err error
 	var profile *Profile
 
-	if !isSet(profileKey) {
+	if !configuration.IsSet(profileKey) {
 		return nil, nil
 	}
 
-	profile = NewProfile(profileKey)
-	err = unmarshalKey(profileKey, profile)
+	profile = NewProfile(configuration, profileKey)
+	err = configuration.unmarshalKey(profileKey, profile)
 	if err != nil {
 		return nil, err
 	}
 	if profile.Inherit != "" {
 		inherit := profile.Inherit
 		// Load inherited profile
-		profile, err = LoadProfile(inherit)
+		profile, err = LoadProfile(configuration, inherit)
 		if err != nil {
 			return nil, err
 		}
@@ -111,7 +108,7 @@ func LoadProfile(profileKey string) (*Profile, error) {
 			return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
 		}
 		// and reload this profile onto the inherited one
-		err = unmarshalKey(profileKey, profile)
+		err = configuration.unmarshalKey(profileKey, profile)
 		if err != nil {
 			return nil, err
 		}

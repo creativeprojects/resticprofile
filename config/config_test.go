@@ -2,31 +2,30 @@ package config
 
 import (
 	"bytes"
+	"sort"
+	"strings"
 	"testing"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNoProfileKeys(t *testing.T) {
-	testConfig := `
-`
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestEmptyAllKeysForTOML(t *testing.T) {
+	testConfig := ""
 
-	profiles := ProfileKeys()
-	assert.Nil(t, profiles)
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
+	keys := configuration.AllKeys()
+	assert.Empty(t, keys)
 }
 
-func TestProfileKeys(t *testing.T) {
+func TestAllKeysForTOML(t *testing.T) {
 	testConfig := `
 [profile1]
+value = true
 [profile2]
+value = false
 [profile3]
 [profile3.backup]
 [profile3.retention]
@@ -37,48 +36,41 @@ source = "/"
 [profile5]
 other = 2
 [profile5.snapshots]
-[global]
-Initialize = true
 `
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+	expected := `profile1.value
+profile2.value
+profile4.backup.source
+profile4.value
+profile5.other`
 
-	profiles := ProfileKeys()
-	assert.Len(t, profiles, 2)
-	assert.Contains(t, profiles, "profile4")
-	assert.Contains(t, profiles, "profile5")
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
+	keys := configuration.AllKeys()
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+	assert.Equal(t, expected, strings.Join(keys, "\n"))
 }
 
 func TestNoProfileGroups(t *testing.T) {
-	testConfig := `
-`
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+	testConfig := ""
 
-	groups := ProfileGroups()
-	assert.Nil(t, groups)
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
+
+	assert.Nil(t, configuration.ProfileGroups())
 }
 
 func TestEmptyProfileGroups(t *testing.T) {
 	testConfig := `[groups]
 `
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
 
-	groups := ProfileGroups()
-	assert.NotNil(t, groups)
+	assert.NotNil(t, configuration.ProfileGroups())
 }
 
 func TestProfileGroups(t *testing.T) {
@@ -86,33 +78,26 @@ func TestProfileGroups(t *testing.T) {
 first = ["backup"]
 second = ["root", "dev"]
 `
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
 
-	groups := ProfileGroups()
+	groups := configuration.ProfileGroups()
 	assert.NotNil(t, groups)
 	assert.Len(t, groups, 2)
 }
 
-func TestNoProfileSections(t *testing.T) {
-	testConfig := `
-`
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestNoProfileSectionsForTOML(t *testing.T) {
+	testConfig := ""
 
-	profileSections := ProfileSections()
-	assert.Nil(t, profileSections)
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
+
+	assert.Nil(t, configuration.ProfileSections())
 }
 
-func TestProfileSections(t *testing.T) {
+func TestProfileSectionsForTOML(t *testing.T) {
 	testConfig := `
 [profile1]
 [profile2]
@@ -129,14 +114,11 @@ other = 2
 [global]
 Initialize = true
 `
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
-	if err != nil {
-		t.Fatal(err)
-	}
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
 
-	profileSections := ProfileSections()
+	profileSections := configuration.ProfileSections()
 	assert.NotNil(t, profileSections)
 	assert.Len(t, profileSections, 2)
 }
@@ -150,12 +132,11 @@ func TestGetGlobalFromJSON(t *testing.T) {
     "priority": "low"
   }
 }`
-	viper.Reset()
-	viper.SetConfigType("json")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "json")
 	require.NoError(t, err)
 
-	global, err := GetGlobalSection()
+	global, err := GetGlobalSection(configuration)
 	require.NoError(t, err)
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.Equal(t, false, global.Initialize)
@@ -170,12 +151,11 @@ global:
     initialize: false
     priority: low
 `
-	viper.Reset()
-	viper.SetConfigType("yaml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "yaml")
 	require.NoError(t, err)
 
-	global, err := GetGlobalSection()
+	global, err := GetGlobalSection(configuration)
 	require.NoError(t, err)
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.Equal(t, false, global.Initialize)
@@ -191,12 +171,11 @@ default-command = "version"
 # initialize a repository if none exist at location
 initialize = false
 `
-	viper.Reset()
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "toml")
 	require.NoError(t, err)
 
-	global, err := GetGlobalSection()
+	global, err := GetGlobalSection(configuration)
 	require.NoError(t, err)
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.Equal(t, false, global.Initialize)
@@ -212,12 +191,11 @@ func TestGetGlobalFromHCL(t *testing.T) {
     priority = "low"
 }
 `
-	viper.Reset()
-	viper.SetConfigType("hcl")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "hcl")
 	require.NoError(t, err)
 
-	global, err := GetGlobalSection()
+	global, err := GetGlobalSection(configuration)
 	require.NoError(t, err)
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.Equal(t, false, global.Initialize)
@@ -237,12 +215,11 @@ func TestGetGlobalFromSplitConfig(t *testing.T) {
     priority = "low"
 }
 `
-	viper.Reset()
-	viper.SetConfigType("hcl")
-	err := viper.ReadConfig(bytes.NewBufferString(testConfig))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(testConfig), "hcl")
 	require.NoError(t, err)
 
-	global, err := GetGlobalSection()
+	global, err := GetGlobalSection(configuration)
 	require.NoError(t, err)
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.Equal(t, false, global.Initialize)

@@ -3,13 +3,13 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"os"
 	"runtime"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -336,13 +336,13 @@ path = "/"
 }
 
 func getProfile(configString, profileKey string) (*Profile, error) {
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(configString))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(configString), "toml")
 	if err != nil {
 		return nil, err
 	}
 
-	profile, err := LoadProfile(profileKey)
+	profile, err := LoadProfile(configuration, profileKey)
 	if err != nil {
 		return nil, err
 	}

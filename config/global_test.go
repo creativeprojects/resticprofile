@@ -3,8 +3,6 @@ package config
 import (
 	"bytes"
 	"testing"
-
-	"github.com/spf13/viper"
 )
 
 func TestEmptyGlobalSection(t *testing.T) {
@@ -60,13 +58,13 @@ restic-binary = "/tmp/restic"
 }
 
 func getGlobalSection(configString string) (*Global, error) {
-	viper.SetConfigType("toml")
-	err := viper.ReadConfig(bytes.NewBufferString(configString))
+	configuration := NewConfig()
+	err := configuration.Load(bytes.NewBufferString(configString), "toml")
 	if err != nil {
 		return nil, err
 	}
 
-	global, err := GetGlobalSection()
+	global, err := GetGlobalSection(configuration)
 	if err != nil {
 		return nil, err
 	}

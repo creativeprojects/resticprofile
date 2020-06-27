@@ -1,6 +1,9 @@
 package config
 
 import (
+	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -10,60 +13,73 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	// profileSections is a cache of ProfileSections()
-	profileSections map[string][]string
-)
+// Config wraps up a viper configuration object
+type Config struct {
+	keyDelim string
+	format   string
+	viper    *viper.Viper
+	data     map[string]interface{}
+}
 
-// LoadConfiguration loads configuration from file
-func LoadConfiguration(configFile string) error {
-	// For compatibility with the previous versions, a .conf file is TOML format
-	if filepath.Ext(configFile) == ".conf" {
-		viper.SetConfigType("toml")
+// NewConfig instantiate a new Config object
+func NewConfig() *Config {
+	return &Config{
+		keyDelim: ".",
+		viper:    viper.New(),
+		data:     make(map[string]interface{}),
 	}
-	viper.SetConfigFile(configFile)
-	err := viper.ReadInConfig()
+}
+
+// LoadFile loads configuration from file
+func (c *Config) LoadFile(configFile string) error {
+	format := filepath.Ext(configFile)
+	if strings.HasPrefix(format, ".") {
+		format = format[1:]
+	}
+	file, err := os.Open(configFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot open configuration file for reading: %w", err)
 	}
-	used := viper.ConfigFileUsed()
-	clog.Debugf("Found configuration file: %s", used)
-	return nil
+	return c.Load(file, format)
 }
 
-// SaveAs saves the current configuration into the file in parameter
-func SaveAs(filename string) error {
-	return viper.SafeWriteConfigAs(filename)
+// Load configuration from reader
+func (c *Config) Load(input io.Reader, format string) error {
+	// For compatibility with the previous versions, a .conf file is TOML format
+	if format == "conf" {
+		format = "toml"
+	}
+	c.format = format
+	c.viper.SetConfigType(c.format)
+	return c.viper.ReadConfig(input)
 }
 
-// ProfileKeys returns all profiles in the configuration
-func ProfileKeys() []string {
-	allKeys := viper.AllKeys()
-	if allKeys == nil || len(allKeys) == 0 {
-		return nil
+// AllKeys returns all keys holding a value, regardless of where they are set.
+// Nested keys are separated by a "."
+func (c *Config) AllKeys() []string {
+	return c.viper.AllKeys()
+}
+
+// IsSet checks if the key contains a value
+func (c *Config) IsSet(key string) bool {
+	if strings.Contains(key, ".") {
+		clog.Warningf("it should not search for a subkey: %s", key)
 	}
-	profiles := make([]string, 0)
-	for _, keys := range allKeys {
-		keyPath := strings.SplitN(keys, ".", 2)
-		if len(keyPath) > 0 {
-			if keyPath[0] == constants.SectionConfigurationGlobal || keyPath[0] == constants.SectionConfigurationGroups {
-				continue
-			}
-			if _, found := array.FindString(profiles, keyPath[0]); !found {
-				profiles = append(profiles, keyPath[0])
-			}
-		}
-	}
-	return profiles
+	return c.viper.IsSet(key)
+}
+
+// HasProfile returns true if the profile exists in the configuration
+func (c *Config) HasProfile(profileKey string) bool {
+	return c.IsSet(profileKey)
 }
 
 // ProfileGroups returns all groups from the configuration
-func ProfileGroups() map[string][]string {
+func (c *Config) ProfileGroups() map[string][]string {
 	groups := make(map[string][]string, 0)
-	if !isSet(constants.SectionConfigurationGroups) {
+	if !c.IsSet(constants.SectionConfigurationGroups) {
 		return nil
 	}
-	err := unmarshalKey(constants.SectionConfigurationGroups, &groups)
+	err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
 	if err != nil {
 		return nil
 	}
@@ -71,16 +87,12 @@ func ProfileGroups() map[string][]string {
 }
 
 // ProfileSections returns a list of profiles with all the sections defined inside each
-func ProfileSections() map[string][]string {
-	// Is the value cached?
-	if profileSections != nil {
-		return profileSections
-	}
-	allKeys := viper.AllKeys()
+func (c *Config) ProfileSections() map[string][]string {
+	allKeys := c.AllKeys()
 	if allKeys == nil || len(allKeys) == 0 {
 		return nil
 	}
-	profileSections = make(map[string][]string, 0)
+	profileSections := make(map[string][]string, 0)
 	for _, keys := range allKeys {
 		keyPath := strings.SplitN(keys, ".", 3)
 		if len(keyPath) > 0 {
@@ -106,11 +118,12 @@ func ProfileSections() map[string][]string {
 	return profileSections
 }
 
-// isSet is a wrapper around the viper.isSet() method
-func isSet(key string) bool {
-	if strings.Contains(key, ".") {
-		clog.Warningf("isSet() should not search for a subkey: %s", key)
-	}
-	return viper.IsSet(key)
+// SaveAs saves the current configuration into the file in parameter
+func (c *Config) SaveAs(filename string) error {
+	return c.viper.SafeWriteConfigAs(filename)
+}
 
+// unmarshalKey is a wrapper around viper.UnmarshalKey with default decoder config options
+func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
+	return c.viper.UnmarshalKey(key, rawVal, configOption)
 }

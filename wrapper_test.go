@@ -9,14 +9,14 @@ import (
 )
 
 func TestGetEmptyEnvironment(t *testing.T) {
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
 	assert.Empty(t, env)
 }
 
 func TestGetSingleEnvironment(t *testing.T) {
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	profile.Environment = map[string]string{
 		"User": "me",
 	}
@@ -26,7 +26,7 @@ func TestGetSingleEnvironment(t *testing.T) {
 }
 
 func TestGetMultipleEnvironment(t *testing.T) {
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	profile.Environment = map[string]string{
 		"User":     "me",
 		"Password": "secret",
@@ -68,7 +68,7 @@ func TestConversionToArgs(t *testing.T) {
 }
 
 func TestPreProfileScriptFail(t *testing.T) {
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
 	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
@@ -76,7 +76,7 @@ func TestPreProfileScriptFail(t *testing.T) {
 }
 
 func TestPostProfileScriptFail(t *testing.T) {
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	profile.RunAfter = []string{"exit 1"} // this should both work on unix shell and windows batch
 	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
@@ -84,7 +84,7 @@ func TestPostProfileScriptFail(t *testing.T) {
 }
 
 func TestRunEchoProfile(t *testing.T) {
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper("echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
@@ -93,7 +93,7 @@ func TestRunEchoProfile(t *testing.T) {
 func TestPostProfileAfterFail(t *testing.T) {
 	testFile := "TestPostProfileAfterFail.txt"
 	_ = os.Remove(testFile)
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	profile.RunAfter = []string{"echo failed > " + testFile}
 	wrapper := newResticWrapper("exit", false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
@@ -105,7 +105,7 @@ func TestPostProfileAfterFail(t *testing.T) {
 func TestPostFailProfile(t *testing.T) {
 	testFile := "TestPostFailProfile.txt"
 	_ = os.Remove(testFile)
-	profile := config.NewProfile("name")
+	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo failed > " + testFile}
 	wrapper := newResticWrapper("exit", false, profile, "1", nil, nil)
 	err := wrapper.runProfile()

@@ -15,7 +15,7 @@ import (
 type ownCommand struct {
 	name              string
 	description       string
-	action            func(commandLineFlags, []string) error
+	action            func(*config.Config, commandLineFlags, []string) error
 	needConfiguration bool // true if the action needs a configuration file loaded
 }
 
@@ -65,23 +65,23 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 	return false
 }
 
-func runOwnCommand(command string, flags commandLineFlags, args []string) error {
+func runOwnCommand(configuration *config.Config, command string, flags commandLineFlags, args []string) error {
 	for _, commandDef := range ownCommands {
 		if commandDef.name == command {
-			return commandDef.action(flags, args)
+			return commandDef.action(configuration, flags, args)
 		}
 	}
 	return fmt.Errorf("command not found: %v", command)
 }
 
-func displayProfilesCommand(commandLineFlags, []string) error {
-	displayProfiles()
-	displayGroups()
+func displayProfilesCommand(configuration *config.Config, _ commandLineFlags, _ []string) error {
+	displayProfiles(configuration)
+	displayGroups(configuration)
 	return nil
 }
 
-func displayProfiles() {
-	profileSections := config.ProfileSections()
+func displayProfiles(configuration *config.Config) {
+	profileSections := configuration.ProfileSections()
 	if profileSections == nil || len(profileSections) == 0 {
 		fmt.Println("\nThere's no available profile in the configuration")
 	} else {
@@ -99,8 +99,8 @@ func displayProfiles() {
 	fmt.Println("")
 }
 
-func displayGroups() {
-	groups := config.ProfileGroups()
+func displayGroups(configuration *config.Config) {
+	groups := configuration.ProfileGroups()
 	if groups == nil || len(groups) == 0 {
 		return
 	}
@@ -113,7 +113,7 @@ func displayGroups() {
 	fmt.Println("")
 }
 
-func selfUpdate(flags commandLineFlags, args []string) error {
+func selfUpdate(_ *config.Config, flags commandLineFlags, args []string) error {
 	err := confirmAndSelfUpdate(flags.verbose)
 	if err != nil {
 		return err
@@ -121,7 +121,7 @@ func selfUpdate(flags commandLineFlags, args []string) error {
 	return nil
 }
 
-func createSystemdTimer(flags commandLineFlags, args []string) error {
+func createSystemdTimer(_ *config.Config, flags commandLineFlags, args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("OnCalendar argument required")
 	}
@@ -129,7 +129,7 @@ func createSystemdTimer(flags commandLineFlags, args []string) error {
 	return nil
 }
 
-func allKeys(flags commandLineFlags, args []string) error {
+func allKeys(_ *config.Config, flags commandLineFlags, args []string) error {
 	keys := viper.AllKeys()
 	sort.Slice(keys, func(i, j int) bool {
 		return keys[i] < keys[j]
