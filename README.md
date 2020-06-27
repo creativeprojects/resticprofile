@@ -76,6 +76,8 @@ Starting with version 0.7.0 you can also upgrade resticprofile using this comman
 $ resticprofile self-update
 ```
 
+_Please note there's an issue with self-updating from linux with ARM processors (like a raspberry pi)_
+
 ## Using docker image ##
 
 You can run resticprofile inside a docker container. It is probably the easiest way to install resticprofile (and restic at the same time) and keep it updated.
