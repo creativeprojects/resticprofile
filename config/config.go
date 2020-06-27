@@ -68,6 +68,11 @@ func (c *Config) IsSet(key string) bool {
 	return c.viper.IsSet(key)
 }
 
+// Get the value from the key
+func (c *Config) Get(key string) interface{} {
+	return c.viper.Get(key)
+}
+
 // HasProfile returns true if the profile exists in the configuration
 func (c *Config) HasProfile(profileKey string) bool {
 	return c.IsSet(profileKey)

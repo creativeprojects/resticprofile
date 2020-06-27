@@ -9,7 +9,6 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/systemd"
-	"github.com/spf13/viper"
 )
 
 type ownCommand struct {
@@ -129,14 +128,14 @@ func createSystemdTimer(_ *config.Config, flags commandLineFlags, args []string)
 	return nil
 }
 
-func allKeys(_ *config.Config, flags commandLineFlags, args []string) error {
-	keys := viper.AllKeys()
+func allKeys(configuration *config.Config, flags commandLineFlags, args []string) error {
+	keys := configuration.AllKeys()
 	sort.Slice(keys, func(i, j int) bool {
 		return keys[i] < keys[j]
 	})
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	for _, key := range keys {
-		_, _ = fmt.Fprintf(w, "\t%s\t%+v\n", key, viper.Get(key))
+		_, _ = fmt.Fprintf(w, "\t%s\t%+v\n", key, configuration.Get(key))
 	}
 	_ = w.Flush()
 	return nil
