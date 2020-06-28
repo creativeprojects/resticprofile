@@ -3,6 +3,9 @@ package config
 import (
 	"bytes"
 	"testing"
+
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEmptyGlobalSection(t *testing.T) {
@@ -14,8 +17,8 @@ something = 1
 		t.Fatal(err)
 	}
 
-	expectString(t, "DefaultCommand", global.DefaultCommand, global.DefaultCommand)
-	expectBool(t, "Initialize", global.Initialize, false)
+	assert.Equal(t, constants.DefaultCommand, global.DefaultCommand)
+	assert.False(t, global.Initialize)
 }
 
 func TestSimpleGlobalSection(t *testing.T) {
@@ -27,8 +30,8 @@ default-command = "test"
 		t.Fatal(err)
 	}
 
-	expectString(t, "DefaultCommand", global.DefaultCommand, "test")
-	expectBool(t, "Initialize", global.Initialize, false)
+	assert.Equal(t, "test", global.DefaultCommand)
+	assert.False(t, global.Initialize)
 }
 
 func TestFullGlobalSection(t *testing.T) {
@@ -47,44 +50,25 @@ restic-binary = "/tmp/restic"
 		t.Fatal(err)
 	}
 
-	expectBool(t, "IONice", global.IONice, true)
-	expectInt(t, "IONiceClass", global.IONiceClass, 2)
-	expectInt(t, "IONiceLevel", global.IONiceLevel, 6)
-	expectInt(t, "Nice", global.Nice, 1)
-	expectString(t, "Priority", global.Priority, "low")
-	expectString(t, "DefaultCommand", global.DefaultCommand, "version")
-	expectBool(t, "Initialize", global.Initialize, true)
-	expectString(t, "ResticBinary", global.ResticBinary, "/tmp/restic")
+	assert.True(t, global.IONice)
+	assert.Equal(t, 2, global.IONiceClass)
+	assert.Equal(t, 6, global.IONiceLevel)
+	assert.Equal(t, 1, global.Nice)
+	assert.Equal(t, "low", global.Priority)
+	assert.Equal(t, "version", global.DefaultCommand)
+	assert.True(t, global.Initialize)
+	assert.Equal(t, "/tmp/restic", global.ResticBinary)
 }
 
 func getGlobalSection(configString string) (*Global, error) {
-	configuration := NewConfig()
-	err := configuration.Load(bytes.NewBufferString(configString), "toml")
+	c, err := Load(bytes.NewBufferString(configString), "toml")
 	if err != nil {
 		return nil, err
 	}
 
-	global, err := GetGlobalSection(configuration)
+	global, err := c.GetGlobalSection()
 	if err != nil {
 		return nil, err
 	}
 	return global, nil
-}
-
-func expectBool(t *testing.T, name string, value, expected bool) {
-	if value != expected {
-		t.Errorf("Expected %s to be %t but found %t", name, expected, value)
-	}
-}
-
-func expectInt(t *testing.T, name string, value, expected int) {
-	if value != expected {
-		t.Errorf("Expected %s to be %d but found %d", name, expected, value)
-	}
-}
-
-func expectString(t *testing.T, name, value, expected string) {
-	if value != expected {
-		t.Errorf("Expected %s to be '%s' but found '%s'", name, expected, value)
-	}
 }

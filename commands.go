@@ -16,6 +16,7 @@ type ownCommand struct {
 	description       string
 	action            func(*config.Config, commandLineFlags, []string) error
 	needConfiguration bool // true if the action needs a configuration file loaded
+	hide              bool
 }
 
 var (
@@ -39,10 +40,11 @@ var (
 			needConfiguration: true,
 		},
 		{
-			name:              "show",
-			description:       "(debug only) show all keys from the configuration file",
-			action:            allKeys,
-			needConfiguration: true,
+			name:              "panic",
+			description:       "(debug only) simulates a panic",
+			action:            panicCommand,
+			needConfiguration: false,
+			hide:              true,
 		},
 	}
 )
@@ -50,6 +52,9 @@ var (
 func displayOwnCommands() {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 	for _, command := range ownCommands {
+		if command.hide {
+			continue
+		}
 		_, _ = fmt.Fprintf(w, "\t%s\t%s\n", command.name, command.description)
 	}
 	_ = w.Flush()
@@ -80,13 +85,16 @@ func displayProfilesCommand(configuration *config.Config, _ commandLineFlags, _ 
 }
 
 func displayProfiles(configuration *config.Config) {
-	profileSections := configuration.ProfileSections()
+	profileSections := configuration.GetProfileSections()
+	keys := sortedMapKeys(profileSections)
 	if profileSections == nil || len(profileSections) == 0 {
 		fmt.Println("\nThere's no available profile in the configuration")
 	} else {
 		fmt.Println("\nProfiles available:")
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		for name, sections := range profileSections {
+		for _, name := range keys {
+			sections := profileSections[name]
+			sort.Strings(sections)
 			if sections == nil || len(sections) == 0 {
 				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
 			} else {
@@ -99,7 +107,7 @@ func displayProfiles(configuration *config.Config) {
 }
 
 func displayGroups(configuration *config.Config) {
-	groups := configuration.ProfileGroups()
+	groups := configuration.GetProfileGroups()
 	if groups == nil || len(groups) == 0 {
 		return
 	}
@@ -128,15 +136,15 @@ func createSystemdTimer(_ *config.Config, flags commandLineFlags, args []string)
 	return nil
 }
 
-func allKeys(configuration *config.Config, flags commandLineFlags, args []string) error {
-	keys := configuration.AllKeys()
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	for _, key := range keys {
-		_, _ = fmt.Fprintf(w, "\t%s\t%+v\n", key, configuration.Get(key))
+func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+	panic("you asked for it")
+}
+
+func sortedMapKeys(data map[string][]string) []string {
+	keys := make([]string, 0, len(data))
+	for key, _ := range data {
+		keys = append(keys, key)
 	}
-	_ = w.Flush()
-	return nil
+	sort.Strings(keys)
+	return keys
 }

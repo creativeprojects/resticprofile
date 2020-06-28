@@ -16,22 +16,12 @@ type Global struct {
 	ResticBinary   string `mapstructure:"restic-binary"`
 }
 
-// NewGlobal instantiates a new Global with default values
-func NewGlobal() *Global {
+// newGlobal instantiates a new Global with default values
+func newGlobal() *Global {
 	return &Global{
 		IONice:         constants.DefaultIONiceFlag,
 		Nice:           constants.DefaultNiceFlag,
 		DefaultCommand: constants.DefaultCommand,
 		ResticBinary:   constants.DefaultResticBinary,
 	}
-}
-
-// GetGlobalSection returns the global configuration
-func GetGlobalSection(configuration *Config) (*Global, error) {
-	global := NewGlobal()
-	err := configuration.unmarshalKey(constants.SectionConfigurationGlobal, global)
-	if err != nil {
-		return nil, err
-	}
-	return global, nil
 }

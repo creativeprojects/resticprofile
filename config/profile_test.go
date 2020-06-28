@@ -7,10 +7,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNoProfile(t *testing.T) {
@@ -336,13 +335,12 @@ path = "/"
 }
 
 func getProfile(configString, profileKey string) (*Profile, error) {
-	configuration := NewConfig()
-	err := configuration.Load(bytes.NewBufferString(configString), "toml")
+	c, err := Load(bytes.NewBufferString(configString), "toml")
 	if err != nil {
 		return nil, err
 	}
 
-	profile, err := LoadProfile(configuration, profileKey)
+	profile, err := c.GetProfile(profileKey)
 	if err != nil {
 		return nil, err
 	}

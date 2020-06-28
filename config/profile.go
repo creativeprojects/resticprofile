@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,64 +57,11 @@ type RetentionSection struct {
 }
 
 // NewProfile instantiates a new blank profile
-func NewProfile(configuration *Config, name string) *Profile {
+func NewProfile(c *Config, name string) *Profile {
 	return &Profile{
 		Name:   name,
-		config: configuration,
+		config: c,
 	}
-}
-
-// HasGroup returns true if the group of profiles exists in the configuration
-func HasGroup(configuration *Config, groupKey string) bool {
-	if !configuration.IsSet(constants.SectionConfigurationGroups) {
-		return false
-	}
-	return configuration.IsSet(constants.SectionConfigurationGroups + "." + groupKey)
-}
-
-// LoadGroup returns the list of profiles in a group
-func LoadGroup(configuration *Config, groupKey string) ([]string, error) {
-	group := make([]string, 0)
-	err := configuration.unmarshalKey(constants.SectionConfigurationGroups+"."+groupKey, &group)
-	if err != nil {
-		return nil, err
-	}
-	return group, nil
-}
-
-// LoadProfile from configuration
-func LoadProfile(configuration *Config, profileKey string) (*Profile, error) {
-	var err error
-	var profile *Profile
-
-	if !configuration.IsSet(profileKey) {
-		return nil, nil
-	}
-
-	profile = NewProfile(configuration, profileKey)
-	err = configuration.unmarshalKey(profileKey, profile)
-	if err != nil {
-		return nil, err
-	}
-	if profile.Inherit != "" {
-		inherit := profile.Inherit
-		// Load inherited profile
-		profile, err = LoadProfile(configuration, inherit)
-		if err != nil {
-			return nil, err
-		}
-		if profile == nil {
-			return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
-		}
-		// and reload this profile onto the inherited one
-		err = configuration.unmarshalKey(profileKey, profile)
-		if err != nil {
-			return nil, err
-		}
-		// make sure it has the right name
-		profile.Name = profileKey
-	}
-	return profile, nil
 }
 
 // SetRootPath changes the path of all the relative paths and files in the configuration
