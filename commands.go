@@ -142,7 +142,7 @@ func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
 
 func sortedMapKeys(data map[string][]string) []string {
 	keys := make([]string, 0, len(data))
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)

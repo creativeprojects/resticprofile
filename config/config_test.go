@@ -8,84 +8,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetGlobalFromJSON(t *testing.T) {
-	testConfig := `
+type testTemplate struct {
+	format string
+	config string
+}
+
+func TestGetGlobal(t *testing.T) {
+	testData := []testTemplate{
+		{"toml", `
+[global]
+priority = "low"
+default-command = "version"
+# initialize a repository if none exist at location
+initialize = false
+`},
+		{"json", `
 {
   "global": {
     "default-command": "version",
     "initialize": false,
     "priority": "low"
   }
-}`
-	c, err := Load(bytes.NewBufferString(testConfig), "json")
-	require.NoError(t, err)
-
-	global, err := c.GetGlobalSection()
-	require.NoError(t, err)
-	assert.Equal(t, "version", global.DefaultCommand)
-	assert.Equal(t, false, global.Initialize)
-	assert.Equal(t, "low", global.Priority)
-	assert.Equal(t, false, global.IONice)
-}
-
-func TestGetGlobalFromYAML(t *testing.T) {
-	testConfig := `
+}`},
+		{"yaml", `---
 global:
     default-command: version
     initialize: false
     priority: low
-`
-	c, err := Load(bytes.NewBufferString(testConfig), "yaml")
-	require.NoError(t, err)
-
-	global, err := c.GetGlobalSection()
-	require.NoError(t, err)
-	assert.Equal(t, "version", global.DefaultCommand)
-	assert.Equal(t, false, global.Initialize)
-	assert.Equal(t, "low", global.Priority)
-	assert.Equal(t, false, global.IONice)
-}
-
-func TestGetGlobalFromTOML(t *testing.T) {
-	testConfig := `
-[global]
-priority = "low"
-default-command = "version"
-# initialize a repository if none exist at location
-initialize = false
-`
-	c, err := Load(bytes.NewBufferString(testConfig), "toml")
-	require.NoError(t, err)
-
-	global, err := c.GetGlobalSection()
-	require.NoError(t, err)
-	assert.Equal(t, "version", global.DefaultCommand)
-	assert.Equal(t, false, global.Initialize)
-	assert.Equal(t, "low", global.Priority)
-	assert.Equal(t, false, global.IONice)
-}
-
-func TestGetGlobalFromHCL(t *testing.T) {
-	testConfig := `
+`},
+		{"hcl", `
 "global" = {
     default-command = "version"
     initialize = false
     priority = "low"
 }
-`
-	c, err := Load(bytes.NewBufferString(testConfig), "hcl")
-	require.NoError(t, err)
-
-	global, err := c.GetGlobalSection()
-	require.NoError(t, err)
-	assert.Equal(t, "version", global.DefaultCommand)
-	assert.Equal(t, false, global.Initialize)
-	assert.Equal(t, "low", global.Priority)
-	assert.Equal(t, false, global.IONice)
-}
-
-func TestGetGlobalFromSplitConfig(t *testing.T) {
-	testConfig := `
+`},
+		{"hcl", `
 "global" = {
     default-command = "version"
     initialize = true
@@ -95,14 +53,22 @@ func TestGetGlobalFromSplitConfig(t *testing.T) {
     initialize = false
     priority = "low"
 }
-`
-	c, err := Load(bytes.NewBufferString(testConfig), "hcl")
-	require.NoError(t, err)
+`},
+	}
 
-	global, err := c.GetGlobalSection()
-	require.NoError(t, err)
-	assert.Equal(t, "version", global.DefaultCommand)
-	assert.Equal(t, false, global.Initialize)
-	assert.Equal(t, "low", global.Priority)
-	assert.Equal(t, false, global.IONice)
+	for _, testItem := range testData {
+		format := testItem.format
+		testConfig := testItem.config
+		t.Run(format, func(t *testing.T) {
+			c, err := Load(bytes.NewBufferString(testConfig), format)
+			require.NoError(t, err)
+
+			global, err := c.GetGlobalSection()
+			require.NoError(t, err)
+			assert.Equal(t, "version", global.DefaultCommand)
+			assert.Equal(t, false, global.Initialize)
+			assert.Equal(t, "low", global.Priority)
+			assert.Equal(t, false, global.IONice)
+		})
+	}
 }

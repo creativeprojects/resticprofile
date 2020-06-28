@@ -32,12 +32,14 @@ Persistent=true
 WantedBy=timers.target
 `
 
+// TemplateInfo to create systemd unit
 type TemplateInfo struct {
 	Profile        string
 	OnCalendar     string
 	SystemdProfile string
 }
 
+// Generate systemd unit
 func Generate(profile, onCalendar string) error {
 	systemdProfile := fmt.Sprintf("resticprofile-backup@%s.service", profile)
 	timerProfile := fmt.Sprintf("resticprofile-backup@%s.timer", profile)
