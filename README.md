@@ -19,6 +19,7 @@ With resticprofile:
 * You can run a shell command if an error occurred (at any time)
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
+* Check you have enough memory before starting a backup. I've had some backups that literally killed a server (with swap disabled)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -190,6 +191,8 @@ priority = "low"
 default-command = "snapshots"
 # initialize a repository if none exist at location
 initialize = false
+# resticprofile won't start a profile if there's less than 100MB of RAM available
+min-memory = 100
 
 # a group is a profile that will call all profiles one by one
 [groups]
@@ -326,6 +329,54 @@ tag = [ 'stdin' ]
 
 ```
 
+## Configuration paths
+
+The default name for the configuration file is `profiles.conf`.
+You can change the name and its path with the `--config` or `-c` option on the command line
+
+### macOS X
+
+resticprofile will search for your configuration file in these folders:
+- _current directory_
+- ~/Library/Preferences
+- /Library/Preferences
+- /usr/local/etc/
+- /usr/local/etc/restic/
+- /usr/local/etc/resticprofile/
+- /etc/
+- /etc/restic/
+- /etc/resticprofile/
+- /opt/local/etc/
+- /opt/local/etc/restic/
+- /opt/local/etc/resticprofile/
+- ~/ ($HOME directory)
+
+### Other unixes (Linux and BSD)
+
+resticprofile will search for your configuration file in these folders:
+- _current directory_
+- ~/.config/
+- /etc/xdg/
+- /usr/local/etc/
+- /usr/local/etc/restic/
+- /usr/local/etc/resticprofile/
+- /etc/
+- /etc/restic/
+- /etc/resticprofile/
+- /opt/local/etc/
+- /opt/local/etc/restic/
+- /opt/local/etc/resticprofile/
+- ~/ ($HOME directory)
+
+### Windows
+
+- _current directory_
+- %USERPROFILE%\AppData\Local\
+- c:\ProgramData\
+- c:\restic\
+- c:\resticprofile\
+- %USERPROFILE%\
+
 ## Using resticprofile
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
@@ -428,6 +479,7 @@ None of these flags are passed on the restic command line
 * **default-command**: string
 * **initialize**: true / false
 * **restic-binary**: string
+* **min-memory**: integer (MB)
 
 `[profile]`
 
