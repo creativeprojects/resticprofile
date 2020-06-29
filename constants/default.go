@@ -11,4 +11,5 @@ const (
 	DefaultNiceFlag          = 0
 	DefaultVerboseFlag       = false
 	DefaultQuietFlag         = false
+	DefaultMinMemory         = 100
 )

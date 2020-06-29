@@ -14,6 +14,7 @@ type Global struct {
 	DefaultCommand string `mapstructure:"default-command"`
 	Initialize     bool   `mapstructure:"initialize"`
 	ResticBinary   string `mapstructure:"restic-binary"`
+	MinMemory      uint64 `mapstructure:"min-memory"`
 }
 
 // newGlobal instantiates a new Global with default values
@@ -23,5 +24,6 @@ func newGlobal() *Global {
 		Nice:           constants.DefaultNiceFlag,
 		DefaultCommand: constants.DefaultCommand,
 		ResticBinary:   constants.DefaultResticBinary,
+		MinMemory:      constants.DefaultMinMemory,
 	}
 }

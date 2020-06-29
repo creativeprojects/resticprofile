@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
+	"github.com/mackerelio/go-osstat/memory"
 )
 
 // These fields are populated by the goreleaser build
@@ -81,6 +82,15 @@ func main() {
 	if err != nil {
 		clog.Error("cannot load global configuration:", err)
 		os.Exit(1)
+	}
+
+	// Check memory pressure
+	if global.MinMemory > 0 {
+		avail := free()
+		if avail > 0 && avail < global.MinMemory {
+			clog.Errorf("available memory is < %v MB (option 'min-memory' in the 'global' section)", global.MinMemory)
+			os.Exit(1)
+		}
 	}
 
 	err = setPriority(global.Nice, global.Priority)
@@ -259,6 +269,17 @@ func runProfile(c *config.Config, global *config.Global, flags commandLineFlags,
 // randomBool returns true for Heads and false for Tails
 func randomBool() bool {
 	return rand.Int31n(10000) < 5000
+}
+
+func free() uint64 {
+	mem, err := memory.Get()
+	if err != nil {
+		clog.Info("OS memory information not available")
+		return 0
+	}
+	avail := (mem.Total - mem.Used) / 1048576
+	clog.Infof("memory available: %vMB", avail)
+	return avail
 }
 
 func showPanicData() {
