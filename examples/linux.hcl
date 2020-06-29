@@ -52,3 +52,33 @@ src {
         with-cache = false
     }
 }
+
+self {
+    inherit = "default"
+    initialize = false
+
+    snapshots = {
+        tag = [ "self" ]
+    }
+
+    backup = {
+        source = "./"
+        tag = [ "self" ]
+    }
+}
+
+# sending stream through stdin
+
+stdin = {
+    inherit = "default"
+
+    snapshots = {
+        tag = [ "stdin" ]
+    }
+
+    backup = {
+        stdin = true
+        stdin-filename = "stdin-test"
+        tag = [ "stdin" ]
+    }
+}
