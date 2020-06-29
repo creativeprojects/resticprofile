@@ -2,7 +2,7 @@ package constants
 
 // Configuration defaults
 const (
-	DefaultConfigurationFile = "profiles.conf"
+	DefaultConfigurationFile = "profiles"
 	DefaultProfileName       = "default"
 	DefaultCommand           = "snapshots"
 	DefaultResticBinary      = "restic"

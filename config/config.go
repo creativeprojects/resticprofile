@@ -289,7 +289,7 @@ func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
 func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
 		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map && (to.Kind() == reflect.Struct || to.Kind() == reflect.Map) {
-			clog.Debugf("hook: from slice %+v to %+v", from.Elem(), to)
+			// clog.Debugf("hook: from slice %+v to %+v", from.Elem(), to)
 			source, ok := data.([]map[string]interface{})
 			if !ok {
 				return data, nil
@@ -309,7 +309,7 @@ func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 			}
 			return convert, nil
 		}
-		clog.Debugf("default from %+v to %+v", from, to)
+		// clog.Debugf("default from %+v to %+v", from, to)
 		return data, nil
 	}
 }

@@ -331,8 +331,15 @@ tag = [ 'stdin' ]
 
 ## Configuration paths
 
-The default name for the configuration file is `profiles.conf`.
-You can change the name and its path with the `--config` or `-c` option on the command line
+The default name for the configuration file is `profiles`, without an extension.
+You can change the name and its path with the `--config` or `-c` option on the command line.
+You can set a specific extension `-c profiles.conf` to load a TOML format file.
+If you set a filename with no extension instead, resticprofile will load the first file it finds with any of these extensions:
+- .conf (toml format)
+- .yaml
+- .toml
+- .json
+- .hcl
 
 ### macOS X
 
@@ -463,6 +470,13 @@ There are not many options on the command line, most of the options are in the c
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
 * **[restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
+
+## Minimum memory required
+
+restic can be memory hungry. I'm running a few servers with no swap (I know: it is _bad_) and I managed to kill some of them during a backup.
+Anyway, for that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
+
+It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the disk buffers/cache).
 
 ## Configuration file reference
 

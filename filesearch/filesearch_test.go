@@ -46,11 +46,13 @@ func TestDefaultConfigDirs(t *testing.T) {
 }
 
 type testLocation struct {
-	path string
-	file string
+	realPath   string
+	realFile   string
+	searchPath string
+	searchFile string
 }
 
-func TestFindConfigurationFileFromCurrentDirectory(t *testing.T) {
+func TestFindConfigurationFile(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Test skipped in short mode")
 	}
@@ -62,31 +64,137 @@ func TestFindConfigurationFileFromCurrentDirectory(t *testing.T) {
 	t.Log("Working directory:", cwd)
 
 	locations := []testLocation{
-		{"", "profiles.conf"},
-		{"unittest-config", "profiles.conf"},
+		{
+			realPath:   "",
+			realFile:   "profiles.spec",
+			searchPath: "",
+			searchFile: "profiles.spec",
+		},
+		{
+			realPath:   "",
+			realFile:   "profiles.conf",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "",
+			realFile:   "profiles.yaml",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "",
+			realFile:   "profiles.json",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "",
+			realFile:   "profiles.toml",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "",
+			realFile:   "profiles.hcl",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.spec",
+			searchPath: "unittest-config",
+			searchFile: "profiles.spec",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.conf",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.toml",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.yaml",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.json",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.hcl",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.spec",
+			searchPath: "",
+			searchFile: "profiles.spec",
+		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.conf",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.toml",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.yaml",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.json",
+			searchPath: "",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.hcl",
+			searchPath: "",
+			searchFile: "profiles",
+		},
 	}
 	for _, location := range locations {
 		var err error
 		// Install empty config file
-		if location.path != "" {
-			err = os.MkdirAll(location.path, 0700)
+		if location.realPath != "" {
+			err = os.MkdirAll(location.realPath, 0700)
 			require.NoError(t, err)
 		}
-		file, err := os.Create(filepath.Join(location.path, location.file))
+		file, err := os.Create(filepath.Join(location.realPath, location.realFile))
 		require.NoError(t, err)
 		file.Close()
 
 		// Test
-		found, err := FindConfigurationFile(filepath.Join(location.path, location.file))
-		assert.NotEmpty(t, found)
-		t.Log("Found", found)
+		found, err := FindConfigurationFile(filepath.Join(location.searchPath, location.searchFile))
 		assert.NoError(t, err)
+		assert.NotEmpty(t, found)
+		assert.Equal(t, filepath.Join(location.realPath, location.realFile), found)
 
 		// Clears up the test file
-		if location.path == "" {
-			err = os.Remove(location.file)
+		if location.realPath == "" {
+			err = os.Remove(location.realFile)
 		} else {
-			err = os.RemoveAll(location.path)
+			err = os.RemoveAll(location.realPath)
 		}
 		require.NoError(t, err)
 	}

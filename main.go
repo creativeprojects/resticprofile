@@ -71,6 +71,7 @@ func main() {
 		clog.Error(err)
 		os.Exit(1)
 	}
+	clog.Infof("using configuration file: %s", configFile)
 
 	c, err := config.LoadFile(configFile)
 	if err != nil {
