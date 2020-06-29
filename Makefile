@@ -77,7 +77,7 @@ test-docker:
 		docker run --rm -v "${GOPATH}":/go -w /go/src/creativeprojects/resticprofile golang:${GO_VERSION} $(GOTEST) -v $(TESTS)
 
 build-docker: clean
-		CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GOBUILD) -v -o ${BUILD}$(BINARY) .
+		CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GOBUILD) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'" -o ${BUILD}$(BINARY) .
 		curl -LO https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2
 		bunzip2 restic_${RESTIC_VERSION}_linux_amd64.bz2
 		mv restic_${RESTIC_VERSION}_linux_amd64 ${BUILD}restic
