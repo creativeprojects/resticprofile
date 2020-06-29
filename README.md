@@ -338,8 +338,8 @@ You can change the name and its path with the `--config` or `-c` option on the c
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- ~/Library/Preferences
-- /Library/Preferences
+- ~/Library/Preferences/resticprofile/
+- /Library/Preferences/resticprofile/
 - /usr/local/etc/
 - /usr/local/etc/restic/
 - /usr/local/etc/resticprofile/
@@ -355,8 +355,8 @@ resticprofile will search for your configuration file in these folders:
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- ~/.config/
-- /etc/xdg/
+- ~/.config/resticprofile/
+- /etc/xdg/resticprofile/
 - /usr/local/etc/
 - /usr/local/etc/restic/
 - /usr/local/etc/resticprofile/
@@ -370,6 +370,7 @@ resticprofile will search for your configuration file in these folders:
 
 ### Windows
 
+resticprofile will search for your configuration file in these folders:
 - _current directory_
 - %USERPROFILE%\AppData\Local\
 - c:\ProgramData\
