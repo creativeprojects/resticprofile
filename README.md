@@ -19,13 +19,13 @@ With resticprofile:
 * You can run a shell command if an error occurred (at any time)
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
-* Check you have enough memory before starting a backup. I've had some backups that literally killed a server (with swap disabled)
+* Check you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
 * [JSON](https://en.wikipedia.org/wiki/JSON) : configuration file with extension _.json_
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
-* HCL: **experimental support**, configuration file with extension _.hcl_
+* [HCL](https://github.com/hashicorp/hcl): **experimental support**, configuration file with extension _.hcl_
 
 For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 
@@ -37,9 +37,9 @@ It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 **This is at _beta_ stage. Please don't use it in production yet. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
-## Installation
+## Installation (macOS, Linux & other unixes)
 
-Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux:
+Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux. It should also work in Windows if you start it from any `bash` command line (WSL, git bash, etc.):
 
 ```
 $ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
@@ -57,6 +57,16 @@ $ sudo ./install.sh -b /usr/local/bin
 
 It will install resticprofile in `/usr/local/bin/`
 
+
+### Installation for Windows using bash
+
+You can use the same script if you're using bash in Windows (via WSL, git bash, etc.)
+
+```
+$ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh
+$ ./install.sh
+```
+It will create a `bin` directory under your current directory and place `resticprofile.exe` in it.
 
 ### Manual installation (Windows)
 
@@ -440,7 +450,8 @@ Usage of resticprofile:
 	resticprofile [resticprofile flags] [command] [restic flags]
 
 resticprofile flags:
-  -c, --config string   configuration file (default "profiles.conf")
+  -c, --config string   configuration file (default "profiles")
+  -f, --format string   file format of the configuration (default is to use the file extension)
   -h, --help            display this help
   -n, --name string     profile name (default "default")
       --no-ansi         disable ansi control characters (disable console colouring)
@@ -464,6 +475,7 @@ There are not many options on the command line, most of the options are in the c
 
 * **[-h]**: Display quick help
 * **[-c | --config] configuration_file**: Specify a configuration file other than the default
+* **[-f | --format] configuration_format**: Specify the configuration file format: `toml`, `yaml`, `json` or `hcl`
 * **[-n | --name] profile_name**: Profile section to use from the configuration file
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
@@ -474,9 +486,9 @@ There are not many options on the command line, most of the options are in the c
 ## Minimum memory required
 
 restic can be memory hungry. I'm running a few servers with no swap (I know: it is _bad_) and I managed to kill some of them during a backup.
-Anyway, for that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
+For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
-It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the disk buffers/cache).
+It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
 
 ## Configuration file reference
 
@@ -748,6 +760,95 @@ stdin:
     snapshots:
         tag:
         - stdin
+
+```
+
+Also here's an example of a configuration file in HCL:
+``` hcl
+global {
+    priority = "low"
+    ionice = true
+    ionice-class = 2
+    ionice-level = 6
+    # don't start if the memory available is < 1000MB
+    min-memory = 1000
+}
+
+groups {
+    all = ["src", "self"]
+}
+
+default {
+    repository = "/tmp/backup"
+    password-file = "key"
+    run-before = "echo Profile started!"
+    run-after = "echo Profile finished!"
+    run-after-fail = "echo An error occured!"
+}
+
+
+src {
+    inherit = "default"
+    initialize = true
+    lock = "/tmp/backup/resticprofile-profile-src.lock"
+
+    snapshots = {
+        tag = [ "test", "dev" ]
+    }
+
+    backup = {
+        run-before = [ "echo Starting!", "ls -al ~/go/src" ]
+        run-after = "echo All Done!"
+        exclude = [ "/**/.git" ]
+        exclude-caches = true
+        tag = [ "test", "dev" ]
+        source = [ "~/go/src" ]
+        check-before = true
+    }
+
+    retention = {
+        before-backup = false
+        after-backup = true
+        keep-last = 3
+        compact = false
+        prune = true
+    }
+
+    check = {
+        check-unused = true
+        with-cache = false
+    }
+}
+
+self {
+    inherit = "default"
+    initialize = false
+
+    snapshots = {
+        tag = [ "self" ]
+    }
+
+    backup = {
+        source = "./"
+        tag = [ "self" ]
+    }
+}
+
+# sending stream through stdin
+
+stdin = {
+    inherit = "default"
+
+    snapshots = {
+        tag = [ "stdin" ]
+    }
+
+    backup = {
+        stdin = true
+        stdin-filename = "stdin-test"
+        tag = [ "stdin" ]
+    }
+}
 
 ```
 

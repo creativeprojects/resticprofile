@@ -21,7 +21,7 @@ import (
 
 // These fields are populated by the goreleaser build
 var (
-	version = "0.8.0"
+	version = "0.8.1"
 	commit  = ""
 	date    = ""
 	builtBy = ""
@@ -73,7 +73,7 @@ func main() {
 	}
 	clog.Infof("using configuration file: %s", configFile)
 
-	c, err := config.LoadFile(configFile)
+	c, err := config.LoadFile(configFile, flags.format)
 	if err != nil {
 		clog.Error("cannot load configuration file:", err)
 		os.Exit(1)

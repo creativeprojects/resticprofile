@@ -13,6 +13,7 @@ type commandLineFlags struct {
 	quiet      bool
 	verbose    bool
 	config     string
+	format     string
 	name       string
 	noAnsi     bool
 	theme      string
@@ -40,10 +41,13 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	flagset.BoolVarP(&flags.quiet, "quiet", "q", constants.DefaultQuietFlag, "display only warnings and errors")
 	flagset.BoolVarP(&flags.verbose, "verbose", "v", constants.DefaultVerboseFlag, "display all debugging information")
 	flagset.StringVarP(&flags.config, "config", "c", constants.DefaultConfigurationFile, "configuration file")
+	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
+
+	// Deprecated since 0.7.0
 	flagset.BoolVar(&flags.selfUpdate, "self-update", false, "auto update of resticprofile (does not update restic)")
 	_ = flagset.MarkHidden("self-update")
 

@@ -60,10 +60,14 @@ func newConfig(format string) *Config {
 }
 
 // LoadFile loads configuration from file
-func LoadFile(configFile string) (*Config, error) {
-	format := filepath.Ext(configFile)
-	if strings.HasPrefix(format, ".") {
-		format = format[1:]
+// Leave format blank for auto-detection from the file extension
+func LoadFile(configFile, format string) (*Config, error) {
+	if format == "" {
+		// use file extension as format
+		format = filepath.Ext(configFile)
+		if strings.HasPrefix(format, ".") {
+			format = format[1:]
+		}
 	}
 	file, err := os.Open(configFile)
 	if err != nil {
