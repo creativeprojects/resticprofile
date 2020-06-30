@@ -12,6 +12,8 @@ import (
 )
 
 var (
+	XDGAppName = "resticprofile"
+
 	// configurationExtensions list the possible extensions for the config file
 	configurationExtensions = []string{
 		"conf",
@@ -82,7 +84,10 @@ func FindConfigurationFile(configFile string) (string, error) {
 		return found, nil
 	}
 	// compile a list of search locations
-	locations := append([]string{xdg.ConfigHome}, xdg.ConfigDirs...)
+	locations := []string{filepath.Join(xdg.ConfigHome, XDGAppName)}
+	for _, configDir := range xdg.ConfigDirs {
+		locations = append(locations, filepath.Join(configDir, XDGAppName))
+	}
 	locations = append(locations, getDefaultConfigurationLocations()...)
 	if home, err := os.UserHomeDir(); err == nil {
 		locations = append(locations, home)
@@ -97,7 +102,7 @@ func findConfigurationFileWithExtension(configFile string) string {
 	}
 
 	// 2. Next we try xdg as the "standard" for user configuration locations
-	xdgFilename, err := xdg.SearchConfigFile(filepath.Join("resticprofile", configFile))
+	xdgFilename, err := xdg.SearchConfigFile(filepath.Join(XDGAppName, configFile))
 	if err == nil {
 		if fileExists(xdgFilename) {
 			return xdgFilename
