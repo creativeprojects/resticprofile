@@ -34,29 +34,29 @@ func TestShowStruct(t *testing.T) {
 	testData := []showStructData{
 		{
 			input:  testObject{Id: 11, Name: "test"},
-			output: " person:\n id: 11\n name:  test\n",
+			output: " person:\n\n id: 11\n name:  test\n\n",
 		},
 		{
 			input:  testObject{Id: 11, Person: testPerson{Name: "test"}},
-			output: " person:\n  name:  test\n id:  11\n",
+			output: " person:\n  name:  test\n\n id:  11\n\n",
 		},
 		{
 			input:  testObject{Id: 11, Person: testPerson{Name: "test", IsValid: true}},
-			output: " person:\n  name:   test\n  valid:  true\n id:  11\n",
+			output: " person:\n  name:   test\n  valid:  true\n\n id:  11\n\n",
 		},
 		{
 			input:  testObject{Id: 11, Pointer: &testPointer{IsValid: true}},
-			output: " person:\n pointer:\n  valid:  true\n id:  11\n",
+			output: " person:\n\n pointer:\n  valid:  true\n\n id:  11\n\n",
 		},
 		{
 			input: testObject{Id: 11, Person: testPerson{Properties: map[string][]string{
 				"list": {"one", "two", "three"},
 			}}},
-			output: " person:\n  properties:\n   list:  one, two, three\n id:  11\n",
+			output: " person:\n  properties:\n   list:  one, two, three\n\n\n id:  11\n\n",
 		},
 		{
 			input:  testObject{Id: 11, Name: "test", Map: map[string][]string{"left": {"over"}}},
-			output: " person:\n id: 11\n name:  test\n left:\tover\n",
+			output: " person:\n\n id: 11\n name:  test\n left:  over\n\n",
 		},
 	}
 
