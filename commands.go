@@ -8,6 +8,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 )
 
@@ -38,6 +39,13 @@ var (
 			description:       "create a user systemd timer",
 			action:            createSystemdTimer,
 			needConfiguration: true,
+		},
+		{
+			name:              "show",
+			description:       "show all the details of the current profile",
+			action:            showProfile,
+			needConfiguration: true,
+			hide:              false,
 		},
 		{
 			name:              "panic",
@@ -147,4 +155,26 @@ func sortedMapKeys(data map[string][]string) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+func showProfile(c *config.Config, flags commandLineFlags, args []string) error {
+	// Show global section first
+	global, err := c.GetGlobalSection()
+	if err != nil {
+		return fmt.Errorf("cannot show global: %w", err)
+	}
+	fmt.Printf("\n%s:\n", constants.SectionConfigurationGlobal)
+	config.ShowStruct(os.Stdout, global)
+
+	// Then show profile
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot show profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+	fmt.Printf("\n%s:\n", flags.name)
+	config.ShowStruct(os.Stdout, profile)
+	return nil
 }
