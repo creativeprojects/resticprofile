@@ -463,6 +463,8 @@ resticprofile own commands:
    profiles       display profile names from the configuration file
    self-update    update resticprofile to latest version (does not update restic)
    systemd-unit   create a user systemd timer
+   show           show all the details of the current profile
+
 
 ```
 
