@@ -7,8 +7,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/systemd"
 )
 
@@ -53,6 +55,13 @@ var (
 			action:            panicCommand,
 			needConfiguration: false,
 			hide:              true,
+		},
+		{
+			name:              "schedule",
+			description:       "schedule a backup",
+			action:            createSchedule,
+			needConfiguration: true,
+			hide:              false,
 		},
 	}
 )
@@ -177,4 +186,20 @@ func showProfile(c *config.Config, flags commandLineFlags, args []string) error 
 	fmt.Printf("\n%s:\n", flags.name)
 	config.ShowStruct(os.Stdout, profile)
 	return nil
+}
+
+func createSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	err = schedule.CreateJob(flags.config, profile)
+	if err == nil {
+		clog.Info("job created!")
+	}
+	return err
 }

@@ -2,8 +2,18 @@
 
 package schedule
 
+import (
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+
+	"github.com/creativeprojects/resticprofile/config"
+	"howett.net/plist"
+)
+
 const (
-	UserAgentPath   = "~/Library/LaunchAgents"
+	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 )
@@ -27,4 +37,55 @@ type CalendarInterval struct {
 	Weekday int `plist:"Weekday,omitempty"` // Day of week (0..7, 0 and 7 being Sunday)
 	Hour    int `plist:"Hour,omitempty"`    // Hour of day (0..23)
 	Minute  int `plist:"Minute,omitempty"`  // Minute of hour (0..59)
+}
+
+func CreateJob(config string, profile *config.Profile) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	binary := os.Args[0]
+	if !filepath.IsAbs(binary) {
+		binary = path.Join(wd, binary)
+	}
+
+	name := "local.resticprofile." + strings.ToLower(profile.Name)
+	job := &LaunchJob{
+		Label:   name,
+		Program: binary,
+		ProgramArguments: []string{
+			binary,
+			"--no-ansi",
+			"--config",
+			config,
+			"--name",
+			profile.Name,
+			"backup",
+		},
+		EnvironmentVariables: profile.Environment,
+		StandardOutPath:      name + ".log",
+		StandardErrorPath:    name + ".error.log",
+		WorkingDirectory:     wd,
+		StartInterval:        300,
+	}
+
+	file, err := os.Create(path.Join(home, UserAgentPath, name+".agent.plist"))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := plist.NewEncoder(file)
+	encoder.Indent("\t")
+	err = encoder.Encode(job)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

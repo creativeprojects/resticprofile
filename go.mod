@@ -35,5 +35,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
-	howett.net/plist v0.0.0-20200419221736-3b63eb3a43b5 // indirect
+	howett.net/plist v0.0.0-20200419221736-3b63eb3a43b5
 )
