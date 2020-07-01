@@ -1,9 +1,13 @@
 //+build darwin
 
+// Documentation about launchd plist file format:
+// https://www.launchd.info
+
 package schedule
 
 import (
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 
@@ -11,12 +15,17 @@ import (
 	"howett.net/plist"
 )
 
+// Default paths for launchd files
 const (
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
+
+	namePrefix     = "local.resticprofile."
+	agentExtension = ".agent.plist"
 )
 
+// LaunchJob is an agent definition for launchd
 type LaunchJob struct {
 	Label                 string             `plist:"Label"`
 	Program               string             `plist:"Program"`
@@ -30,6 +39,7 @@ type LaunchJob struct {
 	StartCalendarInterval []CalendarInterval `plist:"StartCalendarInterval,omitempty"`
 }
 
+// CalendarInterval contains date and time trigger definition
 type CalendarInterval struct {
 	Month   int `plist:"Month,omitempty"`   // Month of year (1..12, 1 being January)
 	Day     int `plist:"Day,omitempty"`     // Day of month (1..31)
@@ -38,6 +48,7 @@ type CalendarInterval struct {
 	Minute  int `plist:"Minute,omitempty"`  // Minute of hour (0..59)
 }
 
+// CreateJob creates a plist file and register it with launchd
 func CreateJob(configFile string, profile *config.Profile) error {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -50,7 +61,7 @@ func CreateJob(configFile string, profile *config.Profile) error {
 
 	binary := absolutePathToBinary(wd, os.Args[0])
 
-	name := "local.resticprofile." + strings.ToLower(profile.Name)
+	name := namePrefix + strings.ToLower(profile.Name)
 	job := &LaunchJob{
 		Label:   name,
 		Program: binary,
@@ -58,7 +69,7 @@ func CreateJob(configFile string, profile *config.Profile) error {
 			binary,
 			"--no-ansi",
 			"--config",
-			config,
+			configFile,
 			"--name",
 			profile.Name,
 			"backup",
@@ -70,7 +81,7 @@ func CreateJob(configFile string, profile *config.Profile) error {
 		StartInterval:        300,
 	}
 
-	file, err := os.Create(path.Join(home, UserAgentPath, name+".agent.plist"))
+	file, err := os.Create(path.Join(home, UserAgentPath, name+agentExtension))
 	if err != nil {
 		return err
 	}
@@ -86,6 +97,19 @@ func CreateJob(configFile string, profile *config.Profile) error {
 	return nil
 }
 
+// RemoveJob stops and unloads the agent from launchd, then removes the configuration file
 func RemoveJob(profileName string) error {
-	return nil
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	name := namePrefix + strings.ToLower(profileName)
+
+	stop := exec.Command("launchctl", "stop", name)
+	_ = stop.Run()
+
+	unload := exec.Command("launchctl", "unload", name)
+	_ = unload.Run()
+
+	return os.Remove(path.Join(home, UserAgentPath, name+agentExtension))
 }
