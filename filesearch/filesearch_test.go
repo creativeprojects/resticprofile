@@ -46,10 +46,11 @@ func TestDefaultConfigDirs(t *testing.T) {
 }
 
 type testLocation struct {
-	realPath   string
-	realFile   string
-	searchPath string
-	searchFile string
+	realPath        string
+	realFile        string
+	searchPath      string
+	searchFile      string
+	deletePathAfter bool
 }
 
 func TestFindConfigurationFile(t *testing.T) {
@@ -101,40 +102,46 @@ func TestFindConfigurationFile(t *testing.T) {
 			searchFile: "profiles",
 		},
 		{
-			realPath:   "unittest-config",
-			realFile:   "profiles.spec",
-			searchPath: "unittest-config",
-			searchFile: "profiles.spec",
+			realPath:        "unittest-config",
+			realFile:        "profiles.spec",
+			searchPath:      "unittest-config",
+			searchFile:      "profiles.spec",
+			deletePathAfter: true,
 		},
 		{
-			realPath:   "unittest-config",
-			realFile:   "profiles.conf",
-			searchPath: "unittest-config",
-			searchFile: "profiles",
+			realPath:        "unittest-config",
+			realFile:        "profiles.conf",
+			searchPath:      "unittest-config",
+			searchFile:      "profiles",
+			deletePathAfter: true,
 		},
 		{
-			realPath:   "unittest-config",
-			realFile:   "profiles.toml",
-			searchPath: "unittest-config",
-			searchFile: "profiles",
+			realPath:        "unittest-config",
+			realFile:        "profiles.toml",
+			searchPath:      "unittest-config",
+			searchFile:      "profiles",
+			deletePathAfter: true,
 		},
 		{
-			realPath:   "unittest-config",
-			realFile:   "profiles.yaml",
-			searchPath: "unittest-config",
-			searchFile: "profiles",
+			realPath:        "unittest-config",
+			realFile:        "profiles.yaml",
+			searchPath:      "unittest-config",
+			searchFile:      "profiles",
+			deletePathAfter: true,
 		},
 		{
-			realPath:   "unittest-config",
-			realFile:   "profiles.json",
-			searchPath: "unittest-config",
-			searchFile: "profiles",
+			realPath:        "unittest-config",
+			realFile:        "profiles.json",
+			searchPath:      "unittest-config",
+			searchFile:      "profiles",
+			deletePathAfter: true,
 		},
 		{
-			realPath:   "unittest-config",
-			realFile:   "profiles.hcl",
-			searchPath: "unittest-config",
-			searchFile: "profiles",
+			realPath:        "unittest-config",
+			realFile:        "profiles.hcl",
+			searchPath:      "unittest-config",
+			searchFile:      "profiles",
+			deletePathAfter: true,
 		},
 		{
 			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
@@ -191,8 +198,8 @@ func TestFindConfigurationFile(t *testing.T) {
 		assert.Equal(t, filepath.Join(location.realPath, location.realFile), found)
 
 		// Clears up the test file
-		if location.realPath == "" {
-			err = os.Remove(location.realFile)
+		if location.realPath == "" || !location.deletePathAfter {
+			err = os.Remove(filepath.Join(location.realPath, location.realFile))
 		} else {
 			err = os.RemoveAll(location.realPath)
 		}
