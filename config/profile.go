@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/clog"
@@ -203,6 +204,10 @@ func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
 func fixPath(source, prefix string) string {
 	if strings.Contains(source, "$") || strings.Contains(source, "%") {
 		source = os.ExpandEnv(source)
+	}
+	if runtime.GOOS != "windows" {
+		prefix = strings.ReplaceAll(strings.TrimSpace(prefix), " ", `\ `)
+		source = strings.ReplaceAll(strings.TrimSpace(source), " ", `\ `)
 	}
 	if source == "" ||
 		filepath.IsAbs(source) ||

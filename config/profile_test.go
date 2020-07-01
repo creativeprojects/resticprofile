@@ -221,6 +221,7 @@ func TestFixUnixPaths(t *testing.T) {
 		{"/dir", "/dir"},
 		{"~/dir", "~/dir"},
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
+		{"some file.txt", "prefix/some\\ file.txt"},
 	}
 
 	err := os.Setenv("TEMP_TEST_DIR", "/home")
@@ -246,6 +247,7 @@ func TestFixWindowsPaths(t *testing.T) {
 		{`\dir`, `prefix\dir`},
 		{`c:\dir`, `c:\dir`},
 		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
+		{"some file.txt", `prefix\some file.txt`},
 	}
 
 	err := os.Setenv("TEMP_TEST_DIR", "/home")
