@@ -5,7 +5,6 @@ package schedule
 import (
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/config"
@@ -39,7 +38,7 @@ type CalendarInterval struct {
 	Minute  int `plist:"Minute,omitempty"`  // Minute of hour (0..59)
 }
 
-func CreateJob(config string, profile *config.Profile) error {
+func CreateJob(configFile string, profile *config.Profile) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -49,10 +48,7 @@ func CreateJob(config string, profile *config.Profile) error {
 		return err
 	}
 
-	binary := os.Args[0]
-	if !filepath.IsAbs(binary) {
-		binary = path.Join(wd, binary)
-	}
+	binary := absolutePathToBinary(wd, os.Args[0])
 
 	name := "local.resticprofile." + strings.ToLower(profile.Name)
 	job := &LaunchJob{
@@ -87,5 +83,9 @@ func CreateJob(config string, profile *config.Profile) error {
 		return err
 	}
 
+	return nil
+}
+
+func RemoveJob(profileName string) error {
 	return nil
 }

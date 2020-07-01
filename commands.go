@@ -63,6 +63,13 @@ var (
 			needConfiguration: true,
 			hide:              false,
 		},
+		{
+			name:              "unschedule",
+			description:       "remove a scheduled backup",
+			action:            removeSchedule,
+			needConfiguration: true,
+			hide:              false,
+		},
 	}
 )
 
@@ -199,7 +206,15 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 
 	err = schedule.CreateJob(flags.config, profile)
 	if err == nil {
-		clog.Info("job created!")
+		clog.Info("scheduled job created")
+	}
+	return err
+}
+
+func removeSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	err := schedule.RemoveJob(flags.name)
+	if err == nil {
+		clog.Info("scheduled job removed")
 	}
 	return err
 }

@@ -4,6 +4,10 @@ package schedule
 
 import "github.com/creativeprojects/resticprofile/config"
 
-func CreateJob(config string, profile *config.Profile) error {
+func CreateJob(configFile string, profile *config.Profile) error {
+	return nil
+}
+
+func RemoveJob(profileName string) error {
 	return nil
 }
