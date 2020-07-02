@@ -1,5 +1,8 @@
 package calendar
 
+// Should be able to read the same calendar events
+// https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events
+
 // Event represents a calendar event.
 // It can be one specific point in time, or a recurring event
 type Event struct {
