@@ -18,13 +18,20 @@ func NewRange(min, max uint) *Range {
 
 func (r *Range) initRange() {
 	r.rangeValues = make([]bool, r.maxRange-r.minRange+1)
-	for i := uint(0); i < r.maxRange-r.minRange; i++ {
-		r.rangeValues[i] = false
-	}
 }
 
 func (r *Range) HasRange() bool {
 	return r.hasRange
+}
+
+func (r *Range) getRangeValues() []uint {
+	values := []uint{}
+	for i := uint(0); i <= r.maxRange-r.minRange; i++ {
+		if r.rangeValues[i] {
+			values = append(values, i+r.minRange)
+		}
+	}
+	return values
 }
 
 func (r *Range) addRangeValue(value uint) {

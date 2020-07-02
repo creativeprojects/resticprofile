@@ -34,4 +34,5 @@ func TestSimpleRangeValue(t *testing.T) {
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
 	assert.True(t, value.HasRange())
+	assert.ElementsMatch(t, []uint{10, 20}, value.getRangeValues())
 }
