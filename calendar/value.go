@@ -76,12 +76,24 @@ func (v *Value) HasLongContiguousRange() bool {
 	return false
 }
 
+// MustAddValue adds a new value and panics if an error arises
+func (v *Value) MustAddValue(value int) {
+	err := v.AddValue(value)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // AddValue adds a new value
-func (v *Value) AddValue(value int) {
+func (v *Value) AddValue(value int) error {
+	err := v.checkValue(value)
+	if err != nil {
+		return err
+	}
 	if !v.hasValue {
 		// 1st time: no value here before
 		v.addSingleValue(value)
-		return
+		return nil
 	}
 	if v.hasSingleValue {
 		// 2nd time: single value here before
@@ -90,13 +102,26 @@ func (v *Value) AddValue(value int) {
 		v.singleValue = 0
 	}
 	v.addRangeValue(value)
+	return nil
 }
 
-//AddRange adds a range of values from min to max
-func (v *Value) AddRange(min int, max int) {
-	for i := min; i <= max; i++ {
-		v.AddValue(i)
+// MustAddRange adds a range of values from min to max and panics if an error occurs
+func (v *Value) MustAddRange(min int, max int) {
+	err := v.AddRange(min, max)
+	if err != nil {
+		panic(err)
 	}
+}
+
+// AddRange adds a range of values from min to max
+func (v *Value) AddRange(min int, max int) error {
+	for i := min; i <= max; i++ {
+		err := v.AddValue(i)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // GetRangeValues returns a list of values
@@ -235,8 +260,11 @@ func (v *Value) parseUnit(input string, postProcess ...postProcessFunc) error {
 		if err != nil {
 			return err
 		}
-		// all good
-		v.AddRange(start, end)
+		// now push the value
+		err = v.AddRange(start, end)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 	i, err := parseInt(input)
@@ -248,8 +276,11 @@ func (v *Value) parseUnit(input string, postProcess ...postProcessFunc) error {
 	if err != nil {
 		return err
 	}
-	// all good
-	v.AddValue(i)
+	// now push the value
+	err = v.AddValue(i)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -276,17 +307,17 @@ func (v *Value) initRange() {
 	v.rangeValues = make([]bool, v.maxRange-v.minRange+1)
 }
 
-func (v *Value) checkValue(value int) {
+func (v *Value) checkValue(value int) error {
 	if value < v.minRange {
-		panic(fmt.Sprintf("value outside of range: %d is lower than %d", value, v.minRange))
+		return fmt.Errorf("value outside of range: %d is lower than %d", value, v.minRange)
 	}
 	if value > v.maxRange {
-		panic(fmt.Sprintf("value outside of range: %d is greater than %d", value, v.maxRange))
+		return fmt.Errorf("value outside of range: %d is greater than %d", value, v.maxRange)
 	}
+	return nil
 }
 
 func (v *Value) addSingleValue(value int) {
-	v.checkValue(value)
 	v.hasValue = true
 	v.hasSingleValue = true
 	v.singleValue = value
@@ -297,7 +328,6 @@ func (v *Value) addRangeValue(value int) {
 		// first time here, we initialize the slice
 		v.initRange()
 	}
-	v.checkValue(value)
 	v.rangeValues[value-v.minRange] = true
 	v.hasRange = true
 }

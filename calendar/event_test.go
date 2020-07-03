@@ -28,6 +28,7 @@ func TestEventKeywords(t *testing.T) {
 
 func TestEventParse(t *testing.T) {
 	// Not all forms of systemd.time are allowed (yet?)
+	// Commented out are the examples that are not valid in our implementation
 	testData := []struct{ input, expected string }{
 		{"Sat,Thu,Mon..Wed,Sat..Sun", "Mon..Thu,Sat..Sun *-*-* 00:00:00"},
 		{"Mon,Sun 12-*-* 2,1:23", "Mon,Sun 2012-*-* 01,02:23:00"},
@@ -70,6 +71,34 @@ func TestEventParse(t *testing.T) {
 			err := event.Parse(testItem.input)
 			assert.NoError(t, err)
 			assert.Equal(t, testItem.expected, event.String())
+		})
+	}
+}
+
+func TestParseInvalidEvents(t *testing.T) {
+	testData := []string{
+		"",
+		"u",
+		"u..mon",
+		"mon..u",
+		"u-u",
+		"13-01",
+		"1-32",
+		"1-",
+		"-1",
+		"1:",
+		":1",
+		"1:99",
+		"24:2",
+		"1:2:60",
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem, func(t *testing.T) {
+			event := NewEvent()
+			err := event.Parse(testItem)
+			assert.Error(t, err)
+			t.Log(err)
 		})
 	}
 }

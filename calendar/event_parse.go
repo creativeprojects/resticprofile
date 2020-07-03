@@ -60,25 +60,41 @@ func parseYear(index int) parseFunc {
 
 func parseMonth(index int) parseFunc {
 	return func(e *Event, match []string) error {
-		return e.Month.Parse(match[index])
+		err := e.Month.Parse(match[index])
+		if err != nil {
+			return fmt.Errorf("cannot parse month: %w", err)
+		}
+		return nil
 	}
 }
 
 func parseDay(index int) parseFunc {
 	return func(e *Event, match []string) error {
-		return e.Day.Parse(match[index])
+		err := e.Day.Parse(match[index])
+		if err != nil {
+			return fmt.Errorf("cannot parse day: %w", err)
+		}
+		return nil
 	}
 }
 
 func parseHour(index int) parseFunc {
 	return func(e *Event, match []string) error {
-		return e.Hour.Parse(match[index])
+		err := e.Hour.Parse(match[index])
+		if err != nil {
+			return fmt.Errorf("cannot parse hour: %w", err)
+		}
+		return nil
 	}
 }
 
 func parseMinute(index int) parseFunc {
 	return func(e *Event, match []string) error {
-		return e.Minute.Parse(match[index])
+		err := e.Minute.Parse(match[index])
+		if err != nil {
+			return fmt.Errorf("cannot parse minute: %w", err)
+		}
+		return nil
 	}
 }
 
@@ -89,7 +105,11 @@ func parseSecond(index int) parseFunc {
 			e.Second.AddValue(0)
 			return nil
 		}
-		return e.Second.Parse(strings.Trim(match[index], ":"))
+		err := e.Second.Parse(strings.Trim(match[index], ":"))
+		if err != nil {
+			return fmt.Errorf("cannot parse second: %w", err)
+		}
+		return nil
 	}
 }
 
@@ -97,13 +117,6 @@ func setMidnight() parseFunc {
 	return func(e *Event, match []string) error {
 		e.Hour.AddValue(0)
 		e.Minute.AddValue(0)
-		e.Second.AddValue(0)
-		return nil
-	}
-}
-
-func setZeroSecond() parseFunc {
-	return func(e *Event, match []string) error {
 		e.Second.AddValue(0)
 		return nil
 	}
@@ -118,6 +131,10 @@ func parseWeekday(index int) parseFunc {
 		for dayIndex, day := range shortWeekDay {
 			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex+1))
 		}
-		return e.WeekDay.Parse(weekdays)
+		err := e.WeekDay.Parse(weekdays)
+		if err != nil {
+			return fmt.Errorf("cannot parse weekday: %w", err)
+		}
+		return nil
 	}
 }

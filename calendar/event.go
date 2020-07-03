@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -55,6 +56,10 @@ func (e *Event) String() string {
 
 // Parse a string into an event
 func (e *Event) Parse(input string) error {
+	if input == "" {
+		return errors.New("calendar event cannot be an empty string")
+	}
+
 	// check for a keyword
 	for keyword, setValues := range specialKeywords {
 		if input == keyword {
@@ -72,11 +77,11 @@ func (e *Event) Parse(input string) error {
 					return err
 				}
 			}
-			break
+			return nil
 		}
 	}
 
-	return nil
+	return errors.New("calendar event doesn't match any well known pattern")
 }
 
 func numbersToWeekdays(weekdays string) string {
