@@ -16,6 +16,7 @@ default:
     repository: /Volumes/RAMDisk
 
 documents:
+    inherit: default
     backup:
         source: ~/Documents
     initialize: false
@@ -58,13 +59,13 @@ root:
         - dev
 
 self:
+    inherit: default
+    schedule: "*:0,15,30,45"
     backup:
         source: ./
-    initialize: false
-    repository: ../backup
+    initialize: true
     snapshots:
-        tag:
-        - self
+        tag: self
 
 src:
     lock: "/tmp/resticprofile-profile-src.lock"

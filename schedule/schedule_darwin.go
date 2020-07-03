@@ -19,6 +19,7 @@ import (
 
 // Default paths for launchd files
 const (
+	LaunchCtl       = "launchctl"
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
@@ -63,7 +64,7 @@ func (j *Job) createJob() error {
 
 	binary := absolutePathToBinary(wd, os.Args[0])
 
-	name := namePrefix + strings.ToLower(j.profile.Name)
+	name := getJobName(j.profile.Name)
 	job := &LaunchJob{
 		Label:   name,
 		Program: binary,
@@ -96,6 +97,25 @@ func (j *Job) createJob() error {
 		return err
 	}
 
+	// load the service
+	filename := path.Join(home, UserAgentPath, name+agentExtension)
+	cmd := exec.Command(LaunchCtl, "load", filename)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	// start the service
+	cmd = exec.Command(LaunchCtl, "start", name)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -105,19 +125,38 @@ func RemoveJob(profileName string) error {
 	if err != nil {
 		return err
 	}
-	name := namePrefix + strings.ToLower(profileName)
+	name := getJobName(profileName)
 
-	stop := exec.Command("launchctl", "stop", name)
+	// stop the service
+	stop := exec.Command(LaunchCtl, "stop", name)
+	stop.Stdout = os.Stdout
+	stop.Stderr = os.Stderr
+	// keep going if there's an error here
 	_ = stop.Run()
 
-	unload := exec.Command("launchctl", "unload", name)
-	_ = unload.Run()
+	// unload the service
+	filename := path.Join(home, UserAgentPath, name+agentExtension)
+	unload := exec.Command(LaunchCtl, "unload", filename)
+	unload.Stdout = os.Stdout
+	unload.Stderr = os.Stderr
+	err = unload.Run()
+	if err != nil {
+		return err
+	}
 
-	return os.Remove(path.Join(home, UserAgentPath, name+agentExtension))
+	return os.Remove(filename)
 }
 
 func (j *Job) displayStatus() error {
-	return nil
+	cmd := exec.Command(LaunchCtl, "list", getJobName(j.profile.Name))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	return err
+}
+
+func getJobName(profileName string) string {
+	return namePrefix + strings.ToLower(profileName)
 }
 
 func loadSchedules(schedules []string) ([]*calendar.Event, error) {
@@ -127,6 +166,13 @@ func loadSchedules(schedules []string) ([]*calendar.Event, error) {
 			return events, errors.New("empty schedule")
 		}
 		fmt.Printf("\nAnalyzing schedule %d/%d\n========================\n", index+1, len(schedules))
+		event := calendar.NewEvent()
+		err := event.Parse(schedule)
+		if err != nil {
+			return events, err
+		}
+		fmt.Printf("schedule event: %s\n", event.String())
+		events = append(events, event)
 	}
 	return events, nil
 }
