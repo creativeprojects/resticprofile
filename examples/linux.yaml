@@ -1,0 +1,64 @@
+global:
+    default-command: version
+    initialize: false
+    priority: low
+
+default:
+    env:
+        tmp: /tmp
+    password-file: key
+    repository: /tmp/backup
+
+documents:
+    inherit: default
+    schedule: "*:0,15,30,45" # every 15 minutes
+    backup:
+        source: ~/Documents
+    snapshots:
+        tag: documents
+
+self:
+    inherit: default
+    backup:
+        source: ./
+    snapshots:
+        tag: self
+
+src:
+    inherit: default
+    initialize: true
+    lock: "/tmp/resticprofile-profile-src.lock"
+    backup:
+        check-before: true
+        exclude:
+        - /**/.git
+        exclude-caches: true
+        one-file-system: false
+        run-after: echo All Done!
+        run-before:
+        - echo Starting!
+        - ls -al ~/go
+        source:
+        - ~/go
+        tag:
+        - test
+        - dev
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        keep-within: 30d
+        prune: true
+    snapshots:
+        tag:
+        - test
+        - dev
+        
+stdin:
+    inherit: default
+    backup:
+        stdin: true
+        stdin-filename: stdin-test
+        tag: stdin
+    snapshots:
+        tag: stdin
