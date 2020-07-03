@@ -38,19 +38,45 @@ func NewEvent(initValues ...func(*Event)) *Event {
 }
 
 // String representation
-func (v *Event) String() string {
+func (e *Event) String() string {
 	output := ""
-	if v.WeekDay.HasValue() {
-		output += numbersToWeekdays(v.WeekDay.String()) + " "
+	if e.WeekDay.HasValue() {
+		output += numbersToWeekdays(e.WeekDay.String()) + " "
 	}
-	output += v.Year.String() + "-" +
-		v.Month.String() + "-" +
-		v.Day.String() + " " +
-		v.Hour.String() + ":" +
-		v.Minute.String() + ":" +
-		v.Second.String()
+	output += e.Year.String() + "-" +
+		e.Month.String() + "-" +
+		e.Day.String() + " " +
+		e.Hour.String() + ":" +
+		e.Minute.String() + ":" +
+		e.Second.String()
 
 	return output
+}
+
+// Parse a string into an event
+func (e *Event) Parse(input string) error {
+	// check for a keyword
+	for keyword, setValues := range specialKeywords {
+		if input == keyword {
+			setValues(e)
+			return nil
+		}
+	}
+
+	// check for all variations one by one
+	for _, rule := range parsingRules {
+		if match := rule.expr.FindStringSubmatch(input); match != nil {
+			for _, parseValue := range rule.parseValues {
+				err := parseValue(e, match)
+				if err != nil {
+					return err
+				}
+			}
+			break
+		}
+	}
+
+	return nil
 }
 
 func numbersToWeekdays(weekdays string) string {

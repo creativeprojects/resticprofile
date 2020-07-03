@@ -124,3 +124,27 @@ func TestAddRangeValuesOutOfRange(t *testing.T) {
 	})
 
 }
+
+func TestParseString(t *testing.T) {
+	testData := []struct {
+		min, max        int
+		input, expected string
+	}{
+		{0, 0, "*", "*"},
+		{1, 12, "1", "01"},
+		{1, 12, "12", "12"},
+		{1, 12, "1,12", "01,12"},
+		{1, 12, "1,2,3", "01..03"},
+		{1, 12, "1..3", "01..03"},
+		{1, 12, "1..3,5..6,10..12", "01..03,05..06,10..12"},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			value := NewValue(testItem.min, testItem.max)
+			err := value.Parse(testItem.input)
+			assert.NoError(t, err)
+			assert.Equal(t, testItem.expected, value.String())
+		})
+	}
+}

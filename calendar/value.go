@@ -2,6 +2,7 @@ package calendar
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -165,6 +166,55 @@ func (v *Value) String() string {
 		output = append(output, fmt.Sprintf("%02d..%02d", r.Start, r.End))
 	}
 	return strings.Join(output, ",")
+}
+
+// Parse a string into a value
+func (v *Value) Parse(input string) error {
+	// clear up data first
+	v.hasValue = false
+	v.hasSingleValue = false
+	v.hasRange = false
+
+	if input == "*" {
+		// done!
+		return nil
+	}
+
+	parts := strings.Split(input, ",")
+	for _, part := range parts {
+		err := v.parseUnit(part)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (v *Value) parseUnit(input string) error {
+	if strings.Contains(input, "..") {
+		// this is a range
+		var start, end int
+		parsed, err := fmt.Sscanf(input, "%d..%d", &start, &end)
+		if err != nil {
+			return err
+		}
+		if parsed != 2 {
+			return fmt.Errorf("cannot parse range '%s'", input)
+		}
+		v.AddRange(start, end)
+		return nil
+	}
+	i, err := parseInt(input)
+	if err != nil {
+		return err
+	}
+	v.AddValue(i)
+	return nil
+}
+
+func parseInt(input string) (int, error) {
+	i, err := strconv.ParseInt(input, 10, 32)
+	return int(i), err
 }
 
 func (v *Value) initRange() {
