@@ -204,7 +204,8 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
-	err = schedule.CreateJob(flags.config, profile)
+	job := schedule.NewJob(flags.config, profile)
+	err = job.Create()
 	if err == nil {
 		clog.Info("scheduled job created")
 	}

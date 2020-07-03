@@ -41,12 +41,12 @@ type Config struct {
 var (
 	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
-		mapstructure.StringToSliceHookFunc(","),
+		// mapstructure.StringToSliceHookFunc(","),
 	))
 	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		sliceOfMapsToMapHookFunc(),
 		mapstructure.StringToTimeDurationHookFunc(),
-		mapstructure.StringToSliceHookFunc(","),
+		// mapstructure.StringToSliceHookFunc(","),
 	))
 )
 
