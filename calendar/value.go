@@ -60,6 +60,20 @@ func (v *Value) HasContiguousRange() bool {
 	return false
 }
 
+// HasLongContiguousRange is true when three or more values are contiguous
+func (v *Value) HasLongContiguousRange() bool {
+	if !v.hasRange {
+		return false
+	}
+
+	for i := 0; i < v.maxRange-v.minRange-1; i++ {
+		if v.rangeValues[i] && v.rangeValues[i+1] && v.rangeValues[i+2] {
+			return true
+		}
+	}
+	return false
+}
+
 // AddValue adds a new value
 func (v *Value) AddValue(value int) {
 	if !v.hasValue {
@@ -158,12 +172,18 @@ func (v *Value) String() string {
 		return fmt.Sprintf("%02d", v.singleValue)
 	}
 	output := []string{}
-	for _, r := range v.GetRanges() {
-		if r.Start == r.End {
-			output = append(output, fmt.Sprintf("%02d", r.Start))
-			continue
+	if !v.HasLongContiguousRange() {
+		for _, r := range v.GetRangeValues() {
+			output = append(output, fmt.Sprintf("%02d", r))
 		}
-		output = append(output, fmt.Sprintf("%02d..%02d", r.Start, r.End))
+	} else {
+		for _, r := range v.GetRanges() {
+			if r.Start == r.End {
+				output = append(output, fmt.Sprintf("%02d", r.Start))
+				continue
+			}
+			output = append(output, fmt.Sprintf("%02d..%02d", r.Start, r.End))
+		}
 	}
 	return strings.Join(output, ",")
 }

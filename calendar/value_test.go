@@ -66,7 +66,7 @@ func TestContiguousRangeValue(t *testing.T) {
 	assert.True(t, value.HasContiguousRange())
 	assert.ElementsMatch(t, entries, value.GetRangeValues())
 	assert.ElementsMatch(t, []Range{{11, 12}, {14, 14}}, value.GetRanges())
-	assert.Equal(t, fmt.Sprintf("%02d..%02d,%02d", entries[0], entries[1], entries[2]), value.String())
+	assert.Equal(t, fmt.Sprintf("%02d,%02d,%02d", entries[0], entries[1], entries[2]), value.String())
 }
 
 func TestComplexContiguousRanges(t *testing.T) {
@@ -99,7 +99,7 @@ func TestAddRanges(t *testing.T) {
 	assert.True(t, value.HasContiguousRange())
 	assert.ElementsMatch(t, entries, value.GetRangeValues())
 	assert.ElementsMatch(t, []Range{{11, 12}, {15, 15}}, value.GetRanges())
-	assert.Equal(t, fmt.Sprintf("%02d..%02d,%02d", entries[0], entries[1], entries[2]), value.String())
+	assert.Equal(t, fmt.Sprintf("%02d,%02d,%02d", entries[0], entries[1], entries[2]), value.String())
 }
 
 func TestAddValueOutOfRange(t *testing.T) {
