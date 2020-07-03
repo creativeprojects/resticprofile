@@ -67,7 +67,8 @@ func _TestEventParse(t *testing.T) {
 	for _, testItem := range testData {
 		t.Run(testItem.input, func(t *testing.T) {
 			event := NewEvent()
-			event.Parse(testItem.input)
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
 			assert.Equal(t, testItem.expected, event.String())
 		})
 	}
@@ -75,21 +76,21 @@ func _TestEventParse(t *testing.T) {
 
 func TestEventParseWIP(t *testing.T) {
 	testData := []struct{ input, expected string }{
-		// {"Sat,Thu,Mon..Wed,Sat..Sun", "Mon..Thu,Sat,Sun *-*-* 00:00:00"},
+		{"Sat,Thu,Mon..Wed,Sat..Sun", "Mon..Thu,Sat..Sun *-*-* 00:00:00"},
 		// {"Mon,Sun 12-*-* 2,1:23", "Mon,Sun 2012-*-* 01,02:23:00"},
-		// {"Wed *-1", "Wed *-*-01 00:00:00"},
-		// {"Wed..Wed,Wed *-1", "Wed *-*-01 00:00:00"},
-		// {"Wed, 17:48", "Wed *-*-* 17:48:00"},
+		{"Wed *-1", "Wed *-*-01 00:00:00"},
+		{"Wed..Wed,Wed *-1", "Wed *-*-01 00:00:00"},
+		{"Wed, 17:48", "Wed *-*-* 17:48:00"},
 		// {"Wed..Sat,Tue 12-10-15 1:2:3", "Tue..Sat 2012-10-15 01:02:03"},
-		// {"*-*-7 0:0:0", "*-*-07 00:00:00"},
-		// {"10-15", "*-10-15 00:00:00"},
-		// {"monday *-12-* 17:00", "Mon *-12-* 17:00:00"},
-		// {"Mon,Fri *-*-3,1,2 *:30:45", "Mon,Fri *-*-01,02,03 *:30:45"},
-		// {"12,14,13,12:20,10,30", "*-*-* 12,13,14:10,20,30:00"},
-		// {"12..14:10,20,30", "*-*-* 12..14:10,20,30:00"},
-		// {"03-05 08:05:40", "*-03-05 08:05:40"},
-		// {"08:05:40", "*-*-* 08:05:40"},
-		// {"05:40", "*-*-* 05:40:00"},
+		{"*-*-7 0:0:0", "*-*-07 00:00:00"},
+		{"10-15", "*-10-15 00:00:00"},
+		{"monday *-12-* 17:00", "Mon *-12-* 17:00:00"},
+		{"Mon,Fri *-*-3,1,2 *:30:45", "Mon,Fri *-*-01..03 *:30:45"},
+		{"12,14,13,12:20,10,30", "*-*-* 12..14:10,20,30:00"},
+		{"12..14:10,20,30", "*-*-* 12..14:10,20,30:00"},
+		{"03-05 08:05:40", "*-03-05 08:05:40"},
+		{"08:05:40", "*-*-* 08:05:40"},
+		{"05:40", "*-*-* 05:40:00"},
 		{"Sat,Sun 12-05 08:05:40", "Sat,Sun *-12-05 08:05:40"},
 		{"Sat,Sun 08:05:40", "Sat,Sun *-*-* 08:05:40"},
 		{"2003-03-05 05:40", "2003-03-05 05:40:00"},
@@ -101,7 +102,8 @@ func TestEventParseWIP(t *testing.T) {
 	for _, testItem := range testData {
 		t.Run(testItem.input, func(t *testing.T) {
 			event := NewEvent()
-			event.Parse(testItem.input)
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
 			assert.Equal(t, testItem.expected, event.String())
 		})
 	}

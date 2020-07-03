@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+type postProcessFunc func(int) (int, error)
+
 // Range represents a range of values: from Range.Start to Range.End
 type Range struct {
 	Start int
@@ -189,7 +191,7 @@ func (v *Value) String() string {
 }
 
 // Parse a string into a value
-func (v *Value) Parse(input string) error {
+func (v *Value) Parse(input string, postProcess ...postProcessFunc) error {
 	// clear up data first
 	v.hasValue = false
 	v.hasSingleValue = false
@@ -202,7 +204,10 @@ func (v *Value) Parse(input string) error {
 
 	parts := strings.Split(input, ",")
 	for _, part := range parts {
-		err := v.parseUnit(part)
+		if part == "" {
+			continue
+		}
+		err := v.parseUnit(part, postProcess...)
 		if err != nil {
 			return err
 		}
@@ -210,7 +215,7 @@ func (v *Value) Parse(input string) error {
 	return nil
 }
 
-func (v *Value) parseUnit(input string) error {
+func (v *Value) parseUnit(input string, postProcess ...postProcessFunc) error {
 	if strings.Contains(input, "..") {
 		// this is a range
 		var start, end int
@@ -221,6 +226,16 @@ func (v *Value) parseUnit(input string) error {
 		if parsed != 2 {
 			return fmt.Errorf("cannot parse range '%s'", input)
 		}
+		// run post-processing functions before adding the value
+		start, err = runPostProcess(start, postProcess)
+		if err != nil {
+			return err
+		}
+		end, err = runPostProcess(end, postProcess)
+		if err != nil {
+			return err
+		}
+		// all good
 		v.AddRange(start, end)
 		return nil
 	}
@@ -228,6 +243,12 @@ func (v *Value) parseUnit(input string) error {
 	if err != nil {
 		return err
 	}
+	// run post-processing functions before adding the value
+	i, err = runPostProcess(i, postProcess)
+	if err != nil {
+		return err
+	}
+	// all good
 	v.AddValue(i)
 	return nil
 }
@@ -235,6 +256,20 @@ func (v *Value) parseUnit(input string) error {
 func parseInt(input string) (int, error) {
 	i, err := strconv.ParseInt(input, 10, 32)
 	return int(i), err
+}
+
+func runPostProcess(value int, postProcess []postProcessFunc) (int, error) {
+	if postProcess == nil || len(postProcess) == 0 {
+		return value, nil
+	}
+	var err error
+	for _, f := range postProcess {
+		value, err = f(value)
+		if err != nil {
+			return value, err
+		}
+	}
+	return value, nil
 }
 
 func (v *Value) initRange() {

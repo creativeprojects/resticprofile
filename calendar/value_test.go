@@ -131,6 +131,7 @@ func TestParseString(t *testing.T) {
 		input, expected string
 	}{
 		{0, 0, "*", "*"},
+		{0, 0, "", "*"},
 		{1, 12, "1", "01"},
 		{1, 12, "12", "12"},
 		{1, 12, "1,12", "01,12"},
