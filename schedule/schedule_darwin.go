@@ -6,11 +6,14 @@
 package schedule
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
 	"howett.net/plist"
 )
@@ -112,4 +115,15 @@ func RemoveJob(profileName string) error {
 	_ = unload.Run()
 
 	return os.Remove(path.Join(home, UserAgentPath, name+agentExtension))
+}
+
+func loadSchedules(schedules []string) ([]*calendar.Event, error) {
+	events := make([]*calendar.Event, 0, len(schedules))
+	for index, schedule := range schedules {
+		if schedule == "" {
+			return events, errors.New("empty schedule")
+		}
+		fmt.Printf("\nAnalyzing schedule %d/%d\n========================\n", index+1, len(schedules))
+	}
+	return events, nil
 }

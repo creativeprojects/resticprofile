@@ -3,10 +3,12 @@
 package schedule
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/capnspacehook/taskmaster"
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
 )
 
@@ -55,4 +57,15 @@ func RemoveJob(profileName string) error {
 	defer taskService.Disconnect()
 
 	return taskService.DeleteTask(tasksPath + profileName)
+}
+
+func loadSchedules(schedules []string) ([]*calendar.Event, error) {
+	events := make([]*calendar.Event, 0, len(schedules))
+	for index, schedule := range schedules {
+		if schedule == "" {
+			return events, errors.New("empty schedule")
+		}
+		fmt.Printf("\nAnalyzing schedule %d/%d\n========================\n", index+1, len(schedules))
+	}
+	return events, nil
 }
