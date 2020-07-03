@@ -20,13 +20,6 @@ const (
 type parseFunc func(e *Event, match []string) error
 
 var (
-	regexpWeekdayFullDateTime = regexp.MustCompile("^" + weekday + " " + yearMonthDay + " " + hourMinuteSecond + "$")
-	regexpWeekdayFullTime     = regexp.MustCompile("^" + weekday + " " + hourMinuteSecond + "$")
-	regexpFullDateTime        = regexp.MustCompile("^" + yearMonthDay + " " + hourMinuteSecond + "$")
-	regexpFullDateHourMinute  = regexp.MustCompile("^" + yearMonthDay + " " + hourMinute + "$")
-	regexpYearMonthDay        = regexp.MustCompile("^" + yearMonthDay + "$")
-	regexpMonthDay            = regexp.MustCompile("^" + monthDay + "$")
-
 	regexpWeekdayPattern     = regexp.MustCompile("^" + weekday + "$")
 	regexpDatePattern        = regexp.MustCompile("^" + datePattern + "$")
 	regexpTimePattern        = regexp.MustCompile("^" + timePattern + "$")
@@ -40,12 +33,6 @@ var (
 		expr        *regexp.Regexp
 		parseValues []parseFunc
 	}{
-		// {regexpWeekdayFullDateTime, []parseFunc{parseWeekday(1), parseYear(2), parseMonth(3), parseDay(4), parseHour(5), parseMinute(6), parseSecond(7)}},
-		// {regexpWeekdayFullTime, []parseFunc{parseWeekday(1), parseHour(2), parseMinute(3), parseSecond(4)}},
-		// {regexpFullDateTime, []parseFunc{parseYear(1), parseMonth(2), parseDay(3), parseHour(4), parseMinute(5), parseSecond(6)}},
-		// {regexpFullDateHourMinute, []parseFunc{parseYear(1), parseMonth(2), parseDay(3), parseHour(4), parseMinute(5), setZeroSecond()}},
-		// {regexpYearMonthDay, []parseFunc{parseYear(1), parseMonth(2), parseDay(3), setMidnight()}},
-		// {regexpMonthDay, []parseFunc{parseMonth(1), parseDay(2), setMidnight()}},
 		{regexpFullPattern, []parseFunc{parseWeekday(1), parseYear(2), parseMonth(3), parseDay(4), parseHour(5), parseMinute(6), parseSecond(7)}},
 		{regexpDatePattern, []parseFunc{parseYear(1), parseMonth(2), parseDay(3), setMidnight()}},
 		{regexpTimePattern, []parseFunc{parseHour(1), parseMinute(2), parseSecond(3)}},
@@ -62,7 +49,12 @@ func parseYear(index int) parseFunc {
 		if match[index] == "" {
 			return nil
 		}
-		return e.Year.Parse(strings.Trim(match[index], "-"))
+		return e.Year.Parse(strings.Trim(match[index], "-"), func(year int) (int, error) {
+			if year < 1000 {
+				year += 2000
+			}
+			return year, nil
+		})
 	}
 }
 
