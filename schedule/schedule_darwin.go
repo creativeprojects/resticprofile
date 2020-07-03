@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"howett.net/plist"
 )
 
@@ -51,8 +50,8 @@ type CalendarInterval struct {
 	Minute  int `plist:"Minute,omitempty"`  // Minute of hour (0..59)
 }
 
-// CreateJob creates a plist file and register it with launchd
-func CreateJob(configFile string, profile *config.Profile) error {
+// createJob creates a plist file and register it with launchd
+func (j *Job) createJob() error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -64,7 +63,7 @@ func CreateJob(configFile string, profile *config.Profile) error {
 
 	binary := absolutePathToBinary(wd, os.Args[0])
 
-	name := namePrefix + strings.ToLower(profile.Name)
+	name := namePrefix + strings.ToLower(j.profile.Name)
 	job := &LaunchJob{
 		Label:   name,
 		Program: binary,
@@ -72,12 +71,12 @@ func CreateJob(configFile string, profile *config.Profile) error {
 			binary,
 			"--no-ansi",
 			"--config",
-			configFile,
+			j.configFile,
 			"--name",
-			profile.Name,
+			j.profile.Name,
 			"backup",
 		},
-		EnvironmentVariables: profile.Environment,
+		EnvironmentVariables: j.profile.Environment,
 		StandardOutPath:      name + ".log",
 		StandardErrorPath:    name + ".error.log",
 		WorkingDirectory:     wd,
@@ -115,6 +114,10 @@ func RemoveJob(profileName string) error {
 	_ = unload.Run()
 
 	return os.Remove(path.Join(home, UserAgentPath, name+agentExtension))
+}
+
+func (j *Job) displayStatus() error {
+	return nil
 }
 
 func loadSchedules(schedules []string) ([]*calendar.Event, error) {

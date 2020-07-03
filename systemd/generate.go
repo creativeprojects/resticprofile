@@ -13,18 +13,19 @@ import (
 )
 
 var systemdUnitBackupUnitTmpl = `[Unit]
-Description=resticprofile backup for {{ .Profile }}
+Description=resticprofile backup for profile '{{ .ProfileName }}'
 
 [Service]
 Type=oneshot
-ExecStart=resticprofile -n "{{ .Profile }}"
+WorkingDirectory={{ .WorkingDirectory }}
+ExecStart={{ .Binary }} --no-ansi --config "{{ .ConfigFile }}" --name "{{ .ProfileName }}" backup
 `
 
 var systemdUnitBackupTimerTmpl = `[Unit]
-Description=backup timer of {{ .Profile }}
+Description=backup timer for profile '{{ .ProfileName }}'
 
 [Timer]
-OnCalendar={{.OnCalendar}}
+{{ range .OnCalendar }}OnCalendar={{ . }}{{ end }}
 Unit={{ .SystemdProfile }}
 Persistent=true
 
@@ -34,30 +35,31 @@ WantedBy=timers.target
 
 // TemplateInfo to create systemd unit
 type TemplateInfo struct {
-	Profile        string
-	OnCalendar     string
-	SystemdProfile string
+	WorkingDirectory string
+	Binary           string
+	ConfigFile       string
+	ProfileName      string
+	OnCalendar       []string
+	SystemdProfile   string
 }
 
 // Generate systemd unit
-func Generate(profile, onCalendar string) error {
-	systemdProfile := fmt.Sprintf("resticprofile-backup@%s.service", profile)
-	timerProfile := fmt.Sprintf("resticprofile-backup@%s.timer", profile)
+func Generate(wd, binary, configFile, profileName string, onCalendar []string) error {
+	systemdProfile := GetServiceFile(profileName)
+	timerProfile := GetTimerFile(profileName)
 
-	u, err := user.Current()
+	systemdUserDir, err := GetUserDir()
 	if err != nil {
 		return err
 	}
 
-	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
-	if err := os.MkdirAll(systemdUserDir, 0700); err != nil {
-		return err
-	}
-
 	info := TemplateInfo{
-		Profile:        profile,
-		SystemdProfile: systemdProfile,
-		OnCalendar:     onCalendar,
+		WorkingDirectory: wd,
+		Binary:           binary,
+		ConfigFile:       configFile,
+		ProfileName:      profileName,
+		SystemdProfile:   systemdProfile,
+		OnCalendar:       onCalendar,
 	}
 
 	var data bytes.Buffer
@@ -66,7 +68,7 @@ func Generate(profile, onCalendar string) error {
 		return err
 	}
 	filePathName := filepath.Join(systemdUserDir, systemdProfile)
-	clog.Infof("Writing %v", filePathName)
+	clog.Infof("writing %v", filePathName)
 	if err := ioutil.WriteFile(filePathName, data.Bytes(), 0600); err != nil {
 		return err
 	}
@@ -77,9 +79,33 @@ func Generate(profile, onCalendar string) error {
 		return err
 	}
 	filePathName = filepath.Join(systemdUserDir, timerProfile)
-	clog.Infof("Writing %v", filePathName)
+	clog.Infof("writing %v", filePathName)
 	if err := ioutil.WriteFile(filePathName, data.Bytes(), 0600); err != nil {
 		return err
 	}
 	return nil
+}
+
+// GetServiceFile returns the service file name for the profile
+func GetServiceFile(profileName string) string {
+	return fmt.Sprintf("resticprofile-backup@profile-%s.service", profileName)
+}
+
+// GetTimerFile returns the timer file name for the profile
+func GetTimerFile(profileName string) string {
+	return fmt.Sprintf("resticprofile-backup@profile-%s.timer", profileName)
+}
+
+// GetUserDir returns the default directory where systemd stores user units
+func GetUserDir() (string, error) {
+	u, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
+	if err := os.MkdirAll(systemdUserDir, 0700); err != nil {
+		return "", err
+	}
+	return systemdUserDir, nil
 }

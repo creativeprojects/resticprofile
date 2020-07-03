@@ -11,6 +11,7 @@ import (
 
 // Job scheduler
 type Job struct {
+	binary     string
 	configFile string
 	profile    *config.Profile
 	schedules  []*calendar.Event
@@ -30,6 +31,10 @@ func (j *Job) Create() error {
 	if err != nil {
 		return err
 	}
+	err = j.createJob()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -41,6 +46,11 @@ func (j *Job) Update() error {
 // Remove a job
 func (j *Job) Remove() error {
 	return nil
+}
+
+// Status of a job
+func (j *Job) Status() error {
+	return j.displayStatus()
 }
 
 func (j *Job) checkSchedules() error {

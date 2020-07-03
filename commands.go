@@ -11,7 +11,6 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schedule"
-	"github.com/creativeprojects/resticprofile/systemd"
 )
 
 type ownCommand struct {
@@ -35,12 +34,6 @@ var (
 			description:       "update resticprofile to latest version (does not update restic)",
 			action:            selfUpdate,
 			needConfiguration: false,
-		},
-		{
-			name:              "systemd-unit",
-			description:       "create a user systemd timer",
-			action:            createSystemdTimer,
-			needConfiguration: true,
 		},
 		{
 			name:              "show",
@@ -67,6 +60,13 @@ var (
 			name:              "unschedule",
 			description:       "remove a scheduled backup",
 			action:            removeSchedule,
+			needConfiguration: true,
+			hide:              false,
+		},
+		{
+			name:              "status",
+			description:       "display the status of a scheduled backup job",
+			action:            statusSchedule,
 			needConfiguration: true,
 			hide:              false,
 		},
@@ -152,14 +152,6 @@ func selfUpdate(_ *config.Config, flags commandLineFlags, args []string) error {
 	return nil
 }
 
-func createSystemdTimer(_ *config.Config, flags commandLineFlags, args []string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("OnCalendar argument required")
-	}
-	systemd.Generate(flags.name, args[0])
-	return nil
-}
-
 func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
 	panic("you asked for it")
 }
@@ -218,4 +210,17 @@ func removeSchedule(c *config.Config, flags commandLineFlags, args []string) err
 		clog.Info("scheduled job removed")
 	}
 	return err
+}
+
+func statusSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	job := schedule.NewJob(flags.config, profile)
+	return job.Status()
 }
