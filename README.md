@@ -39,7 +39,7 @@ It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
 ## Installation (macOS, Linux & other unixes)
 
-Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux. It should also work in Windows if you start it from any `bash` command line (WSL, git bash, etc.):
+Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux:
 
 ```
 $ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
@@ -75,16 +75,16 @@ It will create a `bin` directory under your current directory and place `resticp
 
 ## Upgrade
 
-Once installed, you can easily upgrade resticprofile to the latest release using this flag:
-
-```
-$ resticprofile --self-update
-```
-
-Starting with version 0.7.0 you can also upgrade resticprofile using this command:
+Once installed, you can easily upgrade resticprofile to the latest release using this command:
 
 ```
 $ resticprofile self-update
+```
+
+Versions 0.6.x were using a flag instead:
+
+```
+$ resticprofile --self-update
 ```
 
 _Please note there's an issue with self-updating from linux with ARM processors (like a raspberry pi)_
@@ -462,7 +462,6 @@ resticprofile flags:
 resticprofile own commands:
    profiles       display profile names from the configuration file
    self-update    update resticprofile to latest version (does not update restic)
-   systemd-unit   create a user systemd timer
    show           show all the details of the current profile
 
 
@@ -491,6 +490,13 @@ restic can be memory hungry. I'm running a few servers with no swap (I know: it 
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
+
+## Scheduled backups
+
+I'm working on a feature that is going to manage scheduled backups:
+- using **systemd** where available (Linux and various unixes)
+- using **launchd** on macOS X
+- using **Task Manager** on Windows
 
 ## Configuration file reference
 
@@ -522,6 +528,7 @@ Flags used by resticprofile only
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
 * **run-after-fail**: string OR list of strings
+* **schedule**: string OR list of strings
 
 Flags passed to the restic command line
 
