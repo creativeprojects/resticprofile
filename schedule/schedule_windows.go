@@ -59,6 +59,11 @@ func RemoveJob(profileName string) error {
 	return taskService.DeleteTask(tasksPath + profileName)
 }
 
+// checkSystem does nothing on windows as the task manager is always available
+func checkSystem() error {
+	return nil
+}
+
 func (j *Job) displayStatus() error {
 	return nil
 }

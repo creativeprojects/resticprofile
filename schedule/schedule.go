@@ -27,29 +27,49 @@ func NewJob(configFile string, profile *config.Profile) *Job {
 
 // Create a new job
 func (j *Job) Create() error {
-	err := j.checkSchedules()
+	err := checkSystem()
 	if err != nil {
 		return err
 	}
+
+	err = j.checkSchedules()
+	if err != nil {
+		return err
+	}
+
 	err = j.createJob()
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // Update an existing job
 func (j *Job) Update() error {
+	err := checkSystem()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 // Remove a job
 func (j *Job) Remove() error {
+	err := checkSystem()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 // Status of a job
 func (j *Job) Status() error {
+	err := checkSystem()
+	if err != nil {
+		return err
+	}
+
 	return j.displayStatus()
 }
 

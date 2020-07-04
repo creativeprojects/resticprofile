@@ -14,9 +14,23 @@ import (
 	"github.com/creativeprojects/resticprofile/ui"
 )
 
+const (
+	systemdBin   = "systemd"
+	systemctlBin = "systemctl"
+)
+
+// checkSystem verifies systemd is available on this system
+func checkSystem() error {
+	found, err := exec.LookPath(systemdBin)
+	if err != nil || found == "" {
+		return errors.New("it doesn't look like systemd is installed on your system")
+	}
+	return nil
+}
+
 func RemoveJob(profileName string) error {
 	// stop the job
-	cmd := exec.Command("systemctl", "--user", "stop", systemd.GetTimerFile(profileName))
+	cmd := exec.Command(systemctlBin, "--user", "stop", systemd.GetTimerFile(profileName))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -25,7 +39,7 @@ func RemoveJob(profileName string) error {
 	}
 
 	// disable the job
-	cmd = exec.Command("systemctl", "--user", "disable", systemd.GetTimerFile(profileName))
+	cmd = exec.Command(systemctlBin, "--user", "disable", systemd.GetTimerFile(profileName))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -102,7 +116,7 @@ func (j *Job) createUserJob() error {
 	}
 
 	// enable the job
-	cmd := exec.Command("systemctl", "--user", "enable", systemd.GetTimerFile(j.profile.Name))
+	cmd := exec.Command(systemctlBin, "--user", "enable", systemd.GetTimerFile(j.profile.Name))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -111,7 +125,7 @@ func (j *Job) createUserJob() error {
 	}
 
 	// start the job
-	cmd = exec.Command("systemctl", "--user", "start", systemd.GetTimerFile(j.profile.Name))
+	cmd = exec.Command(systemctlBin, "--user", "start", systemd.GetTimerFile(j.profile.Name))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -123,7 +137,7 @@ func (j *Job) createUserJob() error {
 }
 
 func (j *Job) displayStatus() error {
-	cmd := exec.Command("systemctl", "--user", "status", systemd.GetTimerFile(j.profile.Name))
+	cmd := exec.Command(systemctlBin, "--user", "status", systemd.GetTimerFile(j.profile.Name))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()

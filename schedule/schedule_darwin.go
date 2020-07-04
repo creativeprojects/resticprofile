@@ -19,6 +19,7 @@ import (
 
 // Default paths for launchd files
 const (
+	launchdBin      = "launchd"
 	LaunchCtl       = "launchctl"
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
@@ -147,6 +148,15 @@ func RemoveJob(profileName string) error {
 	return os.Remove(filename)
 }
 
+// checkSystem verifies launchd is available on this system
+func checkSystem() error {
+	found, err := exec.LookPath(launchdBin)
+	if err != nil || found == "" {
+		return errors.New("it doesn't look like launchd is installed on your system")
+	}
+	return nil
+}
+
 func (j *Job) displayStatus() error {
 	cmd := exec.Command(LaunchCtl, "list", getJobName(j.profile.Name))
 	cmd.Stdout = os.Stdout
@@ -171,7 +181,10 @@ func loadSchedules(schedules []string) ([]*calendar.Event, error) {
 		if err != nil {
 			return events, err
 		}
-		fmt.Printf("schedule event: %s\n", event.String())
+		fmt.Printf("  Original form: %s\n", schedule)
+		fmt.Printf("Normalized form: %s\n", event.String())
+		fmt.Printf("    Next elapse: %s\n", "")
+		fmt.Printf("       From now: %s\n", "")
 		events = append(events, event)
 	}
 	return events, nil
