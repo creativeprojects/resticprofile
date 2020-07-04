@@ -29,6 +29,32 @@ The configuration file accepts various formats:
 
 For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 
+# Table of Contents
+
+   * [resticprofile](#resticprofile)
+      * [Requirements](#requirements)
+      * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
+         * [Installation for Windows using bash](#installation-for-windows-using-bash)
+         * [Manual installation (Windows)](#manual-installation-windows)
+      * [Upgrade](#upgrade)
+      * [Using docker image](#using-docker-image)
+         * [Please note:](#please-note)
+      * [Configuration format](#configuration-format)
+      * [Configuration examples](#configuration-examples)
+      * [Configuration paths](#configuration-paths)
+         * [macOS X](#macos-x)
+         * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
+         * [Windows](#windows)
+      * [Using resticprofile](#using-resticprofile)
+      * [Command line reference](#command-line-reference)
+      * [Minimum memory required](#minimum-memory-required)
+      * [Scheduled backups](#scheduled-backups)
+      * [Configuration file reference](#configuration-file-reference)
+      * [Appendix](#appendix)
+      * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
+         * [systemd calendars](#systemd-calendars)
+         * [Configuring a systemd profile](#configuring-a-systemd-profile)
+
 ## Requirements
 
 Since version 0.6.0, **resticprofile** **no longer needs** python installed on your machine. It is distributed as an executable (same as restic).
