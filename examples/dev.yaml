@@ -26,6 +26,7 @@ documents:
         - documents
 
 root:
+    schedule: "*:0,15,30,45"
     backup:
         exclude-caches: true
         exclude-file:
@@ -60,7 +61,9 @@ root:
 
 self:
     inherit: default
-    schedule: "*:0,15,30,45"
+    schedule:
+    - "*:00,30"
+    - "*:15,45"
     backup:
         source: ./
     initialize: true

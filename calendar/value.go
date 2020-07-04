@@ -190,6 +190,16 @@ func (v *Value) GetRanges() []Range {
 	return ranges
 }
 
+// IsInRange check the parameter is in range of Value
+func (v *Value) IsInRange(ref int) bool {
+	for _, current := range v.GetRangeValues() {
+		if current == ref {
+			return true
+		}
+	}
+	return false
+}
+
 // String representation
 func (v *Value) String() string {
 	if !v.hasValue {

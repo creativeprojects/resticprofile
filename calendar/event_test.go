@@ -2,8 +2,10 @@ package calendar
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEventKeywords(t *testing.T) {
@@ -99,6 +101,82 @@ func TestParseInvalidEvents(t *testing.T) {
 			err := event.Parse(testItem)
 			assert.Error(t, err)
 			t.Log(err)
+		})
+	}
+}
+
+func TestMatchingTime(t *testing.T) {
+	ref, err := time.Parse(time.ANSIC, "Mon Jan 2 15:04:05 2006")
+	require.NoError(t, err)
+
+	matches := []string{
+		"*:*:*",
+		"2006-01-02 15:04:05",
+	}
+
+	for _, check := range matches {
+		t.Run(check, func(t *testing.T) {
+			event := NewEvent()
+			err = event.Parse(check)
+			assert.NoError(t, err)
+			assert.True(t, event.match(ref))
+		})
+	}
+}
+
+func TestNotMatchingTime(t *testing.T) {
+	// the base time is the example in the Go documentation https://golang.org/pkg/time/
+	ref, err := time.Parse(time.ANSIC, "Mon Jan 2 15:04:05 2006")
+	require.NoError(t, err)
+
+	matches := []string{
+		"*-*", // any day at midnight
+		"2006-01-02 15:04:11",
+		"2006-01-02 15:11:05",
+		"2006-01-02 11:04:05",
+		"2006-01-11 15:04:05",
+		"2006-11-02 15:04:05",
+		"2011-01-02 15:04:05",
+	}
+
+	for _, check := range matches {
+		t.Run(check, func(t *testing.T) {
+			event := NewEvent()
+			err = event.Parse(check)
+			assert.NoError(t, err)
+			assert.False(t, event.match(ref))
+		})
+	}
+}
+
+func TestNextTrigger(t *testing.T) {
+	// the base time is the example in the Go documentation https://golang.org/pkg/time/
+	ref, err := time.Parse(time.ANSIC, "Mon Jan 2 15:04:05 2006")
+	require.NoError(t, err)
+
+	testData := []struct{ event, trigger string }{
+		{"*:*:*", "2006-01-02 15:04:05"},
+		{"03-*", "2006-03-01 00:00:00"},
+		{"*-01", "2006-02-01 00:00:00"},
+		{"*:*:11", "2006-01-02 15:04:11"},
+		{"*:11:*", "2006-01-02 15:11:00"},
+		{"11:*:*", "2006-01-03 11:00:00"},
+		{"tue", "2006-01-03 00:00:00"},
+	}
+
+	if !testing.Short() {
+		// this one takes about 8 seconds on a 8th generation i7
+		testData = append(testData,
+			struct{ event, trigger string }{"2003-*-*", "0001-01-01 00:00:00"}, // will never get triggered
+		)
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.event, func(t *testing.T) {
+			event := NewEvent()
+			err = event.Parse(testItem.event)
+			assert.NoError(t, err)
+			assert.Equal(t, testItem.trigger, event.Next(ref).String()[0:len(testItem.trigger)])
 		})
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"howett.net/plist"
@@ -20,7 +21,7 @@ import (
 // Default paths for launchd files
 const (
 	launchdBin      = "launchd"
-	LaunchCtl       = "launchctl"
+	launchctlBin    = "launchctl"
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
@@ -78,11 +79,11 @@ func (j *Job) createJob() error {
 			j.profile.Name,
 			"backup",
 		},
-		EnvironmentVariables: j.profile.Environment,
-		StandardOutPath:      name + ".log",
-		StandardErrorPath:    name + ".error.log",
-		WorkingDirectory:     wd,
-		StartInterval:        300,
+		EnvironmentVariables:  j.profile.Environment,
+		StandardOutPath:       name + ".log",
+		StandardErrorPath:     name + ".log",
+		WorkingDirectory:      wd,
+		StartCalendarInterval: getCalendarIntervalsFromSchedules(j.schedules),
 	}
 
 	file, err := os.Create(path.Join(home, UserAgentPath, name+agentExtension))
@@ -98,24 +99,24 @@ func (j *Job) createJob() error {
 		return err
 	}
 
-	// load the service
-	filename := path.Join(home, UserAgentPath, name+agentExtension)
-	cmd := exec.Command(LaunchCtl, "load", filename)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
+	// // load the service
+	// filename := path.Join(home, UserAgentPath, name+agentExtension)
+	// cmd := exec.Command(launchctlBin, "load", filename)
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// err = cmd.Run()
+	// if err != nil {
+	// 	return err
+	// }
 
-	// start the service
-	cmd = exec.Command(LaunchCtl, "start", name)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
+	// // start the service
+	// cmd = exec.Command(launchctlBin, "start", name)
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// err = cmd.Run()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -129,7 +130,7 @@ func RemoveJob(profileName string) error {
 	name := getJobName(profileName)
 
 	// stop the service
-	stop := exec.Command(LaunchCtl, "stop", name)
+	stop := exec.Command(launchctlBin, "stop", name)
 	stop.Stdout = os.Stdout
 	stop.Stderr = os.Stderr
 	// keep going if there's an error here
@@ -137,7 +138,7 @@ func RemoveJob(profileName string) error {
 
 	// unload the service
 	filename := path.Join(home, UserAgentPath, name+agentExtension)
-	unload := exec.Command(LaunchCtl, "unload", filename)
+	unload := exec.Command(launchctlBin, "unload", filename)
 	unload.Stdout = os.Stdout
 	unload.Stderr = os.Stderr
 	err = unload.Run()
@@ -158,7 +159,7 @@ func checkSystem() error {
 }
 
 func (j *Job) displayStatus() error {
-	cmd := exec.Command(LaunchCtl, "list", getJobName(j.profile.Name))
+	cmd := exec.Command(launchctlBin, "list", getJobName(j.profile.Name))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -170,6 +171,7 @@ func getJobName(profileName string) string {
 }
 
 func loadSchedules(schedules []string) ([]*calendar.Event, error) {
+	now := time.Now().Round(time.Second)
 	events := make([]*calendar.Event, 0, len(schedules))
 	for index, schedule := range schedules {
 		if schedule == "" {
@@ -181,11 +183,68 @@ func loadSchedules(schedules []string) ([]*calendar.Event, error) {
 		if err != nil {
 			return events, err
 		}
+		next := event.Next(now)
 		fmt.Printf("  Original form: %s\n", schedule)
 		fmt.Printf("Normalized form: %s\n", event.String())
-		fmt.Printf("    Next elapse: %s\n", "")
-		fmt.Printf("       From now: %s\n", "")
+		fmt.Printf("    Next elapse: %s\n", next.Format(time.UnixDate))
+		fmt.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
+		fmt.Printf("       From now: %s left\n", next.Sub(now))
 		events = append(events, event)
 	}
+	fmt.Print("\n")
 	return events, nil
+}
+
+func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
+	entries := make([]CalendarInterval, 0, len(schedules))
+	for _, schedule := range schedules {
+		entries = append(entries, getCalendarIntervalsFromSchedule(schedule)...)
+	}
+	return entries
+}
+
+func getCalendarIntervalsFromSchedule(schedule *calendar.Event) []CalendarInterval {
+	// how many entries will I need?
+	total := 0
+	values := []*calendar.Value{
+		schedule.WeekDay,
+		schedule.Month,
+		schedule.Day,
+		schedule.Hour,
+		schedule.Minute,
+	}
+	for _, value := range values {
+		if value.HasValue() {
+			num := len(value.GetRangeValues())
+			total = permutations(total, num)
+		}
+	}
+	entries := make([]CalendarInterval, total)
+	// now go through them all again and fill in the events
+	permutation := 1
+
+	// can't do anything generic here...
+	if schedule.WeekDay.HasValue() {
+		values := schedule.WeekDay.GetRangeValues()
+		if len(values) == 1 {
+			// easy: copy it every where
+			for i := 0; i < len(entries); i++ {
+				entries[i].Weekday = values[0]
+			}
+		} else {
+			for i := 0; i < len(entries); i++ {
+				entries[i].Weekday = values[0]
+			}
+			permutation++
+		}
+	}
+
+	return entries
+}
+
+func permutations(total, num int) int {
+	if total == 0 {
+		return num
+	}
+	return total * num
 }

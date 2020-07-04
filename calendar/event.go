@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Should be able to read the same calendar events
@@ -82,6 +83,52 @@ func (e *Event) Parse(input string) error {
 	}
 
 	return errors.New("calendar event doesn't match any well known pattern")
+}
+
+// Next returns the next schedule for this event
+func (e *Event) Next(from time.Time) time.Time {
+	// start from time and increment of 1 second each time
+	next := from
+	// should stop in 2 years time to avoid an infinite loop
+	endYear := from.Year() + 2
+	for next.Year() <= endYear {
+		if e.match(next) {
+			return next
+		}
+		// increment 1 second
+		next = next.Add(time.Second)
+	}
+	return time.Time{}
+}
+
+// match returns true if the time in parameter would trigger the event
+func (e *Event) match(currentTime time.Time) bool {
+	values := []struct {
+		ref     *Value
+		current int
+	}{
+		{e.Year, currentTime.Year()},
+		{e.Month, int(currentTime.Month())},
+		{e.Day, currentTime.Day()},
+		{e.WeekDay, int(currentTime.Weekday())},
+		{e.Hour, currentTime.Hour()},
+		{e.Minute, currentTime.Minute()},
+		{e.Second, currentTime.Second()},
+	}
+	for _, value := range values {
+		if !value.ref.HasValue() {
+			continue
+		}
+		if value.ref.HasSingleValue() {
+			if value.ref.singleValue != value.current {
+				return false
+			}
+		}
+		if !value.ref.IsInRange(value.current) {
+			return false
+		}
+	}
+	return true
 }
 
 func numbersToWeekdays(weekdays string) string {
