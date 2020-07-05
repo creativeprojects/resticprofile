@@ -195,6 +195,27 @@ func loadSchedules(schedules []string) ([]*calendar.Event, error) {
 	return events, nil
 }
 
+// getCalendarIntervalsFromSchedules converts schedules into launchd calendar events
+// let's say we've setup these rules:
+// Mon-Fri *-*-* *:0,30:00  = every half hour
+// Sat     *-*-* 0,12:00:00 = twice a day on saturday
+//         *-*-01 *:*:*     = the first of each month
+//
+// it should translate as:
+// 1st rule
+//    Weekday = Monday, Minute = 0
+//    Weekday = Monday, Minute = 30
+//    ... same from Tuesday to Thurday
+//    Weekday = Friday, Minute = 0
+//    Weekday = Friday, Minute = 30
+// Total of 10 rules
+// 2nd rule
+//    Weekday = Saturday, Hour = 0
+//    Weekday = Saturday, Hour = 12
+// Total of 2 rules
+// 3rd rule
+//    Day = 1
+// Total of 1 rule
 func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
 	entries := make([]CalendarInterval, 0, len(schedules))
 	for _, schedule := range schedules {
