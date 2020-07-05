@@ -1,21 +1,17 @@
 package schedule
 
-import "github.com/creativeprojects/resticprofile/clog"
-
-type combinationType int
-
-const (
-	weekDay combinationType = iota
-	month
-	day
-	hour
-	minute
+import (
+	"github.com/creativeprojects/resticprofile/calendar"
 )
 
 type combinationItem struct {
-	itemType combinationType
+	itemType calendar.TypeValue
 	value    int
 }
+
+var (
+	output [][]combinationItem
+)
 
 // generateCombination generates
 // all combinations of size 'size'
@@ -23,10 +19,8 @@ type combinationItem struct {
 // mainly uses combinationUtil()
 func generateCombination(elements []combinationItem, size int) [][]combinationItem {
 	data := make([]combinationItem, size)
-	permutations := len(elements) ^ (size - 1)
-	clog.Errorf("preparing %d permutations", permutations)
-	output := make([][]combinationItem, 0, permutations)
-	combinationUtil(elements, data, 0, len(elements)-1, 0, size, &output)
+	output = make([][]combinationItem, 0)
+	combinationUtil(elements, data, 0, len(elements)-1, 0, size)
 	return output
 }
 
@@ -38,12 +32,16 @@ func generateCombination(elements []combinationItem, size int) [][]combinationIt
 func combinationUtil(
 	arr []combinationItem, data []combinationItem,
 	start, end int,
-	index, r int, output *[][]combinationItem) {
+	index, r int) {
 	// current combination is ready
 	// send it out
 	if index == r {
-		clog.Errorf("%+v", data)
-		*output = append(*output, data)
+		temp := make([]combinationItem, len(data))
+		// deep copy otherwise the slice always points to the same memory location
+		for i, v := range data {
+			temp[i] = v
+		}
+		output = append(output, temp)
 		return
 	}
 
@@ -54,6 +52,7 @@ func combinationUtil(
 	// remaining elements at remaining positions
 	for i := start; i <= end && end-i+1 >= r-index; i++ {
 		data[index] = arr[i]
-		combinationUtil(arr, data, i+1, end, index+1, r, output)
+		combinationUtil(arr, data, i+1, end, index+1, r)
 	}
+	return
 }

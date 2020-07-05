@@ -8,6 +8,21 @@ import (
 
 type postProcessFunc func(int) (int, error)
 
+// TypeValue represents the type of a Value
+type TypeValue int
+
+// TypeValue
+const (
+	TypeUnknown TypeValue = iota
+	TypeWeekDay
+	TypeYear
+	TypeMonth
+	TypeDay
+	TypeHour
+	TypeMinute
+	TypeSecond
+)
+
 // Range represents a range of values: from Range.Start to Range.End
 type Range struct {
 	Start int
@@ -16,6 +31,7 @@ type Range struct {
 
 // Value is represented by either no value, a single value, or a range of values
 type Value struct {
+	definedType    TypeValue
 	hasValue       bool
 	hasSingleValue bool
 	hasRange       bool
@@ -30,6 +46,36 @@ func NewValue(min, max int) *Value {
 	return &Value{
 		minRange: min,
 		maxRange: max,
+	}
+}
+
+// NewValueFromType creates a new value from a predefined type
+func NewValueFromType(t TypeValue) *Value {
+	min, max := 0, 0
+	switch t {
+	case TypeWeekDay:
+		min = 1
+		max = 7
+	case TypeYear:
+		min = 2000
+		max = 2200
+	case TypeMonth:
+		min = 1
+		max = 12
+	case TypeDay:
+		min = 1
+		max = 31
+	case TypeHour:
+		max = 23
+	case TypeMinute:
+		max = 59
+	case TypeSecond:
+		max = 59
+	}
+	return &Value{
+		definedType: t,
+		minRange:    min,
+		maxRange:    max,
 	}
 }
 
@@ -74,6 +120,11 @@ func (v *Value) HasLongContiguousRange() bool {
 		}
 	}
 	return false
+}
+
+// GetType returns the defined type
+func (v *Value) GetType() TypeValue {
+	return v.definedType
 }
 
 // MustAddValue adds a new value and panics if an error arises

@@ -225,33 +225,20 @@ func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarIn
 }
 
 func getCalendarIntervalsFromSchedule(schedule *calendar.Event) []CalendarInterval {
-	// how many entries will I need?
-	total := 0
-	values := []*calendar.Value{
+	fields := []*calendar.Value{
 		schedule.WeekDay,
 		schedule.Month,
 		schedule.Day,
 		schedule.Hour,
 		schedule.Minute,
 	}
-	for _, value := range values {
-		if value.HasValue() {
-			num := len(value.GetRangeValues())
-			total = permutations(total, num)
-		}
-	}
-	entries := make([]CalendarInterval, total)
-	// now go through them all again and fill in the events
-	permutation := 1
 
-	// can't do anything generic here...
-	if schedule.WeekDay.HasValue() {
-		values := schedule.WeekDay.GetRangeValues()
-		line := spread(values, total, &permutation)
-		for i := 0; i < total; i++ {
-			entries[i].Weekday = line[i]
-		}
-	}
+	// create list of permutable items
+	total, items := getCombinationItemsFromCalendarValues(fields)
+
+	generateCombination(items, total)
+
+	entries := make([]CalendarInterval, total)
 
 	return entries
 }
@@ -261,4 +248,26 @@ func permutations(total, num int) int {
 		return num
 	}
 	return total * num
+}
+
+func getCombinationItemsFromCalendarValues(fields []*calendar.Value) (int, []combinationItem) {
+	// how many entries will I need?
+	total := 0
+	// list of items for the permutation
+	items := []combinationItem{}
+	// create list of permutable items
+	for _, field := range fields {
+		if field.HasValue() {
+			values := field.GetRangeValues()
+			num := len(values)
+			total = permutations(total, num)
+			for _, value := range values {
+				items = append(items, combinationItem{
+					itemType: field.GetType(),
+					value:    value,
+				})
+			}
+		}
+	}
+	return total, items
 }

@@ -22,15 +22,16 @@ type Event struct {
 	Second  *Value
 }
 
+// NewEvent instantiates a new event with all its default values
 func NewEvent(initValues ...func(*Event)) *Event {
 	event := &Event{
-		WeekDay: NewValue(1, 7),
-		Year:    NewValue(2000, 2200),
-		Month:   NewValue(1, 12),
-		Day:     NewValue(1, 31),
-		Hour:    NewValue(0, 23),
-		Minute:  NewValue(0, 59),
-		Second:  NewValue(0, 59),
+		WeekDay: NewValueFromType(TypeWeekDay),
+		Year:    NewValueFromType(TypeYear),
+		Month:   NewValueFromType(TypeMonth),
+		Day:     NewValueFromType(TypeDay),
+		Hour:    NewValueFromType(TypeHour),
+		Minute:  NewValueFromType(TypeMinute),
+		Second:  NewValueFromType(TypeSecond),
 	}
 
 	for _, initValue := range initValues {
