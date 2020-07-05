@@ -226,16 +226,9 @@ func getCalendarIntervalsFromSchedule(schedule *calendar.Event) []CalendarInterv
 	// can't do anything generic here...
 	if schedule.WeekDay.HasValue() {
 		values := schedule.WeekDay.GetRangeValues()
-		if len(values) == 1 {
-			// easy: copy it every where
-			for i := 0; i < len(entries); i++ {
-				entries[i].Weekday = values[0]
-			}
-		} else {
-			for i := 0; i < len(entries); i++ {
-				entries[i].Weekday = values[0]
-			}
-			permutation++
+		line := spread(values, total, &permutation)
+		for i := 0; i < total; i++ {
+			entries[i].Weekday = line[i]
 		}
 	}
 

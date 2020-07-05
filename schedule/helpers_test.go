@@ -14,13 +14,13 @@ func TestSpread(t *testing.T) {
 		expected []int
 	}{
 		{[]int{1}, 0, []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
-		// {[]int{1, 2}, 1, []int{1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2}},
+		// {[]int{1, 2}, 0, []int{1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2}},
 		// {[]int{1, 2, 3}, 2, []int{1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3}},
 		// {[]int{1, 2}, 3, []int{1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2}},
 	}
 
 	for _, testItem := range testData {
-		result := spread(testItem.values, size, testItem.position)
+		result := spread(testItem.values, size, &testItem.position)
 		assert.Equal(t, testItem.expected, result)
 	}
 }
