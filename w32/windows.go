@@ -3,6 +3,7 @@
 package w32
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"syscall"
@@ -33,11 +34,17 @@ func AttachParentConsole() error {
 }
 
 // RunElevated restart resticprofile in elevated mode.
-func RunElevated() error {
+// the parameter is the port where the parent is listening
+func RunElevated(port int) error {
 	verb := "runas"
 	exe, _ := os.Executable()
 	cwd, _ := os.Getwd()
-	args := "--" + constants.FlagAsChild + " " + strings.Join(os.Args[1:], " ")
+	args := fmt.Sprintf("--%s --%s %d %s",
+		constants.FlagAsChild,
+		constants.FlagPort,
+		port,
+		strings.Join(os.Args[1:], " "),
+	)
 
 	verbPtr, _ := syscall.UTF16PtrFromString(verb)
 	exePtr, _ := syscall.UTF16PtrFromString(exe)

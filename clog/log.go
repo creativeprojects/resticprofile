@@ -1,11 +1,5 @@
 package clog
 
-import (
-	"log"
-
-	"github.com/fatih/color"
-)
-
 // LogLevel
 const (
 	DebugLevel = iota
@@ -14,133 +8,76 @@ const (
 	ErrorLevel
 )
 
+// Log represents the logger interface
+type Log interface {
+	Quiet()
+	Verbose()
+	Debug(v ...interface{})
+	Debugf(format string, v ...interface{})
+	Info(v ...interface{})
+	Infof(format string, v ...interface{})
+	Warning(v ...interface{})
+	Warningf(format string, v ...interface{})
+	Error(v ...interface{})
+	Errorf(format string, v ...interface{})
+}
+
 var (
-	quiet     bool
-	verbose   bool
-	colorMaps map[string][4]*color.Color
-	levelMap  [4]*color.Color
+	// default to null logger for tests
+	defaultLog Log = &NullLog{}
 )
 
-func init() {
-	colorMaps = map[string][4]*color.Color{
-		"none": {
-			DebugLevel:   nil,
-			InfoLevel:    nil,
-			WarningLevel: color.New(color.Bold),
-			ErrorLevel:   color.New(color.Bold),
-		},
-		"light": {
-			DebugLevel:   color.New(color.FgGreen),
-			InfoLevel:    color.New(color.FgCyan),
-			WarningLevel: color.New(color.FgMagenta, color.Bold),
-			ErrorLevel:   color.New(color.FgRed, color.Bold),
-		},
-		"dark": {
-			DebugLevel:   color.New(color.FgHiGreen),
-			InfoLevel:    color.New(color.FgHiCyan),
-			WarningLevel: color.New(color.FgHiMagenta, color.Bold),
-			ErrorLevel:   color.New(color.FgHiRed, color.Bold),
-		},
-	}
-	levelMap = colorMaps["light"]
-}
-
-// SetTheme sets the dark or light theme
-func SetTheme(theme string) {
-	var ok bool
-	levelMap, ok = colorMaps[theme]
-	if !ok {
-		levelMap = colorMaps["none"]
-	}
-}
-
-// Colorize activate of deactivate colouring
-func Colorize(colorize bool) {
-	color.NoColor = !colorize
+// SetDefaultLogger sets the logger when using the package methods
+func SetDefaultLogger(log Log) {
+	defaultLog = log
 }
 
 // Quiet will only display warnings and errors
 func Quiet() {
-	quiet = true
-	verbose = false
+	defaultLog.Quiet()
 }
 
 // Verbose will display debugging information
 func Verbose() {
-	verbose = true
-	quiet = false
+	defaultLog.Verbose()
 }
 
 // Debug sends debugging information
 func Debug(v ...interface{}) {
-	if !verbose {
-		return
-	}
-	message(levelMap[DebugLevel], v...)
+	defaultLog.Debug(v...)
 }
 
 // Debugf sends debugging information
 func Debugf(format string, v ...interface{}) {
-	if !verbose {
-		return
-	}
-	messagef(levelMap[DebugLevel], format, v...)
+	defaultLog.Debugf(format, v...)
 }
 
 // Info logs some noticeable information
 func Info(v ...interface{}) {
-	if quiet {
-		return
-	}
-	message(levelMap[InfoLevel], v...)
+	defaultLog.Info(v...)
 }
 
 // Infof logs some noticeable information
 func Infof(format string, v ...interface{}) {
-	if quiet {
-		return
-	}
-	messagef(levelMap[InfoLevel], format, v...)
+	defaultLog.Infof(format, v...)
 }
 
 // Warning send some important message to the console
 func Warning(v ...interface{}) {
-	message(levelMap[WarningLevel], v...)
+	defaultLog.Warning(v...)
 }
 
 // Warningf send some important message to the console
 func Warningf(format string, v ...interface{}) {
-	messagef(levelMap[WarningLevel], format, v...)
+	defaultLog.Warningf(format, v...)
 }
 
 // Error sends error information to the console
 func Error(v ...interface{}) {
-	message(levelMap[ErrorLevel], v...)
+	defaultLog.Error(v...)
 }
 
 // Errorf sends error information to the console
 func Errorf(format string, v ...interface{}) {
-	messagef(levelMap[ErrorLevel], format, v...)
-}
-
-func message(c *color.Color, v ...interface{}) {
-	setColor(c)
-	log.Println(v...)
-	unsetColor()
-}
-
-func messagef(c *color.Color, format string, v ...interface{}) {
-	setColor(c)
-	log.Printf(format+"\n", v...)
-	unsetColor()
-}
-
-func setColor(c *color.Color) {
-	if c != nil {
-		c.Set()
-	}
-}
-
-func unsetColor() {
-	color.Unset()
+	defaultLog.Errorf(format, v...)
 }

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -10,7 +12,9 @@ import (
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/schedule"
+	"github.com/creativeprojects/resticprofile/w32"
 )
 
 type ownCommand struct {
@@ -69,6 +73,13 @@ var (
 			action:            statusSchedule,
 			needConfiguration: true,
 			hide:              false,
+		},
+		{
+			name:              "test",
+			description:       "",
+			action:            testCommand,
+			needConfiguration: true,
+			hide:              true,
 		},
 	}
 )
@@ -223,4 +234,33 @@ func statusSchedule(c *config.Config, flags commandLineFlags, args []string) err
 
 	job := schedule.NewJob(flags.config, profile)
 	return job.Status()
+}
+
+func testCommand(c *config.Config, flags commandLineFlags, args []string) error {
+	if runtime.GOOS != "windows" {
+		return errors.New("only available on Windows platform")
+	}
+
+	if flags.isChild {
+		clog.Debug("We're", " done", " here!")
+		clog.Debugf("%d %d %d", 1, 2, 3)
+		client := remote.NewClient(flags.parentPort)
+		client.Done()
+		return nil
+	}
+	done := make(chan interface{}, 0)
+	err := remote.StartServer(done)
+	if err != nil {
+		return err
+	}
+	err = w32.RunElevated(remote.GetPort())
+	if err != nil {
+		remote.StopServer()
+		return err
+	}
+
+	// wait until the server is done
+	<-done
+
+	return nil
 }

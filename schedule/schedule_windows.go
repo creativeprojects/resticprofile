@@ -5,11 +5,8 @@ package schedule
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/capnspacehook/taskmaster"
-	"github.com/creativeprojects/resticprofile/clog"
-	"github.com/creativeprojects/resticprofile/w32"
 )
 
 const (
@@ -94,13 +91,13 @@ func retryElevated(err error) error {
 		return nil
 	}
 	// maybe can find a better way than searching for the word "denied"?
-	if strings.Contains(err.Error(), "denied") {
-		clog.Info("restarting resticprofile in elevated mode...")
-		err := w32.RunElevated()
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+	// if strings.Contains(err.Error(), "denied") {
+	// 	clog.Info("restarting resticprofile in elevated mode...")
+	// 	err := w32.RunElevated()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	return nil
+	// }
 	return err
 }

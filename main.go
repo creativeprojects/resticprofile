@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
+	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/mackerelio/go-osstat/memory"
 )
 
@@ -59,6 +60,11 @@ func main() {
 		// 	parentConsole = true
 		// }
 
+		if flags.parentPort == 0 {
+			exitCode = 1
+			return
+		}
+
 		// for now we should keep the console running at the end of the program
 		// so we can see what's going on
 		defer func() {
@@ -79,8 +85,6 @@ func main() {
 	// setting up the logger - we can start sending messages from now on
 	setLoggerFlags(flags)
 	banner()
-
-	clog.Infof("arguments: ", os.Args)
 
 	// backlog of messages
 	if parentConsole {
@@ -214,11 +218,22 @@ func main() {
 }
 
 func setLoggerFlags(flags commandLineFlags) {
-	if flags.theme != "" {
-		clog.SetTheme(flags.theme)
-	}
-	if flags.noAnsi {
-		clog.Colorize(false)
+	if flags.isChild {
+		// use a remote logger
+		client := remote.NewClient(flags.parentPort)
+		logger := clog.NewRemoteLog(client)
+		logger.SetPrefix("elevated user: ")
+		clog.SetDefaultLogger(logger)
+	} else {
+		// Use the console logger
+		logger := clog.NewConsoleLog()
+		if flags.theme != "" {
+			logger.SetTheme(flags.theme)
+		}
+		if flags.noAnsi {
+			logger.Colorize(false)
+		}
+		clog.SetDefaultLogger(logger)
 	}
 
 	if flags.quiet && flags.verbose {

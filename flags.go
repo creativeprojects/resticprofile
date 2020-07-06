@@ -21,6 +21,7 @@ type commandLineFlags struct {
 	resticArgs []string
 	selfUpdate bool
 	isChild    bool
+	parentPort int
 }
 
 // loadFlags loads command line flags (before any command)
@@ -52,7 +53,9 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	if runtime.GOOS == "windows" {
 		// flag for internal use only
 		flagset.BoolVar(&flags.isChild, constants.FlagAsChild, false, "run as an elevated user child process")
+		flagset.IntVar(&flags.parentPort, constants.FlagPort, 0, "port of the parent process")
 		_ = flagset.MarkHidden(constants.FlagAsChild)
+		_ = flagset.MarkHidden(constants.FlagPort)
 	}
 
 	// Deprecated since 0.7.0
