@@ -3,19 +3,20 @@
 package schedule
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"strings"
+	"syscall"
 
 	"github.com/capnspacehook/taskmaster"
-	"github.com/creativeprojects/resticprofile/calendar"
+	"golang.org/x/sys/windows"
 )
 
 const (
 	tasksPath = `\resticprofile backup\`
 )
 
-// createJob is creating the task manager job.
+// createJob is creating the task scheduler job.
 func (j *Job) createJob() error {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -28,12 +29,6 @@ func (j *Job) createJob() error {
 	}
 	defer taskService.Disconnect()
 
-	// office, err := taskService.GetRegisteredTask("\\Microsoft\\Office\\Office Automatic Updates 2.0")
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Printf("%+v", office)
-
 	binary := absolutePathToBinary(wd, os.Args[0])
 
 	task := taskService.NewTaskDefinition()
@@ -41,12 +36,18 @@ func (j *Job) createJob() error {
 	task.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
 	task.Principal.UserID = "SYSTEM"
+	task.RegistrationInfo.Author = "resticprofile"
 	task.RegistrationInfo.Description = fmt.Sprintf("restic backup using profile '%s' from '%s'", j.profile.Name, j.configFile)
-	_, _, err = taskService.CreateTask(tasksPath+j.profile.Name, task, true)
+	_, _, err = taskService.CreateTask(getTaskPath(j.profile.Name), task, true)
 	if err != nil {
+		// return retryElevated(err)
 		return err
 	}
 	return nil
+}
+
+func getTaskPath(profileName string) string {
+	return tasksPath + profileName
 }
 
 func RemoveJob(profileName string) error {
@@ -56,25 +57,71 @@ func RemoveJob(profileName string) error {
 	}
 	defer taskService.Disconnect()
 
-	return taskService.DeleteTask(tasksPath + profileName)
+	return taskService.DeleteTask(getTaskPath(profileName))
 }
 
-// checkSystem does nothing on windows as the task manager is always available
+// checkSystem does nothing on windows as the task scheduler is always available
 func checkSystem() error {
 	return nil
 }
 
 func (j *Job) displayStatus() error {
+	taskService, err := taskmaster.Connect("", "", "", "")
+	if err != nil {
+		return err
+	}
+	defer taskService.Disconnect()
+
+	taskName := getTaskPath(j.profile.Name)
+	registeredTask, err := taskService.GetRegisteredTask(taskName)
+	if err != nil {
+		// return retryElevated(err)
+		return err
+	}
+	if registeredTask == nil {
+		return fmt.Errorf("task '%s' is not registered in the task scheduler", taskName)
+	}
+	fmt.Printf("%+v", registeredTask)
 	return nil
 }
 
-func loadSchedules(schedules []string) ([]*calendar.Event, error) {
-	events := make([]*calendar.Event, 0, len(schedules))
-	for index, schedule := range schedules {
-		if schedule == "" {
-			return events, errors.New("empty schedule")
+func retryElevated(err error) error {
+	if strings.Contains(err.Error(), "denied") {
+		err := runElevated()
+		if err != nil {
+			return err
 		}
-		fmt.Printf("\nAnalyzing schedule %d/%d\n========================\n", index+1, len(schedules))
+		return nil
 	}
-	return events, nil
+	return err
+}
+
+// runElevated restart resticprofile in elevated mode.
+// it is not in use right now as it opens a new console window.
+// I need to find a way to attach the new process to the existing console window.
+func runElevated() error {
+	verb := "runas"
+	exe, _ := os.Executable()
+	cwd, _ := os.Getwd()
+	args := strings.Join(os.Args[1:], " ")
+
+	verbPtr, _ := syscall.UTF16PtrFromString(verb)
+	exePtr, _ := syscall.UTF16PtrFromString(exe)
+	cwdPtr, _ := syscall.UTF16PtrFromString(cwd)
+	argPtr, _ := syscall.UTF16PtrFromString(args)
+
+	var showCmd int32 = 1 //SW_NORMAL
+
+	err := windows.ShellExecute(getConsoleHandle(), verbPtr, exePtr, argPtr, cwdPtr, showCmd)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getConsoleHandle() windows.Handle {
+	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+	getConsoleWindow := kernel32.NewProc("GetConsoleWindow")
+	ret, _, _ := getConsoleWindow.Call()
+	return windows.Handle(ret)
 }

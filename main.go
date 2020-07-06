@@ -128,6 +128,8 @@ func main() {
 			clog.Error(err)
 			os.Exit(1)
 		}
+		// fmt.Println("\nPress the Enter Key to continue...")
+		// fmt.Scanln()
 		return
 	}
 

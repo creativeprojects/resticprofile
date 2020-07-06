@@ -1,0 +1,17 @@
+global:
+    priority: low
+    min-memory: 0
+
+default:
+    repository: "d:\\backup"
+    password-file: key
+
+self:
+    inherit: default
+    initialize: true
+    schedule:
+    - "Mon..Fri *:00,30" # every 15 minutes
+    - "Mon..Fri *:15,45" # both combined together
+    - "Sat,Sun 0,12:*"
+    backup:
+        source: "."
