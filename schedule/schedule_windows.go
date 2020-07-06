@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"syscall"
 
 	"github.com/capnspacehook/taskmaster"
-	"golang.org/x/sys/windows"
+	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/resticprofile/w32"
 )
 
 const (
@@ -40,8 +40,8 @@ func (j *Job) createJob() error {
 	task.RegistrationInfo.Description = fmt.Sprintf("restic backup using profile '%s' from '%s'", j.profile.Name, j.configFile)
 	_, _, err = taskService.CreateTask(getTaskPath(j.profile.Name), task, true)
 	if err != nil {
-		// return retryElevated(err)
-		return err
+		return retryElevated(err)
+		// return err
 	}
 	return nil
 }
@@ -57,7 +57,11 @@ func RemoveJob(profileName string) error {
 	}
 	defer taskService.Disconnect()
 
-	return taskService.DeleteTask(getTaskPath(profileName))
+	err = taskService.DeleteTask(getTaskPath(profileName))
+	if err != nil {
+		return retryElevated(err)
+	}
+	return nil
 }
 
 // checkSystem does nothing on windows as the task scheduler is always available
@@ -75,8 +79,8 @@ func (j *Job) displayStatus() error {
 	taskName := getTaskPath(j.profile.Name)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
-		// return retryElevated(err)
-		return err
+		return retryElevated(err)
+		// return err
 	}
 	if registeredTask == nil {
 		return fmt.Errorf("task '%s' is not registered in the task scheduler", taskName)
@@ -86,42 +90,17 @@ func (j *Job) displayStatus() error {
 }
 
 func retryElevated(err error) error {
+	if err == nil {
+		return nil
+	}
+	// maybe can find a better way than searching for the word "denied"?
 	if strings.Contains(err.Error(), "denied") {
-		err := runElevated()
+		clog.Info("restarting resticprofile in elevated mode...")
+		err := w32.RunElevated()
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 	return err
-}
-
-// runElevated restart resticprofile in elevated mode.
-// it is not in use right now as it opens a new console window.
-// I need to find a way to attach the new process to the existing console window.
-func runElevated() error {
-	verb := "runas"
-	exe, _ := os.Executable()
-	cwd, _ := os.Getwd()
-	args := strings.Join(os.Args[1:], " ")
-
-	verbPtr, _ := syscall.UTF16PtrFromString(verb)
-	exePtr, _ := syscall.UTF16PtrFromString(exe)
-	cwdPtr, _ := syscall.UTF16PtrFromString(cwd)
-	argPtr, _ := syscall.UTF16PtrFromString(args)
-
-	var showCmd int32 = 1 //SW_NORMAL
-
-	err := windows.ShellExecute(getConsoleHandle(), verbPtr, exePtr, argPtr, cwdPtr, showCmd)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func getConsoleHandle() windows.Handle {
-	kernel32 := syscall.NewLazyDLL("kernel32.dll")
-	getConsoleWindow := kernel32.NewProc("GetConsoleWindow")
-	ret, _, _ := getConsoleWindow.Call()
-	return windows.Handle(ret)
 }

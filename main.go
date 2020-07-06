@@ -32,16 +32,64 @@ func init() {
 }
 
 func main() {
+	var exitCode = 0
+	var parentConsole bool
 	var err error
-	defer showPanicData()
+
+	// trick to run all defer functions before returning with an exit code
+	defer func() {
+		if exitCode != 0 {
+			os.Exit(exitCode)
+		}
+	}()
 
 	flagset, flags := loadFlags()
+
+	if flags.isChild {
+		// when restarting restiprofile with elevated user,
+		// we should try to attach to the parent console,
+		// but it doesn't seem to work:
+		// - windows API reports that the console is attached properly
+		// - go doesn't send messages to the new console:
+		//   I suspect the low level functions keep a handle to the original console
+		// err = w32.AttachParentConsole()
+		// ^ the error message will be displayed later...
+		// if err == nil {
+		// 	// also display the debug message later, when the logger is configured
+		// 	parentConsole = true
+		// }
+
+		// for now we should keep the console running at the end of the program
+		// so we can see what's going on
+		defer func() {
+			fmt.Println("\n\nPress the Enter Key to continue...")
+			fmt.Scanln()
+		}()
+	}
+
+	// help
 	if flags.help {
 		flagset.Usage()
 		return
 	}
+
+	// keep this one last if possible (so it will be first at the end)
+	defer showPanicData()
+
+	// setting up the logger - we can start sending messages from now on
 	setLoggerFlags(flags)
 	banner()
+
+	clog.Infof("arguments: ", os.Args)
+
+	// backlog of messages
+	if parentConsole {
+		clog.Debug("attached to parent console")
+	}
+	if err != nil {
+		// display the error from attaching to the parent console
+		clog.Errorf("could not attach to the parent console: %v", err)
+	}
 
 	// Deprecated in version 0.7.0
 	// Keep for compatibility with version 0.6.1
@@ -49,7 +97,8 @@ func main() {
 		err = confirmAndSelfUpdate(flags.verbose)
 		if err != nil {
 			clog.Error(err)
-			os.Exit(1)
+			exitCode = 1
+			return
 		}
 		return
 	}
@@ -60,7 +109,8 @@ func main() {
 			err = runOwnCommand(nil, flags.resticArgs[0], flags, flags.resticArgs[1:])
 			if err != nil {
 				clog.Error(err)
-				os.Exit(1)
+				exitCode = 1
+				return
 			}
 			return
 		}
@@ -69,20 +119,23 @@ func main() {
 	configFile, err := filesearch.FindConfigurationFile(flags.config)
 	if err != nil {
 		clog.Error(err)
-		os.Exit(1)
+		exitCode = 1
+		return
 	}
 	clog.Infof("using configuration file: %s", configFile)
 
 	c, err := config.LoadFile(configFile, flags.format)
 	if err != nil {
 		clog.Error("cannot load configuration file:", err)
-		os.Exit(1)
+		exitCode = 1
+		return
 	}
 
 	global, err := c.GetGlobalSection()
 	if err != nil {
 		clog.Error("cannot load global configuration:", err)
-		os.Exit(1)
+		exitCode = 1
+		return
 	}
 
 	// Check memory pressure
@@ -90,7 +143,8 @@ func main() {
 		avail := free()
 		if avail > 0 && avail < global.MinMemory {
 			clog.Errorf("available memory is < %v MB (option 'min-memory' in the 'global' section)", global.MinMemory)
-			os.Exit(1)
+			exitCode = 1
+			return
 		}
 	}
 
@@ -110,7 +164,8 @@ func main() {
 	if err != nil {
 		clog.Error("cannot find restic:", err)
 		clog.Warning("you can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
-		os.Exit(1)
+		exitCode = 1
+		return
 	}
 
 	// The remaining arguments are going to be sent to the restic command line
@@ -126,10 +181,9 @@ func main() {
 		err = runOwnCommand(c, resticCommand, flags, resticArguments)
 		if err != nil {
 			clog.Error(err)
-			os.Exit(1)
+			exitCode = 1
+			return
 		}
-		// fmt.Println("\nPress the Enter Key to continue...")
-		// fmt.Scanln()
 		return
 	}
 
@@ -154,7 +208,8 @@ func main() {
 		clog.Errorf("profile or group not found '%s'", flags.name)
 		displayProfiles(c)
 		displayGroups(c)
-		os.Exit(1)
+		exitCode = 1
+		return
 	}
 }
 

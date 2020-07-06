@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/pflag"
@@ -19,6 +20,7 @@ type commandLineFlags struct {
 	theme      string
 	resticArgs []string
 	selfUpdate bool
+	isChild    bool
 }
 
 // loadFlags loads command line flags (before any command)
@@ -46,6 +48,12 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
+
+	if runtime.GOOS == "windows" {
+		// flag for internal use only
+		flagset.BoolVar(&flags.isChild, constants.FlagAsChild, false, "run as an elevated user child process")
+		_ = flagset.MarkHidden(constants.FlagAsChild)
+	}
 
 	// Deprecated since 0.7.0
 	flagset.BoolVar(&flags.selfUpdate, "self-update", false, "auto update of resticprofile (does not update restic)")
