@@ -20,6 +20,7 @@ type commandLineFlags struct {
 	theme      string
 	resticArgs []string
 	selfUpdate bool
+	wait       bool
 	isChild    bool
 	parentPort int
 }
@@ -49,6 +50,8 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
+
+	flagset.BoolVarP(&flags.help, "wait", "w", false, "wait at the end until the user presses the enter key")
 
 	if runtime.GOOS == "windows" {
 		// flag for internal use only

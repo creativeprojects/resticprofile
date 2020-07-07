@@ -31,7 +31,6 @@ func getServeMux() *http.ServeMux {
 func handlerFuncDone(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	clog.Debug("received 'done' message")
 	// Just close the http server
 	StopServer()
 }

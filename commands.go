@@ -28,16 +28,16 @@ type ownCommand struct {
 var (
 	ownCommands = []ownCommand{
 		{
-			name:              "profiles",
-			description:       "display profile names from the configuration file",
-			action:            displayProfilesCommand,
-			needConfiguration: true,
-		},
-		{
 			name:              "self-update",
 			description:       "update resticprofile to latest version (does not update restic)",
 			action:            selfUpdate,
 			needConfiguration: false,
+		},
+		{
+			name:              "profiles",
+			description:       "display profile names from the configuration file",
+			action:            displayProfilesCommand,
+			needConfiguration: true,
 		},
 		{
 			name:              "show",

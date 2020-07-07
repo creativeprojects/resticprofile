@@ -34,7 +34,6 @@ func init() {
 
 func main() {
 	var exitCode = 0
-	var parentConsole bool
 	var err error
 
 	// trick to run all defer functions before returning with an exit code
@@ -47,24 +46,10 @@ func main() {
 	flagset, flags := loadFlags()
 
 	if flags.isChild {
-		// when restarting restiprofile with elevated user,
-		// we should try to attach to the parent console,
-		// but it doesn't seem to work:
-		// - windows API reports that the console is attached properly
-		// - go doesn't send messages to the new console:
-		//   I suspect the low level functions keep a handle to the original console
-		// err = w32.AttachParentConsole()
-		// ^ the error message will be displayed later...
-		// if err == nil {
-		// 	// also display the debug message later, when the logger is configured
-		// 	parentConsole = true
-		// }
-
 		if flags.parentPort == 0 {
-			exitCode = 1
+			exitCode = 10
 			return
 		}
-
 		// for now we should keep the console running at the end of the program
 		// so we can see what's going on
 		defer func() {
@@ -85,15 +70,6 @@ func main() {
 	// setting up the logger - we can start sending messages from now on
 	setLoggerFlags(flags)
 	banner()
-
-	// backlog of messages
-	if parentConsole {
-		clog.Debug("attached to parent console")
-	}
-	if err != nil {
-		// display the error from attaching to the parent console
-		clog.Errorf("could not attach to the parent console: %v", err)
-	}
 
 	// Deprecated in version 0.7.0
 	// Keep for compatibility with version 0.6.1
@@ -224,16 +200,16 @@ func setLoggerFlags(flags commandLineFlags) {
 		logger := clog.NewRemoteLog(client)
 		logger.SetPrefix("elevated user: ")
 		clog.SetDefaultLogger(logger)
-	} else {
-		// Use the console logger
-		logger := clog.NewConsoleLog()
-		if flags.theme != "" {
-			logger.SetTheme(flags.theme)
-		}
-		if flags.noAnsi {
-			logger.Colorize(false)
-		}
-		clog.SetDefaultLogger(logger)
+		return
+	}
+
+	// Use the console logger
+	logger := clog.NewConsoleLog()
+	if flags.theme != "" {
+		logger.SetTheme(flags.theme)
+	}
+	if flags.noAnsi {
+		logger.Colorize(false)
 	}
 
 	if flags.quiet && flags.verbose {
@@ -248,11 +224,13 @@ func setLoggerFlags(flags commandLineFlags) {
 		clog.Warningf("you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.", coin)
 	}
 	if flags.quiet {
-		clog.Quiet()
+		logger.Quiet()
 	}
 	if flags.verbose {
-		clog.Verbose()
+		logger.Verbose()
 	}
+
+	clog.SetDefaultLogger(logger)
 }
 
 func banner() {

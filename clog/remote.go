@@ -12,10 +12,8 @@ type RemoteLogClient interface {
 
 // RemoteLog logs messages to the console (in colour)
 type RemoteLog struct {
-	quiet   bool
-	verbose bool
-	prefix  string
-	client  RemoteLogClient
+	prefix string
+	client RemoteLogClient
 }
 
 // NewRemoteLog creates a new console logger
@@ -31,47 +29,23 @@ func (l *RemoteLog) SetPrefix(prefix string) {
 	l.prefix = prefix
 }
 
-// Quiet will only display warnings and errors
-func (l *RemoteLog) Quiet() {
-	l.quiet = true
-	l.verbose = false
-}
-
-// Verbose will display debugging information
-func (l *RemoteLog) Verbose() {
-	l.verbose = true
-	l.quiet = false
-}
-
 // Debug sends debugging information
 func (l *RemoteLog) Debug(v ...interface{}) {
-	if !l.verbose {
-		return
-	}
 	l.message(DebugLevel, v...)
 }
 
 // Debugf sends debugging information
 func (l *RemoteLog) Debugf(format string, v ...interface{}) {
-	if !l.verbose {
-		return
-	}
 	l.messagef(DebugLevel, format, v...)
 }
 
 // Info logs some noticeable information
 func (l *RemoteLog) Info(v ...interface{}) {
-	if l.quiet {
-		return
-	}
 	l.message(InfoLevel, v...)
 }
 
 // Infof logs some noticeable information
 func (l *RemoteLog) Infof(format string, v ...interface{}) {
-	if l.quiet {
-		return
-	}
 	l.messagef(InfoLevel, format, v...)
 }
 

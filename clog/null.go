@@ -1,14 +1,7 @@
 package clog
 
+// NullLog forget the log messages
 type NullLog struct{}
-
-// Quiet will only display warnings and errors
-func (l *NullLog) Quiet() {
-}
-
-// Verbose will display debugging information
-func (l *NullLog) Verbose() {
-}
 
 // Debug sends debugging information
 func (l *NullLog) Debug(v ...interface{}) {

@@ -10,8 +10,6 @@ const (
 
 // Log represents the logger interface
 type Log interface {
-	Quiet()
-	Verbose()
 	Debug(v ...interface{})
 	Debugf(format string, v ...interface{})
 	Info(v ...interface{})
@@ -30,16 +28,6 @@ var (
 // SetDefaultLogger sets the logger when using the package methods
 func SetDefaultLogger(log Log) {
 	defaultLog = log
-}
-
-// Quiet will only display warnings and errors
-func Quiet() {
-	defaultLog.Quiet()
-}
-
-// Verbose will display debugging information
-func Verbose() {
-	defaultLog.Verbose()
 }
 
 // Debug sends debugging information
