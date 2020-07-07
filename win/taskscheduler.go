@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/capnspacehook/taskmaster"
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
 )
 
@@ -26,7 +27,7 @@ func NewTaskScheduler(profile *config.Profile) *TaskScheduler {
 }
 
 // Create a task
-func (s *TaskScheduler) Create(binary, args, workingDir, description string) error {
+func (s *TaskScheduler) Create(binary, args, workingDir, description string, schedules []*calendar.Event) error {
 	taskService, err := s.connect()
 	if err != nil {
 		return err
@@ -40,6 +41,7 @@ func (s *TaskScheduler) Create(binary, args, workingDir, description string) err
 	task.Principal.UserID = "SYSTEM"
 	task.RegistrationInfo.Author = "resticprofile"
 	task.RegistrationInfo.Description = description
+
 	_, _, err = taskService.CreateTask(getTaskPath(s.profile.Name), task, true)
 	if err != nil {
 		return err

@@ -23,7 +23,7 @@ func (j *Job) createJob() error {
 	description := fmt.Sprintf("restic backup using profile '%s' from '%s'", j.profile.Name, j.configFile)
 
 	taskScheduler := win.NewTaskScheduler(j.profile)
-	err = taskScheduler.Create(binary, args, wd, description)
+	err = taskScheduler.Create(binary, args, wd, description, j.schedules)
 	if err != nil {
 		return err
 	}
