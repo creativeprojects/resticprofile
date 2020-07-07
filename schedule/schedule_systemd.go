@@ -26,7 +26,52 @@ func checkSystem() error {
 	return nil
 }
 
+// removeJob is disabling the systemd unit and deleting the timer and service files
 func (j *Job) removeJob() error {
+	if os.Geteuid() == 0 {
+		// user has sudoed
+		return j.removeSystemJob()
+	}
+	return j.removeUserJob()
+}
+
+// removeJob is disabling the systemd unit and deleting the timer and service files
+func (j *Job) removeSystemJob() error {
+	// stop the job
+	cmd := exec.Command(systemctlBin, "stop", systemd.GetTimerFile(j.profile.Name))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	// disable the job
+	cmd = exec.Command(systemctlBin, "disable", systemd.GetTimerFile(j.profile.Name))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	timerFile := systemd.GetTimerFile(j.profile.Name)
+	err = os.Remove(path.Join(systemd.GetSystemDir(), timerFile))
+	if err != nil {
+		return nil
+	}
+
+	serviceFile := systemd.GetServiceFile(j.profile.Name)
+	err = os.Remove(path.Join(systemd.GetSystemDir(), serviceFile))
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+// removeJob is disabling the systemd unit and deleting the timer and service files
+func (j *Job) removeUserJob() error {
 	// stop the job
 	cmd := exec.Command(systemctlBin, "--user", "stop", systemd.GetTimerFile(j.profile.Name))
 	cmd.Stdout = os.Stdout
@@ -64,8 +109,7 @@ func (j *Job) removeJob() error {
 	return nil
 }
 
-// createJob is creating the systemd unit and activating it.
-// for systemd the schedules parameter is not used.
+// createJob is creating the systemd unit and activating it
 func (j *Job) createJob() error {
 	if os.Geteuid() == 0 {
 		// user has sudoed already
@@ -75,12 +119,44 @@ func (j *Job) createJob() error {
 		"\nDo you want to install the scheduled backup as a user job as opposed to a system job?"
 	answer := ui.AskYesNo(os.Stdin, message, false)
 	if !answer {
-		return errors.New("operation cancelled")
+		return errors.New("operation cancelled by user")
 	}
 	return j.createUserJob()
 }
 
 func (j *Job) createSystemJob() error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	binary, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	err = systemd.Generate(wd, binary, j.configFile, j.profile.Name, j.profile.Schedule, systemd.SystemUnit)
+	if err != nil {
+		return err
+	}
+
+	// enable the job
+	cmd := exec.Command(systemctlBin, "enable", systemd.GetTimerFile(j.profile.Name))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	// start the job
+	cmd = exec.Command(systemctlBin, "start", systemd.GetTimerFile(j.profile.Name))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -89,8 +165,12 @@ func (j *Job) createUserJob() error {
 	if err != nil {
 		return err
 	}
-	binary := absolutePathToBinary(wd, os.Args[0])
-	err = systemd.Generate(wd, binary, j.configFile, j.profile.Name, j.profile.Schedule)
+	binary, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	err = systemd.Generate(wd, binary, j.configFile, j.profile.Name, j.profile.Schedule, systemd.UserUnit)
 	if err != nil {
 		return err
 	}
