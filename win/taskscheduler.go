@@ -13,16 +13,19 @@ const (
 	tasksPath = `\resticprofile backup\`
 )
 
+// TaskScheduler wraps up a task scheduler service
 type TaskScheduler struct {
 	profile *config.Profile
 }
 
+// NewTaskScheduler creates a new service to talk to windows task scheduler
 func NewTaskScheduler(profile *config.Profile) *TaskScheduler {
 	return &TaskScheduler{
 		profile: profile,
 	}
 }
 
+// Create a task
 func (s *TaskScheduler) Create(binary, args, workingDir, description string) error {
 	taskService, err := s.connect()
 	if err != nil {
@@ -44,10 +47,12 @@ func (s *TaskScheduler) Create(binary, args, workingDir, description string) err
 	return nil
 }
 
+// Update a task
 func (s *TaskScheduler) Update() error {
 	return nil
 }
 
+// Delete a task
 func (s *TaskScheduler) Delete() error {
 	taskService, err := s.connect()
 	if err != nil {
@@ -62,6 +67,7 @@ func (s *TaskScheduler) Delete() error {
 	return nil
 }
 
+// Status returns the status of a task
 func (s *TaskScheduler) Status() error {
 	taskService, err := s.connect()
 	if err != nil {

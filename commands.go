@@ -75,9 +75,9 @@ var (
 			hide:              false,
 		},
 		{
-			name:              "test",
-			description:       "",
-			action:            testCommand,
+			name:              "elevation",
+			description:       "test windows elevated mode",
+			action:            testElevationCommand,
 			needConfiguration: true,
 			hide:              true,
 		},
@@ -199,6 +199,14 @@ func showProfile(c *config.Config, flags commandLineFlags, args []string) error 
 }
 
 func createSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	// If this is running in elevated mode we'll need to send a finished signal
+	if flags.isChild {
+		defer func(port int) {
+			client := remote.NewClient(port)
+			client.Done()
+		}(flags.parentPort)
+	}
+
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -209,13 +217,22 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 
 	job := schedule.NewJob(flags.config, profile)
 	err = job.Create()
-	if err == nil {
-		clog.Info("scheduled job created")
+	if err != nil {
+		return retryElevated(err, flags)
 	}
-	return err
+	clog.Info("scheduled job created")
+	return nil
 }
 
 func removeSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	// If this is running in elevated mode we'll need to send a finished signal
+	if flags.isChild {
+		defer func(port int) {
+			client := remote.NewClient(port)
+			client.Done()
+		}(flags.parentPort)
+	}
+
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -226,13 +243,22 @@ func removeSchedule(c *config.Config, flags commandLineFlags, args []string) err
 
 	job := schedule.NewJob(flags.config, profile)
 	err = job.Remove()
-	if err == nil {
-		clog.Info("scheduled job removed")
+	if err != nil {
+		return retryElevated(err, flags)
 	}
-	return err
+	clog.Info("scheduled job removed")
+	return nil
 }
 
 func statusSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	// If this is running in elevated mode we'll need to send a finished signal
+	if flags.isChild {
+		defer func(port int) {
+			client := remote.NewClient(port)
+			client.Done()
+		}(flags.parentPort)
+	}
+
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -242,19 +268,44 @@ func statusSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	}
 
 	job := schedule.NewJob(flags.config, profile)
-	return job.Status()
+	err = job.Status()
+	if err != nil {
+		return retryElevated(err, flags)
+	}
+	return nil
 }
 
-func testCommand(c *config.Config, flags commandLineFlags, args []string) error {
-	if runtime.GOOS != "windows" {
-		return errors.New("only available on Windows platform")
-	}
-
+func testElevationCommand(c *config.Config, flags commandLineFlags, args []string) error {
 	if flags.isChild {
 		client := remote.NewClient(flags.parentPort)
 		client.Done()
 		return nil
 	}
+
+	return elevated(flags)
+}
+
+func retryElevated(err error, flags commandLineFlags) error {
+	if err == nil {
+		return nil
+	}
+	// maybe can find a better way than searching for the word "denied"?
+	if runtime.GOOS == "windows" && !flags.isChild && strings.Contains(err.Error(), "denied") {
+		clog.Info("restarting resticprofile in elevated mode...")
+		err := elevated(flags)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return err
+}
+
+func elevated(flags commandLineFlags) error {
+	if runtime.GOOS != "windows" {
+		return errors.New("only available on Windows platform")
+	}
+
 	done := make(chan interface{}, 0)
 	err := remote.StartServer(done)
 	if err != nil {
