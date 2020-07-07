@@ -13,8 +13,14 @@ import (
 )
 
 const (
-	systemdBin   = "systemd"
-	systemctlBin = "systemctl"
+	systemdBin     = "systemd"
+	systemctlBin   = "systemctl"
+	commandStart   = "start"
+	commandStop    = "stop"
+	commandEnable  = "enable"
+	commandDisable = "disable"
+	commandStatus  = "status"
+	flagUserUnit   = "--user"
 )
 
 // checkSystem verifies systemd is available on this system
@@ -197,12 +203,22 @@ func (j *Job) createUserJob() error {
 }
 
 func (j *Job) displayStatus() error {
-	cmd := exec.Command(systemctlBin, "--user", "status", systemd.GetTimerFile(j.profile.Name))
+	if os.Geteuid() == 0 {
+		// user has sudoed
+		return runSystemdCommand(j.profile.Name, commandStatus, systemd.SystemUnit)
+	}
+	return runSystemdCommand(j.profile.Name, commandStatus, systemd.UserUnit)
+}
+
+func runSystemdCommand(profileName, command string, unitType systemd.UnitType) error {
+	args := make([]string, 0, 3)
+	if unitType == systemd.UserUnit {
+		args = append(args, flagUserUnit)
+	}
+	args = append(args, command, systemd.GetTimerFile(profileName))
+
+	cmd := exec.Command(systemctlBin, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
+	return cmd.Run()
 }
