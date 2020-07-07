@@ -78,21 +78,6 @@ func (l *TestLog) messagef(level int, format string, v ...interface{}) {
 	l.t.Logf(getLevelName(level)+" "+format, v...)
 }
 
-func getLevelName(level int) string {
-	switch level {
-	case DebugLevel:
-		return "DEBUG"
-	case InfoLevel:
-		return "INFO"
-	case WarningLevel:
-		return "WARNING"
-	case ErrorLevel:
-		return "ERROR"
-	default:
-		return ""
-	}
-}
-
 // Verify interface
 var (
 	_ Log = &TestLog{}

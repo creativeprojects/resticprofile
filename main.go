@@ -16,7 +16,6 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
-	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/mackerelio/go-osstat/memory"
 )
 
@@ -45,17 +44,20 @@ func main() {
 
 	flagset, flags := loadFlags()
 
-	if flags.isChild {
-		if flags.parentPort == 0 {
-			exitCode = 10
-			return
-		}
-		// for now we should keep the console running at the end of the program
+	if flags.wait {
+		// keep the console running at the end of the program
 		// so we can see what's going on
 		defer func() {
 			fmt.Println("\n\nPress the Enter Key to continue...")
 			fmt.Scanln()
 		}()
+	}
+
+	if flags.isChild {
+		if flags.parentPort == 0 {
+			exitCode = 10
+			return
+		}
 	}
 
 	// help
@@ -67,8 +69,24 @@ func main() {
 	// keep this one last if possible (so it will be first at the end)
 	defer showPanicData()
 
-	// setting up the logger - we can start sending messages from now on
-	setLoggerFlags(flags)
+	// setting up the logger - we can start sending messages right after
+	if flags.logFile != "" {
+		logger, err := setupFileLogger(flags)
+		if err != nil {
+			// back to a console logger
+			setupConsoleLogger(flags)
+			clog.Errorf("cannot open logfile: %s", err)
+		} else {
+			// only close the file at the end if the logger opened it properly
+			defer logger.Close()
+		}
+	} else if flags.isChild {
+		// use a remote logger
+		setupRemoteLogger(flags)
+	} else {
+		// Use the console logger
+		setupConsoleLogger(flags)
+	}
 	banner()
 
 	// Deprecated in version 0.7.0
@@ -169,7 +187,12 @@ func main() {
 
 	if c.HasProfile(flags.name) {
 		// Single profile run
-		runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand)
+		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand)
+		if err != nil {
+			clog.Error(err)
+			exitCode = 1
+			return
+		}
 
 	} else if c.HasProfileGroup(flags.name) {
 		// Group run
@@ -179,8 +202,13 @@ func main() {
 		}
 		if group != nil && len(group) > 0 {
 			for i, profileName := range group {
-				clog.Debugf("[%d/%d] Starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
-				runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand)
+				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
+				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand)
+				if err != nil {
+					clog.Error(err)
+					exitCode = 1
+					return
+				}
 			}
 		}
 
@@ -191,46 +219,6 @@ func main() {
 		exitCode = 1
 		return
 	}
-}
-
-func setLoggerFlags(flags commandLineFlags) {
-	if flags.isChild {
-		// use a remote logger
-		client := remote.NewClient(flags.parentPort)
-		logger := clog.NewRemoteLog(client)
-		logger.SetPrefix("elevated user: ")
-		clog.SetDefaultLogger(logger)
-		return
-	}
-
-	// Use the console logger
-	logger := clog.NewConsoleLog()
-	if flags.theme != "" {
-		logger.SetTheme(flags.theme)
-	}
-	if flags.noAnsi {
-		logger.Colorize(false)
-	}
-
-	if flags.quiet && flags.verbose {
-		coin := ""
-		if randomBool() {
-			coin = "verbose"
-			flags.quiet = false
-		} else {
-			coin = "quiet"
-			flags.verbose = false
-		}
-		clog.Warningf("you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.", coin)
-	}
-	if flags.quiet {
-		logger.Quiet()
-	}
-	if flags.verbose {
-		logger.Verbose()
-	}
-
-	clog.SetDefaultLogger(logger)
 }
 
 func banner() {
@@ -260,7 +248,15 @@ func setPriority(nice int, class string) error {
 	return nil
 }
 
-func runProfile(c *config.Config, global *config.Global, flags commandLineFlags, profileName string, resticBinary string, resticArguments []string, resticCommand string) {
+func runProfile(
+	c *config.Config,
+	global *config.Global,
+	flags commandLineFlags,
+	profileName string,
+	resticBinary string,
+	resticArguments []string,
+	resticCommand string,
+) error {
 	var err error
 
 	profile, err := c.GetProfile(profileName)
@@ -268,8 +264,7 @@ func runProfile(c *config.Config, global *config.Global, flags commandLineFlags,
 		clog.Warning(err)
 	}
 	if profile == nil {
-		clog.Errorf("cannot load profile '%s'", profileName)
-		os.Exit(1)
+		return fmt.Errorf("cannot load profile '%s'", profileName)
 	}
 
 	// Send the quiet/verbose down to restic as well (override profile configuration)
@@ -312,9 +307,9 @@ func runProfile(c *config.Config, global *config.Global, flags commandLineFlags,
 	)
 	err = wrapper.runProfile()
 	if err != nil {
-		clog.Error(err)
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
 // randomBool returns true for Heads and false for Tails
@@ -329,7 +324,7 @@ func free() uint64 {
 		return 0
 	}
 	avail := (mem.Total - mem.Used) / 1048576
-	clog.Infof("memory available: %vMB", avail)
+	clog.Debugf("memory available: %vMB", avail)
 	return avail
 }
 

@@ -16,6 +16,7 @@ type commandLineFlags struct {
 	config     string
 	format     string
 	name       string
+	logFile    string
 	noAnsi     bool
 	theme      string
 	resticArgs []string
@@ -47,11 +48,12 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	flagset.StringVarP(&flags.config, "config", "c", constants.DefaultConfigurationFile, "configuration file")
 	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
+	flagset.StringVarP(&flags.logFile, "log", "l", "", "logs into a file instead of the console")
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
 
-	flagset.BoolVarP(&flags.help, "wait", "w", false, "wait at the end until the user presses the enter key")
+	flagset.BoolVarP(&flags.wait, "wait", "w", false, "wait at the end until the user presses the enter key")
 
 	if runtime.GOOS == "windows" {
 		// flag for internal use only

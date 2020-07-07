@@ -1,6 +1,11 @@
 global:
     priority: low
-    min-memory: 0
+    min-memory: 10
+
+groups:
+    double:
+    - self
+    - self
 
 default:
     repository: "d:\\backup"

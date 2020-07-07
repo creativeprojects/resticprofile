@@ -1,5 +1,11 @@
 package clog
 
+import (
+	"io"
+	"log"
+	"os"
+)
+
 // LogLevel
 const (
 	DebugLevel = iota
@@ -20,14 +26,47 @@ type Log interface {
 	Errorf(format string, v ...interface{})
 }
 
+// Verbosity represents the verbose logger interface
+type Verbosity interface {
+	Quiet()
+	Verbose()
+}
+
 var (
 	// default to null logger for tests
-	defaultLog Log = &NullLog{}
+	defaultLog    Log       = &NullLog{}
+	defaultOutput io.Writer = os.Stdout
 )
+
+func getLevelName(level int) string {
+	switch level {
+	case DebugLevel:
+		return "DEBUG"
+	case InfoLevel:
+		return "INFO "
+	case WarningLevel:
+		return "WARN "
+	case ErrorLevel:
+		return "ERROR"
+	default:
+		return ""
+	}
+}
 
 // SetDefaultLogger sets the logger when using the package methods
 func SetDefaultLogger(log Log) {
 	defaultLog = log
+}
+
+// SetOutput sets the default output of the current logger
+func SetOutput(w io.Writer) {
+	defaultOutput = w
+	log.SetOutput(w)
+}
+
+// GetOutput returns the default output of the current logger
+func GetOutput() io.Writer {
+	return defaultOutput
 }
 
 // Debug sends debugging information
