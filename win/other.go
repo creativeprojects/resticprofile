@@ -1,13 +1,8 @@
 // +build !windows
 
-package w32
+package win
 
 import "errors"
-
-// AttachParentConsole returns and error if not on windows platform
-func AttachParentConsole() error {
-	return errors.New("only available on windows platform")
-}
 
 // RunElevated returns and error if not on windows platform
 func RunElevated(port int) error {

@@ -26,9 +26,9 @@ func checkSystem() error {
 	return nil
 }
 
-func RemoveJob(profileName string) error {
+func (j *Job) removeJob() error {
 	// stop the job
-	cmd := exec.Command(systemctlBin, "--user", "stop", systemd.GetTimerFile(profileName))
+	cmd := exec.Command(systemctlBin, "--user", "stop", systemd.GetTimerFile(j.profile.Name))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -37,7 +37,7 @@ func RemoveJob(profileName string) error {
 	}
 
 	// disable the job
-	cmd = exec.Command(systemctlBin, "--user", "disable", systemd.GetTimerFile(profileName))
+	cmd = exec.Command(systemctlBin, "--user", "disable", systemd.GetTimerFile(j.profile.Name))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -49,13 +49,13 @@ func RemoveJob(profileName string) error {
 	if err != nil {
 		return nil
 	}
-	timerFile := systemd.GetTimerFile(profileName)
+	timerFile := systemd.GetTimerFile(j.profile.Name)
 	err = os.Remove(path.Join(systemdUserDir, timerFile))
 	if err != nil {
 		return nil
 	}
 
-	serviceFile := systemd.GetServiceFile(profileName)
+	serviceFile := systemd.GetServiceFile(j.profile.Name)
 	err = os.Remove(path.Join(systemdUserDir, serviceFile))
 	if err != nil {
 		return nil

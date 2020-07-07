@@ -11,7 +11,6 @@ import (
 
 // Job scheduler
 type Job struct {
-	binary     string
 	configFile string
 	profile    *config.Profile
 	schedules  []*calendar.Event
@@ -57,6 +56,10 @@ func (j *Job) Update() error {
 // Remove a job
 func (j *Job) Remove() error {
 	err := checkSystem()
+	if err != nil {
+		return err
+	}
+	err = j.removeJob()
 	if err != nil {
 		return err
 	}

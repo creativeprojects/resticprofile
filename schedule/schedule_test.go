@@ -21,3 +21,10 @@ func TestFileIsAbsoluteOnAllPlatforms(t *testing.T) {
 	assert.True(t, filepath.IsAbs(dir))
 	t.Log(dir)
 }
+
+func TestExecutableIsAbsoluteOnAllPlatforms(t *testing.T) {
+	binary, err := os.Executable()
+	require.NoError(t, err)
+	assert.True(t, filepath.IsAbs(binary))
+	t.Log(binary)
+}

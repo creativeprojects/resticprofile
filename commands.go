@@ -14,7 +14,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/schedule"
-	"github.com/creativeprojects/resticprofile/w32"
+	"github.com/creativeprojects/resticprofile/win"
 )
 
 type ownCommand struct {
@@ -216,7 +216,16 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 }
 
 func removeSchedule(c *config.Config, flags commandLineFlags, args []string) error {
-	err := schedule.RemoveJob(flags.name)
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	job := schedule.NewJob(flags.config, profile)
+	err = job.Remove()
 	if err == nil {
 		clog.Info("scheduled job removed")
 	}
@@ -242,8 +251,6 @@ func testCommand(c *config.Config, flags commandLineFlags, args []string) error 
 	}
 
 	if flags.isChild {
-		clog.Debug("We're", " done", " here!")
-		clog.Debugf("%d %d %d", 1, 2, 3)
 		client := remote.NewClient(flags.parentPort)
 		client.Done()
 		return nil
@@ -253,7 +260,7 @@ func testCommand(c *config.Config, flags commandLineFlags, args []string) error 
 	if err != nil {
 		return err
 	}
-	err = w32.RunElevated(remote.GetPort())
+	err = win.RunElevated(remote.GetPort())
 	if err != nil {
 		remote.StopServer()
 		return err

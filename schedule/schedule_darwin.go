@@ -119,13 +119,13 @@ func (j *Job) createJob() error {
 	return nil
 }
 
-// RemoveJob stops and unloads the agent from launchd, then removes the configuration file
-func RemoveJob(profileName string) error {
+// removeJob stops and unloads the agent from launchd, then removes the configuration file
+func (j *Job) removeJob() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
-	name := getJobName(profileName)
+	name := getJobName(j.profile.Name)
 
 	// stop the service
 	stop := exec.Command(launchctlBin, "stop", name)
