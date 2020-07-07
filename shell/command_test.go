@@ -93,7 +93,7 @@ func TestShellCommand(t *testing.T) {
 
 func TestRunShellEcho(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	cmd := newShellCommand("echo", []string{"TestRunShellEcho"})
+	cmd := newCommand("echo", []string{"TestRunShellEcho"})
 	cmd.Stdout = buffer
 	err := cmd.Run()
 	if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 
 	"github.com/creativeprojects/resticprofile/shell"
@@ -12,9 +13,11 @@ type shellCommandDefinition struct {
 	env           []string
 	displayStderr bool
 	useStdin      bool
+	stdout        io.Writer
 	sigChan       chan os.Signal
 }
 
+// newShellCommand creates a new shell command definition
 func newShellCommand(command string, args, env []string) shellCommandDefinition {
 	if env == nil {
 		env = make([]string, 0)
@@ -25,29 +28,31 @@ func newShellCommand(command string, args, env []string) shellCommandDefinition 
 		env:           env,
 		displayStderr: true,
 		useStdin:      false,
+		stdout:        os.Stdout,
 	}
 }
 
+// runShellCommand instantiates a shell.Command and sends the information to run the shell command
 func runShellCommand(command shellCommandDefinition) error {
 	var err error
 
-	cmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
+	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
 
-	cmd.Stdout = os.Stdout
+	shellCmd.Stdout = command.stdout
 	if command.displayStderr {
-		cmd.Stderr = os.Stderr
+		shellCmd.Stderr = os.Stderr
 	}
 
 	if command.useStdin {
-		cmd.Stdin = os.Stdin
+		shellCmd.Stdin = os.Stdin
 	}
 
-	cmd.Environ = os.Environ()
+	shellCmd.Environ = os.Environ()
 	if command.env != nil && len(command.env) > 0 {
-		cmd.Environ = append(cmd.Environ, command.env...)
+		shellCmd.Environ = append(shellCmd.Environ, command.env...)
 	}
 
-	err = cmd.Run()
+	err = shellCmd.Run()
 	if err != nil {
 		return err
 	}

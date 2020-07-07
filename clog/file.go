@@ -1,6 +1,7 @@
 package clog
 
 import (
+	"io"
 	"log"
 	"os"
 )
@@ -10,6 +11,7 @@ type FileLog struct {
 	quiet   bool
 	verbose bool
 	file    *os.File
+	writer  io.Writer
 }
 
 // NewFileLog creates a new file logger
@@ -20,11 +22,22 @@ func NewFileLog(filename string) (*FileLog, error) {
 		return nil, err
 	}
 	logger := &FileLog{
-		file: file,
+		file:   file,
+		writer: file,
 	}
 	// also redirect the standard logger to the file
 	SetOutput(file)
 	return logger, nil
+}
+
+// NewStreamLog creates a new stream logger
+func NewStreamLog(w io.Writer) *FileLog {
+	logger := &FileLog{
+		writer: w,
+	}
+	// also redirect the standard logger to the stream
+	SetOutput(w)
+	return logger
 }
 
 // Close the logfile when no longer needed
@@ -35,6 +48,7 @@ func (l *FileLog) Close() {
 		l.file.Close()
 		l.file = nil
 	}
+	l.writer = nil
 	// make sure any other call to the logger won't panic
 	defaultLog = &NullLog{}
 	// and reset the standard logger
