@@ -37,7 +37,7 @@ ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
 
-.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server nightly
+.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server nightly toc
 
 all: test build
 
@@ -112,3 +112,8 @@ nightly:
 	go install github.com/goreleaser/goreleaser
 	go mod tidy
 	goreleaser --snapshot --skip-publish --rm-dist
+
+toc:
+	go install github.com/ekalinin/github-markdown-toc.go
+	go mod tidy
+	cat README.md | github-markdown-toc.go --hide-footer

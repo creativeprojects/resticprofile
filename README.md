@@ -31,29 +31,34 @@ For the rest of the documentation, I'll be showing examples using the TOML file 
 
 # Table of Contents
 
-   * [resticprofile](#resticprofile)
-      * [Requirements](#requirements)
-      * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
-         * [Installation for Windows using bash](#installation-for-windows-using-bash)
-         * [Manual installation (Windows)](#manual-installation-windows)
-      * [Upgrade](#upgrade)
-      * [Using docker image](#using-docker-image)
-         * [Please note:](#please-note)
-      * [Configuration format](#configuration-format)
-      * [Configuration examples](#configuration-examples)
-      * [Configuration paths](#configuration-paths)
-         * [macOS X](#macos-x)
-         * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
-         * [Windows](#windows)
-      * [Using resticprofile](#using-resticprofile)
-      * [Command line reference](#command-line-reference)
-      * [Minimum memory required](#minimum-memory-required)
-      * [Scheduled backups](#scheduled-backups)
-      * [Configuration file reference](#configuration-file-reference)
-      * [Appendix](#appendix)
-      * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
-         * [systemd calendars](#systemd-calendars)
-         * [Configuring a systemd profile](#configuring-a-systemd-profile)
+* [resticprofile](#resticprofile)
+* [Table of Contents](#table-of-contents)
+  * [Requirements](#requirements)
+  * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
+    * [Installation for Windows using bash](#installation-for-windows-using-bash)
+    * [Manual installation (Windows)](#manual-installation-windows)
+  * [Upgrade](#upgrade)
+  * [Using docker image](#using-docker-image)
+    * [Container host name](#container-host-name)
+  * [Configuration format](#configuration-format)
+  * [Configuration examples](#configuration-examples)
+  * [Configuration paths](#configuration-paths)
+    * [macOS X](#macos-x)
+    * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
+    * [Windows](#windows)
+  * [Using resticprofile](#using-resticprofile)
+  * [Command line reference](#command-line-reference)
+  * [Minimum memory required](#minimum-memory-required)
+  * [Scheduled backups](#scheduled-backups)
+    * [schedule\-type](#schedule-type)
+    * [schedule](#schedule)
+    * [Scheduling commands](#scheduling-commands)
+  * [Configuration file reference](#configuration-file-reference)
+  * [Appendix](#appendix)
+  * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
+    * [systemd calendars](#systemd-calendars)
+    * [Configuring a systemd profile](#configuring-a-systemd-profile)
+
 
 ## Requirements
 
@@ -133,7 +138,7 @@ You can list your profiles:
 $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
 ```
 
-### Please note:
+### Container host name
 
 Each time a container is started, it gets assigned a new random name. You should probably force a hostname to your container...
 
@@ -519,10 +524,137 @@ It compares against `(total - used)` which is probably the best way to know how 
 
 ## Scheduled backups
 
-I'm working on a feature that is going to manage scheduled backups:
+resticprofile is capable of managing scheduled backups for you:
 - using **systemd** where available (Linux and various unixes)
 - using **launchd** on macOS X
-- using **Task Manager** on Windows
+- using **Task Scheduler** on Windows
+
+Each profile can be scheduled independently (not groups yet). Two parameters are added on the profile:
+
+```ini
+[profile]
+schedule = "*:00,30"
+schedule-type = "system"
+```
+
+### schedule-type
+
+`schedule-type` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's what you want if you're only saving your documents (or any other file inside your profile).
+
+If you need to access some system or protected files, set the `schedule-type` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions if needed)
+
+### schedule
+
+The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to understand. It is the same format used to schedule on macOS and Windows.
+
+The most general form is:
+```
+weekdays year-month-day hour:minute:second
+```
+
+- use `*` to mean any
+- use `,` to separate multiple entries
+- use `..` for a range
+
+**limitations**: divider (`/`), the `~` and timezones are not supported in macOS and Windows.
+
+**macOS users**: please note the `year` and `second` fields have no effect on macOS. They don't make much sense anyway.
+
+Here are a few examples (taken from the systemd documentation):
+
+```
+  Sat,Thu,Mon..Wed,Sat..Sun → Mon..Thu,Sat,Sun *-*-* 00:00:00
+      Mon,Sun 12-*-* 2,1:23 → Mon,Sun 2012-*-* 01,02:23:00
+                    Wed *-1 → Wed *-*-01 00:00:00
+           Wed..Wed,Wed *-1 → Wed *-*-01 00:00:00
+                 Wed, 17:48 → Wed *-*-* 17:48:00
+Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
+                *-*-7 0:0:0 → *-*-07 00:00:00
+                      10-15 → *-10-15 00:00:00
+        monday *-12-* 17:00 → Mon *-12-* 17:00:00
+     Mon,Fri *-*-3,1,2 *:30 → Mon,Fri *-*-01,02,03 *:30:00
+       12,14,13,12:20,10,30 → *-*-* 12,13,14:10,20,30:00
+            12..14:10,20,30 → *-*-* 12..14:10,20,30:00
+                03-05 08:05 → *-03-05 08:05:00
+                      05:40 → *-*-* 05:40:00
+        Sat,Sun 12-05 08:05 → Sat,Sun *-12-05 08:05:00
+              Sat,Sun 08:05 → Sat,Sun *-*-* 08:05:00
+           2003-03-05 05:40 → 2003-03-05 05:40:00
+             2003-02..04-05 → 2003-02..04-05 00:00:00
+                 2003-03-05 → 2003-03-05 00:00:00
+                      03-05 → *-03-05 00:00:00
+                     hourly → *-*-* *:00:00
+                      daily → *-*-* 00:00:00
+                    monthly → *-*-01 00:00:00
+                     weekly → Mon *-*-* 00:00:00
+                     yearly → *-01-01 00:00:00
+                   annually → *-01-01 00:00:00
+```
+
+The `schedule` can be a string or an array of string (to allow for multiple schedules)
+
+Here's an example of a YAML configuration for Windows:
+
+```yaml
+default:
+    repository: "d:\\backup"
+    password-file: key
+
+self:
+    inherit: default
+    schedule:
+    - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
+    - "Sat,Sun 0,12:00"        # twice a day on week-ends
+    backup:
+        source: "."
+```
+
+### Scheduling commands
+
+resticprofile accepts these internal commands:
+- schedule
+- unschedule
+- reschedule
+- status
+
+All these commands need at least a name of a profile, that's where the schedule information is taken from.
+
+Example of the schedule command under Windows (with git bash):
+
+```
+$ resticprofile -c examples/windows.yaml -n self schedule
+2020/07/07 22:33:14 resticprofile 0.9.0 compiled with go1.13.4
+2020/07/07 22:33:14 using configuration file: examples/windows.yaml
+
+Analyzing schedule 1/2
+========================
+  Original form: Mon..Fri *:00,15,30,45
+Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
+    Next elapse: Tue Jul  7 22:45:00 BST 2020
+       (in UTC): Tue Jul  7 21:45:00 UTC 2020
+       From now: 11m45s left
+
+Analyzing schedule 2/2
+========================
+  Original form: Sat,Sun 0,12:00
+Normalized form: Sat,Sun *-*-* 00,12:00:00
+    Next elapse: Sat Jul 11 00:00:00 BST 2020
+       (in UTC): Fri Jul 10 23:00:00 UTC 2020
+       From now: 73h26m45s left
+
+2020/07/07 22:33:17 restarting resticprofile in elevated mode...
+2020/07/07 22:33:30 elevated user: scheduled job created
+```
+
+To remove the schedule, use the `unschedule` command:
+
+```
+$ resticprofile -c examples/windows.yaml -n self unschedule
+2020/07/07 22:36:39 resticprofile 0.9.0 compiled with go1.13.4
+2020/07/07 22:36:39 using configuration file: examples/windows.yaml
+2020/07/07 22:36:42 restarting resticprofile in elevated mode...
+2020/07/07 22:36:44 elevated user: scheduled job removed
+```
 
 ## Configuration file reference
 

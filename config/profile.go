@@ -28,6 +28,7 @@ type Profile struct {
 	RunAfter      []string               `mapstructure:"run-after"`
 	RunAfterFail  []string               `mapstructure:"run-after-fail"`
 	Schedule      []string               `mapstructure:"schedule"`
+	ScheduleType  string                 `mapstructure:"schedule-type"`
 	Environment   map[string]string      `mapstructure:"env"`
 	Backup        *BackupSection         `mapstructure:"backup"`
 	Retention     *RetentionSection      `mapstructure:"retention"`
