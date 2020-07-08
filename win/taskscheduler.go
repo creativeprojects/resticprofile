@@ -135,19 +135,38 @@ func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules [
 			// recurring daily
 			start := schedule.Next(time.Now())
 			// get all recurrences in the same day
-			recurrences := []time.Time{}
-			next := start
-			nextDay := start.Add(24 * time.Hour)
-			for next.Before(nextDay) {
-				recurrences = append(recurrences, next)
-				next = schedule.Next(next.Add(time.Minute))
-			}
+			recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
 			// now calculate the difference in between each
 			differences := make([]time.Duration, len(recurrences)-1)
 			for i := 0; i < len(recurrences)-1; i++ {
 				differences[i] = recurrences[i+1].Sub(recurrences[i])
 			}
 			// check if they're all the same
+			compactDifferences := make([]time.Duration, 0, len(differences))
+			var previous time.Duration = 0
+			for _, difference := range differences {
+				if difference.Seconds() != previous.Seconds() {
+					compactDifferences = append(compactDifferences, difference)
+					previous = difference
+				}
+			}
+
+			if len(compactDifferences) == 1 {
+				// easy case
+				emptyPeriod := period.Period{}
+				interval, _ := period.NewOf(compactDifferences[0])
+				task.AddDailyTriggerEx(
+					1,
+					emptyPeriod,
+					"",
+					start,
+					time.Time{},
+					emptyPeriod,
+					period.NewYMD(0, 0, 1),
+					interval,
+					false,
+					true)
+			}
 		}
 	}
 }

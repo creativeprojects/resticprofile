@@ -27,6 +27,7 @@ test:
     initialize: true
     schedule:
     - "2020-07-31"
+    - "*:0,15,30,45"
     schedule-permission: user
     backup:
         source: "."

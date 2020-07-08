@@ -118,6 +118,18 @@ func (e *Event) AsTime() (time.Time, bool) {
 	return time.Now(), false
 }
 
+// GetAllInBetween returns all activation times of the event in between these two dates.
+// the minimum increment is 1 minute
+func (e *Event) GetAllInBetween(start, end time.Time) []time.Time {
+	recurrences := []time.Time{}
+	next := e.Next(start)
+	for next.Before(end) {
+		recurrences = append(recurrences, next)
+		next = e.Next(next.Add(time.Minute))
+	}
+	return recurrences
+}
+
 // match returns true if the time in parameter would trigger the event
 func (e *Event) match(currentTime time.Time) bool {
 	values := []struct {

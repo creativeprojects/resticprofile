@@ -199,3 +199,44 @@ func TestEventAsTime(t *testing.T) {
 		})
 	}
 }
+
+func TestEventsInBetweenTwoDates(t *testing.T) {
+	testData := []struct {
+		input    string
+		duration time.Duration
+		expected []time.Time
+	}{
+		{
+			"*:0,15,30,45",
+			1 * time.Hour,
+			[]time.Time{
+				mustParseTime("2006-01-02 15:15:00"),
+				mustParseTime("2006-01-02 15:30:00"),
+				mustParseTime("2006-01-02 15:45:00"),
+				mustParseTime("2006-01-02 16:00:00"),
+			},
+		},
+	}
+
+	// the base time is the example in the Go documentation https://golang.org/pkg/time/
+	ref, err := time.Parse(time.ANSIC, "Mon Jan 2 15:04:05 2006")
+	require.NoError(t, err)
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			event := NewEvent()
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
+			recurrences := event.GetAllInBetween(ref, ref.Add(testItem.duration))
+			assert.ElementsMatch(t, testItem.expected, recurrences)
+		})
+	}
+}
+
+func mustParseTime(input string) time.Time {
+	output, err := time.Parse("2006-01-02 15:04:05", input)
+	if err != nil {
+		panic(err)
+	}
+	return output
+}
