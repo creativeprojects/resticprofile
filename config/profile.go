@@ -12,31 +12,31 @@ import (
 
 // Profile contains the whole profile configuration
 type Profile struct {
-	config        *Config
-	Name          string
-	Quiet         bool                   `mapstructure:"quiet" argument:"quiet"`
-	Verbose       bool                   `mapstructure:"verbose" argument:"verbose"`
-	Repository    string                 `mapstructure:"repository" argument:"repo"`
-	PasswordFile  string                 `mapstructure:"password-file" argument:"password-file"`
-	CacheDir      string                 `mapstructure:"cache-dir" argument:"cache-dir"`
-	CACert        string                 `mapstructure:"cacert" argument:"cacert"`
-	TLSClientCert string                 `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
-	Initialize    bool                   `mapstructure:"initialize"`
-	Inherit       string                 `mapstructure:"inherit"`
-	Lock          string                 `mapstructure:"lock"`
-	RunBefore     []string               `mapstructure:"run-before"`
-	RunAfter      []string               `mapstructure:"run-after"`
-	RunAfterFail  []string               `mapstructure:"run-after-fail"`
-	Schedule      []string               `mapstructure:"schedule"`
-	ScheduleType  string                 `mapstructure:"schedule-type"`
-	Environment   map[string]string      `mapstructure:"env"`
-	Backup        *BackupSection         `mapstructure:"backup"`
-	Retention     *RetentionSection      `mapstructure:"retention"`
-	Snapshots     map[string]interface{} `mapstructure:"snapshots"`
-	Forget        map[string]interface{} `mapstructure:"forget"`
-	Check         map[string]interface{} `mapstructure:"check"`
-	Mount         map[string]interface{} `mapstructure:"mount"`
-	OtherFlags    map[string]interface{} `mapstructure:",remain"`
+	config             *Config
+	Name               string
+	Quiet              bool                   `mapstructure:"quiet" argument:"quiet"`
+	Verbose            bool                   `mapstructure:"verbose" argument:"verbose"`
+	Repository         string                 `mapstructure:"repository" argument:"repo"`
+	PasswordFile       string                 `mapstructure:"password-file" argument:"password-file"`
+	CacheDir           string                 `mapstructure:"cache-dir" argument:"cache-dir"`
+	CACert             string                 `mapstructure:"cacert" argument:"cacert"`
+	TLSClientCert      string                 `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
+	Initialize         bool                   `mapstructure:"initialize"`
+	Inherit            string                 `mapstructure:"inherit"`
+	Lock               string                 `mapstructure:"lock"`
+	RunBefore          []string               `mapstructure:"run-before"`
+	RunAfter           []string               `mapstructure:"run-after"`
+	RunAfterFail       []string               `mapstructure:"run-after-fail"`
+	Schedule           []string               `mapstructure:"schedule"`
+	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	Environment        map[string]string      `mapstructure:"env"`
+	Backup             *BackupSection         `mapstructure:"backup"`
+	Retention          *RetentionSection      `mapstructure:"retention"`
+	Snapshots          map[string]interface{} `mapstructure:"snapshots"`
+	Forget             map[string]interface{} `mapstructure:"forget"`
+	Check              map[string]interface{} `mapstructure:"check"`
+	Mount              map[string]interface{} `mapstructure:"mount"`
+	OtherFlags         map[string]interface{} `mapstructure:",remain"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command

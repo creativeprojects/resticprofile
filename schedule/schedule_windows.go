@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/win"
 )
 
@@ -22,8 +23,13 @@ func (j *Job) createJob() error {
 	args := fmt.Sprintf("--no-ansi --config %s --name %s backup", j.configFile, j.profile.Name)
 	description := fmt.Sprintf("restic backup using profile '%s' from '%s'", j.profile.Name, j.configFile)
 
+	// default permission will be system
+	permission := win.SystemAccount
+	if j.profile.SchedulePermission == constants.SchedulePermissionUser {
+		permission = win.UserAccount
+	}
 	taskScheduler := win.NewTaskScheduler(j.profile)
-	err = taskScheduler.Create(binary, args, wd, description, j.schedules)
+	err = taskScheduler.Create(binary, args, wd, description, j.schedules, permission)
 	if err != nil {
 		return err
 	}

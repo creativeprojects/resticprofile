@@ -18,5 +18,6 @@ self:
     - "Mon..Fri *:00,30" # every 15 minutes
     - "Mon..Fri *:15,45" # both combined together
     - "Sat,Sun 0,12:*"
+    schedule-permission: user
     backup:
         source: "."

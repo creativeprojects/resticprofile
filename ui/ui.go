@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strings"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // AskYesNo prompts the user for a message asking for a yes/no answer
@@ -38,4 +41,28 @@ func AskYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
 		return true
 	}
 	return false
+}
+
+// ReadPassword reads a password without echoing it to the terminal.
+func ReadPassword() (string, error) {
+	stdin := int(os.Stdin.Fd())
+	if !terminal.IsTerminal(stdin) {
+		return ReadLine()
+	}
+	line, err := terminal.ReadPassword(stdin)
+	_, _ = fmt.Fprintln(os.Stderr)
+	if err != nil {
+		return "", fmt.Errorf("Failed to read password: %v", err)
+	}
+	return string(line), nil
+}
+
+// ReadLine reads some input
+func ReadLine() (string, error) {
+	buf := bufio.NewReader(os.Stdin)
+	line, err := buf.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("Failed to read line: %v", err)
+	}
+	return strings.TrimSpace(line), nil
 }
