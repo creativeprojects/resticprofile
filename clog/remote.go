@@ -7,16 +7,17 @@ import (
 
 // RemoteLogClient represents the interface of a remote logger
 type RemoteLogClient interface {
+	// Log with a level from 0 to 4
 	Log(level int, message string) error
 }
 
-// RemoteLog logs messages to the console (in colour)
+// RemoteLog logs messages to a remote logger
 type RemoteLog struct {
 	prefix string
 	client RemoteLogClient
 }
 
-// NewRemoteLog creates a new console logger
+// NewRemoteLog creates a new remote logger
 func NewRemoteLog(client RemoteLogClient) *RemoteLog {
 	console := &RemoteLog{
 		client: client,
@@ -27,6 +28,16 @@ func NewRemoteLog(client RemoteLogClient) *RemoteLog {
 // SetPrefix on all messages sent to the server
 func (l *RemoteLog) SetPrefix(prefix string) {
 	l.prefix = prefix
+}
+
+// Log sends a log entry with the specified level
+func (l *RemoteLog) Log(level LogLevel, v ...interface{}) {
+	l.message(level, v...)
+}
+
+// Logf sends a log entry with the specified level
+func (l *RemoteLog) Logf(level LogLevel, format string, v ...interface{}) {
+	l.messagef(level, format, v...)
 }
 
 // Debug sends debugging information
@@ -69,16 +80,16 @@ func (l *RemoteLog) Errorf(format string, v ...interface{}) {
 	l.messagef(ErrorLevel, format, v...)
 }
 
-func (l *RemoteLog) message(level int, v ...interface{}) {
+func (l *RemoteLog) message(level LogLevel, v ...interface{}) {
 	v = append([]interface{}{l.prefix}, v...)
-	err := l.client.Log(level, fmt.Sprint(v...))
+	err := l.client.Log(int(level), fmt.Sprint(v...))
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (l *RemoteLog) messagef(level int, format string, v ...interface{}) {
-	err := l.client.Log(level, fmt.Sprintf(l.prefix+format, v...))
+func (l *RemoteLog) messagef(level LogLevel, format string, v ...interface{}) {
+	err := l.client.Log(int(level), fmt.Sprintf(l.prefix+format, v...))
 	if err != nil {
 		log.Println(err)
 	}
@@ -86,5 +97,5 @@ func (l *RemoteLog) messagef(level int, format string, v ...interface{}) {
 
 // Verify interface
 var (
-	_ Log = &RemoteLog{}
+	_ Logger = &RemoteLog{}
 )

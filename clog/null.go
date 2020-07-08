@@ -1,7 +1,15 @@
 package clog
 
-// NullLog forget the log messages
+// NullLog forgets any log message
 type NullLog struct{}
+
+// Log sends a log entry with the specified level
+func (l *NullLog) Log(level LogLevel, v ...interface{}) {
+}
+
+// Logf sends a log entry with the specified level
+func (l *NullLog) Logf(level LogLevel, format string, v ...interface{}) {
+}
 
 // Debug sends debugging information
 func (l *NullLog) Debug(v ...interface{}) {
@@ -37,5 +45,5 @@ func (l *NullLog) Errorf(format string, v ...interface{}) {
 
 // Verify interface
 var (
-	_ Log = &NullLog{}
+	_ Logger = &NullLog{}
 )

@@ -8,7 +8,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/creativeprojects/resticprofile/clog"
-	"github.com/creativeprojects/resticprofile/ui"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
 )
 
@@ -30,7 +30,7 @@ func confirmAndSelfUpdate(debug bool) error {
 		return nil
 	}
 
-	if !ui.AskYesNo(os.Stdin, fmt.Sprint("Do you want to update to version ", latest.Version), true) {
+	if !term.AskYesNo(os.Stdin, fmt.Sprint("Do you want to update to version ", latest.Version), true) {
 		fmt.Println("Never mind")
 		return nil
 	}

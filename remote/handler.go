@@ -44,7 +44,7 @@ func handlerFuncLog(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		clog.Errorf("error decoding json log message: %v", err)
 	}
-	switch log.Level {
+	switch clog.LogLevel(log.Level) {
 	case clog.DebugLevel:
 		clog.Debug(log.Message)
 
@@ -58,6 +58,6 @@ func handlerFuncLog(w http.ResponseWriter, r *http.Request) {
 		clog.Error(log.Message)
 
 	default:
-		clog.Warningf("message with no level defined: %s", log.Message)
+		clog.Log(clog.NoLevel, log.Message)
 	}
 }

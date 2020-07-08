@@ -13,28 +13,30 @@ func setupRemoteLogger(flags commandLineFlags) {
 }
 
 func setupFileLogger(flags commandLineFlags) (*clog.FileLog, error) {
-	logger, err := clog.NewFileLog(flags.logFile)
+	fileLogger, err := clog.NewFileLog(flags.logFile)
 	if err != nil {
 		return nil, err
 	}
+	logger := setupLevelMiddleware(flags, fileLogger)
+	// default logger added with middleware
 	clog.SetDefaultLogger(logger)
-	setupVerbosity(flags, logger)
-	return logger, nil
+	// but return fileLogger (so we can close it at the end)
+	return fileLogger, nil
 }
 
 func setupConsoleLogger(flags commandLineFlags) {
-	logger := clog.NewConsoleLog()
+	consoleLogger := clog.NewConsoleLog()
 	if flags.theme != "" {
-		logger.SetTheme(flags.theme)
+		consoleLogger.SetTheme(flags.theme)
 	}
 	if flags.noAnsi {
-		logger.Colorize(false)
+		consoleLogger.Colorize(false)
 	}
+	logger := setupLevelMiddleware(flags, consoleLogger)
 	clog.SetDefaultLogger(logger)
-	setupVerbosity(flags, logger)
 }
 
-func setupVerbosity(flags commandLineFlags, logger clog.Verbosity) {
+func setupLevelMiddleware(flags commandLineFlags, logger clog.Logger) *clog.VerbosityMiddleware {
 	if flags.quiet && flags.verbose {
 		coin := ""
 		if randomBool() {
@@ -44,12 +46,13 @@ func setupVerbosity(flags commandLineFlags, logger clog.Verbosity) {
 			coin = "quiet"
 			flags.verbose = false
 		}
-		clog.Warningf("you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.", coin)
+		logger.Warningf("you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.", coin)
 	}
+	minLevel := clog.InfoLevel
 	if flags.quiet {
-		logger.Quiet()
+		minLevel = clog.WarningLevel
+	} else if flags.verbose {
+		minLevel = clog.NoLevel
 	}
-	if flags.verbose {
-		logger.Verbose()
-	}
+	return clog.NewVerbosityMiddleWare(minLevel, logger)
 }

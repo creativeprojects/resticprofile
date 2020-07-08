@@ -12,6 +12,7 @@ type TestLogInterface interface {
 }
 
 // NewTestLog instantiates a new logger redirecting to the test framework logger
+// or any other implementation of TestLogInterface for that matter
 func NewTestLog(t TestLogInterface) *TestLog {
 	return &TestLog{
 		t: t,
@@ -27,6 +28,16 @@ func SetTestLog(t TestLogInterface) {
 // ClearTestLog at the end of the test otherwise the logger will keep a reference on t
 func ClearTestLog() {
 	defaultLog = &NullLog{}
+}
+
+// Log sends a log entry with the specified level
+func (l *TestLog) Log(level LogLevel, v ...interface{}) {
+	l.message(level, v...)
+}
+
+// Logf sends a log entry with the specified level
+func (l *TestLog) Logf(level LogLevel, format string, v ...interface{}) {
+	l.messagef(level, format, v...)
 }
 
 // Debug sends debugging information
@@ -69,16 +80,16 @@ func (l *TestLog) Errorf(format string, v ...interface{}) {
 	l.messagef(ErrorLevel, format, v...)
 }
 
-func (l *TestLog) message(level int, v ...interface{}) {
+func (l *TestLog) message(level LogLevel, v ...interface{}) {
 	v = append([]interface{}{getLevelName(level)}, v...)
 	l.t.Log(v...)
 }
 
-func (l *TestLog) messagef(level int, format string, v ...interface{}) {
+func (l *TestLog) messagef(level LogLevel, format string, v ...interface{}) {
 	l.t.Logf(getLevelName(level)+" "+format, v...)
 }
 
 // Verify interface
 var (
-	_ Log = &TestLog{}
+	_ Logger = &TestLog{}
 )

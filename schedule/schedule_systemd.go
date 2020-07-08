@@ -9,7 +9,7 @@ import (
 	"path"
 
 	"github.com/creativeprojects/resticprofile/systemd"
-	"github.com/creativeprojects/resticprofile/ui"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -87,7 +87,7 @@ func (j *Job) createJob() error {
 	}
 	message := "\nPlease note resticprofile was started as a standard user (typically without sudo):" +
 		"\nDo you want to install the scheduled backup as a user job as opposed to a system job?"
-	answer := ui.AskYesNo(os.Stdin, message, false)
+	answer := term.AskYesNo(os.Stdin, message, false)
 	if !answer {
 		return errors.New("operation cancelled by user")
 	}

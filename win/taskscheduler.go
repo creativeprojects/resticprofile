@@ -11,7 +11,7 @@ import (
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/ui"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -54,7 +54,7 @@ func (s *TaskScheduler) createUserTask(binary, args, workingDir, description str
 	}
 	fmt.Printf("\nCreating task for user %s\n", currentUser.Username)
 	fmt.Printf("Windows requires your password to validate the task: ")
-	password, err := ui.ReadPassword()
+	password, err := term.ReadPassword()
 	if err != nil {
 		return err
 	}

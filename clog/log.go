@@ -6,16 +6,22 @@ import (
 	"os"
 )
 
+// LogLevel represents the importance of a log entry
+type LogLevel int
+
 // LogLevel
 const (
-	DebugLevel = iota
+	NoLevel LogLevel = iota
+	DebugLevel
 	InfoLevel
 	WarningLevel
 	ErrorLevel
 )
 
-// Log represents the logger interface
-type Log interface {
+// Logger represents the logger interface
+type Logger interface {
+	Log(level LogLevel, v ...interface{})
+	Logf(level LogLevel, format string, v ...interface{})
 	Debug(v ...interface{})
 	Debugf(format string, v ...interface{})
 	Info(v ...interface{})
@@ -26,19 +32,13 @@ type Log interface {
 	Errorf(format string, v ...interface{})
 }
 
-// Verbosity represents the verbose logger interface
-type Verbosity interface {
-	Quiet()
-	Verbose()
-}
-
 var (
 	// default to null logger for tests
-	defaultLog    Log       = &NullLog{}
+	defaultLog    Logger    = &NullLog{}
 	defaultOutput io.Writer = os.Stdout
 )
 
-func getLevelName(level int) string {
+func getLevelName(level LogLevel) string {
 	switch level {
 	case DebugLevel:
 		return "DEBUG"
@@ -49,12 +49,12 @@ func getLevelName(level int) string {
 	case ErrorLevel:
 		return "ERROR"
 	default:
-		return ""
+		return "     "
 	}
 }
 
 // SetDefaultLogger sets the logger when using the package methods
-func SetDefaultLogger(log Log) {
+func SetDefaultLogger(log Logger) {
 	defaultLog = log
 }
 
@@ -67,6 +67,16 @@ func SetOutput(w io.Writer) {
 // GetOutput returns the default output of the current logger
 func GetOutput() io.Writer {
 	return defaultOutput
+}
+
+// Log sends a log entry with the specified level
+func Log(level LogLevel, v ...interface{}) {
+	defaultLog.Log(level, v...)
+}
+
+// Logf sends a log entry with the specified level
+func Logf(level LogLevel, format string, v ...interface{}) {
+	defaultLog.Logf(level, format, v...)
 }
 
 // Debug sends debugging information

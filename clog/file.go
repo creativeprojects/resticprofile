@@ -1,17 +1,13 @@
 package clog
 
 import (
-	"io"
-	"log"
 	"os"
 )
 
 // FileLog logs messages to a file
 type FileLog struct {
-	quiet   bool
-	verbose bool
-	file    *os.File
-	writer  io.Writer
+	*StreamLog
+	file *os.File
 }
 
 // NewFileLog creates a new file logger
@@ -21,23 +17,11 @@ func NewFileLog(filename string) (*FileLog, error) {
 	if err != nil {
 		return nil, err
 	}
+	// standard output is managed by StreamLog
 	logger := &FileLog{
-		file:   file,
-		writer: file,
+		StreamLog: NewStreamLog(file),
 	}
-	// also redirect the standard logger to the file
-	SetOutput(file)
 	return logger, nil
-}
-
-// NewStreamLog creates a new stream logger
-func NewStreamLog(w io.Writer) *FileLog {
-	logger := &FileLog{
-		writer: w,
-	}
-	// also redirect the standard logger to the stream
-	SetOutput(w)
-	return logger
 }
 
 // Close the logfile when no longer needed
@@ -55,80 +39,7 @@ func (l *FileLog) Close() {
 	SetOutput(os.Stdout)
 }
 
-// Quiet will only display warnings and errors
-func (l *FileLog) Quiet() {
-	l.quiet = true
-	l.verbose = false
-}
-
-// Verbose will display debugging information
-func (l *FileLog) Verbose() {
-	l.verbose = true
-	l.quiet = false
-}
-
-// Debug sends debugging information
-func (l *FileLog) Debug(v ...interface{}) {
-	if !l.verbose {
-		return
-	}
-	l.message(DebugLevel, v...)
-}
-
-// Debugf sends debugging information
-func (l *FileLog) Debugf(format string, v ...interface{}) {
-	if !l.verbose {
-		return
-	}
-	l.messagef(DebugLevel, format, v...)
-}
-
-// Info logs some noticeable information
-func (l *FileLog) Info(v ...interface{}) {
-	if l.quiet {
-		return
-	}
-	l.message(InfoLevel, v...)
-}
-
-// Infof logs some noticeable information
-func (l *FileLog) Infof(format string, v ...interface{}) {
-	if l.quiet {
-		return
-	}
-	l.messagef(InfoLevel, format, v...)
-}
-
-// Warning send some important message to the console
-func (l *FileLog) Warning(v ...interface{}) {
-	l.message(WarningLevel, v...)
-}
-
-// Warningf send some important message to the console
-func (l *FileLog) Warningf(format string, v ...interface{}) {
-	l.messagef(WarningLevel, format, v...)
-}
-
-// Error sends error information to the console
-func (l *FileLog) Error(v ...interface{}) {
-	l.message(ErrorLevel, v...)
-}
-
-// Errorf sends error information to the console
-func (l *FileLog) Errorf(format string, v ...interface{}) {
-	l.messagef(ErrorLevel, format, v...)
-}
-
-func (l *FileLog) message(level int, v ...interface{}) {
-	v = append([]interface{}{getLevelName(level)}, v...)
-	log.Println(v...)
-}
-
-func (l *FileLog) messagef(level int, format string, v ...interface{}) {
-	log.Printf(getLevelName(level)+" "+format+"\n", v...)
-}
-
 // Verify interface
 var (
-	_ Log = &FileLog{}
+	_ Logger = &FileLog{}
 )

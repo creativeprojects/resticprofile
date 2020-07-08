@@ -6,12 +6,14 @@ import (
 	"github.com/fatih/color"
 )
 
+const (
+	numLevels = 5
+)
+
 // ConsoleLog logs messages to the console (in colour)
 type ConsoleLog struct {
-	quiet     bool
-	verbose   bool
-	colorMaps map[string][4]*color.Color
-	levelMap  [4]*color.Color
+	colorMaps map[string][numLevels]*color.Color
+	levelMap  [numLevels]*color.Color
 }
 
 // NewConsoleLog creates a new console logger
@@ -22,20 +24,23 @@ func NewConsoleLog() *ConsoleLog {
 }
 
 func (l *ConsoleLog) init() {
-	l.colorMaps = map[string][4]*color.Color{
+	l.colorMaps = map[string][numLevels]*color.Color{
 		"none": {
+			NoLevel:      nil,
 			DebugLevel:   nil,
 			InfoLevel:    nil,
 			WarningLevel: color.New(color.Bold),
 			ErrorLevel:   color.New(color.Bold),
 		},
 		"light": {
+			NoLevel:      nil,
 			DebugLevel:   color.New(color.FgGreen),
 			InfoLevel:    color.New(color.FgCyan),
 			WarningLevel: color.New(color.FgMagenta, color.Bold),
 			ErrorLevel:   color.New(color.FgRed, color.Bold),
 		},
 		"dark": {
+			NoLevel:      nil,
 			DebugLevel:   color.New(color.FgHiGreen),
 			InfoLevel:    color.New(color.FgHiCyan),
 			WarningLevel: color.New(color.FgHiMagenta, color.Bold),
@@ -59,47 +64,33 @@ func (l *ConsoleLog) Colorize(colorize bool) {
 	color.NoColor = !colorize
 }
 
-// Quiet will only display warnings and errors
-func (l *ConsoleLog) Quiet() {
-	l.quiet = true
-	l.verbose = false
+// Log sends a log entry with the specified level
+func (l *ConsoleLog) Log(level LogLevel, v ...interface{}) {
+	l.message(l.levelMap[level], v...)
 }
 
-// Verbose will display debugging information
-func (l *ConsoleLog) Verbose() {
-	l.verbose = true
-	l.quiet = false
+// Logf sends a log entry with the specified level
+func (l *ConsoleLog) Logf(level LogLevel, format string, v ...interface{}) {
+	l.messagef(l.levelMap[level], format, v...)
 }
 
 // Debug sends debugging information
 func (l *ConsoleLog) Debug(v ...interface{}) {
-	if !l.verbose {
-		return
-	}
 	l.message(l.levelMap[DebugLevel], v...)
 }
 
 // Debugf sends debugging information
 func (l *ConsoleLog) Debugf(format string, v ...interface{}) {
-	if !l.verbose {
-		return
-	}
 	l.messagef(l.levelMap[DebugLevel], format, v...)
 }
 
 // Info logs some noticeable information
 func (l *ConsoleLog) Info(v ...interface{}) {
-	if l.quiet {
-		return
-	}
 	l.message(l.levelMap[InfoLevel], v...)
 }
 
 // Infof logs some noticeable information
 func (l *ConsoleLog) Infof(format string, v ...interface{}) {
-	if l.quiet {
-		return
-	}
 	l.messagef(l.levelMap[InfoLevel], format, v...)
 }
 
@@ -147,5 +138,5 @@ func (l *ConsoleLog) unsetColor() {
 
 // Verify interface
 var (
-	_ Log = &ConsoleLog{}
+	_ Logger = &ConsoleLog{}
 )
