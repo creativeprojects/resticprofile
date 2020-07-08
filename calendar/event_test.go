@@ -180,3 +180,22 @@ func TestNextTrigger(t *testing.T) {
 		})
 	}
 }
+
+func TestEventAsTime(t *testing.T) {
+	testData := []struct{ input, expected string }{
+		{"2011-11-01", "2011-11-01 00:00:00"},
+		{"2011-11-01 10:01", "2011-11-01 10:01:00"},
+		{"2011-11-01 10:01:02", "2011-11-01 10:01:02"},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			event := NewEvent()
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
+			datetime, ok := event.AsTime()
+			assert.True(t, ok)
+			assert.Equal(t, testItem.expected, datetime.Format("2006-01-02 15:04:05"))
+		})
+	}
+}

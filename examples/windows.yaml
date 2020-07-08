@@ -21,3 +21,12 @@ self:
     schedule-permission: user
     backup:
         source: "."
+
+test:
+    inherit: default
+    initialize: true
+    schedule:
+    - "2020-07-31"
+    schedule-permission: user
+    backup:
+        source: "."

@@ -102,6 +102,22 @@ func (e *Event) Next(from time.Time) time.Time {
 	return time.Time{}
 }
 
+// AsTime returns a time.Time representation of the event if possible,
+// if not possible the second value will be false
+func (e *Event) AsTime() (time.Time, bool) {
+	// Let's not bother about seconds
+	if !e.WeekDay.HasValue() &&
+		e.Year.HasSingleValue() &&
+		e.Month.HasSingleValue() &&
+		e.Day.HasSingleValue() &&
+		e.Hour.HasSingleValue() &&
+		e.Minute.HasSingleValue() {
+		event, err := time.Parse("2006-01-02 15:04:05", e.String())
+		return event, err == nil
+	}
+	return time.Now(), false
+}
+
 // match returns true if the time in parameter would trigger the event
 func (e *Event) match(currentTime time.Time) bool {
 	values := []struct {

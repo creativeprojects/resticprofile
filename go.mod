@@ -19,6 +19,7 @@ require (
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/rhysd/go-github-selfupdate v1.2.2
+	github.com/rickb777/date v1.12.3
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.3.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect

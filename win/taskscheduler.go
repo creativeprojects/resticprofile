@@ -7,12 +7,30 @@ import (
 	"os"
 	"os/user"
 	"text/tabwriter"
+	"time"
 
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/rickb777/date/period"
 )
+
+// Schedule types on Windows:
+// ==========================
+// 1. one time:
+//    - at a specific date
+// 2. daily:
+//    - 1 start date
+//    - recurring every n days
+// 3. weekly:
+//    - 1 start date
+//    - recurring every n weeks
+//    - on specific weekdays
+// 4. monthly:
+//    - 1 start date
+//    - on specific months
+//    - on specific days (1 to 31)
 
 const (
 	tasksPath = `\resticprofile backup\`
@@ -73,6 +91,8 @@ func (s *TaskScheduler) createUserTask(binary, args, workingDir, description str
 	task.RegistrationInfo.Author = "resticprofile"
 	task.RegistrationInfo.Description = description
 
+	s.createSchedules(&task, schedules)
+
 	_, _, err = taskService.CreateTaskEx(getTaskPath(s.profile.Name), task, currentUser.Username, password, taskmaster.TASK_LOGON_PASSWORD, true)
 	if err != nil {
 		return err
@@ -95,11 +115,41 @@ func (s *TaskScheduler) createSystemTask(binary, args, workingDir, description s
 	task.RegistrationInfo.Author = "resticprofile"
 	task.RegistrationInfo.Description = description
 
+	s.createSchedules(&task, schedules)
+
 	_, _, err = taskService.CreateTask(getTaskPath(s.profile.Name), task, true)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules []*calendar.Event) {
+	for _, schedule := range schedules {
+		if once, ok := schedule.AsTime(); ok {
+			// one time only
+			task.AddTimeTrigger(period.Period{}, once)
+			continue
+		}
+		if !schedule.WeekDay.HasValue() && !schedule.Month.HasValue() && !schedule.Day.HasValue() {
+			// recurring daily
+			start := schedule.Next(time.Now())
+			// get all recurrences in the same day
+			recurrences := []time.Time{}
+			next := start
+			nextDay := start.Add(24 * time.Hour)
+			for next.Before(nextDay) {
+				recurrences = append(recurrences, next)
+				next = schedule.Next(next.Add(time.Minute))
+			}
+			// now calculate the difference in between each
+			differences := make([]time.Duration, len(recurrences)-1)
+			for i := 0; i < len(recurrences)-1; i++ {
+				differences[i] = recurrences[i+1].Sub(recurrences[i])
+			}
+			// check if they're all the same
+		}
+	}
 }
 
 // Update a task
