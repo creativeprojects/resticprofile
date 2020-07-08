@@ -484,16 +484,22 @@ resticprofile flags:
   -c, --config string   configuration file (default "profiles")
   -f, --format string   file format of the configuration (default is to use the file extension)
   -h, --help            display this help
+  -l, --log string      logs into a file instead of the console
   -n, --name string     profile name (default "default")
       --no-ansi         disable ansi control characters (disable console colouring)
   -q, --quiet           display only warnings and errors
       --theme string    console colouring theme (dark, light, none) (default "light")
   -v, --verbose         display all debugging information
+  -w, --wait            wait at the end until the user presses the enter key
 
 resticprofile own commands:
-   profiles       display profile names from the configuration file
-   self-update    update resticprofile to latest version (does not update restic)
-   show           show all the details of the current profile
+   self-update   update resticprofile to latest version (does not update restic)
+   profiles      display profile names from the configuration file
+   show          show all the details of the current profile
+   schedule      schedule a backup
+   unschedule    remove a scheduled backup
+   status        display the status of a scheduled backup job
+
 
 
 ```
@@ -512,7 +518,11 @@ There are not many options on the command line, most of the options are in the c
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
-* **[restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
+* **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
+light or dark terminal (none to disable colouring)
+* **[-l | --log] log_file**: To write the logs in file instead of displaying on the console
+* **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
+* **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
 
 ## Minimum memory required
@@ -529,23 +539,26 @@ resticprofile is capable of managing scheduled backups for you:
 - using **launchd** on macOS X
 - using **Task Scheduler** on Windows
 
-Each profile can be scheduled independently (not groups yet). Two parameters are added on the profile:
+Each profile can be scheduled independently (groups are not available for scheduling yet).
+Two parameters can be added on the profile:
 
 ```ini
 [profile]
-schedule = "*:00,30"
 schedule-type = "system"
+schedule = "*:00,30"
 ```
+
+**Please note**: these two parameters are in the profile section, not the backup section of the profile, even though it's obvious it's only for scheduling backups.
 
 ### schedule-type
 
-`schedule-type` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's what you want if you're only saving your documents (or any other file inside your profile).
+`schedule-type` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
 
 If you need to access some system or protected files, set the `schedule-type` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions if needed)
 
 ### schedule
 
-The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to understand. It is the same format used to schedule on macOS and Windows.
+The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use. **It is the same format used to schedule on macOS and Windows**.
 
 The most general form is:
 ```
@@ -556,13 +569,15 @@ weekdays year-month-day hour:minute:second
 - use `,` to separate multiple entries
 - use `..` for a range
 
-**limitations**: divider (`/`), the `~` and timezones are not supported in macOS and Windows.
-
-**macOS users**: please note the `year` and `second` fields have no effect on macOS. They don't make much sense anyway.
+**limitations**:
+- the divider (`/`), the `~` and timezones are not (yet?) supported on macOS and Windows.
+- the `year` and `second` fields have no effect on macOS. They do have limited availability on Windows (they don't make much sense anyway).
 
 Here are a few examples (taken from the systemd documentation):
 
 ```
+On the left is the user input, on the right is the full format understood by the system
+
   Sat,Thu,Mon..Wed,Sat..Sun → Mon..Thu,Sat,Sun *-*-* 00:00:00
       Mon,Sun 12-*-* 2,1:23 → Mon,Sun 2012-*-* 01,02:23:00
                     Wed *-1 → Wed *-*-01 00:00:00
@@ -614,7 +629,6 @@ self:
 resticprofile accepts these internal commands:
 - schedule
 - unschedule
-- reschedule
 - status
 
 All these commands need at least a name of a profile, that's where the schedule information is taken from.
@@ -1022,12 +1036,12 @@ stdin = {
 ## Using resticprofile and systemd
 
 systemd is a common service manager in use by many Linux distributions.
-resticprofile has the ability to autocreate systemd timer and service files.
+resticprofile has the ability to create systemd timer and service files.
 systemd can be used in place of cron to schedule backups.
 
-All systemd units are created under the user's systemd profile (~/.config/systemd/user).
+User systemd units are created under the user's systemd profile (~/.config/systemd/user).
 
-TODO: create system profiles
+System units are created in /etc/systemd/system
 
 ### systemd calendars
 
@@ -1046,33 +1060,3 @@ Normalized form: *-*-* 00:00:00
        (in UTC): Sat 2020-04-18 05:00:00 UTC
        From now: 10h left
 ```
-
-### Configuring a systemd profile
-
-Running the following command will create a timer and systemd unit for the
-'configs' profile name within resticprofile. 
-
-```
-$ resticprofile -n configs systemd-unit daily
-2020/04/17 13:34:07 resticprofile 0.6.0 compiled with go1.14.2
-2020/04/17 13:34:07 Writing /home/<user>/.config/systemd/user/resticprofile-backup@configs.service
-2020/04/17 13:34:07 Writing /home/<user>/.config/systemd/user/resticprofile-backup@configs.timer
-```
-
-The service can be tested or run once with:
-
-```
-$ systemctl --user start resticprofile-backup@configs.service
-```
-
-Or, starting the timer will enable the schedule:
-```
-$ systemctl --user start resticprofile-backup@configs.timer
-```
-
-To persist the timer across reboots, replace `start` with enable:
-
-```
-$ systemctl --user enable resticprofile-backup@configs.timer
-```
-

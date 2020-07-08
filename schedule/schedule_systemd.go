@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/creativeprojects/resticprofile/term"
 )
@@ -30,6 +31,19 @@ func checkSystem() error {
 		return errors.New("it doesn't look like systemd is installed on your system")
 	}
 	return nil
+}
+
+func (j *Job) checkPermission() bool {
+	if j.profile.SchedulePermission == constants.SchedulePermissionUser {
+		// user mode is always available
+		return true
+	}
+	if os.Geteuid() == 0 {
+		// user has sudo'ed
+		return true
+	}
+	// last case is system (or undefined) + no sudo
+	return false
 }
 
 // removeJob is disabling the systemd unit and deleting the timer and service files
