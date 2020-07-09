@@ -72,3 +72,47 @@ global:
 		})
 	}
 }
+
+func TestStringWithCommaNotConvertedToSlice(t *testing.T) {
+	testData := []testTemplate{
+		{"toml", `
+[profile]
+run-before = "first, second, third"
+run-after = ["first", "second", "third"]
+`},
+		{"json", `
+{
+  "profile": {
+    "run-before": "first, second, third",
+    "run-after": ["first", "second", "third"]
+  }
+}`},
+		{"yaml", `---
+profile:
+    run-before: first, second, third
+    run-after: ["first", "second", "third"]
+`},
+		{"hcl", `
+"profile" = {
+    run-before = "first, second, third"
+    run-after = ["first", "second", "third"]
+}
+`},
+	}
+
+	for _, testItem := range testData {
+		format := testItem.format
+		testConfig := testItem.config
+		t.Run(format, func(t *testing.T) {
+			c, err := Load(bytes.NewBufferString(testConfig), format)
+			require.NoError(t, err)
+
+			profile, err := c.GetProfile("profile")
+			require.NoError(t, err)
+
+			assert.NotNil(t, profile)
+			assert.Len(t, profile.RunBefore, 1)
+			assert.Len(t, profile.RunAfter, 3)
+		})
+	}
+}
