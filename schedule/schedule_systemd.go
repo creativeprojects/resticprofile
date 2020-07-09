@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path"
 
-	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 )
@@ -36,18 +35,18 @@ func checkSystem() error {
 // getSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission
 func (j *Job) getSchedulePermission() string {
-	const message = "you have not specified the permission for your schedule (system or user): assuming"
-	if j.profile.SchedulePermission == constants.SchedulePermissionSystem ||
-		j.profile.SchedulePermission == constants.SchedulePermissionUser {
-		// well defined
-		return j.profile.SchedulePermission
-	}
-	// best guess is depending on the user being root or not:
-	if os.Geteuid() == 0 {
-		clog.Warning(message, "system")
-		return constants.SchedulePermissionSystem
-	}
-	clog.Warning(message, "user")
+	// const message = "you have not specified the permission for your schedule (system or user): assuming"
+	// if j.profile.SchedulePermission == constants.SchedulePermissionSystem ||
+	// 	j.profile.SchedulePermission == constants.SchedulePermissionUser {
+	// 	// well defined
+	// 	return j.profile.SchedulePermission
+	// }
+	// // best guess is depending on the user being root or not:
+	// if os.Geteuid() == 0 {
+	// 	clog.Warning(message, "system")
+	// 	return constants.SchedulePermissionSystem
+	// }
+	// clog.Warning(message, "user")
 	return constants.SchedulePermissionUser
 }
 
@@ -89,7 +88,7 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		return err
 	}
 
-	err = systemd.Generate(wd, binary, j.configFile, j.profile.Name, j.profile.Schedule, unitType)
+	err = systemd.Generate(wd, binary, j.configFile, j.profile.Name, j.profile.Backup.Schedule, unitType)
 	if err != nil {
 		return err
 	}

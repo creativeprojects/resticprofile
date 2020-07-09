@@ -25,7 +25,7 @@ func (j *Job) createJob() error {
 
 	// default permission will be system
 	permission := win.SystemAccount
-	if j.profile.SchedulePermission == constants.SchedulePermissionUser {
+	if j.profile.Backup.SchedulePermission == constants.SchedulePermissionUser {
 		permission = win.UserAccount
 	}
 	taskScheduler := win.NewTaskScheduler(j.profile)
