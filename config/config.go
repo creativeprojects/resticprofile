@@ -36,18 +36,11 @@ type Config struct {
 //   key2 = "value"
 // }
 //
-// For that matter, viper creates an slice of maps instead of a map for the other configuration file formats
+// For that matter, viper creates a slice of maps instead of a map for the other configuration file formats
 // This configOptionHCL deals with the slice to merge it into a single map
 var (
-	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
-		mapstructure.StringToTimeDurationHookFunc(),
-		mapstructure.StringToSliceHookFunc(","),
-	))
-	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
-		sliceOfMapsToMapHookFunc(),
-		mapstructure.StringToTimeDurationHookFunc(),
-		mapstructure.StringToSliceHookFunc(","),
-	))
+	configOption    = viper.DecodeHook(nil)
+	configOptionHCL = viper.DecodeHook(sliceOfMapsToMapHookFunc())
 )
 
 // newConfig instantiate a new Config object
