@@ -16,7 +16,7 @@ func TestGetCombinationItemsFromCalendarValues(t *testing.T) {
 	schedule := calendar.NewEvent()
 	err := schedule.Parse("Mon..Fri *-*-* *:0,30:00")
 	require.NoError(t, err)
-	///
+	//
 
 	fields := []*calendar.Value{
 		schedule.WeekDay,

@@ -78,10 +78,11 @@ func (j *Job) Status() error {
 
 func (j *Job) checkSchedules() error {
 	var err error
-	if j.profile.Schedule == nil || len(j.profile.Schedule) == 0 {
+	// Backup schedules
+	if j.profile.Backup == nil || j.profile.Backup.Schedule == nil || len(j.profile.Backup.Schedule) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", j.profile.Name)
 	}
-	j.schedules, err = loadSchedules(j.profile.Schedule)
+	j.schedules, err = loadSchedules(j.profile.Backup.Schedule)
 	return err
 }
 
