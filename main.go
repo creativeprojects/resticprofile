@@ -120,7 +120,9 @@ func main() {
 		exitCode = 1
 		return
 	}
-	clog.Infof("using configuration file: %s", configFile)
+	if configFile != flags.config {
+		clog.Infof("using configuration file: %s", configFile)
+	}
 
 	c, err := config.LoadFile(configFile, flags.format)
 	if err != nil {
@@ -222,7 +224,7 @@ func main() {
 }
 
 func banner() {
-	clog.Infof("resticprofile %s compiled with %s", version, runtime.Version())
+	clog.Debugf("resticprofile %s compiled with %s", version, runtime.Version())
 }
 
 func setPriority(nice int, class string) error {

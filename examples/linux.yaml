@@ -4,8 +4,6 @@ global:
     priority: low
 
 default:
-    env:
-        tmp: /tmp
     password-file: key
     repository: /tmp/backup
 
@@ -19,6 +17,20 @@ documents:
         source: ~/Documents
     snapshots:
         tag: documents
+
+test1:
+    inherit: default
+    schedule: "*:00,15,30,45"
+    schedule-permission: user
+    backup:
+        source: ./
+
+test2:
+    inherit: default
+    schedule: "*:05,25,45"
+    schedule-permission: system
+    backup:
+        source: ./
 
 self:
     inherit: default

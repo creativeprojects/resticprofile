@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"path"
 
+	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
-	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -36,6 +36,7 @@ func checkSystem() error {
 // getSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission
 func (j *Job) getSchedulePermission() string {
+	const message = "you have not specified the permission for your schedule (system or user): assuming"
 	if j.profile.SchedulePermission == constants.SchedulePermissionSystem ||
 		j.profile.SchedulePermission == constants.SchedulePermissionUser {
 		// well defined
@@ -43,13 +44,15 @@ func (j *Job) getSchedulePermission() string {
 	}
 	// best guess is depending on the user being root or not:
 	if os.Geteuid() == 0 {
+		clog.Warning(message, "system")
 		return constants.SchedulePermissionSystem
 	}
+	clog.Warning(message, "user")
 	return constants.SchedulePermissionUser
 }
 
-func (j *Job) checkPermission() bool {
-	if j.profile.SchedulePermission == constants.SchedulePermissionUser {
+func (j *Job) checkPermission(permission string) bool {
+	if permission == constants.SchedulePermissionUser {
 		// user mode is always available
 		return true
 	}
@@ -63,19 +66,14 @@ func (j *Job) checkPermission() bool {
 
 // createJob is creating the systemd unit and activating it
 func (j *Job) createJob() error {
-	ok := j.checkPermission()
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
 	if !ok {
 		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
 	}
 	if os.Geteuid() == 0 {
 		// user has sudoed already
 		return j.createSystemdJob(systemd.SystemUnit)
-	}
-	message := "\nPlease note resticprofile was started as a standard user (typically without sudo):" +
-		"\nDo you want to install the scheduled backup as a user job as opposed to a system job?"
-	answer := term.AskYesNo(os.Stdin, message, false)
-	if !answer {
-		return errors.New("operation cancelled by user")
 	}
 	return j.createSystemdJob(systemd.UserUnit)
 }
@@ -112,7 +110,8 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 
 // removeJob is disabling the systemd unit and deleting the timer and service files
 func (j *Job) removeJob() error {
-	ok := j.checkPermission()
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
 	if !ok {
 		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
 	}
@@ -162,7 +161,8 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 }
 
 func (j *Job) displayStatus() error {
-	if os.Geteuid() == 0 {
+	permission := j.getSchedulePermission()
+	if permission == constants.SchedulePermissionSystem {
 		// user has sudoed
 		return runSystemdCommand(j.profile.Name, commandStatus, systemd.SystemUnit)
 	}
