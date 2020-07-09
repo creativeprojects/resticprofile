@@ -26,5 +26,6 @@ func loadSchedules(schedules []string) ([]*calendar.Event, error) {
 			return events, err
 		}
 	}
+	fmt.Print("\n")
 	return events, nil
 }

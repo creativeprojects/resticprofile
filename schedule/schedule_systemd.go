@@ -57,7 +57,7 @@ func (j *Job) checkPermission(permission string) bool {
 		return true
 	}
 	if os.Geteuid() == 0 {
-		// user has sudo'ed
+		// user has sudoed
 		return true
 	}
 	// last case is system (or undefined) + no sudo
@@ -78,6 +78,7 @@ func (j *Job) createJob() error {
 	return j.createSystemdJob(systemd.UserUnit)
 }
 
+// createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -160,10 +161,10 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	return nil
 }
 
+// displayStatus of a systemd service/timer
 func (j *Job) displayStatus() error {
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {
-		// user has sudoed
 		return runSystemdCommand(j.profile.Name, commandStatus, systemd.SystemUnit)
 	}
 	return runSystemdCommand(j.profile.Name, commandStatus, systemd.UserUnit)
