@@ -10,14 +10,14 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-func loadSchedules(schedules []string) ([]*calendar.Event, error) {
+func loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
 	now := time.Now().Round(time.Second)
 	events := make([]*calendar.Event, 0, len(schedules))
 	for index, schedule := range schedules {
 		if schedule == "" {
 			return events, errors.New("empty schedule")
 		}
-		term.Printf("\nAnalyzing schedule %d/%d\n========================\n", index+1, len(schedules))
+		term.Printf("\nAnalyzing %s schedule %d/%d\n=================================\n", command, index+1, len(schedules))
 		event := calendar.NewEvent()
 		err := event.Parse(schedule)
 		if err != nil {

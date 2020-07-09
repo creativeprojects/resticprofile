@@ -2,8 +2,6 @@ package schedule
 
 import (
 	"fmt"
-	"path"
-	"path/filepath"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
@@ -13,7 +11,7 @@ import (
 type Job struct {
 	configFile string
 	profile    *config.Profile
-	schedules  []*calendar.Event
+	schedules  map[config.ScheduledCommand][]*calendar.Event
 }
 
 // NewJob instantiates a Job object to schedule jobs
@@ -36,9 +34,11 @@ func (j *Job) Create() error {
 		return err
 	}
 
-	err = j.createJob()
-	if err != nil {
-		return err
+	for command, schedules := range j.schedules {
+		err = j.createJob(command.String(), schedules)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -73,24 +73,33 @@ func (j *Job) Status() error {
 		return err
 	}
 
-	return j.displayStatus()
+	err = j.checkSchedules()
+	if err != nil {
+		return err
+	}
+
+	for command := range j.schedules {
+		err = j.displayStatus(command.String())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
+// checkSchedules for each command and load the schedules into j.schedules
 func (j *Job) checkSchedules() error {
 	var err error
-	// Backup schedules
-	if j.profile.Backup == nil || j.profile.Backup.Schedule == nil || len(j.profile.Backup.Schedule) == 0 {
+	j.schedules = make(map[config.ScheduledCommand][]*calendar.Event, 3)
+	commandSchedules := j.profile.GetScheduledCommands()
+	if len(commandSchedules) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", j.profile.Name)
 	}
-	j.schedules, err = loadSchedules(j.profile.Backup.Schedule)
-	return err
-}
-
-// absolutePathToBinary returns an absolute path to the resticprofile binary
-func absolutePathToBinary(currentDir, binaryPath string) string {
-	binary := binaryPath
-	if !filepath.IsAbs(binary) {
-		binary = path.Join(currentDir, binary)
+	for command, schedules := range commandSchedules {
+		j.schedules[command], err = loadSchedules(command.String(), schedules.Schedule)
+		if err != nil {
+			return err
+		}
 	}
-	return binary
+	return nil
 }

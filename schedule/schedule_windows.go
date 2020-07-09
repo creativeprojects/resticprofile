@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/win"
 )
 
 // createJob is creating the task scheduler job.
-func (j *Job) createJob() error {
+func (j *Job) createJob(command string, schedules []*calendar.Event) error {
 	binary, err := os.Executable()
 	if err != nil {
 		return err
@@ -29,7 +30,7 @@ func (j *Job) createJob() error {
 		permission = win.UserAccount
 	}
 	taskScheduler := win.NewTaskScheduler(j.profile)
-	err = taskScheduler.Create(binary, args, wd, description, j.schedules, permission)
+	err = taskScheduler.Create(binary, args, wd, description, schedules, permission)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func checkSystem() error {
 }
 
 // displayStatus display some information about the task scheduler job
-func (j *Job) displayStatus() error {
+func (j *Job) displayStatus(command string) error {
 	taskScheduler := win.NewTaskScheduler(j.profile)
 	err := taskScheduler.Status()
 	if err != nil {

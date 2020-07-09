@@ -7,12 +7,14 @@ package schedule
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"howett.net/plist"
 )
 
@@ -24,7 +26,7 @@ const (
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 
-	namePrefix     = "local.resticprofile."
+	namePrefix     = "local.resticprofile"
 	agentExtension = ".agent.plist"
 )
 
@@ -52,7 +54,7 @@ type CalendarInterval struct {
 }
 
 // createJob creates a plist file and register it with launchd
-func (j *Job) createJob() error {
+func (j *Job) createJob(command string, schedules []*calendar.Event) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -62,9 +64,12 @@ func (j *Job) createJob() error {
 		return err
 	}
 
-	binary := absolutePathToBinary(wd, os.Args[0])
+	binary, err := os.Executable()
+	if err != nil {
+		return err
+	}
 
-	name := getJobName(j.profile.Name)
+	name := getJobName(j.profile.Name, command)
 	job := &LaunchJob{
 		Label:   name,
 		Program: binary,
@@ -81,7 +86,7 @@ func (j *Job) createJob() error {
 		StandardOutPath:       name + ".log",
 		StandardErrorPath:     name + ".log",
 		WorkingDirectory:      wd,
-		StartCalendarInterval: getCalendarIntervalsFromSchedules(j.schedules),
+		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 	}
 
 	file, err := os.Create(path.Join(home, UserAgentPath, name+agentExtension))
@@ -125,26 +130,40 @@ func (j *Job) removeJob() error {
 	if err != nil {
 		return err
 	}
-	name := getJobName(j.profile.Name)
 
-	// stop the service
-	stop := exec.Command(launchctlBin, "stop", name)
-	stop.Stdout = os.Stdout
-	stop.Stderr = os.Stderr
-	// keep going if there's an error here
-	_ = stop.Run()
+	// try all 3 commands
+	for _, command := range []string{
+		config.ScheduleBackup.String(),
+		config.ScheduleCheck.String(),
+		config.ScheduleRetention.String()} {
 
-	// unload the service
-	filename := path.Join(home, UserAgentPath, name+agentExtension)
-	unload := exec.Command(launchctlBin, "unload", filename)
-	unload.Stdout = os.Stdout
-	unload.Stderr = os.Stderr
-	err = unload.Run()
-	if err != nil {
-		return err
+		name := getJobName(j.profile.Name, command)
+		filename := path.Join(home, UserAgentPath, name+agentExtension)
+
+		if _, err := os.Stat(filename); err == nil || os.IsExist(err) {
+			// stop the service
+			stop := exec.Command(launchctlBin, "stop", name)
+			stop.Stdout = os.Stdout
+			stop.Stderr = os.Stderr
+			// keep going if there's an error here
+			_ = stop.Run()
+
+			// unload the service
+			unload := exec.Command(launchctlBin, "unload", filename)
+			unload.Stdout = os.Stdout
+			unload.Stderr = os.Stderr
+			err = unload.Run()
+			if err != nil {
+				return err
+			}
+			err = os.Remove(filename)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	return os.Remove(filename)
+	return nil
 }
 
 // checkSystem verifies launchd is available on this system
@@ -156,16 +175,16 @@ func checkSystem() error {
 	return nil
 }
 
-func (j *Job) displayStatus() error {
-	cmd := exec.Command(launchctlBin, "list", getJobName(j.profile.Name))
+func (j *Job) displayStatus(command string) error {
+	cmd := exec.Command(launchctlBin, "list", getJobName(j.profile.Name, command))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	return err
 }
 
-func getJobName(profileName string) string {
-	return namePrefix + strings.ToLower(profileName)
+func getJobName(profileName, command string) string {
+	return fmt.Sprintf("%s.%s.%s", namePrefix, strings.ToLower(profileName), command)
 }
 
 // getCalendarIntervalsFromSchedules converts schedules into launchd calendar events

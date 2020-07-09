@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 )
@@ -64,7 +65,7 @@ func (j *Job) checkPermission(permission string) bool {
 }
 
 // createJob is creating the systemd unit and activating it
-func (j *Job) createJob() error {
+func (j *Job) createJob(command string, schedules []*calendar.Event) error {
 	permission := j.getSchedulePermission()
 	ok := j.checkPermission(permission)
 	if !ok {
@@ -161,7 +162,7 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 }
 
 // displayStatus of a systemd service/timer
-func (j *Job) displayStatus() error {
+func (j *Job) displayStatus(command string) error {
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {
 		return runSystemdCommand(j.profile.Name, commandStatus, systemd.SystemUnit)

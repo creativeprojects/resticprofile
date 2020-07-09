@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -10,7 +11,30 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
-// ScheduleSection contains the fields for a command that can run on a timer
+// ScheduledCommand is a command that can be scheduled
+type ScheduledCommand int
+
+// ScheduledCommand possible values
+const (
+	ScheduleBackup ScheduledCommand = iota
+	ScheduleRetention
+	ScheduleCheck
+)
+
+func (c ScheduledCommand) String() string {
+	switch c {
+	case ScheduleBackup:
+		return constants.CommandBackup
+	case ScheduleCheck:
+		return constants.CommandCheck
+	case ScheduleRetention:
+		return constants.SectionConfigurationRetention
+	}
+	panic(fmt.Sprintf("Unknown ScheduledCommand id %d", c))
+}
+
+// ScheduleSection contains the fields for a command that can run on a timer.
+// This is being used in 3 sections so far: backup, retention (forget), check
 type ScheduleSection struct {
 	Schedule           []string `mapstructure:"schedule"`
 	SchedulePermission string   `mapstructure:"schedule-permission"`
@@ -45,31 +69,32 @@ type Profile struct {
 
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
-	ScheduleSection
-	CheckBefore bool                   `mapstructure:"check-before"`
-	CheckAfter  bool                   `mapstructure:"check-after"`
-	RunBefore   []string               `mapstructure:"run-before"`
-	RunAfter    []string               `mapstructure:"run-after"`
-	UseStdin    bool                   `mapstructure:"stdin" argument:"stdin"`
-	Source      []string               `mapstructure:"source"`
-	ExcludeFile []string               `mapstructure:"exclude-file" argument:"exclude-file"`
-	FilesFrom   []string               `mapstructure:"files-from" argument:"files-from"`
-	OtherFlags  map[string]interface{} `mapstructure:",remain"`
+	ScheduleSection `mapstructure:",squash"`
+	CheckBefore     bool                   `mapstructure:"check-before"`
+	CheckAfter      bool                   `mapstructure:"check-after"`
+	RunBefore       []string               `mapstructure:"run-before"`
+	RunAfter        []string               `mapstructure:"run-after"`
+	UseStdin        bool                   `mapstructure:"stdin" argument:"stdin"`
+	Source          []string               `mapstructure:"source"`
+	ExcludeFile     []string               `mapstructure:"exclude-file" argument:"exclude-file"`
+	FilesFrom       []string               `mapstructure:"files-from" argument:"files-from"`
+	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
 
-// RetentionSection contains the specific configuration to the 'forget' command run as part of a backup
+// RetentionSection contains the specific configuration to
+// the 'forget' command when running as part of a backup
 type RetentionSection struct {
-	ScheduleSection
-	BeforeBackup bool                   `mapstructure:"before-backup"`
-	AfterBackup  bool                   `mapstructure:"after-backup"`
-	OtherFlags   map[string]interface{} `mapstructure:",remain"`
+	ScheduleSection `mapstructure:",squash"`
+	BeforeBackup    bool                   `mapstructure:"before-backup"`
+	AfterBackup     bool                   `mapstructure:"after-backup"`
+	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
 
 // OtherSectionWithSchedule is a section containing schedule only specific parameters
 // (the other parameters being for restic)
 type OtherSectionWithSchedule struct {
-	ScheduleSection
-	OtherFlags map[string]interface{} `mapstructure:",remain"`
+	ScheduleSection `mapstructure:",squash"`
+	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
 
 // NewProfile instantiates a new blank profile
@@ -187,6 +212,33 @@ func (p *Profile) GetBackupSource() []string {
 		return nil
 	}
 	return p.Backup.Source
+}
+
+// GetScheduledCommands returns a map of commands that are scheduled (in the configuration)
+func (p *Profile) GetScheduledCommands() map[ScheduledCommand]ScheduleSection {
+	scheduledCommands := make(map[ScheduledCommand]ScheduleSection, 3)
+	// Backup
+	if p.Backup != nil && p.Backup.Schedule != nil && len(p.Backup.Schedule) > 0 {
+		scheduledCommands[ScheduleBackup] = ScheduleSection{
+			Schedule:           p.Backup.Schedule,
+			SchedulePermission: p.Backup.SchedulePermission,
+		}
+	}
+	// Retention
+	if p.Retention != nil && p.Retention.Schedule != nil && len(p.Retention.Schedule) > 0 {
+		scheduledCommands[ScheduleRetention] = ScheduleSection{
+			Schedule:           p.Retention.Schedule,
+			SchedulePermission: p.Retention.SchedulePermission,
+		}
+	}
+	// Check
+	if p.Check != nil && p.Check.Schedule != nil && len(p.Check.Schedule) > 0 {
+		scheduledCommands[ScheduleCheck] = ScheduleSection{
+			Schedule:           p.Check.Schedule,
+			SchedulePermission: p.Check.SchedulePermission,
+		}
+	}
+	return scheduledCommands
 }
 
 func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{}) map[string][]string {
