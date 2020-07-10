@@ -88,7 +88,7 @@ func (e *Event) Parse(input string) error {
 
 // Next returns the next schedule for this event
 func (e *Event) Next(from time.Time) time.Time {
-	// start from time and increment of 1 second each time
+	// start from time and increment of 1 minute each time
 	next := from.Truncate(time.Minute) // truncate all the seconds
 	// should stop in 2 years time to avoid an infinite loop
 	endYear := from.Year() + 2
@@ -145,6 +145,7 @@ func (e *Event) match(currentTime time.Time) bool {
 		{e.WeekDay, int(currentTime.Weekday())},
 		{e.Hour, currentTime.Hour()},
 		{e.Minute, currentTime.Minute()},
+		// Not really useful to check for the seconds (might revert if introducing bugs)
 		// {e.Second, currentTime.Second()},
 	}
 	for _, value := range values {
