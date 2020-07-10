@@ -31,3 +31,18 @@ func TestGetCombinationItemsFromCalendarValues(t *testing.T) {
 	assert.Equal(t, 10, total)
 	assert.Len(t, items, 7)
 }
+
+func TestConvertCombinationToCalendarInterval(t *testing.T) {
+	testData := [][]combinationItem{
+		{
+			{calendar.TypeMinute, 15},
+			{calendar.TypeMinute, 45},
+		},
+		{
+			{calendar.TypeWeekDay, 1},
+			{calendar.TypeWeekDay, 7},
+		},
+	}
+	output := convertCombinationToCalendarInterval(testData)
+	t.Logf("%+v", output)
+}
