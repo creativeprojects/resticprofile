@@ -89,15 +89,15 @@ func (e *Event) Parse(input string) error {
 // Next returns the next schedule for this event
 func (e *Event) Next(from time.Time) time.Time {
 	// start from time and increment of 1 second each time
-	next := from
+	next := from.Truncate(time.Minute) // truncate all the seconds
 	// should stop in 2 years time to avoid an infinite loop
 	endYear := from.Year() + 2
 	for next.Year() <= endYear {
 		if e.match(next) {
 			return next
 		}
-		// increment 1 second
-		next = next.Add(time.Second)
+		// increment 1 minute
+		next = next.Add(time.Minute)
 	}
 	return time.Time{}
 }
@@ -105,7 +105,7 @@ func (e *Event) Next(from time.Time) time.Time {
 // AsTime returns a time.Time representation of the event if possible,
 // if not possible the second value will be false
 func (e *Event) AsTime() (time.Time, bool) {
-	// Let's not bother about seconds
+	// Let's not bother with seconds
 	if !e.WeekDay.HasValue() &&
 		e.Year.HasSingleValue() &&
 		e.Month.HasSingleValue() &&
@@ -121,6 +121,9 @@ func (e *Event) AsTime() (time.Time, bool) {
 // GetAllInBetween returns all activation times of the event in between these two dates.
 // the minimum increment is 1 minute
 func (e *Event) GetAllInBetween(start, end time.Time) []time.Time {
+	// align time to the minute (zeroing the seconds)
+	start = start.Truncate(time.Minute)
+	end = end.Truncate(time.Minute)
 	recurrences := []time.Time{}
 	next := e.Next(start)
 	for next.Before(end) {
@@ -142,7 +145,7 @@ func (e *Event) match(currentTime time.Time) bool {
 		{e.WeekDay, int(currentTime.Weekday())},
 		{e.Hour, currentTime.Hour()},
 		{e.Minute, currentTime.Minute()},
-		{e.Second, currentTime.Second()},
+		// {e.Second, currentTime.Second()},
 	}
 	for _, value := range values {
 		if !value.ref.HasValue() {

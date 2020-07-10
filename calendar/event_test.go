@@ -131,12 +131,17 @@ func TestNotMatchingTime(t *testing.T) {
 
 	matches := []string{
 		"*-*", // any day at midnight
-		"2006-01-02 15:04:11",
 		"2006-01-02 15:11:05",
 		"2006-01-02 11:04:05",
 		"2006-01-11 15:04:05",
 		"2006-11-02 15:04:05",
 		"2011-01-02 15:04:05",
+		// seconds don't count
+		"2006-01-02 15:11:00",
+		"2006-01-02 11:04:00",
+		"2006-01-11 15:04:00",
+		"2006-11-02 15:04:00",
+		"2011-01-02 15:04:00",
 	}
 
 	for _, check := range matches {
@@ -155,10 +160,10 @@ func TestNextTrigger(t *testing.T) {
 	require.NoError(t, err)
 
 	testData := []struct{ event, trigger string }{
-		{"*:*:*", "2006-01-02 15:04:05"},
+		{"*:*:*", "2006-01-02 15:04:00"}, // seconds are zeroed out
 		{"03-*", "2006-03-01 00:00:00"},
 		{"*-01", "2006-02-01 00:00:00"},
-		{"*:*:11", "2006-01-02 15:04:11"},
+		{"*:*:11", "2006-01-02 15:04:00"}, // again, seconds are zeroed out
 		{"*:11:*", "2006-01-02 15:11:00"},
 		{"11:*:*", "2006-01-03 11:00:00"},
 		{"tue", "2006-01-03 00:00:00"},
@@ -177,6 +182,36 @@ func TestNextTrigger(t *testing.T) {
 			err = event.Parse(testItem.event)
 			assert.NoError(t, err)
 			assert.Equal(t, testItem.trigger, event.Next(ref).String()[0:len(testItem.trigger)])
+		})
+	}
+}
+
+func BenchmarkNextTrigger(b *testing.B) {
+	// the base time is the example in the Go documentation https://golang.org/pkg/time/
+	ref, _ := time.Parse(time.ANSIC, "Mon Jan 2 15:04:05 2006")
+
+	testData := []struct{ event, trigger string }{
+		{"*:*:*", "2006-01-02 15:04:05"},
+		{"03-*", "2006-03-01 00:00:00"},
+		{"*-01", "2006-02-01 00:00:00"},
+		{"*:*:11", "2006-01-02 15:04:11"},
+		{"*:11:*", "2006-01-02 15:11:00"},
+		{"11:*:*", "2006-01-03 11:00:00"},
+		{"tue", "2006-01-03 00:00:00"},
+	}
+
+	for _, testItem := range testData {
+		b.Run(testItem.event, func(b *testing.B) {
+			b.ReportAllocs()
+			event := NewEvent()
+			_ = event.Parse(testItem.event)
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				next := event.Next(ref).String()
+				if next == "" {
+					b.Fail()
+				}
+			}
 		})
 	}
 }
