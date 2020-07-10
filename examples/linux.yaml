@@ -20,17 +20,21 @@ documents:
 
 test1:
     inherit: default
-    schedule: "*:00,15,30,45"
-    schedule-permission: user
     backup:
         source: ./
+        schedule: "*:00,15,30,45"
+        schedule-permission: user
+    check:
+        schedule: "*-*-1"
 
 test2:
     inherit: default
-    schedule: "*:05,25,45"
-    schedule-permission: system
     backup:
         source: ./
+        schedule: "*:05,25,45"
+        schedule-permission: system
+    check:
+        schedule: "*-*-2"
 
 self:
     inherit: default

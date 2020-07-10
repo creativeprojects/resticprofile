@@ -62,8 +62,8 @@ type TemplateInfo struct {
 // Generate systemd unit
 func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType) error {
 	var err error
-	systemdProfile := GetServiceFile(title)
-	timerProfile := GetTimerFile(title)
+	systemdProfile := GetServiceFile(title, subTitle)
+	timerProfile := GetTimerFile(title, subTitle)
 
 	systemdUserDir := systemdSystemDir
 	if unitType == UserUnit {
@@ -107,13 +107,13 @@ func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription
 }
 
 // GetServiceFile returns the service file name for the profile
-func GetServiceFile(profileName string) string {
-	return fmt.Sprintf("resticprofile-backup@profile-%s.service", profileName)
+func GetServiceFile(profileName, commandName string) string {
+	return fmt.Sprintf("resticprofile-%s@profile-%s.service", commandName, profileName)
 }
 
 // GetTimerFile returns the timer file name for the profile
-func GetTimerFile(profileName string) string {
-	return fmt.Sprintf("resticprofile-backup@profile-%s.timer", profileName)
+func GetTimerFile(profileName, commandName string) string {
+	return fmt.Sprintf("resticprofile-%s@profile-%s.timer", commandName, profileName)
 }
 
 // GetUserDir returns the default directory where systemd stores user units

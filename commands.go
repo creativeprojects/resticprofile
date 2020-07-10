@@ -13,7 +13,6 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/win"
 )
 
@@ -220,7 +219,7 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
-	err = scheduleJobs(flags.config, profile.Name, schedules)
+	err = scheduleJobs(flags.config, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -273,8 +272,12 @@ func statusSchedule(c *config.Config, flags commandLineFlags, args []string) err
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
-	job := schedule.NewJob(flags.config, profile)
-	err = job.Status()
+	schedules := profile.Schedules()
+	if schedules == nil || len(schedules) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = statusJobs(schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}

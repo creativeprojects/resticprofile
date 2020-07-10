@@ -95,14 +95,16 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		return err
 	}
 
+	timerName := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
+
 	// enable the job
-	err = runSystemdCommand(j.config.Title(), commandEnable, unitType)
+	err = runSystemdCommand(timerName, commandEnable, unitType)
 	if err != nil {
 		return err
 	}
 
 	// start the job
-	err = runSystemdCommand(j.config.Title(), commandStart, unitType)
+	err = runSystemdCommand(timerName, commandStart, unitType)
 	if err != nil {
 		return err
 	}
@@ -127,15 +129,16 @@ func (j *Job) removeJob() error {
 // removeSystemdJob is disabling the systemd unit and deleting the timer and service files
 func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	var err error
+	timerFile := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 
 	// stop the job
-	err = runSystemdCommand(j.config.Title(), commandStop, unitType)
+	err = runSystemdCommand(timerFile, commandStop, unitType)
 	if err != nil {
 		return err
 	}
 
 	// disable the job
-	err = runSystemdCommand(j.config.Title(), commandDisable, unitType)
+	err = runSystemdCommand(timerFile, commandDisable, unitType)
 	if err != nil {
 		return err
 	}
@@ -147,13 +150,13 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 			return nil
 		}
 	}
-	timerFile := systemd.GetTimerFile(j.config.Title())
+
 	err = os.Remove(path.Join(systemdPath, timerFile))
 	if err != nil {
 		return nil
 	}
 
-	serviceFile := systemd.GetServiceFile(j.config.Title())
+	serviceFile := systemd.GetServiceFile(j.config.Title(), j.config.SubTitle())
 	err = os.Remove(path.Join(systemdPath, serviceFile))
 	if err != nil {
 		return nil
@@ -166,17 +169,17 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 func (j *Job) displayStatus(command string) error {
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {
-		return runSystemdCommand(j.config.Title(), commandStatus, systemd.SystemUnit)
+		return runSystemdCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.SystemUnit)
 	}
-	return runSystemdCommand(j.config.Title(), commandStatus, systemd.UserUnit)
+	return runSystemdCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.UserUnit)
 }
 
-func runSystemdCommand(profileName, command string, unitType systemd.UnitType) error {
+func runSystemdCommand(timerName, command string, unitType systemd.UnitType) error {
 	args := make([]string, 0, 3)
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
-	args = append(args, command, systemd.GetTimerFile(profileName))
+	args = append(args, command, timerName)
 
 	cmd := exec.Command(systemctlBin, args...)
 	cmd.Stdout = os.Stdout

@@ -17,7 +17,7 @@ func loadSchedules(command string, schedules []string) ([]*calendar.Event, error
 		if schedule == "" {
 			return events, errors.New("empty schedule")
 		}
-		fmt.Printf("\nAnalyzing %s schedule %d/%d\n========================\n", command, index+1, len(schedules))
+		fmt.Printf("\nAnalyzing %s schedule %d/%d\n=================================\n", command, index+1, len(schedules))
 		cmd := exec.Command("systemd-analyze", "calendar", schedule)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

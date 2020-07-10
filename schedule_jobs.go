@@ -10,7 +10,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(configFile, profileName string, configs []*config.ScheduleConfig) error {
+func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func scheduleJobs(configFile, profileName string, configs []*config.ScheduleConf
 			"--config",
 			configFile,
 			"--name",
-			profileName,
+			scheduleConfig.Title(),
 			getResticCommand(scheduleConfig.SubTitle()),
 		})
 		scheduleConfig.SetJobDescription(
@@ -51,6 +51,17 @@ func removeJobs(configs []*config.ScheduleConfig) error {
 			return err
 		}
 		clog.Infof("scheduled job %s/%s removed", scheduleConfig.Title(), scheduleConfig.SubTitle())
+	}
+	return nil
+}
+
+func statusJobs(configs []*config.ScheduleConfig) error {
+	for _, scheduleConfig := range configs {
+		job := schedule.NewJob(scheduleConfig)
+		err := job.Status()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
