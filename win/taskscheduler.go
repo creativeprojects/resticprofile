@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"strings"
 	"text/tabwriter"
 	"time"
 
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rickb777/date/period"
 )
@@ -45,27 +45,40 @@ const (
 	SystemAccount
 )
 
+// Config contains all the information needed to schedule a Job
+type Config interface {
+	Title() string
+	SubTitle() string
+	JobDescription() string
+	TimerDescription() string
+	Schedules() []string
+	Permission() string
+	WorkingDirectory() string
+	Command() string
+	Arguments() []string
+}
+
 // TaskScheduler wraps up a task scheduler service
 type TaskScheduler struct {
-	profile *config.Profile
+	config Config
 }
 
 // NewTaskScheduler creates a new service to talk to windows task scheduler
-func NewTaskScheduler(profile *config.Profile) *TaskScheduler {
+func NewTaskScheduler(config Config) *TaskScheduler {
 	return &TaskScheduler{
-		profile: profile,
+		config: config,
 	}
 }
 
 // Create a task
-func (s *TaskScheduler) Create(binary, args, workingDir, description string, schedules []*calendar.Event, permission Permission) error {
+func (s *TaskScheduler) Create(schedules []*calendar.Event, permission Permission) error {
 	if permission == SystemAccount {
-		return s.createSystemTask(binary, args, workingDir, description, schedules)
+		return s.createSystemTask(schedules)
 	}
-	return s.createUserTask(binary, args, workingDir, description, schedules)
+	return s.createUserTask(schedules)
 }
 
-func (s *TaskScheduler) createUserTask(binary, args, workingDir, description string, schedules []*calendar.Event) error {
+func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 	currentUser, err := user.Current()
 	if err != nil {
 		return err
@@ -84,23 +97,33 @@ func (s *TaskScheduler) createUserTask(binary, args, workingDir, description str
 	defer taskService.Disconnect()
 
 	task := taskService.NewTaskDefinition()
-	task.AddExecAction(binary, args, workingDir, "")
+	task.AddExecAction(
+		s.config.Command(),
+		strings.Join(s.config.Arguments(), " "),
+		s.config.WorkingDirectory(),
+		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
 	task.Principal.UserID = currentUser.Username
 	task.RegistrationInfo.Author = "resticprofile"
-	task.RegistrationInfo.Description = description
+	task.RegistrationInfo.Description = s.config.JobDescription()
 
 	s.createSchedules(&task, schedules)
 
-	_, _, err = taskService.CreateTaskEx(getTaskPath(s.profile.Name), task, currentUser.Username, password, taskmaster.TASK_LOGON_PASSWORD, true)
+	_, _, err = taskService.CreateTaskEx(
+		getTaskPath(s.config.Title(), s.config.SubTitle()),
+		task,
+		currentUser.Username,
+		password,
+		taskmaster.TASK_LOGON_PASSWORD,
+		true)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *TaskScheduler) createSystemTask(binary, args, workingDir, description string, schedules []*calendar.Event) error {
+func (s *TaskScheduler) createSystemTask(schedules []*calendar.Event) error {
 	taskService, err := s.connect()
 	if err != nil {
 		return err
@@ -108,16 +131,20 @@ func (s *TaskScheduler) createSystemTask(binary, args, workingDir, description s
 	defer taskService.Disconnect()
 
 	task := taskService.NewTaskDefinition()
-	task.AddExecAction(binary, args, workingDir, "")
+	task.AddExecAction(
+		s.config.Command(),
+		strings.Join(s.config.Arguments(), " "),
+		s.config.WorkingDirectory(),
+		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
 	task.Principal.UserID = "SYSTEM"
 	task.RegistrationInfo.Author = "resticprofile"
-	task.RegistrationInfo.Description = description
+	task.RegistrationInfo.Description = s.config.JobDescription()
 
 	s.createSchedules(&task, schedules)
 
-	_, _, err = taskService.CreateTask(getTaskPath(s.profile.Name), task, true)
+	_, _, err = taskService.CreateTask(getTaskPath(s.config.Title(), s.config.SubTitle()), task, true)
 	if err != nil {
 		return err
 	}
@@ -184,7 +211,7 @@ func (s *TaskScheduler) Delete() error {
 	}
 	defer taskService.Disconnect()
 
-	err = taskService.DeleteTask(getTaskPath(s.profile.Name))
+	err = taskService.DeleteTask(getTaskPath(s.config.Title(), s.config.SubTitle()))
 	if err != nil {
 		return err
 	}
@@ -199,7 +226,7 @@ func (s *TaskScheduler) Status() error {
 	}
 	defer taskService.Disconnect()
 
-	taskName := getTaskPath(s.profile.Name)
+	taskName := getTaskPath(s.config.Title(), s.config.SubTitle())
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
 		return err
@@ -230,6 +257,6 @@ func (s *TaskScheduler) connect() (*taskmaster.TaskService, error) {
 	return taskmaster.Connect("", "", "", "")
 }
 
-func getTaskPath(profileName string) string {
-	return tasksPath + profileName
+func getTaskPath(profileName, commandName string) string {
+	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
 }

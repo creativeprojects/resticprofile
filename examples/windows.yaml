@@ -14,20 +14,23 @@ default:
 self:
     inherit: default
     initialize: true
-    schedule:
-    - "Mon..Fri *:00,30" # every 15 minutes
-    - "Mon..Fri *:15,45" # both combined together
-    - "Sat,Sun 0,12:*"
-    schedule-permission: user
     backup:
         source: "."
+        schedule:
+        - "Mon..Fri *:00,30" # every 15 minutes
+        - "Mon..Fri *:15,45" # both combined together
+        - "Sat,Sun 0,12:*"
+        schedule-permission: user
 
 test:
     inherit: default
     initialize: true
-    schedule:
-    - "2020-07-31"
-    - "*:0,15,30,45"
-    schedule-permission: user
     backup:
         source: "."
+        schedule:
+        - "2020-07-31"
+        - "*:0,15,30,45"
+        schedule-permission: user
+    check:
+        schedule: "*-*-1"
+        schedule-permission: user

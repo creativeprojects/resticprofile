@@ -3,34 +3,25 @@
 package schedule
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/win"
 )
 
-// createJob is creating the task scheduler job.
-func (j *Job) createJob(command string, schedules []*calendar.Event) error {
-	binary, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	args := fmt.Sprintf("--no-ansi --config %s --name %s backup", j.configFile, j.profile.Name)
-	description := fmt.Sprintf("restic backup using profile '%s' from '%s'", j.profile.Name, j.configFile)
+// checkSystem does nothing on windows as the task scheduler is always available
+func checkSystem() error {
+	return nil
+}
 
+// createJob is creating the task scheduler job.
+func (j *Job) createJob(schedules []*calendar.Event) error {
 	// default permission will be system
 	permission := win.SystemAccount
-	if j.profile.Backup.SchedulePermission == constants.SchedulePermissionUser {
+	if j.config.Permission() == constants.SchedulePermissionUser {
 		permission = win.UserAccount
 	}
-	taskScheduler := win.NewTaskScheduler(j.profile)
-	err = taskScheduler.Create(binary, args, wd, description, schedules, permission)
+	taskScheduler := win.NewTaskScheduler(j.config)
+	err := taskScheduler.Create(schedules, permission)
 	if err != nil {
 		return err
 	}
@@ -39,7 +30,7 @@ func (j *Job) createJob(command string, schedules []*calendar.Event) error {
 
 // removeJob is deleting the task scheduler job
 func (j *Job) removeJob() error {
-	taskScheduler := win.NewTaskScheduler(j.profile)
+	taskScheduler := win.NewTaskScheduler(j.config)
 	err := taskScheduler.Delete()
 	if err != nil {
 		return err
@@ -47,14 +38,9 @@ func (j *Job) removeJob() error {
 	return nil
 }
 
-// checkSystem does nothing on windows as the task scheduler is always available
-func checkSystem() error {
-	return nil
-}
-
 // displayStatus display some information about the task scheduler job
 func (j *Job) displayStatus(command string) error {
-	taskScheduler := win.NewTaskScheduler(j.profile)
+	taskScheduler := win.NewTaskScheduler(j.config)
 	err := taskScheduler.Status()
 	if err != nil {
 		return err

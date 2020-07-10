@@ -16,9 +16,6 @@ type Config interface {
 // Job scheduler
 type Job struct {
 	config Config
-	// configFile string
-	// profile    *config.Profile
-	// schedules  map[config.ScheduledCommand][]*calendar.Event
 }
 
 // NewJob instantiates a Job object to schedule jobs

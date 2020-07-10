@@ -26,7 +26,7 @@ func TestTaskSchedulerConversion(t *testing.T) {
 		schedules[index] = event
 	}
 	task := taskmaster.Definition{}
-	taskScheduler := NewTaskScheduler(&config.Profile{})
+	taskScheduler := NewTaskScheduler(&config.ScheduleConfig{})
 	taskScheduler.createSchedules(&task, schedules)
 	// first task should be a single event
 	singleEvent, ok := task.Triggers[0].(taskmaster.TimeTrigger)
