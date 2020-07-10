@@ -198,6 +198,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			commandName: constants.CommandBackup,
 			schedules:   p.Backup.Schedule,
 			permission:  p.Backup.SchedulePermission,
+			environment: p.Environment,
 		}
 		configs = append(configs, config)
 	}
@@ -208,6 +209,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			commandName: constants.SectionConfigurationRetention,
 			schedules:   p.Retention.Schedule,
 			permission:  p.Retention.SchedulePermission,
+			environment: p.Environment,
 		}
 		configs = append(configs, config)
 	}
@@ -218,6 +220,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			commandName: constants.CommandCheck,
 			schedules:   p.Check.Schedule,
 			permission:  p.Check.SchedulePermission,
+			environment: p.Environment,
 		}
 		configs = append(configs, config)
 	}

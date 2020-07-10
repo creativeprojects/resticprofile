@@ -8,6 +8,7 @@ type ScheduleConfig struct {
 	wd               string
 	command          string
 	arguments        []string
+	environment      map[string]string
 	jobDescription   string
 	timerDescription string
 }
@@ -46,6 +47,10 @@ func (s *ScheduleConfig) WorkingDirectory() string {
 
 func (s *ScheduleConfig) Arguments() []string {
 	return s.arguments
+}
+
+func (s *ScheduleConfig) Environment() map[string]string {
+	return s.environment
 }
 
 func (s *ScheduleConfig) SetCommand(wd, command string, args []string) {

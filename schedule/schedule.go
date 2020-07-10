@@ -1,5 +1,16 @@
 package schedule
 
+import "github.com/creativeprojects/resticprofile/constants"
+
+var (
+	// ScheduledSections are the command that can be scheduled (backup, retention, check)
+	ScheduledSections = []string{
+		constants.CommandBackup,
+		constants.SectionConfigurationRetention,
+		constants.CommandCheck,
+	}
+)
+
 // Config contains all the information needed to schedule a Job
 type Config interface {
 	Title() string
@@ -11,6 +22,7 @@ type Config interface {
 	WorkingDirectory() string
 	Command() string
 	Arguments() []string
+	Environment() map[string]string
 }
 
 // Job scheduler

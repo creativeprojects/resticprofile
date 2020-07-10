@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"howett.net/plist"
 )
 
@@ -22,6 +21,10 @@ import (
 const (
 	launchdBin      = "launchd"
 	launchctlBin    = "launchctl"
+	commandStart    = "start"
+	commandStop     = "stop"
+	commandLoad     = "load"
+	commandUnload   = "unload"
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
@@ -54,38 +57,21 @@ type CalendarInterval struct {
 }
 
 // createJob creates a plist file and register it with launchd
-func (j *Job) createJob(command string, schedules []*calendar.Event) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
+func (j *Job) createJob(schedules []*calendar.Event) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 
-	binary, err := os.Executable()
-	if err != nil {
-		return err
-	}
-
-	name := getJobName(j.profile.Name, command)
+	name := getJobName(j.config.Title(), j.config.SubTitle())
 	job := &LaunchJob{
-		Label:   name,
-		Program: binary,
-		ProgramArguments: []string{
-			binary,
-			"--no-ansi",
-			"--config",
-			j.configFile,
-			"--name",
-			j.profile.Name,
-			"backup",
-		},
-		EnvironmentVariables:  j.profile.Environment,
+		Label:                 name,
+		Program:               j.config.Command(),
+		ProgramArguments:      append([]string{j.config.Command()}, j.config.Arguments()...),
+		EnvironmentVariables:  j.config.Environment(),
 		StandardOutPath:       name + ".log",
 		StandardErrorPath:     name + ".log",
-		WorkingDirectory:      wd,
+		WorkingDirectory:      j.config.WorkingDirectory(),
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 	}
 
@@ -102,24 +88,24 @@ func (j *Job) createJob(command string, schedules []*calendar.Event) error {
 		return err
 	}
 
-	// // load the service
-	// filename := path.Join(home, UserAgentPath, name+agentExtension)
-	// cmd := exec.Command(launchctlBin, "load", filename)
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	// err = cmd.Run()
-	// if err != nil {
-	// 	return err
-	// }
+	// load the service
+	filename := path.Join(home, UserAgentPath, name+agentExtension)
+	cmd := exec.Command(launchctlBin, commandLoad, filename)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
 
-	// // start the service
-	// cmd = exec.Command(launchctlBin, "start", name)
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	// err = cmd.Run()
-	// if err != nil {
-	// 	return err
-	// }
+	// start the service
+	cmd = exec.Command(launchctlBin, commandStart, name)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -131,35 +117,28 @@ func (j *Job) removeJob() error {
 		return err
 	}
 
-	// try all 3 commands
-	for _, command := range []string{
-		config.ScheduleBackup.String(),
-		config.ScheduleCheck.String(),
-		config.ScheduleRetention.String()} {
+	name := getJobName(j.config.Title(), j.config.SubTitle())
+	filename := path.Join(home, UserAgentPath, name+agentExtension)
 
-		name := getJobName(j.profile.Name, command)
-		filename := path.Join(home, UserAgentPath, name+agentExtension)
+	if _, err := os.Stat(filename); err == nil || os.IsExist(err) {
+		// stop the service
+		stop := exec.Command(launchctlBin, commandStop, name)
+		stop.Stdout = os.Stdout
+		stop.Stderr = os.Stderr
+		// keep going if there's an error here
+		_ = stop.Run()
 
-		if _, err := os.Stat(filename); err == nil || os.IsExist(err) {
-			// stop the service
-			stop := exec.Command(launchctlBin, "stop", name)
-			stop.Stdout = os.Stdout
-			stop.Stderr = os.Stderr
-			// keep going if there's an error here
-			_ = stop.Run()
-
-			// unload the service
-			unload := exec.Command(launchctlBin, "unload", filename)
-			unload.Stdout = os.Stdout
-			unload.Stderr = os.Stderr
-			err = unload.Run()
-			if err != nil {
-				return err
-			}
-			err = os.Remove(filename)
-			if err != nil {
-				return err
-			}
+		// unload the service
+		unload := exec.Command(launchctlBin, commandUnload, filename)
+		unload.Stdout = os.Stdout
+		unload.Stderr = os.Stderr
+		err = unload.Run()
+		if err != nil {
+			return err
+		}
+		err = os.Remove(filename)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -176,7 +155,7 @@ func checkSystem() error {
 }
 
 func (j *Job) displayStatus(command string) error {
-	cmd := exec.Command(launchctlBin, "list", getJobName(j.profile.Name, command))
+	cmd := exec.Command(launchctlBin, "list", getJobName(j.config.Title(), j.config.SubTitle()))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
