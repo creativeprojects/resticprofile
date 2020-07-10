@@ -215,30 +215,67 @@ func (p *Profile) GetBackupSource() []string {
 }
 
 // GetScheduledCommands returns a map of commands that are scheduled (in the configuration)
-func (p *Profile) GetScheduledCommands() map[ScheduledCommand]ScheduleSection {
-	scheduledCommands := make(map[ScheduledCommand]ScheduleSection, 3)
+// func (p *Profile) GetScheduledCommands() map[ScheduledCommand]ScheduleSection {
+// 	scheduledCommands := make(map[ScheduledCommand]ScheduleSection, 3)
+// 	// Backup
+// 	if p.Backup != nil && p.Backup.Schedule != nil && len(p.Backup.Schedule) > 0 {
+// 		scheduledCommands[ScheduleBackup] = ScheduleSection{
+// 			Schedule:           p.Backup.Schedule,
+// 			SchedulePermission: p.Backup.SchedulePermission,
+// 		}
+// 	}
+// 	// Retention
+// 	if p.Retention != nil && p.Retention.Schedule != nil && len(p.Retention.Schedule) > 0 {
+// 		scheduledCommands[ScheduleRetention] = ScheduleSection{
+// 			Schedule:           p.Retention.Schedule,
+// 			SchedulePermission: p.Retention.SchedulePermission,
+// 		}
+// 	}
+// 	// Check
+// 	if p.Check != nil && p.Check.Schedule != nil && len(p.Check.Schedule) > 0 {
+// 		scheduledCommands[ScheduleCheck] = ScheduleSection{
+// 			Schedule:           p.Check.Schedule,
+// 			SchedulePermission: p.Check.SchedulePermission,
+// 		}
+// 	}
+// 	return scheduledCommands
+// }
+
+// Schedules returns a slice of ScheduleConfig that satisfy the schedule.Config interface
+func (p *Profile) Schedules() []*ScheduleConfig {
+	// Default to 3: backup, retention and check
+	configs := make([]*ScheduleConfig, 3)
 	// Backup
 	if p.Backup != nil && p.Backup.Schedule != nil && len(p.Backup.Schedule) > 0 {
-		scheduledCommands[ScheduleBackup] = ScheduleSection{
-			Schedule:           p.Backup.Schedule,
-			SchedulePermission: p.Backup.SchedulePermission,
+		config := &ScheduleConfig{
+			profileName: p.Name,
+			commandName: constants.CommandBackup,
+			schedules:   p.Backup.Schedule,
+			permission:  p.Backup.SchedulePermission,
 		}
+		configs = append(configs, config)
 	}
-	// Retention
+	// Retention (forget)
 	if p.Retention != nil && p.Retention.Schedule != nil && len(p.Retention.Schedule) > 0 {
-		scheduledCommands[ScheduleRetention] = ScheduleSection{
-			Schedule:           p.Retention.Schedule,
-			SchedulePermission: p.Retention.SchedulePermission,
+		config := &ScheduleConfig{
+			profileName: p.Name,
+			commandName: constants.SectionConfigurationRetention,
+			schedules:   p.Retention.Schedule,
+			permission:  p.Retention.SchedulePermission,
 		}
+		configs = append(configs, config)
 	}
 	// Check
 	if p.Check != nil && p.Check.Schedule != nil && len(p.Check.Schedule) > 0 {
-		scheduledCommands[ScheduleCheck] = ScheduleSection{
-			Schedule:           p.Check.Schedule,
-			SchedulePermission: p.Check.SchedulePermission,
+		config := &ScheduleConfig{
+			profileName: p.Name,
+			commandName: constants.CommandCheck,
+			schedules:   p.Check.Schedule,
+			permission:  p.Check.SchedulePermission,
 		}
+		configs = append(configs, config)
 	}
-	return scheduledCommands
+	return configs
 }
 
 func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{}) map[string][]string {

@@ -215,12 +215,15 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
-	job := schedule.NewJob(flags.config, profile)
-	err = job.Create()
+	schedules := profile.Schedules()
+	if schedules == nil || len(schedules) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = scheduleJobs(flags.config, profile.Name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
-	clog.Info("scheduled job created")
 	return nil
 }
 
@@ -241,12 +244,15 @@ func removeSchedule(c *config.Config, flags commandLineFlags, args []string) err
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
-	job := schedule.NewJob(flags.config, profile)
-	err = job.Remove()
+	schedules := profile.Schedules()
+	if schedules == nil || len(schedules) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = removeJobs(schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
-	clog.Info("scheduled job removed")
 	return nil
 }
 

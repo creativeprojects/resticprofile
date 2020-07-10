@@ -1,24 +1,30 @@
 package schedule
 
-import (
-	"fmt"
-
-	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
-)
+// Config contains all the information needed to schedule a Job
+type Config interface {
+	Title() string
+	SubTitle() string
+	JobDescription() string
+	TimerDescription() string
+	Schedules() []string
+	Permission() string
+	WorkingDirectory() string
+	Command() string
+	Arguments() []string
+}
 
 // Job scheduler
 type Job struct {
-	configFile string
-	profile    *config.Profile
-	schedules  map[config.ScheduledCommand][]*calendar.Event
+	config Config
+	// configFile string
+	// profile    *config.Profile
+	// schedules  map[config.ScheduledCommand][]*calendar.Event
 }
 
 // NewJob instantiates a Job object to schedule jobs
-func NewJob(configFile string, profile *config.Profile) *Job {
+func NewJob(config Config) *Job {
 	return &Job{
-		configFile: configFile,
-		profile:    profile,
+		config: config,
 	}
 }
 
@@ -29,16 +35,14 @@ func (j *Job) Create() error {
 		return err
 	}
 
-	err = j.checkSchedules()
+	schedules, err := loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
 	}
 
-	for command, schedules := range j.schedules {
-		err = j.createJob(command.String(), schedules)
-		if err != nil {
-			return err
-		}
+	err = j.createJob(schedules)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -73,33 +77,14 @@ func (j *Job) Status() error {
 		return err
 	}
 
-	err = j.checkSchedules()
+	_, err = loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
 	}
 
-	for command := range j.schedules {
-		err = j.displayStatus(command.String())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// checkSchedules for each command and load the schedules into j.schedules
-func (j *Job) checkSchedules() error {
-	var err error
-	j.schedules = make(map[config.ScheduledCommand][]*calendar.Event, 3)
-	commandSchedules := j.profile.GetScheduledCommands()
-	if len(commandSchedules) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", j.profile.Name)
-	}
-	for command, schedules := range commandSchedules {
-		j.schedules[command], err = loadSchedules(command.String(), schedules.Schedule)
-		if err != nil {
-			return err
-		}
+	err = j.displayStatus(j.config.SubTitle())
+	if err != nil {
+		return err
 	}
 	return nil
 }

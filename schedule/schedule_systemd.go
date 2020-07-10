@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
@@ -65,7 +66,7 @@ func (j *Job) checkPermission(permission string) bool {
 }
 
 // createJob is creating the systemd unit and activating it
-func (j *Job) createJob(command string, schedules []*calendar.Event) error {
+func (j *Job) createJob(schedules []*calendar.Event) error {
 	permission := j.getSchedulePermission()
 	ok := j.checkPermission(permission)
 	if !ok {
@@ -80,28 +81,28 @@ func (j *Job) createJob(command string, schedules []*calendar.Event) error {
 
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	binary, err := os.Executable()
-	if err != nil {
-		return err
-	}
 
-	err = systemd.Generate(wd, binary, j.configFile, j.profile.Name, j.profile.Backup.Schedule, unitType)
+	err := systemd.Generate(
+		j.config.Command()+" "+strings.Join(j.config.Arguments(), " "),
+		j.config.WorkingDirectory(),
+		j.config.Title(),
+		j.config.SubTitle(),
+		j.config.JobDescription(),
+		j.config.TimerDescription(),
+		j.config.Schedules(),
+		unitType)
 	if err != nil {
 		return err
 	}
 
 	// enable the job
-	err = runSystemdCommand(j.profile.Name, commandEnable, unitType)
+	err = runSystemdCommand(j.config.Title(), commandEnable, unitType)
 	if err != nil {
 		return err
 	}
 
 	// start the job
-	err = runSystemdCommand(j.profile.Name, commandStart, unitType)
+	err = runSystemdCommand(j.config.Title(), commandStart, unitType)
 	if err != nil {
 		return err
 	}
@@ -128,13 +129,13 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	var err error
 
 	// stop the job
-	err = runSystemdCommand(j.profile.Name, commandStop, unitType)
+	err = runSystemdCommand(j.config.Title(), commandStop, unitType)
 	if err != nil {
 		return err
 	}
 
 	// disable the job
-	err = runSystemdCommand(j.profile.Name, commandDisable, unitType)
+	err = runSystemdCommand(j.config.Title(), commandDisable, unitType)
 	if err != nil {
 		return err
 	}
@@ -146,13 +147,13 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 			return nil
 		}
 	}
-	timerFile := systemd.GetTimerFile(j.profile.Name)
+	timerFile := systemd.GetTimerFile(j.config.Title())
 	err = os.Remove(path.Join(systemdPath, timerFile))
 	if err != nil {
 		return nil
 	}
 
-	serviceFile := systemd.GetServiceFile(j.profile.Name)
+	serviceFile := systemd.GetServiceFile(j.config.Title())
 	err = os.Remove(path.Join(systemdPath, serviceFile))
 	if err != nil {
 		return nil
@@ -165,9 +166,9 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 func (j *Job) displayStatus(command string) error {
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {
-		return runSystemdCommand(j.profile.Name, commandStatus, systemd.SystemUnit)
+		return runSystemdCommand(j.config.Title(), commandStatus, systemd.SystemUnit)
 	}
-	return runSystemdCommand(j.profile.Name, commandStatus, systemd.UserUnit)
+	return runSystemdCommand(j.config.Title(), commandStatus, systemd.UserUnit)
 }
 
 func runSystemdCommand(profileName, command string, unitType systemd.UnitType) error {

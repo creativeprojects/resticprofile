@@ -17,16 +17,16 @@ const (
 	systemdSystemDir  = "/etc/systemd/system/"
 
 	systemdUnitBackupUnitTmpl = `[Unit]
-Description=resticprofile backup for profile '{{ .ProfileName }}'
+Description={{ .JobDescription }}
 
 [Service]
 Type=oneshot
 WorkingDirectory={{ .WorkingDirectory }}
-ExecStart={{ .Binary }} --no-ansi --config "{{ .ConfigFile }}" --name "{{ .ProfileName }}" backup
+ExecStart={{ .CommandLine }}
 `
 
 	systemdUnitBackupTimerTmpl = `[Unit]
-Description=backup timer for profile '{{ .ProfileName }}'
+Description={{ .TimerDescription }}
 
 [Timer]
 {{ range .OnCalendar -}}
@@ -51,19 +51,19 @@ const (
 
 // TemplateInfo to create systemd unit
 type TemplateInfo struct {
+	JobDescription   string
+	TimerDescription string
 	WorkingDirectory string
-	Binary           string
-	ConfigFile       string
-	ProfileName      string
+	CommandLine      string
 	OnCalendar       []string
 	SystemdProfile   string
 }
 
 // Generate systemd unit
-func Generate(wd, binary, configFile, profileName string, onCalendar []string, unitType UnitType) error {
+func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType) error {
 	var err error
-	systemdProfile := GetServiceFile(profileName)
-	timerProfile := GetTimerFile(profileName)
+	systemdProfile := GetServiceFile(title)
+	timerProfile := GetTimerFile(title)
 
 	systemdUserDir := systemdSystemDir
 	if unitType == UserUnit {
@@ -74,12 +74,12 @@ func Generate(wd, binary, configFile, profileName string, onCalendar []string, u
 	}
 
 	info := TemplateInfo{
+		JobDescription:   jobDescription,
+		TimerDescription: timerDescription,
 		WorkingDirectory: wd,
-		Binary:           binary,
-		ConfigFile:       configFile,
-		ProfileName:      profileName,
-		SystemdProfile:   systemdProfile,
+		CommandLine:      commandLine,
 		OnCalendar:       onCalendar,
+		SystemdProfile:   systemdProfile,
 	}
 
 	var data bytes.Buffer
