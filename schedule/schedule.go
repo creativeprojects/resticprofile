@@ -1,6 +1,11 @@
 package schedule
 
-import "github.com/creativeprojects/resticprofile/constants"
+import (
+	"errors"
+
+	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/resticprofile/constants"
+)
 
 var (
 	// ScheduledSections are the command that can be scheduled (backup, retention, check)
@@ -93,6 +98,11 @@ func (j *Job) Status() error {
 
 	err = j.displayStatus(j.config.SubTitle())
 	if err != nil {
+		if errors.Is(err, ErrorServiceNotFound) {
+			// Display a warning and keep going
+			clog.Warningf("service %s/%s not found", j.config.Title(), j.config.SubTitle())
+			return nil
+		}
 		return err
 	}
 	return nil

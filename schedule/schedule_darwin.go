@@ -25,12 +25,15 @@ const (
 	commandStop     = "stop"
 	commandLoad     = "load"
 	commandUnload   = "unload"
+	commandList     = "list"
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 
 	namePrefix     = "local.resticprofile"
 	agentExtension = ".agent.plist"
+
+	codeServiceNotFound = 113
 )
 
 // LaunchJob is an agent definition for launchd
@@ -155,10 +158,13 @@ func checkSystem() error {
 }
 
 func (j *Job) displayStatus(command string) error {
-	cmd := exec.Command(launchctlBin, "list", getJobName(j.config.Title(), j.config.SubTitle()))
+	cmd := exec.Command(launchctlBin, commandList, getJobName(j.config.Title(), j.config.SubTitle()))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
+	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
+		return ErrorServiceNotFound
+	}
 	return err
 }
 
@@ -207,9 +213,9 @@ func getCalendarIntervalsFromSchedule(schedule *calendar.Event) []CalendarInterv
 	// create list of permutable items
 	total, items := getCombinationItemsFromCalendarValues(fields)
 
-	generateCombination(items, total)
+	combinations := generateCombination(items, total)
 
-	entries := make([]CalendarInterval, total)
+	entries := convertCombinationToCalendarInterval(combinations)
 
 	return entries
 }
@@ -241,4 +247,28 @@ func getCombinationItemsFromCalendarValues(fields []*calendar.Value) (int, []com
 		}
 	}
 	return total, items
+}
+
+func convertCombinationToCalendarInterval(combinations [][]combinationItem) []CalendarInterval {
+	entries := make([]CalendarInterval, 0, len(combinations))
+
+	for _, combination := range combinations {
+		entry := CalendarInterval{}
+		for _, field := range combination {
+			switch field.itemType {
+			case calendar.TypeWeekDay:
+				entry.Weekday = field.value
+			case calendar.TypeMonth:
+				entry.Month = field.value
+			case calendar.TypeDay:
+				entry.Day = field.value
+			case calendar.TypeHour:
+				entry.Hour = field.value
+			case calendar.TypeMinute:
+				entry.Minute = field.value
+			}
+		}
+		entries = append(entries, entry)
+	}
+	return entries
 }
