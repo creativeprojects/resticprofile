@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	numLevels = 5
+	numLevels = 4 // Debug, Info, Warn, Error
 )
 
 // ConsoleLog logs messages to the console (in colour)
@@ -26,25 +26,22 @@ func NewConsoleLog() *ConsoleLog {
 func (l *ConsoleLog) init() {
 	l.colorMaps = map[string][numLevels]*color.Color{
 		"none": {
-			NoLevel:      nil,
-			DebugLevel:   nil,
-			InfoLevel:    nil,
-			WarningLevel: color.New(color.Bold),
-			ErrorLevel:   color.New(color.Bold),
+			LevelDebug:   nil,
+			LevelInfo:    nil,
+			LevelWarning: color.New(color.Bold),
+			LevelError:   color.New(color.Bold),
 		},
 		"light": {
-			NoLevel:      nil,
-			DebugLevel:   color.New(color.FgGreen),
-			InfoLevel:    color.New(color.FgCyan),
-			WarningLevel: color.New(color.FgMagenta, color.Bold),
-			ErrorLevel:   color.New(color.FgRed, color.Bold),
+			LevelDebug:   color.New(color.FgGreen),
+			LevelInfo:    color.New(color.FgCyan),
+			LevelWarning: color.New(color.FgMagenta, color.Bold),
+			LevelError:   color.New(color.FgRed, color.Bold),
 		},
 		"dark": {
-			NoLevel:      nil,
-			DebugLevel:   color.New(color.FgHiGreen),
-			InfoLevel:    color.New(color.FgHiCyan),
-			WarningLevel: color.New(color.FgHiMagenta, color.Bold),
-			ErrorLevel:   color.New(color.FgHiRed, color.Bold),
+			LevelDebug:   color.New(color.FgHiGreen),
+			LevelInfo:    color.New(color.FgHiCyan),
+			LevelWarning: color.New(color.FgHiMagenta, color.Bold),
+			LevelError:   color.New(color.FgHiRed, color.Bold),
 		},
 	}
 	l.levelMap = l.colorMaps["light"]
@@ -76,42 +73,42 @@ func (l *ConsoleLog) Logf(level LogLevel, format string, v ...interface{}) {
 
 // Debug sends debugging information
 func (l *ConsoleLog) Debug(v ...interface{}) {
-	l.message(l.levelMap[DebugLevel], v...)
+	l.message(l.levelMap[LevelDebug], v...)
 }
 
 // Debugf sends debugging information
 func (l *ConsoleLog) Debugf(format string, v ...interface{}) {
-	l.messagef(l.levelMap[DebugLevel], format, v...)
+	l.messagef(l.levelMap[LevelDebug], format, v...)
 }
 
 // Info logs some noticeable information
 func (l *ConsoleLog) Info(v ...interface{}) {
-	l.message(l.levelMap[InfoLevel], v...)
+	l.message(l.levelMap[LevelInfo], v...)
 }
 
 // Infof logs some noticeable information
 func (l *ConsoleLog) Infof(format string, v ...interface{}) {
-	l.messagef(l.levelMap[InfoLevel], format, v...)
+	l.messagef(l.levelMap[LevelInfo], format, v...)
 }
 
 // Warning send some important message to the console
 func (l *ConsoleLog) Warning(v ...interface{}) {
-	l.message(l.levelMap[WarningLevel], v...)
+	l.message(l.levelMap[LevelWarning], v...)
 }
 
 // Warningf send some important message to the console
 func (l *ConsoleLog) Warningf(format string, v ...interface{}) {
-	l.messagef(l.levelMap[WarningLevel], format, v...)
+	l.messagef(l.levelMap[LevelWarning], format, v...)
 }
 
 // Error sends error information to the console
 func (l *ConsoleLog) Error(v ...interface{}) {
-	l.message(l.levelMap[ErrorLevel], v...)
+	l.message(l.levelMap[LevelError], v...)
 }
 
 // Errorf sends error information to the console
 func (l *ConsoleLog) Errorf(format string, v ...interface{}) {
-	l.messagef(l.levelMap[ErrorLevel], format, v...)
+	l.messagef(l.levelMap[LevelError], format, v...)
 }
 
 func (l *ConsoleLog) message(c *color.Color, v ...interface{}) {

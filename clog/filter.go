@@ -1,27 +1,27 @@
 package clog
 
-// VerbosityMiddleware is a log middleware that is only passing log entries of level >= minimum level
-type VerbosityMiddleware struct {
+// LevelFilter is a log middleware that is only passing log entries of level >= minimum level
+type LevelFilter struct {
 	destLog  Logger
 	minLevel LogLevel
 }
 
-// NewVerbosityMiddleWare creates a new VerbosityMiddleware
+// NewLevelFilter creates a new VerbosityMiddleware
 // passing log entries to destination if level >= minimum level
-func NewVerbosityMiddleWare(minLevel LogLevel, destination Logger) *VerbosityMiddleware {
-	return &VerbosityMiddleware{
+func NewLevelFilter(minLevel LogLevel, destination Logger) *LevelFilter {
+	return &LevelFilter{
 		minLevel: minLevel,
 		destLog:  destination,
 	}
 }
 
 // SetVerbosity changes the minimum level the log entries are going to be sent to the destination logger
-func (l *VerbosityMiddleware) SetVerbosity(minLevel LogLevel) {
+func (l *LevelFilter) SetVerbosity(minLevel LogLevel) {
 	l.minLevel = minLevel
 }
 
 // Log sends a log entry with the specified level
-func (l *VerbosityMiddleware) Log(level LogLevel, v ...interface{}) {
+func (l *LevelFilter) Log(level LogLevel, v ...interface{}) {
 	if level < l.minLevel {
 		return
 	}
@@ -29,7 +29,7 @@ func (l *VerbosityMiddleware) Log(level LogLevel, v ...interface{}) {
 }
 
 // Logf sends a log entry with the specified level
-func (l *VerbosityMiddleware) Logf(level LogLevel, format string, v ...interface{}) {
+func (l *LevelFilter) Logf(level LogLevel, format string, v ...interface{}) {
 	if level < l.minLevel {
 		return
 	}
@@ -37,66 +37,66 @@ func (l *VerbosityMiddleware) Logf(level LogLevel, format string, v ...interface
 }
 
 // Debug sends debugging information
-func (l *VerbosityMiddleware) Debug(v ...interface{}) {
-	if DebugLevel < l.minLevel {
+func (l *LevelFilter) Debug(v ...interface{}) {
+	if LevelDebug < l.minLevel {
 		return
 	}
 	l.destLog.Debug(v...)
 }
 
 // Debugf sends debugging information
-func (l *VerbosityMiddleware) Debugf(format string, v ...interface{}) {
-	if DebugLevel < l.minLevel {
+func (l *LevelFilter) Debugf(format string, v ...interface{}) {
+	if LevelDebug < l.minLevel {
 		return
 	}
 	l.destLog.Debugf(format, v...)
 }
 
 // Info logs some noticeable information
-func (l *VerbosityMiddleware) Info(v ...interface{}) {
-	if InfoLevel < l.minLevel {
+func (l *LevelFilter) Info(v ...interface{}) {
+	if LevelInfo < l.minLevel {
 		return
 	}
 	l.destLog.Info(v...)
 }
 
 // Infof logs some noticeable information
-func (l *VerbosityMiddleware) Infof(format string, v ...interface{}) {
-	if InfoLevel < l.minLevel {
+func (l *LevelFilter) Infof(format string, v ...interface{}) {
+	if LevelInfo < l.minLevel {
 		return
 	}
 	l.destLog.Infof(format, v...)
 }
 
 // Warning send some important message to the console
-func (l *VerbosityMiddleware) Warning(v ...interface{}) {
-	if WarningLevel < l.minLevel {
+func (l *LevelFilter) Warning(v ...interface{}) {
+	if LevelWarning < l.minLevel {
 		return
 	}
 	l.destLog.Warning(v...)
 }
 
 // Warningf send some important message to the console
-func (l *VerbosityMiddleware) Warningf(format string, v ...interface{}) {
-	if WarningLevel < l.minLevel {
+func (l *LevelFilter) Warningf(format string, v ...interface{}) {
+	if LevelWarning < l.minLevel {
 		return
 	}
 	l.destLog.Warningf(format, v...)
 }
 
 // Error sends error information to the console
-func (l *VerbosityMiddleware) Error(v ...interface{}) {
+func (l *LevelFilter) Error(v ...interface{}) {
 	// error level is always going through
 	l.destLog.Error(v...)
 }
 
 // Errorf sends error information to the console
-func (l *VerbosityMiddleware) Errorf(format string, v ...interface{}) {
+func (l *LevelFilter) Errorf(format string, v ...interface{}) {
 	// error level is always going through
 	l.destLog.Errorf(format, v...)
 }
 
 // Verify interface
 var (
-	_ Logger = &VerbosityMiddleware{}
+	_ Logger = &LevelFilter{}
 )

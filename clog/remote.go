@@ -42,42 +42,42 @@ func (l *RemoteLog) Logf(level LogLevel, format string, v ...interface{}) {
 
 // Debug sends debugging information
 func (l *RemoteLog) Debug(v ...interface{}) {
-	l.message(DebugLevel, v...)
+	l.message(LevelDebug, v...)
 }
 
 // Debugf sends debugging information
 func (l *RemoteLog) Debugf(format string, v ...interface{}) {
-	l.messagef(DebugLevel, format, v...)
+	l.messagef(LevelDebug, format, v...)
 }
 
 // Info logs some noticeable information
 func (l *RemoteLog) Info(v ...interface{}) {
-	l.message(InfoLevel, v...)
+	l.message(LevelInfo, v...)
 }
 
 // Infof logs some noticeable information
 func (l *RemoteLog) Infof(format string, v ...interface{}) {
-	l.messagef(InfoLevel, format, v...)
+	l.messagef(LevelInfo, format, v...)
 }
 
 // Warning send some important message to the console
 func (l *RemoteLog) Warning(v ...interface{}) {
-	l.message(WarningLevel, v...)
+	l.message(LevelWarning, v...)
 }
 
 // Warningf send some important message to the console
 func (l *RemoteLog) Warningf(format string, v ...interface{}) {
-	l.messagef(WarningLevel, format, v...)
+	l.messagef(LevelWarning, format, v...)
 }
 
 // Error sends error information to the console
 func (l *RemoteLog) Error(v ...interface{}) {
-	l.message(ErrorLevel, v...)
+	l.message(LevelError, v...)
 }
 
 // Errorf sends error information to the console
 func (l *RemoteLog) Errorf(format string, v ...interface{}) {
-	l.messagef(ErrorLevel, format, v...)
+	l.messagef(LevelError, format, v...)
 }
 
 func (l *RemoteLog) message(level LogLevel, v ...interface{}) {

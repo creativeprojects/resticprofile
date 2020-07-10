@@ -14,13 +14,13 @@ func TestLogger(t *testing.T) {
 	SetTestLog(t)
 	defer ClearTestLog()
 
-	Log(NoLevel, "one", "two", "three")
+	Log(LevelInfo, "one", "two", "three")
 	Debug("one", "two", "three")
 	Info("one", "two", "three")
 	Warning("one", "two", "three")
 	Error("one", "two", "three")
 
-	Logf(NoLevel, "%d %d %d", 1, 2, 3)
+	Logf(LevelInfo, "%d %d %d", 1, 2, 3)
 	Debugf("%d %d %d", 1, 2, 3)
 	Infof("%d %d %d", 1, 2, 3)
 	Warningf("%d %d %d", 1, 2, 3)
@@ -28,8 +28,9 @@ func TestLogger(t *testing.T) {
 }
 
 func TestFileLoggerConcurrency(t *testing.T) {
-	// remove date prefix on logs
+	// remove date prefix on logs during the test
 	log.SetFlags(0)
+	defer log.SetFlags(log.LstdFlags)
 
 	iterations := 1000
 	buffer := &bytes.Buffer{}
@@ -46,37 +47,31 @@ func TestFileLoggerConcurrency(t *testing.T) {
 	for line, err := buffer.ReadString('\n'); err == nil; line, err = buffer.ReadString('\n') {
 		assert.Len(t, line, 14)
 	}
-	// clean up
-	log.SetFlags(log.LstdFlags)
 }
 
 func TestLoggerVerbosity(t *testing.T) {
 	expected := []string{
-		"      0 >= 0",
-		"DEBUG 1 >= 0",
-		"INFO  2 >= 0",
-		"WARN  3 >= 0",
-		"ERROR 4 >= 0",
-		"DEBUG 1 >= 1",
-		"INFO  2 >= 1",
-		"WARN  3 >= 1",
-		"ERROR 4 >= 1",
-		"INFO  2 >= 2",
-		"WARN  3 >= 2",
-		"ERROR 4 >= 2",
-		"WARN  3 >= 3",
-		"ERROR 4 >= 3",
-		"ERROR 4 >= 4",
+		"DEBUG 0 >= 0",
+		"INFO  1 >= 0",
+		"WARN  2 >= 0",
+		"ERROR 3 >= 0",
+		"INFO  1 >= 1",
+		"WARN  2 >= 1",
+		"ERROR 3 >= 1",
+		"WARN  2 >= 2",
+		"ERROR 3 >= 2",
+		"ERROR 3 >= 3",
 	}
-	// remove date prefix on logs
+	// remove date prefix on logs during the test
 	log.SetFlags(0)
+	defer log.SetFlags(log.LstdFlags)
 
 	buffer := &bytes.Buffer{}
 	streamLogger := NewStreamLog(buffer)
 
-	for minLevel := NoLevel; minLevel <= ErrorLevel; minLevel++ {
-		logger := NewVerbosityMiddleWare(minLevel, streamLogger)
-		for logLevel := NoLevel; logLevel <= ErrorLevel; logLevel++ {
+	for minLevel := LevelDebug; minLevel <= LevelError; minLevel++ {
+		logger := NewLevelFilter(minLevel, streamLogger)
+		for logLevel := LevelDebug; logLevel <= LevelError; logLevel++ {
 			logger.Logf(logLevel, "%d >= %d", logLevel, minLevel)
 		}
 	}
@@ -85,6 +80,30 @@ func TestLoggerVerbosity(t *testing.T) {
 		logs = append(logs, strings.Trim(line, "\n"))
 	}
 	assert.ElementsMatch(t, expected, logs)
-	// clean up
-	log.SetFlags(log.LstdFlags)
+}
+
+func BenchmarkStreamMessages(b *testing.B) {
+	b.ReportAllocs()
+	buffer := &bytes.Buffer{}
+	streamLogger := NewStreamLog(buffer)
+	logger := NewLevelFilter(LevelDebug, streamLogger)
+	param1 := "string"
+	param2 := 0
+
+	for i := 0; i < b.N; i++ {
+		logger.Infof("Message with a %s and a %d", param1, param2)
+	}
+}
+
+func BenchmarkStreamFilteredMessages(b *testing.B) {
+	b.ReportAllocs()
+	buffer := &bytes.Buffer{}
+	streamLogger := NewStreamLog(buffer)
+	logger := NewLevelFilter(LevelWarning, streamLogger)
+	param1 := "string"
+	param2 := 0
+
+	for i := 0; i < b.N; i++ {
+		logger.Infof("Message with a %s and a %d", param1, param2)
+	}
 }

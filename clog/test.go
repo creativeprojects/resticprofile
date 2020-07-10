@@ -42,51 +42,51 @@ func (l *TestLog) Logf(level LogLevel, format string, v ...interface{}) {
 
 // Debug sends debugging information
 func (l *TestLog) Debug(v ...interface{}) {
-	l.message(DebugLevel, v...)
+	l.message(LevelDebug, v...)
 }
 
 // Debugf sends debugging information
 func (l *TestLog) Debugf(format string, v ...interface{}) {
-	l.messagef(DebugLevel, format, v...)
+	l.messagef(LevelDebug, format, v...)
 }
 
 // Info logs some noticeable information
 func (l *TestLog) Info(v ...interface{}) {
-	l.message(InfoLevel, v...)
+	l.message(LevelInfo, v...)
 }
 
 // Infof logs some noticeable information
 func (l *TestLog) Infof(format string, v ...interface{}) {
-	l.messagef(InfoLevel, format, v...)
+	l.messagef(LevelInfo, format, v...)
 }
 
 // Warning send some important message to the console
 func (l *TestLog) Warning(v ...interface{}) {
-	l.message(WarningLevel, v...)
+	l.message(LevelWarning, v...)
 }
 
 // Warningf send some important message to the console
 func (l *TestLog) Warningf(format string, v ...interface{}) {
-	l.messagef(WarningLevel, format, v...)
+	l.messagef(LevelWarning, format, v...)
 }
 
 // Error sends error information to the console
 func (l *TestLog) Error(v ...interface{}) {
-	l.message(ErrorLevel, v...)
+	l.message(LevelError, v...)
 }
 
 // Errorf sends error information to the console
 func (l *TestLog) Errorf(format string, v ...interface{}) {
-	l.messagef(ErrorLevel, format, v...)
+	l.messagef(LevelError, format, v...)
 }
 
 func (l *TestLog) message(level LogLevel, v ...interface{}) {
-	v = append([]interface{}{getLevelName(level)}, v...)
+	v = append([]interface{}{level.String()}, v...)
 	l.t.Log(v...)
 }
 
 func (l *TestLog) messagef(level LogLevel, format string, v ...interface{}) {
-	l.t.Logf(getLevelName(level)+" "+format, v...)
+	l.t.Logf(level.String()+" "+format, v...)
 }
 
 // Verify interface

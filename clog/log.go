@@ -6,18 +6,6 @@ import (
 	"os"
 )
 
-// LogLevel represents the importance of a log entry
-type LogLevel int
-
-// LogLevel
-const (
-	NoLevel LogLevel = iota
-	DebugLevel
-	InfoLevel
-	WarningLevel
-	ErrorLevel
-)
-
 // Logger represents the logger interface
 type Logger interface {
 	Log(level LogLevel, v ...interface{})
@@ -37,21 +25,6 @@ var (
 	defaultLog    Logger    = &NullLog{}
 	defaultOutput io.Writer = os.Stdout
 )
-
-func getLevelName(level LogLevel) string {
-	switch level {
-	case DebugLevel:
-		return "DEBUG"
-	case InfoLevel:
-		return "INFO "
-	case WarningLevel:
-		return "WARN "
-	case ErrorLevel:
-		return "ERROR"
-	default:
-		return "     "
-	}
-}
 
 // SetDefaultLogger sets the logger when using the package methods
 func SetDefaultLogger(log Logger) {

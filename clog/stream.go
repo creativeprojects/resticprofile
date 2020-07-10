@@ -32,51 +32,51 @@ func (l *StreamLog) Logf(level LogLevel, format string, v ...interface{}) {
 
 // Debug sends debugging information
 func (l *StreamLog) Debug(v ...interface{}) {
-	l.message(DebugLevel, v...)
+	l.message(LevelDebug, v...)
 }
 
 // Debugf sends debugging information
 func (l *StreamLog) Debugf(format string, v ...interface{}) {
-	l.messagef(DebugLevel, format, v...)
+	l.messagef(LevelDebug, format, v...)
 }
 
 // Info logs some noticeable information
 func (l *StreamLog) Info(v ...interface{}) {
-	l.message(InfoLevel, v...)
+	l.message(LevelInfo, v...)
 }
 
 // Infof logs some noticeable information
 func (l *StreamLog) Infof(format string, v ...interface{}) {
-	l.messagef(InfoLevel, format, v...)
+	l.messagef(LevelInfo, format, v...)
 }
 
 // Warning send some important message to the console
 func (l *StreamLog) Warning(v ...interface{}) {
-	l.message(WarningLevel, v...)
+	l.message(LevelWarning, v...)
 }
 
 // Warningf send some important message to the console
 func (l *StreamLog) Warningf(format string, v ...interface{}) {
-	l.messagef(WarningLevel, format, v...)
+	l.messagef(LevelWarning, format, v...)
 }
 
 // Error sends error information to the console
 func (l *StreamLog) Error(v ...interface{}) {
-	l.message(ErrorLevel, v...)
+	l.message(LevelError, v...)
 }
 
 // Errorf sends error information to the console
 func (l *StreamLog) Errorf(format string, v ...interface{}) {
-	l.messagef(ErrorLevel, format, v...)
+	l.messagef(LevelError, format, v...)
 }
 
 func (l *StreamLog) message(level LogLevel, v ...interface{}) {
-	v = append([]interface{}{getLevelName(level)}, v...)
+	v = append([]interface{}{level.String()}, v...)
 	log.Println(v...)
 }
 
 func (l *StreamLog) messagef(level LogLevel, format string, v ...interface{}) {
-	log.Printf(getLevelName(level)+" "+format+"\n", v...)
+	log.Printf(level.String()+" "+format+"\n", v...)
 }
 
 // Verify interface
