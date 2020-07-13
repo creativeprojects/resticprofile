@@ -58,6 +58,21 @@ root:
         tag:
         - test
         - dev
+    forget:
+        host: true
+        keep-daily: 1
+        keep-hourly: 1
+        keep-last: 3
+        keep-monthly: 1
+        keep-tag:
+        - forever
+        keep-weekly: 1
+        keep-within: 3h
+        keep-yearly: 1
+        prune: false
+        tag:
+        - test
+        - dev
 
 self:
     inherit: default

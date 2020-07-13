@@ -188,14 +188,13 @@ verbose = true
 source = [ "/home" ]
 ```
 
-You may have noticed the `source` flag is accepting an array of values (inside brakets)
+You may have noticed the `source` flag is accepting an array of values (inside brackets)
 
 Now, assuming this configuration file is named `profiles.conf` in the current folder, you can simply run
 
 ```
 resticprofile backup
 ```
-
 
 ## Configuration examples
 
@@ -425,6 +424,11 @@ resticprofile will search for your configuration file in these folders:
 - c:\restic\
 - c:\resticprofile\
 - %USERPROFILE%\
+
+
+## Path resolution in configuration
+
+All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.
 
 ## Using resticprofile
 

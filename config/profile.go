@@ -1,11 +1,6 @@
 package config
 
 import (
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
-
 	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 )
@@ -81,30 +76,24 @@ func NewProfile(c *Config, name string) *Profile {
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
 
-	p.Lock = fixPath(p.Lock, rootPath)
-	p.PasswordFile = fixPath(p.PasswordFile, rootPath)
-	p.CacheDir = fixPath(p.CacheDir, rootPath)
-	p.CACert = fixPath(p.CACert, rootPath)
-	p.TLSClientCert = fixPath(p.TLSClientCert, rootPath)
+	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath), unixSpaces)
+	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, absolutePrefix(rootPath), unixSpaces)
+	p.CacheDir = fixPath(p.CacheDir, expandEnv, absolutePrefix(rootPath), unixSpaces)
+	p.CACert = fixPath(p.CACert, expandEnv, absolutePrefix(rootPath), unixSpaces)
+	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, absolutePrefix(rootPath), unixSpaces)
 
 	if p.Backup != nil {
 		if p.Backup.ExcludeFile != nil && len(p.Backup.ExcludeFile) > 0 {
-			for i := 0; i < len(p.Backup.ExcludeFile); i++ {
-				p.Backup.ExcludeFile[i] = fixPath(p.Backup.ExcludeFile[i], rootPath)
-			}
+			p.Backup.ExcludeFile = fixPaths(p.Backup.ExcludeFile, expandEnv, absolutePrefix(rootPath), unixSpaces)
 		}
 
 		if p.Backup.FilesFrom != nil && len(p.Backup.FilesFrom) > 0 {
-			for i := 0; i < len(p.Backup.FilesFrom); i++ {
-				p.Backup.FilesFrom[i] = fixPath(p.Backup.FilesFrom[i], rootPath)
-			}
+			p.Backup.FilesFrom = fixPaths(p.Backup.FilesFrom, expandEnv, absolutePrefix(rootPath), unixSpaces)
 		}
 
-		// Do we need to do source files? (it wasn't the case before v0.6.0)
+		// Backup source is NOT relative to the configuration, but where the script was launched instead
 		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
-			for i := 0; i < len(p.Backup.Source); i++ {
-				p.Backup.Source[i] = fixPath(p.Backup.Source[i], rootPath)
-			}
+			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv, unixSpaces)
 		}
 	}
 }
@@ -138,7 +127,7 @@ func (p *Profile) GetCommonFlags() map[string][]string {
 	return flags
 }
 
-// GetCommandFlags returns the flags specific to the command (backup, snapshots, etc.)
+// GetCommandFlags returns the flags specific to the command (backup, snapshots, forget, etc.)
 func (p *Profile) GetCommandFlags(command string) map[string][]string {
 	flags := p.GetCommonFlags()
 
@@ -163,6 +152,16 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 		if p.Check != nil && p.Check.OtherFlags != nil {
 			flags = addOtherFlags(flags, p.Check.OtherFlags)
 		}
+
+	case constants.CommandForget:
+		if p.Forget != nil {
+			flags = addOtherFlags(flags, p.Forget)
+		}
+
+	case constants.CommandMount:
+		if p.Mount != nil {
+			flags = addOtherFlags(flags, p.Mount)
+		}
 	}
 
 	return flags
@@ -173,7 +172,7 @@ func (p *Profile) GetRetentionFlags() map[string][]string {
 	flags := p.GetCommonFlags()
 	// Special case of retention: we do copy the "source" from "backup" as "path" if it hasn't been redefined in "retention"
 	if _, found := p.Retention.OtherFlags[constants.ParameterPath]; !found {
-		p.Retention.OtherFlags[constants.ParameterPath] = p.Backup.Source
+		p.Retention.OtherFlags[constants.ParameterPath] = fixPaths(p.Backup.Source, absolutePath)
 	}
 	flags = addOtherFlags(flags, p.Retention.OtherFlags)
 	return flags
@@ -252,24 +251,6 @@ func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
 		flags[key] = value
 	}
 	return flags
-}
-
-func fixPath(source, prefix string) string {
-	if strings.Contains(source, "$") || strings.Contains(source, "%") {
-		source = os.ExpandEnv(source)
-	}
-	if runtime.GOOS != "windows" {
-		prefix = strings.ReplaceAll(strings.TrimSpace(prefix), " ", `\ `)
-		source = strings.ReplaceAll(strings.TrimSpace(source), " ", `\ `)
-	}
-	if source == "" ||
-		filepath.IsAbs(source) ||
-		strings.HasPrefix(source, "~") ||
-		strings.HasPrefix(source, "$") ||
-		strings.HasPrefix(source, "%") {
-		return source
-	}
-	return filepath.Join(prefix, source)
 }
 
 func replaceTrueValue(source map[string]interface{}, key, replace string) {
