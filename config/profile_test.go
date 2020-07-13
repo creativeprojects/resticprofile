@@ -3,13 +3,10 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"runtime"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNoProfile(t *testing.T) {
@@ -205,58 +202,6 @@ array2 = ["one", "two"]
 	assert.Equal([]string{"42"}, flags["int"])
 	assert.Equal([]string{"1"}, flags["array1"])
 	assert.Equal([]string{"one", "two"}, flags["array2"])
-}
-
-func TestFixUnixPaths(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.SkipNow()
-	}
-
-	paths := []struct {
-		source   string
-		expected string
-	}{
-		{"", ""},
-		{"dir", "prefix/dir"},
-		{"/dir", "/dir"},
-		{"~/dir", "~/dir"},
-		{"$TEMP_TEST_DIR/dir", "/home/dir"},
-		{"some file.txt", "prefix/some\\ file.txt"},
-	}
-
-	err := os.Setenv("TEMP_TEST_DIR", "/home")
-	require.NoError(t, err)
-
-	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, "prefix")
-		assert.Equal(t, testPath.expected, fixed)
-	}
-}
-
-func TestFixWindowsPaths(t *testing.T) {
-	if runtime.GOOS != "windows" {
-		t.SkipNow()
-	}
-
-	paths := []struct {
-		source   string
-		expected string
-	}{
-		{``, ``},
-		{`dir`, `prefix\dir`},
-		{`\dir`, `prefix\dir`},
-		{`c:\dir`, `c:\dir`},
-		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
-		{"some file.txt", `prefix\some file.txt`},
-	}
-
-	err := os.Setenv("TEMP_TEST_DIR", "/home")
-	require.NoError(t, err)
-
-	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, "prefix")
-		assert.Equal(t, testPath.expected, fixed)
-	}
 }
 
 func TestHostInProfile(t *testing.T) {
