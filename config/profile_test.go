@@ -3,10 +3,12 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNoProfile(t *testing.T) {
@@ -254,7 +256,11 @@ host = false
 	flags := profile.GetRetentionFlags()
 	assert.NotNil(flags)
 	assert.Contains(flags, "path")
-	assert.Equal([]string{"/"}, flags["path"])
+	if runtime.GOOS == "windows" {
+		assert.Equal([]string{"C:\\"}, flags["path"])
+	} else {
+		assert.Equal([]string{"/"}, flags["path"])
+	}
 }
 
 func TestReplacePathInRetention(t *testing.T) {
@@ -292,4 +298,64 @@ func getProfile(configString, profileKey string) (*Profile, error) {
 		return nil, err
 	}
 	return profile, nil
+}
+
+func TestForgetCommandFlags(t *testing.T) {
+	testData := []testTemplate{
+		{"toml", `
+[profile]
+initialize = true
+
+[profile.backup]
+source = "/"
+
+[profile.forget]
+keep-daily = 1
+`},
+		{"json", `
+{
+  "profile": {
+    "backup": {"source": "/"},
+    "forget": {"keep-daily": 1}
+  }
+}`},
+		{"yaml", `---
+profile:
+  backup:
+    source: "/"
+  forget:
+    keep-daily: 1
+`},
+		{"hcl", `
+"profile" = {
+	backup = {
+		source = "/"
+	}
+	forget = {
+		keep-daily = 1
+	}
+}
+`},
+	}
+
+	for _, testItem := range testData {
+		format := testItem.format
+		testConfig := testItem.config
+		t.Run(format, func(t *testing.T) {
+			profile := getConfigProfile(t, format, testConfig, "profile")
+
+			assert.NotNil(t, profile)
+			assert.NotNil(t, profile.Forget)
+			assert.NotEmpty(t, profile.Forget["keep-daily"])
+		})
+	}
+}
+
+func getConfigProfile(t *testing.T, configFormat, configString, profileKey string) *Profile {
+	c, err := Load(bytes.NewBufferString(configString), configFormat)
+	require.NoError(t, err)
+
+	profile, err := c.GetProfile(profileKey)
+	require.NoError(t, err)
+	return profile
 }
