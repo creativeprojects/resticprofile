@@ -24,6 +24,9 @@ const (
 	commandDisable = "disable"
 	commandStatus  = "status"
 	flagUserUnit   = "--user"
+
+	// https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
+	codeUnitNotFound = 4
 )
 
 // checkSystem verifies systemd is available on this system
@@ -99,13 +102,13 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	timerName := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 
 	// enable the job
-	err = runSystemdCommand(timerName, commandEnable, unitType)
+	err = runSystemctlCommand(timerName, commandEnable, unitType)
 	if err != nil {
 		return err
 	}
 
 	// start the job
-	err = runSystemdCommand(timerName, commandStart, unitType)
+	err = runSystemctlCommand(timerName, commandStart, unitType)
 	if err != nil {
 		return err
 	}
@@ -133,13 +136,13 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	timerFile := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 
 	// stop the job
-	err = runSystemdCommand(timerFile, commandStop, unitType)
+	err = runSystemctlCommand(timerFile, commandStop, unitType)
 	if err != nil {
 		return err
 	}
 
 	// disable the job
-	err = runSystemdCommand(timerFile, commandDisable, unitType)
+	err = runSystemctlCommand(timerFile, commandDisable, unitType)
 	if err != nil {
 		return err
 	}
@@ -170,12 +173,12 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 func (j *Job) displayStatus(command string) error {
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {
-		return runSystemdCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.SystemUnit)
+		return runSystemctlCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.SystemUnit)
 	}
-	return runSystemdCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.UserUnit)
+	return runSystemctlCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.UserUnit)
 }
 
-func runSystemdCommand(timerName, command string, unitType systemd.UnitType) error {
+func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) error {
 	args := make([]string, 0, 3)
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
@@ -185,5 +188,9 @@ func runSystemdCommand(timerName, command string, unitType systemd.UnitType) err
 	cmd := exec.Command(systemctlBin, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	err := cmd.Run()
+	if cmd.ProcessState.ExitCode() == codeUnitNotFound {
+		return ErrorServiceNotFound
+	}
+	return err
 }
