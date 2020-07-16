@@ -536,7 +536,7 @@ For that matter I've introduced a parameter in the `global` section called `min-
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
 
-## Scheduled backups
+## Scheduled backups (please note this is work in progress for version 0.9.0)
 
 resticprofile is capable of managing scheduled backups for you:
 - using **systemd** where available (Linux and various unixes)
@@ -544,23 +544,33 @@ resticprofile is capable of managing scheduled backups for you:
 - using **Task Scheduler** on Windows
 
 Each profile can be scheduled independently (groups are not available for scheduling yet).
-Two parameters can be added on the profile:
+
+These 3 profile sections are accepting a schedule configuration:
+- backup
+- retention (when not run before or after a backup)
+- check
+
+which mean you can schedule backup, retention (`forget` command) and repository check independently (I recommend to use a local `lock` in this case).
+
+### Schedule configuration
+
+The schedule configuration consists on two parameters which can be added on each profile:
 
 ```ini
-[profile]
+[profile.backup]
 schedule-type = "system"
 schedule = "*:00,30"
 ```
 
-**Please note**: these two parameters are in the profile section, not the backup section of the profile, even though it's obvious it's only for scheduling backups.
 
-### schedule-type
+
+#### schedule-type
 
 `schedule-type` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
 
-If you need to access some system or protected files, set the `schedule-type` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions if needed)
+If you need to access some system or protected files, set the `schedule-type` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
 
-### schedule
+#### schedule
 
 The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use. **It is the same format used to schedule on macOS and Windows**.
 
@@ -621,11 +631,11 @@ default:
 
 self:
     inherit: default
-    schedule:
-    - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
-    - "Sat,Sun 0,12:00"        # twice a day on week-ends
     backup:
         source: "."
+        schedule:
+        - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
+        - "Sat,Sun 0,12:00"        # twice a day on week-ends
 ```
 
 ### Scheduling commands
@@ -635,7 +645,7 @@ resticprofile accepts these internal commands:
 - unschedule
 - status
 
-All these commands need at least a name of a profile, that's where the schedule information is taken from.
+Please note the display of the status command will be OS dependant.
 
 Example of the schedule command under Windows (with git bash):
 
@@ -704,7 +714,6 @@ Flags used by resticprofile only
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
 * **run-after-fail**: string OR list of strings
-* **schedule**: string OR list of strings
 
 Flags passed to the restic command line
 
@@ -733,6 +742,8 @@ Flags used by resticprofile only
 * **run-after**: string OR list of strings
 * **check-before**: true / false
 * **check-after**: true / false
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
 
 Flags passed to the restic command line
 
@@ -760,6 +771,8 @@ Flags used by resticprofile only
 
 * **before-backup**: true / false
 * **after-backup**: true / false
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
 
 Flags passed to the restic command line
 
@@ -811,6 +824,11 @@ Flags passed to the restic command line
 * **prune**: true / false
 
 `[profile.check]`
+
+Flags used by resticprofile only
+
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
 
 Flags passed to the restic command line
 
