@@ -46,18 +46,19 @@ For the rest of the documentation, I'll be showing examples using the TOML file 
     * [macOS X](#macos-x)
     * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
     * [Windows](#windows)
+  * [Path resolution in configuration](#path-resolution-in-configuration)
   * [Using resticprofile](#using-resticprofile)
   * [Command line reference](#command-line-reference)
   * [Minimum memory required](#minimum-memory-required)
-  * [Scheduled backups](#scheduled-backups)
-    * [schedule\-type](#schedule-type)
-    * [schedule](#schedule)
+  * [Scheduled backups (please note this is work in progress for version 0\.9\.0)](#scheduled-backups-please-note-this-is-work-in-progress-for-version-090)
+    * [Schedule configuration](#schedule-configuration)
+      * [schedule\-type](#schedule-type)
+      * [schedule](#schedule)
     * [Scheduling commands](#scheduling-commands)
   * [Configuration file reference](#configuration-file-reference)
   * [Appendix](#appendix)
   * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
     * [systemd calendars](#systemd-calendars)
-    * [Configuring a systemd profile](#configuring-a-systemd-profile)
 
 
 ## Requirements
