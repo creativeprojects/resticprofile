@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"

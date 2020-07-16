@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"golang.org/x/sys/windows"
 )
 

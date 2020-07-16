@@ -8,7 +8,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"golang.org/x/sys/unix"
 )
 

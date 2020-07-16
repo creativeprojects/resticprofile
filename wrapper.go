@@ -6,10 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 type resticWrapper struct {
@@ -178,8 +179,8 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
 	rCommand := newShellCommand(r.resticBinary, arguments, env)
 	rCommand.sigChan = r.sigChan
-	// stdout is coming from the logger - could seem strange but that's where we're sending all output
-	rCommand.stdout = clog.GetOutput()
+	// stdout is coming from the default terminal
+	rCommand.stdout = term.GetOutput()
 
 	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.UseStdin {
 		clog.Debug("redirecting stdin to the backup")

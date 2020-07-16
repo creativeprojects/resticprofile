@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/creativeprojects/clog"
 )
 
 // Client for sending messages back to the parent process
 type Client struct {
-	baseURL string
-	client  *http.Client
+	baseURL   string
+	client    *http.Client
+	logPrefix string
 }
 
 type remoteLog struct {
@@ -26,11 +29,16 @@ func NewClient(port int) *Client {
 	}
 }
 
-// Log messages back to the parent process
-func (c *Client) Log(level int, message string) error {
+// SetLogPrefix adds a prefix to all the log messages
+func (c *Client) SetLogPrefix(logPrefix string) {
+	c.logPrefix = logPrefix
+}
+
+// LogEntry logs messages back to the parent process
+func (c *Client) LogEntry(logEntry clog.LogEntry) error {
 	log := remoteLog{
-		Level:   level,
-		Message: message,
+		Level:   int(logEntry.Level),
+		Message: c.logPrefix + logEntry.GetMessage(),
 	}
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
