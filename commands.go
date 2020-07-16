@@ -1,15 +1,19 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 	"text/tabwriter"
 
+	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/systemd"
+	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/win"
 )
 
 type ownCommand struct {
@@ -23,21 +27,15 @@ type ownCommand struct {
 var (
 	ownCommands = []ownCommand{
 		{
-			name:              "profiles",
-			description:       "display profile names from the configuration file",
-			action:            displayProfilesCommand,
-			needConfiguration: true,
-		},
-		{
 			name:              "self-update",
 			description:       "update resticprofile to latest version (does not update restic)",
 			action:            selfUpdate,
 			needConfiguration: false,
 		},
 		{
-			name:              "systemd-unit",
-			description:       "create a user systemd timer",
-			action:            createSystemdTimer,
+			name:              "profiles",
+			description:       "display profile names from the configuration file",
+			action:            displayProfilesCommand,
 			needConfiguration: true,
 		},
 		{
@@ -52,6 +50,34 @@ var (
 			description:       "(debug only) simulates a panic",
 			action:            panicCommand,
 			needConfiguration: false,
+			hide:              true,
+		},
+		{
+			name:              "schedule",
+			description:       "schedule a backup",
+			action:            createSchedule,
+			needConfiguration: true,
+			hide:              false,
+		},
+		{
+			name:              "unschedule",
+			description:       "remove a scheduled backup",
+			action:            removeSchedule,
+			needConfiguration: true,
+			hide:              false,
+		},
+		{
+			name:              "status",
+			description:       "display the status of a scheduled backup job",
+			action:            statusSchedule,
+			needConfiguration: true,
+			hide:              false,
+		},
+		{
+			name:              "elevation",
+			description:       "test windows elevated mode",
+			action:            testElevationCommand,
+			needConfiguration: true,
 			hide:              true,
 		},
 	}
@@ -136,14 +162,6 @@ func selfUpdate(_ *config.Config, flags commandLineFlags, args []string) error {
 	return nil
 }
 
-func createSystemdTimer(_ *config.Config, flags commandLineFlags, args []string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("OnCalendar argument required")
-	}
-	systemd.Generate(flags.name, args[0])
-	return nil
-}
-
 func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
 	panic("you asked for it")
 }
@@ -176,5 +194,140 @@ func showProfile(c *config.Config, flags commandLineFlags, args []string) error 
 	}
 	fmt.Printf("\n%s:\n", flags.name)
 	config.ShowStruct(os.Stdout, profile)
+	return nil
+}
+
+func createSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	// If this is running in elevated mode we'll need to send a finished signal
+	if flags.isChild {
+		defer func(port int) {
+			client := remote.NewClient(port)
+			client.Done()
+		}(flags.parentPort)
+	}
+
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	schedules := profile.Schedules()
+	if schedules == nil || len(schedules) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = scheduleJobs(flags.config, schedules)
+	if err != nil {
+		return retryElevated(err, flags)
+	}
+	return nil
+}
+
+func removeSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	// If this is running in elevated mode we'll need to send a finished signal
+	if flags.isChild {
+		defer func(port int) {
+			client := remote.NewClient(port)
+			client.Done()
+		}(flags.parentPort)
+	}
+
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	schedules := profile.Schedules()
+	if schedules == nil || len(schedules) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = removeJobs(schedules)
+	if err != nil {
+		return retryElevated(err, flags)
+	}
+	return nil
+}
+
+func statusSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+	// If this is running in elevated mode we'll need to send a finished signal
+	if flags.isChild {
+		defer func(port int) {
+			client := remote.NewClient(port)
+			client.Done()
+		}(flags.parentPort)
+	}
+
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	schedules := profile.Schedules()
+	if schedules == nil || len(schedules) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = statusJobs(schedules)
+	if err != nil {
+		return retryElevated(err, flags)
+	}
+	return nil
+}
+
+func testElevationCommand(c *config.Config, flags commandLineFlags, args []string) error {
+	if flags.isChild {
+		client := remote.NewClient(flags.parentPort)
+		client.Done()
+		return nil
+	}
+
+	return elevated(flags)
+}
+
+func retryElevated(err error, flags commandLineFlags) error {
+	if err == nil {
+		return nil
+	}
+	// maybe can find a better way than searching for the word "denied"?
+	if runtime.GOOS == "windows" && !flags.isChild && strings.Contains(err.Error(), "denied") {
+		clog.Info("restarting resticprofile in elevated mode...")
+		err := elevated(flags)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return err
+}
+
+func elevated(flags commandLineFlags) error {
+	if runtime.GOOS != "windows" {
+		return errors.New("only available on Windows platform")
+	}
+
+	done := make(chan interface{}, 0)
+	err := remote.StartServer(done)
+	if err != nil {
+		return err
+	}
+	err = win.RunElevated(remote.GetPort())
+	if err != nil {
+		remote.StopServer()
+		return err
+	}
+
+	// wait until the server is done
+	<-done
+
 	return nil
 }

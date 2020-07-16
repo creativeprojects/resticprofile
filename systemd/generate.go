@@ -12,52 +12,74 @@ import (
 	"github.com/creativeprojects/resticprofile/clog"
 )
 
-var systemdUnitBackupUnitTmpl = `[Unit]
-Description=resticprofile backup for {{ .Profile }}
+const (
+	defaultPermission = 0644
+	systemdSystemDir  = "/etc/systemd/system/"
+
+	systemdUnitBackupUnitTmpl = `[Unit]
+Description={{ .JobDescription }}
 
 [Service]
 Type=oneshot
-ExecStart=resticprofile -n "{{ .Profile }}"
+WorkingDirectory={{ .WorkingDirectory }}
+ExecStart={{ .CommandLine }}
 `
 
-var systemdUnitBackupTimerTmpl = `[Unit]
-Description=backup timer of {{ .Profile }}
+	systemdUnitBackupTimerTmpl = `[Unit]
+Description={{ .TimerDescription }}
 
 [Timer]
-OnCalendar={{.OnCalendar}}
+{{ range .OnCalendar -}}
+OnCalendar={{ . }}
+{{ end -}}
 Unit={{ .SystemdProfile }}
 Persistent=true
 
 [Install]
 WantedBy=timers.target
 `
+)
+
+// UnitType is either user or system
+type UnitType int
+
+// Type of systemd unit
+const (
+	UserUnit UnitType = iota
+	SystemUnit
+)
 
 // TemplateInfo to create systemd unit
 type TemplateInfo struct {
-	Profile        string
-	OnCalendar     string
-	SystemdProfile string
+	JobDescription   string
+	TimerDescription string
+	WorkingDirectory string
+	CommandLine      string
+	OnCalendar       []string
+	SystemdProfile   string
 }
 
 // Generate systemd unit
-func Generate(profile, onCalendar string) error {
-	systemdProfile := fmt.Sprintf("resticprofile-backup@%s.service", profile)
-	timerProfile := fmt.Sprintf("resticprofile-backup@%s.timer", profile)
+func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType) error {
+	var err error
+	systemdProfile := GetServiceFile(title, subTitle)
+	timerProfile := GetTimerFile(title, subTitle)
 
-	u, err := user.Current()
-	if err != nil {
-		return err
-	}
-
-	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
-	if err := os.MkdirAll(systemdUserDir, 0700); err != nil {
-		return err
+	systemdUserDir := systemdSystemDir
+	if unitType == UserUnit {
+		systemdUserDir, err = GetUserDir()
+		if err != nil {
+			return err
+		}
 	}
 
 	info := TemplateInfo{
-		Profile:        profile,
-		SystemdProfile: systemdProfile,
-		OnCalendar:     onCalendar,
+		JobDescription:   jobDescription,
+		TimerDescription: timerDescription,
+		WorkingDirectory: wd,
+		CommandLine:      commandLine,
+		OnCalendar:       onCalendar,
+		SystemdProfile:   systemdProfile,
 	}
 
 	var data bytes.Buffer
@@ -66,8 +88,8 @@ func Generate(profile, onCalendar string) error {
 		return err
 	}
 	filePathName := filepath.Join(systemdUserDir, systemdProfile)
-	clog.Infof("Writing %v", filePathName)
-	if err := ioutil.WriteFile(filePathName, data.Bytes(), 0600); err != nil {
+	clog.Infof("writing %v", filePathName)
+	if err := ioutil.WriteFile(filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 	data.Reset()
@@ -77,9 +99,38 @@ func Generate(profile, onCalendar string) error {
 		return err
 	}
 	filePathName = filepath.Join(systemdUserDir, timerProfile)
-	clog.Infof("Writing %v", filePathName)
-	if err := ioutil.WriteFile(filePathName, data.Bytes(), 0600); err != nil {
+	clog.Infof("writing %v", filePathName)
+	if err := ioutil.WriteFile(filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 	return nil
+}
+
+// GetServiceFile returns the service file name for the profile
+func GetServiceFile(profileName, commandName string) string {
+	return fmt.Sprintf("resticprofile-%s@profile-%s.service", commandName, profileName)
+}
+
+// GetTimerFile returns the timer file name for the profile
+func GetTimerFile(profileName, commandName string) string {
+	return fmt.Sprintf("resticprofile-%s@profile-%s.timer", commandName, profileName)
+}
+
+// GetUserDir returns the default directory where systemd stores user units
+func GetUserDir() (string, error) {
+	u, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
+	if err := os.MkdirAll(systemdUserDir, 0700); err != nil {
+		return "", err
+	}
+	return systemdUserDir, nil
+}
+
+// GetSystemDir returns the path where the local systemd units are stored
+func GetSystemDir() string {
+	return systemdSystemDir
 }

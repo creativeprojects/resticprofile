@@ -9,47 +9,60 @@ import (
 type Profile struct {
 	config        *Config
 	Name          string
-	Quiet         bool                   `mapstructure:"quiet" argument:"quiet"`
-	Verbose       bool                   `mapstructure:"verbose" argument:"verbose"`
-	Repository    string                 `mapstructure:"repository" argument:"repo"`
-	PasswordFile  string                 `mapstructure:"password-file" argument:"password-file"`
-	CacheDir      string                 `mapstructure:"cache-dir" argument:"cache-dir"`
-	CACert        string                 `mapstructure:"cacert" argument:"cacert"`
-	TLSClientCert string                 `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
-	Initialize    bool                   `mapstructure:"initialize"`
-	Inherit       string                 `mapstructure:"inherit"`
-	Lock          string                 `mapstructure:"lock"`
-	RunBefore     []string               `mapstructure:"run-before"`
-	RunAfter      []string               `mapstructure:"run-after"`
-	RunAfterFail  []string               `mapstructure:"run-after-fail"`
-	Environment   map[string]string      `mapstructure:"env"`
-	Backup        *BackupSection         `mapstructure:"backup"`
-	Retention     *RetentionSection      `mapstructure:"retention"`
-	Snapshots     map[string]interface{} `mapstructure:"snapshots"`
-	Forget        map[string]interface{} `mapstructure:"forget"`
-	Check         map[string]interface{} `mapstructure:"check"`
-	Mount         map[string]interface{} `mapstructure:"mount"`
-	OtherFlags    map[string]interface{} `mapstructure:",remain"`
+	Quiet         bool                      `mapstructure:"quiet" argument:"quiet"`
+	Verbose       bool                      `mapstructure:"verbose" argument:"verbose"`
+	Repository    string                    `mapstructure:"repository" argument:"repo"`
+	PasswordFile  string                    `mapstructure:"password-file" argument:"password-file"`
+	CacheDir      string                    `mapstructure:"cache-dir" argument:"cache-dir"`
+	CACert        string                    `mapstructure:"cacert" argument:"cacert"`
+	TLSClientCert string                    `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
+	Initialize    bool                      `mapstructure:"initialize"`
+	Inherit       string                    `mapstructure:"inherit"`
+	Lock          string                    `mapstructure:"lock"`
+	RunBefore     []string                  `mapstructure:"run-before"`
+	RunAfter      []string                  `mapstructure:"run-after"`
+	RunAfterFail  []string                  `mapstructure:"run-after-fail"`
+	Environment   map[string]string         `mapstructure:"env"`
+	Backup        *BackupSection            `mapstructure:"backup"`
+	Retention     *RetentionSection         `mapstructure:"retention"`
+	Check         *OtherSectionWithSchedule `mapstructure:"check"`
+	Snapshots     map[string]interface{}    `mapstructure:"snapshots"`
+	Forget        map[string]interface{}    `mapstructure:"forget"`
+	Mount         map[string]interface{}    `mapstructure:"mount"`
+	OtherFlags    map[string]interface{}    `mapstructure:",remain"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
-	CheckBefore bool                   `mapstructure:"check-before"`
-	CheckAfter  bool                   `mapstructure:"check-after"`
-	RunBefore   []string               `mapstructure:"run-before"`
-	RunAfter    []string               `mapstructure:"run-after"`
-	UseStdin    bool                   `mapstructure:"stdin" argument:"stdin"`
-	Source      []string               `mapstructure:"source"`
-	ExcludeFile []string               `mapstructure:"exclude-file" argument:"exclude-file"`
-	FilesFrom   []string               `mapstructure:"files-from" argument:"files-from"`
-	OtherFlags  map[string]interface{} `mapstructure:",remain"`
+	CheckBefore        bool                   `mapstructure:"check-before"`
+	CheckAfter         bool                   `mapstructure:"check-after"`
+	RunBefore          []string               `mapstructure:"run-before"`
+	RunAfter           []string               `mapstructure:"run-after"`
+	UseStdin           bool                   `mapstructure:"stdin" argument:"stdin"`
+	Source             []string               `mapstructure:"source"`
+	ExcludeFile        []string               `mapstructure:"exclude-file" argument:"exclude-file"`
+	FilesFrom          []string               `mapstructure:"files-from" argument:"files-from"`
+	Schedule           []string               `mapstructure:"schedule"`
+	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	OtherFlags         map[string]interface{} `mapstructure:",remain"`
 }
 
-// RetentionSection contains the specific configuration to the 'forget' command run as part of a backup
+// RetentionSection contains the specific configuration to
+// the 'forget' command when running as part of a backup
 type RetentionSection struct {
-	BeforeBackup bool                   `mapstructure:"before-backup"`
-	AfterBackup  bool                   `mapstructure:"after-backup"`
-	OtherFlags   map[string]interface{} `mapstructure:",remain"`
+	BeforeBackup       bool                   `mapstructure:"before-backup"`
+	AfterBackup        bool                   `mapstructure:"after-backup"`
+	Schedule           []string               `mapstructure:"schedule"`
+	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	OtherFlags         map[string]interface{} `mapstructure:",remain"`
+}
+
+// OtherSectionWithSchedule is a section containing schedule only specific parameters
+// (the other parameters being for restic)
+type OtherSectionWithSchedule struct {
+	Schedule           []string               `mapstructure:"schedule"`
+	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	OtherFlags         map[string]interface{} `mapstructure:",remain"`
 }
 
 // NewProfile instantiates a new blank profile
@@ -136,8 +149,8 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 		}
 
 	case constants.CommandCheck:
-		if p.Check != nil {
-			flags = addOtherFlags(flags, p.Check)
+		if p.Check != nil && p.Check.OtherFlags != nil {
+			flags = addOtherFlags(flags, p.Check.OtherFlags)
 		}
 
 	case constants.CommandForget:
@@ -171,6 +184,46 @@ func (p *Profile) GetBackupSource() []string {
 		return nil
 	}
 	return p.Backup.Source
+}
+
+// Schedules returns a slice of ScheduleConfig that satisfy the schedule.Config interface
+func (p *Profile) Schedules() []*ScheduleConfig {
+	// Default to 3: backup, retention and check
+	configs := make([]*ScheduleConfig, 0, 3)
+	// Backup
+	if p.Backup != nil && p.Backup.Schedule != nil && len(p.Backup.Schedule) > 0 {
+		config := &ScheduleConfig{
+			profileName: p.Name,
+			commandName: constants.CommandBackup,
+			schedules:   p.Backup.Schedule,
+			permission:  p.Backup.SchedulePermission,
+			environment: p.Environment,
+		}
+		configs = append(configs, config)
+	}
+	// Retention (forget)
+	if p.Retention != nil && p.Retention.Schedule != nil && len(p.Retention.Schedule) > 0 {
+		config := &ScheduleConfig{
+			profileName: p.Name,
+			commandName: constants.SectionConfigurationRetention,
+			schedules:   p.Retention.Schedule,
+			permission:  p.Retention.SchedulePermission,
+			environment: p.Environment,
+		}
+		configs = append(configs, config)
+	}
+	// Check
+	if p.Check != nil && p.Check.Schedule != nil && len(p.Check.Schedule) > 0 {
+		config := &ScheduleConfig{
+			profileName: p.Name,
+			commandName: constants.CommandCheck,
+			schedules:   p.Check.Schedule,
+			permission:  p.Check.SchedulePermission,
+			environment: p.Environment,
+		}
+		configs = append(configs, config)
+	}
+	return configs
 }
 
 func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{}) map[string][]string {

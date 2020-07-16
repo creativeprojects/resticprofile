@@ -1,0 +1,36 @@
+global:
+    priority: low
+    min-memory: 10
+
+groups:
+    double:
+    - self
+    - self
+
+default:
+    repository: "d:\\backup"
+    password-file: key
+
+self:
+    inherit: default
+    initialize: true
+    backup:
+        source: "."
+        schedule:
+        - "Mon..Fri *:00,30" # every 15 minutes
+        - "Mon..Fri *:15,45" # both combined together
+        - "Sat,Sun 0,12:*"
+        schedule-permission: user
+
+test:
+    inherit: default
+    initialize: true
+    backup:
+        source: "."
+        schedule:
+        - "2020-07-31"
+        - "*:0,15,30,45"
+        schedule-permission: user
+    check:
+        schedule: "*-*-1"
+        schedule-permission: user

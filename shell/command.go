@@ -19,11 +19,11 @@ type Command struct {
 	Stdout    io.Writer
 	Stderr    io.Writer
 	sigChan   chan os.Signal
-	done      chan bool
+	done      chan interface{}
 }
 
-// newShellCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
-func newShellCommand(command string, args []string) *Command {
+// newCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
+func newCommand(command string, args []string) *Command {
 	return &Command{
 		Command:   command,
 		Arguments: args,
@@ -38,7 +38,7 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 		Arguments: args,
 		Environ:   []string{},
 		sigChan:   c,
-		done:      make(chan bool, 1),
+		done:      make(chan interface{}, 0),
 	}
 }
 

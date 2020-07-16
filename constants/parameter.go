@@ -3,9 +3,9 @@ package constants
 // Parameter
 const (
 	ParameterIONice         = "ionice"
-	ParamaterIONiceClass    = "ionice-class"
+	ParameterIONiceClass    = "ionice-class"
 	ParameterIONiceLevel    = "ionice-level"
-	ParamaterNice           = "nice"
+	ParameterNice           = "nice"
 	ParameterPriority       = "priority"
 	ParameterDefaultCommand = "default-command"
 	ParameterInitialize     = "initialize"

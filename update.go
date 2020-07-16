@@ -1,16 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"runtime"
-	"strings"
 
 	"github.com/blang/semver"
 	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
 )
 
@@ -32,7 +30,7 @@ func confirmAndSelfUpdate(debug bool) error {
 		return nil
 	}
 
-	if !askYesNo(os.Stdin, fmt.Sprint("Do you want to update to version ", latest.Version), true) {
+	if !term.AskYesNo(os.Stdin, fmt.Sprint("Do you want to update to version ", latest.Version), true) {
 		fmt.Println("Never mind")
 		return nil
 	}
@@ -46,36 +44,4 @@ func confirmAndSelfUpdate(debug bool) error {
 	}
 	clog.Infof("Successfully updated to version %s", latest.Version)
 	return nil
-}
-
-func askYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
-	if !strings.HasSuffix(message, "?") {
-		message += "?"
-	}
-	question := ""
-	input := ""
-	if defaultAnswer {
-		question = "(Y/n)"
-		input = "y"
-	} else {
-		question = "(y/N)"
-		input = "n"
-	}
-	fmt.Printf("%s %s: ", message, question)
-	scanner := bufio.NewScanner(reader)
-	if scanner.Scan() {
-		input = strings.TrimSpace(strings.ToLower(scanner.Text()))
-		if len(input) > 1 {
-			// take only the first character
-			input = input[:1]
-		}
-	}
-
-	if input == "" {
-		return defaultAnswer
-	}
-	if input == "y" {
-		return true
-	}
-	return false
 }

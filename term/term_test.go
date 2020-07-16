@@ -1,4 +1,4 @@
-package main
+package term
 
 import (
 	"bytes"
@@ -59,7 +59,7 @@ func TestAskYesNo(t *testing.T) {
 		{"no\r\n", false, false},
 	}
 	for _, testItem := range testData {
-		result := askYesNo(
+		result := AskYesNo(
 			bytes.NewBufferString(testItem.input),
 			"message",
 			testItem.defaultAnswer,

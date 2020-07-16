@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/adrg/xdg v0.2.1
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
 	github.com/fatih/color v1.9.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
@@ -18,6 +19,7 @@ require (
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/rhysd/go-github-selfupdate v1.2.2
+	github.com/rickb777/date v1.12.3
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.3.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
@@ -26,7 +28,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
 	github.com/ulikunitz/xz v0.5.7 // indirect
-	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 // indirect
+	golang.org/x/crypto v0.0.0-20200707235045-ab33eee955e0
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
@@ -35,4 +37,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	howett.net/plist v0.0.0-20200419221736-3b63eb3a43b5
 )

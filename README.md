@@ -31,29 +31,35 @@ For the rest of the documentation, I'll be showing examples using the TOML file 
 
 # Table of Contents
 
-   * [resticprofile](#resticprofile)
-      * [Requirements](#requirements)
-      * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
-         * [Installation for Windows using bash](#installation-for-windows-using-bash)
-         * [Manual installation (Windows)](#manual-installation-windows)
-      * [Upgrade](#upgrade)
-      * [Using docker image](#using-docker-image)
-         * [Please note:](#please-note)
-      * [Configuration format](#configuration-format)
-      * [Configuration examples](#configuration-examples)
-      * [Configuration paths](#configuration-paths)
-         * [macOS X](#macos-x)
-         * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
-         * [Windows](#windows)
-      * [Using resticprofile](#using-resticprofile)
-      * [Command line reference](#command-line-reference)
-      * [Minimum memory required](#minimum-memory-required)
-      * [Scheduled backups](#scheduled-backups)
-      * [Configuration file reference](#configuration-file-reference)
-      * [Appendix](#appendix)
-      * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
-         * [systemd calendars](#systemd-calendars)
-         * [Configuring a systemd profile](#configuring-a-systemd-profile)
+* [resticprofile](#resticprofile)
+* [Table of Contents](#table-of-contents)
+  * [Requirements](#requirements)
+  * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
+    * [Installation for Windows using bash](#installation-for-windows-using-bash)
+    * [Manual installation (Windows)](#manual-installation-windows)
+  * [Upgrade](#upgrade)
+  * [Using docker image](#using-docker-image)
+    * [Container host name](#container-host-name)
+  * [Configuration format](#configuration-format)
+  * [Configuration examples](#configuration-examples)
+  * [Configuration paths](#configuration-paths)
+    * [macOS X](#macos-x)
+    * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
+    * [Windows](#windows)
+  * [Path resolution in configuration](#path-resolution-in-configuration)
+  * [Using resticprofile](#using-resticprofile)
+  * [Command line reference](#command-line-reference)
+  * [Minimum memory required](#minimum-memory-required)
+  * [Scheduled backups (please note this is work in progress for version 0\.9\.0)](#scheduled-backups-please-note-this-is-work-in-progress-for-version-090)
+    * [Schedule configuration](#schedule-configuration)
+      * [schedule\-type](#schedule-type)
+      * [schedule](#schedule)
+    * [Scheduling commands](#scheduling-commands)
+  * [Configuration file reference](#configuration-file-reference)
+  * [Appendix](#appendix)
+  * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
+    * [systemd calendars](#systemd-calendars)
+
 
 ## Requirements
 
@@ -133,7 +139,7 @@ You can list your profiles:
 $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
 ```
 
-### Please note:
+### Container host name
 
 Each time a container is started, it gets assigned a new random name. You should probably force a hostname to your container...
 
@@ -483,16 +489,22 @@ resticprofile flags:
   -c, --config string   configuration file (default "profiles")
   -f, --format string   file format of the configuration (default is to use the file extension)
   -h, --help            display this help
+  -l, --log string      logs into a file instead of the console
   -n, --name string     profile name (default "default")
       --no-ansi         disable ansi control characters (disable console colouring)
   -q, --quiet           display only warnings and errors
       --theme string    console colouring theme (dark, light, none) (default "light")
   -v, --verbose         display all debugging information
+  -w, --wait            wait at the end until the user presses the enter key
 
 resticprofile own commands:
-   profiles       display profile names from the configuration file
-   self-update    update resticprofile to latest version (does not update restic)
-   show           show all the details of the current profile
+   self-update   update resticprofile to latest version (does not update restic)
+   profiles      display profile names from the configuration file
+   show          show all the details of the current profile
+   schedule      schedule a backup
+   unschedule    remove a scheduled backup
+   status        display the status of a scheduled backup job
+
 
 
 ```
@@ -511,7 +523,11 @@ There are not many options on the command line, most of the options are in the c
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
-* **[restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
+* **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
+light or dark terminal (none to disable colouring)
+* **[-l | --log] log_file**: To write the logs in file instead of displaying on the console
+* **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
+* **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
 
 ## Minimum memory required
@@ -521,12 +537,153 @@ For that matter I've introduced a parameter in the `global` section called `min-
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
 
-## Scheduled backups
+## Scheduled backups (please note this is work in progress for version 0.9.0)
 
-I'm working on a feature that is going to manage scheduled backups:
+resticprofile is capable of managing scheduled backups for you:
 - using **systemd** where available (Linux and various unixes)
 - using **launchd** on macOS X
-- using **Task Manager** on Windows
+- using **Task Scheduler** on Windows
+
+Each profile can be scheduled independently (groups are not available for scheduling yet).
+
+These 3 profile sections are accepting a schedule configuration:
+- backup
+- retention (when not run before or after a backup)
+- check
+
+which mean you can schedule backup, retention (`forget` command) and repository check independently (I recommend to use a local `lock` in this case).
+
+### Schedule configuration
+
+The schedule configuration consists on two parameters which can be added on each profile:
+
+```ini
+[profile.backup]
+schedule-type = "system"
+schedule = "*:00,30"
+```
+
+
+
+#### schedule-type
+
+`schedule-type` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
+
+If you need to access some system or protected files, set the `schedule-type` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
+
+#### schedule
+
+The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use. **It is the same format used to schedule on macOS and Windows**.
+
+The most general form is:
+```
+weekdays year-month-day hour:minute:second
+```
+
+- use `*` to mean any
+- use `,` to separate multiple entries
+- use `..` for a range
+
+**limitations**:
+- the divider (`/`), the `~` and timezones are not (yet?) supported on macOS and Windows.
+- the `year` and `second` fields have no effect on macOS. They do have limited availability on Windows (they don't make much sense anyway).
+
+Here are a few examples (taken from the systemd documentation):
+
+```
+On the left is the user input, on the right is the full format understood by the system
+
+  Sat,Thu,Mon..Wed,Sat..Sun → Mon..Thu,Sat,Sun *-*-* 00:00:00
+      Mon,Sun 12-*-* 2,1:23 → Mon,Sun 2012-*-* 01,02:23:00
+                    Wed *-1 → Wed *-*-01 00:00:00
+           Wed..Wed,Wed *-1 → Wed *-*-01 00:00:00
+                 Wed, 17:48 → Wed *-*-* 17:48:00
+Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
+                *-*-7 0:0:0 → *-*-07 00:00:00
+                      10-15 → *-10-15 00:00:00
+        monday *-12-* 17:00 → Mon *-12-* 17:00:00
+     Mon,Fri *-*-3,1,2 *:30 → Mon,Fri *-*-01,02,03 *:30:00
+       12,14,13,12:20,10,30 → *-*-* 12,13,14:10,20,30:00
+            12..14:10,20,30 → *-*-* 12..14:10,20,30:00
+                03-05 08:05 → *-03-05 08:05:00
+                      05:40 → *-*-* 05:40:00
+        Sat,Sun 12-05 08:05 → Sat,Sun *-12-05 08:05:00
+              Sat,Sun 08:05 → Sat,Sun *-*-* 08:05:00
+           2003-03-05 05:40 → 2003-03-05 05:40:00
+             2003-02..04-05 → 2003-02..04-05 00:00:00
+                 2003-03-05 → 2003-03-05 00:00:00
+                      03-05 → *-03-05 00:00:00
+                     hourly → *-*-* *:00:00
+                      daily → *-*-* 00:00:00
+                    monthly → *-*-01 00:00:00
+                     weekly → Mon *-*-* 00:00:00
+                     yearly → *-01-01 00:00:00
+                   annually → *-01-01 00:00:00
+```
+
+The `schedule` can be a string or an array of string (to allow for multiple schedules)
+
+Here's an example of a YAML configuration for Windows:
+
+```yaml
+default:
+    repository: "d:\\backup"
+    password-file: key
+
+self:
+    inherit: default
+    backup:
+        source: "."
+        schedule:
+        - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
+        - "Sat,Sun 0,12:00"        # twice a day on week-ends
+```
+
+### Scheduling commands
+
+resticprofile accepts these internal commands:
+- schedule
+- unschedule
+- status
+
+Please note the display of the status command will be OS dependant.
+
+Example of the schedule command under Windows (with git bash):
+
+```
+$ resticprofile -c examples/windows.yaml -n self schedule
+2020/07/07 22:33:14 resticprofile 0.9.0 compiled with go1.13.4
+2020/07/07 22:33:14 using configuration file: examples/windows.yaml
+
+Analyzing schedule 1/2
+========================
+  Original form: Mon..Fri *:00,15,30,45
+Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
+    Next elapse: Tue Jul  7 22:45:00 BST 2020
+       (in UTC): Tue Jul  7 21:45:00 UTC 2020
+       From now: 11m45s left
+
+Analyzing schedule 2/2
+========================
+  Original form: Sat,Sun 0,12:00
+Normalized form: Sat,Sun *-*-* 00,12:00:00
+    Next elapse: Sat Jul 11 00:00:00 BST 2020
+       (in UTC): Fri Jul 10 23:00:00 UTC 2020
+       From now: 73h26m45s left
+
+2020/07/07 22:33:17 restarting resticprofile in elevated mode...
+2020/07/07 22:33:30 elevated user: scheduled job created
+```
+
+To remove the schedule, use the `unschedule` command:
+
+```
+$ resticprofile -c examples/windows.yaml -n self unschedule
+2020/07/07 22:36:39 resticprofile 0.9.0 compiled with go1.13.4
+2020/07/07 22:36:39 using configuration file: examples/windows.yaml
+2020/07/07 22:36:42 restarting resticprofile in elevated mode...
+2020/07/07 22:36:44 elevated user: scheduled job removed
+```
 
 ## Configuration file reference
 
@@ -558,7 +715,6 @@ Flags used by resticprofile only
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
 * **run-after-fail**: string OR list of strings
-* **schedule**: string OR list of strings
 
 Flags passed to the restic command line
 
@@ -587,6 +743,8 @@ Flags used by resticprofile only
 * **run-after**: string OR list of strings
 * **check-before**: true / false
 * **check-after**: true / false
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
 
 Flags passed to the restic command line
 
@@ -614,6 +772,8 @@ Flags used by resticprofile only
 
 * **before-backup**: true / false
 * **after-backup**: true / false
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
 
 Flags passed to the restic command line
 
@@ -665,6 +825,11 @@ Flags passed to the restic command line
 * **prune**: true / false
 
 `[profile.check]`
+
+Flags used by resticprofile only
+
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
 
 Flags passed to the restic command line
 
@@ -894,12 +1059,12 @@ stdin = {
 ## Using resticprofile and systemd
 
 systemd is a common service manager in use by many Linux distributions.
-resticprofile has the ability to autocreate systemd timer and service files.
+resticprofile has the ability to create systemd timer and service files.
 systemd can be used in place of cron to schedule backups.
 
-All systemd units are created under the user's systemd profile (~/.config/systemd/user).
+User systemd units are created under the user's systemd profile (~/.config/systemd/user).
 
-TODO: create system profiles
+System units are created in /etc/systemd/system
 
 ### systemd calendars
 
@@ -918,33 +1083,3 @@ Normalized form: *-*-* 00:00:00
        (in UTC): Sat 2020-04-18 05:00:00 UTC
        From now: 10h left
 ```
-
-### Configuring a systemd profile
-
-Running the following command will create a timer and systemd unit for the
-'configs' profile name within resticprofile. 
-
-```
-$ resticprofile -n configs systemd-unit daily
-2020/04/17 13:34:07 resticprofile 0.6.0 compiled with go1.14.2
-2020/04/17 13:34:07 Writing /home/<user>/.config/systemd/user/resticprofile-backup@configs.service
-2020/04/17 13:34:07 Writing /home/<user>/.config/systemd/user/resticprofile-backup@configs.timer
-```
-
-The service can be tested or run once with:
-
-```
-$ systemctl --user start resticprofile-backup@configs.service
-```
-
-Or, starting the timer will enable the schedule:
-```
-$ systemctl --user start resticprofile-backup@configs.timer
-```
-
-To persist the timer across reboots, replace `start` with enable:
-
-```
-$ systemctl --user enable resticprofile-backup@configs.timer
-```
-
