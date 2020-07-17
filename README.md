@@ -52,7 +52,7 @@ For the rest of the documentation, I'll be showing examples using the TOML file 
   * [Minimum memory required](#minimum-memory-required)
   * [Scheduled backups (please note this is work in progress for version 0\.9\.0)](#scheduled-backups-please-note-this-is-work-in-progress-for-version-090)
     * [Schedule configuration](#schedule-configuration)
-      * [schedule\-type](#schedule-type)
+      * [schedule\-permission](#schedule-permission)
       * [schedule](#schedule)
     * [Scheduling commands](#scheduling-commands)
   * [Configuration file reference](#configuration-file-reference)
@@ -573,17 +573,17 @@ The schedule configuration consists on two parameters which can be added on each
 
 ```ini
 [profile.backup]
-schedule-type = "system"
+schedule-permission = "system"
 schedule = "*:00,30"
 ```
 
 
 
-#### schedule-type
+#### schedule-permission
 
-`schedule-type` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
+`schedule-permission` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
 
-If you need to access some system or protected files, set the `schedule-type` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
+If you need to access some system or protected files, set the `schedule-permission` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
 
 #### schedule
 
