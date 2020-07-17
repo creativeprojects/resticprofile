@@ -20,6 +20,7 @@ With resticprofile:
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
 * It can check that you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
 * **[new for v0.9.0]** You can easily schedule backups, retentions and checks (works for *systemd*, *launchd* and *windows task scheduler*)
+* You can generate cryptographically secure random keys to use as a restic key file
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -50,6 +51,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Using resticprofile](#using-resticprofile)
   * [Command line reference](#command-line-reference)
   * [Minimum memory required](#minimum-memory-required)
+  * [Generating random keys](#generating-random-keys)
   * [Scheduled backups (please note this is work in progress for version 0\.9\.0)](#scheduled-backups-please-note-this-is-work-in-progress-for-version-090)
     * [Schedule configuration](#schedule-configuration)
       * [schedule\-permission](#schedule-permission)
@@ -59,6 +61,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Appendix](#appendix)
   * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
     * [systemd calendars](#systemd-calendars)
+
 
 
 ## Requirements
@@ -514,11 +517,10 @@ resticprofile own commands:
    self-update   update resticprofile to latest version (does not update restic)
    profiles      display profile names from the configuration file
    show          show all the details of the current profile
+   random-key    generate a cryptographically secure random key to use as a restic key file
    schedule      schedule a backup
    unschedule    remove a scheduled backup
    status        display the status of a scheduled backup job
-
-
 
 
 ```
@@ -551,6 +553,25 @@ restic can be memory hungry. I'm running a few servers with no swap (I know: it 
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
+
+## Generating random keys
+
+resticprofile has a handy tool to generate cryptographically secure random keys encoded in base64. You can simply put this key into a file and use it as a strong key for restic
+
+On Linux and FreeBSD, the generator uses getrandom(2) if available, /dev/urandom otherwise. On OpenBSD, the generator uses getentropy(2). On other Unix-like systems, the generator reads from /dev/urandom. On Windows systems, the generator uses the CryptGenRandom API. On Wasm, the generator uses the Web Crypto API. 
+[Reference from the Go documentation](https://golang.org/pkg/crypto/rand/#pkg-variables)
+
+```
+$ resticprofile random-key
+```
+
+generates a 1024 bytes random key (converted into 1368 base64 characters) and displays it on the console
+
+To generate a different size of key, you can specify the bytes length on the command line:
+
+```
+$ resticprofile random-key 2048
+```
 
 ## Scheduled backups (please note this is work in progress for version 0.9.0)
 

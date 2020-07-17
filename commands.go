@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -43,6 +46,12 @@ var (
 			description:       "show all the details of the current profile",
 			action:            showProfile,
 			needConfiguration: true,
+		},
+		{
+			name:              "random-key",
+			description:       "generate a cryptographically secure random key to use as a restic keyfile",
+			action:            randomKey,
+			needConfiguration: false,
 		},
 		{
 			name:              "schedule",
@@ -195,6 +204,33 @@ func showProfile(c *config.Config, flags commandLineFlags, args []string) error 
 	fmt.Printf("\n%s:\n", flags.name)
 	config.ShowStruct(os.Stdout, profile)
 	return nil
+}
+
+// randomKey simply display a base64'd random key to the console
+func randomKey(c *config.Config, flags commandLineFlags, args []string) error {
+	var err error
+	size := uint64(1024)
+	// flags.resticArgs contain the command and the rest of the command line
+	if len(flags.resticArgs) > 1 {
+		// second parameter should be an integer
+		size, err = strconv.ParseUint(flags.resticArgs[1], 10, 32)
+		if err != nil {
+			return fmt.Errorf("cannot parse the key size: %w", err)
+		}
+		if size < 1 {
+			return fmt.Errorf("invalid key size: %v", size)
+		}
+	}
+	buffer := make([]byte, size)
+	_, err = rand.Read(buffer)
+	if err != nil {
+		return err
+	}
+	encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
+	_, err = encoder.Write(buffer)
+	encoder.Close()
+	fmt.Println("")
+	return err
 }
 
 func createSchedule(c *config.Config, flags commandLineFlags, args []string) error {
