@@ -51,6 +51,17 @@ func (c *Client) LogEntry(logEntry clog.LogEntry) error {
 	return nil
 }
 
+// Term sends plain text terminal output
+func (c *Client) Term(p []byte) error {
+	buffer := bytes.NewBuffer(p)
+	resp, err := c.client.Post(c.baseURL+termPath, "text/plain", buffer)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
 // Done signals to the parent process that we're finished
 func (c *Client) Done() error {
 	resp, err := c.client.Get(c.baseURL + donePath)

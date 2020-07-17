@@ -2,7 +2,9 @@ package remote
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/creativeprojects/clog"
 )
@@ -10,6 +12,7 @@ import (
 const (
 	donePath = "/done"
 	logPath  = "/log"
+	termPath = "/term"
 )
 
 type logMessage struct {
@@ -25,6 +28,7 @@ func getServeMux() *http.ServeMux {
 	serveMux = http.NewServeMux()
 	serveMux.HandleFunc(donePath, handlerFuncDone)
 	serveMux.HandleFunc(logPath, handlerFuncLog)
+	serveMux.HandleFunc(termPath, handlerFuncTerm)
 	return serveMux
 }
 
@@ -59,5 +63,14 @@ func handlerFuncLog(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		clog.Log(clog.LevelInfo, log.Message)
+	}
+}
+
+func handlerFuncTerm(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	_, err := io.Copy(os.Stdout, r.Body)
+	if err != nil {
+		clog.Errorf("error while copying terminal data: %w", err)
 	}
 }
