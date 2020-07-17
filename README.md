@@ -14,12 +14,12 @@ With resticprofile:
 * You can run the forget command before or after a backup (in a section called *retention*)
 * You can check a repository before or after a backup
 * You can create groups of profiles that will run sequentially
-* You can run shell commands before or after a backup
-* You can also run shell commands before or after running a profile (any command): useful if you need to mount your backup disk
+* You can run shell commands before or after running a profile: useful if you need to mount and unmount your backup disk for example
 * You can run a shell command if an error occurred (at any time)
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
-* Check you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
+* It can check that you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
+* **[new for v0.9.0]** You can easily schedule backups, retentions and checks (works for *systemd*, *launchd* and *windows task scheduler*)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -27,7 +27,7 @@ The configuration file accepts various formats:
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
 * [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
 
-For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
+For the rest of the documentation, I'll be mostly showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile.
 
 # Table of Contents
 
@@ -63,7 +63,7 @@ For the rest of the documentation, I'll be showing examples using the TOML file 
 
 ## Requirements
 
-Since version 0.6.0, **resticprofile** **no longer needs** python installed on your machine. It is distributed as an executable (same as restic).
+Since version 0.6.0, resticprofile no longer needs python installed on your machine. It is distributed as an executable (same as restic).
 
 It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
@@ -331,6 +331,7 @@ keep-within = "30d"
 compact = false
 prune = true
 
+# check command of profile src
 [src.check]
 read-data = true
 # if scheduled, will check the repository the first day of each month at 3am
@@ -569,7 +570,7 @@ which mean you can schedule backup, retention (`forget` command) and repository 
 
 ### Schedule configuration
 
-The schedule configuration consists on two parameters which can be added on each profile:
+The schedule configuration consists of two parameters which can be added on each profile:
 
 ```ini
 [profile.backup]
@@ -581,13 +582,17 @@ schedule = "*:00,30"
 
 #### schedule-permission
 
-`schedule-permission` accepts two parameters: `system` or `user`. You can always run the schedule commands for a user schedule, but your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
+`schedule-permission` accepts two parameters: `user` or `system`:
 
-If you need to access some system or protected files, set the `schedule-permission` to `system`. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
+* `user`: your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
+
+* `system`: if you need to access some system or protected files. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
+
+* *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user)
 
 #### schedule
 
-The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use. **It is the same format used to schedule on macOS and Windows**.
+The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use: **It is the same format used to schedule on macOS and Windows**.
 
 The most general form is:
 ```
