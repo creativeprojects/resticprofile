@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 )
 
 const (

@@ -11,7 +11,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
@@ -71,14 +71,14 @@ func main() {
 
 	// setting up the logger - we can start sending messages right after
 	if flags.logFile != "" {
-		logger, err := setupFileLogger(flags)
+		fileHandler, err := setupFileLogger(flags)
 		if err != nil {
 			// back to a console logger
 			setupConsoleLogger(flags)
 			clog.Errorf("cannot open logfile: %s", err)
 		} else {
 			// only close the file at the end if the logger opened it properly
-			defer logger.Close()
+			defer fileHandler.Close()
 		}
 	} else if flags.isChild {
 		// use a remote logger
@@ -302,6 +302,7 @@ func runProfile(
 	wrapper := newResticWrapper(
 		resticBinary,
 		global.Initialize || profile.Initialize,
+		flags.dryRun,
 		profile,
 		resticCommand,
 		resticArguments,

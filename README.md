@@ -25,7 +25,7 @@ The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
 * [JSON](https://en.wikipedia.org/wiki/JSON) : configuration file with extension _.json_
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
-* [HCL](https://github.com/hashicorp/hcl): **experimental support**, configuration file with extension _.hcl_
+* [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
 
 For the rest of the documentation, I'll be showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile :-)
 
@@ -277,7 +277,10 @@ exclude-file = [ "root-excludes", "excludes" ]
 exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
-source = [ "." ]
+source = [ "/" ]
+# if scheduled, will run every dat at midnight
+schedule = "daily"
+schedule-permission = "system"
 
 # retention policy for profile root
 [root.retention]
@@ -316,6 +319,9 @@ check-before = true
 # will only run these scripts before and after a backup
 run-before = [ "echo Starting!", "ls -al ./src" ]
 run-after = "echo All Done!"
+# if scheduled, will run every 30 minutes
+schedule = "*:0,30"
+schedule-permission = "user"
 
 # retention policy for profile src
 [src.retention]
@@ -324,6 +330,11 @@ after-backup = true
 keep-within = "30d"
 compact = false
 prune = true
+
+[src.check]
+read-data = true
+# if scheduled, will check the repository the first day of each month at 3am
+schedule = "*-*-01 03:00"
 
 ```
 
@@ -487,6 +498,7 @@ Usage of resticprofile:
 
 resticprofile flags:
   -c, --config string   configuration file (default "profiles")
+      --dry-run         display the restic commands instead of running them
   -f, --format string   file format of the configuration (default is to use the file extension)
   -h, --help            display this help
   -l, --log string      logs into a file instead of the console
@@ -507,9 +519,10 @@ resticprofile own commands:
 
 
 
+
 ```
 
-A command is a restic command **except** for one command recognized by resticprofile only: `profiles`
+A command is either a restic command or a resticprofile own command.
 
 
 ## Command line reference ##
@@ -520,6 +533,7 @@ There are not many options on the command line, most of the options are in the c
 * **[-c | --config] configuration_file**: Specify a configuration file other than the default
 * **[-f | --format] configuration_format**: Specify the configuration file format: `toml`, `yaml`, `json` or `hcl`
 * **[-n | --name] profile_name**: Profile section to use from the configuration file
+* **[--dry-run]**: Doesn't run the restic command but display the command line instead
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
@@ -857,7 +871,7 @@ As an example, here's a similar configuration file in YAML:
 
 ```yaml
 global:
-    default-command: version
+    default-command: snapshots
     initialize: false
     priority: low
 
@@ -869,14 +883,12 @@ groups:
 default:
     env:
         tmp: /tmp
-    initialize: false
     password-file: key
     repository: /backup
 
 documents:
     backup:
         source: ~/Documents
-    initialize: false
     repository: ~/backup
     snapshots:
         tag:
@@ -890,7 +902,7 @@ root:
         - excludes
         one-file-system: false
         source:
-        - .
+        - /
         tag:
         - test
         - dev
@@ -918,7 +930,6 @@ root:
 self:
     backup:
         source: ./
-    initialize: false
     repository: ../backup
     snapshots:
         tag:

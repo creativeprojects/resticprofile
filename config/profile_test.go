@@ -3,7 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"runtime"
+	"path/filepath"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
@@ -237,12 +237,15 @@ host = "ConfigHost"
 
 func TestKeepPathInRetention(t *testing.T) {
 	assert := assert.New(t)
+	root, err := filepath.Abs("/")
+	require.NoError(t, err)
+	root = filepath.ToSlash(root)
 	testConfig := `
 [profile]
 initialize = true
 
 [profile.backup]
-source = "/"
+source = "` + root + `"
 
 [profile.retention]
 host = false
@@ -256,11 +259,7 @@ host = false
 	flags := profile.GetRetentionFlags()
 	assert.NotNil(flags)
 	assert.Contains(flags, "path")
-	if runtime.GOOS == "windows" {
-		assert.Equal([]string{"C:\\"}, flags["path"])
-	} else {
-		assert.Equal([]string{"/"}, flags["path"])
-	}
+	assert.Equal([]string{root}, flags["path"])
 }
 
 func TestReplacePathInRetention(t *testing.T) {

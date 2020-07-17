@@ -30,7 +30,7 @@ test:
         schedule:
         - "2020-07-31"
         - "*:0,15,30,45"
-        schedule-permission: user
+        schedule-permission: system
     check:
         schedule: "*-*-1"
-        schedule-permission: user
+        schedule-permission: system

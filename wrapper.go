@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 type resticWrapper struct {
 	resticBinary string
 	initialize   bool
+	dryRun       bool
 	profile      *config.Profile
 	command      string
 	moreArgs     []string
@@ -24,6 +27,7 @@ type resticWrapper struct {
 func newResticWrapper(
 	resticBinary string,
 	initialize bool,
+	dryRun bool,
 	profile *config.Profile,
 	command string,
 	moreArgs []string,
@@ -32,6 +36,7 @@ func newResticWrapper(
 	return &resticWrapper{
 		resticBinary: resticBinary,
 		initialize:   initialize,
+		dryRun:       dryRun,
 		profile:      profile,
 		command:      command,
 		moreArgs:     moreArgs,
@@ -130,7 +135,7 @@ func (r *resticWrapper) runProfile() error {
 }
 
 func (r *resticWrapper) runInitialize() error {
-	clog.Infof("profile '%s': Initializing repository (if not existing)", r.profile.Name)
+	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	rCommand.displayStderr = false
@@ -138,25 +143,25 @@ func (r *resticWrapper) runInitialize() error {
 }
 
 func (r *resticWrapper) runCheck() error {
-	clog.Infof("profile '%s': Checking repository consistency", r.profile.Name)
+	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
 	rCommand := r.prepareCommand(constants.CommandCheck, args)
 	return runShellCommand(rCommand)
 }
 
 func (r *resticWrapper) runRetention() error {
-	clog.Infof("profile '%s': Cleaning up repository using retention information", r.profile.Name)
+	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetRetentionFlags())
 	rCommand := r.prepareCommand(constants.CommandForget, args)
 	return runShellCommand(rCommand)
 }
 
 func (r *resticWrapper) runCommand(command string) error {
-	clog.Infof("profile '%s': Starting '%s'", r.profile.Name, command)
+	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	rCommand := r.prepareCommand(command, args)
 	err := runShellCommand(rCommand)
-	clog.Infof("profile '%s': Finished '%s'", r.profile.Name, command)
+	clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
 	return err
 }
 
@@ -176,10 +181,9 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 	env := append(os.Environ(), r.getEnvironment()...)
 
 	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
-	rCommand := newShellCommand(r.resticBinary, arguments, env)
-	rCommand.sigChan = r.sigChan
-	// stdout is coming from the logger - could seem strange but that's where we're sending all output
-	rCommand.stdout = clog.GetOutput()
+	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan)
+	// stdout is coming from the default terminal
+	rCommand.stdout = term.GetOutput()
 
 	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.UseStdin {
 		clog.Debug("redirecting stdin to the backup")
@@ -199,8 +203,7 @@ func (r *resticWrapper) runPreCommand(command string) error {
 	for i, preCommand := range r.profile.Backup.RunBefore {
 		clog.Debugf("starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newShellCommand(preCommand, nil, env)
-		rCommand.sigChan = r.sigChan
+		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan)
 		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
@@ -220,8 +223,7 @@ func (r *resticWrapper) runPostCommand(command string) error {
 	for i, postCommand := range r.profile.Backup.RunAfter {
 		clog.Debugf("starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newShellCommand(postCommand, nil, env)
-		rCommand.sigChan = r.sigChan
+		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan)
 		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
@@ -237,8 +239,7 @@ func (r *resticWrapper) runProfilePreCommand() error {
 	for i, preCommand := range r.profile.RunBefore {
 		clog.Debugf("starting 'run-before' profile command %d/%d", i+1, len(r.profile.RunBefore))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newShellCommand(preCommand, nil, env)
-		rCommand.sigChan = r.sigChan
+		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan)
 		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
@@ -254,8 +255,7 @@ func (r *resticWrapper) runProfilePostCommand() error {
 	for i, postCommand := range r.profile.RunAfter {
 		clog.Debugf("starting 'run-after' profile command %d/%d", i+1, len(r.profile.RunAfter))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newShellCommand(postCommand, nil, env)
-		rCommand.sigChan = r.sigChan
+		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan)
 		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
@@ -271,8 +271,7 @@ func (r *resticWrapper) runProfilePostFailCommand() error {
 	for i, postCommand := range r.profile.RunAfterFail {
 		clog.Debugf("starting 'run-after-fail' profile command %d/%d", i+1, len(r.profile.RunAfterFail))
 		env := append(os.Environ(), r.getEnvironment()...)
-		rCommand := newShellCommand(postCommand, nil, env)
-		rCommand.sigChan = r.sigChan
+		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan)
 		err := runShellCommand(rCommand)
 		if err != nil {
 			return err
@@ -304,7 +303,17 @@ func convertIntoArgs(flags map[string][]string) []string {
 		return args
 	}
 
-	for key, values := range flags {
+	// we make a list of keys first, so we can loop on the map from an ordered list of keys
+	keys := make([]string, 0, len(flags))
+	for key := range flags {
+		keys = append(keys, key)
+	}
+	// sort the keys in order
+	sort.Strings(keys)
+
+	// now we loop from the ordered list of keys
+	for _, key := range keys {
+		values := flags[key]
 		if values == nil {
 			continue
 		}

@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 )
 
 type pathFix func(string) string

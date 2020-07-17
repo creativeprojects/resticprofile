@@ -9,8 +9,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 )

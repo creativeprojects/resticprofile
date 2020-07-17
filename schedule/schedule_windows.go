@@ -3,6 +3,8 @@
 package schedule
 
 import (
+	"errors"
+
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/win"
@@ -43,6 +45,9 @@ func (j *Job) displayStatus(command string) error {
 	taskScheduler := win.NewTaskScheduler(j.config)
 	err := taskScheduler.Status()
 	if err != nil {
+		if errors.Is(err, win.ErrorNotRegistered) {
+			return ErrorServiceNotFound
+		}
 		return err
 	}
 	return nil

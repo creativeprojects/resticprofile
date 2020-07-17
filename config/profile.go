@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 )
 

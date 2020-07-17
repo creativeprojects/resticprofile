@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/blang/semver"
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
 )

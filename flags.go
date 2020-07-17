@@ -17,6 +17,7 @@ type commandLineFlags struct {
 	format     string
 	name       string
 	logFile    string
+	dryRun     bool
 	noAnsi     bool
 	theme      string
 	resticArgs []string
@@ -49,6 +50,7 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
 	flagset.StringVarP(&flags.logFile, "log", "l", "", "logs into a file instead of the console")
+	flagset.BoolVar(&flags.dryRun, "dry-run", false, "display the restic commands instead of running them")
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")

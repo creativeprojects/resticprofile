@@ -1,42 +1,44 @@
 package main
 
 import (
-	"github.com/creativeprojects/resticprofile/clog"
+	"log"
+
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/remote"
 )
 
 func setupRemoteLogger(flags commandLineFlags) {
 	client := remote.NewClient(flags.parentPort)
-	logger := clog.NewRemoteLog(client)
-	logger.SetPrefix("elevated user: ")
+	logger := clog.NewLogger(client)
+	client.SetLogPrefix("elevated user: ")
 	clog.SetDefaultLogger(logger)
 }
 
-func setupFileLogger(flags commandLineFlags) (*clog.FileLog, error) {
-	fileLogger, err := clog.NewFileLog(flags.logFile)
+func setupFileLogger(flags commandLineFlags) (*clog.FileHandler, error) {
+	fileHandler, err := clog.NewFileHandler(flags.logFile, "", log.LstdFlags)
 	if err != nil {
 		return nil, err
 	}
-	logger := setupLevelFilter(flags, fileLogger)
-	// default logger added with middleware
+	logger := newFilteredLogger(flags, fileHandler)
+	// default logger added with level filtering
 	clog.SetDefaultLogger(logger)
-	// but return fileLogger (so we can close it at the end)
-	return fileLogger, nil
+	// but return fileHandler (so we can close it at the end)
+	return fileHandler, nil
 }
 
 func setupConsoleLogger(flags commandLineFlags) {
-	consoleLogger := clog.NewConsoleLog()
+	consoleHandler := clog.NewConsoleHandler("", log.LstdFlags)
 	if flags.theme != "" {
-		consoleLogger.SetTheme(flags.theme)
+		consoleHandler.SetTheme(flags.theme)
 	}
 	if flags.noAnsi {
-		consoleLogger.Colorize(false)
+		consoleHandler.Colouring(false)
 	}
-	logger := setupLevelFilter(flags, consoleLogger)
+	logger := newFilteredLogger(flags, consoleHandler)
 	clog.SetDefaultLogger(logger)
 }
 
-func setupLevelFilter(flags commandLineFlags, logger clog.Logger) *clog.LevelFilter {
+func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logger {
 	if flags.quiet && flags.verbose {
 		coin := ""
 		if randomBool() {
@@ -46,7 +48,12 @@ func setupLevelFilter(flags commandLineFlags, logger clog.Logger) *clog.LevelFil
 			coin = "quiet"
 			flags.verbose = false
 		}
-		logger.Warningf("you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.", coin)
+		// the logger hasn't been created yet, so we call the handler directly
+		handler.LogEntry(clog.LogEntry{
+			Level:  clog.LevelWarning,
+			Format: "you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! and selection is ... %s.",
+			Values: []interface{}{coin},
+		})
 	}
 	minLevel := clog.LevelInfo
 	if flags.quiet {
@@ -54,5 +61,6 @@ func setupLevelFilter(flags commandLineFlags, logger clog.Logger) *clog.LevelFil
 	} else if flags.verbose {
 		minLevel = clog.LevelDebug
 	}
-	return clog.NewLevelFilter(minLevel, logger)
+	// now create and return the logger
+	return clog.NewLogger(clog.NewLevelFilter(minLevel, handler))
 }

@@ -3,7 +3,7 @@ package schedule
 import (
 	"errors"
 
-	"github.com/creativeprojects/resticprofile/clog"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 )
 

@@ -232,7 +232,7 @@ func (s *TaskScheduler) Status() error {
 		return err
 	}
 	if registeredTask == nil {
-		return fmt.Errorf("task '%s' is not registered in the task scheduler", taskName)
+		return fmt.Errorf("%w: %s", ErrorNotRegistered, taskName)
 	}
 	writer := tabwriter.NewWriter(os.Stdout, 2, 2, 2, ' ', 0)
 	fmt.Fprintf(writer, "Task\t%s\n", registeredTask.Path)
