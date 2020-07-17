@@ -10,11 +10,12 @@ default:
 documents:
     inherit: default
     initialize: true
-    schedule:
-    - "*:00,30" # every 15 minutes
-    - "*:15,45" # both combined together
     backup:
+        tag: documents
         source: ~/Documents
+        schedule:
+        - "*:00,30" # every 15 minutes
+        - "*:15,45" # both combined together
     snapshots:
         tag: documents
 

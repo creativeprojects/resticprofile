@@ -2,6 +2,7 @@ package term
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -66,4 +67,19 @@ func TestAskYesNo(t *testing.T) {
 		)
 		assert.Equalf(t, testItem.expected, result, "when input was %q", testItem.input)
 	}
+}
+
+func ExamplePrint() {
+	SetOutput(os.Stdout)
+	Print("ExamplePrint")
+	// Output: ExamplePrint
+}
+
+func TestCanRedirectTermOutput(t *testing.T) {
+	message := "TestCanRedirectTermOutput"
+	buffer := &bytes.Buffer{}
+	SetOutput(buffer)
+	_, err := Print(message)
+	assert.NoError(t, err)
+	assert.Equal(t, message, buffer.String())
 }

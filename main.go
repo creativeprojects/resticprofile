@@ -302,6 +302,7 @@ func runProfile(
 	wrapper := newResticWrapper(
 		resticBinary,
 		global.Initialize || profile.Initialize,
+		flags.dryRun,
 		profile,
 		resticCommand,
 		resticArguments,

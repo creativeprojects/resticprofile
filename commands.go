@@ -43,14 +43,6 @@ var (
 			description:       "show all the details of the current profile",
 			action:            showProfile,
 			needConfiguration: true,
-			hide:              false,
-		},
-		{
-			name:              "panic",
-			description:       "(debug only) simulates a panic",
-			action:            panicCommand,
-			needConfiguration: false,
-			hide:              true,
 		},
 		{
 			name:              "schedule",
@@ -73,11 +65,19 @@ var (
 			needConfiguration: true,
 			hide:              false,
 		},
+		// hidden commands
 		{
 			name:              "elevation",
 			description:       "test windows elevated mode",
 			action:            testElevationCommand,
 			needConfiguration: true,
+			hide:              true,
+		},
+		{
+			name:              "panic",
+			description:       "(debug only) simulates a panic",
+			action:            panicCommand,
+			needConfiguration: false,
 			hide:              true,
 		},
 	}
