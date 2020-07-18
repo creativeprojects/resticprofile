@@ -324,7 +324,6 @@ func statusSchedule(c *config.Config, flags commandLineFlags, args []string) err
 func testElevationCommand(c *config.Config, flags commandLineFlags, args []string) error {
 	if flags.isChild {
 		client := remote.NewClient(flags.parentPort)
-		term.SetOutput(term.NewRemoteTerm(client))
 		term.Print("first line", "\n")
 		term.Println("second", "one")
 		term.Printf("value = %d", 11)

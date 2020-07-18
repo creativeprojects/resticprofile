@@ -11,11 +11,14 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/term"
+
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
+	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/mackerelio/go-osstat/memory"
 )
 
@@ -82,7 +85,10 @@ func main() {
 		}
 	} else if flags.isChild {
 		// use a remote logger
-		setupRemoteLogger(flags)
+		client := remote.NewClient(flags.parentPort)
+		setupRemoteLogger(client)
+		// also redirect the terminal through the client
+		term.SetOutput(term.NewRemoteTerm(client))
 	} else {
 		// Use the console logger
 		setupConsoleLogger(flags)

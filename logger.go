@@ -7,8 +7,7 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 )
 
-func setupRemoteLogger(flags commandLineFlags) {
-	client := remote.NewClient(flags.parentPort)
+func setupRemoteLogger(client *remote.Client) {
 	logger := clog.NewLogger(client)
 	client.SetLogPrefix("elevated user: ")
 	clog.SetDefaultLogger(logger)

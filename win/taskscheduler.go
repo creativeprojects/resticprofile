@@ -4,7 +4,6 @@ package win
 
 import (
 	"fmt"
-	"os"
 	"os/user"
 	"strings"
 	"text/tabwriter"
@@ -251,7 +250,7 @@ func (s *TaskScheduler) Status() error {
 	if registeredTask == nil {
 		return fmt.Errorf("%w: %s", ErrorNotRegistered, taskName)
 	}
-	writer := tabwriter.NewWriter(os.Stdout, 2, 2, 2, ' ', 0)
+	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', 0)
 	fmt.Fprintf(writer, "Task\t%s\n", registeredTask.Path)
 	fmt.Fprintf(writer, "User\t%s\n", registeredTask.Definition.Principal.UserID)
 	if registeredTask.Definition.Actions != nil && len(registeredTask.Definition.Actions) > 0 {
