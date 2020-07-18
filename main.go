@@ -162,7 +162,7 @@ func main() {
 
 	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
 	if err != nil {
-		clog.Error("cannot find restic:", err)
+		clog.Error("cannot find restic: ", err)
 		clog.Warning("you can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
 		exitCode = 1
 		return

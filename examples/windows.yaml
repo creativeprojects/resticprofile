@@ -34,3 +34,6 @@ test:
     check:
         schedule: "*-*-1"
         schedule-permission: system
+    retention:
+        schedule: [ "3:30" ]
+        schedule-permission: system
