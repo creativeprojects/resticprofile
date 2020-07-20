@@ -20,11 +20,21 @@ var (
 
 func generateTreeOfSchedules(event *calendar.Event) []treeElement {
 	elements := make([]treeElement, 0)
+	currentElements := elements
 	for _, currentTypeValue := range valuesOrder {
 		value := getCalendarValue(event, currentTypeValue)
 		values := value.GetRangeValues()
 		if len(values) > 0 {
-			// do something
+			subTree := getElements(values, currentTypeValue)
+			if len(currentElements) > 0 {
+				for _, element := range currentElements {
+					element.subElements = make([]treeElement, len(subTree))
+					copy(element.subElements, subTree)
+				}
+			} else {
+				currentElements = make([]treeElement, len(subTree))
+				copy(currentElements, subTree)
+			}
 		}
 	}
 	return elements
@@ -44,4 +54,15 @@ func getCalendarValue(event *calendar.Event, typeValue calendar.TypeValue) *cale
 		return event.Minute
 	}
 	return nil
+}
+
+func getElements(values []int, typeValue calendar.TypeValue) []treeElement {
+	elements := make([]treeElement, len(values))
+	for i, value := range values {
+		elements[i] = treeElement{
+			value:       value,
+			elementType: typeValue,
+		}
+	}
+	return elements
 }
