@@ -133,6 +133,11 @@ func (e *Event) GetAllInBetween(start, end time.Time) []time.Time {
 	return recurrences
 }
 
+// IsDaily means all events are within a day (from once to multiple times a day)
+func (e *Event) IsDaily() bool {
+	return !e.Year.HasValue() && !e.Month.HasValue() && !e.Day.HasValue() && !e.WeekDay.HasValue()
+}
+
 // match returns true if the time in parameter would trigger the event
 func (e *Event) match(currentTime time.Time) bool {
 	values := []struct {

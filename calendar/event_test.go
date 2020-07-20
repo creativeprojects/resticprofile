@@ -275,3 +275,26 @@ func mustParseTime(input string) time.Time {
 	}
 	return output
 }
+
+func TestEventIsDaily(t *testing.T) {
+	testData := []struct {
+		input   string
+		isDaily bool
+	}{
+		{"2011-11-01", false},
+		{"2011-11-01 10:01", false},
+		{"2011-11-01 10:01:02", false},
+		{"2020-*-*", false},
+		{"Mon..Fri", false},
+		{"*-*-*", true},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			event := NewEvent()
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
+			assert.Equal(t, testItem.isDaily, event.IsDaily())
+		})
+	}
+}
