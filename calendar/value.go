@@ -54,8 +54,8 @@ func NewValueFromType(t TypeValue) *Value {
 	min, max := 0, 0
 	switch t {
 	case TypeWeekDay:
-		min = 0
-		max = 6
+		min = minDay
+		max = maxDay - 1
 	case TypeYear:
 		min = 2000
 		max = 2200
@@ -164,9 +164,12 @@ func (v *Value) MustAddRange(min int, max int) {
 	}
 }
 
-// AddRange adds a range of values from min to max
-func (v *Value) AddRange(min int, max int) error {
-	for i := min; i <= max; i++ {
+// AddRange adds a range of values from start to end
+func (v *Value) AddRange(start int, end int) error {
+	if end < start {
+		return v.AddRange(end, start)
+	}
+	for i := start; i <= end; i++ {
 		err := v.AddValue(i)
 		if err != nil {
 			return err

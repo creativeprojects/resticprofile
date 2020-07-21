@@ -66,6 +66,8 @@ func TestEventParse(t *testing.T) {
 		{"yearly", "*-01-01 00:00:00"},
 		{"annually", "*-01-01 00:00:00"},
 		// {"*:2/3", "*-*-* *:02/3:00"},
+		{"mon..sun", "Mon..Sun *-*-* 00:00:00"},
+		{"sun..mon", "Sun,Mon *-*-* 00:00:00"},
 	}
 
 	for _, testItem := range testData {

@@ -131,6 +131,10 @@ func parseWeekday(index int) parseFunc {
 		for dayIndex, day := range shortWeekDay {
 			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex))
 		}
+		// add some special cases for sunday being the last day instead of the first day
+		weekdays = strings.ReplaceAll(weekdays, "..00", "..07")
+		weekdays = strings.ReplaceAll(weekdays, ",00", ",07")
+
 		err := e.WeekDay.Parse(weekdays)
 		if err != nil {
 			return fmt.Errorf("cannot parse weekday: %w", err)
