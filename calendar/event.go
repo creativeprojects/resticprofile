@@ -133,6 +133,27 @@ func (e *Event) GetAllInBetween(start, end time.Time) []time.Time {
 	return recurrences
 }
 
+// Field returns a calendar.Value from the type (year, month, day, etc.)
+func (e *Event) Field(typeValue TypeValue) *Value {
+	switch typeValue {
+	case TypeYear:
+		return e.Year
+	case TypeMonth:
+		return e.Month
+	case TypeDay:
+		return e.Day
+	case TypeWeekDay:
+		return e.WeekDay
+	case TypeHour:
+		return e.Hour
+	case TypeMinute:
+		return e.Minute
+	case TypeSecond:
+		return e.Second
+	}
+	return nil
+}
+
 // IsDaily means all events are within a day (from once to multiple times a day)
 func (e *Event) IsDaily() bool {
 	return !e.Year.HasValue() && !e.Month.HasValue() && !e.Day.HasValue() && !e.WeekDay.HasValue()
