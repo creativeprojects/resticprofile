@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"howett.net/plist"
 )
 
@@ -75,11 +76,10 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 
 // createJob creates a plist file and register it with launchd
 func (j *Job) createJob(schedules []*calendar.Event) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
+	ok := j.checkPermission(j.config.Permission())
+	if !ok {
+		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
 	}
-
 	name := getJobName(j.config.Title(), j.config.SubTitle())
 	job := &LaunchJob{
 		Label:                 name,
@@ -92,7 +92,11 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 	}
 
-	file, err := os.Create(path.Join(home, UserAgentPath, name+agentExtension))
+	filename, err := getFilename(name, j.config.Permission())
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -106,7 +110,6 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 	}
 
 	// load the service
-	filename := path.Join(home, UserAgentPath, name+agentExtension)
 	cmd := exec.Command(launchctlBin, commandLoad, filename)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -120,13 +123,15 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 
 // removeJob stops and unloads the agent from launchd, then removes the configuration file
 func (j *Job) removeJob() error {
-	home, err := os.UserHomeDir()
+	ok := j.checkPermission(j.config.Permission())
+	if !ok {
+		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
+	}
+	name := getJobName(j.config.Title(), j.config.SubTitle())
+	filename, err := getFilename(name, j.config.Permission())
 	if err != nil {
 		return err
 	}
-
-	name := getJobName(j.config.Title(), j.config.SubTitle())
-	filename := path.Join(home, UserAgentPath, name+agentExtension)
 
 	if _, err := os.Stat(filename); err == nil || os.IsExist(err) {
 		// stop the service in case it's already running
@@ -173,8 +178,32 @@ func (j *Job) displayStatus(command string) error {
 	return err
 }
 
+func (j *Job) checkPermission(permission string) bool {
+	if permission == constants.SchedulePermissionUser {
+		// user mode is always available
+		return true
+	}
+	if os.Geteuid() == 0 {
+		// user has sudoed
+		return true
+	}
+	// last case is system (or undefined) + no sudo
+	return false
+}
+
 func getJobName(profileName, command string) string {
 	return fmt.Sprintf("%s.%s.%s", namePrefix, strings.ToLower(profileName), command)
+}
+
+func getFilename(name, permission string) (string, error) {
+	if permission == constants.SchedulePermissionSystem {
+		return path.Join(GlobalDaemons, name+agentExtension), nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return path.Join(home, UserAgentPath, name+agentExtension), nil
 }
 
 // getCalendarIntervalsFromSchedules converts schedules into launchd calendar events

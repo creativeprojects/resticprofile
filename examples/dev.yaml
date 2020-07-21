@@ -85,6 +85,15 @@ self:
         schedule:
         - "*:15,45"
 
+system:
+    initialize: true
+    inherit: default
+    backup:
+        source: ./
+        schedule:
+        - "*:5,10,20,25,35,40,50,55"
+        schedule-permission: system
+
 src:
     lock: "/tmp/resticprofile-profile-src.lock"
     backup:
