@@ -20,10 +20,13 @@ func TestConversionWeekdaysToBitmap(t *testing.T) {
 	}{
 		{nil, 0},
 		{[]int{}, 0},
+		{[]int{0}, 1},
 		{[]int{1}, 2},
 		{[]int{2}, 4},
 		{[]int{7}, 1},
 		{[]int{1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{0, 1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{0, 1, 2, 3, 4, 5, 6}, 127},
 	}
 
 	for _, testItem := range testData {

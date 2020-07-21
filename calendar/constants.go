@@ -1,7 +1,12 @@
 package calendar
 
+const (
+	minDay = 0
+	maxDay = 8
+)
+
 var (
-	shortWeekDay = [7]string{
+	shortWeekDay = [maxDay]string{
 		"sun",
 		"mon",
 		"tue",
@@ -9,9 +14,10 @@ var (
 		"thu",
 		"fri",
 		"sat",
+		"sun",
 	}
 
-	longWeekDay = [7]string{
+	longWeekDay = [maxDay]string{
 		"sunday",
 		"monday",
 		"tuesday",
@@ -19,6 +25,7 @@ var (
 		"thusday",
 		"friday",
 		"saturday",
+		"sunday",
 	}
 
 	specialKeywords = map[string]func(event *Event){

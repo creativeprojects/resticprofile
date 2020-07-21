@@ -310,6 +310,8 @@ func convertWeekdaysToBitmap(weekdays []int) int {
 
 func getWeekdayBit(weekday int) int {
 	switch weekday {
+	case 0:
+		return 1
 	case 1:
 		return 2
 	case 2:

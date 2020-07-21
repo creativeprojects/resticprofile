@@ -196,7 +196,7 @@ func (e *Event) match(currentTime time.Time) bool {
 }
 
 func numbersToWeekdays(weekdays string) string {
-	for day := 0; day < 7; day++ {
+	for day := minDay; day < maxDay; day++ {
 		weekdays = strings.ReplaceAll(weekdays, fmt.Sprintf("%02d", day), capitalize(shortWeekDay[day]))
 	}
 	return weekdays
