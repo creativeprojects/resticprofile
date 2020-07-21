@@ -1,3 +1,5 @@
+//+build darwin
+
 package schedule
 
 import "github.com/creativeprojects/resticprofile/calendar"

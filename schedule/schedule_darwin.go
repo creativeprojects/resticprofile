@@ -116,13 +116,13 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 	}
 
 	// start the service
-	cmd = exec.Command(launchctlBin, commandStart, name)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
+	// cmd = exec.Command(launchctlBin, commandStart, name)
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// err = cmd.Run()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -138,7 +138,7 @@ func (j *Job) removeJob() error {
 	filename := path.Join(home, UserAgentPath, name+agentExtension)
 
 	if _, err := os.Stat(filename); err == nil || os.IsExist(err) {
-		// stop the service
+		// stop the service in case it's already running
 		stop := exec.Command(launchctlBin, commandStop, name)
 		stop.Stdout = os.Stdout
 		stop.Stderr = os.Stderr

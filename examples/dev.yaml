@@ -75,6 +75,7 @@ root:
         - dev
 
 self:
+    initialize: true
     inherit: default
     backup:
         source: ./
@@ -83,9 +84,6 @@ self:
     check:
         schedule:
         - "*:15,45"
-    initialize: true
-    snapshots:
-        tag: self
 
 src:
     lock: "/tmp/resticprofile-profile-src.lock"
