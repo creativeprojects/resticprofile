@@ -4,6 +4,7 @@ package win
 
 import (
 	"testing"
+	"time"
 
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -33,10 +34,12 @@ func TestConversionWeekdaysToBitmap(t *testing.T) {
 		assert.Equal(t, testItem.bitmap, convertWeekdaysToBitmap(testItem.weekdays))
 	}
 }
+
 func TestTaskSchedulerConversion(t *testing.T) {
 	testData := []string{
 		"2020-01-01",
 		"*:0,15,30,45",
+		"sat,sun 3:30",
 	}
 	schedules := make([]*calendar.Event, len(testData))
 	for index, testEvent := range testData {
@@ -48,14 +51,21 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	task := taskmaster.Definition{}
 	taskScheduler := NewTaskScheduler(&config.ScheduleConfig{})
 	taskScheduler.createSchedules(&task, schedules)
+
 	// first task should be a single event
 	singleEvent, ok := task.Triggers[0].(taskmaster.TimeTrigger)
 	require.True(t, ok)
 	assert.Equal(t, "2020-01-01 00:00:00", singleEvent.StartBoundary.Format("2006-01-02 15:04:05"))
-	t.Logf("%+v", task.Triggers[1])
+
 	// second task will be a daily recurring
 	dailyEvent, ok := task.Triggers[1].(taskmaster.DailyTrigger)
 	require.True(t, ok)
 	assert.Equal(t, period.NewHMS(0, 15, 0), dailyEvent.RepetitionInterval)
 	assert.Equal(t, period.NewYMD(0, 0, 1), dailyEvent.RepetitionDuration)
+
+	// third task will be a weekly recurring
+	weeklyEvent, ok := task.Triggers[2].(taskmaster.WeeklyTrigger)
+	require.True(t, ok)
+	t.Logf("%+v", weeklyEvent)
+	assert.Equal(t, getWeekdayBit(int(time.Saturday))+getWeekdayBit(int(time.Sunday)), int(weeklyEvent.DaysOfWeek))
 }
