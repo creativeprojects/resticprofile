@@ -115,15 +115,6 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 		return err
 	}
 
-	// start the service
-	// cmd = exec.Command(launchctlBin, commandStart, name)
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	// err = cmd.Run()
-	// if err != nil {
-	// 	return err
-	// }
-
 	return nil
 }
 
