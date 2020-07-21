@@ -12,43 +12,6 @@ import (
 	"howett.net/plist"
 )
 
-func TestGetCombinationItemsFromCalendarValues(t *testing.T) {
-	// this is a bit much to run, just to create 1 weekday and 1 minute values
-	// we might need to refactor if the setup is using too much code
-	schedule := calendar.NewEvent()
-	err := schedule.Parse("Mon..Fri *-*-* *:0,30:00")
-	require.NoError(t, err)
-	//
-
-	fields := []*calendar.Value{
-		schedule.WeekDay,
-		schedule.Month,
-		schedule.Day,
-		schedule.Hour,
-		schedule.Minute,
-	}
-
-	// create list of permutable items
-	total, items := getCombinationItemsFromCalendarValues(fields)
-	assert.Equal(t, 10, total)
-	assert.Len(t, items, 7)
-}
-
-func TestConvertCombinationToCalendarInterval(t *testing.T) {
-	testData := [][]combinationItem{
-		{
-			{calendar.TypeMinute, 15},
-			{calendar.TypeMinute, 45},
-		},
-		{
-			{calendar.TypeWeekDay, 1},
-			{calendar.TypeWeekDay, 7},
-		},
-	}
-	output := convertCombinationToCalendarInterval(testData)
-	t.Logf("%+v", output)
-}
-
 func TestPListEncoderWithCalendarInterval(t *testing.T) {
 	expected := `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -84,6 +47,18 @@ func TestGetCalendarIntervalsFromScheduleTree(t *testing.T) {
 			{"Hour": 0, "Minute": 40},
 			{"Hour": 12, "Minute": 20},
 			{"Hour": 12, "Minute": 40},
+		}},
+		{"Mon..Fri *-*-* *:0,30:00", []CalendarInterval{
+			{"Weekday": 1, "Minute": 0},
+			{"Weekday": 1, "Minute": 30},
+			{"Weekday": 2, "Minute": 0},
+			{"Weekday": 2, "Minute": 30},
+			{"Weekday": 3, "Minute": 0},
+			{"Weekday": 3, "Minute": 30},
+			{"Weekday": 4, "Minute": 0},
+			{"Weekday": 4, "Minute": 30},
+			{"Weekday": 5, "Minute": 0},
+			{"Weekday": 5, "Minute": 30},
 		}},
 	}
 

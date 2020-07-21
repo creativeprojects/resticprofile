@@ -210,68 +210,7 @@ func getJobName(profileName, command string) string {
 func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
 	entries := make([]CalendarInterval, 0, len(schedules))
 	for _, schedule := range schedules {
-		entries = append(entries, getCalendarIntervalsFromSchedule(schedule)...)
-	}
-	return entries
-}
-
-func getCalendarIntervalsFromSchedule(schedule *calendar.Event) []CalendarInterval {
-	fields := []*calendar.Value{
-		schedule.WeekDay,
-		schedule.Month,
-		schedule.Day,
-		schedule.Hour,
-		schedule.Minute,
-	}
-
-	// create list of permutable items
-	total, items := getCombinationItemsFromCalendarValues(fields)
-
-	combinations := generateCombination(items, total)
-
-	entries := convertCombinationToCalendarInterval(combinations)
-
-	return entries
-}
-
-func permutations(total, num int) int {
-	if total == 0 {
-		return num
-	}
-	return total * num
-}
-
-func getCombinationItemsFromCalendarValues(fields []*calendar.Value) (int, []combinationItem) {
-	// how many entries will I need?
-	total := 0
-	// list of items for the permutation
-	items := []combinationItem{}
-	// create list of permutable items
-	for _, field := range fields {
-		if field.HasValue() {
-			values := field.GetRangeValues()
-			num := len(values)
-			total = permutations(total, num)
-			for _, value := range values {
-				items = append(items, combinationItem{
-					itemType: field.GetType(),
-					value:    value,
-				})
-			}
-		}
-	}
-	return total, items
-}
-
-func convertCombinationToCalendarInterval(combinations [][]combinationItem) []CalendarInterval {
-	entries := make([]CalendarInterval, 0, len(combinations))
-
-	for _, combination := range combinations {
-		entry := newCalendarInterval()
-		for _, field := range combination {
-			setCalendarIntervalValueFromType(entry, field.value, field.itemType)
-		}
-		entries = append(entries, *entry)
+		entries = append(entries, getCalendarIntervalsFromScheduleTree(generateTreeOfSchedules(schedule))...)
 	}
 	return entries
 }
