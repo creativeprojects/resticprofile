@@ -159,6 +159,11 @@ func (e *Event) IsDaily() bool {
 	return !e.Year.HasValue() && !e.Month.HasValue() && !e.Day.HasValue() && !e.WeekDay.HasValue()
 }
 
+// IsWeekly means all events runs on specific days of the week (every week)
+func (e *Event) IsWeekly() bool {
+	return !e.Year.HasValue() && !e.Month.HasValue() && !e.Day.HasValue() && e.WeekDay.HasValue()
+}
+
 // match returns true if the time in parameter would trigger the event
 func (e *Event) match(currentTime time.Time) bool {
 	values := []struct {

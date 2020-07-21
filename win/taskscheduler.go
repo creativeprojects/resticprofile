@@ -159,7 +159,7 @@ func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules [
 			task.AddTimeTrigger(period.Period{}, once)
 			continue
 		}
-		if !schedule.WeekDay.HasValue() && !schedule.Month.HasValue() && !schedule.Day.HasValue() {
+		if schedule.IsDaily() {
 			// recurring daily
 			s.createDailyTrigger(task, schedule)
 			continue
