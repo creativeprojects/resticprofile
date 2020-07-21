@@ -50,13 +50,27 @@ type LaunchJob struct {
 	StartCalendarInterval []CalendarInterval `plist:"StartCalendarInterval,omitempty"`
 }
 
-// CalendarInterval contains date and time trigger definition
-type CalendarInterval struct {
-	Month   int `plist:"Month,omitempty"`   // Month of year (1..12, 1 being January)
-	Day     int `plist:"Day,omitempty"`     // Day of month (1..31)
-	Weekday int `plist:"Weekday,omitempty"` // Day of week (0..7, 0 and 7 being Sunday)
-	Hour    int `plist:"Hour,omitempty"`    // Hour of day (0..23)
-	Minute  int `plist:"Minute,omitempty"`  // Minute of hour (0..59)
+// CalendarInterval contains date and time trigger definition inside a map.
+// keys of the map should be:
+//  "Month"   Month of year (1..12, 1 being January)
+// 	"Day"     Day of month (1..31)
+// 	"Weekday" Day of week (0..7, 0 and 7 being Sunday)
+// 	"Hour"    Hour of day (0..23)
+// 	"Minute"  Minute of hour (0..59)
+type CalendarInterval map[string]int
+
+// newCalendarInterval creates a new map of 5 elements
+func newCalendarInterval() *CalendarInterval {
+	var value CalendarInterval = make(map[string]int, 5)
+	return &value
+}
+
+func (c *CalendarInterval) clone() *CalendarInterval {
+	clone := newCalendarInterval()
+	for key, value := range *c {
+		(*clone)[key] = value
+	}
+	return clone
 }
 
 // createJob creates a plist file and register it with launchd
@@ -253,33 +267,52 @@ func convertCombinationToCalendarInterval(combinations [][]combinationItem) []Ca
 	entries := make([]CalendarInterval, 0, len(combinations))
 
 	for _, combination := range combinations {
-		entry := CalendarInterval{}
+		entry := newCalendarInterval()
 		for _, field := range combination {
-			setCalendarIntervalValueFromType(&entry, field.value, field.itemType)
+			setCalendarIntervalValueFromType(entry, field.value, field.itemType)
 		}
-		entries = append(entries, entry)
+		entries = append(entries, *entry)
 	}
 	return entries
 }
 
 func getCalendarIntervalsFromScheduleTree(tree []*treeElement) []CalendarInterval {
-	return nil
+	entries := make([]CalendarInterval, 0)
+	for _, element := range tree {
+		// creates a new calendar entry for each tip of the branch
+		newEntry := newCalendarInterval()
+		fillInValueFromScheduleTreeElement(newEntry, element, &entries)
+	}
+	return entries
+}
+
+func fillInValueFromScheduleTreeElement(currentEntry *CalendarInterval, element *treeElement, entries *[]CalendarInterval) {
+	setCalendarIntervalValueFromType(currentEntry, element.value, element.elementType)
+	if element.subElements == nil || len(element.subElements) == 0 {
+		// end of the line, this entry is finished
+		*entries = append(*entries, *currentEntry)
+		return
+	}
+	for _, subElement := range element.subElements {
+		// new branch means new calendar entry
+		fillInValueFromScheduleTreeElement(currentEntry.clone(), subElement, entries)
+	}
 }
 
 func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeValue calendar.TypeValue) {
 	if entry == nil {
-		entry = &CalendarInterval{}
+		entry = newCalendarInterval()
 	}
 	switch typeValue {
 	case calendar.TypeWeekDay:
-		entry.Weekday = value
+		(*entry)["Weekday"] = value
 	case calendar.TypeMonth:
-		entry.Month = value
+		(*entry)["Month"] = value
 	case calendar.TypeDay:
-		entry.Day = value
+		(*entry)["Day"] = value
 	case calendar.TypeHour:
-		entry.Hour = value
+		(*entry)["Hour"] = value
 	case calendar.TypeMinute:
-		entry.Minute = value
+		(*entry)["Minute"] = value
 	}
 }

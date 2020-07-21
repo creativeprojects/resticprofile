@@ -3,11 +3,13 @@
 package schedule
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"howett.net/plist"
 )
 
 func TestGetCombinationItemsFromCalendarValues(t *testing.T) {
@@ -45,4 +47,52 @@ func TestConvertCombinationToCalendarInterval(t *testing.T) {
 	}
 	output := convertCombinationToCalendarInterval(testData)
 	t.Logf("%+v", output)
+}
+
+func TestPListEncoderWithCalendarInterval(t *testing.T) {
+	expected := `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict><key>Day</key><integer>1</integer><key>Hour</key><integer>0</integer></dict></plist>`
+	entry := newCalendarInterval()
+	setCalendarIntervalValueFromType(entry, 1, calendar.TypeDay)
+	setCalendarIntervalValueFromType(entry, 0, calendar.TypeHour)
+	buffer := &bytes.Buffer{}
+	encoder := plist.NewEncoder(buffer)
+	err := encoder.Encode(entry)
+	require.NoError(t, err)
+	assert.Equal(t, expected, buffer.String())
+}
+
+func TestGetCalendarIntervalsFromScheduleTree(t *testing.T) {
+	testData := []struct {
+		input    string
+		expected []CalendarInterval
+	}{
+		{"*-*-*", []CalendarInterval{
+			{"Hour": 0, "Minute": 0},
+		}},
+		{"*:0,30", []CalendarInterval{
+			{"Minute": 0},
+			{"Minute": 30},
+		}},
+		{"0,12:20", []CalendarInterval{
+			{"Hour": 0, "Minute": 20},
+			{"Hour": 12, "Minute": 20},
+		}},
+		{"0,12:20,40", []CalendarInterval{
+			{"Hour": 0, "Minute": 20},
+			{"Hour": 0, "Minute": 40},
+			{"Hour": 12, "Minute": 20},
+			{"Hour": 12, "Minute": 40},
+		}},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			event := calendar.NewEvent()
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
+			assert.ElementsMatch(t, testItem.expected, getCalendarIntervalsFromScheduleTree(generateTreeOfSchedules(event)))
+		})
+	}
 }
