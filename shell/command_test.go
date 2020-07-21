@@ -48,7 +48,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 		t.Fatal(err)
 	}
 	if runtime.GOOS == "windows" {
-		assert.Equal(t, strings.ToLower(`C:\Windows\system32\cmd.exe`), strings.ToLower(command))
+		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			`/C`,
 			`/bin/restic`,
@@ -78,7 +78,7 @@ func TestShellCommand(t *testing.T) {
 		t.Fatal(err)
 	}
 	if runtime.GOOS == "windows" {
-		assert.Equal(t, strings.ToLower(`C:\Windows\system32\cmd.exe`), strings.ToLower(command))
+		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			"/C",
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
