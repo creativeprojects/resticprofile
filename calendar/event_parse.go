@@ -126,10 +126,10 @@ func parseWeekday(index int) parseFunc {
 	return func(e *Event, match []string) error {
 		weekdays := strings.ToLower(match[index])
 		for dayIndex, day := range longWeekDay {
-			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex+1))
+			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex))
 		}
 		for dayIndex, day := range shortWeekDay {
-			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex+1))
+			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex))
 		}
 		err := e.WeekDay.Parse(weekdays)
 		if err != nil {

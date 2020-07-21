@@ -13,6 +13,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestConversionWeekdaysToBitmap(t *testing.T) {
+	testData := []struct {
+		weekdays []int
+		bitmap   int
+	}{
+		{nil, 0},
+		{[]int{}, 0},
+		{[]int{1}, 2},
+		{[]int{2}, 4},
+		{[]int{7}, 1},
+		{[]int{1, 2, 3, 4, 5, 6, 7}, 127},
+	}
+
+	for _, testItem := range testData {
+		assert.Equal(t, testItem.bitmap, convertWeekdaysToBitmap(testItem.weekdays))
+	}
+}
 func TestTaskSchedulerConversion(t *testing.T) {
 	testData := []string{
 		"2020-01-01",

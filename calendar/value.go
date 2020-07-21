@@ -54,8 +54,8 @@ func NewValueFromType(t TypeValue) *Value {
 	min, max := 0, 0
 	switch t {
 	case TypeWeekDay:
-		min = 1
-		max = 7
+		min = 0
+		max = 6
 	case TypeYear:
 		min = 2000
 		max = 2200

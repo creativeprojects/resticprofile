@@ -164,6 +164,10 @@ func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules [
 			s.createDailyTrigger(task, schedule)
 			continue
 		}
+		if schedule.IsWeekly() {
+			s.createWeeklyTrigger(task, schedule)
+			continue
+		}
 	}
 }
 
@@ -210,6 +214,22 @@ func (s *TaskScheduler) createDailyTrigger(task *taskmaster.Definition, schedule
 			interval,
 			false,
 			true)
+		return
+	}
+}
+
+func (s *TaskScheduler) createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
+	emptyPeriod := period.Period{}
+	start := schedule.Next(time.Now())
+	// get all recurrences in the same day
+	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
+	if len(recurrences) == 0 {
+		clog.Warningf("cannot convert schedule '%s' into a daily trigger", schedule.String())
+		return
+	}
+	// Is it only once per 24h?
+	if len(recurrences) == 1 {
+		task.AddWeeklyTrigger(taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())), 1, emptyPeriod, recurrences[0])
 		return
 	}
 }
@@ -275,4 +295,36 @@ func (s *TaskScheduler) connect() (*taskmaster.TaskService, error) {
 
 func getTaskPath(profileName, commandName string) string {
 	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
+}
+
+func convertWeekdaysToBitmap(weekdays []int) int {
+	bitmap := 0
+	if weekdays == nil || len(weekdays) == 0 {
+		return 0
+	}
+	for _, weekday := range weekdays {
+		bitmap |= getWeekdayBit(weekday)
+	}
+	return bitmap
+}
+
+func getWeekdayBit(weekday int) int {
+	switch weekday {
+	case 1:
+		return 2
+	case 2:
+		return 4
+	case 3:
+		return 8
+	case 4:
+		return 16
+	case 5:
+		return 32
+	case 6:
+		return 64
+	case 7:
+		// Sunday is the first day of the week
+		return 1
+	}
+	return 0
 }

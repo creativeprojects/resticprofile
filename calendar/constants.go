@@ -2,23 +2,23 @@ package calendar
 
 var (
 	shortWeekDay = [7]string{
+		"sun",
 		"mon",
 		"tue",
 		"wed",
 		"thu",
 		"fri",
 		"sat",
-		"sun",
 	}
 
 	longWeekDay = [7]string{
+		"sunday",
 		"monday",
 		"tuesday",
 		"wednesday",
 		"thusday",
 		"friday",
 		"saturday",
-		"sunday",
 	}
 
 	specialKeywords = map[string]func(event *Event){

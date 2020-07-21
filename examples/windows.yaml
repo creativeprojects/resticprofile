@@ -8,7 +8,7 @@ groups:
     - self
 
 default:
-    repository: "d:\\backup"
+    repository: "r:\\backup"
     password-file: key
 
 self:
@@ -29,11 +29,11 @@ test:
         source: "."
         schedule:
         - "2020-07-31"
-        - "*:0,15,30,45"
+        - "mon..sat *:0,15,30,45"
         schedule-permission: system
     check:
         schedule: "*-*-1"
         schedule-permission: system
     retention:
-        schedule: [ "3:30" ]
+        schedule: "sun 3:30"
         schedule-permission: system

@@ -321,3 +321,27 @@ func TestEventIsWeekly(t *testing.T) {
 		})
 	}
 }
+
+func TestDaysOfWeekValues(t *testing.T) {
+	testData := []struct {
+		input     string
+		dayOfWeek int
+	}{
+		{"sun", int(time.Sunday)},
+		{"mon", int(time.Monday)},
+		{"tue", int(time.Tuesday)},
+		{"wed", int(time.Wednesday)},
+		{"thu", int(time.Thursday)},
+		{"fri", int(time.Friday)},
+		{"sat", int(time.Saturday)},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			event := NewEvent()
+			err := event.Parse(testItem.input)
+			assert.NoError(t, err)
+			assert.Equal(t, testItem.dayOfWeek, event.WeekDay.singleValue)
+		})
+	}
+}
