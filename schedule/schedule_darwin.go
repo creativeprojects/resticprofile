@@ -255,20 +255,31 @@ func convertCombinationToCalendarInterval(combinations [][]combinationItem) []Ca
 	for _, combination := range combinations {
 		entry := CalendarInterval{}
 		for _, field := range combination {
-			switch field.itemType {
-			case calendar.TypeWeekDay:
-				entry.Weekday = field.value
-			case calendar.TypeMonth:
-				entry.Month = field.value
-			case calendar.TypeDay:
-				entry.Day = field.value
-			case calendar.TypeHour:
-				entry.Hour = field.value
-			case calendar.TypeMinute:
-				entry.Minute = field.value
-			}
+			setCalendarIntervalValueFromType(&entry, field.value, field.itemType)
 		}
 		entries = append(entries, entry)
 	}
 	return entries
+}
+
+func getCalendarIntervalsFromScheduleTree(tree []*treeElement) []CalendarInterval {
+	return nil
+}
+
+func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeValue calendar.TypeValue) {
+	if entry == nil {
+		entry = &CalendarInterval{}
+	}
+	switch typeValue {
+	case calendar.TypeWeekDay:
+		entry.Weekday = value
+	case calendar.TypeMonth:
+		entry.Month = value
+	case calendar.TypeDay:
+		entry.Day = value
+	case calendar.TypeHour:
+		entry.Hour = value
+	case calendar.TypeMinute:
+		entry.Minute = value
+	}
 }
