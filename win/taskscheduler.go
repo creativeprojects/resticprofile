@@ -232,6 +232,38 @@ func (s *TaskScheduler) createWeeklyTrigger(task *taskmaster.Definition, schedul
 		task.AddWeeklyTrigger(taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())), 1, emptyPeriod, recurrences[0])
 		return
 	}
+	// now calculate the difference in between each
+	differences := make([]time.Duration, len(recurrences)-1)
+	for i := 0; i < len(recurrences)-1; i++ {
+		differences[i] = recurrences[i+1].Sub(recurrences[i])
+	}
+	// check if they're all the same
+	compactDifferences := make([]time.Duration, 0, len(differences))
+	var previous time.Duration = 0
+	for _, difference := range differences {
+		if difference.Seconds() != previous.Seconds() {
+			compactDifferences = append(compactDifferences, difference)
+			previous = difference
+		}
+	}
+
+	if len(compactDifferences) == 1 {
+		// easy case
+		interval, _ := period.NewOf(compactDifferences[0])
+		task.AddWeeklyTriggerEx(
+			taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+			1,
+			emptyPeriod,
+			"",
+			start,
+			time.Time{},
+			emptyPeriod,
+			period.NewYMD(0, 0, 1),
+			interval,
+			false,
+			true)
+		return
+	}
 }
 
 // Update a task

@@ -29,7 +29,7 @@ test:
         source: "."
         schedule:
         - "2020-07-31"
-        - "mon..sat *:0,15,30,45"
+        - "mon..fri *:0,15,30,45"
         schedule-permission: system
     check:
         schedule: "*-*-1"
