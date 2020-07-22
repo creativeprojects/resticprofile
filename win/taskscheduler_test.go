@@ -47,6 +47,9 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	clog.SetTestLog(t)
 	defer clog.CloseTestLog()
 
+	_ = ConnectScheduler()
+	defer CloseScheduler()
+
 	schedules := make([]*calendar.Event, len(testData))
 	for index, testEvent := range testData {
 		event := calendar.NewEvent()
