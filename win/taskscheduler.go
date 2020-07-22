@@ -69,6 +69,8 @@ type TaskScheduler struct {
 var (
 	// no need to recreate the service every time
 	taskService *taskmaster.TaskService
+	// ask the user password only once
+	userPassword = ""
 )
 
 // NewTaskScheduler creates a new service to talk to windows task scheduler
@@ -113,11 +115,13 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\nCreating task for user %s\n", currentUser.Username)
-	fmt.Printf("Windows requires your password to validate the task: ")
-	password, err := term.ReadPassword()
-	if err != nil {
-		return err
+	if userPassword == "" {
+		fmt.Printf("\nCreating task for user %s\n", currentUser.Username)
+		fmt.Printf("Windows requires your password to validate the task: ")
+		userPassword, err = term.ReadPassword()
+		if err != nil {
+			return err
+		}
 	}
 
 	task := taskService.NewTaskDefinition()
@@ -138,7 +142,7 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 		getTaskPath(s.config.Title(), s.config.SubTitle()),
 		task,
 		currentUser.Username,
-		password,
+		userPassword,
 		taskmaster.TASK_LOGON_PASSWORD,
 		true)
 	if err != nil {
