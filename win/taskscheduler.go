@@ -3,7 +3,9 @@
 package win
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"os/user"
 	"strings"
 	"text/tabwriter"
@@ -64,11 +66,38 @@ type TaskScheduler struct {
 	config Config
 }
 
+var (
+	// no need to recreate the service every time
+	taskService *taskmaster.TaskService
+)
+
 // NewTaskScheduler creates a new service to talk to windows task scheduler
 func NewTaskScheduler(config Config) *TaskScheduler {
+	if taskService == nil {
+		panic("you need to call win.ConnectScheduler() before instanciating a TaskScheduler")
+	}
 	return &TaskScheduler{
 		config: config,
 	}
+}
+
+// ConnectScheduler initializes a connection to the local task scheduler
+func ConnectScheduler() error {
+	var err error
+
+	if taskService == nil || !taskService.IsConnected() {
+		taskService, err = taskmaster.Connect("", "", "", "")
+	}
+	return err
+}
+
+// CloseScheduler releases the ressources used by the task service
+func CloseScheduler() {
+	if taskService == nil {
+		return
+	}
+	taskService.Disconnect()
+	taskService = nil
 }
 
 // Create a task
@@ -91,12 +120,6 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 		return err
 	}
 
-	taskService, err := s.connect()
-	if err != nil {
-		return err
-	}
-	defer taskService.Disconnect()
-
 	task := taskService.NewTaskDefinition()
 	task.AddExecAction(
 		s.config.Command(),
@@ -111,7 +134,7 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 
 	s.createSchedules(&task, schedules)
 
-	_, _, err = taskService.CreateTaskEx(
+	_, created, err := taskService.CreateTaskEx(
 		getTaskPath(s.config.Title(), s.config.SubTitle()),
 		task,
 		currentUser.Username,
@@ -121,16 +144,13 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 	if err != nil {
 		return err
 	}
+	if !created {
+		return errors.New("cannot create user task")
+	}
 	return nil
 }
 
 func (s *TaskScheduler) createSystemTask(schedules []*calendar.Event) error {
-	taskService, err := s.connect()
-	if err != nil {
-		return err
-	}
-	defer taskService.Disconnect()
-
 	task := taskService.NewTaskDefinition()
 	task.AddExecAction(
 		s.config.Command(),
@@ -145,9 +165,12 @@ func (s *TaskScheduler) createSystemTask(schedules []*calendar.Event) error {
 
 	s.createSchedules(&task, schedules)
 
-	_, _, err = taskService.CreateTask(getTaskPath(s.config.Title(), s.config.SubTitle()), task, true)
+	_, created, err := taskService.CreateTask(getTaskPath(s.config.Title(), s.config.SubTitle()), task, true)
 	if err != nil {
 		return err
+	}
+	if !created {
+		return errors.New("cannot create system task")
 	}
 	return nil
 }
@@ -168,6 +191,11 @@ func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules [
 			s.createWeeklyTrigger(task, schedule)
 			continue
 		}
+		if schedule.IsMonthly() {
+			s.createMonthlyTrigger(task, schedule)
+			continue
+		}
+		clog.Warningf("cannot convert schedule '%s' into a task scheduler equivalent", schedule.String())
 	}
 }
 
@@ -224,12 +252,14 @@ func (s *TaskScheduler) createWeeklyTrigger(task *taskmaster.Definition, schedul
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
 	if len(recurrences) == 0 {
-		clog.Warningf("cannot convert schedule '%s' into a daily trigger", schedule.String())
+		clog.Warningf("cannot convert schedule '%s' into a weekly trigger", schedule.String())
 		return
 	}
 	// Is it only once per 24h?
 	if len(recurrences) == 1 {
-		task.AddWeeklyTrigger(taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())), 1, emptyPeriod, recurrences[0])
+		task.AddWeeklyTrigger(
+			taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+			1, emptyPeriod, recurrences[0])
 		return
 	}
 	// now calculate the difference in between each
@@ -266,6 +296,40 @@ func (s *TaskScheduler) createWeeklyTrigger(task *taskmaster.Definition, schedul
 	}
 }
 
+func (s *TaskScheduler) createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
+	emptyPeriod := period.Period{}
+	start := schedule.Next(time.Now())
+	// get all recurrences in the same day
+	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
+	if len(recurrences) == 0 {
+		clog.Warningf("cannot convert schedule '%s' into a monthly trigger", schedule.String())
+		return
+	}
+	// Is it only once per 24h?
+	if len(recurrences) == 1 {
+		if schedule.WeekDay.HasValue() && !schedule.Day.HasValue() {
+			task.AddMonthlyDOWTrigger(
+				taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+				taskmaster.First|taskmaster.Second|taskmaster.Third|taskmaster.Fourth|taskmaster.Last,
+				taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
+				true,
+				emptyPeriod,
+				recurrences[0],
+			)
+		} else if !schedule.WeekDay.HasValue() && schedule.Day.HasValue() {
+			task.AddMonthlyTrigger(
+				convertDaysToBitmap(schedule.Day.GetRangeValues()),
+				taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
+				emptyPeriod,
+				recurrences[0],
+			)
+		} else {
+			clog.Warningf("task scheduler does not support a day of the month and a day of the week in the same trigger: %s", schedule.String())
+		}
+		return
+	}
+}
+
 // Update a task
 func (s *TaskScheduler) Update() error {
 	return nil
@@ -273,14 +337,12 @@ func (s *TaskScheduler) Update() error {
 
 // Delete a task
 func (s *TaskScheduler) Delete() error {
-	taskService, err := s.connect()
+	taskName := getTaskPath(s.config.Title(), s.config.SubTitle())
+	err := taskService.DeleteTask(taskName)
 	if err != nil {
-		return err
-	}
-	defer taskService.Disconnect()
-
-	err = taskService.DeleteTask(getTaskPath(s.config.Title(), s.config.SubTitle()))
-	if err != nil {
+		if strings.Contains(err.Error(), "doesn't exist") {
+			return fmt.Errorf("%w: %s", ErrorNotRegistered, taskName)
+		}
 		return err
 	}
 	return nil
@@ -288,12 +350,6 @@ func (s *TaskScheduler) Delete() error {
 
 // Status returns the status of a task
 func (s *TaskScheduler) Status() error {
-	taskService, err := s.connect()
-	if err != nil {
-		return err
-	}
-	defer taskService.Disconnect()
-
 	taskName := getTaskPath(s.config.Title(), s.config.SubTitle())
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
@@ -302,27 +358,23 @@ func (s *TaskScheduler) Status() error {
 	if registeredTask == nil {
 		return fmt.Errorf("%w: %s", ErrorNotRegistered, taskName)
 	}
-	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', 0)
-	fmt.Fprintf(writer, "Task\t%s\n", registeredTask.Path)
-	fmt.Fprintf(writer, "User\t%s\n", registeredTask.Definition.Principal.UserID)
+	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', tabwriter.AlignRight)
+	fmt.Fprintf(writer, "Task:\t %s\n", registeredTask.Path)
+	fmt.Fprintf(writer, "User:\t %s\n", registeredTask.Definition.Principal.UserID)
 	if registeredTask.Definition.Actions != nil && len(registeredTask.Definition.Actions) > 0 {
 		if action, ok := registeredTask.Definition.Actions[0].(taskmaster.ExecAction); ok {
-			fmt.Fprintf(writer, "Working Dir\t%v\n", action.WorkingDir)
-			fmt.Fprintf(writer, "Exec\t%v\n", action.Path+" "+action.Args)
+			fmt.Fprintf(writer, "Working Dir:\t %v\n", action.WorkingDir)
+			fmt.Fprintf(writer, "Exec:\t %v\n", action.Path+" "+action.Args)
 		}
 	}
-	fmt.Fprintf(writer, "Enabled\t%v\n", registeredTask.Enabled)
-	fmt.Fprintf(writer, "State\t%s\n", registeredTask.State.String())
-	fmt.Fprintf(writer, "Missed runs\t%d\n", registeredTask.MissedRuns)
-	fmt.Fprintf(writer, "Next Run Time\t%v\n", registeredTask.NextRunTime)
-	fmt.Fprintf(writer, "Last Run Time\t%v\n", registeredTask.LastRunTime)
-	fmt.Fprintf(writer, "Last Task Result\t%d\n", registeredTask.LastTaskResult)
+	fmt.Fprintf(writer, "Enabled:\t %v\n", registeredTask.Enabled)
+	fmt.Fprintf(writer, "State:\t %s\n", registeredTask.State.String())
+	fmt.Fprintf(writer, "Missed runs:\t %d\n", registeredTask.MissedRuns)
+	fmt.Fprintf(writer, "Last Run Time:\t %v\n", registeredTask.LastRunTime)
+	fmt.Fprintf(writer, "Last Result:\t %d\n", registeredTask.LastTaskResult)
+	fmt.Fprintf(writer, "Next Run Time:\t %v\n", registeredTask.NextRunTime)
 	writer.Flush()
 	return nil
-}
-
-func (s *TaskScheduler) connect() (*taskmaster.TaskService, error) {
-	return taskmaster.Connect("", "", "", "")
 }
 
 func getTaskPath(profileName, commandName string) string {
@@ -361,4 +413,34 @@ func getWeekdayBit(weekday int) int {
 		return 1
 	}
 	return 0
+}
+
+func convertMonthsToBitmap(months []int) int {
+	bitmap := 0
+	if months == nil {
+		return 0
+	}
+	if len(months) == 0 {
+		// all values
+		bitmap = int(math.Pow(2, 12)) - 1
+	}
+	for _, month := range months {
+		bitmap |= int(math.Pow(2, float64(month-1)))
+	}
+	return bitmap
+}
+
+func convertDaysToBitmap(days []int) int {
+	bitmap := 0
+	if days == nil {
+		return 0
+	}
+	if len(days) == 0 {
+		// every day
+		bitmap = int(math.Pow(2, 31)) - 1
+	}
+	for _, day := range days {
+		bitmap |= int(math.Pow(2, float64(day-1)))
+	}
+	return bitmap
 }

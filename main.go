@@ -73,7 +73,23 @@ func main() {
 	defer showPanicData()
 
 	// setting up the logger - we can start sending messages right after
-	if flags.logFile != "" {
+	if flags.isChild {
+		// use a remote logger
+		client := remote.NewClient(flags.parentPort)
+		setupRemoteLogger(client)
+
+		// also redirect the terminal through the client
+		term.SetOutput(term.NewRemoteTerm(client))
+
+		// If this is running in elevated mode we'll need to send a finished signal
+		if flags.isChild {
+			defer func(port int) {
+				client := remote.NewClient(port)
+				client.Done()
+			}(flags.parentPort)
+		}
+
+	} else if flags.logFile != "" {
 		fileHandler, err := setupFileLogger(flags)
 		if err != nil {
 			// back to a console logger
@@ -83,12 +99,7 @@ func main() {
 			// only close the file at the end if the logger opened it properly
 			defer fileHandler.Close()
 		}
-	} else if flags.isChild {
-		// use a remote logger
-		client := remote.NewClient(flags.parentPort)
-		setupRemoteLogger(client)
-		// also redirect the terminal through the client
-		term.SetOutput(term.NewRemoteTerm(client))
+
 	} else {
 		// Use the console logger
 		setupConsoleLogger(flags)

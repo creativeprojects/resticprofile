@@ -1,9 +1,6 @@
 package schedule
 
 import (
-	"errors"
-
-	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
@@ -44,11 +41,6 @@ func NewJob(config Config) *Job {
 
 // Create a new job
 func (j *Job) Create() error {
-	err := checkSystem()
-	if err != nil {
-		return err
-	}
-
 	schedules, err := loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
@@ -64,20 +56,12 @@ func (j *Job) Create() error {
 
 // Update an existing job
 func (j *Job) Update() error {
-	err := checkSystem()
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
 // Remove a job
 func (j *Job) Remove() error {
-	err := checkSystem()
-	if err != nil {
-		return err
-	}
-	err = j.removeJob()
+	err := j.removeJob()
 	if err != nil {
 		return err
 	}
@@ -86,23 +70,13 @@ func (j *Job) Remove() error {
 
 // Status of a job
 func (j *Job) Status() error {
-	err := checkSystem()
-	if err != nil {
-		return err
-	}
-
-	_, err = loadSchedules(j.config.SubTitle(), j.config.Schedules())
+	_, err := loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
 	}
 
 	err = j.displayStatus(j.config.SubTitle())
 	if err != nil {
-		if errors.Is(err, ErrorServiceNotFound) {
-			// Display a warning and keep going
-			clog.Warningf("service %s/%s not found", j.config.Title(), j.config.SubTitle())
-			return nil
-		}
 		return err
 	}
 	return nil

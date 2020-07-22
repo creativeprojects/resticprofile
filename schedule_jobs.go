@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -19,6 +20,13 @@ func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 	if err != nil {
 		return err
 	}
+
+	err = schedule.Init()
+	if err != nil {
+		return err
+	}
+	defer schedule.Close()
+
 	for _, scheduleConfig := range configs {
 		scheduleConfig.SetCommand(wd, binary, []string{
 			"--no-ansi",
@@ -36,7 +44,10 @@ func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 		job := schedule.NewJob(scheduleConfig)
 		err = job.Create()
 		if err != nil {
-			return err
+			return fmt.Errorf("error creating job %s/%s: %w",
+				scheduleConfig.Title(),
+				scheduleConfig.SubTitle(),
+				err)
 		}
 		clog.Infof("scheduled job %s/%s created", scheduleConfig.Title(), scheduleConfig.SubTitle())
 	}
@@ -44,11 +55,25 @@ func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 }
 
 func removeJobs(configs []*config.ScheduleConfig) error {
+	err := schedule.Init()
+	if err != nil {
+		return err
+	}
+	defer schedule.Close()
+
 	for _, scheduleConfig := range configs {
 		job := schedule.NewJob(scheduleConfig)
 		err := job.Remove()
 		if err != nil {
-			return err
+			if errors.Is(err, schedule.ErrorServiceNotFound) {
+				// Display a warning and keep going
+				clog.Warningf("service %s/%s not found", scheduleConfig.Title(), scheduleConfig.SubTitle())
+				continue
+			}
+			return fmt.Errorf("error removing job %s/%s: %w",
+				scheduleConfig.Title(),
+				scheduleConfig.SubTitle(),
+				err)
 		}
 		clog.Infof("scheduled job %s/%s removed", scheduleConfig.Title(), scheduleConfig.SubTitle())
 	}
@@ -56,11 +81,25 @@ func removeJobs(configs []*config.ScheduleConfig) error {
 }
 
 func statusJobs(configs []*config.ScheduleConfig) error {
+	err := schedule.Init()
+	if err != nil {
+		return err
+	}
+	defer schedule.Close()
+
 	for _, scheduleConfig := range configs {
 		job := schedule.NewJob(scheduleConfig)
 		err := job.Status()
 		if err != nil {
-			return err
+			if errors.Is(err, schedule.ErrorServiceNotFound) {
+				// Display a warning and keep going
+				clog.Warningf("service %s/%s not found", scheduleConfig.Title(), scheduleConfig.SubTitle())
+				continue
+			}
+			return fmt.Errorf("error querying status of job %s/%s: %w",
+				scheduleConfig.Title(),
+				scheduleConfig.SubTitle(),
+				err)
 		}
 	}
 	return nil

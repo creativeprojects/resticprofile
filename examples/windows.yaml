@@ -16,6 +16,9 @@ self:
     initialize: true
     backup:
         source: "."
+        exclude:
+        - "*.exe"
+        - ".git"
         schedule:
         - "Mon..Fri *:00,30" # every 15 minutes
         - "Mon..Fri *:15,45" # both combined together
@@ -25,15 +28,23 @@ self:
 test:
     inherit: default
     initialize: true
-    backup:
-        source: "."
-        schedule:
-        - "2020-07-31"
-        - "mon..fri *:0,15,30,45"
-        schedule-permission: system
+    # backup:
+    #     source: "."
+    #     exclude:
+    #     - "*.exe"
+    #     - ".git"
+    #     schedule:
+    #     - "2020-07-31"
+    #     - "mon..fri *:0,15,30,45"
+    #     schedule-permission: system
     check:
-        schedule: "*-*-1"
+        schedule:
+        - "*-*-1"
+        - "sun *-*-1"
+        - "mon *-1..10-*"
         schedule-permission: system
-    retention:
-        schedule: "sun 3:30"
-        schedule-permission: system
+    # retention:
+    #     schedule:
+    #     - "sun 3:30"
+    #     - "*-7,8-* 12:00"
+    #     schedule-permission: system

@@ -29,13 +29,17 @@ const (
 	codeUnitNotFound = 4
 )
 
-// checkSystem verifies systemd is available on this system
-func checkSystem() error {
+// Init verifies systemd is available on this system
+func Init() error {
 	found, err := exec.LookPath(systemdBin)
 	if err != nil || found == "" {
 		return errors.New("it doesn't look like systemd is installed on your system")
 	}
 	return nil
+}
+
+// Close does nothing in systemd
+func Close() {
 }
 
 // getSchedulePermission returns the permission defined from the configuration,

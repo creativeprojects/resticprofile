@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/capnspacehook/taskmaster"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/rickb777/date/period"
@@ -40,7 +41,12 @@ func TestTaskSchedulerConversion(t *testing.T) {
 		"2020-01-01",
 		"*:0,15,30,45",
 		"sat,sun 3:30",
+		"*-*-1",
+		"mon *-1..10-*",
 	}
+	clog.SetTestLog(t)
+	defer clog.CloseTestLog()
+
 	schedules := make([]*calendar.Event, len(testData))
 	for index, testEvent := range testData {
 		event := calendar.NewEvent()
@@ -52,20 +58,29 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	taskScheduler := NewTaskScheduler(&config.ScheduleConfig{})
 	taskScheduler.createSchedules(&task, schedules)
 
-	// first task should be a single event
+	// 1st task should be a single event
 	singleEvent, ok := task.Triggers[0].(taskmaster.TimeTrigger)
 	require.True(t, ok)
 	assert.Equal(t, "2020-01-01 00:00:00", singleEvent.StartBoundary.Format("2006-01-02 15:04:05"))
 
-	// second task will be a daily recurring
+	// 2nd task will be a daily recurring
 	dailyEvent, ok := task.Triggers[1].(taskmaster.DailyTrigger)
 	require.True(t, ok)
 	assert.Equal(t, period.NewHMS(0, 15, 0), dailyEvent.RepetitionInterval)
 	assert.Equal(t, period.NewYMD(0, 0, 1), dailyEvent.RepetitionDuration)
 
-	// third task will be a weekly recurring
+	// 3rd task will be a weekly recurring
 	weeklyEvent, ok := task.Triggers[2].(taskmaster.WeeklyTrigger)
 	require.True(t, ok)
-	t.Logf("%+v", weeklyEvent)
 	assert.Equal(t, getWeekdayBit(int(time.Saturday))+getWeekdayBit(int(time.Sunday)), int(weeklyEvent.DaysOfWeek))
+
+	// 4th task will be a monthly recurring
+	monthlyEvent, ok := task.Triggers[3].(taskmaster.MonthlyTrigger)
+	require.True(t, ok)
+	t.Logf("%+v", monthlyEvent)
+
+	// 5th task will be a monthly with day of week recurring
+	monthlyDOWEvent, ok := task.Triggers[4].(taskmaster.MonthlyDOWTrigger)
+	require.True(t, ok)
+	t.Logf("%+v", monthlyDOWEvent)
 }

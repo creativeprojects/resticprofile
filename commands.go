@@ -90,6 +90,13 @@ var (
 			needConfiguration: false,
 			hide:              true,
 		},
+		{
+			name:              "test",
+			description:       "placeholder for a quick test",
+			action:            testCommand,
+			needConfiguration: true,
+			hide:              true,
+		},
 	}
 )
 
@@ -176,6 +183,10 @@ func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
 	panic("you asked for it")
 }
 
+func testCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+	return nil
+}
+
 func sortedMapKeys(data map[string][]string) []string {
 	keys := make([]string, 0, len(data))
 	for key := range data {
@@ -235,14 +246,6 @@ func randomKey(c *config.Config, flags commandLineFlags, args []string) error {
 }
 
 func createSchedule(c *config.Config, flags commandLineFlags, args []string) error {
-	// If this is running in elevated mode we'll need to send a finished signal
-	if flags.isChild {
-		defer func(port int) {
-			client := remote.NewClient(port)
-			client.Done()
-		}(flags.parentPort)
-	}
-
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -264,14 +267,6 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 }
 
 func removeSchedule(c *config.Config, flags commandLineFlags, args []string) error {
-	// If this is running in elevated mode we'll need to send a finished signal
-	if flags.isChild {
-		defer func(port int) {
-			client := remote.NewClient(port)
-			client.Done()
-		}(flags.parentPort)
-	}
-
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -293,14 +288,6 @@ func removeSchedule(c *config.Config, flags commandLineFlags, args []string) err
 }
 
 func statusSchedule(c *config.Config, flags commandLineFlags, args []string) error {
-	// If this is running in elevated mode we'll need to send a finished signal
-	if flags.isChild {
-		defer func(port int) {
-			client := remote.NewClient(port)
-			client.Done()
-		}(flags.parentPort)
-	}
-
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)

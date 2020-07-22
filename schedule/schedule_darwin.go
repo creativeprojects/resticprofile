@@ -74,6 +74,19 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 	return clone
 }
 
+// Init verifies launchd is available on this system
+func Init() error {
+	found, err := exec.LookPath(launchdBin)
+	if err != nil || found == "" {
+		return errors.New("it doesn't look like launchd is installed on your system")
+	}
+	return nil
+}
+
+// Close does nothing in systemd
+func Close() {
+}
+
 // createJob creates a plist file and register it with launchd
 func (j *Job) createJob(schedules []*calendar.Event) error {
 	ok := j.checkPermission(j.config.Permission())
@@ -155,15 +168,6 @@ func (j *Job) removeJob() error {
 		}
 	}
 
-	return nil
-}
-
-// checkSystem verifies launchd is available on this system
-func checkSystem() error {
-	found, err := exec.LookPath(launchdBin)
-	if err != nil || found == "" {
-		return errors.New("it doesn't look like launchd is installed on your system")
-	}
 	return nil
 }
 

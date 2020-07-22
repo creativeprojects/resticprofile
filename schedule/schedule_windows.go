@@ -10,9 +10,14 @@ import (
 	"github.com/creativeprojects/resticprofile/win"
 )
 
-// checkSystem does nothing on windows as the task scheduler is always available
-func checkSystem() error {
-	return nil
+// Init a connection to the task scheduler
+func Init() error {
+	return win.ConnectScheduler()
+}
+
+// Close the connection to the task scheduler
+func Close() {
+	win.CloseScheduler()
 }
 
 // createJob is creating the task scheduler job.
@@ -35,6 +40,9 @@ func (j *Job) removeJob() error {
 	taskScheduler := win.NewTaskScheduler(j.config)
 	err := taskScheduler.Delete()
 	if err != nil {
+		if errors.Is(err, win.ErrorNotRegistered) {
+			return ErrorServiceNotFound
+		}
 		return err
 	}
 	return nil
