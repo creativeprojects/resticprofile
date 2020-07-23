@@ -3,6 +3,7 @@
 package schtasks
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -32,6 +33,26 @@ func TestConversionWeekdaysToBitmap(t *testing.T) {
 
 	for _, testItem := range testData {
 		assert.Equal(t, testItem.bitmap, convertWeekdaysToBitmap(testItem.weekdays))
+	}
+}
+
+func BenchmarkPow(b *testing.B) {
+	const expected = 0x80000000
+	for i := 0; i < b.N; i++ {
+		value := 31
+		if int(math.Pow(2, float64(value))) != expected {
+			b.Fail()
+		}
+	}
+}
+
+func BenchmarkExp2(b *testing.B) {
+	const expected = 0x80000000
+	for i := 0; i < b.N; i++ {
+		value := 31
+		if int(math.Exp2(float64(value))) != expected {
+			b.Fail()
+		}
 	}
 }
 

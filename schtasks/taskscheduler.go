@@ -411,8 +411,15 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 			)
 			return
 		}
-		task.AddMonthlyTrigger(
-			convertDaysToBitmap(schedule.Day.GetRangeValues()),
+		// Temporary fix: https://github.com/capnspacehook/taskmaster/issues/10
+		// task.AddMonthlyTrigger(
+		// 	convertDaysToBitmap(schedule.Day.GetRangeValues()),
+		// 	taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
+		// 	emptyPeriod,
+		// 	recurrences[0],
+		// )
+		addMonthlyTrigger(task,
+			taskmaster.DayOfMonth(convertDaysToBitmap(schedule.Day.GetRangeValues())),
 			taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
 			emptyPeriod,
 			recurrences[0],
@@ -508,11 +515,11 @@ func convertMonthsToBitmap(months []int) int {
 	}
 	if len(months) == 0 {
 		// all values
-		return int(math.Pow(2, 12)) - 1
+		return int(math.Exp2(12)) - 1
 	}
 	bitmap := 0
 	for _, month := range months {
-		bitmap |= int(math.Pow(2, float64(month-1)))
+		bitmap |= int(math.Exp2(float64(month - 1)))
 	}
 	return bitmap
 }
@@ -523,11 +530,42 @@ func convertDaysToBitmap(days []int) int {
 	}
 	if len(days) == 0 {
 		// every day
-		return int(math.Pow(2, 31)) - 1
+		return int(math.Exp2(31)) - 1
 	}
 	bitmap := 0
 	for _, day := range days {
-		bitmap |= int(math.Pow(2, float64(day-1)))
+		bitmap |= int(math.Exp2(float64(day - 1)))
 	}
 	return bitmap
+}
+
+// addMonthlyTrigger is a (hopefully) temporary fix for AddMonthlyTrigger
+func addMonthlyTrigger(
+	taskDefinition *taskmaster.Definition,
+	dayOfMonth taskmaster.DayOfMonth,
+	monthOfYear taskmaster.Month,
+	randomDelay period.Period,
+	startBoundary time.Time) {
+	// check how many items we have now
+	countBefore := len(taskDefinition.Triggers)
+	tempDay := countBefore + 1
+	if tempDay > 31 {
+		tempDay -= 31
+	}
+	tempPeriod := period.NewHMS(11, tempDay, tempDay)
+	taskDefinition.AddMonthlyTrigger(tempDay, monthOfYear, tempPeriod, startBoundary)
+	// Now search for the previous entry to update it
+	for index, trigger := range taskDefinition.Triggers {
+		if monthlyTrigger, ok := trigger.(taskmaster.MonthlyTrigger); ok {
+			// check it's the right temporary data
+			if monthlyTrigger.DaysOfMonth == taskmaster.DayOfMonth(tempDay) &&
+				monthlyTrigger.RandomDelay == tempPeriod {
+				// update to the right data
+				monthlyTrigger.DaysOfMonth = dayOfMonth
+				monthlyTrigger.RandomDelay = randomDelay
+				taskDefinition.Triggers[index] = monthlyTrigger
+				break
+			}
+		}
+	}
 }
