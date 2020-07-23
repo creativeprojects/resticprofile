@@ -793,6 +793,104 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 2020/07/22 21:34:51 scheduled job self/retention removed
 ```
 
+With this example of configuration for Linux:
+
+```yaml
+
+default:
+    password-file: key
+    repository: /tmp/backup
+
+test1:
+    inherit: default
+    backup:
+        source: ./
+        schedule: "*:00,15,30,45"
+        schedule-permission: user
+    check:
+        schedule: "*-*-1"
+        schedule-permission: user
+
+```
+
+```
+$ resticprofile -c examples/linux.yaml -n test1 schedule
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:00,15,30,45
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Thu 2020-07-23 17:15:00 BST
+       (in UTC): Thu 2020-07-23 16:15:00 UTC
+       From now: 6min left
+
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.service
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer
+Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer.
+2020/07/23 17:08:51 scheduled job test1/backup created
+
+Analyzing check schedule 1/1
+=================================
+  Original form: *-*-1
+Normalized form: *-*-01 00:00:00
+    Next elapse: Sat 2020-08-01 00:00:00 BST
+       (in UTC): Fri 2020-07-31 23:00:00 UTC
+       From now: 1 weeks 1 days left
+
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.service
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer
+Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer.
+2020/07/23 17:08:51 scheduled job test1/check created
+```
+
+Status is directly given by systemctl:
+
+```
+$ resticprofile -c examples/linux.yaml -n test1 status
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:00,15,30,45
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Thu 2020-07-23 17:15:00 BST
+       (in UTC): Thu 2020-07-23 16:15:00 UTC
+       From now: 2min 52s left
+
+● resticprofile-backup@profile-test1.timer - backup timer for profile test1 in examples/linux.yaml
+   Loaded: loaded (/home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer; enabled; vendor preset: enabled)
+   Active: active (waiting) since Thu 2020-07-23 17:08:51 BST; 3min 16s ago
+  Trigger: Thu 2020-07-23 17:15:00 BST; 2min 52s left
+
+Jul 23 17:08:51 Desktop76 systemd[2502]: Started backup timer for profile test1 in examples/linux.yaml.
+
+Analyzing check schedule 1/1
+=================================
+  Original form: *-*-1
+Normalized form: *-*-01 00:00:00
+    Next elapse: Sat 2020-08-01 00:00:00 BST
+       (in UTC): Fri 2020-07-31 23:00:00 UTC
+       From now: 1 weeks 1 days left
+
+● resticprofile-check@profile-test1.timer - check timer for profile test1 in examples/linux.yaml
+   Loaded: loaded (/home/user/.config/systemd/user/resticprofile-check@profile-test1.timer; enabled; vendor preset: enabled)
+   Active: active (waiting) since Thu 2020-07-23 17:08:51 BST; 3min 16s ago
+  Trigger: Sat 2020-08-01 00:00:00 BST; 1 weeks 1 days left
+
+Jul 23 17:08:51 Desktop76 systemd[2502]: Started check timer for profile test1 in examples/linux.yaml.
+
+```
+
+And unschedule:
+
+```
+$ resticprofile -c examples/linux.yaml -n test1 unschedule
+Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer.
+2020/07/23 17:13:42 scheduled job test1/backup removed
+Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer.
+2020/07/23 17:13:42 scheduled job test1/check removed
+```
+
+
 ## Configuration file reference
 
 `[global]`

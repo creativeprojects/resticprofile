@@ -26,7 +26,9 @@ const (
 	flagUserUnit   = "--user"
 
 	// https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
-	codeUnitNotFound = 4
+	codeStatusUnitNotFound = 4
+	// undocumented
+	codeStopUnitNotFound = 5
 )
 
 // Init verifies systemd is available on this system
@@ -45,7 +47,7 @@ func Close() {
 // getSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission
 func (j *Job) getSchedulePermission() string {
-	const message = "you have not specified the permission for your schedule (system or user): assuming"
+	const message = "you have not specified the permission for your schedule (system or user): assuming "
 	if j.config.Permission() == constants.SchedulePermissionSystem ||
 		j.config.Permission() == constants.SchedulePermissionUser {
 		// well defined
@@ -193,7 +195,10 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) e
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
-	if cmd.ProcessState.ExitCode() == codeUnitNotFound {
+	if command == commandStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
+		return ErrorServiceNotFound
+	}
+	if command == commandStop && cmd.ProcessState.ExitCode() == codeStopUnitNotFound {
 		return ErrorServiceNotFound
 	}
 	return err

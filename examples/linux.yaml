@@ -27,6 +27,7 @@ test1:
         schedule-permission: user
     check:
         schedule: "*-*-1"
+        schedule-permission: user
 
 test2:
     inherit: default
