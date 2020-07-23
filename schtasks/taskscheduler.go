@@ -64,6 +64,8 @@ type Config interface {
 var (
 	// no need to recreate the service every time
 	taskService *taskmaster.TaskService
+	// current user
+	userName = ""
 	// ask the user password only once
 	userPassword = ""
 )
@@ -87,7 +89,7 @@ func Close() {
 	taskService = nil
 }
 
-// Create a task
+// Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config Config, schedules []*calendar.Event, permission Permission) error {
 	if permission == SystemAccount {
 		return createSystemTask(config, schedules)
@@ -95,21 +97,24 @@ func Create(config Config, schedules []*calendar.Event, permission Permission) e
 	return createUserTask(config, schedules)
 }
 
+// createUserTask creates a new user task. Will update an existing task instead of overwritting
 func createUserTask(config Config, schedules []*calendar.Event) error {
-	currentUser, err := user.Current()
+	taskName := getTaskPath(config.Title(), config.SubTitle())
+	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
 		return err
 	}
-	if userPassword == "" {
-		fmt.Printf("\nCreating task for user %s\n", currentUser.Username)
-		fmt.Printf("Task Scheduler requires your Windows password to validate the task: ")
-		userPassword, err = term.ReadPassword()
-		if err != nil {
-			return err
-		}
+	if registeredTask != nil {
+		return updateUserTask(registeredTask, config, schedules)
+	}
+
+	username, password, err := userCredentials()
+	if err != nil {
+		return fmt.Errorf("cannot get user name or password: %w", err)
 	}
 
 	task := taskService.NewTaskDefinition()
+
 	task.AddExecAction(
 		config.Command(),
 		strings.Join(config.Arguments(), " "),
@@ -117,19 +122,19 @@ func createUserTask(config Config, schedules []*calendar.Event) error {
 		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
-	task.Principal.UserID = currentUser.Username
+	task.Principal.UserID = username
 	task.RegistrationInfo.Author = "resticprofile"
 	task.RegistrationInfo.Description = config.JobDescription()
 
 	createSchedules(&task, schedules)
 
 	_, created, err := taskService.CreateTaskEx(
-		getTaskPath(config.Title(), config.SubTitle()),
+		taskName,
 		task,
-		currentUser.Username,
-		userPassword,
+		username,
+		password,
 		taskmaster.TASK_LOGON_PASSWORD,
-		true)
+		false)
 	if err != nil {
 		return err
 	}
@@ -139,7 +144,74 @@ func createUserTask(config Config, schedules []*calendar.Event) error {
 	return nil
 }
 
+// updateUserTask updates an existing task
+func updateUserTask(task *taskmaster.RegisteredTask, config Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title(), config.SubTitle())
+
+	username, password, err := userCredentials()
+	if err != nil {
+		return fmt.Errorf("cannot get user name or password: %w", err)
+	}
+
+	// clear up all actions and put ours back
+	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
+	task.Definition.AddExecAction(
+		config.Command(),
+		strings.Join(config.Arguments(), " "),
+		config.WorkingDirectory(),
+		"")
+	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
+	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
+	task.Definition.Principal.UserID = username
+
+	// clear up all schedules and put them back
+	task.Definition.Triggers = []taskmaster.Trigger{}
+	createSchedules(&task.Definition, schedules)
+
+	_, err = taskService.UpdateTaskEx(
+		taskName,
+		task.Definition,
+		username,
+		password,
+		taskmaster.TASK_LOGON_PASSWORD)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// userCredentials asks for the user password only once, and keeps it in cache
+func userCredentials() (string, string, error) {
+	if userName != "" {
+		// we've been here already: we don't check for blank password as it's a valid password
+		return userName, userPassword, nil
+	}
+	currentUser, err := user.Current()
+	if err != nil {
+		return "", "", err
+	}
+	userName = currentUser.Username
+
+	fmt.Printf("\nCreating task for user %s\n", userName)
+	fmt.Printf("Task Scheduler requires your Windows password to validate the task: ")
+	userPassword, err = term.ReadPassword()
+	if err != nil {
+		return "", "", err
+	}
+	return userName, userPassword, nil
+}
+
+// createSystemTask creates a new system task. Will update an existing task instead of overwritting
 func createSystemTask(config Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title(), config.SubTitle())
+	registeredTask, err := taskService.GetRegisteredTask(taskName)
+	if err != nil {
+		return err
+	}
+	if registeredTask != nil {
+		return updateSystemTask(registeredTask, config, schedules)
+	}
+
 	task := taskService.NewTaskDefinition()
 	task.AddExecAction(
 		config.Command(),
@@ -154,12 +226,38 @@ func createSystemTask(config Config, schedules []*calendar.Event) error {
 
 	createSchedules(&task, schedules)
 
-	_, created, err := taskService.CreateTask(getTaskPath(config.Title(), config.SubTitle()), task, true)
+	_, created, err := taskService.CreateTask(taskName, task, false)
 	if err != nil {
 		return err
 	}
 	if !created {
 		return errors.New("cannot create system task")
+	}
+	return nil
+}
+
+// updateSystemTask updates an existing task
+func updateSystemTask(task *taskmaster.RegisteredTask, config Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title(), config.SubTitle())
+
+	// clear up all actions and put ours back
+	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
+	task.Definition.AddExecAction(
+		config.Command(),
+		strings.Join(config.Arguments(), " "),
+		config.WorkingDirectory(),
+		"")
+	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
+	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
+	task.Definition.Principal.UserID = "SYSTEM"
+
+	// clear up all schedules and put them back
+	task.Definition.Triggers = []taskmaster.Trigger{}
+	createSchedules(&task.Definition, schedules)
+
+	_, err := taskService.UpdateTask(taskName, task.Definition)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -233,6 +331,7 @@ func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 			true)
 		return
 	}
+	clog.Warning("createDailyTrigger fallback")
 }
 
 func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
@@ -283,6 +382,7 @@ func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) 
 			true)
 		return
 	}
+	clog.Warning("createWeeklyTrigger fallback")
 }
 
 func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
@@ -296,7 +396,11 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 	}
 	// Is it only once per 24h?
 	if len(recurrences) == 1 {
-		if schedule.WeekDay.HasValue() && !schedule.Day.HasValue() {
+		if schedule.WeekDay.HasValue() && schedule.Day.HasValue() {
+			clog.Warningf("task scheduler does not support a day of the month and a day of the week in the same trigger: %s", schedule.String())
+			return
+		}
+		if schedule.WeekDay.HasValue() {
 			task.AddMonthlyDOWTrigger(
 				taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
 				taskmaster.First|taskmaster.Second|taskmaster.Third|taskmaster.Fourth|taskmaster.Last,
@@ -305,18 +409,17 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 				emptyPeriod,
 				recurrences[0],
 			)
-		} else if !schedule.WeekDay.HasValue() && schedule.Day.HasValue() {
-			task.AddMonthlyTrigger(
-				convertDaysToBitmap(schedule.Day.GetRangeValues()),
-				taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
-				emptyPeriod,
-				recurrences[0],
-			)
-		} else {
-			clog.Warningf("task scheduler does not support a day of the month and a day of the week in the same trigger: %s", schedule.String())
+			return
 		}
+		task.AddMonthlyTrigger(
+			convertDaysToBitmap(schedule.Day.GetRangeValues()),
+			taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
+			emptyPeriod,
+			recurrences[0],
+		)
 		return
 	}
+	clog.Warning("createMonthlyTrigger fallback")
 }
 
 // Delete a task
@@ -366,10 +469,10 @@ func getTaskPath(profileName, commandName string) string {
 }
 
 func convertWeekdaysToBitmap(weekdays []int) int {
-	bitmap := 0
 	if weekdays == nil || len(weekdays) == 0 {
 		return 0
 	}
+	bitmap := 0
 	for _, weekday := range weekdays {
 		bitmap |= getWeekdayBit(weekday)
 	}
@@ -400,14 +503,14 @@ func getWeekdayBit(weekday int) int {
 }
 
 func convertMonthsToBitmap(months []int) int {
-	bitmap := 0
 	if months == nil {
 		return 0
 	}
 	if len(months) == 0 {
 		// all values
-		bitmap = int(math.Pow(2, 12)) - 1
+		return int(math.Pow(2, 12)) - 1
 	}
+	bitmap := 0
 	for _, month := range months {
 		bitmap |= int(math.Pow(2, float64(month-1)))
 	}
@@ -415,14 +518,14 @@ func convertMonthsToBitmap(months []int) int {
 }
 
 func convertDaysToBitmap(days []int) int {
-	bitmap := 0
 	if days == nil {
 		return 0
 	}
 	if len(days) == 0 {
 		// every day
-		bitmap = int(math.Pow(2, 31)) - 1
+		return int(math.Pow(2, 31)) - 1
 	}
+	bitmap := 0
 	for _, day := range days {
 		bitmap |= int(math.Pow(2, float64(day-1)))
 	}

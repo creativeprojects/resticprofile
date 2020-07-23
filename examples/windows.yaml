@@ -44,7 +44,7 @@ test:
         schedule:
         - "*-*-1"
         - "sun *-*-1"
-        - "mon *-1..10-*"
+        - "mon *-11..12-*"
         schedule-permission: system
     retention:
         schedule:
