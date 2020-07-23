@@ -7,28 +7,27 @@ import (
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/win"
+	"github.com/creativeprojects/resticprofile/schtasks"
 )
 
 // Init a connection to the task scheduler
 func Init() error {
-	return win.ConnectScheduler()
+	return schtasks.Connect()
 }
 
 // Close the connection to the task scheduler
 func Close() {
-	win.CloseScheduler()
+	schtasks.Close()
 }
 
 // createJob is creating the task scheduler job.
 func (j *Job) createJob(schedules []*calendar.Event) error {
 	// default permission will be system
-	permission := win.SystemAccount
+	permission := schtasks.SystemAccount
 	if j.config.Permission() == constants.SchedulePermissionUser {
-		permission = win.UserAccount
+		permission = schtasks.UserAccount
 	}
-	taskScheduler := win.NewTaskScheduler(j.config)
-	err := taskScheduler.Create(schedules, permission)
+	err := schtasks.Create(j.config, schedules, permission)
 	if err != nil {
 		return err
 	}
@@ -37,10 +36,9 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 
 // removeJob is deleting the task scheduler job
 func (j *Job) removeJob() error {
-	taskScheduler := win.NewTaskScheduler(j.config)
-	err := taskScheduler.Delete()
+	err := schtasks.Delete(j.config.Title(), j.config.SubTitle())
 	if err != nil {
-		if errors.Is(err, win.ErrorNotRegistered) {
+		if errors.Is(err, schtasks.ErrorNotRegistered) {
 			return ErrorServiceNotFound
 		}
 		return err
@@ -50,10 +48,9 @@ func (j *Job) removeJob() error {
 
 // displayStatus display some information about the task scheduler job
 func (j *Job) displayStatus(command string) error {
-	taskScheduler := win.NewTaskScheduler(j.config)
-	err := taskScheduler.Status()
+	err := schtasks.Status(j.config.Title(), j.config.SubTitle())
 	if err != nil {
-		if errors.Is(err, win.ErrorNotRegistered) {
+		if errors.Is(err, schtasks.ErrorNotRegistered) {
 			return ErrorServiceNotFound
 		}
 		return err

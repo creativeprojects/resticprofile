@@ -717,7 +717,7 @@ Normalized form: Sat,Sun *-*-* 00,12:*:00
        From now: 50h31m52s left
 
 Creating task for user Creative Projects
-Windows requires your password to validate the task: 
+Task Scheduler requires your Windows password to validate the task: 
 
 2020/07/22 21:28:15 scheduled job self/backup created
 
@@ -1092,7 +1092,7 @@ default {
     password-file = "key"
     run-before = "echo Profile started!"
     run-after = "echo Profile finished!"
-    run-after-fail = "echo An error occured!"
+    run-after-fail = "echo An error occurred!"
 }
 
 

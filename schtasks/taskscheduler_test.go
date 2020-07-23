@@ -1,6 +1,6 @@
 //+build windows
 
-package win
+package schtasks
 
 import (
 	"testing"
@@ -9,7 +9,6 @@ import (
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/rickb777/date/period"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -47,9 +46,6 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	clog.SetTestLog(t)
 	defer clog.CloseTestLog()
 
-	_ = ConnectScheduler()
-	defer CloseScheduler()
-
 	schedules := make([]*calendar.Event, len(testData))
 	for index, testEvent := range testData {
 		event := calendar.NewEvent()
@@ -58,8 +54,7 @@ func TestTaskSchedulerConversion(t *testing.T) {
 		schedules[index] = event
 	}
 	task := taskmaster.Definition{}
-	taskScheduler := NewTaskScheduler(&config.ScheduleConfig{})
-	taskScheduler.createSchedules(&task, schedules)
+	createSchedules(&task, schedules)
 
 	// 1st task should be a single event
 	singleEvent, ok := task.Triggers[0].(taskmaster.TimeTrigger)

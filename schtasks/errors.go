@@ -1,4 +1,6 @@
-package win
+//+build windows
+
+package schtasks
 
 import "errors"
 

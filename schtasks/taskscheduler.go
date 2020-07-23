@@ -1,6 +1,6 @@
 //+build windows
 
-package win
+package schtasks
 
 import (
 	"errors"
@@ -61,11 +61,6 @@ type Config interface {
 	Arguments() []string
 }
 
-// TaskScheduler wraps up a task scheduler service
-type TaskScheduler struct {
-	config Config
-}
-
 var (
 	// no need to recreate the service every time
 	taskService *taskmaster.TaskService
@@ -73,18 +68,8 @@ var (
 	userPassword = ""
 )
 
-// NewTaskScheduler creates a new service to talk to windows task scheduler
-func NewTaskScheduler(config Config) *TaskScheduler {
-	if taskService == nil {
-		panic("you need to call win.ConnectScheduler() before instanciating a TaskScheduler")
-	}
-	return &TaskScheduler{
-		config: config,
-	}
-}
-
-// ConnectScheduler initializes a connection to the local task scheduler
-func ConnectScheduler() error {
+// Connect initializes a connection to the local task scheduler
+func Connect() error {
 	var err error
 
 	if taskService == nil || !taskService.IsConnected() {
@@ -93,8 +78,8 @@ func ConnectScheduler() error {
 	return err
 }
 
-// CloseScheduler releases the ressources used by the task service
-func CloseScheduler() {
+// Close releases the ressources used by the task service
+func Close() {
 	if taskService == nil {
 		return
 	}
@@ -103,21 +88,21 @@ func CloseScheduler() {
 }
 
 // Create a task
-func (s *TaskScheduler) Create(schedules []*calendar.Event, permission Permission) error {
+func Create(config Config, schedules []*calendar.Event, permission Permission) error {
 	if permission == SystemAccount {
-		return s.createSystemTask(schedules)
+		return createSystemTask(config, schedules)
 	}
-	return s.createUserTask(schedules)
+	return createUserTask(config, schedules)
 }
 
-func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
+func createUserTask(config Config, schedules []*calendar.Event) error {
 	currentUser, err := user.Current()
 	if err != nil {
 		return err
 	}
 	if userPassword == "" {
 		fmt.Printf("\nCreating task for user %s\n", currentUser.Username)
-		fmt.Printf("Windows requires your password to validate the task: ")
+		fmt.Printf("Task Scheduler requires your Windows password to validate the task: ")
 		userPassword, err = term.ReadPassword()
 		if err != nil {
 			return err
@@ -126,20 +111,20 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 
 	task := taskService.NewTaskDefinition()
 	task.AddExecAction(
-		s.config.Command(),
-		strings.Join(s.config.Arguments(), " "),
-		s.config.WorkingDirectory(),
+		config.Command(),
+		strings.Join(config.Arguments(), " "),
+		config.WorkingDirectory(),
 		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
 	task.Principal.UserID = currentUser.Username
 	task.RegistrationInfo.Author = "resticprofile"
-	task.RegistrationInfo.Description = s.config.JobDescription()
+	task.RegistrationInfo.Description = config.JobDescription()
 
-	s.createSchedules(&task, schedules)
+	createSchedules(&task, schedules)
 
 	_, created, err := taskService.CreateTaskEx(
-		getTaskPath(s.config.Title(), s.config.SubTitle()),
+		getTaskPath(config.Title(), config.SubTitle()),
 		task,
 		currentUser.Username,
 		userPassword,
@@ -154,22 +139,22 @@ func (s *TaskScheduler) createUserTask(schedules []*calendar.Event) error {
 	return nil
 }
 
-func (s *TaskScheduler) createSystemTask(schedules []*calendar.Event) error {
+func createSystemTask(config Config, schedules []*calendar.Event) error {
 	task := taskService.NewTaskDefinition()
 	task.AddExecAction(
-		s.config.Command(),
-		strings.Join(s.config.Arguments(), " "),
-		s.config.WorkingDirectory(),
+		config.Command(),
+		strings.Join(config.Arguments(), " "),
+		config.WorkingDirectory(),
 		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
 	task.Principal.UserID = "SYSTEM"
 	task.RegistrationInfo.Author = "resticprofile"
-	task.RegistrationInfo.Description = s.config.JobDescription()
+	task.RegistrationInfo.Description = config.JobDescription()
 
-	s.createSchedules(&task, schedules)
+	createSchedules(&task, schedules)
 
-	_, created, err := taskService.CreateTask(getTaskPath(s.config.Title(), s.config.SubTitle()), task, true)
+	_, created, err := taskService.CreateTask(getTaskPath(config.Title(), config.SubTitle()), task, true)
 	if err != nil {
 		return err
 	}
@@ -179,7 +164,7 @@ func (s *TaskScheduler) createSystemTask(schedules []*calendar.Event) error {
 	return nil
 }
 
-func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules []*calendar.Event) {
+func createSchedules(task *taskmaster.Definition, schedules []*calendar.Event) {
 	for _, schedule := range schedules {
 		if once, ok := schedule.AsTime(); ok {
 			// one time only
@@ -188,22 +173,22 @@ func (s *TaskScheduler) createSchedules(task *taskmaster.Definition, schedules [
 		}
 		if schedule.IsDaily() {
 			// recurring daily
-			s.createDailyTrigger(task, schedule)
+			createDailyTrigger(task, schedule)
 			continue
 		}
 		if schedule.IsWeekly() {
-			s.createWeeklyTrigger(task, schedule)
+			createWeeklyTrigger(task, schedule)
 			continue
 		}
 		if schedule.IsMonthly() {
-			s.createMonthlyTrigger(task, schedule)
+			createMonthlyTrigger(task, schedule)
 			continue
 		}
 		clog.Warningf("cannot convert schedule '%s' into a task scheduler equivalent", schedule.String())
 	}
 }
 
-func (s *TaskScheduler) createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
+func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 	emptyPeriod := period.Period{}
 	start := schedule.Next(time.Now())
 	// get all recurrences in the same day
@@ -250,7 +235,7 @@ func (s *TaskScheduler) createDailyTrigger(task *taskmaster.Definition, schedule
 	}
 }
 
-func (s *TaskScheduler) createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
+func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 	emptyPeriod := period.Period{}
 	start := schedule.Next(time.Now())
 	// get all recurrences in the same day
@@ -300,7 +285,7 @@ func (s *TaskScheduler) createWeeklyTrigger(task *taskmaster.Definition, schedul
 	}
 }
 
-func (s *TaskScheduler) createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
+func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 	emptyPeriod := period.Period{}
 	start := schedule.Next(time.Now())
 	// get all recurrences in the same day
@@ -334,14 +319,9 @@ func (s *TaskScheduler) createMonthlyTrigger(task *taskmaster.Definition, schedu
 	}
 }
 
-// Update a task
-func (s *TaskScheduler) Update() error {
-	return nil
-}
-
 // Delete a task
-func (s *TaskScheduler) Delete() error {
-	taskName := getTaskPath(s.config.Title(), s.config.SubTitle())
+func Delete(title, subtitle string) error {
+	taskName := getTaskPath(title, subtitle)
 	err := taskService.DeleteTask(taskName)
 	if err != nil {
 		if strings.Contains(err.Error(), "doesn't exist") {
@@ -353,8 +333,8 @@ func (s *TaskScheduler) Delete() error {
 }
 
 // Status returns the status of a task
-func (s *TaskScheduler) Status() error {
-	taskName := getTaskPath(s.config.Title(), s.config.SubTitle())
+func Status(title, subtitle string) error {
+	taskName := getTaskPath(title, subtitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
 		return err

@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "launchd",
+        "restic",
+        "resticprofile",
         "systemd"
     ]
 }
