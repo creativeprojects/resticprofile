@@ -11,7 +11,10 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
+	"sort"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
@@ -31,8 +34,9 @@ const (
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 
-	namePrefix     = "local.resticprofile"
-	agentExtension = ".agent.plist"
+	namePrefix      = "local.resticprofile"
+	agentExtension  = ".agent.plist"
+	daemonExtension = ".plist"
 
 	codeServiceNotFound = 113
 )
@@ -89,35 +93,20 @@ func Close() {
 
 // createJob creates a plist file and register it with launchd
 func (j *Job) createJob(schedules []*calendar.Event) error {
-	ok := j.checkPermission(j.config.Permission())
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
 	if !ok {
 		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
 	}
-	name := getJobName(j.config.Title(), j.config.SubTitle())
-	job := &LaunchJob{
-		Label:                 name,
-		Program:               j.config.Command(),
-		ProgramArguments:      append([]string{j.config.Command()}, j.config.Arguments()...),
-		EnvironmentVariables:  j.config.Environment(),
-		StandardOutPath:       name + ".log",
-		StandardErrorPath:     name + ".log",
-		WorkingDirectory:      j.config.WorkingDirectory(),
-		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
-	}
-
-	filename, err := getFilename(name, j.config.Permission())
+	filename, err := j.createPlistFile(schedules)
 	if err != nil {
+		if filename != "" {
+			os.Remove(filename)
+		}
 		return err
 	}
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
 
-	encoder := plist.NewEncoder(file)
-	encoder.Indent("\t")
-	err = encoder.Encode(job)
+	j.fixFileOwner(filename)
 	if err != nil {
 		return err
 	}
@@ -134,65 +123,123 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 	return nil
 }
 
+func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
+	name := getJobName(j.config.Title(), j.config.SubTitle())
+	job := &LaunchJob{
+		Label:                 name,
+		Program:               j.config.Command(),
+		ProgramArguments:      append([]string{j.config.Command()}, j.config.Arguments()...),
+		EnvironmentVariables:  j.config.Environment(),
+		StandardOutPath:       name + ".log",
+		StandardErrorPath:     name + ".log",
+		WorkingDirectory:      j.config.WorkingDirectory(),
+		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
+	}
+
+	filename, err := getFilename(name, j.getSchedulePermission())
+	if err != nil {
+		return "", err
+	}
+	file, err := os.Create(filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	encoder := plist.NewEncoder(file)
+	encoder.Indent("\t")
+	err = encoder.Encode(job)
+	if err != nil {
+		return filename, err
+	}
+	return filename, nil
+}
+
+// fixFileOwner gives the owner back to the user
+func (j *Job) fixFileOwner(filename string) error {
+	if j.getSchedulePermission() == constants.SchedulePermissionSystem {
+		return nil
+	}
+	if os.Geteuid() != 0 {
+		return nil
+	}
+	// this is the case of a launchd agent supposed to be of type user, but created by root
+	// well it doesn't even seem to work anyway
+	return os.Chown(filename, os.Getuid(), os.Getgid())
+}
+
 // removeJob stops and unloads the agent from launchd, then removes the configuration file
 func (j *Job) removeJob() error {
-	ok := j.checkPermission(j.config.Permission())
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
 	if !ok {
 		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
 	}
 	name := getJobName(j.config.Title(), j.config.SubTitle())
-	filename, err := getFilename(name, j.config.Permission())
+	filename, err := getFilename(name, j.getSchedulePermission())
 	if err != nil {
 		return err
 	}
 
-	if _, err := os.Stat(filename); err == nil || os.IsExist(err) {
-		// stop the service in case it's already running
-		stop := exec.Command(launchctlBin, commandStop, name)
-		stop.Stdout = os.Stdout
-		stop.Stderr = os.Stderr
-		// keep going if there's an error here
-		_ = stop.Run()
+	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
+		return ErrorServiceNotFound
+	}
+	// stop the service in case it's already running
+	stop := exec.Command(launchctlBin, commandStop, name)
+	stop.Stdout = os.Stdout
+	stop.Stderr = os.Stderr
+	// keep going if there's an error here
+	_ = stop.Run()
 
-		// unload the service
-		unload := exec.Command(launchctlBin, commandUnload, filename)
-		unload.Stdout = os.Stdout
-		unload.Stderr = os.Stderr
-		err = unload.Run()
-		if err != nil {
-			return err
-		}
-		err = os.Remove(filename)
-		if err != nil {
-			return err
-		}
+	// unload the service
+	unload := exec.Command(launchctlBin, commandUnload, filename)
+	unload.Stdout = os.Stdout
+	unload.Stderr = os.Stderr
+	err = unload.Run()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(filename)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (j *Job) displayStatus(command string) error {
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
+	if !ok {
+		return errors.New("user is not allowed view a system job: please restart resticprofile as root (with sudo)")
+	}
 	cmd := exec.Command(launchctlBin, commandList, getJobName(j.config.Title(), j.config.SubTitle()))
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
 		return ErrorServiceNotFound
 	}
-	return err
-}
+	if err != nil {
+		return err
+	}
+	status := parseStatus(string(output))
+	if len(status) == 0 {
+		// output was not parsed, it could mean output format has changed
+		fmt.Println(string(output))
+	}
+	// order keys alphabetically
+	keys := make([]string, 0, len(status))
+	for key := range status {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight)
+	for _, key := range keys {
+		fmt.Fprintf(writer, "%s:\t %s\n", key, status[key])
+	}
+	writer.Flush()
+	fmt.Println("")
 
-func (j *Job) checkPermission(permission string) bool {
-	if permission == constants.SchedulePermissionUser {
-		// user mode is always available
-		return true
-	}
-	if os.Geteuid() == 0 {
-		// user has sudoed
-		return true
-	}
-	// last case is system (or undefined) + no sudo
-	return false
+	return nil
 }
 
 func getJobName(profileName, command string) string {
@@ -201,7 +248,7 @@ func getJobName(profileName, command string) string {
 
 func getFilename(name, permission string) (string, error) {
 	if permission == constants.SchedulePermissionSystem {
-		return path.Join(GlobalDaemons, name+agentExtension), nil
+		return path.Join(GlobalDaemons, name+daemonExtension), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -278,4 +325,17 @@ func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeVa
 	case calendar.TypeMinute:
 		(*entry)["Minute"] = value
 	}
+}
+
+func parseStatus(status string) map[string]string {
+	expr := regexp.MustCompile(`^\s*"(\w+)"\s*=\s*(.*);$`)
+	lines := strings.Split(status, "\n")
+	output := make(map[string]string, len(lines))
+	for _, line := range lines {
+		match := expr.FindStringSubmatch(line)
+		if len(match) == 3 {
+			output[match[1]] = strings.Trim(match[2], "\"")
+		}
+	}
+	return output
 }

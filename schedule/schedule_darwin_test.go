@@ -71,3 +71,36 @@ func TestGetCalendarIntervalsFromScheduleTree(t *testing.T) {
 		})
 	}
 }
+
+func TestParseStatus(t *testing.T) {
+	status := `{
+	"StandardOutPath" = "local.resticprofile.self.check.log";
+	"LimitLoadToSessionType" = "Aqua";
+	"StandardErrorPath" = "local.resticprofile.self.check.log";
+	"Label" = "local.resticprofile.self.check";
+	"OnDemand" = true;
+	"LastExitStatus" = 0;
+	"Program" = "/Users/go/src/github.com/creativeprojects/resticprofile/resticprofile";
+	"ProgramArguments" = (
+		"/Users/go/src/github.com/creativeprojects/resticprofile/resticprofile";
+		"--no-ansi";
+		"--config";
+		"examples/dev.yaml";
+		"--name";
+		"self";
+		"check";
+	);
+};`
+	expected := map[string]string{
+		"StandardOutPath":        "local.resticprofile.self.check.log",
+		"LimitLoadToSessionType": "Aqua",
+		"StandardErrorPath":      "local.resticprofile.self.check.log",
+		"Label":                  "local.resticprofile.self.check",
+		"OnDemand":               "true",
+		"LastExitStatus":         "0",
+		"Program":                "/Users/go/src/github.com/creativeprojects/resticprofile/resticprofile",
+	}
+
+	output := parseStatus(status)
+	assert.Equal(t, expected, output)
+}

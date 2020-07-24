@@ -81,6 +81,7 @@ self:
         source: ./
         schedule:
         - "*:00,30"
+        schedule-permission: user
     check:
         schedule:
         - "*:15,45"

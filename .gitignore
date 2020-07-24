@@ -21,3 +21,6 @@
 
 # test output
 /coverage.out
+
+# log files
+/*.log

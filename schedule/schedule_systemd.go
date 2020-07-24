@@ -9,7 +9,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
@@ -42,37 +41,6 @@ func Init() error {
 
 // Close does nothing in systemd
 func Close() {
-}
-
-// getSchedulePermission returns the permission defined from the configuration,
-// or the best guess considering the current user permission
-func (j *Job) getSchedulePermission() string {
-	const message = "you have not specified the permission for your schedule (system or user): assuming "
-	if j.config.Permission() == constants.SchedulePermissionSystem ||
-		j.config.Permission() == constants.SchedulePermissionUser {
-		// well defined
-		return j.config.Permission()
-	}
-	// best guess is depending on the user being root or not:
-	if os.Geteuid() == 0 {
-		clog.Warning(message, "system")
-		return constants.SchedulePermissionSystem
-	}
-	clog.Warning(message, "user")
-	return constants.SchedulePermissionUser
-}
-
-func (j *Job) checkPermission(permission string) bool {
-	if permission == constants.SchedulePermissionUser {
-		// user mode is always available
-		return true
-	}
-	if os.Geteuid() == 0 {
-		// user has sudoed
-		return true
-	}
-	// last case is system (or undefined) + no sudo
-	return false
 }
 
 // createJob is creating the systemd unit and activating it

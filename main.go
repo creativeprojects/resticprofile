@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -314,7 +315,7 @@ func runProfile(
 
 	// Catch CTR-C keypress
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, os.Kill)
+	signal.Notify(sigChan, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGABRT)
 
 	wrapper := newResticWrapper(
 		resticBinary,
