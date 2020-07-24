@@ -61,7 +61,10 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Appendix](#appendix)
   * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
     * [systemd calendars](#systemd-calendars)
-
+  * [Using resticprofile and launchd on macOS](#using-resticprofile-and-launchd-on-macos)
+    * [User agent](#user-agent)
+      * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
+    * [Daemon](#daemon)
 
 
 ## Requirements
