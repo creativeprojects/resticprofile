@@ -13,9 +13,11 @@ import (
 	"path"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"howett.net/plist"
@@ -155,17 +157,38 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 	return filename, nil
 }
 
-// fixFileOwner gives the owner back to the user
-func (j *Job) fixFileOwner(filename string) error {
-	if j.getSchedulePermission() == constants.SchedulePermissionSystem {
-		return nil
-	}
-	if os.Geteuid() != 0 {
-		return nil
+// fixFileOwner gives the owner back to the user.
+// No error is returned as it's not a big deal if we can't change the file permissions
+func (j *Job) fixFileOwner(filename string) {
+	if j.getSchedulePermission() == constants.SchedulePermissionSystem || os.Geteuid() != 0 {
+		// system permission or user hasn't sudoed
+		return
 	}
 	// this is the case of a launchd agent supposed to be of type user, but created by root
-	// well it doesn't even seem to work anyway
-	return os.Chown(filename, os.Getuid(), os.Getgid())
+	sudoUID, sudoGID := 0, 0
+	var err error
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "SUDO_UID=") {
+			temp := strings.TrimPrefix(env, "SUDO_UID=")
+			sudoUID, err = strconv.Atoi(temp)
+			if err != nil {
+				return
+			}
+		}
+		if strings.HasPrefix(env, "SUDO_GID=") {
+			temp := strings.TrimPrefix(env, "SUDO_GID=")
+			sudoGID, err = strconv.Atoi(temp)
+			if err != nil {
+				return
+			}
+		}
+	}
+	if sudoUID > 0 {
+		err = os.Chown(filename, sudoUID, sudoGID)
+		if err != nil {
+			clog.Warningf("cannot change agent owner: %v", err)
+		}
+	}
 }
 
 // removeJob stops and unloads the agent from launchd, then removes the configuration file

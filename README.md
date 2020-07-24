@@ -1286,3 +1286,27 @@ Normalized form: *-*-* 00:00:00
        (in UTC): Sat 2020-04-18 05:00:00 UTC
        From now: 10h left
 ```
+
+## Using resticprofile and launchd on macOS
+
+`launchd` is the service manager on macOS. resticprofile can schedule a profile via a _user agent_ or a _daemon_ in launchd.
+
+### User agent
+
+A user agent is generated when you set `schedule-permission` to `user`. 
+
+It consists of a `plist` file in the folder `~/Library/LaunchAgents`:
+
+A user agent **mostly** runs with the privileges of the user. But if you backup some specific files, like your contacts or your calendar for example, you will need to give more permissions to resticprofile **and** restic
+
+TODO _write up some information about FDA_
+
+#### Special case of schedule-permission=user with sudo
+
+Please note if you schedule a user agent while running resticprofile with sudo: the user agent will be registered to the root user, and not your initial user context. It means you can only see it (`status`) and remove it (`unschedule`) via sudo.
+
+### Daemon
+
+A launchd daemon is generated when you set `schedule-permission` to `system`. 
+
+It consists of a `plist` file in the folder `/Library/LaunchDaemons`. You have to run resticprofile with sudo to `schedule`, check the  `status` and `unschedule` the profile.
