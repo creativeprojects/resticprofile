@@ -12,6 +12,11 @@ import (
 	"howett.net/plist"
 )
 
+func TestLaunchdIsInstalledOnTravisCI(t *testing.T) {
+	err := Init()
+	assert.NoError(t, err)
+}
+
 func TestPListEncoderWithCalendarInterval(t *testing.T) {
 	expected := `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -59,6 +64,15 @@ func TestGetCalendarIntervalsFromScheduleTree(t *testing.T) {
 			{"Weekday": 4, "Minute": 30},
 			{"Weekday": 5, "Minute": 0},
 			{"Weekday": 5, "Minute": 30},
+		}},
+		// First sunday of the month at 3:30am
+		{"Sun *-*-01..06 03:30:00", []CalendarInterval{
+			{"Day": 1, "Weekday": 0, "Hour": 3, "Minute": 30},
+			{"Day": 2, "Weekday": 0, "Hour": 3, "Minute": 30},
+			{"Day": 3, "Weekday": 0, "Hour": 3, "Minute": 30},
+			{"Day": 4, "Weekday": 0, "Hour": 3, "Minute": 30},
+			{"Day": 5, "Weekday": 0, "Hour": 3, "Minute": 30},
+			{"Day": 6, "Weekday": 0, "Hour": 3, "Minute": 30},
 		}},
 	}
 

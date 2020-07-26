@@ -108,10 +108,12 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 		return err
 	}
 
-	j.fixFileOwner(filename)
-	if err != nil {
-		return err
-	}
+	// Don't do that for now: if the user agent was scheduled as user root,
+	// a normal user cannot stop or unload it via launchctl anyway
+	// j.fixFileOwner(filename)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// load the service
 	cmd := exec.Command(launchctlBin, commandLoad, filename)

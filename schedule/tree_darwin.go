@@ -31,11 +31,21 @@ func generateTreeOfSchedules(event *calendar.Event) []*treeElement {
 		}
 		subTree := getElements(values, currentTypeValue)
 		if len(*currentElements) > 0 {
+			newCurrentElements := make([]*treeElement, 0)
 			for _, element := range *currentElements {
+				// add each new element to the child of all the current elements
 				element.subElements = make([]*treeElement, len(subTree))
 				copy(element.subElements, subTree)
+				// the new current element is a slice concatening all the child slices into one big one
+				for _, newElement := range element.subElements {
+					// keep a reference of it into the big slice
+					newCurrentElements = append(newCurrentElements, newElement)
+				}
 			}
+			// full horizontal view of the current row of the tree
+			currentElements = &newCurrentElements
 		} else {
+			// first time: this is going to the root of the tree
 			*currentElements = make([]*treeElement, len(subTree))
 			copy(*currentElements, subTree)
 		}

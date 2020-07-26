@@ -90,6 +90,140 @@ func TestGenerateTree(t *testing.T) {
 				},
 			},
 		}},
+		{"Sun *-*-01..06 3:30", []*treeElement{
+			{
+				elementType: calendar.TypeDay,
+				value:       1,
+				subElements: []*treeElement{
+					{
+						elementType: calendar.TypeWeekDay,
+						value:       0,
+						subElements: []*treeElement{
+							{
+								elementType: calendar.TypeHour,
+								value:       3,
+								subElements: []*treeElement{
+									{
+										elementType: calendar.TypeMinute,
+										value:       30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				elementType: calendar.TypeDay,
+				value:       2,
+				subElements: []*treeElement{
+					{
+						elementType: calendar.TypeWeekDay,
+						value:       0,
+						subElements: []*treeElement{
+							{
+								elementType: calendar.TypeHour,
+								value:       3,
+								subElements: []*treeElement{
+									{
+										elementType: calendar.TypeMinute,
+										value:       30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				elementType: calendar.TypeDay,
+				value:       3,
+				subElements: []*treeElement{
+					{
+						elementType: calendar.TypeWeekDay,
+						value:       0,
+						subElements: []*treeElement{
+							{
+								elementType: calendar.TypeHour,
+								value:       3,
+								subElements: []*treeElement{
+									{
+										elementType: calendar.TypeMinute,
+										value:       30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				elementType: calendar.TypeDay,
+				value:       4,
+				subElements: []*treeElement{
+					{
+						elementType: calendar.TypeWeekDay,
+						value:       0,
+						subElements: []*treeElement{
+							{
+								elementType: calendar.TypeHour,
+								value:       3,
+								subElements: []*treeElement{
+									{
+										elementType: calendar.TypeMinute,
+										value:       30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				elementType: calendar.TypeDay,
+				value:       5,
+				subElements: []*treeElement{
+					{
+						elementType: calendar.TypeWeekDay,
+						value:       0,
+						subElements: []*treeElement{
+							{
+								elementType: calendar.TypeHour,
+								value:       3,
+								subElements: []*treeElement{
+									{
+										elementType: calendar.TypeMinute,
+										value:       30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				elementType: calendar.TypeDay,
+				value:       6,
+				subElements: []*treeElement{
+					{
+						elementType: calendar.TypeWeekDay,
+						value:       0,
+						subElements: []*treeElement{
+							{
+								elementType: calendar.TypeHour,
+								value:       3,
+								subElements: []*treeElement{
+									{
+										elementType: calendar.TypeMinute,
+										value:       30,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}},
 	}
 
 	for _, testItem := range testData {
