@@ -57,6 +57,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
       * [schedule\-permission](#schedule-permission)
       * [schedule](#schedule)
     * [Scheduling commands](#scheduling-commands)
+    * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
   * [Configuration file reference](#configuration-file-reference)
   * [Appendix](#appendix)
   * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
@@ -73,11 +74,11 @@ Since version 0.6.0, resticprofile no longer needs python installed on your mach
 
 It's been actively tested on macOS X and Linux, and regularly tested on Windows.
 
-**This is at _beta_ stage. Please don't use it in production yet. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
+**This is at _beta_ stage. Please avoid using it in production. Or at least test carefully first. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
 ## Installation (macOS, Linux & other unixes)
 
-Here's a simple script to download the binary automatically for you. It works on mac OS X, FreeBSD, OpenBSD and Linux:
+Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD, OpenBSD and Linux:
 
 ```
 $ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
@@ -893,6 +894,15 @@ Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@
 2020/07/23 17:13:42 scheduled job test1/check removed
 ```
 
+### Changing schedule-permission from user to system, or system to user
+
+If you need to change the permission of a schedule, **please be sure to `unschedule` the profile before**.
+
+This order is important:
+
+- `unschedule` the job first. resticprofile does **not** keep track of how your profile **was** installed, so you have to remove the schedule first
+- now you can change your permission (`user` to `system`, or `system` to `user`)
+- `schedule` your updated profile
 
 ## Configuration file reference
 
