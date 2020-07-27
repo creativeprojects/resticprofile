@@ -96,6 +96,11 @@ func statusJobs(configs []*config.ScheduleConfig) error {
 				clog.Warningf("service %s/%s not found", scheduleConfig.Title(), scheduleConfig.SubTitle())
 				continue
 			}
+			if errors.Is(err, schedule.ErrorServiceNotRunning) {
+				// Display a warning and keep going
+				clog.Warningf("service %s/%s is not running", scheduleConfig.Title(), scheduleConfig.SubTitle())
+				continue
+			}
 			return fmt.Errorf("error querying status of job %s/%s: %w",
 				scheduleConfig.Title(),
 				scheduleConfig.SubTitle(),

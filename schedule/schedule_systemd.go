@@ -4,6 +4,7 @@ package schedule
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -12,6 +13,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -22,12 +24,13 @@ const (
 	commandEnable  = "enable"
 	commandDisable = "disable"
 	commandStatus  = "status"
+	commandReload  = "daemon-reload"
 	flagUserUnit   = "--user"
 
 	// https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
+	codeStatusNotRunning   = 3
 	codeStatusUnitNotFound = 4
-	// undocumented
-	codeStopUnitNotFound = 5
+	codeStopUnitNotFound   = 5 // undocumented
 )
 
 // Init verifies systemd is available on this system
@@ -73,6 +76,17 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		return err
 	}
 
+	if unitType == systemd.SystemUnit {
+		// tell systemd we've changed some system configuration files
+		cmd := exec.Command(systemctlBin, commandReload)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+
 	timerName := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 
 	// enable the job
@@ -81,10 +95,16 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		return err
 	}
 
-	// start the job
-	err = runSystemctlCommand(timerName, commandStart, unitType)
-	if err != nil {
-		return err
+	// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
+	message := fmt.Sprintf(`
+Scheduled job %s/%s will be enabled after the next reboot.
+You can avoid a reboot but Systemd needs to start it right now.
+Do you want to run a %s now?`, j.config.Title(), j.config.SubTitle(), j.config.SubTitle())
+	if term.AskYesNo(os.Stdin, message, true) {
+		err = runSystemctlCommand(timerName, commandStart, unitType)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -165,6 +185,9 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) e
 	err := cmd.Run()
 	if command == commandStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
 		return ErrorServiceNotFound
+	}
+	if command == commandStatus && cmd.ProcessState.ExitCode() == codeStatusNotRunning {
+		return ErrorServiceNotRunning
 	}
 	if command == commandStop && cmd.ProcessState.ExitCode() == codeStopUnitNotFound {
 		return ErrorServiceNotFound

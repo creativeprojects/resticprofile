@@ -33,10 +33,11 @@ test2:
     inherit: default
     backup:
         source: ./
-        schedule: "*:05,25,45"
+        schedule: "*:05,20,35,50"
         schedule-permission: system
     check:
         schedule: "*-*-2"
+        schedule-permission: system
 
 self:
     inherit: default
