@@ -4,11 +4,13 @@ package schedule
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
@@ -16,6 +18,7 @@ import (
 
 const (
 	systemdBin     = "systemd"
+	journalctlBin  = "journalctl"
 	systemctlBin   = "systemctl"
 	commandStart   = "start"
 	commandStop    = "stop"
@@ -160,11 +163,20 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 
 // displayStatus of a systemd service/timer
 func (j *Job) displayStatus(command string) error {
+	timerName := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {
-		return runSystemctlCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.SystemUnit)
+		err := runJournalCtlCommand(timerName, systemd.SystemUnit)
+		if err != nil {
+			clog.Warning("cannot read system logs: %v", err)
+		}
+		return runSystemctlCommand(timerName, commandStatus, systemd.SystemUnit)
 	}
-	return runSystemctlCommand(systemd.GetTimerFile(j.config.Title(), j.config.SubTitle()), commandStatus, systemd.UserUnit)
+	err := runJournalCtlCommand(timerName, systemd.UserUnit)
+	if err != nil {
+		clog.Warning("cannot read user logs: %v", err)
+	}
+	return runSystemctlCommand(timerName, commandStatus, systemd.UserUnit)
 }
 
 func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) error {
@@ -187,5 +199,19 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) e
 	if command == commandStop && cmd.ProcessState.ExitCode() == codeStopUnitNotFound {
 		return ErrorServiceNotFound
 	}
+	return err
+}
+
+func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
+	timerName = strings.TrimSuffix(timerName, ".timer")
+	args := []string{"--since", "1 month ago", "--no-pager", "--priority", "err", "--unit", timerName}
+	if unitType == systemd.UserUnit {
+		args = append(args, flagUserUnit)
+	}
+	cmd := exec.Command(journalctlBin, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	fmt.Println("")
 	return err
 }
