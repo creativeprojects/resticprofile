@@ -138,7 +138,8 @@ func (r *resticWrapper) runInitialize() error {
 	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
 	rCommand := r.prepareCommand(constants.CommandInit, args)
-	rCommand.displayStderr = false
+	// don't display any error
+	rCommand.stderr = nil
 	return runShellCommand(rCommand)
 }
 
@@ -182,8 +183,9 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 
 	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
 	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan)
-	// stdout is coming from the default terminal
+	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()
+	rCommand.stderr = term.GetErrorOutput()
 
 	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.UseStdin {
 		clog.Debug("redirecting stdin to the backup")

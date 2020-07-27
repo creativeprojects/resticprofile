@@ -10,14 +10,14 @@ import (
 )
 
 type shellCommandDefinition struct {
-	command       string
-	args          []string
-	env           []string
-	displayStderr bool
-	useStdin      bool
-	stdout        io.Writer
-	dryRun        bool
-	sigChan       chan os.Signal
+	command  string
+	args     []string
+	env      []string
+	useStdin bool
+	stdout   io.Writer
+	stderr   io.Writer
+	dryRun   bool
+	sigChan  chan os.Signal
 }
 
 // newShellCommand creates a new shell command definition
@@ -26,14 +26,14 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 		env = make([]string, 0)
 	}
 	return shellCommandDefinition{
-		command:       command,
-		args:          args,
-		env:           env,
-		displayStderr: true,
-		useStdin:      false,
-		stdout:        os.Stdout,
-		dryRun:        dryRun,
-		sigChan:       sigChan,
+		command:  command,
+		args:     args,
+		env:      env,
+		useStdin: false,
+		stdout:   os.Stdout,
+		stderr:   os.Stderr,
+		dryRun:   dryRun,
+		sigChan:  sigChan,
 	}
 }
 
@@ -49,9 +49,7 @@ func runShellCommand(command shellCommandDefinition) error {
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
 
 	shellCmd.Stdout = command.stdout
-	if command.displayStderr {
-		shellCmd.Stderr = os.Stderr
-	}
+	shellCmd.Stderr = command.stderr
 
 	if command.useStdin {
 		shellCmd.Stdin = os.Stdin

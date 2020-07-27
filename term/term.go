@@ -12,6 +12,7 @@ import (
 
 var (
 	terminalOutput io.Writer = os.Stdout
+	errorOutput    io.Writer = os.Stderr
 )
 
 // AskYesNo prompts the user for a message asking for a yes/no answer
@@ -79,6 +80,22 @@ func SetOutput(w io.Writer) {
 // GetOutput returns the default output of the Print* functions
 func GetOutput() io.Writer {
 	return terminalOutput
+}
+
+// SetErrorOutput changes the error output for the Print* functions
+func SetErrorOutput(w io.Writer) {
+	errorOutput = w
+}
+
+// GetErrorOutput returns the error output of the Print* functions
+func GetErrorOutput() io.Writer {
+	return errorOutput
+}
+
+// SetAllOutput changes the default and error output for the Print* functions
+func SetAllOutput(w io.Writer) {
+	terminalOutput = w
+	errorOutput = w
 }
 
 // Print formats using the default formats for its operands and writes to standard output.

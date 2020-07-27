@@ -80,7 +80,7 @@ func main() {
 		setupRemoteLogger(client)
 
 		// also redirect the terminal through the client
-		term.SetOutput(term.NewRemoteTerm(client))
+		term.SetAllOutput(term.NewRemoteTerm(client))
 
 		// If this is running in elevated mode we'll need to send a finished signal
 		if flags.isChild {
@@ -98,7 +98,7 @@ func main() {
 			clog.Errorf("cannot open logfile: %s", err)
 		} else {
 			// also redirect all terminal output
-			term.SetOutput(file)
+			term.SetAllOutput(file)
 			// only close the file at the end if the logger opened it properly
 			defer file.Close()
 		}
