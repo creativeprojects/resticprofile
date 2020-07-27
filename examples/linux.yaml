@@ -28,7 +28,6 @@ test1:
         schedule: "*:00,15,30,45"
         schedule-permission: user
         schedule-log: backup-test1.log
-        run-after: "chown -R $SUDO_USER $HOME/.cache/restic /tmp/backup"
     check:
         schedule: "*-*-1"
         schedule-permission: user
@@ -42,6 +41,7 @@ test2:
         schedule: "*:05,20,35,50"
         schedule-permission: system
         schedule-log: backup-test2.log
+        run-after: "chown -R $SUDO_USER $HOME/.cache/restic /tmp/backup"
     check:
         schedule: "*-*-2"
         schedule-permission: system

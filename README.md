@@ -55,6 +55,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Scheduled backups (please note this is work in progress for version 0\.9\.0)](#scheduled-backups-please-note-this-is-work-in-progress-for-version-090)
     * [Schedule configuration](#schedule-configuration)
       * [schedule\-permission](#schedule-permission)
+      * [schedule\-log](#schedule-log)
       * [schedule](#schedule)
     * [Scheduling commands](#scheduling-commands)
     * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
@@ -62,10 +63,12 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Appendix](#appendix)
   * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
     * [systemd calendars](#systemd-calendars)
+    * [First time schedule](#first-time-schedule)
   * [Using resticprofile and launchd on macOS](#using-resticprofile-and-launchd-on-macos)
     * [User agent](#user-agent)
       * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
     * [Daemon](#daemon)
+
 
 
 ## Requirements

@@ -23,8 +23,10 @@ Description={{ .JobDescription }}
 Type=oneshot
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
-{{ if .Environment }}Environment="{{ .Environment }}"{{ end }}
 {{ if .Nice }}Nice={{ .Nice }}{{ end }}
+{{ range .Environment -}}
+Environment="{{ . }}"
+{{ end -}}
 `
 
 	systemdUnitBackupTimerTmpl = `[Unit]
@@ -60,7 +62,7 @@ type TemplateInfo struct {
 	OnCalendar       []string
 	SystemdProfile   string
 	Nice             int
-	Environment      string
+	Environment      []string
 }
 
 // Generate systemd unit
@@ -77,10 +79,14 @@ func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription
 		}
 	}
 
-	environment := ""
+	environment := make([]string, 0, 2)
 	// add $HOME to the environment variables (as a fallback if not defined in profile)
 	if home, err := os.UserHomeDir(); err == nil {
-		environment = fmt.Sprintf("HOME=%s", home)
+		environment = append(environment, fmt.Sprintf("HOME=%s", home))
+	}
+	// also add $SUDO_USER to env variables
+	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
+		environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
 	}
 
 	info := TemplateInfo{
