@@ -291,6 +291,8 @@ source = [ "/" ]
 # if scheduled, will run every dat at midnight
 schedule = "daily"
 schedule-permission = "system"
+# run this after a backup to share a repository between a user and root (via sudo)
+run-after = "chown -R $SUDO_USER $HOME/.cache/restic /backup"
 
 # retention policy for profile root
 [root.retention]
@@ -328,7 +330,7 @@ source = [ "./src" ]
 check-before = true
 # will only run these scripts before and after a backup
 run-before = [ "echo Starting!", "ls -al ./src" ]
-run-after = "echo All Done!"
+run-after = "sync"
 # if scheduled, will run every 30 minutes
 schedule = "*:0,30"
 schedule-permission = "user"
