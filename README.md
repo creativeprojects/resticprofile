@@ -595,12 +595,13 @@ which mean you can schedule backup, retention (`forget` command) and repository 
 
 ### Schedule configuration
 
-The schedule configuration consists of two parameters which can be added on each profile:
+The schedule configuration consists of a few parameters which can be added on each profile:
 
 ```ini
 [profile.backup]
-schedule-permission = "system"
 schedule = "*:00,30"
+schedule-permission = "system"
+schedule-log = "profile-backup.log"
 ```
 
 
@@ -613,7 +614,11 @@ schedule = "*:00,30"
 
 * `system`: if you need to access some system or protected files. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
 
-* *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user)
+* *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user) and fallback to `user`
+
+#### schedule-log
+
+Allow to redirect all output from resticprofile and restic to a file
 
 #### schedule
 
@@ -847,6 +852,15 @@ Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofil
 2020/07/23 17:08:51 scheduled job test1/check created
 ```
 
+**Please note:**
+
+**I'm not entirely sure of the pattern, but be careful that your backup can start as soon as you schedule it.**
+
+When scheduling a profile for the very first time with systemd, it seems that systemd starts it straight away.
+
+If you reschedule it later (via the same `schedule` command) it seems to wait patiently until the next trigger.
+
+
 Status is directly given by systemctl:
 
 ```
@@ -964,6 +978,7 @@ Flags used by resticprofile only
 * **check-after**: true / false
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-log**: string
 
 Flags passed to the restic command line
 
@@ -993,6 +1008,7 @@ Flags used by resticprofile only
 * **after-backup**: true / false
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-log**: string
 
 Flags passed to the restic command line
 
@@ -1049,6 +1065,7 @@ Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-log**: string
 
 Flags passed to the restic command line
 
@@ -1299,6 +1316,17 @@ Normalized form: *-*-* 00:00:00
        (in UTC): Sat 2020-04-18 05:00:00 UTC
        From now: 10h left
 ```
+
+### First time schedule
+
+When you schedule a profile with the `schedule` command, under the hood resticprofile will
+- create the unit file
+- create the timer file
+- run `systemctl daemon-reload` (only if `schedule-permission` is set to `system`)
+- run `systemctl enable`
+- run `systemctl start`
+
+**Please note the first time you schedule a profile, the `systemctl start` command will trigger a immediate start of the profile. It usually means if you have a backup and a check, it will start both straight away. So far I haven't found a way of preventing it.**
 
 ## Using resticprofile and launchd on macOS
 
