@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -28,14 +29,19 @@ func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 	defer schedule.Close()
 
 	for _, scheduleConfig := range configs {
-		scheduleConfig.SetCommand(wd, binary, []string{
+		args := []string{
 			"--no-ansi",
 			"--config",
 			configFile,
 			"--name",
 			scheduleConfig.Title(),
-			getResticCommand(scheduleConfig.SubTitle()),
-		})
+		}
+		if runtime.GOOS != "darwin" && scheduleConfig.Logfile() != "" {
+			args = append(args, "--log", scheduleConfig.Logfile())
+		}
+		args = append(args, getResticCommand(scheduleConfig.SubTitle()))
+
+		scheduleConfig.SetCommand(wd, binary, args)
 		scheduleConfig.SetJobDescription(
 			fmt.Sprintf("resticprofile %s for profile %s in %s", scheduleConfig.SubTitle(), scheduleConfig.Title(), configFile))
 		scheduleConfig.SetTimerDescription(

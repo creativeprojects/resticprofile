@@ -12,6 +12,7 @@ type ScheduleConfig struct {
 	jobDescription   string
 	timerDescription string
 	nice             int
+	logfile          string
 }
 
 func (s *ScheduleConfig) Title() string {
@@ -70,4 +71,8 @@ func (s *ScheduleConfig) SetTimerDescription(description string) {
 
 func (s *ScheduleConfig) Nice() int {
 	return s.nice
+}
+
+func (s *ScheduleConfig) Logfile() string {
+	return s.logfile
 }

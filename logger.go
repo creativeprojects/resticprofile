@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/remote"
@@ -13,16 +14,16 @@ func setupRemoteLogger(client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupFileLogger(flags commandLineFlags) (*clog.FileHandler, error) {
-	fileHandler, err := clog.NewFileHandler(flags.logFile, "", log.LstdFlags)
+func setupFileLogger(flags commandLineFlags) (*os.File, error) {
+	file, err := os.OpenFile(flags.logFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		return nil, err
 	}
-	logger := newFilteredLogger(flags, fileHandler)
+	logger := newFilteredLogger(flags, clog.NewStandardLogHandler(file, "", log.LstdFlags))
 	// default logger added with level filtering
 	clog.SetDefaultLogger(logger)
-	// but return fileHandler (so we can close it at the end)
-	return fileHandler, nil
+	// and return the file handle (so we can close it at the end)
+	return file, nil
 }
 
 func setupConsoleLogger(flags commandLineFlags) {

@@ -44,6 +44,7 @@ type BackupSection struct {
 	FilesFrom          []string               `mapstructure:"files-from" argument:"files-from"`
 	Schedule           []string               `mapstructure:"schedule"`
 	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	ScheduleLog        string                 `mapstructure:"schedule-log"`
 	OtherFlags         map[string]interface{} `mapstructure:",remain"`
 }
 
@@ -54,6 +55,7 @@ type RetentionSection struct {
 	AfterBackup        bool                   `mapstructure:"after-backup"`
 	Schedule           []string               `mapstructure:"schedule"`
 	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	ScheduleLog        string                 `mapstructure:"schedule-log"`
 	OtherFlags         map[string]interface{} `mapstructure:",remain"`
 }
 
@@ -62,6 +64,7 @@ type RetentionSection struct {
 type OtherSectionWithSchedule struct {
 	Schedule           []string               `mapstructure:"schedule"`
 	SchedulePermission string                 `mapstructure:"schedule-permission"`
+	ScheduleLog        string                 `mapstructure:"schedule-log"`
 	OtherFlags         map[string]interface{} `mapstructure:",remain"`
 }
 
@@ -199,6 +202,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			permission:  p.Backup.SchedulePermission,
 			environment: p.Environment,
 			nice:        10, // hard-coded for now
+			logfile:     p.Backup.ScheduleLog,
 		}
 		configs = append(configs, config)
 	}
@@ -211,6 +215,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			permission:  p.Retention.SchedulePermission,
 			environment: p.Environment,
 			nice:        10, // hard-coded for now
+			logfile:     p.Retention.ScheduleLog,
 		}
 		configs = append(configs, config)
 	}
@@ -223,6 +228,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			permission:  p.Check.SchedulePermission,
 			environment: p.Environment,
 			nice:        10, // hard-coded for now
+			logfile:     p.Check.ScheduleLog,
 		}
 		configs = append(configs, config)
 	}

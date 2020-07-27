@@ -91,14 +91,16 @@ func main() {
 		}
 
 	} else if flags.logFile != "" {
-		fileHandler, err := setupFileLogger(flags)
+		file, err := setupFileLogger(flags)
 		if err != nil {
 			// back to a console logger
 			setupConsoleLogger(flags)
 			clog.Errorf("cannot open logfile: %s", err)
 		} else {
+			// also redirect all terminal output
+			term.SetOutput(file)
 			// only close the file at the end if the logger opened it properly
-			defer fileHandler.Close()
+			defer file.Close()
 		}
 
 	} else {
