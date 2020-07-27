@@ -4,7 +4,6 @@ package schedule
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -13,7 +12,6 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
-	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -71,7 +69,8 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		j.config.JobDescription(),
 		j.config.TimerDescription(),
 		j.config.Schedules(),
-		unitType)
+		unitType,
+		j.config.Nice())
 	if err != nil {
 		return err
 	}
@@ -96,16 +95,12 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	}
 
 	// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
-	message := fmt.Sprintf(`
-Scheduled job %s/%s will be enabled after the next reboot.
-You can avoid a reboot but Systemd needs to start it right now.
-Do you want to run a %s now?`, j.config.Title(), j.config.SubTitle(), j.config.SubTitle())
-	if term.AskYesNo(os.Stdin, message, true) {
-		err = runSystemctlCommand(timerName, commandStart, unitType)
-		if err != nil {
-			return err
-		}
+	err = runSystemctlCommand(timerName, commandStart, unitType)
+	if err != nil {
+		return err
 	}
+	// display a status after starting it
+	_ = runSystemctlCommand(timerName, commandStatus, unitType)
 
 	return nil
 }

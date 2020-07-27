@@ -41,20 +41,25 @@ func SetNice(priority int) error {
 	pid := 0
 
 	if priority < -20 || priority > 19 {
-		return fmt.Errorf("Unexpected priority value %d", priority)
+		return fmt.Errorf("unexpected priority value %d", priority)
+	}
+
+	currentPriority, _ := unix.Getpriority(unix.PRIO_PROCESS, 0)
+	if currentPriority == priority {
+		return nil
 	}
 
 	// Move ourselves to a new process group so that we can use the process
 	// group variants of Setpriority etc to affect all of our threads in one go
 	err = unix.Setpgid(pid, 0)
 	if err != nil {
-		return fmt.Errorf("Error setting process group: %v", err)
+		return fmt.Errorf("error setting process group: %v", err)
 	}
 
-	clog.Debugf("Setting process priority to %d", priority)
+	clog.Debugf("setting process priority to %d", priority)
 	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
 	if err != nil {
-		return fmt.Errorf("Error setting process priority: %v", err)
+		return fmt.Errorf("error setting process priority: %v", err)
 	}
 	return nil
 }
@@ -81,7 +86,7 @@ func SetIONice(class, value int) error {
 	if value < 0 || value > 7 {
 		return fmt.Errorf("SetIONice: expected value from 0 to 7, found %d", value)
 	}
-	clog.Debugf("Setting IO priority class to %d, level %d", class, value)
+	clog.Debugf("setting IO priority class to %d, level %d", class, value)
 	// Try group of processes first
 	err := setIOPrio(IOPrioWhoPGRP, IOPrioClass(class), value)
 	if err != nil {
@@ -131,15 +136,15 @@ func setIOPrio(who IOPrioWho, class IOPrioClass, value int) error {
 }
 
 func errnoToError(errno syscall.Errno) error {
-	message := "Unspecified error"
+	message := "unspecified error"
 
 	switch errno {
 	case unix.EINVAL:
-		message = "Invalid class or value"
+		message = "invalid class or value"
 	case unix.EPERM:
-		message = "Permission denied"
+		message = "permission denied"
 	case unix.ESRCH:
-		message = "Process, group of processes, or user processes not found"
+		message = "process, group of processes, or user processes not found"
 	}
 	return errors.New(message)
 }

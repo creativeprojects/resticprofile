@@ -198,6 +198,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			schedules:   p.Backup.Schedule,
 			permission:  p.Backup.SchedulePermission,
 			environment: p.Environment,
+			nice:        10, // hard-coded for now
 		}
 		configs = append(configs, config)
 	}
@@ -209,6 +210,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			schedules:   p.Retention.Schedule,
 			permission:  p.Retention.SchedulePermission,
 			environment: p.Environment,
+			nice:        10, // hard-coded for now
 		}
 		configs = append(configs, config)
 	}
@@ -220,6 +222,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			schedules:   p.Check.Schedule,
 			permission:  p.Check.SchedulePermission,
 			environment: p.Environment,
+			nice:        10, // hard-coded for now
 		}
 		configs = append(configs, config)
 	}

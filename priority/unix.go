@@ -17,13 +17,13 @@ func SetNice(priority int) error {
 	pid := 0
 
 	if priority < -20 || priority > 19 {
-		return fmt.Errorf("Unexpected priority value %d", priority)
+		return fmt.Errorf("unexpected priority value %d", priority)
 	}
 
-	clog.Debugf("Setting process priority to %d", priority)
+	clog.Debugf("setting process priority to %d", priority)
 	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
 	if err != nil {
-		return fmt.Errorf("Error setting process priority: %v", err)
+		return fmt.Errorf("error setting process priority: %v", err)
 	}
 	return nil
 }

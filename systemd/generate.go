@@ -23,6 +23,8 @@ Description={{ .JobDescription }}
 Type=oneshot
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
+{{ if .Environment }}Environment="{{ .Environment }}"{{ end }}
+{{ if .Nice }}Nice={{ .Nice }}{{ end }}
 `
 
 	systemdUnitBackupTimerTmpl = `[Unit]
@@ -57,10 +59,12 @@ type TemplateInfo struct {
 	CommandLine      string
 	OnCalendar       []string
 	SystemdProfile   string
+	Nice             int
+	Environment      string
 }
 
 // Generate systemd unit
-func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType) error {
+func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType, nice int) error {
 	var err error
 	systemdProfile := GetServiceFile(title, subTitle)
 	timerProfile := GetTimerFile(title, subTitle)
@@ -73,6 +77,12 @@ func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription
 		}
 	}
 
+	environment := ""
+	// add $HOME to the environment variables (as a fallback if not defined in profile)
+	if home, err := os.UserHomeDir(); err == nil {
+		environment = fmt.Sprintf("HOME=%s", home)
+	}
+
 	info := TemplateInfo{
 		JobDescription:   jobDescription,
 		TimerDescription: timerDescription,
@@ -80,6 +90,8 @@ func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription
 		CommandLine:      commandLine,
 		OnCalendar:       onCalendar,
 		SystemdProfile:   systemdProfile,
+		Nice:             nice,
+		Environment:      environment,
 	}
 
 	var data bytes.Buffer

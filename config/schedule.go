@@ -11,6 +11,7 @@ type ScheduleConfig struct {
 	environment      map[string]string
 	jobDescription   string
 	timerDescription string
+	nice             int
 }
 
 func (s *ScheduleConfig) Title() string {
@@ -65,4 +66,8 @@ func (s *ScheduleConfig) SetJobDescription(description string) {
 
 func (s *ScheduleConfig) SetTimerDescription(description string) {
 	s.timerDescription = description
+}
+
+func (s *ScheduleConfig) Nice() int {
+	return s.nice
 }
