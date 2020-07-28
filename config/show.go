@@ -13,6 +13,7 @@ const (
 	templateIndent = "    " // 4 spaces
 )
 
+// ShowStruct write out to w a human readable text representation of the orig parameter
 func ShowStruct(w io.Writer, orig interface{}) error {
 	return showSubStruct(w, orig, "")
 }
@@ -32,7 +33,7 @@ func showSubStruct(outputWriter io.Writer, orig interface{}, prefix string) erro
 		return fmt.Errorf("unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct)
 	}
 
-	// make a temporary buffer to display sub structs and maps after direct properties (which are buffered through a tabWriter)
+	// make a temporary buffer to display sub struct and map after direct properties (which are buffered through a tabWriter)
 	buffer := bufio.NewWriter(outputWriter)
 	tabWriter := tabwriter.NewWriter(outputWriter, 0, 2, 2, ' ', 0)
 	prefix = addIndentation(prefix)
@@ -115,6 +116,10 @@ func showMap(tabWriter io.Writer, prefix string, valueOf reflect.Value) {
 }
 
 func showKeyValue(tabWriter io.Writer, prefix, key string, valueOf reflect.Value) {
+	// hard-coded case for "inherit": we don't need to display it
+	if key == "inherit" {
+		return
+	}
 	// This is reusing the stringifyValue function used to build the restic flags
 	convert, ok := stringifyValue(valueOf)
 	if ok {
