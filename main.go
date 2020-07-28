@@ -70,9 +70,6 @@ func main() {
 		return
 	}
 
-	// keep this one last if possible (so it will be first at the end)
-	defer showPanicData()
-
 	// setting up the logger - we can start sending messages right after
 	if flags.isChild {
 		// use a remote logger
@@ -99,7 +96,7 @@ func main() {
 		} else {
 			// also redirect all terminal output
 			term.SetAllOutput(file)
-			// only close the file at the end if the logger opened it properly
+			// close the log file at the end
 			defer file.Close()
 		}
 
@@ -107,6 +104,10 @@ func main() {
 		// Use the console logger
 		setupConsoleLogger(flags)
 	}
+
+	// keep this one last if possible (so it will be first at the end)
+	defer showPanicData()
+
 	banner()
 
 	// Deprecated in version 0.7.0
@@ -356,7 +357,7 @@ func showPanicData() {
 		message := `
 ===============================================================
 uh-oh! resticprofile crashed miserably :-(
-Please can you open an issue on github including these details:
+Can you please open an issue on github including these details:
 ===============================================================
 `
 		fmt.Fprintf(os.Stderr, message)

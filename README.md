@@ -690,7 +690,7 @@ self:
         source: "."
         schedule:
         - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
-        - "Sat,Sun 0,12:*"         # twice a day on week-ends
+        - "Sat,Sun 0,12:00"        # twice a day on week-ends
         schedule-permission: user
     retention:
         schedule:

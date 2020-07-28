@@ -36,7 +36,8 @@ import (
 //    - on specific days (1 to 31)
 
 const (
-	tasksPath = `\resticprofile backup\`
+	tasksPath   = `\resticprofile backup\`
+	maxTriggers = 60
 )
 
 // Permission is a choice between User and System
@@ -358,7 +359,17 @@ func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) 
 			true)
 		return
 	}
-	clog.Warning("createWeeklyTrigger fallback")
+
+	if len(recurrences) > maxTriggers {
+		clog.Warningf("this task would need more than %d triggers (%d in total), please rethink your triggers definition", maxTriggers, len(recurrences))
+		return
+	}
+	// install them all
+	for _, recurrence := range recurrences {
+		task.AddWeeklyTrigger(
+			taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+			1, emptyPeriod, recurrence)
+	}
 }
 
 func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
