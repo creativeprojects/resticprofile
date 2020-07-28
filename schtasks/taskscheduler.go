@@ -320,7 +320,15 @@ func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 			true)
 		return
 	}
-	clog.Warning("createDailyTrigger fallback")
+
+	if len(recurrences) > maxTriggers {
+		clog.Warningf("this task would need more than %d triggers (%d in total), please rethink your triggers definition", maxTriggers, len(recurrences))
+		return
+	}
+	// install them all
+	for _, recurrence := range recurrences {
+		task.AddDailyTrigger(1, emptyPeriod, recurrence)
+	}
 }
 
 func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
@@ -381,8 +389,13 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 		clog.Warningf("cannot convert schedule '%s' into a monthly trigger", schedule.String())
 		return
 	}
-	// Is it only once per 24h?
-	if len(recurrences) == 1 {
+
+	if len(recurrences) > maxTriggers {
+		clog.Warningf("this task would need more than %d triggers (%d in total), please rethink your triggers definition", maxTriggers, len(recurrences))
+		return
+	}
+	// install them all
+	for _, recurrence := range recurrences {
 		if schedule.WeekDay.HasValue() && schedule.Day.HasValue() {
 			clog.Warningf("task scheduler does not support a day of the month and a day of the week in the same trigger: %s", schedule.String())
 			return
@@ -394,7 +407,7 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 				taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
 				true,
 				emptyPeriod,
-				recurrences[0],
+				recurrence,
 			)
 			return
 		}
@@ -403,17 +416,15 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 		// 	convertDaysToBitmap(schedule.Day.GetRangeValues()),
 		// 	taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
 		// 	emptyPeriod,
-		// 	recurrences[0],
+		// 	recurrence,
 		// )
 		addMonthlyTrigger(task,
 			taskmaster.DayOfMonth(convertDaysToBitmap(schedule.Day.GetRangeValues())),
 			taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
 			emptyPeriod,
-			recurrences[0],
+			recurrence,
 		)
-		return
 	}
-	clog.Warning("createMonthlyTrigger fallback")
 }
 
 // Delete a task

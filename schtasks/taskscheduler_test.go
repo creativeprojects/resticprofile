@@ -72,6 +72,11 @@ func TestCompileDifferences(t *testing.T) {
 			[]time.Duration{12 * time.Hour},
 			[]time.Duration{12 * time.Hour},
 		},
+		{
+			"mon *-11..12-* 1,13:00",
+			[]time.Duration{12 * time.Hour},
+			[]time.Duration{12 * time.Hour},
+		},
 	}
 
 	for _, testItem := range testData {
