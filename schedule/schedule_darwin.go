@@ -20,6 +20,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/term"
 	"howett.net/plist"
 )
 
@@ -124,20 +125,51 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 		return err
 	}
 
+	// ask the user if he want to start the service now
+	name := getJobName(j.config.Title(), j.config.SubTitle())
+	message := `
+By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
+You have to start it manually the first time to accept the requests for access:
+
+%% %s %s %s
+
+Do you want to start it now?`
+	answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, commandStart, name), true)
+	if answer {
+		// start the service
+		cmd := exec.Command(launchctlBin, commandStart, name)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 	name := getJobName(j.config.Title(), j.config.SubTitle())
+	logfile := j.config.Logfile()
+	if logfile == "" {
+		logfile = name + ".log"
+	}
+
+	// Add path to env variables
+	env := make(map[string]string, 1)
+	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
+		env["PATH"] = pathEnv
+	}
+
 	job := &LaunchJob{
 		Label:                 name,
 		Program:               j.config.Command(),
-		ProgramArguments:      append([]string{j.config.Command()}, j.config.Arguments()...),
-		EnvironmentVariables:  j.config.Environment(),
-		StandardOutPath:       name + ".log",
-		StandardErrorPath:     name + ".log",
+		ProgramArguments:      append([]string{j.config.Command(), "-v"}, j.config.Arguments()...),
+		StandardOutPath:       logfile,
+		StandardErrorPath:     logfile,
 		WorkingDirectory:      j.config.WorkingDirectory(),
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
+		EnvironmentVariables:  env,
 	}
 
 	filename, err := getFilename(name, j.getSchedulePermission())

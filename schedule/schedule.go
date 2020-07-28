@@ -30,6 +30,7 @@ type Config interface {
 	Arguments() []string
 	Environment() map[string]string
 	Nice() int
+	Logfile() string
 }
 
 // Job scheduler

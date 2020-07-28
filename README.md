@@ -58,6 +58,9 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
       * [schedule\-log](#schedule-log)
       * [schedule](#schedule)
     * [Scheduling commands](#scheduling-commands)
+      * [Examples of scheduling commands under Windows](#examples-of-scheduling-commands-under-windows)
+      * [Examples of scheduling commands under Linux](#examples-of-scheduling-commands-under-linux)
+      * [Examples of scheduling commands under macOS](#examples-of-scheduling-commands-under-macos)
     * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
   * [Configuration file reference](#configuration-file-reference)
   * [Appendix](#appendix)
@@ -709,6 +712,8 @@ Please note the display of the status command will be OS dependant.
 
 If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
 
+#### Examples of scheduling commands under Windows
+
 Example of the schedule command under Windows (with git bash):
 
 ```
@@ -807,6 +812,8 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 2020/07/22 21:34:51 scheduled job self/retention removed
 ```
 
+#### Examples of scheduling commands under Linux
+
 With this example of configuration for Linux:
 
 ```yaml
@@ -857,13 +864,35 @@ Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofil
 2020/07/23 17:08:51 scheduled job test1/check created
 ```
 
-**Please note:**
 
-**I'm not entirely sure of the pattern, but be careful that your backup can start as soon as you schedule it.**
+#### Examples of scheduling commands under macOS
 
-When scheduling a profile for the very first time with systemd, it seems that systemd starts it straight away.
+Under macOS resticprofile is asking if you want to start a profile right now so you can give the access needed to the agent.
 
-If you reschedule it later (via the same `schedule` command) it seems to wait patiently until the next trigger.
+```
+% resticprofile -v -c examples/private/azure.yaml -n self schedule
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:0,15,30,45:00
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Tue Jul 28 23:00:00 BST 2020
+       (in UTC): Tue Jul 28 22:00:00 UTC 2020
+       From now: 2m34s left
+
+
+By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
+You have to start it manually the first time to accept the requests for access:
+
+% launchctl start local.resticprofile.self.backup
+
+Do you want to start it now? (Y/n):
+2020/07/28 22:57:26 scheduled job self/backup created
+```
+
+Right after you started the profile, you should get some popup asking you to grant access to various thing. If you backup your files to an external repository on a network you will get this request:
+
+!["resticprofile" would like to access files on a network volume](https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png)
 
 
 The `status` command shows a combination of `journalctl` displaying errors (only) in the last month and `systemctl status`:

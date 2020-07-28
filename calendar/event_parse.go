@@ -7,14 +7,10 @@ import (
 )
 
 const (
-	unit             = "[0-9*.,]+"
-	weekday          = "([a-zA-Z0-9*.,]+)"
-	datePattern      = "(" + unit + "-|)(" + unit + ")-(" + unit + ")" // year or nothing then month then day
-	timePattern      = "(" + unit + "):(" + unit + ")(:" + unit + "|)" // hour, minute then second or nothing
-	yearMonthDay     = "(" + unit + ")-(" + unit + ")-(" + unit + ")"
-	monthDay         = "(" + unit + ")-(" + unit + ")"
-	hourMinuteSecond = "(" + unit + "):(" + unit + "):(" + unit + ")"
-	hourMinute       = "(" + unit + "):(" + unit + ")"
+	unit        = "[0-9*.,]+"
+	weekday     = "([a-zA-Z0-9*.,]+)"
+	datePattern = "(" + unit + "-|)(" + unit + ")-(" + unit + ")" // year or nothing then month then day
+	timePattern = "(" + unit + "):(" + unit + ")(:" + unit + "|)" // hour, minute then second or nothing
 )
 
 type parseFunc func(e *Event, match []string) error
