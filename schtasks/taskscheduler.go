@@ -409,7 +409,7 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 				emptyPeriod,
 				recurrence,
 			)
-			return
+			continue
 		}
 		// Temporary fix: https://github.com/capnspacehook/taskmaster/issues/10
 		// task.AddMonthlyTrigger(
