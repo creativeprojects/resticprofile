@@ -707,7 +707,7 @@ resticprofile accepts these internal commands:
 
 Please note the display of the status command will be OS dependant.
 
-If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler.
+If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
 
 Example of the schedule command under Windows (with git bash):
 
@@ -724,8 +724,8 @@ Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
 
 Analyzing backup schedule 2/2
 =================================
-  Original form: Sat,Sun 0,12:*
-Normalized form: Sat,Sun *-*-* 00,12:*:00
+  Original form: Sat,Sun 0,12:00
+Normalized form: Sat,Sun *-*-* 00,12:00:00
     Next elapse: Sat Jul 25 00:00:00 BST 2020
        (in UTC): Fri Jul 24 23:00:00 UTC 2020
        From now: 50h31m52s left
@@ -866,7 +866,7 @@ When scheduling a profile for the very first time with systemd, it seems that sy
 If you reschedule it later (via the same `schedule` command) it seems to wait patiently until the next trigger.
 
 
-Status is directly given by systemctl:
+The `status` command shows a combination of `journalctl` displaying errors (only) in the last month and `systemctl status`:
 
 ```
 $ resticprofile -c examples/linux.yaml -n test1 status
@@ -875,16 +875,22 @@ Analyzing backup schedule 1/1
 =================================
   Original form: *:00,15,30,45
 Normalized form: *-*-* *:00,15,30,45:00
-    Next elapse: Thu 2020-07-23 17:15:00 BST
-       (in UTC): Thu 2020-07-23 16:15:00 UTC
-       From now: 2min 52s left
+    Next elapse: Tue 2020-07-28 15:15:00 BST
+       (in UTC): Tue 2020-07-28 14:15:00 UTC
+       From now: 4min 44s left
+
+-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
+Jul 27 20:48:01 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
+Jul 27 21:00:55 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
+Jul 27 21:15:34 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
 
 ● resticprofile-backup@profile-test1.timer - backup timer for profile test1 in examples/linux.yaml
    Loaded: loaded (/home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer; enabled; vendor preset: enabled)
-   Active: active (waiting) since Thu 2020-07-23 17:08:51 BST; 3min 16s ago
-  Trigger: Thu 2020-07-23 17:15:00 BST; 2min 52s left
+   Active: active (waiting) since Tue 2020-07-28 15:10:06 BST; 8s ago
+  Trigger: Tue 2020-07-28 15:15:00 BST; 4min 44s left
 
-Jul 23 17:08:51 Desktop76 systemd[2502]: Started backup timer for profile test1 in examples/linux.yaml.
+Jul 28 15:10:06 Desktop76 systemd[2951]: Started backup timer for profile test1 in examples/linux.yaml.
+
 
 Analyzing check schedule 1/1
 =================================
@@ -892,14 +898,18 @@ Analyzing check schedule 1/1
 Normalized form: *-*-01 00:00:00
     Next elapse: Sat 2020-08-01 00:00:00 BST
        (in UTC): Fri 2020-07-31 23:00:00 UTC
-       From now: 1 weeks 1 days left
+       From now: 3 days left
+
+-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
+Jul 27 19:39:59 Desktop76 systemd[2986]: Failed to start resticprofile check for profile test1 in examples/linux.yaml.
 
 ● resticprofile-check@profile-test1.timer - check timer for profile test1 in examples/linux.yaml
    Loaded: loaded (/home/user/.config/systemd/user/resticprofile-check@profile-test1.timer; enabled; vendor preset: enabled)
-   Active: active (waiting) since Thu 2020-07-23 17:08:51 BST; 3min 16s ago
-  Trigger: Sat 2020-08-01 00:00:00 BST; 1 weeks 1 days left
+   Active: active (waiting) since Tue 2020-07-28 15:10:07 BST; 7s ago
+  Trigger: Sat 2020-08-01 00:00:00 BST; 3 days left
 
-Jul 23 17:08:51 Desktop76 systemd[2502]: Started check timer for profile test1 in examples/linux.yaml.
+Jul 28 15:10:07 Desktop76 systemd[2951]: Started check timer for profile test1 in examples/linux.yaml.
+
 
 ```
 
