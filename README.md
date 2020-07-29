@@ -19,8 +19,8 @@ With resticprofile:
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
 * It can check that you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
+* **[new for v0.9.0]** You can generate cryptographically secure random keys to use as a restic key file
 * **[new for v0.9.0]** You can easily schedule backups, retentions and checks (works for *systemd*, *launchd* and *windows task scheduler*)
-* You can generate cryptographically secure random keys to use as a restic key file
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -52,7 +52,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Command line reference](#command-line-reference)
   * [Minimum memory required](#minimum-memory-required)
   * [Generating random keys](#generating-random-keys)
-  * [Scheduled backups (please note this is work in progress for version 0\.9\.0)](#scheduled-backups-please-note-this-is-work-in-progress-for-version-090)
+  * [Scheduled backups](#scheduled-backups)
     * [Schedule configuration](#schedule-configuration)
       * [schedule\-permission](#schedule-permission)
       * [schedule\-log](#schedule-log)
@@ -585,7 +585,7 @@ To generate a different size of key, you can specify the bytes length on the com
 $ resticprofile random-key 2048
 ```
 
-## Scheduled backups (please note this is work in progress for version 0.9.0)
+## Scheduled backups
 
 resticprofile is capable of managing scheduled backups for you:
 - using **systemd** where available (Linux and various unixes)
@@ -680,7 +680,7 @@ Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
 
 The `schedule` can be a string or an array of string (to allow for multiple schedules)
 
-Here's an example of a YAML configuration for Windows:
+Here's an example of a YAML configuration:
 
 ```yaml
 default:
@@ -696,8 +696,7 @@ self:
         - "Sat,Sun 0,12:00"        # twice a day on week-ends
         schedule-permission: user
     retention:
-        schedule:
-        - "sun 3:30"
+        schedule: "sun 3:30"
         schedule-permission: user
 ```
 
@@ -708,13 +707,13 @@ resticprofile accepts these internal commands:
 - unschedule
 - status
 
-Please note the display of the status command will be OS dependant.
-
-If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
+Please note the display of the `status` command will be OS dependant.
 
 #### Examples of scheduling commands under Windows
 
-Example of the schedule command under Windows (with git bash):
+If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
+
+Example of the `schedule` command under Windows (with git bash):
 
 ```
 $ resticprofile -c examples/windows.yaml -n self schedule
@@ -864,37 +863,6 @@ Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofil
 2020/07/23 17:08:51 scheduled job test1/check created
 ```
 
-
-#### Examples of scheduling commands under macOS
-
-Under macOS resticprofile is asking if you want to start a profile right now so you can give the access needed to the agent.
-
-```
-% resticprofile -v -c examples/private/azure.yaml -n self schedule
-
-Analyzing backup schedule 1/1
-=================================
-  Original form: *:0,15,30,45:00
-Normalized form: *-*-* *:00,15,30,45:00
-    Next elapse: Tue Jul 28 23:00:00 BST 2020
-       (in UTC): Tue Jul 28 22:00:00 UTC 2020
-       From now: 2m34s left
-
-
-By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
-You have to start it manually the first time to accept the requests for access:
-
-% launchctl start local.resticprofile.self.backup
-
-Do you want to start it now? (Y/n):
-2020/07/28 22:57:26 scheduled job self/backup created
-```
-
-Right after you started the profile, you should get some popup asking you to grant access to various thing. If you backup your files to an external repository on a network you will get this request:
-
-!["resticprofile" would like to access files on a network volume](https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png)
-
-
 The `status` command shows a combination of `journalctl` displaying errors (only) in the last month and `systemctl status`:
 
 ```
@@ -942,7 +910,7 @@ Jul 28 15:10:07 Desktop76 systemd[2951]: Started check timer for profile test1 i
 
 ```
 
-And unschedule:
+And `unschedule`:
 
 ```
 $ resticprofile -c examples/linux.yaml -n test1 unschedule
@@ -951,6 +919,42 @@ Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup
 Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer.
 2020/07/23 17:13:42 scheduled job test1/check removed
 ```
+
+#### Examples of scheduling commands under macOS
+
+macOS has a very tight protection system when running scheduled tasks (also called agents).
+
+Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task (it will consist on a few popup windows)
+
+Here's an example of scheduling a backup to Azure (which needs network access):
+
+```
+% resticprofile -v -c examples/private/azure.yaml -n self schedule
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:0,15,30,45:00
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Tue Jul 28 23:00:00 BST 2020
+       (in UTC): Tue Jul 28 22:00:00 UTC 2020
+       From now: 2m34s left
+
+
+By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
+You have to start it manually the first time to accept the requests for access:
+
+% launchctl start local.resticprofile.self.backup
+
+Do you want to start it now? (Y/n):
+2020/07/28 22:57:26 scheduled job self/backup created
+```
+
+Right after you started the profile, you should get some popup asking you to grant access to various files/folders/network.
+
+If you backup your files to an external repository on a network, you should get this popup window:
+
+!["resticprofile" would like to access files on a network volume](https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png)
+
 
 ### Changing schedule-permission from user to system, or system to user
 
@@ -1245,7 +1249,7 @@ stdin:
 ```
 
 Also here's an example of a configuration file in HCL:
-``` hcl
+```hcl
 global {
     priority = "low"
     ionice = true
@@ -1370,7 +1374,6 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 - run `systemctl enable`
 - run `systemctl start`
 
-**Please note the first time you schedule a profile, the `systemctl start` command will trigger a immediate start of the profile. It usually means if you have a backup and a check, it will start both straight away. So far I haven't found a way of preventing it.**
 
 ## Using resticprofile and launchd on macOS
 
@@ -1378,13 +1381,25 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 
 ### User agent
 
-A user agent is generated when you set `schedule-permission` to `user`. 
+A user agent is generated when you set `schedule-permission` to `user`.
 
 It consists of a `plist` file in the folder `~/Library/LaunchAgents`:
 
-A user agent **mostly** runs with the privileges of the user. But if you backup some specific files, like your contacts or your calendar for example, you will need to give more permissions to resticprofile **and** restic
+A user agent **mostly** runs with the privileges of the user. But if you backup some specific files, like your contacts or your calendar for example, you will need to give more permissions to resticprofile **and** restic.
 
-TODO _write up some information about FDA_
+For this to happen, you need to start the agent or daemon from a console window first (resticprofile will ask if you want to do so)
+
+If your profile is a backup profile called `remote`, the command to run manually is:
+
+```
+% launchctl start local.resticprofile.remote.backup
+```
+
+Once you grant the permission, the background agents/daemon will be able to run normally.
+
+There's some information in this thread: https://github.com/restic/restic/issues/2051
+
+*TODO: I'm going to try to compile a comprehensive how-to guide from all the information from the thread. Stay tuned!*
 
 #### Special case of schedule-permission=user with sudo
 
