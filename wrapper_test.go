@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -75,7 +76,7 @@ func TestPreProfileScriptFail(t *testing.T) {
 	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
 	wrapper := newResticWrapper("echo", false, false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
-	assert.EqualError(t, err, "exit status 1")
+	assert.EqualError(t, err, "run-before on profile 'name': exit status 1")
 }
 
 func TestPostProfileScriptFail(t *testing.T) {
@@ -83,7 +84,7 @@ func TestPostProfileScriptFail(t *testing.T) {
 	profile.RunAfter = []string{"exit 1"} // this should both work on unix shell and windows batch
 	wrapper := newResticWrapper("echo", false, false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
-	assert.EqualError(t, err, "exit status 1")
+	assert.EqualError(t, err, "run-after on profile 'name': exit status 1")
 }
 
 func TestRunEchoProfile(t *testing.T) {
@@ -100,7 +101,7 @@ func TestPostProfileAfterFail(t *testing.T) {
 	profile.RunAfter = []string{"echo failed > " + testFile}
 	wrapper := newResticWrapper("exit", false, false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
-	assert.EqualError(t, err, "exit status 1")
+	assert.EqualError(t, err, "1 on profile 'name': exit status 1")
 	assert.NoFileExistsf(t, testFile, "the run-after script should not have been running")
 	_ = os.Remove(testFile)
 }
@@ -112,7 +113,7 @@ func TestPostFailProfile(t *testing.T) {
 	profile.RunAfterFail = []string{"echo failed > " + testFile}
 	wrapper := newResticWrapper("exit", false, false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
-	assert.EqualError(t, err, "exit status 1")
+	assert.EqualError(t, err, "1 on profile 'name': exit status 1")
 	assert.FileExistsf(t, testFile, "the run-after-fail script has not been running")
 	_ = os.Remove(testFile)
 }
@@ -143,4 +144,49 @@ func TestDryRun(t *testing.T) {
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
 	assert.Equal(t, "", buffer.String())
+}
+
+func TestEnvProfileName(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	profile := config.NewProfile(nil, "TestEnvProfileName")
+	if runtime.GOOS == "windows" {
+		profile.RunBefore = []string{"echo profile name = %PROFILE_NAME%"}
+	} else {
+		profile.RunBefore = []string{"echo profile name = $PROFILE_NAME"}
+	}
+	wrapper := newResticWrapper("echo", false, false, profile, "test", nil, nil)
+	err := wrapper.runProfile()
+	assert.NoError(t, err)
+	assert.Equal(t, "profile name = TestEnvProfileName\ntest\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+}
+
+func TestEnvProfileCommand(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	profile := config.NewProfile(nil, "name")
+	if runtime.GOOS == "windows" {
+		profile.RunBefore = []string{"echo profile command = %PROFILE_COMMAND%"}
+	} else {
+		profile.RunBefore = []string{"echo profile command = $PROFILE_COMMAND"}
+	}
+	wrapper := newResticWrapper("echo", false, false, profile, "test-command", nil, nil)
+	err := wrapper.runProfile()
+	assert.NoError(t, err)
+	assert.Equal(t, "profile command = test-command\ntest-command\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+}
+
+func TestEnvError(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	profile := config.NewProfile(nil, "name")
+	if runtime.GOOS == "windows" {
+		profile.RunAfterFail = []string{"echo error: %ERROR%"}
+	} else {
+		profile.RunAfterFail = []string{"echo error: $ERROR"}
+	}
+	wrapper := newResticWrapper("exit", false, false, profile, "1", nil, nil)
+	err := wrapper.runProfile()
+	assert.Error(t, err)
+	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }

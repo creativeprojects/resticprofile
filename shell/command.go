@@ -90,7 +90,7 @@ func getShellCommand(command string, args []string) (string, []string, error) {
 		if err != nil {
 			return "", nil, fmt.Errorf("cannot find shell executable (cmd.exe) in path")
 		}
-		// cmd.exe accepts that all arguments are sent one bye one
+		// cmd.exe accepts that all arguments are sent one by one
 		args := append([]string{"/C", command}, removeQuotes(args)...)
 		return shell, args, nil
 	}

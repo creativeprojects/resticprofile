@@ -172,6 +172,11 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 
 // GetRetentionFlags returns the flags specific to the "forget" command being run as part of a backup
 func (p *Profile) GetRetentionFlags() map[string][]string {
+	// if there was no "other" flags, the map could be un-initialized
+	if p.Retention.OtherFlags == nil {
+		p.Retention.OtherFlags = make(map[string]interface{})
+	}
+
 	flags := p.GetCommonFlags()
 	// Special case of retention: we do copy the "source" from "backup" as "path" if it hasn't been redefined in "retention"
 	if _, found := p.Retention.OtherFlags[constants.ParameterPath]; !found {
