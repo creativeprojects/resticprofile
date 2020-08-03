@@ -24,3 +24,5 @@
 
 # log files
 /*.log
+
+status.json

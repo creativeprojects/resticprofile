@@ -64,6 +64,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
       * [Examples of scheduling commands under Linux](#examples-of-scheduling-commands-under-linux)
       * [Examples of scheduling commands under macOS](#examples-of-scheduling-commands-under-macos)
     * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
+  * [Status file for easy monitoring](#status-file-for-easy-monitoring)
   * [Configuration file reference](#configuration-file-reference)
   * [Appendix](#appendix)
   * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
@@ -1004,6 +1005,40 @@ This order is important:
 - now you can change your permission (`user` to `system`, or `system` to `user`)
 - `schedule` your updated profile
 
+## Status file for easy monitoring
+
+If you need to escalate the result of your backup to a monitoring system, you can definitely use the `run-after` and `run-after-fail` scripting.
+
+But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. I have a Zabbix agent checking this file once a day, and you can hook up any monitoring system that can load a JSON file.
+
+In your profile, you simply need to add a new parameter, which is the location of your status file
+
+```toml
+[my-backup]
+status-file = "backup-status.json"
+```
+
+Here's an example of a generated file, where you can see that the last check failed, whereas the last backup succeeded:
+
+```json
+{
+  "profiles": {
+    "my-backup": {
+      "backup": {
+        "success": true,
+        "time": "2020-07-31T23:54:00.401556+01:00",
+        "error": ""
+      },
+      "check": {
+        "success": false,
+        "time": "2020-07-31T23:47:22.311848+01:00",
+        "error": "exit status 1"
+      }
+    }
+  }
+}
+```
+
 ## Configuration file reference
 
 `[global]`
@@ -1034,6 +1069,7 @@ Flags used by resticprofile only
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
 * **run-after-fail**: string OR list of strings
+* **status-file**: string
 
 Flags passed to the restic command line
 

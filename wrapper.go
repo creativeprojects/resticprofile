@@ -11,6 +11,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
+	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 )
 
@@ -135,53 +136,6 @@ func (r *resticWrapper) runProfile() error {
 	return nil
 }
 
-func (r *resticWrapper) runInitialize() error {
-	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
-	rCommand := r.prepareCommand(constants.CommandInit, args)
-	// don't display any error
-	rCommand.stderr = nil
-	err := runShellCommand(rCommand)
-	if err != nil {
-		return fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err)
-	}
-	return nil
-}
-
-func (r *resticWrapper) runCheck() error {
-	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
-	rCommand := r.prepareCommand(constants.CommandCheck, args)
-	err := runShellCommand(rCommand)
-	if err != nil {
-		return fmt.Errorf("backup check on profile '%s': %w", r.profile.Name, err)
-	}
-	return nil
-}
-
-func (r *resticWrapper) runRetention() error {
-	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetRetentionFlags())
-	rCommand := r.prepareCommand(constants.CommandForget, args)
-	err := runShellCommand(rCommand)
-	if err != nil {
-		return fmt.Errorf("backup retention on profile '%s': %w", r.profile.Name, err)
-	}
-	return nil
-}
-
-func (r *resticWrapper) runCommand(command string) error {
-	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
-	args := convertIntoArgs(r.profile.GetCommandFlags(command))
-	rCommand := r.prepareCommand(command, args)
-	err := runShellCommand(rCommand)
-	if err != nil {
-		return fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err)
-	}
-	clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
-	return nil
-}
-
 func (r *resticWrapper) prepareCommand(command string, args []string) shellCommandDefinition {
 	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
 	arguments := append([]string{command}, args...)
@@ -208,6 +162,59 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 		rCommand.useStdin = true
 	}
 	return rCommand
+}
+
+func (r *resticWrapper) runInitialize() error {
+	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
+	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
+	rCommand := r.prepareCommand(constants.CommandInit, args)
+	// don't display any error
+	rCommand.stderr = nil
+	err := runShellCommand(rCommand)
+	if err != nil {
+		return fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err)
+	}
+	return nil
+}
+
+func (r *resticWrapper) runCheck() error {
+	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
+	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
+	rCommand := r.prepareCommand(constants.CommandCheck, args)
+	err := runShellCommand(rCommand)
+	if err != nil {
+		r.statusError(constants.CommandCheck, err)
+		return fmt.Errorf("backup check on profile '%s': %w", r.profile.Name, err)
+	}
+	r.statusSuccess(constants.CommandCheck)
+	return nil
+}
+
+func (r *resticWrapper) runRetention() error {
+	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
+	args := convertIntoArgs(r.profile.GetRetentionFlags())
+	rCommand := r.prepareCommand(constants.CommandForget, args)
+	err := runShellCommand(rCommand)
+	if err != nil {
+		r.statusError(constants.SectionConfigurationRetention, err)
+		return fmt.Errorf("backup retention on profile '%s': %w", r.profile.Name, err)
+	}
+	r.statusSuccess(constants.SectionConfigurationRetention)
+	return nil
+}
+
+func (r *resticWrapper) runCommand(command string) error {
+	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
+	args := convertIntoArgs(r.profile.GetCommandFlags(command))
+	rCommand := r.prepareCommand(command, args)
+	err := runShellCommand(rCommand)
+	if err != nil {
+		r.statusError(r.command, err)
+		return fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err)
+	}
+	r.statusSuccess(r.command)
+	clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
+	return nil
 }
 
 func (r *resticWrapper) runPreCommand(command string) error {
@@ -347,6 +354,56 @@ func (r *resticWrapper) getProfileEnvironment() []string {
 	return []string{
 		fmt.Sprintf("PROFILE_NAME=%s", r.profile.Name),
 		fmt.Sprintf("PROFILE_COMMAND=%s", r.command),
+	}
+}
+
+func (r *resticWrapper) statusSuccess(command string) {
+	if r.profile.StatusFile == "" {
+		return
+	}
+	var err error
+	switch command {
+	case constants.CommandBackup:
+		status := status.NewStatus(r.profile.StatusFile).Load()
+		status.Profile(r.profile.Name).BackupSuccess()
+		err = status.Save()
+	case constants.CommandCheck:
+		status := status.NewStatus(r.profile.StatusFile).Load()
+		status.Profile(r.profile.Name).CheckSuccess()
+		err = status.Save()
+	case constants.SectionConfigurationRetention, constants.CommandForget:
+		status := status.NewStatus(r.profile.StatusFile).Load()
+		status.Profile(r.profile.Name).RetentionSuccess()
+		err = status.Save()
+	}
+	if err != nil {
+		// not important enough to throw an error here
+		clog.Warningf("saving status file '%s': %v", r.profile.StatusFile, err)
+	}
+}
+
+func (r *resticWrapper) statusError(command string, fail error) {
+	if r.profile.StatusFile == "" {
+		return
+	}
+	var err error
+	switch command {
+	case constants.CommandBackup:
+		status := status.NewStatus(r.profile.StatusFile).Load()
+		status.Profile(r.profile.Name).BackupError(fail)
+		err = status.Save()
+	case constants.CommandCheck:
+		status := status.NewStatus(r.profile.StatusFile).Load()
+		status.Profile(r.profile.Name).CheckError(fail)
+		err = status.Save()
+	case constants.SectionConfigurationRetention, constants.CommandForget:
+		status := status.NewStatus(r.profile.StatusFile).Load()
+		status.Profile(r.profile.Name).RetentionError(fail)
+		err = status.Save()
+	}
+	if err != nil {
+		// not important enough to throw an error here
+		clog.Warningf("saving status file '%s': %v", r.profile.StatusFile, err)
 	}
 }
 

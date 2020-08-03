@@ -21,6 +21,7 @@ require (
 	github.com/rhysd/go-github-selfupdate v1.2.2
 	github.com/rickb777/date v1.12.3
 	github.com/smartystreets/assertions v1.0.0 // indirect
+	github.com/spf13/afero v1.3.2
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5
