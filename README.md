@@ -21,6 +21,7 @@ With resticprofile:
 * It can check that you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
 * **[new for v0.9.0]** You can generate cryptographically secure random keys to use as a restic key file
 * **[new for v0.9.0]** You can easily schedule backups, retentions and checks (works for *systemd*, *launchd* and *windows task scheduler*)
+* **[new for v0.9.1]** You can generate a simple status file to send to some monitoring software and make sure your backups are running fine 
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
