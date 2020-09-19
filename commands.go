@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -30,6 +31,12 @@ type ownCommand struct {
 
 var (
 	ownCommands = []ownCommand{
+		{
+			name:              "version",
+			description:       "display version (run in vebose mode for detailed information)",
+			action:            displayVersion,
+			needConfiguration: false,
+		},
 		{
 			name:              "self-update",
 			description:       "update resticprofile to latest version (does not update restic)",
@@ -132,6 +139,33 @@ func runOwnCommand(configuration *config.Config, command string, flags commandLi
 func displayProfilesCommand(configuration *config.Config, _ commandLineFlags, _ []string) error {
 	displayProfiles(configuration)
 	displayGroups(configuration)
+	return nil
+}
+
+func displayVersion(_ *config.Config, flags commandLineFlags, _ []string) error {
+	fmt.Printf("resticprofile version %s commit %s.\n", version, commit)
+
+	if flags.verbose {
+		w := tabwriter.NewWriter(os.Stderr, 0, 0, 3, ' ', 0)
+		_, _ = fmt.Fprintf(w, "\n")
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "os", runtime.GOOS)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "arch", runtime.GOARCH)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "version", version)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "commit", commit)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "compiled", date)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "by", builtBy)
+		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "go version", runtime.Version())
+		_, _ = fmt.Fprintf(w, "\n")
+		_, _ = fmt.Fprintf(w, "\t%s:\n", "go modules")
+		bi, _ := debug.ReadBuildInfo()
+		for _, dep := range bi.Deps {
+			_, _ = fmt.Fprintf(w, "\t\t%s\t%s\n", dep.Path, dep.Version)
+		}
+		_, _ = fmt.Fprintf(w, "\n")
+
+		w.Flush()
+	}
 	return nil
 }
 

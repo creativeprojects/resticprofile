@@ -566,6 +566,7 @@ resticprofile flags:
   -w, --wait            wait at the end until the user presses the enter key
 
 resticprofile own commands:
+   version       display version (run in vebose mode for detailed information)
    self-update   update resticprofile to latest version (does not update restic)
    profiles      display profile names from the configuration file
    show          show all the details of the current profile
@@ -605,6 +606,14 @@ restic can be memory hungry. I'm running a few servers with no swap (I know: it 
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
+
+## Version
+
+The `version` command displays resticprofile version. If run in vebose mode (using `--verbose` flag) additional information such as OS version or golang version or modules are displayed as well.
+
+```
+$ resticprofile --verbose version
+```
 
 ## Generating random keys
 
