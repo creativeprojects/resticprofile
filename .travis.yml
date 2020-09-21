@@ -16,15 +16,22 @@ jobs:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
 
+    - os: linux
+      go: "1.15.x"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
+
     - os: osx
-      go: "1.14.x"
+      go: "1.15.x"
       cache:
         directories:
           - $HOME/Library/Caches/go-build
           - $HOME/gopath/pkg/mod
 
     - os: windows
-      go: "1.14.x"
+      go: "1.15.x"
       cache:
         directories:
           - $USERPROFILE/AppData/Local/go-build
