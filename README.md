@@ -44,6 +44,11 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
     * [Container host name](#container-host-name)
   * [Configuration format](#configuration-format)
   * [Configuration examples](#configuration-examples)
+    * [Simple TOML configuration](#simple-toml-configuration)
+    * [Simple YAML configuration](#simple-yaml-configuration)
+    * [More complex configuration in TOML](#more-complex-configuration-in-toml)
+    * [TOML configuration example for Windows](#toml-configuration-example-for-windows)
+    * [Use stdin in configuration](#use-stdin-in-configuration)
   * [Configuration paths](#configuration-paths)
     * [macOS X](#macos-x)
     * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
@@ -54,6 +59,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Using resticprofile](#using-resticprofile)
   * [Command line reference](#command-line-reference)
   * [Minimum memory required](#minimum-memory-required)
+  * [Version](#version)
   * [Generating random keys](#generating-random-keys)
   * [Scheduled backups](#scheduled-backups)
     * [Schedule configuration](#schedule-configuration)
@@ -192,7 +198,7 @@ Let's say you normally use this command:
 restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
 ```
 
-For resticprofile to generate this command automatically for you, here's the configuration file:
+For resticprofile to generate this command automatically for you, here's the configuration file (in *TOML* format):
 
 ```ini
 [default]
@@ -204,7 +210,22 @@ verbose = true
 source = [ "/home" ]
 ```
 
-You may have noticed the `source` flag is accepting an array of values (inside brackets)
+or the YAML version if you prefer so:
+
+```yaml
+---
+default:
+  repository: "local:/backup"
+  password-file: "password.txt"
+
+  backup:
+    verbose: true
+    source:
+    - "/home"
+```
+
+
+You may have noticed the `source` flag is accepting an array of values (inside brackets in TOML, list of values in YAML)
 
 Now, assuming this configuration file is named `profiles.conf` in the current folder, you can simply run
 
@@ -216,10 +237,12 @@ resticprofile backup
 
 Here's a simple configuration file using a Microsoft Azure backend:
 
+### Simple TOML configuration
 ```ini
 [default]
 repository = "azure:restic:/"
 password-file = "key"
+option = "azure.connections=3"
 
 [default.env]
 AZURE_ACCOUNT_NAME = "my_storage_account"
@@ -232,6 +255,30 @@ one-file-system = true
 tag = [ "root" ]
 source = [ "/", "/var" ]
 ```
+
+### Simple YAML configuration
+```yaml
+default:
+  repository: "azure:restic:/"
+  password-file: "key"
+  option: "azure.connections=3"
+
+  env:
+    AZURE_ACCOUNT_NAME: "my_storage_account"
+    AZURE_ACCOUNT_KEY: "my_super_secret_key"
+
+  backup:
+    exclude-file: "excludes"
+    exclude-caches: true
+    one-file-system: true
+    tag:
+    - "root"
+    source:
+    - "/"
+    - "/var"
+```
+
+### More complex configuration in TOML
 
 Here's a more complex configuration file showing profile inheritance and two backup profiles using the same repository:
 
@@ -293,7 +340,7 @@ exclude-caches = true
 one-file-system = false
 tag = [ "test", "dev" ]
 source = [ "/" ]
-# if scheduled, will run every dat at midnight
+# if scheduled, will run every day at midnight
 schedule = "daily"
 schedule-permission = "system"
 # run this after a backup to share a repository between a user and root (via sudo)
@@ -356,6 +403,8 @@ schedule = "*-*-01 03:00"
 
 ```
 
+### TOML configuration example for Windows
+
 And another simple example for Windows:
 
 ```ini
@@ -383,6 +432,8 @@ run-before = "dir /l"
 run-after = "echo All Done!"
 
 ```
+
+### Use stdin in configuration
 
 Simple example sending a file via stdin
 
@@ -471,14 +522,14 @@ Here's an example of all the external commands that you can run during the execu
 
 ```yaml
 documents:
-    inherit: default
-    run-before: "echo == run-before profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-after: "echo == run-after profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-after-fail: "echo == Error in profile $PROFILE_NAME command $PROFILE_COMMAND: $ERROR"
-    backup:
-        run-before: "echo === run-before backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-        run-after: "echo === run-after backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-        source: ~/Documents
+  inherit: default
+  run-before: "echo == run-before profile $PROFILE_NAME command $PROFILE_COMMAND"
+  run-after: "echo == run-after profile $PROFILE_NAME command $PROFILE_COMMAND"
+  run-after-fail: "echo == Error in profile $PROFILE_NAME command $PROFILE_COMMAND: $ERROR"
+  backup:
+    run-before: "echo === run-before backup profile $PROFILE_NAME command $PROFILE_COMMAND"
+    run-after: "echo === run-after backup profile $PROFILE_NAME command $PROFILE_COMMAND"
+    source: ~/Documents
 ```
 
 `run-before`, `run-after` and `run-after-fail` can be a string, or an array of strings if you need to run more than one command
