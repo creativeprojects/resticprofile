@@ -168,13 +168,13 @@ func (j *Job) displayStatus(command string) error {
 	if permission == constants.SchedulePermissionSystem {
 		err := runJournalCtlCommand(timerName, systemd.SystemUnit)
 		if err != nil {
-			clog.Warning("cannot read system logs: %v", err)
+			clog.Warningf("cannot read system logs: %v", err)
 		}
 		return runSystemctlCommand(timerName, commandStatus, systemd.SystemUnit)
 	}
 	err := runJournalCtlCommand(timerName, systemd.UserUnit)
 	if err != nil {
-		clog.Warning("cannot read user logs: %v", err)
+		clog.Warningf("cannot read user logs: %v", err)
 	}
 	return runSystemctlCommand(timerName, commandStatus, systemd.UserUnit)
 }
