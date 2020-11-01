@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// SetPID is a callback to send the PID of the current child process
+type SetPID func(pid int)
+
 // Command holds the configuration to run a shell command
 type Command struct {
 	Command   string
@@ -18,6 +21,7 @@ type Command struct {
 	Stdin     io.Reader
 	Stdout    io.Writer
 	Stderr    io.Writer
+	SetPID    SetPID
 	sigChan   chan os.Signal
 	done      chan interface{}
 }
@@ -62,23 +66,21 @@ func (c *Command) Run() error {
 		cmd.Env = append(cmd.Env, c.Environ...)
 	}
 
-	if c.sigChan == nil {
-		// Simple case without taking care of OS signals
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
-	// More complex case with OS signalling
+	// spawn the child process
 	if err = cmd.Start(); err != nil {
 		return err
 	}
-	defer func() {
-		close(c.done)
-	}()
-	go c.propagateSignal(cmd.Process)
+	if c.SetPID != nil {
+		// send the PID back (to write down in a lockfile)
+		c.SetPID(cmd.Process.Pid)
+	}
+	// setup the OS signalling if we need it (typically used for unixes but not windows)
+	if c.sigChan != nil {
+		defer func() {
+			close(c.done)
+		}()
+		go c.propagateSignal(cmd.Process)
+	}
 	return cmd.Wait()
 }
 

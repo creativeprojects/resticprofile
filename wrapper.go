@@ -23,6 +23,7 @@ type resticWrapper struct {
 	command      string
 	moreArgs     []string
 	sigChan      chan os.Signal
+	setPID       func(pid int)
 }
 
 func newResticWrapper(
@@ -46,7 +47,8 @@ func newResticWrapper(
 }
 
 func (r *resticWrapper) runProfile() error {
-	err := lockRun(r.profile.Lock, func() error {
+	err := lockRun(r.profile.Lock, func(setPID lock.SetPID) error {
+		r.setPID = setPID
 		return runOnFailure(
 			func() error {
 				var err error
@@ -152,7 +154,7 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 	env := append(os.Environ(), r.getEnvironment()...)
 
 	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
-	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan)
+	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan, r.setPID)
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()
 	rCommand.stderr = term.GetErrorOutput()
@@ -230,7 +232,7 @@ func (r *resticWrapper) runPreCommand(command string) error {
 
 	for i, preCommand := range r.profile.Backup.RunBefore {
 		clog.Debugf("starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
-		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan)
+		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -255,7 +257,7 @@ func (r *resticWrapper) runPostCommand(command string) error {
 
 	for i, postCommand := range r.profile.Backup.RunAfter {
 		clog.Debugf("starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
-		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan)
+		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -276,7 +278,7 @@ func (r *resticWrapper) runProfilePreCommand() error {
 
 	for i, preCommand := range r.profile.RunBefore {
 		clog.Debugf("starting 'run-before' profile command %d/%d", i+1, len(r.profile.RunBefore))
-		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan)
+		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -297,7 +299,7 @@ func (r *resticWrapper) runProfilePostCommand() error {
 
 	for i, postCommand := range r.profile.RunAfter {
 		clog.Debugf("starting 'run-after' profile command %d/%d", i+1, len(r.profile.RunAfter))
-		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan)
+		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -319,7 +321,7 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 
 	for i, postCommand := range r.profile.RunAfterFail {
 		clog.Debugf("starting 'run-after-fail' profile command %d/%d", i+1, len(r.profile.RunAfterFail))
-		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan)
+		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -447,10 +449,10 @@ func convertIntoArgs(flags map[string][]string) []string {
 }
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk
-func lockRun(filename string, run func() error) error {
+func lockRun(filename string, run func(setPID lock.SetPID) error) error {
 	if filename == "" {
 		// No lock
-		return run()
+		return run(nil)
 	}
 	// Make sure the path to the lock exists
 	dir := filepath.Dir(filename)
@@ -458,15 +460,19 @@ func lockRun(filename string, run func() error) error {
 		err := os.MkdirAll(dir, 0755)
 		if err != nil {
 			clog.Warningf("the profile will run without a lockfile: %v", err)
-			return run()
+			return run(nil)
 		}
 	}
 	runLock := lock.NewLock(filename)
 	if !runLock.TryAcquire() {
-		return fmt.Errorf("another process is already running this profile: %s", runLock.Who())
+		who, err := runLock.Who()
+		if err != nil {
+			return fmt.Errorf("another process left the lockfile unreadable: %s", err)
+		}
+		return fmt.Errorf("another process is already running this profile: %s", who)
 	}
 	defer runLock.Release()
-	return run()
+	return run(runLock.SetPID)
 }
 
 // runOnFailure will run the onFailure function if an error occurred in the run function

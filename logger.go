@@ -10,7 +10,7 @@ import (
 
 func setupRemoteLogger(client *remote.Client) {
 	logger := clog.NewLogger(client)
-	client.SetLogPrefix("elevated user: ")
+	client.SetPrefix("elevated user: ")
 	clog.SetDefaultLogger(logger)
 }
 

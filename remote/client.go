@@ -29,8 +29,8 @@ func NewClient(port int) *Client {
 	}
 }
 
-// SetLogPrefix adds a prefix to all the log messages
-func (c *Client) SetLogPrefix(logPrefix string) {
+// SetPrefix adds a prefix to all the log messages
+func (c *Client) SetPrefix(logPrefix string) {
 	c.logPrefix = logPrefix
 }
 
@@ -72,3 +72,6 @@ func (c *Client) Done() error {
 
 	return nil
 }
+
+// Verify interface with logger
+var _ clog.Handler = &Client{}

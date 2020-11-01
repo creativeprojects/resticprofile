@@ -153,3 +153,40 @@ func TestInterruptShellCommand(t *testing.T) {
 
 	assert.WithinDuration(t, time.Now(), start, 1*time.Second)
 }
+
+func TestSetPIDCallback(t *testing.T) {
+	called := 0
+	buffer := &bytes.Buffer{}
+	cmd := newCommand("echo", []string{"TestRunShellEcho"})
+	cmd.Stdout = buffer
+	cmd.SetPID = func(pid int) {
+		called++
+	}
+	err := cmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 1, called)
+}
+
+func TestSetPIDCallbackWithSignalling(t *testing.T) {
+	called := 0
+	buffer := &bytes.Buffer{}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	defer signal.Reset(os.Interrupt)
+
+	cmd := NewSignalledCommand("echo", []string{"TestRunShellEcho"}, c)
+	cmd.Stdout = buffer
+	cmd.SetPID = func(pid int) {
+		called++
+	}
+	err := cmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 1, called)
+}

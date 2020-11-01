@@ -18,10 +18,11 @@ type shellCommandDefinition struct {
 	stderr   io.Writer
 	dryRun   bool
 	sigChan  chan os.Signal
+	setPID   func(pid int)
 }
 
 // newShellCommand creates a new shell command definition
-func newShellCommand(command string, args, env []string, dryRun bool, sigChan chan os.Signal) shellCommandDefinition {
+func newShellCommand(command string, args, env []string, dryRun bool, sigChan chan os.Signal, setPID func(pid int)) shellCommandDefinition {
 	if env == nil {
 		env = make([]string, 0)
 	}
@@ -34,6 +35,7 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 		stderr:   os.Stderr,
 		dryRun:   dryRun,
 		sigChan:  sigChan,
+		setPID:   setPID,
 	}
 }
 
@@ -53,6 +55,11 @@ func runShellCommand(command shellCommandDefinition) error {
 
 	if command.useStdin {
 		shellCmd.Stdin = os.Stdin
+	}
+
+	// set PID callback
+	if command.setPID != nil {
+		shellCmd.SetPID = command.setPID
 	}
 
 	shellCmd.Environ = os.Environ()

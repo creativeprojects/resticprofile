@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 	"time"
 
@@ -31,7 +32,8 @@ func TestLockIsNotAvailable(t *testing.T) {
 	defer other.Release()
 	assert.False(t, other.TryAcquire())
 
-	who := other.Who()
-	t.Log("File was locked by", other.Who())
+	who, err := other.Who()
+	assert.NoError(t, err)
 	assert.NotEmpty(t, who)
+	assert.Regexp(t, regexp.MustCompile(`^\w+ on \w+, \d+-\w+-\d+ \d+:\d+:\d+ \w* from [.\w]+$`), who)
 }

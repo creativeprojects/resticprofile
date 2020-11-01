@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
@@ -189,4 +192,13 @@ func TestEnvError(t *testing.T) {
 	err := wrapper.runProfile()
 	assert.Error(t, err)
 	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+}
+
+func TestRunProfileWithSetPIDCallback(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	profile.Lock = filepath.Join(os.TempDir(), fmt.Sprintf("%s%d%d.tmp", "TestRunProfileWithSetPIDCallback", time.Now().UnixNano(), os.Getpid()))
+	t.Logf("lockfile = %s", profile.Lock)
+	wrapper := newResticWrapper("echo", false, false, profile, "test", nil, nil)
+	err := wrapper.runProfile()
+	assert.NoError(t, err)
 }
