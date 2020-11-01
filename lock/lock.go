@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"strings"
 	"time"
 )
 
@@ -36,11 +37,13 @@ func (l *Lock) Release() {
 
 // Who owns the lock?
 func (l *Lock) Who() string {
-	who, err := ioutil.ReadFile(l.Lockfile)
+	buffer, err := ioutil.ReadFile(l.Lockfile)
 	if err != nil {
 		return err.Error()
 	}
-	return string(who)
+	// first line should be "who" owns the lock, any subsequent line will contain the restic PIDs
+	contents := strings.Split(string(buffer), "\n")
+	return contents[0]
 }
 
 func (l *Lock) lock() bool {
