@@ -35,5 +35,5 @@ func TestLockIsNotAvailable(t *testing.T) {
 	who, err := other.Who()
 	assert.NoError(t, err)
 	assert.NotEmpty(t, who)
-	assert.Regexp(t, regexp.MustCompile(`^\w+ on \w+, \d+-\w+-\d+ \d+:\d+:\d+ \w* from [\.\-\w]+$`), who)
+	assert.Regexp(t, regexp.MustCompile(`^[\-\\\w]+ on \w+, \d+-\w+-\d+ \d+:\d+:\d+ \w* from [\.\-\w]+$`), who)
 }
