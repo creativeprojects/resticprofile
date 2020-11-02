@@ -38,7 +38,7 @@ func (l *Lock) TryAcquire() bool {
 
 // ForceAcquire returns true if the lock was successfully set.
 //
-// If a lock file already exists, it reads the PID of the supposidly running process and check if
+// If a lock file already exists, it reads the PID of the supposedly running process and check if
 // it's still running. If there no more process with this PID, it will try to delete the lock, then
 // recreate a new lock.
 func (l *Lock) ForceAcquire() bool {
