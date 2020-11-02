@@ -37,7 +37,7 @@ ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
 
-.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server nightly toc
+.PHONY: all test test-ci build build-mac build-linux build-windows build-all coverage clean test-docker build-docker ramdisk passphrase rest-server nightly toc release-snapshot
 
 all: test build
 
@@ -84,6 +84,9 @@ build-docker: clean
 		mv restic_${RESTIC_VERSION}_linux_amd64 ${BUILD}restic
 		chmod +x ${BUILD}restic
 		cd ${BUILD}; docker build --pull --tag creativeprojects/resticprofile .
+
+release-snapshot:
+		goreleaser build --snapshot --config .goreleaser.yml --rm-dist
 
 ramdisk: ${TMP_MOUNT}
 
