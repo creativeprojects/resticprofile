@@ -2,8 +2,8 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
@@ -200,7 +200,7 @@ array2 = ["one", "two"]
 
 	assert.Equal([]string{}, flags["bool-true"])
 	assert.Equal([]string{"test"}, flags["string"])
-	assert.Equal([]string{fmt.Sprintf("%f", 4.2)}, flags["float"])
+	assert.Equal([]string{strconv.FormatFloat(4.2, 'f', -1, 64)}, flags["float"])
 	assert.Equal([]string{"42"}, flags["int"])
 	assert.Equal([]string{"1"}, flags["array1"])
 	assert.Equal([]string{"one", "two"}, flags["array2"])

@@ -47,7 +47,7 @@ func newResticWrapper(
 }
 
 func (r *resticWrapper) runProfile() error {
-	err := lockRun(r.profile.Lock, func(setPID lock.SetPID) error {
+	err := lockRun(r.profile.Lock, r.profile.ForceLock, func(setPID lock.SetPID) error {
 		r.setPID = setPID
 		return runOnFailure(
 			func() error {
@@ -449,7 +449,7 @@ func convertIntoArgs(flags map[string][]string) []string {
 }
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk
-func lockRun(filename string, run func(setPID lock.SetPID) error) error {
+func lockRun(filename string, force bool, run func(setPID lock.SetPID) error) error {
 	if filename == "" {
 		// No lock
 		return run(nil)
@@ -464,12 +464,20 @@ func lockRun(filename string, run func(setPID lock.SetPID) error) error {
 		}
 	}
 	runLock := lock.NewLock(filename)
-	if !runLock.TryAcquire() {
+	success := runLock.TryAcquire()
+	if !success {
 		who, err := runLock.Who()
 		if err != nil {
 			return fmt.Errorf("another process left the lockfile unreadable: %s", err)
 		}
-		return fmt.Errorf("another process is already running this profile: %s", who)
+		// should we try to force our way?
+		if force {
+			clog.Warningf("previous run of the profile started by %s hasn't finished properly", who)
+			success = runLock.ForceAcquire()
+		}
+		if !success {
+			return fmt.Errorf("another process is already running this profile: %s", who)
+		}
 	}
 	defer runLock.Release()
 	return run(runLock.SetPID)

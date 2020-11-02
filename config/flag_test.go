@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -151,4 +153,54 @@ func TestConvertPointerStructToFlag(t *testing.T) {
 		"some-int-2":    {"10"},
 		"some-string-2": {"test"},
 	}, flags)
+}
+
+func BenchmarkFormatInt(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var value int64 = 123456
+		str := strconv.FormatInt(value, 10)
+		if str == "" {
+			b.Fail()
+		}
+	}
+}
+
+func BenchmarkFormatUint(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var value uint64 = 123456
+		str := strconv.FormatUint(value, 10)
+		if str == "" {
+			b.Fail()
+		}
+	}
+}
+
+func BenchmarkFormatFloat(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var value float64 = 123456
+		str := strconv.FormatFloat(value, 'f', -1, 64)
+		if str == "" {
+			b.Fail()
+		}
+	}
+}
+
+func BenchmarkSprintfInt(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var value int64 = 123456
+		str := fmt.Sprintf("%d", value)
+		if str == "" {
+			b.Fail()
+		}
+	}
+}
+
+func BenchmarkSprintfFloat(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var value float64 = 123456
+		str := fmt.Sprintf("%f", value)
+		if str == "" {
+			b.Fail()
+		}
+	}
 }

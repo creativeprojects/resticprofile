@@ -76,6 +76,7 @@ root:
 
 self:
     lock: "/Volumes/RAMDisk/resticprofile-profile-self.lock"
+    force-inactive-lock: true
     initialize: true
     inherit: default
     status-file: status.json

@@ -19,6 +19,7 @@ type Profile struct {
 	Initialize    bool                      `mapstructure:"initialize"`
 	Inherit       string                    `mapstructure:"inherit"`
 	Lock          string                    `mapstructure:"lock"`
+	ForceLock     bool                      `mapstructure:"force-inactive-lock"`
 	RunBefore     []string                  `mapstructure:"run-before"`
 	RunAfter      []string                  `mapstructure:"run-after"`
 	RunAfterFail  []string                  `mapstructure:"run-after-fail"`

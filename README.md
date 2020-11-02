@@ -56,6 +56,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Path resolution in configuration](#path-resolution-in-configuration)
   * [Run commands before, after success or after failure](#run-commands-before-after-success-or-after-failure)
     * [run before and after order during a backup](#run-before-and-after-order-during-a-backup)
+  * [Locks](#locks)
   * [Using resticprofile](#using-resticprofile)
   * [Command line reference](#command-line-reference)
   * [Minimum memory required](#minimum-memory-required)
@@ -81,6 +82,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
     * [User agent](#user-agent)
       * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
     * [Daemon](#daemon)
+
 
 ## Requirements
 
@@ -331,6 +333,7 @@ initialize = true
 # this will add a LOCAL lockfile so you cannot run the same profile more than once at a time
 # (it's totally independent of the restic locks on the repository)
 lock = "/tmp/resticprofile-root.lock"
+force-inactive-lock = false
 
 # 'backup' command of profile 'root'
 [root.backup]
@@ -548,6 +551,46 @@ The commands will be running in this order **during a backup**:
 - run the restic backup (with check and retention if configured) - if error, go to `run-after-fail`
 - `run-after` from the backup section - if error, go to `run-after-fail`
 - `run-after` from the profile - if error, go to `run-after-fail`
+
+## Locks
+
+restic is already using a lock to avoid running some operations at the same time.
+
+Since resticprofile can run several commands in a profile, it could be better to run the whole batch in a lock so nobody can interfere in the meantime.
+
+For this to happen you can specify a lock file in each profile:
+
+```yaml
+src:
+    lock: "/tmp/resticprofile-profile-src.lock"
+    backup:
+        check-before: true
+        exclude:
+        - /**/.git
+        source:
+        - ~/go
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        keep-within: 30d
+        prune: true
+```
+
+For this profile, a lock will be set using the file `/tmp/resticprofile-profile-src.lock` for the duration of the profile: *check*, *backup* and *retention* (via the forget command)
+
+**Please note restic locks and resticprofile locks are completely independant**
+
+In some cases, you might want to override the resticprofile lock if the process died (or the machine rebooted) leaving a lockfile behind.
+
+For that matter, if you add the flag `force-inactive-lock` to your profile, resticprofile will check for the presence of a process with the PID indicated in the lockfile. If it can't find any, it will try to delete the lock and continue the operation (locking again, running profile and so on...)
+
+```yaml
+src:
+    lock: "/tmp/resticprofile-profile-src.lock"
+    force-inactive-lock: true
+```
+
 
 ## Using resticprofile
 
@@ -1127,6 +1170,7 @@ Flags used by resticprofile only
 * ****inherit****: string
 * **initialize**: true / false
 * **lock**: string: specify a local lockfile
+* **force-inactive-lock**: true / false
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
 * **run-after-fail**: string OR list of strings
@@ -1342,6 +1386,7 @@ self:
 
 src:
     lock: "/tmp/resticprofile-profile-src.lock"
+    force-inactive-lock: false
     backup:
         check-before: true
         exclude:
@@ -1411,6 +1456,7 @@ src {
     inherit = "default"
     initialize = true
     lock = "/tmp/backup/resticprofile-profile-src.lock"
+    force-inactive-lock = false
 
     snapshots = {
         tag = [ "test", "dev" ]
