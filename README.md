@@ -1447,7 +1447,7 @@ inherit = "azure"
 
 ## Debugging your template and variable expansion
 
-If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the --trace flag:
+If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the `--trace` flag.
 
 ## Limitations of using templates
 
