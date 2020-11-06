@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -172,7 +173,7 @@ func displayVersion(_ *config.Config, flags commandLineFlags, _ []string) error 
 func displayProfiles(configuration *config.Config) {
 	profileSections := configuration.GetProfileSections()
 	keys := sortedMapKeys(profileSections)
-	if profileSections == nil || len(profileSections) == 0 {
+	if len(profileSections) == 0 {
 		fmt.Println("\nThere's no available profile in the configuration")
 	} else {
 		fmt.Println("\nProfiles available:")
@@ -180,7 +181,7 @@ func displayProfiles(configuration *config.Config) {
 		for _, name := range keys {
 			sections := profileSections[name]
 			sort.Strings(sections)
-			if sections == nil || len(sections) == 0 {
+			if len(sections) == 0 {
 				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
 			} else {
 				_, _ = fmt.Fprintf(w, "\t%s:\t(%s)\n", name, strings.Join(sections, ", "))
@@ -193,7 +194,7 @@ func displayProfiles(configuration *config.Config) {
 
 func displayGroups(configuration *config.Config) {
 	groups := configuration.GetProfileGroups()
-	if groups == nil || len(groups) == 0 {
+	if len(groups) == 0 {
 		return
 	}
 	fmt.Println("Groups available:")
@@ -247,6 +248,14 @@ func showProfile(c *config.Config, flags commandLineFlags, args []string) error 
 	if profile == nil {
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
+	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
+	// So we need to fix all relative files
+	rootPath := filepath.Dir(c.GetConfigFile())
+	if rootPath != "." {
+		clog.Debugf("files in configuration are relative to '%s'", rootPath)
+	}
+	profile.SetRootPath(rootPath)
+
 	fmt.Printf("\n%s:\n", flags.name)
 	config.ShowStruct(os.Stdout, profile)
 	return nil
@@ -289,7 +298,7 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	}
 
 	schedules := profile.Schedules()
-	if schedules == nil || len(schedules) == 0 {
+	if len(schedules) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
@@ -310,7 +319,7 @@ func removeSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	}
 
 	schedules := profile.Schedules()
-	if schedules == nil || len(schedules) == 0 {
+	if len(schedules) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
@@ -331,7 +340,7 @@ func statusSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	}
 
 	schedules := profile.Schedules()
-	if schedules == nil || len(schedules) == 0 {
+	if len(schedules) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
@@ -376,7 +385,7 @@ func elevated(flags commandLineFlags) error {
 		return errors.New("only available on Windows platform")
 	}
 
-	done := make(chan interface{}, 0)
+	done := make(chan interface{})
 	err := remote.StartServer(done)
 	if err != nil {
 		return err

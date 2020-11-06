@@ -1,0 +1,44 @@
+# yaml configuration file is not well suited for nested templates as it requires the exact number of spaces
+# also if you redefine an existing block it replaces the previous definition
+{{ define "tags" }}
+        tag:
+        - "{{ .Profile.Name }}"
+        - dev
+{{ end }}
+---
+generic:
+    password-file: "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+    repository: "/backup/{{ .Now.Weekday }}"
+    lock: "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+    initialize: true
+
+    backup:
+        check-before: true
+        exclude:
+        - /**/.git
+        exclude-caches: true
+        one-file-system: false
+        run-after: echo All Done!
+        run-before:
+        - "echo Hello {{ .Env.LOGNAME }}"
+        - "echo current dir: {{ .CurrentDir }}"
+        - "echo config dir: {{ .ConfigDir }}"
+        - "echo profile started at {{ .Now.Format "02 Jan 06 15:04 MST" }}"
+        {{ template "tags" . }}
+
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        keep-within: 30d
+        prune: true
+        {{ template "tags" . }}
+
+    snapshots:
+        {{ template "tags" . }}
+
+src:
+    inherit: generic
+    backup:
+        source:
+        - "{{ .Env.HOME }}/go/src"

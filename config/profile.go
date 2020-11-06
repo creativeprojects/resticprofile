@@ -143,7 +143,7 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 			break
 		}
 		commandFlags := convertStructToFlags(*p.Backup)
-		if commandFlags != nil && len(commandFlags) > 0 {
+		if len(commandFlags) > 0 {
 			flags = mergeFlags(flags, commandFlags)
 		}
 		flags = addOtherFlags(flags, p.Backup.OtherFlags)
@@ -241,9 +241,8 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 	}
 	return configs
 }
-
 func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{}) map[string][]string {
-	if otherFlags == nil || len(otherFlags) == 0 {
+	if len(otherFlags) == 0 {
 		return flags
 	}
 
@@ -257,10 +256,10 @@ func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{})
 }
 
 func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
-	if (flags == nil || len(flags) == 0) && newFlags != nil {
+	if len(flags) == 0 && newFlags != nil {
 		return newFlags
 	}
-	if flags != nil && (newFlags == nil || len(newFlags) == 0) {
+	if flags != nil && len(newFlags) == 0 {
 		return flags
 	}
 	for key, value := range newFlags {

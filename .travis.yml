@@ -45,4 +45,7 @@ install:
 
 script:
   - go build -v .
-  - go test -v -short ./...
+  - go test -v -race -short -coverprofile=coverage.txt ./...
+
+after_success:
+  - if [ -f coverage.txt ]; then bash <(curl -s https://codecov.io/bash); fi

@@ -65,3 +65,22 @@ func TestRunOwnCommand(t *testing.T) {
 	assert.EqualError(t, runOwnCommand(nil, "third", commandLineFlags{}, nil), "third")
 	assert.EqualError(t, runOwnCommand(nil, "another one", commandLineFlags{}, nil), "command not found: another one")
 }
+
+func TestPanicCommand(t *testing.T) {
+	assert.Panics(t, func() {
+		_ = panicCommand(nil, commandLineFlags{}, nil)
+	})
+}
+
+func TestRandomKeyOfInvalidSize(t *testing.T) {
+	assert.Error(t, randomKey(nil, commandLineFlags{resticArgs: []string{"restic", "size"}}, nil))
+}
+
+func TestRandomKeyOfZeroSize(t *testing.T) {
+	assert.Error(t, randomKey(nil, commandLineFlags{resticArgs: []string{"restic", "0"}}, nil))
+}
+
+func TestRandomKey(t *testing.T) {
+	// doesn't look like much, but it's testing the random generator is not throwing an error
+	assert.NoError(t, randomKey(nil, commandLineFlags{}, nil))
+}

@@ -39,7 +39,7 @@ func setupConsoleLogger(flags commandLineFlags) {
 }
 
 func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logger {
-	if flags.quiet && flags.verbose {
+	if flags.quiet && (flags.verbose || flags.veryVerbose) {
 		coin := ""
 		if randomBool() {
 			coin = "verbose"
@@ -47,6 +47,7 @@ func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logge
 		} else {
 			coin = "quiet"
 			flags.verbose = false
+			flags.veryVerbose = false
 		}
 		// the logger hasn't been created yet, so we call the handler directly
 		handler.LogEntry(clog.LogEntry{
@@ -58,6 +59,8 @@ func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logge
 	minLevel := clog.LevelInfo
 	if flags.quiet {
 		minLevel = clog.LevelWarning
+	} else if flags.veryVerbose {
+		minLevel = clog.LevelTrace
 	} else if flags.verbose {
 		minLevel = clog.LevelDebug
 	}

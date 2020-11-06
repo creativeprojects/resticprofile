@@ -15,6 +15,20 @@ type ScheduleConfig struct {
 	logfile          string
 }
 
+func (s *ScheduleConfig) SetCommand(wd, command string, args []string) {
+	s.wd = wd
+	s.command = command
+	s.arguments = args
+}
+
+func (s *ScheduleConfig) SetJobDescription(description string) {
+	s.jobDescription = description
+}
+
+func (s *ScheduleConfig) SetTimerDescription(description string) {
+	s.timerDescription = description
+}
+
 func (s *ScheduleConfig) Title() string {
 	return s.profileName
 }
@@ -53,20 +67,6 @@ func (s *ScheduleConfig) Arguments() []string {
 
 func (s *ScheduleConfig) Environment() map[string]string {
 	return s.environment
-}
-
-func (s *ScheduleConfig) SetCommand(wd, command string, args []string) {
-	s.wd = wd
-	s.command = command
-	s.arguments = args
-}
-
-func (s *ScheduleConfig) SetJobDescription(description string) {
-	s.jobDescription = description
-}
-
-func (s *ScheduleConfig) SetTimerDescription(description string) {
-	s.timerDescription = description
 }
 
 func (s *ScheduleConfig) Nice() int {

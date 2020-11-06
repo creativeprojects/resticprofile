@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 	"text/tabwriter"
 )
 
@@ -86,7 +85,6 @@ func showSubStruct(outputWriter io.Writer, orig interface{}, prefix string) erro
 	tabWriter.Flush()
 	fmt.Fprintln(buffer, "")
 	buffer.Flush()
-	prefix = removeIndentation(prefix)
 
 	return nil
 }
@@ -95,17 +93,12 @@ func addIndentation(indent string) string {
 	return indent + templateIndent
 }
 
-func removeIndentation(indent string) string {
-	return indent[:len(indent)-len(templateIndent)]
-}
-
 func showNewMap(outputWriter io.Writer, prefix string, valueOf reflect.Value) {
 	subWriter := tabwriter.NewWriter(outputWriter, 0, 2, 2, ' ', 0)
 	prefix = addIndentation(prefix)
 	showMap(subWriter, prefix, valueOf)
 	subWriter.Flush()
 	fmt.Fprintln(outputWriter, "")
-	prefix = removeIndentation(prefix)
 }
 
 func showMap(tabWriter io.Writer, prefix string, valueOf reflect.Value) {
@@ -127,6 +120,13 @@ func showKeyValue(tabWriter io.Writer, prefix, key string, valueOf reflect.Value
 			// special case of a true flag that shows no value
 			convert = append(convert, "true")
 		}
-		fmt.Fprintf(tabWriter, "%s%s:\t%s\n", prefix, key, strings.Join(convert, ", "))
+		if len(convert) > 0 {
+			fmt.Fprintf(tabWriter, "%s%s:\t%s\n", prefix, key, convert[0])
+		}
+		if len(convert) > 1 {
+			for i := 1; i < len(convert); i++ {
+				fmt.Fprintf(tabWriter, "%s\t%s\n", prefix, convert[i])
+			}
+		}
 	}
 }

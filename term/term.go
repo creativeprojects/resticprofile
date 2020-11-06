@@ -57,7 +57,7 @@ func ReadPassword() (string, error) {
 	line, err := terminal.ReadPassword(stdin)
 	_, _ = fmt.Fprintln(os.Stderr)
 	if err != nil {
-		return "", fmt.Errorf("Failed to read password: %v", err)
+		return "", fmt.Errorf("failed to read password: %v", err)
 	}
 	return string(line), nil
 }
@@ -67,7 +67,7 @@ func ReadLine() (string, error) {
 	buf := bufio.NewReader(os.Stdin)
 	line, err := buf.ReadString('\n')
 	if err != nil {
-		return "", fmt.Errorf("Failed to read line: %v", err)
+		return "", fmt.Errorf("failed to read line: %v", err)
 	}
 	return strings.TrimSpace(line), nil
 }

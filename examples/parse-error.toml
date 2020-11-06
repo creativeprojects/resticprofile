@@ -1,0 +1,34 @@
+{{ define "retention" }}
+    [{{ .Profile.Name }}.retention]
+    after-backup = true
+    before-backup = false
+    compact = false
+    keep-within = "30d"
+    prune = true
+{{ end }}
+
+[src]
+password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+repository = "/backup/{{ .Now.Weekday }}"
+lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+initialize = true
+
+    [src.backup]
+    source = "{{ .Env.HOME }}/go/src"
+    check-before = true
+    exclude = ["/**/.git"]
+    exclude-caches = true
+    tag = ["{{ .Profile.Name }}", "dev"]
+
+    {{ template "retention" . }}
+
+    [src.snapshots]
+    tag = ["{{ .Profile.Name }}", "dev"]
+
+[other]
+password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+repository = "/backup/{{ .Now.Weekday }}"
+lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+initialize = true
+
+    {{ template "retention" . }}

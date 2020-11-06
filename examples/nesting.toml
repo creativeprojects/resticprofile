@@ -1,0 +1,82 @@
+#
+# This is an example of TOML configuration using nested templates
+#
+
+# nested template declarations
+{{ define "backup_root" }}
+    exclude = [ "{{ .Profile.Name }}-backup.log" ]
+    exclude-file = [
+        "{{ .ConfigDir }}/root-excludes",
+        "{{ .ConfigDir }}/excludes"
+    ]
+    exclude-caches = true
+    tag = [ "root" ]
+    source = [ "/" ]
+{{ end }}
+
+[global]
+priority = "low"
+ionice = true
+ionice-class = 2
+ionice-level = 6
+
+[base]
+status-file = "{{ .Env.HOME }}/status.json"
+
+    [base.snapshots]
+    host = true
+
+    [base.retention]
+    host = true
+    after-backup = true
+    keep-within = "30d"
+
+[nas]
+inherit = "base"
+repository = "rest:http://{{ .Env.BACKUP_REST_USER }}:{{ .Env.BACKUP_REST_PASSWORD }}@nas:8000/root"
+password-file = "nas-key"
+
+[nas-root]
+inherit = "nas"
+
+    [nas-root.backup]
+    {{ template "backup_root" . }}
+    schedule = "01:47"
+    schedule-permission = "system"
+    schedule-log = "{{ .Profile.Name }}-backup.log"
+
+[azure]
+inherit = "base"
+repository = "azure:restic:/"
+password-file = "azure-key"
+lock = "/tmp/resticprofile-azure.lock"
+
+    [azure.backup]
+    schedule-permission = "system"
+    schedule-log = "{{ .Profile.Name }}-backup.log"
+
+# root
+
+[azure-root]
+inherit = "azure"
+
+    [azure-root.backup]
+    {{ template "backup_root" . }}
+    schedule = "03:58"
+
+# mysql
+
+[azure-mysql]
+inherit = "azure"
+
+    [azure-mysql.backup]
+    tag = [ "mysql" ]
+    run-before = [
+        "rm -f /tmp/mysqldumpall.sql",
+        "mysqldump -u{{ .Env.MYSQL_BACKUP_USER }} -p{{ .Env.MYSQL_BACKUP_PASSWORD }} --all-databases > /tmp/mysqldumpall.sql"
+    ]
+    source = "/tmp/mysqldumpall.sql"
+    run-after = [
+        "rm -f /tmp/mysqldumpall.sql"
+    ]
+    schedule = "03:18"

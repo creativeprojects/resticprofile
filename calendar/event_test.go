@@ -170,13 +170,7 @@ func TestNextTrigger(t *testing.T) {
 		{"*:11:*", "2006-01-02 15:11:00"},
 		{"11:*:*", "2006-01-03 11:00:00"},
 		{"tue", "2006-01-03 00:00:00"},
-	}
-
-	if !testing.Short() {
-		// this one takes about 8 seconds on a 8th generation i7
-		testData = append(testData,
-			struct{ event, trigger string }{"2003-*-*", "0001-01-01 00:00:00"}, // will never get triggered
-		)
+		{"2003-*-*", "0001-01-01 00:00:00"},
 	}
 
 	for _, testItem := range testData {

@@ -412,7 +412,7 @@ func (r *resticWrapper) statusError(command string, fail error) {
 func convertIntoArgs(flags map[string][]string) []string {
 	args := make([]string, 0)
 
-	if flags == nil || len(flags) == 0 {
+	if len(flags) == 0 {
 		return args
 	}
 

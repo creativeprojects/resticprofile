@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -13,7 +12,7 @@ import (
 
 func TestNoProfile(t *testing.T) {
 	testConfig := ""
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +22,7 @@ func TestNoProfile(t *testing.T) {
 func TestEmptyProfile(t *testing.T) {
 	testConfig := `[profile]
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +33,7 @@ func TestEmptyProfile(t *testing.T) {
 func TestNoInitializeValue(t *testing.T) {
 	testConfig := `[profile]
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +45,7 @@ func TestInitializeValueFalse(t *testing.T) {
 	testConfig := `[profile]
 initialize = false
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +57,7 @@ func TestInitializeValueTrue(t *testing.T) {
 	testConfig := `[profile]
 initialize = true
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +72,7 @@ initialize = true
 [profile]
 inherit = "parent"
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +88,7 @@ initialize = true
 initialize = false
 inherit = "parent"
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +100,7 @@ func TestUnknownParent(t *testing.T) {
 	testConfig := `[profile]
 inherit = "parent"
 `
-	_, err := getProfile(testConfig, "profile")
+	_, err := getProfile("toml", testConfig, "profile")
 	assert.Error(t, err)
 }
 
@@ -126,7 +125,7 @@ third-value = 3
 verbose = true
 quiet = false
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +149,7 @@ quiet = true
 verbose = false
 repository = "test"
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +178,7 @@ array0 = []
 array1 = [1]
 array2 = ["one", "two"]
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,7 +215,7 @@ host = true
 [profile.snapshots]
 host = "ConfigHost"
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +249,7 @@ source = "` + root + `"
 [profile.retention]
 host = false
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,7 +273,7 @@ source = "/some_other_path"
 [profile.retention]
 path = "/"
 `
-	profile, err := getProfile(testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -284,19 +283,6 @@ path = "/"
 	assert.NotNil(flags)
 	assert.Contains(flags, "path")
 	assert.Equal([]string{"/"}, flags["path"])
-}
-
-func getProfile(configString, profileKey string) (*Profile, error) {
-	c, err := Load(bytes.NewBufferString(configString), "toml")
-	if err != nil {
-		return nil, err
-	}
-
-	profile, err := c.GetProfile(profileKey)
-	if err != nil {
-		return nil, err
-	}
-	return profile, nil
 }
 
 func TestForgetCommandFlags(t *testing.T) {
@@ -341,20 +327,12 @@ profile:
 		format := testItem.format
 		testConfig := testItem.config
 		t.Run(format, func(t *testing.T) {
-			profile := getConfigProfile(t, format, testConfig, "profile")
+			profile, err := getProfile(format, testConfig, "profile")
+			require.NoError(t, err)
 
 			assert.NotNil(t, profile)
 			assert.NotNil(t, profile.Forget)
 			assert.NotEmpty(t, profile.Forget["keep-daily"])
 		})
 	}
-}
-
-func getConfigProfile(t *testing.T, configFormat, configString, profileKey string) *Profile {
-	c, err := Load(bytes.NewBufferString(configString), configFormat)
-	require.NoError(t, err)
-
-	profile, err := c.GetProfile(profileKey)
-	require.NoError(t, err)
-	return profile
 }

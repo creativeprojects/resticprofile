@@ -11,11 +11,8 @@ import (
 )
 
 func TestStartProcessWithPriority(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode")
-	}
 
-	// Run these 3 tests inside one test, so we don't have concurrency issue
+	// Run these 3 tests inside one test, so we don't have any concurrency issue
 	t.Run("WithNormalPriority", func(t *testing.T) {
 		err := SetClass(Normal)
 		if err != nil {

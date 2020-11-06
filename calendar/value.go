@@ -354,7 +354,7 @@ func parseInt(input string) (int, error) {
 }
 
 func runPostProcess(value int, postProcess []postProcessFunc) (int, error) {
-	if postProcess == nil || len(postProcess) == 0 {
+	if len(postProcess) == 0 {
 		return value, nil
 	}
 	var err error

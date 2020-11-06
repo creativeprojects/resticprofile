@@ -42,7 +42,7 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 		Arguments: args,
 		Environ:   []string{},
 		sigChan:   c,
-		done:      make(chan interface{}, 0),
+		done:      make(chan interface{}),
 	}
 }
 

@@ -24,7 +24,7 @@ func convertStructToFlags(orig interface{}) map[string][]string {
 		valueOf = valueOf.Elem()
 	}
 
-	flags := make(map[string][]string, 0)
+	flags := make(map[string][]string)
 	// NumField() will panic if typeOf is not a struct
 	if typeOf.Kind() != reflect.Struct {
 		panic(fmt.Errorf("unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct))

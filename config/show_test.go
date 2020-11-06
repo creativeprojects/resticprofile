@@ -52,7 +52,7 @@ func TestShowStruct(t *testing.T) {
 			input: testObject{Id: 11, Person: testPerson{Properties: map[string][]string{
 				"list": {"one", "two", "three"},
 			}}},
-			output: " person:\n  properties:\n   list:  one, two, three\n\n\n id:  11\n\n",
+			output: " person:\n  properties:\n   list:  one\n       two\n       three\n\n\n id:  11\n\n",
 		},
 		{
 			input:  testObject{Id: 11, Name: "test", Map: map[string][]string{"left": {"over"}}},

@@ -10,21 +10,22 @@ import (
 )
 
 type commandLineFlags struct {
-	help       bool
-	quiet      bool
-	verbose    bool
-	config     string
-	format     string
-	name       string
-	logFile    string
-	dryRun     bool
-	noAnsi     bool
-	theme      string
-	resticArgs []string
-	selfUpdate bool
-	wait       bool
-	isChild    bool
-	parentPort int
+	help        bool
+	quiet       bool
+	verbose     bool
+	veryVerbose bool
+	config      string
+	format      string
+	name        string
+	logFile     string
+	dryRun      bool
+	noAnsi      bool
+	theme       string
+	resticArgs  []string
+	selfUpdate  bool
+	wait        bool
+	isChild     bool
+	parentPort  int
 }
 
 // loadFlags loads command line flags (before any command)
@@ -45,7 +46,8 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 
 	flagset.BoolVarP(&flags.help, "help", "h", false, "display this help")
 	flagset.BoolVarP(&flags.quiet, "quiet", "q", constants.DefaultQuietFlag, "display only warnings and errors")
-	flagset.BoolVarP(&flags.verbose, "verbose", "v", constants.DefaultVerboseFlag, "display all debugging information")
+	flagset.BoolVarP(&flags.verbose, "verbose", "v", constants.DefaultVerboseFlag, "display some debugging information")
+	flagset.BoolVar(&flags.veryVerbose, "trace", constants.DefaultVerboseFlag, "display even more debugging information")
 	flagset.StringVarP(&flags.config, "config", "c", constants.DefaultConfigurationFile, "configuration file")
 	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")

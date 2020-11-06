@@ -54,9 +54,6 @@ type testLocation struct {
 }
 
 func TestFindConfigurationFile(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Test skipped in short mode")
-	}
 	// Work from a temporary directory
 	err := os.Chdir(os.TempDir())
 	require.NoError(t, err)
