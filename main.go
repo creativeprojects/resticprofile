@@ -364,6 +364,9 @@ Can you please open an issue on github including these details:
 		w := tabwriter.NewWriter(os.Stderr, 0, 0, 3, ' ', 0)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "os", runtime.GOOS)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "arch", runtime.GOARCH)
+		if goarm > 0 {
+			_, _ = fmt.Fprintf(w, "\t%s:\tv%d\n", "arm", goarm)
+		}
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "version", version)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "commit", commit)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "compiled", date)
