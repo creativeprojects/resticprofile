@@ -3,6 +3,7 @@ module github.com/creativeprojects/resticprofile
 go 1.13
 
 require (
+	github.com/creativeprojects/go-selfupdate v0.1.1
 	github.com/adrg/xdg v0.2.2
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
@@ -14,7 +15,6 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
-	github.com/rhysd/go-github-selfupdate v1.2.2
 	github.com/rickb777/date v1.14.3
 	github.com/shirou/gopsutil/v3 v3.20.10
 	github.com/smartystreets/assertions v1.0.0 // indirect

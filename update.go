@@ -6,15 +6,14 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/blang/semver"
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/go-selfupdate/selfupdate"
 	"github.com/creativeprojects/resticprofile/term"
-	"github.com/rhysd/go-github-selfupdate/selfupdate"
 )
 
 func confirmAndSelfUpdate(debug bool) error {
 	if debug {
-		selfupdate.EnableLog()
+		selfupdate.SetLogger(clog.NewStandardLogger(clog.LevelDebug, clog.GetDefaultLogger()))
 	}
 	latest, found, err := selfupdate.DetectLatest("creativeprojects/resticprofile")
 	if err != nil {
@@ -24,13 +23,12 @@ func confirmAndSelfUpdate(debug bool) error {
 		return fmt.Errorf("latest version for %s/%s could not be found from github repository", runtime.GOOS, runtime.GOARCH)
 	}
 
-	v := semver.MustParse(version)
-	if latest.Version.LTE(v) {
+	if latest.LessThan(version) {
 		clog.Infof("Current version (%s) is the latest", version)
 		return nil
 	}
 
-	if !term.AskYesNo(os.Stdin, fmt.Sprint("Do you want to update to version ", latest.Version), true) {
+	if !term.AskYesNo(os.Stdin, fmt.Sprintf("Do you want to update to version %s", latest.Version()), true) {
 		fmt.Println("Never mind")
 		return nil
 	}
