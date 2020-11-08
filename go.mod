@@ -3,11 +3,10 @@ module github.com/creativeprojects/resticprofile
 go 1.13
 
 require (
-	github.com/creativeprojects/go-selfupdate v0.1.1
 	github.com/adrg/xdg v0.2.2
-	github.com/blang/semver v3.5.1+incompatible
 	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
 	github.com/creativeprojects/clog v0.6.0
+	github.com/creativeprojects/go-selfupdate v0.1.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mackerelio/go-osstat v0.1.0
@@ -24,9 +23,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
-	github.com/ulikunitz/xz v0.5.8 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
