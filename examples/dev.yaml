@@ -82,7 +82,9 @@ self:
     backup:
         check-before: true
         source: {{ .CurrentDir }}
-        exclude: "/**/.git/"
+        exclude:
+          - "/**/.git/"
+          - "resticp\\*"
         schedule:
         - "*:00,30"
         schedule-permission: user
