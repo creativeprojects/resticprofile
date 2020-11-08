@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"regexp"
 	"runtime"
 	"strings"
 	"syscall"
@@ -61,7 +62,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 			`.`,
 		}, args)
 	} else {
-		assert.Equal(t, "/bin/sh", command)
+		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/sh"), command)
 		assert.Equal(t, []string{
 			"-c",
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
@@ -84,7 +85,7 @@ func TestShellCommand(t *testing.T) {
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
 		}, args)
 	} else {
-		assert.Equal(t, "/bin/sh", command)
+		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/sh"), command)
 		assert.Equal(t, []string{
 			"-c",
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",

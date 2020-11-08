@@ -24,13 +24,14 @@ func TestFixUnixPaths(t *testing.T) {
 		{"~/dir", "~/dir"},
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
 		{"some file.txt", "prefix/some\\ file.txt"},
+		{"/**/.git", "/\\*\\*/.git"},
 	}
 
 	err := os.Setenv("TEMP_TEST_DIR", "/home")
 	require.NoError(t, err)
 
 	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("prefix"), unixSpaces)
+		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("prefix"), unixSpaces, unixGlobs)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 	}
 }

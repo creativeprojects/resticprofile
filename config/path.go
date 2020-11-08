@@ -46,6 +46,13 @@ func unixSpaces(value string) string {
 	return value
 }
 
+func unixGlobs(value string) string {
+	if runtime.GOOS != "windows" {
+		value = strings.ReplaceAll(value, "*", `\*`)
+	}
+	return value
+}
+
 func absolutePrefix(prefix string) pathFix {
 	return func(value string) string {
 		if value == "" ||

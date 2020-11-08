@@ -42,6 +42,8 @@ type BackupSection struct {
 	RunAfter           []string               `mapstructure:"run-after"`
 	UseStdin           bool                   `mapstructure:"stdin" argument:"stdin"`
 	Source             []string               `mapstructure:"source"`
+	Exclude            []string               `mapstructure:"exclude" argument:"exclude"`
+	Iexclude           []string               `mapstructure:"iexclude" argument:"iexclude"`
 	ExcludeFile        []string               `mapstructure:"exclude-file" argument:"exclude-file"`
 	FilesFrom          []string               `mapstructure:"files-from" argument:"files-from"`
 	Schedule           []string               `mapstructure:"schedule"`
@@ -99,6 +101,14 @@ func (p *Profile) SetRootPath(rootPath string) {
 		// Backup source is NOT relative to the configuration, but where the script was launched instead
 		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
 			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv, unixSpaces)
+		}
+
+		if p.Backup.Exclude != nil && len(p.Backup.Exclude) > 0 {
+			p.Backup.Exclude = fixPaths(p.Backup.Exclude, expandEnv, unixSpaces, unixGlobs)
+		}
+
+		if p.Backup.Iexclude != nil && len(p.Backup.Iexclude) > 0 {
+			p.Backup.Iexclude = fixPaths(p.Backup.Iexclude, expandEnv, unixSpaces, unixGlobs)
 		}
 	}
 }
