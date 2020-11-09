@@ -49,6 +49,9 @@ func handlerFuncLog(w http.ResponseWriter, r *http.Request) {
 		clog.Errorf("error decoding json log message: %v", err)
 	}
 	switch clog.LogLevel(log.Level) {
+	case clog.LevelTrace:
+		clog.Trace(log.Message)
+
 	case clog.LevelDebug:
 		clog.Debug(log.Message)
 
