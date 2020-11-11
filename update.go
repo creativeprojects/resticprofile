@@ -11,7 +11,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-func confirmAndSelfUpdate(debug bool) error {
+func confirmAndSelfUpdate(quiet, debug bool, version string) error {
 	if debug {
 		selfupdate.SetLogger(clog.NewStandardLogger(clog.LevelDebug, clog.GetDefaultLogger()))
 	}
@@ -28,7 +28,8 @@ func confirmAndSelfUpdate(debug bool) error {
 		return nil
 	}
 
-	if !term.AskYesNo(os.Stdin, fmt.Sprintf("Do you want to update to version %s", latest.Version()), true) {
+	// don't ask in quiet mode
+	if !quiet && !term.AskYesNo(os.Stdin, fmt.Sprintf("Do you want to update to version %s", latest.Version()), true) {
 		fmt.Println("Never mind")
 		return nil
 	}

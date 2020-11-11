@@ -34,13 +34,13 @@ var (
 	ownCommands = []ownCommand{
 		{
 			name:              "version",
-			description:       "display version (run in vebose mode for detailed information)",
+			description:       "display version (run in verbose mode for detailed information)",
 			action:            displayVersion,
 			needConfiguration: false,
 		},
 		{
 			name:              "self-update",
-			description:       "update resticprofile to latest version (does not update restic)",
+			description:       "update to latest resticprofile (use -q/--quiet flag to update without confirmation)",
 			action:            selfUpdate,
 			needConfiguration: false,
 		},
@@ -210,7 +210,7 @@ func displayGroups(configuration *config.Config) {
 }
 
 func selfUpdate(_ *config.Config, flags commandLineFlags, args []string) error {
-	err := confirmAndSelfUpdate(flags.verbose)
+	err := confirmAndSelfUpdate(flags.quiet, flags.verbose, version)
 	if err != nil {
 		return err
 	}
@@ -222,6 +222,7 @@ func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
 }
 
 func testCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+	clog.Info("Nothing to test")
 	return nil
 }
 
