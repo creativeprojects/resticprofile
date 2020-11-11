@@ -6,7 +6,7 @@ require (
 	github.com/adrg/xdg v0.2.2
 	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
 	github.com/creativeprojects/clog v0.7.0
-	github.com/creativeprojects/go-selfupdate v0.1.1
+	github.com/creativeprojects/go-selfupdate v0.2.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mackerelio/go-osstat v0.1.0

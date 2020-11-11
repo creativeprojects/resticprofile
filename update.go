@@ -23,7 +23,7 @@ func confirmAndSelfUpdate(debug bool) error {
 		return fmt.Errorf("latest version for %s/%s could not be found from github repository", runtime.GOOS, runtime.GOARCH)
 	}
 
-	if latest.LessThan(version) {
+	if latest.LessOrEqual(version) {
 		clog.Infof("Current version (%s) is the latest", version)
 		return nil
 	}
@@ -40,6 +40,6 @@ func confirmAndSelfUpdate(debug bool) error {
 	if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
 		return fmt.Errorf("error occurred while updating binary: %v", err)
 	}
-	clog.Infof("Successfully updated to version %s", latest.Version)
+	clog.Infof("Successfully updated to version %s", latest.Version())
 	return nil
 }
