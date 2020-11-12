@@ -10,12 +10,12 @@ groups:
 default:
     repository: "r:\\backup"
     password-file: key
+    lock: "r:\\resticprofile-{{ .Profile.Name }}.lock"
 
 self:
     inherit: default
     initialize: true
     verbose: true
-    lock: "r:\\resticprofile-profile-self.lock"
     force-inactive-lock: true
     backup:
         source: "."
