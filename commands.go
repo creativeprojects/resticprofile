@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -25,9 +26,9 @@ import (
 type ownCommand struct {
 	name              string
 	description       string
-	action            func(*config.Config, commandLineFlags, []string) error
+	action            func(io.Writer, *config.Config, commandLineFlags, []string) error
 	needConfiguration bool // true if the action needs a configuration file loaded
-	hide              bool
+	hide              bool // don't display the command in the help
 }
 
 var (
@@ -108,8 +109,8 @@ var (
 	}
 )
 
-func displayOwnCommands() {
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
+func displayOwnCommands(output io.Writer) {
+	w := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
 	for _, command := range ownCommands {
 		if command.hide {
 			continue
@@ -131,23 +132,23 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 func runOwnCommand(configuration *config.Config, command string, flags commandLineFlags, args []string) error {
 	for _, commandDef := range ownCommands {
 		if commandDef.name == command {
-			return commandDef.action(configuration, flags, args)
+			return commandDef.action(os.Stdout, configuration, flags, args)
 		}
 	}
 	return fmt.Errorf("command not found: %v", command)
 }
 
-func displayProfilesCommand(configuration *config.Config, _ commandLineFlags, _ []string) error {
-	displayProfiles(configuration)
-	displayGroups(configuration)
+func displayProfilesCommand(output io.Writer, configuration *config.Config, _ commandLineFlags, _ []string) error {
+	displayProfiles(output, configuration)
+	displayGroups(output, configuration)
 	return nil
 }
 
-func displayVersion(_ *config.Config, flags commandLineFlags, _ []string) error {
-	fmt.Printf("resticprofile version %s commit %s.\n", version, commit)
+func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, _ []string) error {
+	fmt.Fprintf(output, "resticprofile version %s commit %s.\n", version, commit)
 
 	if flags.verbose {
-		w := tabwriter.NewWriter(os.Stderr, 0, 0, 3, ' ', 0)
+		w := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
 		_, _ = fmt.Fprintf(w, "\n")
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "os", runtime.GOOS)
@@ -173,14 +174,14 @@ func displayVersion(_ *config.Config, flags commandLineFlags, _ []string) error 
 	return nil
 }
 
-func displayProfiles(configuration *config.Config) {
+func displayProfiles(output io.Writer, configuration *config.Config) {
 	profileSections := configuration.GetProfileSections()
 	keys := sortedMapKeys(profileSections)
 	if len(profileSections) == 0 {
-		fmt.Println("\nThere's no available profile in the configuration")
+		fmt.Fprintln(output, "\nThere's no available profile in the configuration")
 	} else {
-		fmt.Println("\nProfiles available:")
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(output, "\nProfiles available:")
+		w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 		for _, name := range keys {
 			sections := profileSections[name]
 			sort.Strings(sections)
@@ -192,24 +193,24 @@ func displayProfiles(configuration *config.Config) {
 		}
 		_ = w.Flush()
 	}
-	fmt.Println("")
+	fmt.Fprintln(output, "")
 }
 
-func displayGroups(configuration *config.Config) {
+func displayGroups(output io.Writer, configuration *config.Config) {
 	groups := configuration.GetProfileGroups()
 	if len(groups) == 0 {
 		return
 	}
-	fmt.Println("Groups available:")
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(output, "Groups available:")
+	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 	for name, groupList := range groups {
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
 	}
 	_ = w.Flush()
-	fmt.Println("")
+	fmt.Fprintln(output, "")
 }
 
-func selfUpdate(_ *config.Config, flags commandLineFlags, args []string) error {
+func selfUpdate(_ io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
 	err := confirmAndSelfUpdate(flags.quiet, flags.verbose, version)
 	if err != nil {
 		return err
@@ -217,11 +218,11 @@ func selfUpdate(_ *config.Config, flags commandLineFlags, args []string) error {
 	return nil
 }
 
-func panicCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+func panicCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
 	panic("you asked for it")
 }
 
-func testCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+func testCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
 	clog.Info("Nothing to test")
 	return nil
 }
@@ -235,7 +236,7 @@ func sortedMapKeys(data map[string][]string) []string {
 	return keys
 }
 
-func showProfile(c *config.Config, flags commandLineFlags, args []string) error {
+func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	// Show global section first
 	global, err := c.GetGlobalSection()
 	if err != nil {
@@ -266,7 +267,7 @@ func showProfile(c *config.Config, flags commandLineFlags, args []string) error 
 }
 
 // randomKey simply display a base64'd random key to the console
-func randomKey(c *config.Config, flags commandLineFlags, args []string) error {
+func randomKey(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	var err error
 	size := uint64(1024)
 	// flags.resticArgs contain the command and the rest of the command line
@@ -285,14 +286,14 @@ func randomKey(c *config.Config, flags commandLineFlags, args []string) error {
 	if err != nil {
 		return err
 	}
-	encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
+	encoder := base64.NewEncoder(base64.StdEncoding, output)
 	_, err = encoder.Write(buffer)
 	encoder.Close()
-	fmt.Println("")
+	fmt.Fprintln(output, "")
 	return err
 }
 
-func createSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -313,7 +314,7 @@ func createSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	return nil
 }
 
-func removeSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -334,7 +335,7 @@ func removeSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	return nil
 }
 
-func statusSchedule(c *config.Config, flags commandLineFlags, args []string) error {
+func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -355,7 +356,7 @@ func statusSchedule(c *config.Config, flags commandLineFlags, args []string) err
 	return nil
 }
 
-func testElevationCommand(c *config.Config, flags commandLineFlags, args []string) error {
+func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	if flags.isChild {
 		client := remote.NewClient(flags.parentPort)
 		term.Print("first line", "\n")

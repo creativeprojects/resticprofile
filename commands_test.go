@@ -2,6 +2,9 @@ package main
 
 import (
 	"errors"
+	"io"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
@@ -33,23 +36,22 @@ func init() {
 	}
 }
 
-func firstCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+func firstCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
 	return errors.New("first")
 }
 
-func secondCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+func secondCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
 	return errors.New("second")
 }
 
-func thirdCommand(_ *config.Config, _ commandLineFlags, _ []string) error {
+func thirdCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
 	return errors.New("third")
 }
 
-func ExampleDisplayOwnCommands() {
-	displayOwnCommands()
-	// Output:
-	//    first    first first
-	//    second   second second
+func TestDisplayOwnCommands(t *testing.T) {
+	buffer := &strings.Builder{}
+	displayOwnCommands(buffer)
+	assert.Equal(t, "   first    first first\n   second   second second\n", buffer.String())
 }
 
 func TestIsOwnCommand(t *testing.T) {
@@ -68,19 +70,19 @@ func TestRunOwnCommand(t *testing.T) {
 
 func TestPanicCommand(t *testing.T) {
 	assert.Panics(t, func() {
-		_ = panicCommand(nil, commandLineFlags{}, nil)
+		_ = panicCommand(nil, nil, commandLineFlags{}, nil)
 	})
 }
 
 func TestRandomKeyOfInvalidSize(t *testing.T) {
-	assert.Error(t, randomKey(nil, commandLineFlags{resticArgs: []string{"restic", "size"}}, nil))
+	assert.Error(t, randomKey(os.Stdout, nil, commandLineFlags{resticArgs: []string{"restic", "size"}}, nil))
 }
 
 func TestRandomKeyOfZeroSize(t *testing.T) {
-	assert.Error(t, randomKey(nil, commandLineFlags{resticArgs: []string{"restic", "0"}}, nil))
+	assert.Error(t, randomKey(os.Stdout, nil, commandLineFlags{resticArgs: []string{"restic", "0"}}, nil))
 }
 
 func TestRandomKey(t *testing.T) {
 	// doesn't look like much, but it's testing the random generator is not throwing an error
-	assert.NoError(t, randomKey(nil, commandLineFlags{}, nil))
+	assert.NoError(t, randomKey(os.Stdout, nil, commandLineFlags{}, nil))
 }

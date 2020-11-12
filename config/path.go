@@ -39,16 +39,18 @@ func expandEnv(value string) string {
 	return value
 }
 
-func unixSpaces(value string) string {
+// escapeSpaces escapes ' ' characters (unix only)
+func escapeSpaces(value string) string {
 	if runtime.GOOS != "windows" {
-		value = strings.ReplaceAll(strings.TrimSpace(value), " ", `\ `)
+		value = escapeString(value, []byte{' '})
 	}
 	return value
 }
 
-func unixGlobs(value string) string {
+// escapeShellString escapes ' ', '*' and '?' characters (unix only)
+func escapeShellString(value string) string {
 	if runtime.GOOS != "windows" {
-		value = strings.ReplaceAll(value, "*", `\*`)
+		value = escapeString(value, []byte{' ', '*', '?'})
 	}
 	return value
 }
@@ -80,4 +82,31 @@ func absolutePath(value string) string {
 	// looks like we can't get an absolute version...
 	clog.Errorf("cannot determine absolute path for '%s'", value)
 	return value
+}
+
+// escapeString adds a '\' in front of the characters to escape.
+// it checks for the number of '\' characters in front:
+// - if even: add one
+// - if odd: do nothing, it means the character is already escaped
+func escapeString(value string, chars []byte) string {
+	output := &strings.Builder{}
+	escape := 0
+	for i := 0; i < len(value); i++ {
+		if value[i] == '\\' {
+			escape++
+		} else {
+			for _, char := range chars {
+				if value[i] == char {
+					if escape%2 == 0 {
+						// even number of escape characters in front, we need to escape this one
+						output.WriteByte('\\')
+					}
+				}
+			}
+			// reset number of '\'
+			escape = 0
+		}
+		output.WriteByte(value[i])
+	}
+	return output.String()
 }

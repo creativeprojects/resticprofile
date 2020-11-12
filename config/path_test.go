@@ -19,19 +19,29 @@ func TestFixUnixPaths(t *testing.T) {
 		expected string
 	}{
 		{"", ""},
-		{"dir", "prefix/dir"},
+		{"dir", "/prefix/dir"},
 		{"/dir", "/dir"},
 		{"~/dir", "~/dir"},
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
-		{"some file.txt", "prefix/some\\ file.txt"},
+		{"some file.txt", "/prefix/some\\ file.txt"},
 		{"/**/.git", "/\\*\\*/.git"},
+		{"/\\*\\*/.git", "/\\*\\*/.git"},
+		{`/?`, `/\?`},
+		{`/\?`, `/\?`},
+		{`/\\?`, `/\\\?`},
+		{`/\\\?`, `/\\\?`},
+		{`/\\\\?`, `/\\\\\?`},
+		{`/ ?*`, `/\ \?\*`},
 	}
 
 	err := os.Setenv("TEMP_TEST_DIR", "/home")
 	require.NoError(t, err)
 
 	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("prefix"), unixSpaces, unixGlobs)
+		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("/prefix"), escapeShellString)
+		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
+		// running it again should not change the value
+		fixed = fixPath(fixed, expandEnv, absolutePrefix("/prefix"), escapeShellString)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 	}
 }
@@ -46,18 +56,21 @@ func TestFixWindowsPaths(t *testing.T) {
 		expected string
 	}{
 		{``, ``},
-		{`dir`, `prefix\dir`},
-		{`\dir`, `prefix\dir`},
+		{`dir`, `\prefix\dir`},
+		{`\dir`, `\prefix\dir`},
 		{`c:\dir`, `c:\dir`},
 		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
-		{"some file.txt", `prefix\some file.txt`},
+		{"some file.txt", `\prefix\some file.txt`},
 	}
 
 	err := os.Setenv("TEMP_TEST_DIR", "/home")
 	require.NoError(t, err)
 
 	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("prefix"), unixSpaces)
+		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("\\prefix"), escapeShellString)
+		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
+		// running it again should not change the value
+		fixed = fixPath(fixed, expandEnv, absolutePrefix("\\prefix"), escapeShellString)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 	}
 }

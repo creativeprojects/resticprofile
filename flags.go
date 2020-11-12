@@ -38,7 +38,7 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 		fmt.Println("\nresticprofile flags:")
 		flagset.PrintDefaults()
 		fmt.Println("\nresticprofile own commands:")
-		displayOwnCommands()
+		displayOwnCommands(os.Stdout)
 		fmt.Println("")
 	}
 
