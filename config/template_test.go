@@ -7,14 +7,13 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/creativeprojects/clog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestResolveLock(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -28,8 +27,8 @@ lock = "/tmp/{{ .Profile.Name }}.lock"
 }
 
 func TestResolveYear(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -43,8 +42,8 @@ cache-dir = "{{ .Now.Year }}"
 }
 
 func TestResolveSliceValue(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -58,8 +57,8 @@ run-before = ["echo {{ .Profile.Name }}"]
 }
 
 func TestResolveStructThenSliceValue(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -74,8 +73,8 @@ run-before = ["echo {{ .Profile.Name }}"]
 }
 
 func TestResolveStructThenSliceTwoValues(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -90,8 +89,8 @@ run-before = ["echo {{ .Profile.Name }}", "ls -al"]
 }
 
 func TestYamlResolveStructThenSliceValue(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `---
 profile1:
@@ -107,8 +106,8 @@ profile1:
 }
 
 func TestYamlResolveStructThenSliceTwoValue(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `---
 profile1:
@@ -125,8 +124,8 @@ profile1:
 }
 
 func TestResolveRemainMap(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -140,8 +139,8 @@ something = "{{ .Profile.Name }}"
 }
 
 func TestResolveStructThenRemainMap(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -156,8 +155,8 @@ something = "{{ .Profile.Name }}"
 }
 
 func TestResolveInheritanceOfProfileName(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -173,8 +172,8 @@ inherit = "profile1"
 }
 
 func TestResolveSnapshotTag(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 [profile1]
@@ -189,8 +188,8 @@ tag = ["test", "{{ .Profile.Name }}"]
 }
 
 func TestInheritanceWithTemplates(t *testing.T) {
-	clog.SetTestLog(t)
-	defer clog.CloseTestLog()
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
 
 	testConfig := `
 {{ define "repo" -}}

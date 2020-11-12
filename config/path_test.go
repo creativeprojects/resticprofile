@@ -56,21 +56,21 @@ func TestFixWindowsPaths(t *testing.T) {
 		expected string
 	}{
 		{``, ``},
-		{`dir`, `\prefix\dir`},
-		{`\dir`, `\prefix\dir`},
+		{`dir`, `c:\prefix\dir`},
+		{`\dir`, `c:\prefix\dir`},
 		{`c:\dir`, `c:\dir`},
 		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
-		{"some file.txt", `\prefix\some file.txt`},
+		{"some file.txt", `c:\prefix\some file.txt`},
 	}
 
 	err := os.Setenv("TEMP_TEST_DIR", "/home")
 	require.NoError(t, err)
 
 	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("\\prefix"), escapeShellString)
+		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("c:\\prefix"), escapeShellString)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 		// running it again should not change the value
-		fixed = fixPath(fixed, expandEnv, absolutePrefix("\\prefix"), escapeShellString)
+		fixed = fixPath(fixed, expandEnv, absolutePrefix("c:\\prefix"), escapeShellString)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 	}
 }
