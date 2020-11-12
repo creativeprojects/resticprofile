@@ -499,7 +499,7 @@ func compileDifferences(recurrences []time.Time) ([]time.Duration, []time.Durati
 }
 
 func convertWeekdaysToBitmap(weekdays []int) int {
-	if weekdays == nil || len(weekdays) == 0 {
+	if len(weekdays) == 0 {
 		return 0
 	}
 	bitmap := 0
