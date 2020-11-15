@@ -16,7 +16,7 @@ func TestUpdate(t *testing.T) {
 
 	err := confirmAndSelfUpdate(true, true, "0.0.1")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "error occurred while updating binary: file ")
+	assert.Contains(t, err.Error(), "unable to update binary: file ")
 	assert.Contains(t, err.Error(), "resticprofile.test")
 	assert.Contains(t, err.Error(), " is not found")
 }
