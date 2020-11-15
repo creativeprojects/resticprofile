@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/go-selfupdate/selfupdate"
+	"github.com/creativeprojects/go-selfupdate"
 	"github.com/creativeprojects/resticprofile/term"
 )
 
@@ -15,9 +15,13 @@ func confirmAndSelfUpdate(quiet, debug bool, version string) error {
 	if debug {
 		selfupdate.SetLogger(clog.NewStandardLogger(clog.LevelDebug, clog.GetDefaultLogger()))
 	}
-	latest, found, err := selfupdate.DetectLatest("creativeprojects/resticprofile")
+	updater, _ := selfupdate.NewUpdater(
+		selfupdate.Config{
+			Validator: &selfupdate.ChecksumValidator{UniqueFilename: "checksums.txt"},
+		})
+	latest, found, err := updater.DetectLatest("creativeprojects/resticprofile")
 	if err != nil {
-		return fmt.Errorf("error occurred while detecting version: %v", err)
+		return fmt.Errorf("unable to detect latest version: %v", err)
 	}
 	if !found {
 		return fmt.Errorf("latest version for %s/%s could not be found from github repository", runtime.GOOS, runtime.GOARCH)
@@ -38,8 +42,8 @@ func confirmAndSelfUpdate(quiet, debug bool, version string) error {
 	if err != nil {
 		return errors.New("could not locate executable path")
 	}
-	if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
-		return fmt.Errorf("error occurred while updating binary: %v", err)
+	if err := updater.UpdateTo(latest, exe); err != nil {
+		return fmt.Errorf("unable to update binary: %v", err)
 	}
 	clog.Infof("Successfully updated to version %s", latest.Version())
 	return nil

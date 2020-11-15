@@ -6,7 +6,7 @@ require (
 	github.com/adrg/xdg v0.2.2
 	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
 	github.com/creativeprojects/clog v0.7.0
-	github.com/creativeprojects/go-selfupdate v0.2.1
+	github.com/creativeprojects/go-selfupdate v0.4.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mackerelio/go-osstat v0.1.0
@@ -23,8 +23,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1
+	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
+	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
