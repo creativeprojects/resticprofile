@@ -768,9 +768,9 @@ schedule-log = "profile-backup.log"
 
 `schedule-permission` accepts two parameters: `user` or `system`:
 
-* `user`: your backup will be running using your current user permissions on files. That's probably what you want if you're only saving your documents (or any other file inside your profile).
+* `user`: your backup will be running using your current user permissions on files. This is fine if you're only saving your documents (or any other file inside your profile). Please note on **systemd** that the schedule **will only run when your user is logged in**.
 
-* `system`: if you need to access some system or protected files. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed)
+* `system`: if you need to access some system or protected files. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed).
 
 * *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user) and fallback to `user`
 

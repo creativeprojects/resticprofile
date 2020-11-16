@@ -20,7 +20,7 @@ const (
 Description={{ .JobDescription }}
 
 [Service]
-Type=oneshot
+Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
 {{ if .Nice }}Nice={{ .Nice }}{{ end }}

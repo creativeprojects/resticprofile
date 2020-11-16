@@ -4,17 +4,33 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"syscall"
 	"testing"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/shirou/gopsutil/v3/process"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+const (
+	helperBinary = "./locktest"
+)
+
+func init() {
+	if runtime.GOOS == "windows" {
+		return
+	}
+	// compile helper command
+	cmd := exec.Command("go", "build", "-o", helperBinary, "./test")
+	cmd.Run()
+}
 
 func TestLockIsAvailable(t *testing.T) {
 	tempfile := filepath.Join(os.TempDir(), fmt.Sprintf("%s%d%d.tmp", "TestLockIsAvailable", time.Now().UnixNano(), os.Getpid()))
@@ -253,4 +269,75 @@ func TestForceLockWithRunningPID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestLockWithNoInterruption(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("cannot send a signal to a child process in Windows")
+	}
+	lockfile := "TestLockWithNoInterruption.lock"
+	// make sure there's no remaining lockfile from a failed test
+	_ = os.Remove(lockfile)
+
+	var err error
+	buffer := &bytes.Buffer{}
+	cmd := exec.Command(helperBinary, "-wait", "1", "-lock", lockfile)
+	cmd.Stdout = buffer
+	cmd.Stderr = buffer
+
+	err = cmd.Run()
+	assert.NoError(t, err)
+	assert.Equal(t, "lock acquired\ntask finished\nlock released\n", buffer.String())
+}
+
+func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("cannot send a signal to a child process in Windows")
+	}
+	lockfile := "TestLockIsRemovedAfterInterruptSignal.lock"
+	// make sure there's no remaining lockfile from a failed test
+	_ = os.Remove(lockfile)
+
+	var err error
+	buffer := &bytes.Buffer{}
+	cmd := exec.Command(helperBinary, "-wait", "400", "-lock", lockfile)
+	cmd.Stdout = buffer
+	cmd.Stderr = buffer
+
+	err = cmd.Start()
+	require.NoError(t, err)
+
+	time.Sleep(100 * time.Millisecond)
+	err = cmd.Process.Signal(syscall.SIGINT)
+	require.NoError(t, err)
+
+	err = cmd.Wait()
+	assert.NoError(t, err)
+	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
+}
+
+func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("cannot send a signal to a child process in Windows")
+	}
+	lockfile := "TestLockIsRemovedAfterInterruptSignal.lock"
+	// make sure there's no remaining lockfile from a failed test
+	_ = os.Remove(lockfile)
+
+	var err error
+	buffer := &bytes.Buffer{}
+	cmd := exec.Command(helperBinary, "-wait", "400", "-lock", lockfile)
+	cmd.Stdout = buffer
+	cmd.Stderr = buffer
+
+	err = cmd.Start()
+	require.NoError(t, err)
+
+	time.Sleep(100 * time.Millisecond)
+	err = cmd.Process.Signal(syscall.SIGINT)
+	require.NoError(t, err)
+
+	err = cmd.Wait()
+	assert.NoError(t, err)
+	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
 }

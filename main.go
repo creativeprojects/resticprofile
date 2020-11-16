@@ -12,20 +12,19 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/term"
-
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
 )
 
 // These fields are populated by the goreleaser build
 var (
-	version = "0.10.0-dev"
+	version = "0.10.1-dev"
 	commit  = ""
 	date    = ""
 	builtBy = ""
@@ -209,6 +208,10 @@ func main() {
 	}
 
 	if c.HasProfile(flags.name) {
+		// if running as a systemd timer
+		notifyStart()
+		defer notifyStop()
+
 		// Single profile run
 		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand)
 		if err != nil {
@@ -224,6 +227,10 @@ func main() {
 			clog.Errorf("cannot load group '%s': %v", flags.name, err)
 		}
 		if len(group) > 0 {
+			// if running as a systemd timer
+			notifyStart()
+			defer notifyStop()
+
 			for i, profileName := range group {
 				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
 				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand)
@@ -300,6 +307,13 @@ func runProfile(
 		profile.Quiet = false
 	}
 
+	// change log filter according to profile settings
+	if profile.Quiet {
+		changeLevelFilter(clog.LevelWarning)
+	} else if profile.Verbose {
+		changeLevelFilter(clog.LevelDebug)
+	}
+
 	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(c.GetConfigFile())
@@ -316,9 +330,11 @@ func runProfile(
 	}
 	profile.SetHost(hostname)
 
-	// Catch CTR-C keypress
+	// Catch CTR-C keypress, or other signal sent by a service manager (systemd)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	// remove signal catch before leaving
+	defer signal.Stop(sigChan)
 
 	wrapper := newResticWrapper(
 		resticBinary,

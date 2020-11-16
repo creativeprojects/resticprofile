@@ -6,6 +6,7 @@ global:
 default:
     password-file: key
     repository: /tmp/backup
+    lock: "/tmp/backup/resticprofile-{{ .Profile.Name }}.lock"
 
 documents:
     inherit: default
@@ -33,6 +34,7 @@ test1:
     backup:
         source: ./
         schedule: "*:00,15,30,45"
+        # schedule: "*:*"
         schedule-permission: user
         schedule-log: backup-test1.log
     check:
@@ -53,6 +55,18 @@ test2:
         schedule: "*-*-2"
         schedule-permission: system
         schedule-log: check-test2.log
+
+longrun:
+    inherit: default
+    initialize: true
+    verbose: true
+    backup:
+        source: ./
+        schedule: "*:*"
+        schedule-permission: user
+        schedule-log: backup-longrun.log
+        # should keep it going for more than a minute
+        run-before: "ping -c 100 127.0.0.1"
 
 self:
     inherit: default

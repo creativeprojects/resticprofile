@@ -67,3 +67,11 @@ func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logge
 	// now create and return the logger
 	return clog.NewLogger(clog.NewLevelFilter(minLevel, handler))
 }
+
+func changeLevelFilter(level clog.LogLevel) {
+	handler := clog.GetDefaultLogger().GetHandler()
+	filter, ok := handler.(*clog.LevelFilter)
+	if ok {
+		filter.SetLevel(level)
+	}
+}

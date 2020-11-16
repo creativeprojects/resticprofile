@@ -26,8 +26,8 @@ type Command struct {
 	done      chan interface{}
 }
 
-// newCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
-func newCommand(command string, args []string) *Command {
+// NewCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
+func NewCommand(command string, args []string) *Command {
 	return &Command{
 		Command:   command,
 		Arguments: args,
