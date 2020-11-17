@@ -143,13 +143,20 @@ Once installed, you can easily upgrade resticprofile to the latest release using
 $ resticprofile self-update
 ```
 
-Versions 0.6.x were using a flag instead:
+Versions 0.6.x were using a flag instead, **this is deprecated since version 0.7.0**:
 
 ```
 $ resticprofile --self-update
 ```
 
-_Please note there's an issue with self-updating from linux with ARM processors (like a raspberry pi)_
+_Please note on versions before 0.10.0,  there was an issue with self-updating from linux with ARM processors (like a raspberry pi). This was fixed in version 0.10.0_
+
+resticprofile will check for a new version from GitHub releases and asks you if you want to update to the new version. If you add the flag `-q` or `--quiet` to the command line, it will update automatically without asking.
+
+```
+$ resticprofile --quiet --self-update
+```
+
 
 ## Using docker image ##
 
@@ -663,19 +670,19 @@ resticprofile flags:
       --no-ansi         disable ansi control characters (disable console colouring)
   -q, --quiet           display only warnings and errors
       --theme string    console colouring theme (dark, light, none) (default "light")
-  -v, --verbose         display all debugging information
+      --trace           display even more debugging information
+  -v, --verbose         display some debugging information
   -w, --wait            wait at the end until the user presses the enter key
 
 resticprofile own commands:
-   version       display version (run in vebose mode for detailed information)
-   self-update   update resticprofile to latest version (does not update restic)
+   version       display version (run in verbose mode for detailed information)
+   self-update   update to latest resticprofile (use -q/--quiet flag to update without confirmation)
    profiles      display profile names from the configuration file
    show          show all the details of the current profile
-   random-key    generate a cryptographically secure random key to use as a restic key file
+   random-key    generate a cryptographically secure random key to use as a restic keyfile
    schedule      schedule a backup
    unschedule    remove a scheduled backup
    status        display the status of a scheduled backup job
-
 
 ```
 
@@ -2011,7 +2018,7 @@ Normalized form: *-*-* 00:00:00
 ### First time schedule
 
 When you schedule a profile with the `schedule` command, under the hood resticprofile will
-- create the unit file
+- create the unit file (of type `notify`)
 - create the timer file
 - run `systemctl daemon-reload` (only if `schedule-permission` is set to `system`)
 - run `systemctl enable`
