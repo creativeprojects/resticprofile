@@ -1,9 +1,15 @@
 project_name: resticprofile
+env:
+  - RESTIC_VERSION=0.11.0
 
 before:
   hooks:
     - go mod download
     - go generate ./...
+    - curl -LO https://github.com/restic/restic/releases/download/v{{ .Env.RESTIC_VERSION }}/restic_{{ .Env.RESTIC_VERSION }}_linux_amd64.bz2
+    - bunzip2 restic_{{ .Env.RESTIC_VERSION }}_linux_amd64.bz2
+    - mv restic_{{ .Env.RESTIC_VERSION }}_linux_amd64 build/restic
+    - chmod +x build/restic
 
 builds:
   - id: resticprofile_targz
@@ -67,3 +73,19 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+dockers:
+  -
+    goos: linux
+    goarch: amd64
+    binaries:
+    - resticprofile
+    builds:
+    - resticprofile_targz
+    image_templates:
+    - "creativeprojects/resticprofile:latest"
+    - "creativeprojects/resticprofile:{{ .RawVersion }}"
+    skip_push: false
+    dockerfile: build/Dockerfile
+    extra_files:
+    - build/restic

@@ -2,7 +2,8 @@ FROM alpine:latest
 
 LABEL maintainer Fred <fred@gcreativeprojects.tech>
 
-COPY restic* /usr/bin/
+COPY build/restic /usr/bin/
+COPY resticprofile /usr/bin/
 
 VOLUME /resticprofile
 WORKDIR /resticprofile
