@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/creativeprojects/resticprofile.svg?branch=master)](https://travis-ci.com/creativeprojects/resticprofile)
+![Build](https://github.com/creativeprojects/resticprofile/workflows/Build/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/creativeprojects/resticprofile)](https://goreportcard.com/report/github.com/creativeprojects/resticprofile)
 
 # resticprofile
