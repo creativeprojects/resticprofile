@@ -54,6 +54,8 @@ type LaunchJob struct {
 	WorkingDirectory      string             `plist:"WorkingDirectory"`
 	StartInterval         int                `plist:"StartInterval,omitempty"`
 	StartCalendarInterval []CalendarInterval `plist:"StartCalendarInterval,omitempty"`
+	ProcessType           string             `plist:"ProcessType"`
+	LowPriorityIO         bool               `plist:"LowPriorityIO"`
 }
 
 // CalendarInterval contains date and time trigger definition inside a map.
@@ -161,6 +163,8 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 		WorkingDirectory:      j.config.WorkingDirectory(),
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 		EnvironmentVariables:  env,
+		ProcessType:           "Background",
+		LowPriorityIO:         true,
 	}
 
 	filename, err := getFilename(name, j.getSchedulePermission())
