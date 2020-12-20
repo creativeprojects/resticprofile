@@ -30,8 +30,9 @@ func NewClient(port int) *Client {
 }
 
 // SetPrefix adds a prefix to all the log messages
-func (c *Client) SetPrefix(logPrefix string) {
+func (c *Client) SetPrefix(logPrefix string) clog.Handler {
 	c.logPrefix = logPrefix
+	return c
 }
 
 // LogEntry logs messages back to the parent process
