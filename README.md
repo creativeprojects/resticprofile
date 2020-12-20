@@ -1770,6 +1770,14 @@ Flags passed to the restic command line
 * **read-data-subset**: string
 * **with-cache**: true / false
 
+`[profile.prune]`
+
+Flags used by resticprofile only
+
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
+* **schedule-log**: string
+
 `[profile.mount]`
 
 Flags passed to the restic command line
