@@ -57,9 +57,15 @@ func showSubStruct(outputWriter io.Writer, orig interface{}, prefix string) erro
 				continue
 			}
 			if valueOf.Field(i).Kind() == reflect.Struct {
-				// start of a new struct
-				fmt.Fprintf(buffer, "%s%s:\n", prefix, key)
-				err := showSubStruct(buffer, valueOf.Field(i).Interface(), prefix)
+				var err error
+				if key == ",squash" {
+					p := prefix[0 : len(prefix)-len(templateIndent)]
+					err = showSubStruct(tabWriter, valueOf.Field(i).Interface(), p)
+				} else {
+					// start of a new struct
+					fmt.Fprintf(buffer, "%s%s:\n", prefix, key)
+					err = showSubStruct(buffer, valueOf.Field(i).Interface(), prefix)
+				}
 				if err != nil {
 					return err
 				}
