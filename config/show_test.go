@@ -30,6 +30,15 @@ type testPointer struct {
 	IsValid bool `mapstructure:"valid"`
 }
 
+type testEmbedded struct {
+	EmbeddedStruct `mapstructure:",squash"`
+	InlineValue    int `mapstructure:"inline"`
+}
+
+type EmbeddedStruct struct {
+	Value bool `mapstructure:"value"`
+}
+
 func TestShowStruct(t *testing.T) {
 	testData := []showStructData{
 		{
@@ -57,6 +66,10 @@ func TestShowStruct(t *testing.T) {
 		{
 			input:  testObject{Id: 11, Name: "test", Map: map[string][]string{"left": {"over"}}},
 			output: " person:\n\n id: 11\n name:  test\n left:  over\n\n",
+		},
+		{
+			input:  testEmbedded{EmbeddedStruct{Value: true}, 1},
+			output: " value:  true\n\n inline:  1\n\n",
 		},
 	}
 

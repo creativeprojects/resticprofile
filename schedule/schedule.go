@@ -5,11 +5,12 @@ import (
 )
 
 var (
-	// ScheduledSections are the command that can be scheduled (backup, retention, check)
+	// ScheduledSections are the command that can be scheduled (backup, retention, check, prune)
 	ScheduledSections = []string{
 		constants.CommandBackup,
 		constants.SectionConfigurationRetention,
 		constants.CommandCheck,
+		constants.CommandPrune,
 	}
 )
 

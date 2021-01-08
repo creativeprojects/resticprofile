@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -334,5 +335,51 @@ profile:
 			assert.NotNil(t, profile.Forget)
 			assert.NotEmpty(t, profile.Forget["keep-daily"])
 		})
+	}
+}
+
+func TestSchedules(t *testing.T) {
+	assert := assert.New(t)
+
+	testConfig := func(command string, scheduled bool) string {
+		schedule := ""
+		if scheduled {
+			schedule = `schedule = "@hourly"`
+		}
+
+		config := `
+[profile]
+initialize = true
+
+[profile.%s]
+%s
+`
+		return fmt.Sprintf(config, command, schedule)
+	}
+
+	sections := NewProfile(nil, "").allSchedulableSections()
+	assert.Len(sections, 4)
+
+	for command, _ := range sections {
+		// Check that schedule is supported
+		profile, err := getProfile("toml", testConfig(command, true), "profile")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(profile)
+
+		config := profile.Schedules()
+		assert.Len(config, 1)
+		assert.Equal(config[0].commandName, command)
+		assert.Len(config[0].schedules, 1)
+		assert.Equal(config[0].schedules[0], "@hourly")
+
+		// Check that schedule is optional
+		profile, err = getProfile("toml", testConfig(command, false), "profile")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(profile)
+		assert.Empty(profile.Schedules())
 	}
 }
