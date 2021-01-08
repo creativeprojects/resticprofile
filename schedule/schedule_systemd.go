@@ -17,7 +17,6 @@ import (
 )
 
 const (
-	systemdBin     = "systemd"
 	journalctlBin  = "journalctl"
 	systemctlBin   = "systemctl"
 	commandStart   = "start"
@@ -36,9 +35,9 @@ const (
 
 // Init verifies systemd is available on this system
 func Init() error {
-	found, err := exec.LookPath(systemdBin)
+	found, err := exec.LookPath(systemctlBin)
 	if err != nil || found == "" {
-		return errors.New("it doesn't look like systemd is installed on your system")
+		return errors.New("it doesn't look like systemd is installed on your system (cannot find systemctl in path)")
 	}
 	return nil
 }
