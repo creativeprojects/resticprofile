@@ -288,7 +288,7 @@ profile:
 			assert.NotNil(t, profile.Backup)
 			assert.Contains(t, profile.Backup.OtherFlags["tag"], "profile")
 			assert.NotNil(t, profile.Forget)
-			assert.Contains(t, profile.Forget["tag"], "profile")
+			assert.Contains(t, profile.Forget.OtherFlags["tag"], "profile")
 		})
 	}
 }

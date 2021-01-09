@@ -1737,6 +1737,12 @@ Flags passed to the restic command line
 
 `[profile.forget]`
 
+Flags used by resticprofile only
+
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
+* **schedule-log**: string
+
 Flags passed to the restic command line
 
 * **keep-last**: integer

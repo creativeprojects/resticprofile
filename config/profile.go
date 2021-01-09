@@ -32,7 +32,7 @@ type Profile struct {
 	Check         *OtherSectionWithSchedule `mapstructure:"check"`
 	Prune         *OtherSectionWithSchedule `mapstructure:"prune"`
 	Snapshots     map[string]interface{}    `mapstructure:"snapshots"`
-	Forget        map[string]interface{}    `mapstructure:"forget"`
+	Forget        *OtherSectionWithSchedule `mapstructure:"forget"`
 	Mount         map[string]interface{}    `mapstructure:"mount"`
 	OtherFlags    map[string]interface{}    `mapstructure:",remain"`
 }
@@ -128,7 +128,7 @@ func (p *Profile) SetHost(hostname string) {
 		replaceTrueValue(p.Snapshots, constants.ParameterHost, hostname)
 	}
 	if p.Forget != nil {
-		replaceTrueValue(p.Forget, constants.ParameterHost, hostname)
+		replaceTrueValue(p.Forget.OtherFlags, constants.ParameterHost, hostname)
 	}
 	if p.Mount != nil {
 		replaceTrueValue(p.Mount, constants.ParameterHost, hostname)
@@ -178,7 +178,7 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 
 	case constants.CommandForget:
 		if p.Forget != nil {
-			flags = addOtherFlags(flags, p.Forget)
+			flags = addOtherFlags(flags, p.Forget.OtherFlags)
 		}
 
 	case constants.CommandMount:
@@ -244,6 +244,7 @@ func (p *Profile) allSchedulableSections() map[string]interface{} {
 		constants.CommandBackup:                 p.Backup,
 		constants.SectionConfigurationRetention: p.Retention,
 		constants.CommandCheck:                  p.Check,
+		constants.CommandForget:                 p.Forget,
 		constants.CommandPrune:                  p.Prune,
 	}
 }

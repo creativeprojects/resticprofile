@@ -333,7 +333,7 @@ profile:
 
 			assert.NotNil(t, profile)
 			assert.NotNil(t, profile.Forget)
-			assert.NotEmpty(t, profile.Forget["keep-daily"])
+			assert.NotEmpty(t, profile.Forget.OtherFlags["keep-daily"])
 		})
 	}
 }
@@ -358,7 +358,7 @@ initialize = true
 	}
 
 	sections := NewProfile(nil, "").allSchedulableSections()
-	assert.Len(sections, 4)
+	assert.Len(sections, 5)
 
 	for command, _ := range sections {
 		// Check that schedule is supported
