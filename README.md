@@ -751,12 +751,16 @@ resticprofile is capable of managing scheduled backups for you:
 
 Each profile can be scheduled independently (groups are not available for scheduling yet).
 
-These 3 profile sections are accepting a schedule configuration:
+These 4 profile sections are accepting a schedule configuration:
 - backup
-- retention (when not run before or after a backup)
 - check
+- forget (version 0.11.0)
+- prune (version 0.11.0)
 
 which mean you can schedule backup, retention (`forget` command) and repository check independently (I recommend to use a local `lock` in this case).
+
+**Important**:
+Starting from version 0.11.0 the schedule of the `retention` section is **deprecated**: Use the `forget` section instead.
 
 ### Schedule configuration
 
@@ -784,6 +788,12 @@ schedule-log = "profile-backup.log"
 #### schedule-log
 
 Allow to redirect all output from resticprofile and restic to a file
+
+#### schedule-priority
+
+Starting from version 0.11.0, `schedule-priority` accepts two values:
+- `background`: the process shouldn't be noticeable when working on the machine at the same time (this is the default)
+- `standard`: the process should get the same priority as any other process on the machine (but it won't run faster if you're not using the machine at the same time)
 
 #### schedule
 

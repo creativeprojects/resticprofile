@@ -69,10 +69,12 @@ type OtherSectionWithSchedule struct {
 	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
 
+// ScheduleSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleSection struct {
 	Schedule           []string `mapstructure:"schedule"`
 	SchedulePermission string   `mapstructure:"schedule-permission"`
 	ScheduleLog        string   `mapstructure:"schedule-log"`
+	SchedulePriority   string   `mapstructure:"schedule-priority"`
 }
 
 // NewProfile instantiates a new blank profile
