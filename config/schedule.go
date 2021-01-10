@@ -12,6 +12,7 @@ type ScheduleConfig struct {
 	jobDescription   string
 	timerDescription string
 	nice             int
+	priority         string
 	logfile          string
 }
 
@@ -71,6 +72,10 @@ func (s *ScheduleConfig) Environment() map[string]string {
 
 func (s *ScheduleConfig) Nice() int {
 	return s.nice
+}
+
+func (s *ScheduleConfig) Priority() string {
+	return s.priority
 }
 
 func (s *ScheduleConfig) Logfile() string {
