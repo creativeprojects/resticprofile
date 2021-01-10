@@ -19,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/win"
 )
@@ -329,12 +330,31 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	scheduler, _, schedules, err := getScheduleJobs(c, flags)
+	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
 		return err
 	}
 
-	err = removeJobs(scheduler, flags.name, schedules)
+	configs := convertSchedules(schedules)
+
+	// Add all undeclared schedules as remove-only configs
+	for _, command := range profile.SchedulableCommands() {
+		declared := false
+		for _, s := range schedules {
+			if declared = s.SubTitle() == command; declared {
+				break
+			}
+		}
+		if !declared {
+			configs = append(configs, schedule.NewRemoveOnlyConfig(profile.Name, command))
+		}
+	}
+
+	if len(configs) == 0 {
+		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+
+	err = removeJobs(scheduler, flags.name, configs)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -348,7 +368,7 @@ func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 	}
 	displayProfileDeprecationNotices(profile)
 
-	err = statusJobs(scheduler, flags.name, schedules)
+	err = statusJobs(scheduler, flags.name, convertSchedules(schedules))
 	if err != nil {
 		return retryElevated(err, flags)
 	}

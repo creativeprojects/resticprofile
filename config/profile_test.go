@@ -418,10 +418,10 @@ initialize = true
 		return fmt.Sprintf(config, command, schedule)
 	}
 
-	sections := NewProfile(nil, "").allSchedulableSections()
+	sections := NewProfile(nil, "").SchedulableCommands()
 	assert.Len(sections, 5)
 
-	for command, _ := range sections {
+	for _, command := range sections {
 		// Check that schedule is supported
 		profile, err := getProfile("toml", testConfig(command, true), "profile")
 		if err != nil {
