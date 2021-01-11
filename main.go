@@ -24,7 +24,7 @@ import (
 
 // These fields are populated by the goreleaser build
 var (
-	version = "0.10.2-dev"
+	version = "0.11.0-dev"
 	commit  = ""
 	date    = ""
 	builtBy = ""
@@ -296,6 +296,8 @@ func runProfile(
 	if profile == nil {
 		return fmt.Errorf("cannot load profile '%s'", profileName)
 	}
+
+	displayProfileDeprecationNotices(profile)
 
 	// Send the quiet/verbose down to restic as well (override profile configuration)
 	if flags.quiet {

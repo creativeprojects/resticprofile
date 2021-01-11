@@ -208,6 +208,18 @@ func (p *Profile) GetRetentionFlags() map[string][]string {
 	return flags
 }
 
+// HasDeprecatedRetentionSchedule indicates if there's one or more schedule parameters in the retention section,
+// which is deprecated as of 0.11.0
+func (p *Profile) HasDeprecatedRetentionSchedule() bool {
+	if p.Retention == nil {
+		return false
+	}
+	if len(p.Retention.Schedule) > 0 {
+		return true
+	}
+	return false
+}
+
 // GetBackupSource returns the directories to backup
 func (p *Profile) GetBackupSource() []string {
 	if p.Backup == nil {

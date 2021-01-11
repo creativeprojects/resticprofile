@@ -92,6 +92,9 @@ self:
     check:
         schedule:
         - "*:15,45"
+    retention:
+        schedule: "weekly"
+        after-backup: true
 
 system:
     initialize: true
@@ -101,6 +104,8 @@ system:
         schedule:
         - "*:5,10,20,25,35,40,50,55"
         schedule-permission: system
+    forget:
+        schedule: "weekly"
 
 src:
     backup:

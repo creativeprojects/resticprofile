@@ -253,6 +253,9 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	if profile == nil {
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
+	// Display deprecation notice
+	displayProfileDeprecationNotices(profile)
+
 	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(c.GetConfigFile())
@@ -302,6 +305,8 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
+	displayProfileDeprecationNotices(profile)
+
 	schedules := profile.Schedules()
 	if len(schedules) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
@@ -343,6 +348,8 @@ func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 	if profile == nil {
 		return fmt.Errorf("profile '%s' not found", flags.name)
 	}
+
+	displayProfileDeprecationNotices(profile)
 
 	schedules := profile.Schedules()
 	if len(schedules) == 0 {

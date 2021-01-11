@@ -444,3 +444,113 @@ initialize = true
 		assert.Empty(profile.Schedules())
 	}
 }
+
+// schedule is moving from "retention" to "forget" section
+// first test: check the schedule works in "forget" section
+func TestForgetSchedule(t *testing.T) {
+	testData := []testTemplate{
+		{"toml", `
+[profile]
+initialize = true
+
+[profile.backup]
+source = "/"
+
+[profile.forget]
+schedule = "weekly"
+`},
+		{"json", `
+{
+  "profile": {
+    "backup": {"source": "/"},
+    "forget": {"schedule": "weekly"}
+  }
+}`},
+		{"yaml", `---
+profile:
+  backup:
+    source: /
+  forget:
+    schedule: weekly
+`},
+		{"hcl", `
+"profile" = {
+	backup = {
+		source = "/"
+	}
+	forget = {
+		schedule = "weekly"
+	}
+}
+`},
+	}
+
+	for _, testItem := range testData {
+		format := testItem.format
+		testConfig := testItem.config
+		t.Run(format, func(t *testing.T) {
+			profile, err := getProfile(format, testConfig, "profile")
+			require.NoError(t, err)
+
+			assert.NotNil(t, profile)
+			assert.NotNil(t, profile.Forget)
+			assert.NotEmpty(t, profile.Forget.Schedule)
+			assert.False(t, profile.HasDeprecatedRetentionSchedule())
+		})
+	}
+}
+
+// schedule is moving from "retention" to "forget" section
+// second test: check the schedule deprecation in the "retention" section
+func TestRetentionSchedule(t *testing.T) {
+	testData := []testTemplate{
+		{"toml", `
+[profile]
+initialize = true
+
+[profile.backup]
+source = "/"
+
+[profile.retention]
+schedule = "weekly"
+`},
+		{"json", `
+{
+  "profile": {
+    "backup": {"source": "/"},
+    "retention": {"schedule": "weekly"}
+  }
+}`},
+		{"yaml", `---
+profile:
+  backup:
+    source: /
+  retention:
+    schedule: weekly
+`},
+		{"hcl", `
+"profile" = {
+	backup = {
+		source = "/"
+	}
+	retention = {
+		schedule = "weekly"
+	}
+}
+`},
+	}
+
+	for _, testItem := range testData {
+		format := testItem.format
+		testConfig := testItem.config
+		t.Run(format, func(t *testing.T) {
+			profile, err := getProfile(format, testConfig, "profile")
+			require.NoError(t, err)
+
+			assert.NotNil(t, profile)
+			assert.NotNil(t, profile.Retention)
+			assert.NotEmpty(t, profile.Retention.Schedule)
+			assert.True(t, profile.HasDeprecatedRetentionSchedule())
+		})
+	}
+}
