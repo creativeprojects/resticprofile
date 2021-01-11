@@ -10,6 +10,7 @@ var (
 		constants.CommandBackup,
 		constants.SectionConfigurationRetention,
 		constants.CommandCheck,
+		constants.CommandForget,
 		constants.CommandPrune,
 	}
 )

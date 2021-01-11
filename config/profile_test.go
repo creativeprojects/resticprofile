@@ -235,6 +235,67 @@ host = "ConfigHost"
 	assert.Equal([]string{"ConfigHost"}, flags["host"])
 }
 
+func TestHostInAllSupportedSections(t *testing.T) {
+	assert := assert.New(t)
+
+	// Sections supporting "host" flag
+	sections := []string{
+		constants.CommandBackup,
+		constants.CommandForget,
+		constants.CommandSnapshots,
+		constants.CommandMount,
+		constants.SectionConfigurationRetention,
+	}
+
+	assertHostIs := func(expectedHost []string, profile *Profile, section string) {
+		assert.NotNil(profile)
+
+		var flags = map[string][]string{}
+		if section == constants.SectionConfigurationRetention {
+			flags = addOtherFlags(flags, profile.Retention.OtherFlags)
+		} else {
+			flags = profile.GetCommandFlags(section)
+		}
+
+		assert.NotNil(flags)
+		assert.Contains(flags, "host")
+		assert.Equal(expectedHost, flags["host"])
+	}
+
+	testConfig := func(section, host string) string {
+		return fmt.Sprintf(`
+[profile]
+initialize = true
+[profile.%s]
+host = %s
+`, section, host)
+	}
+
+	for _, section := range sections {
+		// Check that host can be set globally
+		profile, err := getProfile("toml", testConfig(section, "true"), "profile")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(profile)
+
+		assertHostIs(emptyStringArray, profile, section)
+		profile.SetHost("TestHost")
+		assertHostIs([]string{"TestHost"}, profile, section)
+
+		// Ensure host is set only when host value is true
+		profile, err = getProfile("toml", testConfig(section, `"OtherTestHost"`), "profile")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(profile)
+
+		assertHostIs([]string{"OtherTestHost"}, profile, section)
+		profile.SetHost("TestHost")
+		assertHostIs([]string{"OtherTestHost"}, profile, section)
+	}
+}
+
 func TestKeepPathInRetention(t *testing.T) {
 	assert := assert.New(t)
 	root, err := filepath.Abs("/")
@@ -333,7 +394,7 @@ profile:
 
 			assert.NotNil(t, profile)
 			assert.NotNil(t, profile.Forget)
-			assert.NotEmpty(t, profile.Forget["keep-daily"])
+			assert.NotEmpty(t, profile.Forget.OtherFlags["keep-daily"])
 		})
 	}
 }
@@ -358,7 +419,7 @@ initialize = true
 	}
 
 	sections := NewProfile(nil, "").allSchedulableSections()
-	assert.Len(sections, 4)
+	assert.Len(sections, 5)
 
 	for command, _ := range sections {
 		// Check that schedule is supported
