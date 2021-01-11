@@ -170,7 +170,7 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 	job := &LaunchJob{
 		Label:                 name,
 		Program:               j.config.Command(),
-		ProgramArguments:      append([]string{j.config.Command(), "-v"}, j.config.Arguments()...),
+		ProgramArguments:      append([]string{j.config.Command(), "--no-prio"}, j.config.Arguments()...),
 		StandardOutPath:       logfile,
 		StandardErrorPath:     logfile,
 		WorkingDirectory:      j.config.WorkingDirectory(),

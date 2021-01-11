@@ -63,7 +63,7 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	err := systemd.Generate(
-		j.config.Command()+" "+strings.Join(j.config.Arguments(), " "),
+		j.config.Command()+" --no-prio "+strings.Join(j.config.Arguments(), " "),
 		j.config.WorkingDirectory(),
 		j.config.Title(),
 		j.config.SubTitle(),
