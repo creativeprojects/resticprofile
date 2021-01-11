@@ -148,7 +148,8 @@ func TestInterruptShellCommand(t *testing.T) {
 	}()
 	start := time.Now()
 	err := cmd.Run()
-	if err != nil && err.Error() != "exit status 1" {
+	// GitHub Actions *sometimes* sends a different message: "signal: interrupt"
+	if err != nil && (err.Error() != "exit status 1" || err.Error() != "signal: interrupt") {
 		t.Fatal(err)
 	}
 
