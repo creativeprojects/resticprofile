@@ -160,9 +160,11 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 		env["PATH"] = pathEnv
 	}
 
-	var lowPriorityIO = false
-	if j.config.Priority() == constants.SchedulePriorityBackground {
-		lowPriorityIO = true
+	lowPriorityIO := true
+	nice := 10
+	if j.config.Priority() == constants.SchedulePriorityStandard {
+		lowPriorityIO = false
+		nice = 0
 	}
 
 	job := &LaunchJob{
@@ -174,7 +176,7 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 		WorkingDirectory:      j.config.WorkingDirectory(),
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 		EnvironmentVariables:  env,
-		Nice:                  j.config.Nice(),
+		Nice:                  nice,
 		ProcessType:           priorityValues[j.config.Priority()],
 		LowPriorityIO:         lowPriorityIO,
 	}

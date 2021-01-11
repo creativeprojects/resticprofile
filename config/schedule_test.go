@@ -18,8 +18,6 @@ func TestScheduleProperties(t *testing.T) {
 		environment:      map[string]string{"test": "dev"},
 		jobDescription:   "job",
 		timerDescription: "timer",
-		nice:             11,
-		priority:         "background",
 		logfile:          "log.txt",
 	}
 
@@ -33,7 +31,27 @@ func TestScheduleProperties(t *testing.T) {
 	assert.Equal(t, "home", schedule.WorkingDirectory())
 	assert.ElementsMatch(t, []string{"1", "2"}, schedule.Arguments())
 	assert.Equal(t, "dev", schedule.Environment()["test"])
-	assert.Equal(t, 11, schedule.Nice())
-	assert.Equal(t, "background", schedule.Priority())
+	assert.Equal(t, "background", schedule.Priority()) // default value
 	assert.Equal(t, "log.txt", schedule.Logfile())
+}
+
+func TestStandardPriority(t *testing.T) {
+	schedule := ScheduleConfig{
+		priority: "standard",
+	}
+	assert.Equal(t, "standard", schedule.Priority())
+}
+
+func TestCaseInsensitivePriority(t *testing.T) {
+	schedule := ScheduleConfig{
+		priority: "stANDard",
+	}
+	assert.Equal(t, "standard", schedule.Priority())
+}
+
+func TestOtherPriority(t *testing.T) {
+	schedule := ScheduleConfig{
+		priority: "other",
+	}
+	assert.Equal(t, "background", schedule.Priority()) // default value
 }

@@ -27,7 +27,6 @@ type Config interface {
 	Command() string
 	Arguments() []string
 	Environment() map[string]string
-	Nice() int
 	Priority() string
 	Logfile() string
 }
