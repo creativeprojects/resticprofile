@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 const (
@@ -66,7 +67,7 @@ type TemplateInfo struct {
 }
 
 // Generate systemd unit
-func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType, nice int) error {
+func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType, priority string) error {
 	var err error
 	systemdProfile := GetServiceFile(title, subTitle)
 	timerProfile := GetTimerFile(title, subTitle)
@@ -87,6 +88,11 @@ func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription
 	// also add $SUDO_USER to env variables
 	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
 		environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
+	}
+
+	nice := constants.DefaultBackgroundNiceFlag
+	if priority == constants.SchedulePriorityStandard {
+		nice = constants.DefaultStandardNiceFlag
 	}
 
 	info := TemplateInfo{

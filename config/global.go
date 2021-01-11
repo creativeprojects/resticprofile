@@ -21,7 +21,7 @@ type Global struct {
 func newGlobal() *Global {
 	return &Global{
 		IONice:         constants.DefaultIONiceFlag,
-		Nice:           constants.DefaultNiceFlag,
+		Nice:           constants.DefaultStandardNiceFlag,
 		DefaultCommand: constants.DefaultCommand,
 		ResticBinary:   constants.DefaultResticBinary,
 		MinMemory:      constants.DefaultMinMemory,

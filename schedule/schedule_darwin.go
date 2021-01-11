@@ -161,10 +161,10 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 	}
 
 	lowPriorityIO := true
-	nice := 10
+	nice := constants.DefaultBackgroundNiceFlag
 	if j.config.Priority() == constants.SchedulePriorityStandard {
 		lowPriorityIO = false
-		nice = 0
+		nice = constants.DefaultStandardNiceFlag
 	}
 
 	job := &LaunchJob{

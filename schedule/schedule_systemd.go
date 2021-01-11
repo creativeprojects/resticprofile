@@ -71,7 +71,7 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		j.config.TimerDescription(),
 		j.config.Schedules(),
 		unitType,
-		10)
+		j.config.Priority())
 	if err != nil {
 		return err
 	}
