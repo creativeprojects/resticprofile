@@ -242,7 +242,6 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				schedules:   s.Schedule,
 				permission:  s.SchedulePermission,
 				environment: p.Environment,
-				nice:        10, // hard-coded for now
 				logfile:     s.ScheduleLog,
 				priority:    s.SchedulePriority,
 			}

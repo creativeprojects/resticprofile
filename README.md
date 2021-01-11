@@ -789,11 +789,13 @@ schedule-log = "profile-backup.log"
 
 Allow to redirect all output from resticprofile and restic to a file
 
-#### schedule-priority
+#### schedule-priority (systemd and launchd only)
 
 Starting from version 0.11.0, `schedule-priority` accepts two values:
 - `background`: the process shouldn't be noticeable when working on the machine at the same time (this is the default)
 - `standard`: the process should get the same priority as any other process on the machine (but it won't run faster if you're not using the machine at the same time)
+
+`schedule-priority` is not available for windows task scheduler, nor crond
 
 #### schedule
 

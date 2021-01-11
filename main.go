@@ -168,15 +168,17 @@ func main() {
 		}
 	}
 
-	err = setPriority(global.Nice, global.Priority)
-	if err != nil {
-		clog.Warning(err)
-	}
-
-	if global.IONice {
-		err = priority.SetIONice(global.IONiceClass, global.IONiceLevel)
+	if flags.noPriority == false {
+		err = setPriority(global.Nice, global.Priority)
 		if err != nil {
 			clog.Warning(err)
+		}
+
+		if global.IONice {
+			err = priority.SetIONice(global.IONiceClass, global.IONiceLevel)
+			if err != nil {
+				clog.Warning(err)
+			}
 		}
 	}
 

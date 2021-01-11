@@ -26,6 +26,7 @@ type commandLineFlags struct {
 	wait        bool
 	isChild     bool
 	parentPort  int
+	noPriority  bool
 }
 
 // loadFlags loads command line flags (before any command)
@@ -56,6 +57,7 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
+	flagset.BoolVar(&flags.noPriority, "no-prio", false, "don't set any priority on load: used when started from a service that has already set the priority")
 
 	flagset.BoolVarP(&flags.wait, "wait", "w", false, "wait at the end until the user presses the enter key")
 

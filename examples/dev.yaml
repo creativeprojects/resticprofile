@@ -93,8 +93,10 @@ self:
         schedule:
         - "*:15,45"
     retention:
-        schedule: "weekly"
         after-backup: true
+    forget:
+        schedule: "weekly"
+        schedule-priority: standard
 
 system:
     initialize: true

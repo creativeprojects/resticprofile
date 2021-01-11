@@ -1,5 +1,11 @@
 package config
 
+import (
+	"strings"
+
+	"github.com/creativeprojects/resticprofile/constants"
+)
+
 type ScheduleConfig struct {
 	profileName      string
 	commandName      string
@@ -11,7 +17,6 @@ type ScheduleConfig struct {
 	environment      map[string]string
 	jobDescription   string
 	timerDescription string
-	nice             int
 	priority         string
 	logfile          string
 }
@@ -70,11 +75,13 @@ func (s *ScheduleConfig) Environment() map[string]string {
 	return s.environment
 }
 
-func (s *ScheduleConfig) Nice() int {
-	return s.nice
-}
-
+// Priority is either "background" or "standard"
 func (s *ScheduleConfig) Priority() string {
+	s.priority = strings.ToLower(s.priority)
+	// default value for priority is "background"
+	if s.priority != constants.SchedulePriorityBackground && s.priority != constants.SchedulePriorityStandard {
+		s.priority = constants.SchedulePriorityBackground
+	}
 	return s.priority
 }
 
