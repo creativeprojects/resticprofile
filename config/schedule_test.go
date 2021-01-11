@@ -19,6 +19,7 @@ func TestScheduleProperties(t *testing.T) {
 		jobDescription:   "job",
 		timerDescription: "timer",
 		nice:             11,
+		priority:         "background",
 		logfile:          "log.txt",
 	}
 
@@ -33,5 +34,6 @@ func TestScheduleProperties(t *testing.T) {
 	assert.ElementsMatch(t, []string{"1", "2"}, schedule.Arguments())
 	assert.Equal(t, "dev", schedule.Environment()["test"])
 	assert.Equal(t, 11, schedule.Nice())
+	assert.Equal(t, "background", schedule.Priority())
 	assert.Equal(t, "log.txt", schedule.Logfile())
 }

@@ -244,6 +244,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				environment: p.Environment,
 				nice:        10, // hard-coded for now
 				logfile:     s.ScheduleLog,
+				priority:    s.SchedulePriority,
 			}
 
 			configs = append(configs, config)

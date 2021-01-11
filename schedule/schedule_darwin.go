@@ -54,6 +54,14 @@ type LaunchJob struct {
 	WorkingDirectory      string             `plist:"WorkingDirectory"`
 	StartInterval         int                `plist:"StartInterval,omitempty"`
 	StartCalendarInterval []CalendarInterval `plist:"StartCalendarInterval,omitempty"`
+	ProcessType           string             `plist:"ProcessType"`
+	LowPriorityIO         bool               `plist:"LowPriorityIO"`
+	Nice                  int                `plist:"Nice"`
+}
+
+var priorityValues = map[string]string{
+	constants.SchedulePriorityBackground: "Background",
+	constants.SchedulePriorityStandard:   "Standard",
 }
 
 // CalendarInterval contains date and time trigger definition inside a map.
@@ -152,6 +160,11 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 		env["PATH"] = pathEnv
 	}
 
+	var lowPriorityIO = false
+	if j.config.Priority() == constants.SchedulePriorityBackground {
+		lowPriorityIO = true
+	}
+
 	job := &LaunchJob{
 		Label:                 name,
 		Program:               j.config.Command(),
@@ -161,6 +174,9 @@ func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
 		WorkingDirectory:      j.config.WorkingDirectory(),
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 		EnvironmentVariables:  env,
+		Nice:                  j.config.Nice(),
+		ProcessType:           priorityValues[j.config.Priority()],
+		LowPriorityIO:         lowPriorityIO,
 	}
 
 	filename, err := getFilename(name, j.getSchedulePermission())
