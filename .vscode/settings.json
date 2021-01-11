@@ -4,5 +4,6 @@
         "restic",
         "resticprofile",
         "systemd"
-    ]
+    ],
+    "files.eol": "\n"
 }
