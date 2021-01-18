@@ -16,8 +16,8 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
-func loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
-	if Scheduler == constants.SchedulerCrond {
+func (j *Job) loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
+	if j.scheduler == constants.SchedulerCrond {
 		return loadParsedSchedules(command, schedules)
 	}
 	return loadSystemdSchedules(command, schedules)

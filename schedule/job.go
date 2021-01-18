@@ -31,12 +31,13 @@ type SchedulerJob interface {
 
 // Job scheduler
 type Job struct {
-	config Config
+	config    Config
+	scheduler string
 }
 
 // Create a new job
 func (j *Job) Create() error {
-	schedules, err := loadSchedules(j.config.SubTitle(), j.config.Schedules())
+	schedules, err := j.loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
 	}
@@ -65,7 +66,7 @@ func (j *Job) Remove() error {
 
 // Status of a job
 func (j *Job) Status() error {
-	_, err := loadSchedules(j.config.SubTitle(), j.config.Schedules())
+	_, err := j.loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
 	}

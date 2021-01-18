@@ -8,32 +8,19 @@ package schedule
 
 import (
 	"errors"
-	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 )
 
-// Init verifies systemd or crond is available on this system
-func Init() error {
-	scheduler := constants.SchedulerSystemd
-	bin := systemctlBin
-	if Scheduler == constants.SchedulerCrond {
-		scheduler = constants.SchedulerCrond
-		bin = crontabBin
+// NewSchedule creates a Scheduler interface, which is either a CrondSchedule or a SystemdSchedule object
+func NewSchedule(scheduler string) Scheduler {
+	if scheduler == constants.SchedulerCrond {
+		return &CrondSchedule{}
 	}
-	found, err := exec.LookPath(bin)
-	if err != nil || found == "" {
-		return fmt.Errorf("it doesn't look like %s is installed on your system (cannot find %q command in path)", scheduler, bin)
-	}
-	return nil
-}
-
-// Close does nothing in systemd or crond
-func Close() {
+	return &SystemdSchedule{}
 }
 
 // createJob is creating the crontab OR systemd unit and activating it
@@ -43,7 +30,7 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 	if !ok {
 		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
 	}
-	if Scheduler == constants.SchedulerCrond {
+	if j.scheduler == constants.SchedulerCrond {
 		return j.createCrondJob(schedules)
 	}
 	if os.Geteuid() == 0 {
@@ -60,7 +47,7 @@ func (j *Job) removeJob() error {
 	if !ok {
 		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
 	}
-	if Scheduler == constants.SchedulerCrond {
+	if j.scheduler == constants.SchedulerCrond {
 		return j.removeCrondJob()
 	}
 	if os.Geteuid() == 0 {
@@ -72,7 +59,7 @@ func (j *Job) removeJob() error {
 
 // displayStatus of a schedule
 func (j *Job) displayStatus(command string) error {
-	if Scheduler == constants.SchedulerCrond {
+	if j.scheduler == constants.SchedulerCrond {
 		return j.displayCrondStatus(command)
 	}
 	return j.displaySystemdStatus(command)

@@ -3,15 +3,46 @@
 package schedule
 
 import (
+	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 )
 
 const (
 	crontabBin = "crontab"
 )
+
+// CrondSchedule is a Scheduler using crond
+type CrondSchedule struct {
+}
+
+// Init verifies crond is available on this system
+func (s *CrondSchedule) Init() error {
+	found, err := exec.LookPath(crontabBin)
+	if err != nil || found == "" {
+		return fmt.Errorf("it doesn't look like crond is installed on your system (cannot find %q command in path)", crontabBin)
+	}
+	return nil
+}
+
+// Close does nothing when using crond
+func (s *CrondSchedule) Close() {
+}
+
+// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
+func (s *CrondSchedule) NewJob(config Config) SchedulerJob {
+	return &Job{
+		config:    config,
+		scheduler: constants.SchedulerCrond,
+	}
+}
+
+// Verify interface
+var _ Scheduler = &CrondSchedule{}
 
 // createCrondJob is creating the crontab
 func (j *Job) createCrondJob(schedules []*calendar.Event) error {

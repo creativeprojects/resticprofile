@@ -10,15 +10,35 @@ import (
 	"github.com/creativeprojects/resticprofile/schtasks"
 )
 
+// Schedule using windows task manager
+type Schedule struct {
+}
+
+// NewSchedule creates a Schedule onject (of Scheduler interface)
+// On windows, only the task manager is supported
+func NewSchedule(scheduler string) Scheduler {
+	return &Schedule{}
+}
+
 // Init a connection to the task scheduler
-func Init() error {
+func (s *Schedule) Init() error {
 	return schtasks.Connect()
 }
 
 // Close the connection to the task scheduler
-func Close() {
+func (s *Schedule) Close() {
 	schtasks.Close()
 }
+
+// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
+func (s *Schedule) NewJob(config Config) SchedulerJob {
+	return &Job{
+		config: config,
+	}
+}
+
+// Verify interface
+var _ Scheduler = &Schedule{}
 
 // createJob is creating the task scheduler job.
 func (j *Job) createJob(schedules []*calendar.Event) error {

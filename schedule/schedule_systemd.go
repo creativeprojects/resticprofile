@@ -31,6 +31,34 @@ const (
 	codeStopUnitNotFound   = 5 // undocumented
 )
 
+// SystemdSchedule is a Scheduler using systemd
+type SystemdSchedule struct {
+}
+
+// Init verifies systemd is available on this system
+func (s *SystemdSchedule) Init() error {
+	found, err := exec.LookPath(systemctlBin)
+	if err != nil || found == "" {
+		return fmt.Errorf("it doesn't look like systemd is installed on your system (cannot find %q command in path)", systemctlBin)
+	}
+	return nil
+}
+
+// Close does nothing when using systemd
+func (s *SystemdSchedule) Close() {
+}
+
+// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
+func (s *SystemdSchedule) NewJob(config Config) SchedulerJob {
+	return &Job{
+		config:    config,
+		scheduler: constants.SchedulerSystemd,
+	}
+}
+
+// Verify interface
+var _ Scheduler = &SystemdSchedule{}
+
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	err := systemd.Generate(
