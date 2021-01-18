@@ -71,6 +71,7 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("")
 	// display a status after starting it
 	_ = runSystemctlCommand(timerName, commandStatus, unitType)
 
@@ -134,7 +135,25 @@ func (j *Job) displaySystemdStatus(command string) error {
 	return runSystemctlCommand(timerName, commandStatus, systemd.UserUnit)
 }
 
+// displaySystemdStatus displays the status of all the timers installed on that profile
+func displaySystemdStatus(profile string) error {
+	timerName := fmt.Sprintf("resticprofile-*@profile-%s.timer", profile)
+	args := []string{"list-timers", "--all", "--no-pager", timerName}
+	// if unitType == systemd.UserUnit {
+	// 	args = append(args, flagUserUnit)
+	// }
+	cmd := exec.Command(systemctlBin, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	fmt.Println("")
+	return err
+}
+
 func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) error {
+	if command == commandStatus {
+		fmt.Print("Systemd timer status\n=====================\n")
+	}
 	args := make([]string, 0, 3)
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
@@ -158,8 +177,9 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) e
 }
 
 func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
+	fmt.Print("Recent log (>= warning in the last month)\n==========================================\n")
 	timerName = strings.TrimSuffix(timerName, ".timer")
-	args := []string{"--since", "1 month ago", "--no-pager", "--priority", "err", "--unit", timerName}
+	args := []string{"--since", "1 month ago", "--no-pager", "--priority", "warning", "--unit", timerName}
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
