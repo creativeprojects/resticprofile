@@ -144,10 +144,11 @@ func displayProfilesCommand(output io.Writer, configuration *config.Config, _ co
 	return nil
 }
 
-func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, _ []string) error {
-	fmt.Fprintf(output, "resticprofile version %s commit %s.\n", version, commit)
+func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
+	fmt.Fprintf(output, "resticprofile version %s commit %q\n", version, commit)
 
-	if flags.verbose {
+	// allow for the general verbose flag, or specified after the command
+	if flags.verbose || (len(args) > 0 && (args[0] == "-v" || args[0] == "--verbose")) {
 		w := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
 		_, _ = fmt.Fprintf(w, "\n")
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
