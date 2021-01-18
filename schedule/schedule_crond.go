@@ -17,7 +17,14 @@ const (
 func (j *Job) createCrondJob(schedules []*calendar.Event) error {
 	entries := make([]crond.Entry, len(schedules))
 	for i, event := range schedules {
-		entries[i] = crond.NewEntry(event, j.config.Configfile(), j.config.Title(), j.config.SubTitle(), j.config.Command()+" "+strings.Join(j.config.Arguments(), " "))
+		entries[i] = crond.NewEntry(
+			event,
+			j.config.Configfile(),
+			j.config.Title(),
+			j.config.SubTitle(),
+			j.config.Command()+" "+strings.Join(j.config.Arguments(), " "),
+			j.config.WorkingDirectory(),
+		)
 	}
 	crontab := crond.NewCrontab(entries)
 	err := crontab.Rewrite()
@@ -29,7 +36,14 @@ func (j *Job) createCrondJob(schedules []*calendar.Event) error {
 
 func (j *Job) removeCrondJob() error {
 	entries := []crond.Entry{
-		crond.NewEntry(calendar.NewEvent(), j.config.Configfile(), j.config.Title(), j.config.SubTitle(), j.config.Command()+" "+strings.Join(j.config.Arguments(), " ")),
+		crond.NewEntry(
+			calendar.NewEvent(),
+			j.config.Configfile(),
+			j.config.Title(),
+			j.config.SubTitle(),
+			j.config.Command()+" "+strings.Join(j.config.Arguments(), " "),
+			j.config.WorkingDirectory(),
+		),
 	}
 	crontab := crond.NewCrontab(entries)
 	err := crontab.Remove()

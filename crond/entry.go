@@ -17,22 +17,28 @@ type Entry struct {
 	profileName string
 	commandName string
 	commandLine string
+	workDir     string
 }
 
 // NewEntry creates a new crontab entry
-func NewEntry(event *calendar.Event, configFile, profileName, commandName, commandLine string) Entry {
+func NewEntry(event *calendar.Event, configFile, profileName, commandName, commandLine, workDir string) Entry {
 	return Entry{
 		event:       event,
 		configFile:  configFile,
 		profileName: profileName,
 		commandName: commandName,
 		commandLine: commandLine,
+		workDir:     workDir,
 	}
 }
 
 // String returns the crontab line representation of the entry (end of line included)
 func (e Entry) String() string {
 	minute, hour, dayOfMonth, month, dayOfWeek := "*", "*", "*", "*", "*"
+	wd := ""
+	if e.workDir != "" {
+		wd = fmt.Sprintf("cd %s && ", e.workDir)
+	}
 	if e.event.Minute.HasValue() {
 		minute = formatRange(e.event.Minute.GetRanges(), twoDecimals)
 	}
@@ -49,7 +55,7 @@ func (e Entry) String() string {
 		// don't make ranges for days of the week as it can fail with high sunday (7)
 		dayOfWeek = formatList(e.event.WeekDay.GetRangeValues(), formatWeekDay)
 	}
-	return fmt.Sprintf("%s %s %s %s %s\t%s\n", minute, hour, dayOfMonth, month, dayOfWeek, e.commandLine)
+	return fmt.Sprintf("%s %s %s %s %s\t%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, wd, e.commandLine)
 }
 
 // Generate writes a cron line in the StringWriter (end of line included)

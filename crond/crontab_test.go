@@ -23,11 +23,22 @@ func TestGenerateSimpleCrontab(t *testing.T) {
 	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
 		event.Minute.MustAddValue(1)
 		event.Hour.MustAddValue(1)
-	}), "", "", "", "resticprofile backup")})
+	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
 	err := crontab.Generate(buffer)
 	require.NoError(t, err)
 	assert.Equal(t, "01 01 * * *\tresticprofile backup\n", buffer.String())
+}
+
+func TestGenerateWorkDirCrontab(t *testing.T) {
+	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
+		event.Minute.MustAddValue(1)
+		event.Hour.MustAddValue(1)
+	}), "", "", "", "resticprofile backup", "workdir")})
+	buffer := &strings.Builder{}
+	err := crontab.Generate(buffer)
+	require.NoError(t, err)
+	assert.Equal(t, "01 01 * * *\tcd workdir && resticprofile backup\n", buffer.String())
 }
 
 func TestCleanupCrontab(t *testing.T) {
@@ -107,7 +118,7 @@ func TestUpdateSimpleCrontab(t *testing.T) {
 	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
 		event.Minute.MustAddValue(1)
 		event.Hour.MustAddValue(1)
-	}), "", "", "", "resticprofile backup")})
+	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
 	err := crontab.Update("", true, buffer)
 	require.NoError(t, err)
@@ -118,7 +129,7 @@ func TestUpdateExistingCrontab(t *testing.T) {
 	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
 		event.Minute.MustAddValue(1)
 		event.Hour.MustAddValue(1)
-	}), "", "", "", "resticprofile backup")})
+	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
 	err := crontab.Update("something\n"+startMarker+endMarker, true, buffer)
 	require.NoError(t, err)

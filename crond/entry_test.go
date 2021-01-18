@@ -12,7 +12,7 @@ import (
 )
 
 func TestEmptyUserEvent(t *testing.T) {
-	entry := NewEntry(calendar.NewEvent(), "", "", "", "command line")
+	entry := NewEntry(calendar.NewEvent(), "", "", "", "command line", "")
 	buffer := &strings.Builder{}
 	err := entry.Generate(buffer)
 	require.NoError(t, err)
@@ -62,7 +62,7 @@ func TestEvents(t *testing.T) {
 			err := event.Parse(testRun.event)
 			require.NoError(t, err)
 
-			entry := NewEntry(event, "", "", "", "command line")
+			entry := NewEntry(event, "", "", "", "command line", "")
 			buffer := &strings.Builder{}
 			err = entry.Generate(buffer)
 			require.NoError(t, err)
