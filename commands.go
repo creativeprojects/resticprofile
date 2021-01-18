@@ -298,6 +298,11 @@ func randomKey(output io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+	global, err := c.GetGlobalSection()
+	if err != nil {
+		return fmt.Errorf("cannot load global section: %w", err)
+	}
+
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -313,7 +318,7 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
-	err = scheduleJobs(schedules)
+	err = scheduleJobs(global.Scheduler, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -321,6 +326,11 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+	global, err := c.GetGlobalSection()
+	if err != nil {
+		return fmt.Errorf("cannot load global section: %w", err)
+	}
+
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -334,7 +344,7 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
-	err = removeJobs(schedules)
+	err = removeJobs(global.Scheduler, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -342,6 +352,11 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+	global, err := c.GetGlobalSection()
+	if err != nil {
+		return fmt.Errorf("cannot load global section: %w", err)
+	}
+
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
@@ -357,7 +372,7 @@ func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
-	err = statusJobs(schedules)
+	err = statusJobs(global.Scheduler, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}

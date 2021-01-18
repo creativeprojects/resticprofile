@@ -42,6 +42,39 @@ const (
 	codeServiceNotFound = 113
 )
 
+// Schedule using launchd
+type Schedule struct {
+}
+
+// NewSchedule creates a Schedule object (in a Scheduler interface)
+// On macOS only launchd scheduler is supported
+func NewSchedule(scheduler string) Scheduler {
+	return &Schedule{}
+}
+
+// Init verifies launchd is available on this system
+func (s *Schedule) Init() error {
+	found, err := exec.LookPath(launchdBin)
+	if err != nil || found == "" {
+		return errors.New("it doesn't look like launchd is installed on your system")
+	}
+	return nil
+}
+
+// Close does nothing with launchd
+func (s *Schedule) Close() {
+}
+
+// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
+func (s *Schedule) NewJob(config Config) SchedulerJob {
+	return &Job{
+		config: config,
+	}
+}
+
+// Verify interface
+var _ Scheduler = &Schedule{}
+
 // LaunchJob is an agent definition for launchd
 type LaunchJob struct {
 	Label                 string             `plist:"Label"`
@@ -85,19 +118,6 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 		(*clone)[key] = value
 	}
 	return clone
-}
-
-// Init verifies launchd is available on this system
-func Init() error {
-	found, err := exec.LookPath(launchdBin)
-	if err != nil || found == "" {
-		return errors.New("it doesn't look like launchd is installed on your system")
-	}
-	return nil
-}
-
-// Close does nothing with launchd
-func Close() {
 }
 
 // createJob creates a plist file and register it with launchd
