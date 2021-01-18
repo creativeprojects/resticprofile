@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
+	"strings"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
 )
@@ -188,6 +190,11 @@ func main() {
 		clog.Warning("you can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
 		exitCode = 1
 		return
+	}
+
+	// only "crond" is not the default
+	if strings.ToLower(global.Scheduler) == constants.SchedulerCrond {
+		schedule.Scheduler = constants.SchedulerCrond
 	}
 
 	// The remaining arguments are going to be sent to the restic command line

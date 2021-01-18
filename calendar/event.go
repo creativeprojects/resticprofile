@@ -181,8 +181,7 @@ func (e *Event) match(currentTime time.Time) bool {
 		{e.WeekDay, int(currentTime.Weekday())},
 		{e.Hour, currentTime.Hour()},
 		{e.Minute, currentTime.Minute()},
-		// Not really useful to check for the seconds (might revert if introducing bugs)
-		// {e.Second, currentTime.Second()},
+		// Not really useful to check for the seconds
 	}
 	for _, value := range values {
 		if !value.ref.HasValue() {

@@ -1,6 +1,8 @@
-//+build darwin windows
-
 package schedule
+
+//
+// Common code for all systems
+//
 
 import (
 	"errors"
@@ -10,7 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-func loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
+func loadParsedSchedules(command string, schedules []string) ([]*calendar.Event, error) {
 	now := time.Now().Round(time.Second)
 	events := make([]*calendar.Event, 0, len(schedules))
 	for index, schedule := range schedules {

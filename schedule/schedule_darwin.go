@@ -96,7 +96,7 @@ func Init() error {
 	return nil
 }
 
-// Close does nothing in systemd
+// Close does nothing with launchd
 func Close() {
 }
 

@@ -95,13 +95,14 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
 
 Since version 0.6.0, resticprofile no longer needs python installed on your machine. It is distributed as an executable (same as restic).
 
-It's been actively tested on macOS X and Linux, and regularly tested on Windows.
+It's been actively tested on macOS X and Linux (Debian), and regularly tested on Windows.
+Please note I use resticprofile on multiple Debian (and Debian based) distributions (AMD64 and ARM), but **no other distribution**. I also do not use it on FreeBSD.
 
 **This is at _beta_ stage. Please avoid using it in production. Or at least test carefully first. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
 ## Installation (macOS, Linux & other unixes)
 
-Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD, OpenBSD and Linux:
+Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD and Linux:
 
 ```
 $ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
@@ -668,6 +669,7 @@ resticprofile flags:
   -l, --log string      logs into a file instead of the console
   -n, --name string     profile name (default "default")
       --no-ansi         disable ansi control characters (disable console colouring)
+      --no-prio         don't set any priority on load: used when started from a service that has already set the priority
   -q, --quiet           display only warnings and errors
       --theme string    console colouring theme (dark, light, none) (default "light")
       --trace           display even more debugging information
@@ -683,6 +685,7 @@ resticprofile own commands:
    schedule      schedule a backup
    unschedule    remove a scheduled backup
    status        display the status of a scheduled backup job
+
 
 ```
 
@@ -744,10 +747,21 @@ $ resticprofile random-key 2048
 
 ## Scheduled backups
 
-resticprofile is capable of managing scheduled backups for you:
-- using **systemd** where available (Linux and various unixes)
-- using **launchd** on macOS X
-- using **Task Scheduler** on Windows
+resticprofile is capable of managing scheduled backups for you using:
+- **launchd** on macOS X
+- **Task Scheduler** on Windows
+- **systemd** where available (Linux and other BSDs)
+- **crond** on supported platforms (Linux and other BSDs)
+
+On unixes (except macOS) resticprofile is using **systemd** by default. **crond** can be used instead if configured in `global` `scheduler` parameter:
+
+```yaml
+---
+global:
+    scheduler: crond
+```
+
+
 
 Each profile can be scheduled independently (groups are not available for scheduling yet).
 
@@ -757,10 +771,12 @@ These 4 profile sections are accepting a schedule configuration:
 - forget (version 0.11.0)
 - prune (version 0.11.0)
 
-which mean you can schedule backup, retention (`forget` command) and repository check independently (I recommend to use a local `lock` in this case).
+which mean you can schedule `backup`, `forget`, `prune` and `check` independently (I recommend to use a local `lock` in this case).
 
+### retention schedule is deprecated
 **Important**:
-Starting from version 0.11.0 the schedule of the `retention` section is **deprecated**: Use the `forget` section instead.
+starting from version 0.11.0 the schedule of the `retention` section is **deprecated**: Use the `forget` section instead.
+
 
 ### Schedule configuration
 
@@ -985,7 +1001,6 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 With this example of configuration for Linux:
 
 ```yaml
-
 default:
     password-file: key
     repository: /tmp/backup
@@ -1641,6 +1656,7 @@ None of these flags are passed on the restic command line
 * **initialize**: true / false
 * **restic-binary**: string
 * **min-memory**: integer (MB)
+* **scheduler**: string (`crond` is the only non-default value)
 
 `[profile]`
 

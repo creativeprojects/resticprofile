@@ -15,6 +15,7 @@ type Global struct {
 	Initialize     bool   `mapstructure:"initialize"`
 	ResticBinary   string `mapstructure:"restic-binary"`
 	MinMemory      uint64 `mapstructure:"min-memory"`
+	Scheduler      string `mapstructure:"scheduler"`
 }
 
 // newGlobal instantiates a new Global with default values

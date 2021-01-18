@@ -2,6 +2,10 @@
 
 package schedule
 
+//
+// Common code for systemd and crond only
+//
+
 import (
 	"errors"
 	"fmt"
@@ -9,13 +13,20 @@ import (
 	"os/exec"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 func loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
-	events := make([]*calendar.Event, 0, len(schedules))
+	if Scheduler == constants.SchedulerCrond {
+		return loadParsedSchedules(command, schedules)
+	}
+	return loadSystemdSchedules(command, schedules)
+}
+
+func loadSystemdSchedules(command string, schedules []string) ([]*calendar.Event, error) {
 	for index, schedule := range schedules {
 		if schedule == "" {
-			return events, errors.New("empty schedule")
+			return nil, errors.New("empty schedule")
 		}
 		fmt.Printf("\nAnalyzing %s schedule %d/%d\n=================================\n", command, index+1, len(schedules))
 		cmd := exec.Command("systemd-analyze", "calendar", schedule)
@@ -23,9 +34,10 @@ func loadSchedules(command string, schedules []string) ([]*calendar.Event, error
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
-			return events, err
+			return nil, err
 		}
 	}
 	fmt.Print("\n")
-	return events, nil
+	// systemd won't use the parsed events, we can safely return nil
+	return nil, nil
 }

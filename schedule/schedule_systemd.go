@@ -3,7 +3,6 @@
 package schedule
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 )
@@ -32,33 +30,6 @@ const (
 	codeStatusUnitNotFound = 4
 	codeStopUnitNotFound   = 5 // undocumented
 )
-
-// Init verifies systemd is available on this system
-func Init() error {
-	found, err := exec.LookPath(systemctlBin)
-	if err != nil || found == "" {
-		return errors.New("it doesn't look like systemd is installed on your system (cannot find systemctl in path)")
-	}
-	return nil
-}
-
-// Close does nothing in systemd
-func Close() {
-}
-
-// createJob is creating the systemd unit and activating it
-func (j *Job) createJob(schedules []*calendar.Event) error {
-	permission := j.getSchedulePermission()
-	ok := j.checkPermission(permission)
-	if !ok {
-		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
-	}
-	if os.Geteuid() == 0 {
-		// user has sudoed already
-		return j.createSystemdJob(systemd.SystemUnit)
-	}
-	return j.createSystemdJob(systemd.UserUnit)
-}
 
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
@@ -106,20 +77,6 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	return nil
 }
 
-// removeJob is disabling the systemd unit and deleting the timer and service files
-func (j *Job) removeJob() error {
-	permission := j.getSchedulePermission()
-	ok := j.checkPermission(permission)
-	if !ok {
-		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
-	}
-	if os.Geteuid() == 0 {
-		// user has sudoed
-		return j.removeSystemdJob(systemd.SystemUnit)
-	}
-	return j.removeSystemdJob(systemd.UserUnit)
-}
-
 // removeSystemdJob is disabling the systemd unit and deleting the timer and service files
 func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	var err error
@@ -159,8 +116,8 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	return nil
 }
 
-// displayStatus of a systemd service/timer
-func (j *Job) displayStatus(command string) error {
+// displaySystemdStatus displays information of a systemd service/timer
+func (j *Job) displaySystemdStatus(command string) error {
 	timerName := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 	permission := j.getSchedulePermission()
 	if permission == constants.SchedulePermissionSystem {

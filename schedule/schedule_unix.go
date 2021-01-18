@@ -1,53 +1,79 @@
-//+build !windows
+//+build !darwin,!windows
 
 package schedule
 
-import (
-	"os"
-	"runtime"
+//
+// Schedule: common code for systemd and crond only
+//
 
-	"github.com/creativeprojects/clog"
+import (
+	"errors"
+	"fmt"
+	"os"
+	"os/exec"
+
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/systemd"
 )
 
-// getSchedulePermission returns the permission defined from the configuration,
-// or the best guess considering the current user permission.
-//
-// This method is for Unixes only
-func (j *Job) getSchedulePermission() string {
-	const message = "you have not specified the permission for your schedule (system or user): assuming "
-	if j.config.Permission() == constants.SchedulePermissionSystem ||
-		j.config.Permission() == constants.SchedulePermissionUser {
-		// well defined
-		return j.config.Permission()
+// Init verifies systemd or crond is available on this system
+func Init() error {
+	scheduler := constants.SchedulerSystemd
+	bin := systemctlBin
+	if Scheduler == constants.SchedulerCrond {
+		scheduler = constants.SchedulerCrond
+		bin = crontabBin
 	}
-	// best guess is depending on the user being root or not:
-	if os.Geteuid() == 0 {
-		if runtime.GOOS != "darwin" {
-			// darwin can backup protected files without the need of a system task; no need to bother the user then
-			clog.Warning(message, "system")
-		}
-		return constants.SchedulePermissionSystem
+	found, err := exec.LookPath(bin)
+	if err != nil || found == "" {
+		return fmt.Errorf("it doesn't look like %s is installed on your system (cannot find %q command in path)", scheduler, bin)
 	}
-	if runtime.GOOS != "darwin" {
-		// darwin can backup protected files without the need of a system task; no need to bother the user then
-		clog.Warning(message, "user")
-	}
-	return constants.SchedulePermissionUser
+	return nil
 }
 
-// checkPermission returns true if the user is allowed.
-//
-// This method is for Unixes only
-func (j *Job) checkPermission(permission string) bool {
-	if permission == constants.SchedulePermissionUser {
-		// user mode is always available
-		return true
+// Close does nothing in systemd or crond
+func Close() {
+}
+
+// createJob is creating the crontab OR systemd unit and activating it
+func (j *Job) createJob(schedules []*calendar.Event) error {
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
+	if !ok {
+		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
+	}
+	if Scheduler == constants.SchedulerCrond {
+		return j.createCrondJob(schedules)
+	}
+	if os.Geteuid() == 0 {
+		// user has sudoed already
+		return j.createSystemdJob(systemd.SystemUnit)
+	}
+	return j.createSystemdJob(systemd.UserUnit)
+}
+
+// removeJob is disabling the systemd unit and deleting the timer and service files
+func (j *Job) removeJob() error {
+	permission := j.getSchedulePermission()
+	ok := j.checkPermission(permission)
+	if !ok {
+		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
+	}
+	if Scheduler == constants.SchedulerCrond {
+		return j.removeCrondJob()
 	}
 	if os.Geteuid() == 0 {
 		// user has sudoed
-		return true
+		return j.removeSystemdJob(systemd.SystemUnit)
 	}
-	// last case is system (or undefined) + no sudo
-	return false
+	return j.removeSystemdJob(systemd.UserUnit)
+}
+
+// displayStatus of a schedule
+func (j *Job) displayStatus(command string) error {
+	if Scheduler == constants.SchedulerCrond {
+		return j.displayCrondStatus(command)
+	}
+	return j.displaySystemdStatus(command)
 }

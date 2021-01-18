@@ -12,7 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
+func scheduleJobs(configs []*config.ScheduleConfig) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 		args := []string{
 			"--no-ansi",
 			"--config",
-			configFile,
+			scheduleConfig.Configfile(),
 			"--name",
 			scheduleConfig.Title(),
 		}
@@ -43,9 +43,9 @@ func scheduleJobs(configFile string, configs []*config.ScheduleConfig) error {
 
 		scheduleConfig.SetCommand(wd, binary, args)
 		scheduleConfig.SetJobDescription(
-			fmt.Sprintf("resticprofile %s for profile %s in %s", scheduleConfig.SubTitle(), scheduleConfig.Title(), configFile))
+			fmt.Sprintf("resticprofile %s for profile %s in %s", scheduleConfig.SubTitle(), scheduleConfig.Title(), scheduleConfig.Configfile()))
 		scheduleConfig.SetTimerDescription(
-			fmt.Sprintf("%s timer for profile %s in %s", scheduleConfig.SubTitle(), scheduleConfig.Title(), configFile))
+			fmt.Sprintf("%s timer for profile %s in %s", scheduleConfig.SubTitle(), scheduleConfig.Title(), scheduleConfig.Configfile()))
 
 		job := schedule.NewJob(scheduleConfig)
 		err = job.Create()

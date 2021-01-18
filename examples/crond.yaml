@@ -1,0 +1,67 @@
+{{ define "tags" }}
+        tag:
+        - dev
+        - {{ .Profile.Name }}
+{{ end }}
+
+global:
+    default-command: snapshots
+    initialize: false
+    priority: low
+    scheduler: crond
+
+default:
+    password-file: key
+    repository: /tmp/backup
+    lock: "/tmp/backup/resticprofile-{{ .Profile.Name }}.lock"
+
+test_user1:
+    inherit: default
+    initialize: true
+    verbose: true
+    backup:
+        source: {{ .CurrentDir }}
+        exclude:
+          - "/**/.git/"
+          - "resticp\\*"
+        schedule: "*:00,30"
+        schedule-permission: user
+        schedule-log: backup-{{ .Profile.Name }}.log
+    check:
+        schedule: "*-*-1"
+        schedule-permission: user
+        schedule-log: check-{{ .Profile.Name }}.log
+
+test_user2:
+    inherit: default
+    initialize: true
+    verbose: true
+    backup:
+        source: {{ .CurrentDir }}
+        exclude:
+          - "/**/.git/"
+          - "resticp\\*"
+        schedule: "*:15,45"
+        schedule-permission: user
+        schedule-log: backup-{{ .Profile.Name }}.log
+    check:
+        schedule: "*-*-15"
+        schedule-permission: user
+        schedule-log: check-{{ .Profile.Name }}.log
+
+test_root:
+    inherit: default
+    verbose: true
+    backup:
+        source: ./
+        exclude:
+          - "/**/.git/"
+          - "resticp\\*"
+        schedule: "*:05,20,35,50"
+        schedule-permission: system
+        schedule-log: backup-{{ .Profile.Name }}.log
+        run-after: "chown -R $SUDO_USER $HOME/.cache/restic /tmp/backup"
+    check:
+        schedule: "*-*-2"
+        schedule-permission: system
+        schedule-log: check-{{ .Profile.Name }}.log

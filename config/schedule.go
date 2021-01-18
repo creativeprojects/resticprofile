@@ -19,6 +19,7 @@ type ScheduleConfig struct {
 	timerDescription string
 	priority         string
 	logfile          string
+	configfile       string
 }
 
 func (s *ScheduleConfig) SetCommand(wd, command string, args []string) {
@@ -87,4 +88,8 @@ func (s *ScheduleConfig) Priority() string {
 
 func (s *ScheduleConfig) Logfile() string {
 	return s.logfile
+}
+
+func (s *ScheduleConfig) Configfile() string {
+	return s.configfile
 }

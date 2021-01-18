@@ -2,6 +2,14 @@ package constants
 
 import "github.com/creativeprojects/resticprofile/priority"
 
+// Scheduler type
+const (
+	SchedulerLaunchd = "launchd"
+	SchedulerWindows = "taskscheduler"
+	SchedulerSystemd = "systemd"
+	SchedulerCrond   = "crond"
+)
+
 var (
 	// PriorityValues is the map between the name and the value
 	PriorityValues = map[string]int{

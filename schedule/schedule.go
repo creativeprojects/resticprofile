@@ -1,5 +1,9 @@
 package schedule
 
+//
+// Schedule: common code for all systems
+//
+
 import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
@@ -13,6 +17,8 @@ var (
 		constants.CommandForget,
 		constants.CommandPrune,
 	}
+	// Scheduler is the scheduler to use on this system
+	Scheduler = ""
 )
 
 // Config contains all the information needed to schedule a Job
@@ -29,6 +35,7 @@ type Config interface {
 	Environment() map[string]string
 	Priority() string
 	Logfile() string
+	Configfile() string
 }
 
 // Job scheduler

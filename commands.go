@@ -312,7 +312,7 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
-	err = scheduleJobs(flags.config, schedules)
+	err = scheduleJobs(schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
