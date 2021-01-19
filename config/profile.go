@@ -26,6 +26,7 @@ type Profile struct {
 	RunAfter      []string                  `mapstructure:"run-after"`
 	RunAfterFail  []string                  `mapstructure:"run-after-fail"`
 	StatusFile    string                    `mapstructure:"status-file"`
+	OtherFlags    map[string]interface{}    `mapstructure:",remain"`
 	Environment   map[string]string         `mapstructure:"env"`
 	Backup        *BackupSection            `mapstructure:"backup"`
 	Retention     *RetentionSection         `mapstructure:"retention"`
@@ -34,7 +35,6 @@ type Profile struct {
 	Snapshots     map[string]interface{}    `mapstructure:"snapshots"`
 	Forget        *OtherSectionWithSchedule `mapstructure:"forget"`
 	Mount         map[string]interface{}    `mapstructure:"mount"`
-	OtherFlags    map[string]interface{}    `mapstructure:",remain"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command
