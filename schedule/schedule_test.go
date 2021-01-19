@@ -32,18 +32,18 @@ func TestExecutableIsAbsoluteOnAllPlatforms(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	err := Init()
-	defer Close()
+	scheduler := NewScheduler("", "profile")
+	err := scheduler.Init()
+	defer scheduler.Close()
 	require.NoError(t, err)
 }
 
 func TestCrondInit(t *testing.T) {
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
-		t.Skip("crond not supported on this platform")
+		t.Skip("crond scheduler is not supported on this platform")
 	}
-	// TODO: the Scheduler package variable can make things tricky to test
-	Scheduler = constants.SchedulerCrond
-	err := Init()
+	scheduler := NewScheduler(constants.SchedulerCrond, "profile")
+	err := scheduler.Init()
+	defer scheduler.Close()
 	require.NoError(t, err)
-	Scheduler = ""
 }

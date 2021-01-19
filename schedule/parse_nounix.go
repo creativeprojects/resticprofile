@@ -8,6 +8,6 @@ package schedule
 
 import "github.com/creativeprojects/resticprofile/calendar"
 
-func loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
+func (j *Job) loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
 	return loadParsedSchedules(command, schedules)
 }

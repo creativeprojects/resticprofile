@@ -31,6 +31,55 @@ const (
 	codeStopUnitNotFound   = 5 // undocumented
 )
 
+// SystemdSchedule is a Scheduler using systemd
+type SystemdSchedule struct {
+	profileName string
+}
+
+// Init verifies systemd is available on this system
+func (s *SystemdSchedule) Init() error {
+	found, err := exec.LookPath(systemctlBin)
+	if err != nil || found == "" {
+		return fmt.Errorf("it doesn't look like systemd is installed on your system (cannot find %q command in path)", systemctlBin)
+	}
+	return nil
+}
+
+// Close does nothing when using systemd
+func (s *SystemdSchedule) Close() {
+}
+
+// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
+func (s *SystemdSchedule) NewJob(config Config) SchedulerJob {
+	return &Job{
+		config:    config,
+		scheduler: constants.SchedulerSystemd,
+	}
+}
+
+// DisplayStatus display timers in systemd
+func (s *SystemdSchedule) DisplayStatus() {
+	var (
+		status string
+		err    error
+	)
+	if os.Geteuid() == 0 {
+		// if the user is root, we search for system timers
+		status, err = getSystemdStatus(s.profileName, systemd.SystemUnit)
+	} else {
+		// otherwise user timers
+		status, err = getSystemdStatus(s.profileName, systemd.UserUnit)
+	}
+	if err != nil || status == "" || strings.HasPrefix(status, "0 timers") {
+		// fail silently
+		return
+	}
+	fmt.Printf("\nTimers summary\n===============\n%s\n", status)
+}
+
+// Verify interface
+var _ Scheduler = &SystemdSchedule{}
+
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	err := systemd.Generate(
@@ -66,10 +115,12 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 		return err
 	}
 
-	// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
-	err = runSystemctlCommand(timerName, commandStart, unitType)
-	if err != nil {
-		return err
+	if _, noStart := j.config.GetFlag("no-start"); !noStart {
+		// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
+		err = runSystemctlCommand(timerName, commandStart, unitType)
+		if err != nil {
+			return err
+		}
 	}
 	fmt.Println("")
 	// display a status after starting it
@@ -135,19 +186,19 @@ func (j *Job) displaySystemdStatus(command string) error {
 	return runSystemctlCommand(timerName, commandStatus, systemd.UserUnit)
 }
 
-// displaySystemdStatus displays the status of all the timers installed on that profile
-func displaySystemdStatus(profile string) error {
+// getSystemdStatus displays the status of all the timers installed on that profile
+func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error) {
 	timerName := fmt.Sprintf("resticprofile-*@profile-%s.timer", profile)
 	args := []string{"list-timers", "--all", "--no-pager", timerName}
-	// if unitType == systemd.UserUnit {
-	// 	args = append(args, flagUserUnit)
-	// }
+	if unitType == systemd.UserUnit {
+		args = append(args, flagUserUnit)
+	}
+	buffer := &strings.Builder{}
 	cmd := exec.Command(systemctlBin, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = buffer
+	cmd.Stderr = buffer
 	err := cmd.Run()
-	fmt.Println("")
-	return err
+	return buffer.String(), err
 }
 
 func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) error {

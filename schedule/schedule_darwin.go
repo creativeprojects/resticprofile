@@ -42,6 +42,43 @@ const (
 	codeServiceNotFound = 113
 )
 
+// Schedule using launchd
+type Schedule struct {
+}
+
+// NewScheduler creates a Schedule object (of Scheduler interface)
+// On macOS only launchd scheduler is supported
+func NewScheduler(scheduler, profileName string) Scheduler {
+	return &Schedule{}
+}
+
+// Init verifies launchd is available on this system
+func (s *Schedule) Init() error {
+	found, err := exec.LookPath(launchdBin)
+	if err != nil || found == "" {
+		return errors.New("it doesn't look like launchd is installed on your system")
+	}
+	return nil
+}
+
+// Close does nothing with launchd
+func (s *Schedule) Close() {
+}
+
+// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
+func (s *Schedule) NewJob(config Config) SchedulerJob {
+	return &Job{
+		config: config,
+	}
+}
+
+// DisplayStatus does nothing on launchd
+func (s *Schedule) DisplayStatus() {
+}
+
+// Verify interface
+var _ Scheduler = &Schedule{}
+
 // LaunchJob is an agent definition for launchd
 type LaunchJob struct {
 	Label                 string             `plist:"Label"`
@@ -87,19 +124,6 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 	return clone
 }
 
-// Init verifies launchd is available on this system
-func Init() error {
-	found, err := exec.LookPath(launchdBin)
-	if err != nil || found == "" {
-		return errors.New("it doesn't look like launchd is installed on your system")
-	}
-	return nil
-}
-
-// Close does nothing with launchd
-func Close() {
-}
-
 // createJob creates a plist file and register it with launchd
 func (j *Job) createJob(schedules []*calendar.Event) error {
 	permission := j.getSchedulePermission()
@@ -124,24 +148,26 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 		return err
 	}
 
-	// ask the user if he want to start the service now
-	name := getJobName(j.config.Title(), j.config.SubTitle())
-	message := `
+	if _, noStart := j.config.GetFlag("no-start"); !noStart {
+		// ask the user if he want to start the service now
+		name := getJobName(j.config.Title(), j.config.SubTitle())
+		message := `
 By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
 You have to start it manually the first time to accept the requests for access:
 
 %% %s %s %s
 
 Do you want to start it now?`
-	answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, commandStart, name), true)
-	if answer {
-		// start the service
-		cmd := exec.Command(launchctlBin, commandStart, name)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			return err
+		answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, commandStart, name), true)
+		if answer {
+			// start the service
+			cmd := exec.Command(launchctlBin, commandStart, name)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err = cmd.Run()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

@@ -12,7 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(configs []*config.ScheduleConfig) error {
+func scheduleJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -22,11 +22,12 @@ func scheduleJobs(configs []*config.ScheduleConfig) error {
 		return err
 	}
 
-	err = schedule.Init()
+	scheduler := schedule.NewScheduler(schedulerType, profileName)
+	err = scheduler.Init()
 	if err != nil {
 		return err
 	}
-	defer schedule.Close()
+	defer scheduler.Close()
 
 	for _, scheduleConfig := range configs {
 		args := []string{
@@ -47,7 +48,7 @@ func scheduleJobs(configs []*config.ScheduleConfig) error {
 		scheduleConfig.SetTimerDescription(
 			fmt.Sprintf("%s timer for profile %s in %s", scheduleConfig.SubTitle(), scheduleConfig.Title(), scheduleConfig.Configfile()))
 
-		job := schedule.NewJob(scheduleConfig)
+		job := scheduler.NewJob(scheduleConfig)
 		err = job.Create()
 		if err != nil {
 			return fmt.Errorf("error creating job %s/%s: %w",
@@ -60,15 +61,16 @@ func scheduleJobs(configs []*config.ScheduleConfig) error {
 	return nil
 }
 
-func removeJobs(configs []*config.ScheduleConfig) error {
-	err := schedule.Init()
+func removeJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+	scheduler := schedule.NewScheduler(schedulerType, profileName)
+	err := scheduler.Init()
 	if err != nil {
 		return err
 	}
-	defer schedule.Close()
+	defer scheduler.Close()
 
 	for _, scheduleConfig := range configs {
-		job := schedule.NewJob(scheduleConfig)
+		job := scheduler.NewJob(scheduleConfig)
 		err := job.Remove()
 		if err != nil {
 			if errors.Is(err, schedule.ErrorServiceNotFound) {
@@ -86,15 +88,16 @@ func removeJobs(configs []*config.ScheduleConfig) error {
 	return nil
 }
 
-func statusJobs(configs []*config.ScheduleConfig) error {
-	err := schedule.Init()
+func statusJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+	scheduler := schedule.NewScheduler(schedulerType, profileName)
+	err := scheduler.Init()
 	if err != nil {
 		return err
 	}
-	defer schedule.Close()
+	defer scheduler.Close()
 
 	for _, scheduleConfig := range configs {
-		job := schedule.NewJob(scheduleConfig)
+		job := scheduler.NewJob(scheduleConfig)
 		err := job.Status()
 		if err != nil {
 			if errors.Is(err, schedule.ErrorServiceNotFound) {
@@ -113,6 +116,7 @@ func statusJobs(configs []*config.ScheduleConfig) error {
 				err)
 		}
 	}
+	scheduler.DisplayStatus()
 	return nil
 }
 

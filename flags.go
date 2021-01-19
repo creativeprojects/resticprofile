@@ -35,12 +35,13 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 
 	flagset.Usage = func() {
 		fmt.Println("\nUsage of resticprofile:")
-		fmt.Println("\tresticprofile [resticprofile flags] [command] [restic flags]")
+		fmt.Println("\tresticprofile [resticprofile flags] [restic command] [restic flags]")
+		fmt.Println("\tresticprofile [resticprofile flags] [resticprofile command] [command specific flags]")
 		fmt.Println("\nresticprofile flags:")
 		flagset.PrintDefaults()
 		fmt.Println("\nresticprofile own commands:")
 		displayOwnCommands(os.Stdout)
-		fmt.Println("")
+		fmt.Println("\nMore information: https://github.com/creativeprojects/resticprofile#using-resticprofile")
 	}
 
 	flags := commandLineFlags{}
