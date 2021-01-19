@@ -221,7 +221,7 @@ func selfUpdate(_ io.Writer, _ *config.Config, flags commandLineFlags, args []st
 	if !quiet && len(args) > 0 && (args[0] == "-q" || args[0] == "--quiet") {
 		quiet = true
 	}
-	err := confirmAndSelfUpdate(quiet, flags.verbose, version)
+	err := confirmAndSelfUpdate(quiet, flags.verbose, version, true)
 	if err != nil {
 		return err
 	}

@@ -11,13 +11,14 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-func confirmAndSelfUpdate(quiet, debug bool, version string) error {
+func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) error {
 	if debug {
 		selfupdate.SetLogger(clog.NewStandardLogger(clog.LevelDebug, clog.GetDefaultLogger()))
 	}
 	updater, _ := selfupdate.NewUpdater(
 		selfupdate.Config{
-			Validator: &selfupdate.ChecksumValidator{UniqueFilename: "checksums.txt"},
+			Validator:  &selfupdate.ChecksumValidator{UniqueFilename: "checksums.txt"},
+			Prerelease: prerelease,
 		})
 	latest, found, err := updater.DetectLatest("creativeprojects/resticprofile")
 	if err != nil {

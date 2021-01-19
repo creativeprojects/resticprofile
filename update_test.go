@@ -14,7 +14,7 @@ func TestUpdate(t *testing.T) {
 	clog.SetTestLog(t)
 	defer clog.CloseTestLog()
 
-	err := confirmAndSelfUpdate(true, true, "0.0.1")
+	err := confirmAndSelfUpdate(true, true, "0.0.1", false)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unable to update binary: file ")
 	assert.Contains(t, err.Error(), "resticprofile.test")

@@ -112,7 +112,7 @@ func main() {
 	// Deprecated in version 0.7.0
 	// Keep for compatibility with version 0.6.1
 	if flags.selfUpdate {
-		err = confirmAndSelfUpdate(flags.quiet, flags.verbose, version)
+		err = confirmAndSelfUpdate(flags.quiet, flags.verbose, version, false)
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1
