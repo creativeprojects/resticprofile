@@ -72,7 +72,7 @@ var (
 			action:            createSchedule,
 			needConfiguration: true,
 			hide:              false,
-			flags:             map[string]string{"--no-start": "don't start the timer/service (systemd only)"},
+			flags:             map[string]string{"--no-start": "don't start the timer/service (systemd/launch only)"},
 		},
 		{
 			name:              "unschedule",

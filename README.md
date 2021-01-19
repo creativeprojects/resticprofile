@@ -1134,7 +1134,7 @@ Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@
 
 macOS has a very tight protection system when running scheduled tasks (also called agents).
 
-Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task (it will consist on a few popup windows)
+Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task, which consists on a few popup windows (you can disable this behavior by adding the flag `--no-start` after the schedule command).
 
 Here's an example of scheduling a backup to Azure (which needs network access):
 
@@ -1165,6 +1165,12 @@ If you backup your files to an external repository on a network, you should get 
 
 !["resticprofile" would like to access files on a network volume](https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png)
 
+**Note:**
+If you prefer not being asked, you can add the `--no-start` flag like so:
+
+```
+% resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
+```
 
 ### Changing schedule-permission from user to system, or system to user
 

@@ -148,24 +148,26 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 		return err
 	}
 
-	// ask the user if he want to start the service now
-	name := getJobName(j.config.Title(), j.config.SubTitle())
-	message := `
+	if _, noStart := j.config.GetFlag("no-start"); !noStart {
+		// ask the user if he want to start the service now
+		name := getJobName(j.config.Title(), j.config.SubTitle())
+		message := `
 By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
 You have to start it manually the first time to accept the requests for access:
 
 %% %s %s %s
 
 Do you want to start it now?`
-	answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, commandStart, name), true)
-	if answer {
-		// start the service
-		cmd := exec.Command(launchctlBin, commandStart, name)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			return err
+		answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, commandStart, name), true)
+		if answer {
+			// start the service
+			cmd := exec.Command(launchctlBin, commandStart, name)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err = cmd.Run()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
