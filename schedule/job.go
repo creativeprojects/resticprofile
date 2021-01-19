@@ -25,7 +25,6 @@ type Config interface {
 // SchedulerJob interface
 type SchedulerJob interface {
 	Create() error
-	Update() error
 	Remove() error
 	Status() error
 }
@@ -48,11 +47,6 @@ func (j *Job) Create() error {
 		return err
 	}
 
-	return nil
-}
-
-// Update an existing job
-func (j *Job) Update() error {
 	return nil
 }
 
