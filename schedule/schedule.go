@@ -24,4 +24,5 @@ type Scheduler interface {
 	Init() error
 	Close()
 	NewJob(Config) SchedulerJob
+	DisplayStatus()
 }

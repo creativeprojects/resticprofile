@@ -19,6 +19,7 @@ type Config interface {
 	Priority() string
 	Logfile() string
 	Configfile() string
+	GetFlag(string) (string, bool)
 }
 
 // SchedulerJob interface

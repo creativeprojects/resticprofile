@@ -12,7 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(schedulerType string, configs []*config.ScheduleConfig) error {
+func scheduleJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -22,7 +22,7 @@ func scheduleJobs(schedulerType string, configs []*config.ScheduleConfig) error 
 		return err
 	}
 
-	scheduler := schedule.NewSchedule(schedulerType)
+	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err = scheduler.Init()
 	if err != nil {
 		return err
@@ -61,8 +61,8 @@ func scheduleJobs(schedulerType string, configs []*config.ScheduleConfig) error 
 	return nil
 }
 
-func removeJobs(schedulerType string, configs []*config.ScheduleConfig) error {
-	scheduler := schedule.NewSchedule(schedulerType)
+func removeJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err := scheduler.Init()
 	if err != nil {
 		return err
@@ -88,8 +88,8 @@ func removeJobs(schedulerType string, configs []*config.ScheduleConfig) error {
 	return nil
 }
 
-func statusJobs(schedulerType string, configs []*config.ScheduleConfig) error {
-	scheduler := schedule.NewSchedule(schedulerType)
+func statusJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err := scheduler.Init()
 	if err != nil {
 		return err
@@ -116,6 +116,7 @@ func statusJobs(schedulerType string, configs []*config.ScheduleConfig) error {
 				err)
 		}
 	}
+	scheduler.DisplayStatus()
 	return nil
 }
 

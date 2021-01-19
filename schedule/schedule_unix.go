@@ -15,12 +15,16 @@ import (
 	"github.com/creativeprojects/resticprofile/systemd"
 )
 
-// NewSchedule creates a Scheduler interface, which is either a CrondSchedule or a SystemdSchedule object
-func NewSchedule(scheduler string) Scheduler {
+// NewScheduler creates a Scheduler interface, which is either a CrondSchedule or a SystemdSchedule object
+func NewScheduler(scheduler, profileName string) Scheduler {
 	if scheduler == constants.SchedulerCrond {
-		return &CrondSchedule{}
+		return &CrondSchedule{
+			profileName: profileName,
+		}
 	}
-	return &SystemdSchedule{}
+	return &SystemdSchedule{
+		profileName: profileName,
+	}
 }
 
 // createJob is creating the crontab OR systemd unit and activating it

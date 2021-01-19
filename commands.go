@@ -27,8 +27,9 @@ type ownCommand struct {
 	name              string
 	description       string
 	action            func(io.Writer, *config.Config, commandLineFlags, []string) error
-	needConfiguration bool // true if the action needs a configuration file loaded
-	hide              bool // don't display the command in the help
+	needConfiguration bool              // true if the action needs a configuration file loaded
+	hide              bool              // don't display the command in the help
+	flags             map[string]string // own command flags should be simple enough to be handled manually for now
 }
 
 var (
@@ -38,12 +39,14 @@ var (
 			description:       "display version (run in verbose mode for detailed information)",
 			action:            displayVersion,
 			needConfiguration: false,
+			flags:             map[string]string{"-v, --verbose": "display details information"},
 		},
 		{
 			name:              "self-update",
 			description:       "update to latest resticprofile (use -q/--quiet flag to update without confirmation)",
 			action:            selfUpdate,
 			needConfiguration: false,
+			flags:             map[string]string{"-q, --quiet": "update without confirmation prompt"},
 		},
 		{
 			name:              "profiles",
@@ -65,21 +68,22 @@ var (
 		},
 		{
 			name:              "schedule",
-			description:       "schedule a backup",
+			description:       "schedule jobs from a profile",
 			action:            createSchedule,
 			needConfiguration: true,
 			hide:              false,
+			flags:             map[string]string{"--no-start": "don't start the timer/service (systemd only)"},
 		},
 		{
 			name:              "unschedule",
-			description:       "remove a scheduled backup",
+			description:       "remove a scheduled job",
 			action:            removeSchedule,
 			needConfiguration: true,
 			hide:              false,
 		},
 		{
 			name:              "status",
-			description:       "display the status of a scheduled backup job",
+			description:       "display the status of a scheduled job",
 			action:            statusSchedule,
 			needConfiguration: true,
 			hide:              false,
@@ -110,14 +114,15 @@ var (
 )
 
 func displayOwnCommands(output io.Writer) {
-	w := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
+	commandsWriter := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
 	for _, command := range ownCommands {
 		if command.hide {
 			continue
 		}
-		_, _ = fmt.Fprintf(w, "\t%s\t%s\n", command.name, command.description)
+		_, _ = fmt.Fprintf(commandsWriter, "\t%s\t%s\n", command.name, command.description)
+		// TODO: find a nice way to display command flags
 	}
-	_ = w.Flush()
+	_ = commandsWriter.Flush()
 }
 
 func isOwnCommand(command string, configurationLoaded bool) bool {
@@ -212,7 +217,11 @@ func displayGroups(output io.Writer, configuration *config.Config) {
 }
 
 func selfUpdate(_ io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
-	err := confirmAndSelfUpdate(flags.quiet, flags.verbose, version)
+	quiet := flags.quiet
+	if !quiet && len(args) > 0 && (args[0] == "-q" || args[0] == "--quiet") {
+		quiet = true
+	}
+	err := confirmAndSelfUpdate(quiet, flags.verbose, version)
 	if err != nil {
 		return err
 	}
@@ -297,28 +306,22 @@ func randomKey(output io.Writer, c *config.Config, flags commandLineFlags, args 
 	return err
 }
 
+// createSchedule accepts one argument from the commandline: --no-start
 func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	global, err := c.GetGlobalSection()
+	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
-		return fmt.Errorf("cannot load global section: %w", err)
+		return err
 	}
-
-	profile, err := c.GetProfile(flags.name)
-	if err != nil {
-		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-	}
-	if profile == nil {
-		return fmt.Errorf("profile '%s' not found", flags.name)
-	}
-
 	displayProfileDeprecationNotices(profile)
 
-	schedules := profile.Schedules()
-	if len(schedules) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	// add the no-start flag to all the jobs
+	if len(args) > 0 && args[0] == "--no-start" {
+		for id := range schedules {
+			schedules[id].SetFlag("no-start", "")
+		}
 	}
 
-	err = scheduleJobs(global.Scheduler, schedules)
+	err = scheduleJobs(scheduler, flags.name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -326,25 +329,12 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	global, err := c.GetGlobalSection()
+	scheduler, _, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
-		return fmt.Errorf("cannot load global section: %w", err)
+		return err
 	}
 
-	profile, err := c.GetProfile(flags.name)
-	if err != nil {
-		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-	}
-	if profile == nil {
-		return fmt.Errorf("profile '%s' not found", flags.name)
-	}
-
-	schedules := profile.Schedules()
-	if len(schedules) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
-	}
-
-	err = removeJobs(global.Scheduler, schedules)
+	err = removeJobs(scheduler, flags.name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -352,31 +342,38 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	global, err := c.GetGlobalSection()
+	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
-		return fmt.Errorf("cannot load global section: %w", err)
+		return err
 	}
-
-	profile, err := c.GetProfile(flags.name)
-	if err != nil {
-		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-	}
-	if profile == nil {
-		return fmt.Errorf("profile '%s' not found", flags.name)
-	}
-
 	displayProfileDeprecationNotices(profile)
 
-	schedules := profile.Schedules()
-	if len(schedules) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
-	}
-
-	err = statusJobs(global.Scheduler, schedules)
+	err = statusJobs(scheduler, flags.name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
 	return nil
+}
+
+func getScheduleJobs(c *config.Config, flags commandLineFlags) (string, *config.Profile, []*config.ScheduleConfig, error) {
+	global, err := c.GetGlobalSection()
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("cannot load global section: %w", err)
+	}
+
+	profile, err := c.GetProfile(flags.name)
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+	}
+	if profile == nil {
+		return "", nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
+	}
+
+	schedules := profile.Schedules()
+	if len(schedules) == 0 {
+		return "", nil, nil, fmt.Errorf("no schedule found for profile '%s'", flags.name)
+	}
+	return global.Scheduler, profile, schedules, nil
 }
 
 func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {

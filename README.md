@@ -63,11 +63,16 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Version](#version)
   * [Generating random keys](#generating-random-keys)
   * [Scheduled backups](#scheduled-backups)
+    * [retention schedule is deprecated](#retention-schedule-is-deprecated)
     * [Schedule configuration](#schedule-configuration)
       * [schedule\-permission](#schedule-permission)
       * [schedule\-log](#schedule-log)
+      * [schedule\-priority (systemd and launchd only)](#schedule-priority-systemd-and-launchd-only)
       * [schedule](#schedule)
     * [Scheduling commands](#scheduling-commands)
+      * [schedule command](#schedule-command)
+      * [unschedule command](#unschedule-command)
+      * [status command](#status-command)
       * [Examples of scheduling commands under Windows](#examples-of-scheduling-commands-under-windows)
       * [Examples of scheduling commands under Linux](#examples-of-scheduling-commands-under-linux)
       * [Examples of scheduling commands under macOS](#examples-of-scheduling-commands-under-macos)
@@ -90,7 +95,8 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
     * [User agent](#user-agent)
       * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
     * [Daemon](#daemon)
-    
+
+
 ## Requirements
 
 Since version 0.6.0, resticprofile no longer needs python installed on your machine. It is distributed as an executable (same as restic).
@@ -892,7 +898,19 @@ resticprofile accepts these internal commands:
 - unschedule
 - status
 
-Please note the display of the `status` command will be OS dependant.
+#### schedule command
+
+Install all the schedules defined on the profile.
+
+Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **dont' want** to start (and enable) it now, pass the `--no-start` flag to the command line.
+
+#### unschedule command
+
+Remove all the schedule defined on the profile
+
+#### status command
+
+The display of the `status` command will be OS dependant. Please see the examples below on which output you can expect from it.
 
 #### Examples of scheduling commands under Windows
 
@@ -1060,11 +1078,15 @@ Normalized form: *-*-* *:00,15,30,45:00
        (in UTC): Tue 2020-07-28 14:15:00 UTC
        From now: 4min 44s left
 
+Recent log (>= warning in the last month)
+==========================================
 -- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
 Jul 27 20:48:01 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
 Jul 27 21:00:55 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
 Jul 27 21:15:34 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
 
+Systemd timer status
+=====================
 ● resticprofile-backup@profile-test1.timer - backup timer for profile test1 in examples/linux.yaml
    Loaded: loaded (/home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer; enabled; vendor preset: enabled)
    Active: active (waiting) since Tue 2020-07-28 15:10:06 BST; 8s ago
@@ -1081,9 +1103,13 @@ Normalized form: *-*-01 00:00:00
        (in UTC): Fri 2020-07-31 23:00:00 UTC
        From now: 3 days left
 
+Recent log (>= warning in the last month)
+==========================================
 -- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
 Jul 27 19:39:59 Desktop76 systemd[2986]: Failed to start resticprofile check for profile test1 in examples/linux.yaml.
 
+Systemd timer status
+=====================
 ● resticprofile-check@profile-test1.timer - check timer for profile test1 in examples/linux.yaml
    Loaded: loaded (/home/user/.config/systemd/user/resticprofile-check@profile-test1.timer; enabled; vendor preset: enabled)
    Active: active (waiting) since Tue 2020-07-28 15:10:07 BST; 7s ago

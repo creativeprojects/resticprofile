@@ -14,9 +14,9 @@ import (
 type Schedule struct {
 }
 
-// NewSchedule creates a Schedule onject (of Scheduler interface)
+// NewScheduler creates a Schedule onject (of Scheduler interface)
 // On windows, only the task manager is supported
-func NewSchedule(scheduler string) Scheduler {
+func NewScheduler(scheduler, profileName string) Scheduler {
 	return &Schedule{}
 }
 
@@ -35,6 +35,10 @@ func (s *Schedule) NewJob(config Config) SchedulerJob {
 	return &Job{
 		config: config,
 	}
+}
+
+// DisplayStatus does nothing on windows task manager
+func (s *Schedule) DisplayStatus() {
 }
 
 // Verify interface

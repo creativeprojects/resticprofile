@@ -46,9 +46,9 @@ const (
 type Schedule struct {
 }
 
-// NewSchedule creates a Schedule object (in a Scheduler interface)
+// NewScheduler creates a Schedule object (of Scheduler interface)
 // On macOS only launchd scheduler is supported
-func NewSchedule(scheduler string) Scheduler {
+func NewScheduler(scheduler, profileName string) Scheduler {
 	return &Schedule{}
 }
 
@@ -70,6 +70,10 @@ func (s *Schedule) NewJob(config Config) SchedulerJob {
 	return &Job{
 		config: config,
 	}
+}
+
+// DisplayStatus does nothing on launchd
+func (s *Schedule) DisplayStatus() {
 }
 
 // Verify interface

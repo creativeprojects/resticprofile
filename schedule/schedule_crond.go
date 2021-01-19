@@ -18,6 +18,7 @@ const (
 
 // CrondSchedule is a Scheduler using crond
 type CrondSchedule struct {
+	profileName string
 }
 
 // Init verifies crond is available on this system
@@ -39,6 +40,10 @@ func (s *CrondSchedule) NewJob(config Config) SchedulerJob {
 		config:    config,
 		scheduler: constants.SchedulerCrond,
 	}
+}
+
+// DisplayStatus does nothing in crond
+func (s *CrondSchedule) DisplayStatus() {
 }
 
 // Verify interface

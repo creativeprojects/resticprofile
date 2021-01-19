@@ -20,6 +20,7 @@ type ScheduleConfig struct {
 	priority         string
 	logfile          string
 	configfile       string
+	flags            map[string]string
 }
 
 func (s *ScheduleConfig) SetCommand(wd, command string, args []string) {
@@ -92,4 +93,20 @@ func (s *ScheduleConfig) Logfile() string {
 
 func (s *ScheduleConfig) Configfile() string {
 	return s.configfile
+}
+
+func (s *ScheduleConfig) GetFlag(name string) (string, bool) {
+	if len(s.flags) == 0 {
+		return "", false
+	}
+	// we can't do a direct return, technically the map returns only one value
+	value, found := s.flags[name]
+	return value, found
+}
+
+func (s *ScheduleConfig) SetFlag(name, value string) {
+	if s.flags == nil {
+		s.flags = make(map[string]string)
+	}
+	s.flags[name] = value
 }
