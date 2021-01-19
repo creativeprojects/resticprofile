@@ -43,40 +43,42 @@ func TestShowStruct(t *testing.T) {
 	testData := []showStructData{
 		{
 			input:  testObject{Id: 11, Name: "test"},
-			output: " person:\n\n id: 11\n name:  test\n\n",
+			output: " id: 11\n name:  test\n",
 		},
 		{
 			input:  testObject{Id: 11, Person: testPerson{Name: "test"}},
-			output: " person:\n  name:  test\n\n id:  11\n\n",
+			output: " id:  11\n\n person:\n  name:  test\n",
 		},
 		{
 			input:  testObject{Id: 11, Person: testPerson{Name: "test", IsValid: true}},
-			output: " person:\n  name:   test\n  valid:  true\n\n id:  11\n\n",
+			output: " id:  11\n\n person:\n  name:   test\n  valid:  true\n",
 		},
 		{
 			input:  testObject{Id: 11, Pointer: &testPointer{IsValid: true}},
-			output: " person:\n\n pointer:\n  valid:  true\n\n id:  11\n\n",
+			output: " id:  11\n\n pointer:\n  valid:  true\n",
 		},
 		{
 			input: testObject{Id: 11, Person: testPerson{Properties: map[string][]string{
 				"list": {"one", "two", "three"},
 			}}},
-			output: " person:\n  properties:\n   list:  one\n       two\n       three\n\n\n id:  11\n\n",
+			output: " id:  11\n\n person.properties:\n  list:  one\n      two\n      three\n",
 		},
 		{
 			input:  testObject{Id: 11, Name: "test", Map: map[string][]string{"left": {"over"}}},
-			output: " person:\n\n id: 11\n name:  test\n left:  over\n\n",
+			output: " id: 11\n name:  test\n left:  over\n",
 		},
 		{
 			input:  testEmbedded{EmbeddedStruct{Value: true}, 1},
-			output: " value:  true\n\n inline:  1\n\n",
+			output: " value:   true\n inline:  1\n",
 		},
 	}
 
 	for _, testItem := range testData {
-		b := &strings.Builder{}
-		err := ShowStruct(b, testItem.input)
-		assert.NoError(t, err)
-		assert.Equal(t, testItem.output, strings.ReplaceAll(b.String(), "    ", " "))
+		t.Run("", func(t *testing.T) {
+			b := &strings.Builder{}
+			err := ShowStruct(b, testItem.input, "top-level")
+			assert.NoError(t, err)
+			assert.Equal(t, "top-level:\n"+testItem.output, strings.ReplaceAll(b.String(), "    ", " "))
+		})
 	}
 }

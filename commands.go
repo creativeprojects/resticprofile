@@ -252,8 +252,8 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	if err != nil {
 		return fmt.Errorf("cannot show global: %w", err)
 	}
-	fmt.Printf("\n%s:\n", constants.SectionConfigurationGlobal)
-	config.ShowStruct(os.Stdout, global)
+	config.ShowStruct(os.Stdout, global, constants.SectionConfigurationGlobal)
+	fmt.Println("")
 
 	// Then show profile
 	profile, err := c.GetProfile(flags.name)
@@ -274,8 +274,8 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	}
 	profile.SetRootPath(rootPath)
 
-	fmt.Printf("\n%s:\n", flags.name)
-	config.ShowStruct(os.Stdout, profile)
+	config.ShowStruct(os.Stdout, profile, flags.name)
+	fmt.Println("")
 	return nil
 }
 
