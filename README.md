@@ -19,10 +19,11 @@ With resticprofile:
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
 * It can check that you have enough memory before starting a backup. (I've had some backups that literally killed a server with swap disabled)
-* **[new for v0.9.0]** You can generate cryptographically secure random keys to use as a restic key file
-* **[new for v0.9.0]** You can easily schedule backups, retentions and checks (works for *systemd*, *launchd* and *windows task scheduler*)
-* **[new for v0.9.1]** You can generate a simple status file to send to some monitoring software and make sure your backups are running fine 
+* You can generate cryptographically secure random keys to use as a restic key file
+* You can easily schedule backups, retentions and checks (works for *systemd*, *crond*, *launchd* and *windows task scheduler*)
+* You can generate a simple status file to send to some monitoring software and make sure your backups are running fine 
 * **[new for v0.10.0]** You can use a template syntax in your configuration file
+* **[new for v0.11.0]** You can generate scheduled tasks using *crond*
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
