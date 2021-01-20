@@ -40,6 +40,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
   * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
     * [Installation for Windows using bash](#installation-for-windows-using-bash)
     * [Manual installation (Windows)](#manual-installation-windows)
+    * [Ansible](#ansible)
   * [Upgrade](#upgrade)
   * [Using docker image](#using-docker-image)
     * [Container host name](#container-host-name)
@@ -97,7 +98,6 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
       * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
     * [Daemon](#daemon)
 
-
 ## Requirements
 
 Since version 0.6.0, resticprofile no longer needs python installed on your machine. It is distributed as an executable (same as restic).
@@ -142,6 +142,10 @@ It will create a `bin` directory under your current directory and place `resticp
 
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
 - Once downloaded you need to open the archive and copy the binary file `resticprofile` (or `resticprofile.exe`) in your PATH.
+
+### Ansible
+
+Installation using Ansible is not supported out of the box yet, but since I'm using it on my servers I thought I could [share the playbook](https://github.com/creativeprojects/resticprofile/tree/master/ansible)
 
 ## Upgrade
 
