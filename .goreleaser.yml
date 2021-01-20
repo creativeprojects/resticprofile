@@ -78,9 +78,7 @@ dockers:
   -
     goos: linux
     goarch: amd64
-    binaries:
-    - resticprofile
-    builds:
+    ids:
     - resticprofile_targz
     image_templates:
     - "creativeprojects/resticprofile:latest"
