@@ -166,7 +166,13 @@ _Please note on versions before 0.10.0,  there was an issue with self-updating f
 resticprofile will check for a new version from GitHub releases and asks you if you want to update to the new version. If you add the flag `-q` or `--quiet` to the command line, it will update automatically without asking.
 
 ```
-$ resticprofile --quiet --self-update
+$ resticprofile --quiet self-update
+```
+
+and since version 0.11.0:
+
+```
+$ resticprofile self-update --quiet
 ```
 
 
