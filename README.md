@@ -205,7 +205,7 @@ $ docker run -it --rm -v $PWD:/resticprofile -h my-machine creativeprojects/rest
 
 ... or in your configuration:
 
-```ini
+```toml
 [profile]
 host = "my-machine"
 ```
@@ -235,7 +235,7 @@ restic --repo "local:/backup" --password-file "password.txt" --verbose backup /h
 
 For resticprofile to generate this command automatically for you, here's the configuration file (in *TOML* format):
 
-```ini
+```toml
 [default]
 repository = "local:/backup"
 password-file = "password.txt"
@@ -273,7 +273,7 @@ resticprofile backup
 Here's a simple configuration file using a Microsoft Azure backend:
 
 ## Simple TOML configuration
-```ini
+```toml
 [default]
 repository = "azure:restic:/"
 password-file = "key"
@@ -317,7 +317,7 @@ default:
 
 Here's a more complex configuration file showing profile inheritance and two backup profiles using the same repository:
 
-```ini
+```toml
 [global]
 # ionice is available on Linux only
 ionice = false
@@ -443,7 +443,7 @@ schedule = "*-*-01 03:00"
 
 And another simple example for Windows:
 
-```ini
+```toml
 [global]
 restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
 
@@ -473,7 +473,7 @@ run-after = "echo All Done!"
 
 Simple example sending a file via stdin
 
-```ini
+```toml
 
 [stdin]
 repository = "local:/backup/restic"
@@ -800,7 +800,7 @@ starting from version 0.11.0 the schedule of the `retention` section is **deprec
 
 The schedule configuration consists of a few parameters which can be added on each profile:
 
-```ini
+```toml
 [profile.backup]
 schedule = "*:00,30"
 schedule-permission = "system"
@@ -1198,7 +1198,7 @@ This order is important:
 
 If you need to escalate the result of your backup to a monitoring system, you can definitely use the `run-after` and `run-after-fail` scripting.
 
-But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. I have a Zabbix agent checking this file once a day, and you can hook up any monitoring system that can load a JSON file.
+But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. I have a Zabbix agent [checking this file](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix) once a day, and you can hook up any monitoring system that can load a JSON file.
 
 In your profile, you simply need to add a new parameter, which is the location of your status file
 
@@ -1427,7 +1427,7 @@ Note the **dot** after the name: it's used to pass the variables to the template
 
 Here's a working example:
 
-```ini
+```toml
 #
 # This is an example of TOML configuration using nested templates
 #
@@ -1531,7 +1531,7 @@ If for some reason you don't understand why resticprofile is not loading your co
 
 There's something to be aware of when dealing with templates: at the time the template is compiled, it has no knowledge of what the end configuration should look like: it has no knowledge of profiles for example. Here is a **non-working** example of what I mean:
 
-```ini
+```toml
 {{ define "retention" }}
     [{{ .Profile.Name }}.retention]
     after-backup = true
@@ -1636,7 +1636,7 @@ exit status 1
 
  The fix for this configuration is very simple though, just remove the section name from the template:
 
-```ini
+```toml
 {{ define "retention" }}
     after-backup = true
     before-backup = false

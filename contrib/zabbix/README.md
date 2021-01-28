@@ -12,7 +12,7 @@ There's one MACRO needed:
 I recommend making a different profile for scheduling and for running commands manually.
 Let's consider this example:
 
-```ini
+```toml
 
 [profile1]
 repository = "rest:http://user:password@server:8000/backup"
@@ -39,7 +39,7 @@ Meaning that tomorrow you will get an alert that the `profile1.check` didn't run
 
 An easy fix is to create a profile to run commands manually:
 
-```ini
+```toml
 
 [manual]
 repository = "rest:http://user:password@server:8000/backup"
