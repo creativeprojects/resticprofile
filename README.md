@@ -36,69 +36,70 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
 # Table of Contents
 * [resticprofile](#resticprofile)
 * [Table of Contents](#table-of-contents)
-  * [Requirements](#requirements)
-  * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
-    * [Installation for Windows using bash](#installation-for-windows-using-bash)
-    * [Manual installation (Windows)](#manual-installation-windows)
-    * [Ansible](#ansible)
-  * [Upgrade](#upgrade)
-  * [Using docker image](#using-docker-image)
-    * [Container host name](#container-host-name)
-  * [Configuration format](#configuration-format)
-  * [Configuration examples](#configuration-examples)
-    * [Simple TOML configuration](#simple-toml-configuration)
-    * [Simple YAML configuration](#simple-yaml-configuration)
-    * [More complex configuration in TOML](#more-complex-configuration-in-toml)
-    * [TOML configuration example for Windows](#toml-configuration-example-for-windows)
+* [Requirements](#requirements)
+* [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
+  * [Installation for Windows using bash](#installation-for-windows-using-bash)
+  * [Manual installation (Windows)](#manual-installation-windows)
+  * [Ansible](#ansible)
+* [Upgrade](#upgrade)
+* [Using docker image](#using-docker-image)
+  * [Container host name](#container-host-name)
+* [Configuration format](#configuration-format)
+* [Configuration examples](#configuration-examples)
+  * [Simple TOML configuration](#simple-toml-configuration)
+  * [Simple YAML configuration](#simple-yaml-configuration)
+  * [More complex configuration in TOML](#more-complex-configuration-in-toml)
+  * [TOML configuration example for Windows](#toml-configuration-example-for-windows)
     * [Use stdin in configuration](#use-stdin-in-configuration)
-  * [Configuration paths](#configuration-paths)
-    * [macOS X](#macos-x)
-    * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
-    * [Windows](#windows)
-  * [Path resolution in configuration](#path-resolution-in-configuration)
-  * [Run commands before, after success or after failure](#run-commands-before-after-success-or-after-failure)
-    * [run before and after order during a backup](#run-before-and-after-order-during-a-backup)
-  * [Locks](#locks)
-  * [Using resticprofile](#using-resticprofile)
-  * [Command line reference](#command-line-reference)
-  * [Minimum memory required](#minimum-memory-required)
-  * [Version](#version)
-  * [Generating random keys](#generating-random-keys)
-  * [Scheduled backups](#scheduled-backups)
-    * [retention schedule is deprecated](#retention-schedule-is-deprecated)
-    * [Schedule configuration](#schedule-configuration)
-      * [schedule\-permission](#schedule-permission)
-      * [schedule\-log](#schedule-log)
-      * [schedule\-priority (systemd and launchd only)](#schedule-priority-systemd-and-launchd-only)
-      * [schedule](#schedule)
-    * [Scheduling commands](#scheduling-commands)
-      * [schedule command](#schedule-command)
-      * [unschedule command](#unschedule-command)
-      * [status command](#status-command)
-      * [Examples of scheduling commands under Windows](#examples-of-scheduling-commands-under-windows)
-      * [Examples of scheduling commands under Linux](#examples-of-scheduling-commands-under-linux)
-      * [Examples of scheduling commands under macOS](#examples-of-scheduling-commands-under-macos)
-    * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
-  * [Status file for easy monitoring](#status-file-for-easy-monitoring)
-  * [Variable expansion in configuration file](#variable-expansion-in-configuration-file)
-    * [Pre\-defined variables](#pre-defined-variables)
-    * [Hand\-made variables](#hand-made-variables)
-    * [Examples](#examples)
-  * [Configuration templates](#configuration-templates)
-  * [Debugging your template and variable expansion](#debugging-your-template-and-variable-expansion)
-  * [Limitations of using templates](#limitations-of-using-templates)
-  * [Documentation on template, variable expansion and other configuration scripting](#documentation-on-template-variable-expansion-and-other-configuration-scripting)
-  * [Configuration file reference](#configuration-file-reference)
-  * [Appendix](#appendix)
-  * [Using resticprofile and systemd](#using-resticprofile-and-systemd)
-    * [systemd calendars](#systemd-calendars)
-    * [First time schedule](#first-time-schedule)
-  * [Using resticprofile and launchd on macOS](#using-resticprofile-and-launchd-on-macos)
-    * [User agent](#user-agent)
-      * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
-    * [Daemon](#daemon)
+* [Configuration paths](#configuration-paths)
+  * [macOS X](#macos-x)
+  * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
+  * [Windows](#windows)
+* [Path resolution in configuration](#path-resolution-in-configuration)
+* [Run commands before, after success or after failure](#run-commands-before-after-success-or-after-failure)
+  * [run before and after order during a backup](#run-before-and-after-order-during-a-backup)
+* [Locks](#locks)
+* [Using resticprofile](#using-resticprofile)
+* [Command line reference](#command-line-reference)
+* [Minimum memory required](#minimum-memory-required)
+* [Version](#version)
+* [Generating random keys](#generating-random-keys)
+* [Scheduled backups](#scheduled-backups)
+  * [retention schedule is deprecated](#retention-schedule-is-deprecated)
+  * [Schedule configuration](#schedule-configuration)
+    * [schedule\-permission](#schedule-permission)
+    * [schedule\-log](#schedule-log)
+    * [schedule\-priority (systemd and launchd only)](#schedule-priority-systemd-and-launchd-only)
+    * [schedule](#schedule)
+  * [Scheduling commands](#scheduling-commands)
+    * [schedule command](#schedule-command)
+    * [unschedule command](#unschedule-command)
+    * [status command](#status-command)
+    * [Examples of scheduling commands under Windows](#examples-of-scheduling-commands-under-windows)
+    * [Examples of scheduling commands under Linux](#examples-of-scheduling-commands-under-linux)
+    * [Examples of scheduling commands under macOS](#examples-of-scheduling-commands-under-macos)
+  * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
+* [Status file for easy monitoring](#status-file-for-easy-monitoring)
+* [Variable expansion in configuration file](#variable-expansion-in-configuration-file)
+  * [Pre\-defined variables](#pre-defined-variables)
+  * [Hand\-made variables](#hand-made-variables)
+  * [Examples](#examples)
+* [Configuration templates](#configuration-templates)
+* [Debugging your template and variable expansion](#debugging-your-template-and-variable-expansion)
+* [Limitations of using templates](#limitations-of-using-templates)
+* [Documentation on template, variable expansion and other configuration scripting](#documentation-on-template-variable-expansion-and-other-configuration-scripting)
+* [Configuration file reference](#configuration-file-reference)
+* [Appendix](#appendix)
+* [Using resticprofile and systemd](#using-resticprofile-and-systemd)
+  * [systemd calendars](#systemd-calendars)
+  * [First time schedule](#first-time-schedule)
+* [Using resticprofile and launchd on macOS](#using-resticprofile-and-launchd-on-macos)
+  * [User agent](#user-agent)
+    * [Special case of schedule\-permission=user with sudo](#special-case-of-schedule-permissionuser-with-sudo)
+  * [Daemon](#daemon)
+* [Contributions](#contributions)
 
-## Requirements
+# Requirements
 
 Since version 0.6.0, resticprofile no longer needs python installed on your machine. It is distributed as an executable (same as restic).
 
@@ -107,7 +108,7 @@ Please note I use resticprofile on multiple Debian (and Debian based) distributi
 
 **This is at _beta_ stage. Please avoid using it in production. Or at least test carefully first. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
-## Installation (macOS, Linux & other unixes)
+# Installation (macOS, Linux & other unixes)
 
 Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD and Linux:
 
@@ -128,7 +129,7 @@ $ sudo ./install.sh -b /usr/local/bin
 It will install resticprofile in `/usr/local/bin/`
 
 
-### Installation for Windows using bash
+## Installation for Windows using bash
 
 You can use the same script if you're using bash in Windows (via WSL, git bash, etc.)
 
@@ -138,16 +139,16 @@ $ ./install.sh
 ```
 It will create a `bin` directory under your current directory and place `resticprofile.exe` in it.
 
-### Manual installation (Windows)
+## Manual installation (Windows)
 
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
 - Once downloaded you need to open the archive and copy the binary file `resticprofile` (or `resticprofile.exe`) in your PATH.
 
-### Ansible
+## Ansible
 
-Installation using Ansible is not supported out of the box yet, but since I'm using it on my servers I thought I could [share the playbook](https://github.com/creativeprojects/resticprofile/tree/master/ansible)
+Installation using Ansible is not supported out of the box yet, but since I'm using it on my servers I thought I could [share the playbook](https://github.com/creativeprojects/resticprofile/tree/master/contrib/ansible)
 
-## Upgrade
+# Upgrade
 
 Once installed, you can easily upgrade resticprofile to the latest release using this command:
 
@@ -176,7 +177,7 @@ $ resticprofile self-update --quiet
 ```
 
 
-## Using docker image ##
+# Using docker image ##
 
 You can run resticprofile inside a docker container. It is probably the easiest way to install resticprofile (and restic at the same time) and keep it updated.
 
@@ -194,7 +195,7 @@ You can list your profiles:
 $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
 ```
 
-### Container host name
+## Container host name
 
 Each time a container is started, it gets assigned a new random name. You should probably force a hostname to your container...
 
@@ -210,7 +211,7 @@ host = "my-machine"
 ```
 
 
-## Configuration format
+# Configuration format
 
 * A configuration is a set of _profiles_.
 * Each profile is in its own `[section]`.
@@ -267,11 +268,11 @@ Now, assuming this configuration file is named `profiles.conf` in the current fo
 resticprofile backup
 ```
 
-## Configuration examples
+# Configuration examples
 
 Here's a simple configuration file using a Microsoft Azure backend:
 
-### Simple TOML configuration
+## Simple TOML configuration
 ```ini
 [default]
 repository = "azure:restic:/"
@@ -290,7 +291,7 @@ tag = [ "root" ]
 source = [ "/", "/var" ]
 ```
 
-### Simple YAML configuration
+## Simple YAML configuration
 ```yaml
 default:
   repository: "azure:restic:/"
@@ -312,7 +313,7 @@ default:
     - "/var"
 ```
 
-### More complex configuration in TOML
+## More complex configuration in TOML
 
 Here's a more complex configuration file showing profile inheritance and two backup profiles using the same repository:
 
@@ -438,7 +439,7 @@ schedule = "*-*-01 03:00"
 
 ```
 
-### TOML configuration example for Windows
+## TOML configuration example for Windows
 
 And another simple example for Windows:
 
@@ -485,7 +486,7 @@ tag = [ 'stdin' ]
 
 ```
 
-## Configuration paths
+# Configuration paths
 
 The default name for the configuration file is `profiles`, without an extension.
 You can change the name and its path with the `--config` or `-c` option on the command line.
@@ -497,7 +498,7 @@ If you set a filename with no extension instead, resticprofile will load the fir
 - .json
 - .hcl
 
-### macOS X
+## macOS X
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
@@ -514,7 +515,7 @@ resticprofile will search for your configuration file in these folders:
 - /opt/local/etc/resticprofile/
 - ~/ ($HOME directory)
 
-### Other unixes (Linux and BSD)
+## Other unixes (Linux and BSD)
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
@@ -531,7 +532,7 @@ resticprofile will search for your configuration file in these folders:
 - /opt/local/etc/resticprofile/
 - ~/ ($HOME directory)
 
-### Windows
+## Windows
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
@@ -542,11 +543,11 @@ resticprofile will search for your configuration file in these folders:
 - %USERPROFILE%\
 
 
-## Path resolution in configuration
+# Path resolution in configuration
 
 All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.
 
-## Run commands before, after success or after failure
+# Run commands before, after success or after failure
 
 resticprofile has 2 places where you can run commands around restic:
 
@@ -575,7 +576,7 @@ A few environment variables will be set before running these commands:
 
 Additionally for the `run-after-fail` commands, the `ERROR` environment variable will be set to the latest error message.
 
-### run before and after order during a backup
+## run before and after order during a backup
 
 The commands will be running in this order **during a backup**:
 - `run-before` from the profile - if error, go to `run-after-fail`
@@ -584,7 +585,7 @@ The commands will be running in this order **during a backup**:
 - `run-after` from the backup section - if error, go to `run-after-fail`
 - `run-after` from the profile - if error, go to `run-after-fail`
 
-## Locks
+# Locks
 
 restic is already using a lock to avoid running some operations at the same time.
 
@@ -624,7 +625,7 @@ src:
 ```
 
 
-## Using resticprofile
+# Using resticprofile
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
 
@@ -709,7 +710,7 @@ resticprofile own commands:
 A command is either a restic command or a resticprofile own command.
 
 
-## Command line reference ##
+# Command line reference ##
 
 There are not many options on the command line, most of the options are in the configuration file.
 
@@ -728,14 +729,14 @@ light or dark terminal (none to disable colouring)
 * **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
 
-## Minimum memory required
+# Minimum memory required
 
 restic can be memory hungry. I'm running a few servers with no swap (I know: it is _bad_) and I managed to kill some of them during a backup.
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
 
-## Version
+# Version
 
 The `version` command displays resticprofile version. If run in vebose mode (using `--verbose` flag) additional information such as OS version or golang version or modules are displayed as well.
 
@@ -743,7 +744,7 @@ The `version` command displays resticprofile version. If run in vebose mode (usi
 $ resticprofile --verbose version
 ```
 
-## Generating random keys
+# Generating random keys
 
 resticprofile has a handy tool to generate cryptographically secure random keys encoded in base64. You can simply put this key into a file and use it as a strong key for restic
 
@@ -762,7 +763,7 @@ To generate a different size of key, you can specify the bytes length on the com
 $ resticprofile random-key 2048
 ```
 
-## Scheduled backups
+# Scheduled backups
 
 resticprofile is capable of managing scheduled backups for you using:
 - **launchd** on macOS X
@@ -790,12 +791,12 @@ These 4 profile sections are accepting a schedule configuration:
 
 which mean you can schedule `backup`, `forget`, `prune` and `check` independently (I recommend to use a local `lock` in this case).
 
-### retention schedule is deprecated
+## retention schedule is deprecated
 **Important**:
 starting from version 0.11.0 the schedule of the `retention` section is **deprecated**: Use the `forget` section instead.
 
 
-### Schedule configuration
+## Schedule configuration
 
 The schedule configuration consists of a few parameters which can be added on each profile:
 
@@ -808,7 +809,7 @@ schedule-log = "profile-backup.log"
 
 
 
-#### schedule-permission
+### schedule-permission
 
 `schedule-permission` accepts two parameters: `user` or `system`:
 
@@ -818,11 +819,11 @@ schedule-log = "profile-backup.log"
 
 * *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user) and fallback to `user`
 
-#### schedule-log
+### schedule-log
 
 Allow to redirect all output from resticprofile and restic to a file
 
-#### schedule-priority (systemd and launchd only)
+### schedule-priority (systemd and launchd only)
 
 Starting from version 0.11.0, `schedule-priority` accepts two values:
 - `background`: the process shouldn't be noticeable when working on the machine at the same time (this is the default)
@@ -830,7 +831,7 @@ Starting from version 0.11.0, `schedule-priority` accepts two values:
 
 `schedule-priority` is not available for windows task scheduler, nor crond
 
-#### schedule
+### schedule
 
 The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use: **It is the same format used to schedule on macOS and Windows**.
 
@@ -902,28 +903,28 @@ self:
         schedule-permission: user
 ```
 
-### Scheduling commands
+## Scheduling commands
 
 resticprofile accepts these internal commands:
 - schedule
 - unschedule
 - status
 
-#### schedule command
+### schedule command
 
 Install all the schedules defined on the profile.
 
 Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **dont' want** to start (and enable) it now, pass the `--no-start` flag to the command line.
 
-#### unschedule command
+### unschedule command
 
 Remove all the schedule defined on the profile
 
-#### status command
+### status command
 
 The display of the `status` command will be OS dependant. Please see the examples below on which output you can expect from it.
 
-#### Examples of scheduling commands under Windows
+### Examples of scheduling commands under Windows
 
 If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
 
@@ -1025,7 +1026,7 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 2020/07/22 21:34:51 scheduled job self/retention removed
 ```
 
-#### Examples of scheduling commands under Linux
+### Examples of scheduling commands under Linux
 
 With this example of configuration for Linux:
 
@@ -1141,7 +1142,7 @@ Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@
 2020/07/23 17:13:42 scheduled job test1/check removed
 ```
 
-#### Examples of scheduling commands under macOS
+### Examples of scheduling commands under macOS
 
 macOS has a very tight protection system when running scheduled tasks (also called agents).
 
@@ -1183,7 +1184,7 @@ If you prefer not being asked, you can add the `--no-start` flag like so:
 % resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
 ```
 
-### Changing schedule-permission from user to system, or system to user
+## Changing schedule-permission from user to system, or system to user
 
 If you need to change the permission of a schedule, **please be sure to `unschedule` the profile before**.
 
@@ -1193,7 +1194,7 @@ This order is important:
 - now you can change your permission (`user` to `system`, or `system` to `user`)
 - `schedule` your updated profile
 
-## Status file for easy monitoring
+# Status file for easy monitoring
 
 If you need to escalate the result of your backup to a monitoring system, you can definitely use the `run-after` and `run-after-fail` scripting.
 
@@ -1226,11 +1227,11 @@ Here's an example of a generated file, where you can see that the last check fai
   }
 }
 ```
-## Variable expansion in configuration file
+# Variable expansion in configuration file
 
 You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where specific bits will be replaced by a variable.
 
-### Pre-defined variables
+## Pre-defined variables
 
 The syntax for using a pre-defined variable is:
 ```
@@ -1264,7 +1265,7 @@ For example, for the variable `.Now` you can use:
 - `.Now.YearDay`
 
 
-### Hand-made variables
+## Hand-made variables
 
 But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
 
@@ -1276,7 +1277,7 @@ But you can also define variables yourself. Hand-made variables starts with a `$
 tag: "{{ $name }}"
 ```
 
-### Examples
+## Examples
 
 You can use a combination of inheritance and variables in the resticprofile configuration file like so:
 
@@ -1400,7 +1401,7 @@ default {
 
 ```
 
-## Configuration templates
+# Configuration templates
 
 Templates are a great way to compose configuration profiles.
 
@@ -1522,11 +1523,11 @@ inherit = "azure"
 
 ```
 
-## Debugging your template and variable expansion
+# Debugging your template and variable expansion
 
 If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the `--trace` flag.
 
-## Limitations of using templates
+# Limitations of using templates
 
 There's something to be aware of when dealing with templates: at the time the template is compiled, it has no knowledge of what the end configuration should look like: it has no knowledge of profiles for example. Here is a **non-working** example of what I mean:
 
@@ -1675,14 +1676,14 @@ initialize = true
 
 And now you no longer end up with duplicated sections.
 
-## Documentation on template, variable expansion and other configuration scripting
+# Documentation on template, variable expansion and other configuration scripting
 
 There are a lot more you can do with configuration templates. If you're brave enough, [you can read the full documentation of the Go templates](https://golang.org/pkg/text/template/).
 
 For a more end-user kind of documentation, you can also read [hugo documentation on templates](https://gohugo.io/templates/introduction/) which is using the same Go implementation, but don't talk much about the developer side of it.
 Please note there are some functions only made available by hugo though.
 
-## Configuration file reference
+# Configuration file reference
 
 `[global]`
 
@@ -1868,7 +1869,7 @@ Flags passed to the restic command line
 * **snapshot-template**: string
 * **tag**: string OR list of strings
 
-## Appendix
+# Appendix
 
 As an example, here's a similar configuration file in YAML:
 
@@ -2072,7 +2073,7 @@ stdin = {
 
 ```
 
-## Using resticprofile and systemd
+# Using resticprofile and systemd
 
 systemd is a common service manager in use by many Linux distributions.
 resticprofile has the ability to create systemd timer and service files.
@@ -2082,7 +2083,7 @@ User systemd units are created under the user's systemd profile (~/.config/syste
 
 System units are created in /etc/systemd/system
 
-### systemd calendars
+## systemd calendars
 
 resticprofile uses systemd
 [OnCalendar](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events)
@@ -2100,7 +2101,7 @@ Normalized form: *-*-* 00:00:00
        From now: 10h left
 ```
 
-### First time schedule
+## First time schedule
 
 When you schedule a profile with the `schedule` command, under the hood resticprofile will
 - create the unit file (of type `notify`)
@@ -2110,11 +2111,11 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 - run `systemctl start`
 
 
-## Using resticprofile and launchd on macOS
+# Using resticprofile and launchd on macOS
 
 `launchd` is the service manager on macOS. resticprofile can schedule a profile via a _user agent_ or a _daemon_ in launchd.
 
-### User agent
+## User agent
 
 A user agent is generated when you set `schedule-permission` to `user`.
 
@@ -2136,12 +2137,17 @@ There's some information in this thread: https://github.com/restic/restic/issues
 
 *TODO: I'm going to try to compile a comprehensive how-to guide from all the information from the thread. Stay tuned!*
 
-#### Special case of schedule-permission=user with sudo
+### Special case of schedule-permission=user with sudo
 
 Please note if you schedule a user agent while running resticprofile with sudo: the user agent will be registered to the root user, and not your initial user context. It means you can only see it (`status`) and remove it (`unschedule`) via sudo.
 
-### Daemon
+## Daemon
 
 A launchd daemon is generated when you set `schedule-permission` to `system`. 
 
 It consists of a `plist` file in the folder `/Library/LaunchDaemons`. You have to run resticprofile with sudo to `schedule`, check the  `status` and `unschedule` the profile.
+
+# Contributions
+
+Please send me your resticprofile recipes, fancy configuration files, and tips and tricks.
+I have created a [contributions section](https://github.com/creativeprojects/resticprofile/tree/master/contrib) for these.
