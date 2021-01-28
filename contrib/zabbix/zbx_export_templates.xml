@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2021-01-28T14:20:58Z</date>
+    <groups>
+        <group>
+            <name>Templates/Operating systems</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template restic backup by Zabbix agent</template>
+            <name>Template restic backup by Zabbix agent</name>
+            <groups>
+                <group>
+                    <name>Templates/Operating systems</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Backup</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Status file</name>
+                    <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                    <delay>3h</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>Backup</name>
+                        </application>
+                    </applications>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Profiles</name>
+                    <type>DEPENDENT</type>
+                    <key>backup.profiles</key>
+                    <delay>0</delay>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Backup profile {#PROFILENAME} / {#PROFILECOMMAND} error</name>
+                            <type>DEPENDENT</type>
+                            <key>backup.error[{#PROFILENAME}, {#PROFILECOMMAND}]</key>
+                            <delay>0</delay>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>Backup</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.profiles[&quot;{#PROFILENAME}&quot;][&quot;{#PROFILECOMMAND}&quot;].error</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Backup profile {#PROFILENAME} / {#PROFILECOMMAND} success</name>
+                            <type>DEPENDENT</type>
+                            <key>backup.success[{#PROFILENAME}, {#PROFILECOMMAND}]</key>
+                            <delay>0</delay>
+                            <applications>
+                                <application>
+                                    <name>Backup</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.profiles[&quot;{#PROFILENAME}&quot;][&quot;{#PROFILECOMMAND}&quot;].success</params>
+                                </step>
+                                <step>
+                                    <type>BOOL_TO_DECIMAL</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                            </master_item>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}=0</expression>
+                                    <name>Last {#PROFILENAME} / {#PROFILECOMMAND} failed</name>
+                                    <priority>HIGH</priority>
+                                    <manual_close>YES</manual_close>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Backup profile {#PROFILENAME} / {#PROFILECOMMAND} time</name>
+                            <type>DEPENDENT</type>
+                            <key>backup.time[{#PROFILENAME}, {#PROFILECOMMAND}]</key>
+                            <delay>0</delay>
+                            <units>unixtime</units>
+                            <applications>
+                                <application>
+                                    <name>Backup</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.profiles[&quot;{#PROFILENAME}&quot;][&quot;{#PROFILECOMMAND}&quot;].time</params>
+                                </step>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <params>return Math.round(Date.parse(value)/1000)</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                            </master_item>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{now()}-{last()}&gt;108000</expression>
+                                    <name>Last {#PROFILENAME} / {#PROFILECOMMAND} did not run</name>
+                                    <priority>HIGH</priority>
+                                    <description>Last profile was running more than 30 hours ago</description>
+                                    <manual_close>YES</manual_close>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                    </master_item>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>var output = []
+
+var status = JSON.parse(value)
+Object.keys(status.profiles).forEach(function(profileName) {
+    Object.keys(status.profiles[profileName]).forEach(function(entry) {
+        output.push({
+            &quot;{#PROFILENAME}&quot;: profileName,
+            &quot;{#PROFILECOMMAND}&quot;: entry,
+        })
+    })
+});
+
+return JSON.stringify(output)</params>
+                        </step>
+                    </preprocessing>
+                </discovery_rule>
+            </discovery_rules>
+            <macros>
+                <macro>
+                    <macro>{$BACKUP_STATUS_FILE}</macro>
+                    <value>/home/backup/status.json</value>
+                    <description>resticprofile status file</description>
+                </macro>
+            </macros>
+        </template>
+        <template>
+            <template>Template restic backup by Zabbix agent active</template>
+            <name>Template restic backup by Zabbix agent active</name>
+            <groups>
+                <group>
+                    <name>Templates/Operating systems</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Backup</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Status file</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                    <delay>3h</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>Backup</name>
+                        </application>
+                    </applications>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Profiles</name>
+                    <type>DEPENDENT</type>
+                    <key>backup.profiles</key>
+                    <delay>0</delay>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Backup profile {#PROFILENAME} / {#PROFILECOMMAND} error</name>
+                            <type>DEPENDENT</type>
+                            <key>backup.error[{#PROFILENAME}, {#PROFILECOMMAND}]</key>
+                            <delay>0</delay>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>Backup</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.profiles[&quot;{#PROFILENAME}&quot;][&quot;{#PROFILECOMMAND}&quot;].error</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Backup profile {#PROFILENAME} / {#PROFILECOMMAND} success</name>
+                            <type>DEPENDENT</type>
+                            <key>backup.success[{#PROFILENAME}, {#PROFILECOMMAND}]</key>
+                            <delay>0</delay>
+                            <applications>
+                                <application>
+                                    <name>Backup</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.profiles[&quot;{#PROFILENAME}&quot;][&quot;{#PROFILECOMMAND}&quot;].success</params>
+                                </step>
+                                <step>
+                                    <type>BOOL_TO_DECIMAL</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                            </master_item>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}=0</expression>
+                                    <name>Last {#PROFILENAME} / {#PROFILECOMMAND} failed</name>
+                                    <priority>HIGH</priority>
+                                    <manual_close>YES</manual_close>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Backup profile {#PROFILENAME} / {#PROFILECOMMAND} time</name>
+                            <type>DEPENDENT</type>
+                            <key>backup.time[{#PROFILENAME}, {#PROFILECOMMAND}]</key>
+                            <delay>0</delay>
+                            <units>unixtime</units>
+                            <applications>
+                                <application>
+                                    <name>Backup</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.profiles[&quot;{#PROFILENAME}&quot;][&quot;{#PROFILECOMMAND}&quot;].time</params>
+                                </step>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <params>return Math.round(Date.parse(value)/1000)</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                            </master_item>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{now()}-{last()}&gt;108000</expression>
+                                    <name>Last {#PROFILENAME} / {#PROFILECOMMAND} did not run</name>
+                                    <priority>HIGH</priority>
+                                    <description>Last profile was running more than 30 hours ago</description>
+                                    <manual_close>YES</manual_close>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
+                    </master_item>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>var output = []
+
+var status = JSON.parse(value)
+Object.keys(status.profiles).forEach(function(profileName) {
+    Object.keys(status.profiles[profileName]).forEach(function(entry) {
+        output.push({
+            &quot;{#PROFILENAME}&quot;: profileName,
+            &quot;{#PROFILECOMMAND}&quot;: entry,
+        })
+    })
+});
+
+return JSON.stringify(output)</params>
+                        </step>
+                    </preprocessing>
+                </discovery_rule>
+            </discovery_rules>
+            <macros>
+                <macro>
+                    <macro>{$BACKUP_STATUS_FILE}</macro>
+                    <value>/home/backup/status.json</value>
+                    <description>resticprofile status file</description>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+</zabbix_export>

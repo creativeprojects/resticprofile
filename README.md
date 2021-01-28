@@ -2149,5 +2149,5 @@ It consists of a `plist` file in the folder `/Library/LaunchDaemons`. You have t
 
 # Contributions
 
-Please send me your resticprofile recipes, fancy configuration files, and tips and tricks.
-I have created a [contributions section](https://github.com/creativeprojects/resticprofile/tree/master/contrib) for these.
+Please share your resticprofile recipes, fancy configuration files, or tips and tricks.
+I have created a [contributions section](https://github.com/creativeprojects/resticprofile/tree/master/contrib) for that matter.

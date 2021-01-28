@@ -1,4 +1,4 @@
-## Send an email on error (systemd schedule)
+# Send an email on error (systemd schedule)
 
 In `profiles.yaml` you set:
 
