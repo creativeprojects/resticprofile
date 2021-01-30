@@ -71,11 +71,19 @@ var (
 	userPassword = ""
 )
 
+// ErrorNotConnected is returned by public functions if Connect was not called, was not successful or Close closed the connection.
+var ErrorNotConnected = errors.New("local task scheduler not connected")
+
+// IsConnected returns whether a connection to the local task scheduler is established
+func IsConnected() bool {
+	return taskService != nil && taskService.IsConnected()
+}
+
 // Connect initializes a connection to the local task scheduler
 func Connect() error {
 	var err error
 
-	if taskService == nil || !taskService.IsConnected() {
+	if !IsConnected() {
 		taskService, err = taskmaster.Connect("", "", "", "")
 	}
 	return err
@@ -92,6 +100,10 @@ func Close() {
 
 // Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config Config, schedules []*calendar.Event, permission Permission) error {
+	if !IsConnected() {
+		return ErrorNotConnected
+	}
+
 	if permission == SystemAccount {
 		return createSystemTask(config, schedules)
 	}
@@ -429,6 +441,10 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 
 // Delete a task
 func Delete(title, subtitle string) error {
+	if !IsConnected() {
+		return ErrorNotConnected
+	}
+
 	taskName := getTaskPath(title, subtitle)
 	err := taskService.DeleteTask(taskName)
 	if err != nil {
@@ -442,6 +458,10 @@ func Delete(title, subtitle string) error {
 
 // Status returns the status of a task
 func Status(title, subtitle string) error {
+	if !IsConnected() {
+		return ErrorNotConnected
+	}
+
 	taskName := getTaskPath(title, subtitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
