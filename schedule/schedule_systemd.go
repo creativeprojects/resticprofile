@@ -110,21 +110,21 @@ func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
 	timerName := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 
 	// enable the job
-	err = runSystemctlCommand(timerName, commandEnable, unitType)
+	err = runSystemctlCommand(timerName, commandEnable, unitType, false)
 	if err != nil {
 		return err
 	}
 
 	if _, noStart := j.config.GetFlag("no-start"); !noStart {
 		// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
-		err = runSystemctlCommand(timerName, commandStart, unitType)
+		err = runSystemctlCommand(timerName, commandStart, unitType, false)
 		if err != nil {
 			return err
 		}
 	}
 	fmt.Println("")
 	// display a status after starting it
-	_ = runSystemctlCommand(timerName, commandStatus, unitType)
+	_ = runSystemctlCommand(timerName, commandStatus, unitType, false)
 
 	return nil
 }
@@ -135,13 +135,13 @@ func (j *Job) removeSystemdJob(unitType systemd.UnitType) error {
 	timerFile := systemd.GetTimerFile(j.config.Title(), j.config.SubTitle())
 
 	// stop the job
-	err = runSystemctlCommand(timerFile, commandStop, unitType)
+	err = runSystemctlCommand(timerFile, commandStop, unitType, j.RemoveOnly())
 	if err != nil {
 		return err
 	}
 
 	// disable the job
-	err = runSystemctlCommand(timerFile, commandDisable, unitType)
+	err = runSystemctlCommand(timerFile, commandDisable, unitType, j.RemoveOnly())
 	if err != nil {
 		return err
 	}
@@ -177,13 +177,13 @@ func (j *Job) displaySystemdStatus(command string) error {
 		if err != nil {
 			clog.Warningf("cannot read system logs: %v", err)
 		}
-		return runSystemctlCommand(timerName, commandStatus, systemd.SystemUnit)
+		return runSystemctlCommand(timerName, commandStatus, systemd.SystemUnit, false)
 	}
 	err := runJournalCtlCommand(timerName, systemd.UserUnit)
 	if err != nil {
 		clog.Warningf("cannot read user logs: %v", err)
 	}
-	return runSystemctlCommand(timerName, commandStatus, systemd.UserUnit)
+	return runSystemctlCommand(timerName, commandStatus, systemd.UserUnit, false)
 }
 
 // getSystemdStatus displays the status of all the timers installed on that profile
@@ -201,7 +201,7 @@ func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error)
 	return buffer.String(), err
 }
 
-func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) error {
+func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, silent bool) error {
 	if command == commandStatus {
 		fmt.Print("Systemd timer status\n=====================\n")
 	}
@@ -212,8 +212,10 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType) e
 	args = append(args, command, timerName)
 
 	cmd := exec.Command(systemctlBin, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	if !silent {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 	err := cmd.Run()
 	if command == commandStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
 		return ErrorServiceNotFound

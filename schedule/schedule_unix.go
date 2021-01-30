@@ -46,7 +46,13 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 
 // removeJob is disabling the systemd unit and deleting the timer and service files
 func (j *Job) removeJob() error {
-	permission := j.getSchedulePermission()
+	var permission string
+	if j.RemoveOnly() {
+		permission, _ = j.detectSchedulePermission() // silent call for possibly non-existent job
+	} else {
+		permission = j.getSchedulePermission()
+	}
+
 	ok := j.checkPermission(permission)
 	if !ok {
 		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
