@@ -44,7 +44,7 @@ var ErrorJobCanBeRemovedOnly = errors.New("job can be removed only")
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {
 	permission, _ := j.detectSchedulePermission()
-	return !j.checkPermission(permission)
+	return j.checkPermission(permission)
 }
 
 // Create a new job

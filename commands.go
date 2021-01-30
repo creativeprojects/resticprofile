@@ -309,7 +309,7 @@ func randomKey(output io.Writer, c *config.Config, flags commandLineFlags, args 
 
 // createSchedule accepts one argument from the commandline: --no-start
 func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+	scheduler, profile, schedules, err := mustGetScheduleJobs(c, flags)
 	if err != nil {
 		return err
 	}
@@ -330,28 +330,9 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+	scheduler, _, configs, err := getRemovableScheduleJobs(c, flags)
 	if err != nil {
 		return err
-	}
-
-	configs := convertSchedules(schedules)
-
-	// Add all undeclared schedules as remove-only configs
-	for _, command := range profile.SchedulableCommands() {
-		declared := false
-		for _, s := range schedules {
-			if declared = s.SubTitle() == command; declared {
-				break
-			}
-		}
-		if !declared {
-			configs = append(configs, schedule.NewRemoveOnlyConfig(profile.Name, command))
-		}
-	}
-
-	if len(configs) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 
 	err = removeJobs(scheduler, flags.name, configs)
@@ -362,7 +343,7 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+	scheduler, profile, schedules, err := mustGetScheduleJobs(c, flags)
 	if err != nil {
 		return err
 	}
@@ -389,11 +370,42 @@ func getScheduleJobs(c *config.Config, flags commandLineFlags) (string, *config.
 		return "", nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
-	schedules := profile.Schedules()
+	return global.Scheduler, profile, profile.Schedules(), nil
+}
+
+func mustGetScheduleJobs(c *config.Config, flags commandLineFlags) (string, *config.Profile, []*config.ScheduleConfig, error) {
+	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+	if err != nil {
+		return "", nil, nil, err
+	}
 	if len(schedules) == 0 {
 		return "", nil, nil, fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
-	return global.Scheduler, profile, schedules, nil
+	return scheduler, profile, schedules, nil
+}
+
+func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (string, *config.Profile, []schedule.Config, error) {
+	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	configs := convertSchedules(schedules)
+
+	// Add all undeclared schedules as remove-only configs
+	for _, command := range profile.SchedulableCommands() {
+		declared := false
+		for _, s := range schedules {
+			if declared = s.SubTitle() == command; declared {
+				break
+			}
+		}
+		if !declared {
+			configs = append(configs, schedule.NewRemoveOnlyConfig(profile.Name, command))
+		}
+	}
+
+	return scheduler, profile, configs, nil
 }
 
 func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
