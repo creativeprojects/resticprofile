@@ -61,7 +61,15 @@ func scheduleJobs(schedulerType, profileName string, configs []*config.ScheduleC
 	return nil
 }
 
-func removeJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+func convertSchedules(configs []*config.ScheduleConfig) []schedule.Config {
+	sc := make([]schedule.Config, len(configs))
+	for index, item := range configs {
+		sc[index] = item
+	}
+	return sc
+}
+
+func removeJobs(schedulerType, profileName string, configs []schedule.Config) error {
 	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err := scheduler.Init()
 	if err != nil {
@@ -71,11 +79,20 @@ func removeJobs(schedulerType, profileName string, configs []*config.ScheduleCon
 
 	for _, scheduleConfig := range configs {
 		job := scheduler.NewJob(scheduleConfig)
+
+		// Skip over non-accessible, RemoveOnly jobs since they may not exist and must not causes errors
+		if job.RemoveOnly() && !job.Accessible() {
+			continue
+		}
+
+		// Try to remove the job
 		err := job.Remove()
 		if err != nil {
 			if errors.Is(err, schedule.ErrorServiceNotFound) {
-				// Display a warning and keep going
-				clog.Warningf("service %s/%s not found", scheduleConfig.Title(), scheduleConfig.SubTitle())
+				// Display a warning and keep going. Skip message for RemoveOnly jobs since they may not exist
+				if !job.RemoveOnly() {
+					clog.Warningf("service %s/%s not found", scheduleConfig.Title(), scheduleConfig.SubTitle())
+				}
 				continue
 			}
 			return fmt.Errorf("error removing job %s/%s: %w",
@@ -83,12 +100,13 @@ func removeJobs(schedulerType, profileName string, configs []*config.ScheduleCon
 				scheduleConfig.SubTitle(),
 				err)
 		}
+
 		clog.Infof("scheduled job %s/%s removed", scheduleConfig.Title(), scheduleConfig.SubTitle())
 	}
 	return nil
 }
 
-func statusJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+func statusJobs(schedulerType, profileName string, configs []schedule.Config) error {
 	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err := scheduler.Init()
 	if err != nil {

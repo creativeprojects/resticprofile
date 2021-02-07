@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,4 +87,41 @@ func TestRandomKeyOfZeroSize(t *testing.T) {
 func TestRandomKey(t *testing.T) {
 	// doesn't look like much, but it's testing the random generator is not throwing an error
 	assert.NoError(t, randomKey(os.Stdout, nil, commandLineFlags{}, nil))
+}
+
+func TestRemovableSchedules(t *testing.T) {
+	testConfig := `
+[default.check]
+schedule = "daily"
+[default.backup]
+`
+	parsedConfig, err := config.Load(bytes.NewBufferString(testConfig), "toml")
+	assert.Nil(t, err)
+
+	// Test that errors from getScheduleJobs are passed thru
+	_, _, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "non-existent"})
+	assert.EqualError(t, notFoundErr, "profile 'non-existent' not found")
+
+	// Test that declared and declarable job configs are returned
+	_, profile, schedules, err := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "default"})
+	assert.Nil(t, err)
+	assert.NotNil(t, profile)
+	assert.NotEmpty(t, schedules)
+	assert.Len(t, schedules, len(profile.SchedulableCommands()))
+
+	declaredCount := 0
+
+	for _, jobConfig := range schedules {
+		scheduler := schedule.NewScheduler("", jobConfig.Title())
+		defer func(s schedule.Scheduler) { s.Close() }(scheduler) // Capture current ref to scheduler to be able to close it when function returns.
+
+		if jobConfig.SubTitle() == "check" {
+			assert.False(t, scheduler.NewJob(jobConfig).RemoveOnly())
+			declaredCount++
+		} else {
+			assert.True(t, scheduler.NewJob(jobConfig).RemoveOnly())
+		}
+	}
+
+	assert.Equal(t, 1, declaredCount)
 }

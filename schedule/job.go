@@ -1,5 +1,7 @@
 package schedule
 
+import "errors"
+
 //
 // Schedule: common code for all systems
 //
@@ -24,8 +26,10 @@ type Config interface {
 
 // SchedulerJob interface
 type SchedulerJob interface {
+	Accessible() bool
 	Create() error
 	Remove() error
+	RemoveOnly() bool
 	Status() error
 }
 
@@ -35,8 +39,20 @@ type Job struct {
 	scheduler string
 }
 
+var ErrorJobCanBeRemovedOnly = errors.New("job can be removed only")
+
+// Accessible checks if the current user is permitted to access the job
+func (j *Job) Accessible() bool {
+	permission, _ := j.detectSchedulePermission()
+	return j.checkPermission(permission)
+}
+
 // Create a new job
 func (j *Job) Create() error {
+	if j.RemoveOnly() {
+		return ErrorJobCanBeRemovedOnly
+	}
+
 	schedules, err := j.loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err
@@ -59,8 +75,17 @@ func (j *Job) Remove() error {
 	return nil
 }
 
+// RemoveOnly returns true if this job can be removed only
+func (j *Job) RemoveOnly() bool {
+	return isRemoveOnlyConfig(j.config)
+}
+
 // Status of a job
 func (j *Job) Status() error {
+	if j.RemoveOnly() {
+		return ErrorJobCanBeRemovedOnly
+	}
+
 	_, err := j.loadSchedules(j.config.SubTitle(), j.config.Schedules())
 	if err != nil {
 		return err

@@ -48,7 +48,7 @@ var _ Scheduler = &Schedule{}
 func (j *Job) createJob(schedules []*calendar.Event) error {
 	// default permission will be system
 	permission := schtasks.SystemAccount
-	if j.config.Permission() == constants.SchedulePermissionUser {
+	if p, _ := j.detectSchedulePermission(); p == constants.SchedulePermissionUser {
 		permission = schtasks.UserAccount
 	}
 	err := schtasks.Create(j.config, schedules, permission)
@@ -80,4 +80,23 @@ func (j *Job) displayStatus(command string) error {
 		return err
 	}
 	return nil
+}
+
+// detectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// unsafe specifies whether a guess may lead to a too broad or too narrow file access permission.
+//
+// This method is for Windows only
+func (j *Job) detectSchedulePermission() (permission string, unsafe bool) {
+	if j.config.Permission() == constants.SchedulePermissionUser {
+		return constants.SchedulePermissionUser, false
+	}
+	return constants.SchedulePermissionSystem, false
+}
+
+// checkPermission returns true if the user is allowed to access the job.
+//
+// This method is for Windows only
+func (j *Job) checkPermission(permission string) bool {
+	return true
 }

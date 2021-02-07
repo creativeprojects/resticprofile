@@ -15,28 +15,40 @@ import (
 //
 // This method is for Unixes only
 func (j *Job) getSchedulePermission() string {
-	const message = "you have not specified the permission for your schedule (system or user): assuming "
+	permission, unsafe := j.detectSchedulePermission()
+	if unsafe {
+		clog.Warningf("you have not specified the permission for your schedule (system or user): assuming %s", permission)
+	}
+	return permission
+}
+
+// detectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// unsafe specifies whether a guess may lead to a too broad or too narrow file access permission.
+//
+// This method is for Unixes only
+func (j *Job) detectSchedulePermission() (permission string, unsafe bool) {
 	if j.config.Permission() == constants.SchedulePermissionSystem ||
 		j.config.Permission() == constants.SchedulePermissionUser {
 		// well defined
-		return j.config.Permission()
-	}
-	// best guess is depending on the user being root or not:
-	if os.Geteuid() == 0 {
-		if runtime.GOOS != "darwin" {
-			// darwin can backup protected files without the need of a system task; no need to bother the user then
-			clog.Warning(message, "system")
+		permission = j.config.Permission()
+		unsafe = false
+
+	} else {
+		// best guess is depending on the user being root or not:
+		if os.Geteuid() == 0 {
+			permission = constants.SchedulePermissionSystem
+		} else {
+			permission = constants.SchedulePermissionUser
 		}
-		return constants.SchedulePermissionSystem
+		// darwin can backup protected files without the need of a system task; Guess based on UID is never unsafe
+		unsafe = runtime.GOOS != "darwin"
 	}
-	if runtime.GOOS != "darwin" {
-		// darwin can backup protected files without the need of a system task; no need to bother the user then
-		clog.Warning(message, "user")
-	}
-	return constants.SchedulePermissionUser
+
+	return
 }
 
-// checkPermission returns true if the user is allowed.
+// checkPermission returns true if the user is allowed to access the job.
 //
 // This method is for Unixes only
 func (j *Job) checkPermission(permission string) bool {

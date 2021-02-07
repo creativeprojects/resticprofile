@@ -228,6 +228,16 @@ func (p *Profile) GetBackupSource() []string {
 	return p.Backup.Source
 }
 
+// SchedulableCommands returns all command names that could have a schedule
+func (p *Profile) SchedulableCommands() []string {
+	sections := p.allSchedulableSections()
+	commands := make([]string, 0, len(sections))
+	for name := range sections {
+		commands = append(commands, name)
+	}
+	return commands
+}
+
 // Schedules returns a slice of ScheduleConfig that satisfy the schedule.Config interface
 func (p *Profile) Schedules() []*ScheduleConfig {
 	// All SectionWithSchedule (backup, check, prune, etc)
