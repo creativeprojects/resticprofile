@@ -194,6 +194,21 @@ func TestEnvError(t *testing.T) {
 	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
+func TestEnvErrorCommandLine(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	profile := config.NewProfile(nil, "name")
+	if runtime.GOOS == "windows" {
+		profile.RunAfterFail = []string{"echo cmd: %ERROR_COMMANDLINE%"}
+	} else {
+		profile.RunAfterFail = []string{"echo cmd: $ERROR_COMMANDLINE"}
+	}
+	wrapper := newResticWrapper("exit", false, false, profile, "1", nil, nil)
+	err := wrapper.runProfile()
+	assert.Error(t, err)
+	assert.Equal(t, "cmd: \"exit\" \"1\"\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+}
+
 func TestRunProfileWithSetPIDCallback(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Lock = filepath.Join(os.TempDir(), fmt.Sprintf("%s%d%d.tmp", "TestRunProfileWithSetPIDCallback", time.Now().UnixNano(), os.Getpid()))
