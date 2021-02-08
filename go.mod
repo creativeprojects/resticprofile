@@ -8,7 +8,7 @@ require (
 	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
 	github.com/coreos/go-systemd/v22 v22.1.0
 	github.com/creativeprojects/clog v0.8.0
-	github.com/creativeprojects/go-selfupdate v0.4.0
+	github.com/creativeprojects/go-selfupdate v0.6.1
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/mackerelio/go-osstat v0.1.0

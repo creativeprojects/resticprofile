@@ -165,8 +165,8 @@ func cleanupCrontab(crontab string) string {
 }
 
 // extractOwnSection returns before our section, inside, and after if found.
-// It is not returning both start and end markers.
-// If not found, it return the content in the first string
+// - It is not returning both start and end markers.
+// - If not found, it returns the file content in the first string
 func extractOwnSection(crontab string) (string, string, string, bool) {
 	start := strings.Index(crontab, startMarker)
 	end := strings.Index(crontab, endMarker)

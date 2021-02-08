@@ -22,7 +22,7 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 		})
 	latest, found, err := updater.DetectLatest("creativeprojects/resticprofile")
 	if err != nil {
-		return fmt.Errorf("unable to detect latest version: %v", err)
+		return fmt.Errorf("unable to detect latest version: %w", err)
 	}
 	if !found {
 		return fmt.Errorf("latest version for %s/%s could not be found from github repository", runtime.GOOS, runtime.GOARCH)
@@ -44,7 +44,7 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 		return errors.New("could not locate executable path")
 	}
 	if err := updater.UpdateTo(latest, exe); err != nil {
-		return fmt.Errorf("unable to update binary: %v", err)
+		return fmt.Errorf("unable to update binary: %w", err)
 	}
 	clog.Infof("Successfully updated to version %s", latest.Version())
 	return nil
