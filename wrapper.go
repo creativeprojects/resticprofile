@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -52,6 +53,8 @@ type resticWrapper struct {
 	resticBinary string
 	initialize   bool
 	dryRun       bool
+	noLock       bool
+	lockWait     *time.Duration
 	profile      *config.Profile
 	command      string
 	moreArgs     []string
@@ -72,6 +75,8 @@ func newResticWrapper(
 		resticBinary: resticBinary,
 		initialize:   initialize,
 		dryRun:       dryRun,
+		noLock:       false,
+		lockWait:     nil,
 		profile:      profile,
 		command:      command,
 		moreArgs:     moreArgs,
@@ -79,8 +84,29 @@ func newResticWrapper(
 	}
 }
 
+// ignoreLock configures resticWrapper to ignore the lock defined in profile
+func (r *resticWrapper) ignoreLock() {
+	r.noLock = true
+	r.lockWait = nil
+}
+
+// ignoreLock configures resticWrapper to wait up to duration to acquire the lock defined in profile
+func (r *resticWrapper) maxWaitOnLock(duration time.Duration) {
+	r.noLock = false
+	if duration > 0 {
+		r.lockWait = &duration
+	} else {
+		r.lockWait = nil
+	}
+}
+
 func (r *resticWrapper) runProfile() error {
-	err := lockRun(r.profile.Lock, r.profile.ForceLock, func(setPID lock.SetPID) error {
+	lockFile := r.profile.Lock
+	if r.noLock {
+		lockFile = ""
+	}
+
+	err := lockRun(lockFile, r.profile.ForceLock, r.lockWait, func(setPID lock.SetPID) error {
 		r.setPID = setPID
 		return runOnFailure(
 			func() error {
@@ -508,13 +534,14 @@ func convertIntoArgs(flags map[string][]string) []string {
 }
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk
-func lockRun(filename string, force bool, run func(setPID lock.SetPID) error) error {
-	if filename == "" {
-		// No lock
+func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setPID lock.SetPID) error) error {
+	// No lock
+	if lockFile == "" {
 		return run(nil)
 	}
+
 	// Make sure the path to the lock exists
-	dir := filepath.Dir(filename)
+	dir := filepath.Dir(lockFile)
 	if dir != "" {
 		err := os.MkdirAll(dir, 0755)
 		if err != nil {
@@ -522,22 +549,46 @@ func lockRun(filename string, force bool, run func(setPID lock.SetPID) error) er
 			return run(nil)
 		}
 	}
-	runLock := lock.NewLock(filename)
+
+	// Acquire lock
+	runLock := lock.NewLock(lockFile)
 	success := runLock.TryAcquire()
-	if !success {
+	start := time.Now()
+
+	for !success {
 		who, err := runLock.Who()
 		if err != nil {
 			return fmt.Errorf("another process left the lockfile unreadable: %s", err)
 		}
+
 		// should we try to force our way?
 		if force {
-			clog.Warningf("previous run of the profile started by %s hasn't finished properly", who)
 			success = runLock.ForceAcquire()
+
+			if lockWait == nil || success {
+				clog.Warningf("previous run of the profile started by %s hasn't finished properly", who)
+			}
+		} else {
+			success = runLock.TryAcquire()
 		}
+
+		// Retry or return?
 		if !success {
-			return fmt.Errorf("another process is already running this profile: %s", who)
+			if lockWait == nil {
+				return fmt.Errorf("another process is already running this profile: %s", who)
+
+			} else {
+				if time.Now().Sub(start) < *lockWait {
+					time.Sleep(3 * time.Second)
+				} else {
+					clog.Warningf("previous run of the profile hasn't finished after %s", *lockWait)
+					lockWait = nil
+				}
+			}
 		}
 	}
+
+	// Run locked
 	defer runLock.Release()
 	return run(runLock.SetPID)
 }
