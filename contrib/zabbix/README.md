@@ -1,11 +1,10 @@
 # Feeding the resticprofile status file into Zabbix
 
-I have created a Zabbix template which is reading the status file from resticprofile, and is sending an alert if a profile didn't finish in the last 30 hours (a bit more than a day in case a profile takes a bit longer) or if it failed. The assumption is that each profile target is running once a day.
+I have created a Zabbix template which is reading the status file from resticprofile, and is sending an alert if a profile didn't finish in the last 26 hours or if it failed. The maximum number of hours is configurable via a MACRO.
 
-There's one MACRO needed:
-`{$BACKUP_STATUS_FILE}` which contain the full path of the status file
-
-**If your profiles are running more than once a day, you will need to edit the template according to your needs.**
+Two MACROs are available:
+- `{$BACKUP_STATUS_FILE}` which contain the full path of the status file. Default is `/home/backup/status.json`.
+- `{$MAX_HOURS_BETWEEN}` which contain the maximum number of hours before it triggers an alert. Default is `26` hours (for backup running once a day, plus some time if it takes a bit longer than usual).
 
 ## Running profiles manually
 

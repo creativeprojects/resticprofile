@@ -1211,7 +1211,7 @@ This order is important:
 
 If you need to escalate the result of your backup to a monitoring system, you can definitely use the `run-after` and `run-after-fail` scripting.
 
-But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. I have a Zabbix agent [checking this file](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix) once a day, and you can hook up any monitoring system that can load a JSON file.
+But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. For example I have a Zabbix agent [checking this file](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix) once a day, and so you can hook up any monitoring system that can interpret a JSON file.
 
 In your profile, you simply need to add a new parameter, which is the location of your status file
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>5.0</version>
-    <date>2021-01-28T14:20:58Z</date>
+    <date>2021-02-21T18:26:11Z</date>
     <groups>
         <group>
             <name>Templates/Operating systems</name>
@@ -25,7 +25,7 @@
                 <item>
                     <name>Status file</name>
                     <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
-                    <delay>3h</delay>
+                    <delay>1h</delay>
                     <trends>0</trends>
                     <value_type>TEXT</value_type>
                     <applications>
@@ -33,6 +33,12 @@
                             <name>Backup</name>
                         </application>
                     </applications>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <params>1d</params>
+                        </step>
+                    </preprocessing>
                 </item>
             </items>
             <discovery_rules>
@@ -122,10 +128,11 @@
                             </master_item>
                             <trigger_prototypes>
                                 <trigger_prototype>
-                                    <expression>{now()}-{last()}&gt;108000</expression>
+                                    <expression>{now()}-{last()}&gt;({$MAX_HOURS_BETWEEN}*3600)</expression>
                                     <name>Last {#PROFILENAME} / {#PROFILECOMMAND} did not run</name>
                                     <priority>HIGH</priority>
-                                    <description>Last profile was running more than 30 hours ago</description>
+                                    <description>Last profile has not finished on time (or has not started):&#13;
+last run finished more than {$MAX_HOURS_BETWEEN} hour(s) ago</description>
                                     <manual_close>YES</manual_close>
                                 </trigger_prototype>
                             </trigger_prototypes>
@@ -154,11 +161,21 @@ return JSON.stringify(output)</params>
                     </preprocessing>
                 </discovery_rule>
             </discovery_rules>
+            <tags>
+                <tag>
+                    <tag>from</tag>
+                    <value>local</value>
+                </tag>
+            </tags>
             <macros>
                 <macro>
                     <macro>{$BACKUP_STATUS_FILE}</macro>
                     <value>/home/backup/status.json</value>
                     <description>resticprofile status file</description>
+                </macro>
+                <macro>
+                    <macro>{$MAX_HOURS_BETWEEN}</macro>
+                    <value>26</value>
                 </macro>
             </macros>
         </template>
@@ -180,7 +197,7 @@ return JSON.stringify(output)</params>
                     <name>Status file</name>
                     <type>ZABBIX_ACTIVE</type>
                     <key>vfs.file.contents[{$BACKUP_STATUS_FILE}]</key>
-                    <delay>3h</delay>
+                    <delay>1h</delay>
                     <trends>0</trends>
                     <value_type>TEXT</value_type>
                     <applications>
@@ -188,6 +205,12 @@ return JSON.stringify(output)</params>
                             <name>Backup</name>
                         </application>
                     </applications>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <params>1d</params>
+                        </step>
+                    </preprocessing>
                 </item>
             </items>
             <discovery_rules>
@@ -277,10 +300,11 @@ return JSON.stringify(output)</params>
                             </master_item>
                             <trigger_prototypes>
                                 <trigger_prototype>
-                                    <expression>{now()}-{last()}&gt;108000</expression>
+                                    <expression>{now()}-{last()}&gt;({$MAX_HOURS_BETWEEN}*3600)</expression>
                                     <name>Last {#PROFILENAME} / {#PROFILECOMMAND} did not run</name>
                                     <priority>HIGH</priority>
-                                    <description>Last profile was running more than 30 hours ago</description>
+                                    <description>Last profile has not finished on time (or has not started):&#13;
+last run finished more than {$MAX_HOURS_BETWEEN} hour(s) ago</description>
                                     <manual_close>YES</manual_close>
                                 </trigger_prototype>
                             </trigger_prototypes>
@@ -309,11 +333,21 @@ return JSON.stringify(output)</params>
                     </preprocessing>
                 </discovery_rule>
             </discovery_rules>
+            <tags>
+                <tag>
+                    <tag>from</tag>
+                    <value>local</value>
+                </tag>
+            </tags>
             <macros>
                 <macro>
                     <macro>{$BACKUP_STATUS_FILE}</macro>
                     <value>/home/backup/status.json</value>
                     <description>resticprofile status file</description>
+                </macro>
+                <macro>
+                    <macro>{$MAX_HOURS_BETWEEN}</macro>
+                    <value>26</value>
                 </macro>
             </macros>
         </template>
