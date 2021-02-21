@@ -574,7 +574,7 @@ A few environment variables will be set before running these commands:
 - `PROFILE_NAME`
 - `PROFILE_COMMAND`: backup, check, forget, etc.
 
-Additionally for the `run-after-fail` commands, the `ERROR` environment variable will be set to the latest error message.
+Additionally for the `run-after-fail` commands, the `ERROR` environment variable will be set to the latest error message and `ERROR_COMMANDLINE` to the commandline that failed.
 
 ## run before and after order during a backup
 
@@ -700,9 +700,9 @@ resticprofile own commands:
    profiles      display profile names from the configuration file
    show          show all the details of the current profile
    random-key    generate a cryptographically secure random key to use as a restic keyfile
-   schedule      schedule a backup
-   unschedule    remove a scheduled backup
-   status        display the status of a scheduled backup job
+   schedule      schedule jobs from a profile (use --all flag to schedule all jobs of all profiles)
+   unschedule    remove scheduled jobs of a profile (use --all flag to unschedule all profiles)
+   status        display the status of scheduled jobs (use --all flag for all profiles)
 
 
 ```
@@ -910,17 +910,30 @@ resticprofile accepts these internal commands:
 - unschedule
 - status
 
+All internal commands either operate on the profile selected by `--name`, on the profiles selected by a group, or on all profiles when the flag `--all` is passed.
+
+Examples:
+```
+resticprofile --name profile schedule 
+resticprofile --name group schedule 
+resticprofile schedule --all 
+```
+
+Please note, schedules are always independent of each other no matter whether they have been created with `--all`, by group or from a single profile.
+
 ### schedule command
 
-Install all the schedules defined on the profile.
+Install all the schedules defined on the selected profile or profiles.
 
 Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **dont' want** to start (and enable) it now, pass the `--no-start` flag to the command line.
 
 ### unschedule command
 
-Remove all the schedule defined on the profile
+Remove all the schedules defined on the selected profile or profiles.
 
 ### status command
+
+Print the status on all the installed schedules of the selected profile or profiles. 
 
 The display of the `status` command will be OS dependant. Please see the examples below on which output you can expect from it.
 
