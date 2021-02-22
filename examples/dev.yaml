@@ -84,7 +84,6 @@ self:
         source: {{ .CurrentDir }}
         exclude:
           - "/**/.git/"
-          - "resticp\\*"
         schedule:
         - "*:00,30"
         schedule-permission: user
