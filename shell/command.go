@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+const (
+	windowsDefaultShell = "cmd.exe"
+	windowsPowershell   = "powershell.exe"
+)
+
 // SetPID is a callback to send the PID of the current child process
 type SetPID func(pid int)
 
@@ -19,17 +24,18 @@ type ScanOutput func(r io.Reader, w io.Writer) error
 
 // Command holds the configuration to run a shell command
 type Command struct {
-	Command    string
-	Arguments  []string
-	Environ    []string
-	Dir        string
-	Stdin      io.Reader
-	Stdout     io.Writer
-	Stderr     io.Writer
-	SetPID     SetPID
-	ScanOutput ScanOutput
-	sigChan    chan os.Signal
-	done       chan interface{}
+	Command       string
+	Arguments     []string
+	Environ       []string
+	Dir           string
+	Stdin         io.Reader
+	Stdout        io.Writer
+	Stderr        io.Writer
+	SetPID        SetPID
+	ScanOutput    ScanOutput
+	UsePowershell bool
+	sigChan       chan os.Signal
+	done          chan interface{}
 }
 
 // NewCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
@@ -59,7 +65,7 @@ func (c *Command) Run() (Summary, error) {
 
 	summary := Summary{}
 
-	command, args, err := getShellCommand(c.Command, c.Arguments)
+	command, args, err := c.getShellCommand()
 	if err != nil {
 		return summary, err
 	}
@@ -115,15 +121,19 @@ func (c *Command) Run() (Summary, error) {
 }
 
 // getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
-func getShellCommand(command string, args []string) (string, []string, error) {
+func (c *Command) getShellCommand() (string, []string, error) {
 
 	if runtime.GOOS == "windows" {
-		shell, err := exec.LookPath("cmd.exe")
+		search := windowsDefaultShell
+		if c.UsePowershell {
+			search = windowsPowershell
+		}
+		shell, err := exec.LookPath(search)
 		if err != nil {
-			return "", nil, fmt.Errorf("cannot find shell executable (cmd.exe) in path")
+			return "", nil, fmt.Errorf("cannot find shell executable (%s) in path", search)
 		}
 		// cmd.exe accepts that all arguments are sent one by one
-		args := append([]string{"/C", command}, removeQuotes(args)...)
+		args := append([]string{"/C", c.Command}, removeQuotes(c.Arguments)...)
 		return shell, args, nil
 	}
 
@@ -132,7 +142,7 @@ func getShellCommand(command string, args []string) (string, []string, error) {
 		return "", nil, fmt.Errorf("cannot find shell executable (sh) in path")
 	}
 	// Flatten all arguments into one string, sh expects one big string
-	flatCommand := append([]string{command}, args...)
+	flatCommand := append([]string{c.Command}, c.Arguments...)
 	return shell, []string{"-c", strings.Join(flatCommand, " ")}, nil
 }
 

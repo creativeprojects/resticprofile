@@ -45,7 +45,12 @@ func TestShellCommandWithArguments(t *testing.T) {
 		`backup`,
 		`.`,
 	}
-	command, args, err := getShellCommand(testCommand, testArgs)
+	c := &Command{
+		Command:   testCommand,
+		Arguments: testArgs,
+	}
+
+	command, args, err := c.getShellCommand()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,8 +79,12 @@ func TestShellCommandWithArguments(t *testing.T) {
 func TestShellCommand(t *testing.T) {
 	testCommand := "/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup ."
 	testArgs := []string{}
+	c := &Command{
+		Command:   testCommand,
+		Arguments: testArgs,
+	}
 
-	command, args, err := getShellCommand(testCommand, testArgs)
+	command, args, err := c.getShellCommand()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,6 +216,7 @@ func TestSummaryDurationCommand(t *testing.T) {
 	buffer := &bytes.Buffer{}
 
 	cmd := NewCommand("sleep", []string{"1"})
+	cmd.UsePowershell = true
 	cmd.Stdout = buffer
 
 	start := time.Now()
@@ -230,6 +240,7 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 
 	sigChan := make(chan os.Signal, 1)
 	cmd := NewSignalledCommand("sleep", []string{"1"}, sigChan)
+	cmd.UsePowershell = true
 	cmd.Stdout = buffer
 
 	start := time.Now()
