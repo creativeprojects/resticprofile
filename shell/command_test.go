@@ -207,9 +207,6 @@ func TestSetPIDCallbackWithSignalling(t *testing.T) {
 }
 
 func TestSummaryDurationCommand(t *testing.T) {
-	// if runtime.GOOS == "windows" {
-	// 	t.Skip("Test not running on this platform")
-	// }
 	if testing.Short() {
 		t.SkipNow()
 	}
@@ -226,13 +223,10 @@ func TestSummaryDurationCommand(t *testing.T) {
 	// make sure the command ran properly
 	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 100*time.Millisecond)
 	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
-	assert.Less(t, summary.Duration.Milliseconds(), int64(1100))
+	assert.Less(t, summary.Duration.Milliseconds(), int64(1500))
 }
 
 func TestSummaryDurationSignalledCommand(t *testing.T) {
-	// if runtime.GOOS == "windows" {
-	// 	t.Skip("Test not running on this platform")
-	// }
 	if testing.Short() {
 		t.SkipNow()
 	}
@@ -250,7 +244,7 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 	// make sure the command ran properly
 	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 100*time.Millisecond)
 	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
-	assert.Less(t, summary.Duration.Milliseconds(), int64(1100))
+	assert.Less(t, summary.Duration.Milliseconds(), int64(1500))
 }
 
 // Try to make a test to make sure restic is catching the signal properly

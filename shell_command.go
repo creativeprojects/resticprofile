@@ -40,12 +40,12 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 }
 
 // runShellCommand instantiates a shell.Command and sends the information to run the shell command
-func runShellCommand(command shellCommandDefinition) error {
+func runShellCommand(command shellCommandDefinition) (shell.Summary, error) {
 	var err error
 
 	if command.dryRun {
 		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.args, " "))
-		return nil
+		return shell.Summary{}, nil
 	}
 
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
@@ -67,9 +67,9 @@ func runShellCommand(command shellCommandDefinition) error {
 		shellCmd.Environ = append(shellCmd.Environ, command.env...)
 	}
 
-	_, err = shellCmd.Run()
+	summary, err := shellCmd.Run()
 	if err != nil {
-		return err
+		return summary, err
 	}
-	return nil
+	return summary, nil
 }

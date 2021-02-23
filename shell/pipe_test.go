@@ -1,4 +1,4 @@
-package status
+package shell
 
 import (
 	"bufio"
@@ -33,6 +33,11 @@ Added to the repo: 282.768 MiB
 processed 223 files, 346.107 MiB in 0:00
 snapshot 07ab30a5 saved
 `
+
+	if runtime.GOOS == "windows" {
+		// change the source
+		source = strings.ReplaceAll(source, "\n", eol)
+	}
 
 	filesNew, filesChanged, filesUnmodified := 0, 0, 0
 	dirsNew, dirsChanged, dirsUnmodified := 0, 0, 0
