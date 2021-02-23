@@ -17,6 +17,7 @@ self:
     initialize: true
     verbose: true
     force-inactive-lock: true
+    status-file: "r:\\backup\\status.json"
     backup:
         source: "."
         exclude:
