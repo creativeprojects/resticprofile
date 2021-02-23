@@ -231,6 +231,9 @@ func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	rCommand := r.prepareCommand(command, args)
+	if command == constants.CommandBackup && r.profile.StatusFile != "" {
+		rCommand.scanOutput = shell.ScanBackup
+	}
 	summary, err := runShellCommand(rCommand)
 	if err != nil {
 		r.statusError(r.command, summary, err)

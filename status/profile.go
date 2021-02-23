@@ -9,7 +9,7 @@ import (
 
 // Profile status
 type Profile struct {
-	Backup    *CommandStatus `json:"backup,omitempty"`
+	Backup    *BackupStatus  `json:"backup,omitempty"`
 	Retention *CommandStatus `json:"retention,omitempty"`
 	Check     *CommandStatus `json:"check,omitempty"`
 }
@@ -26,15 +26,60 @@ type CommandStatus struct {
 	Duration int64     `json:"duration"`
 }
 
+// BackupStatus contains the last backup status
+type BackupStatus struct {
+	CommandStatus
+	FilesNew        int    `json:"files_new"`
+	FilesChanged    int    `json:"files_changed"`
+	FilesUnmodified int    `json:"files_unmodified"`
+	DirsNew         int    `json:"dirs_new"`
+	DirsChanged     int    `json:"dirs_changed"`
+	DirsUnmodified  int    `json:"dirs_unmodified"`
+	FilesTotal      int    `json:"files_total"`
+	BytesAdded      uint64 `json:"bytes_added"`
+	BytesTotal      uint64 `json:"bytes_total"`
+}
+
 // BackupSuccess indicates the last backup was successful
 func (p *Profile) BackupSuccess(summary shell.Summary) *Profile {
-	p.Backup = newSuccess(summary.Duration)
+	p.Backup = &BackupStatus{
+		CommandStatus: CommandStatus{
+			Success:  true,
+			Time:     time.Now(),
+			Duration: int64(math.Ceil(summary.Duration.Seconds())),
+		},
+		FilesNew:        summary.FilesNew,
+		FilesChanged:    summary.FilesChanged,
+		FilesUnmodified: summary.FilesUnmodified,
+		DirsNew:         summary.DirsNew,
+		DirsChanged:     summary.DirsChanged,
+		DirsUnmodified:  summary.DirsUnmodified,
+		FilesTotal:      summary.FilesTotal,
+		BytesAdded:      summary.BytesAdded,
+		BytesTotal:      summary.BytesTotal,
+	}
 	return p
 }
 
 // BackupError sets the error of the last backup
 func (p *Profile) BackupError(err error, summary shell.Summary) *Profile {
-	p.Backup = newError(err, summary.Duration)
+	p.Backup = &BackupStatus{
+		CommandStatus: CommandStatus{
+			Success:  false,
+			Time:     time.Now(),
+			Error:    err.Error(),
+			Duration: int64(math.Ceil(summary.Duration.Seconds())),
+		},
+		FilesNew:        0,
+		FilesChanged:    0,
+		FilesUnmodified: 0,
+		DirsNew:         0,
+		DirsChanged:     0,
+		DirsUnmodified:  0,
+		FilesTotal:      0,
+		BytesAdded:      0,
+		BytesTotal:      0,
+	}
 	return p
 }
 

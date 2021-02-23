@@ -20,7 +20,7 @@ type SetPID func(pid int)
 
 // ScanOutput is a callback to scan the default output of the command
 // The implementation is expected to send everything read from the reader back to the writer
-type ScanOutput func(r io.Reader, summary Summary, w io.Writer) error
+type ScanOutput func(r io.Reader, summary *Summary, w io.Writer) error
 
 // Command holds the configuration to run a shell command
 type Command struct {
@@ -109,7 +109,7 @@ func (c *Command) Run() (Summary, error) {
 
 	// output scanner
 	if stdout != nil {
-		err = c.ScanOutput(stdout, summary, c.Stdout)
+		err = c.ScanOutput(stdout, &summary, c.Stdout)
 		if err != nil {
 			return summary, err
 		}

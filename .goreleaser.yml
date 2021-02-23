@@ -1,6 +1,6 @@
 project_name: resticprofile
 env:
-  - RESTIC_VERSION=0.11.0
+  - RESTIC_VERSION=0.12.0
 
 before:
   hooks:

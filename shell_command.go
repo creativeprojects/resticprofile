@@ -10,15 +10,16 @@ import (
 )
 
 type shellCommandDefinition struct {
-	command  string
-	args     []string
-	env      []string
-	useStdin bool
-	stdout   io.Writer
-	stderr   io.Writer
-	dryRun   bool
-	sigChan  chan os.Signal
-	setPID   func(pid int)
+	command    string
+	args       []string
+	env        []string
+	useStdin   bool
+	stdout     io.Writer
+	stderr     io.Writer
+	dryRun     bool
+	sigChan    chan os.Signal
+	setPID     shell.SetPID
+	scanOutput shell.ScanOutput
 }
 
 // newShellCommand creates a new shell command definition
@@ -65,6 +66,11 @@ func runShellCommand(command shellCommandDefinition) (shell.Summary, error) {
 	shellCmd.Environ = os.Environ()
 	if command.env != nil && len(command.env) > 0 {
 		shellCmd.Environ = append(shellCmd.Environ, command.env...)
+	}
+
+	// scan output
+	if command.scanOutput != nil {
+		shellCmd.ScanOutput = command.scanOutput
 	}
 
 	summary, err := shellCmd.Run()

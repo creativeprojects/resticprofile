@@ -25,7 +25,7 @@ type Summary struct {
 }
 
 // ScanBackup should populate the backup summary values from the standard output
-func ScanBackup(r io.Reader, summary *Summary, w io.Writer) error {
+var ScanBackup ScanOutput = func(r io.Reader, summary *Summary, w io.Writer) error {
 	eol := "\n"
 	if runtime.GOOS == "windows" {
 		eol = "\r\n"
