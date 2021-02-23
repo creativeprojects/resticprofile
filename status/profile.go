@@ -15,9 +15,10 @@ func newProfile() *Profile {
 
 // CommandStatus is the last command status
 type CommandStatus struct {
-	Success bool      `json:"success"`
-	Time    time.Time `json:"time"`
-	Error   string    `json:"error"`
+	Success  bool      `json:"success"`
+	Time     time.Time `json:"time"`
+	Error    string    `json:"error"`
+	Duration int64     `json:"duration"`
 }
 
 // BackupSuccess indicates the last backup was successful

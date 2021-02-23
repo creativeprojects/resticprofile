@@ -67,7 +67,7 @@ func runShellCommand(command shellCommandDefinition) error {
 		shellCmd.Environ = append(shellCmd.Environ, command.env...)
 	}
 
-	err = shellCmd.Run()
+	_, err = shellCmd.Run()
 	if err != nil {
 		return err
 	}

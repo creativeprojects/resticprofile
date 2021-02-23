@@ -7,23 +7,29 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // SetPID is a callback to send the PID of the current child process
 type SetPID func(pid int)
 
+// ScanOutput is a callback to scan the default output of the command
+// The implementation is expected to send everything read from the reader back to the writer
+type ScanOutput func(r io.Reader, w io.Writer) error
+
 // Command holds the configuration to run a shell command
 type Command struct {
-	Command   string
-	Arguments []string
-	Environ   []string
-	Dir       string
-	Stdin     io.Reader
-	Stdout    io.Writer
-	Stderr    io.Writer
-	SetPID    SetPID
-	sigChan   chan os.Signal
-	done      chan interface{}
+	Command    string
+	Arguments  []string
+	Environ    []string
+	Dir        string
+	Stdin      io.Reader
+	Stdout     io.Writer
+	Stderr     io.Writer
+	SetPID     SetPID
+	ScanOutput ScanOutput
+	sigChan    chan os.Signal
+	done       chan interface{}
 }
 
 // NewCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
@@ -47,17 +53,28 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 }
 
 // Run the command
-func (c *Command) Run() error {
+func (c *Command) Run() (Summary, error) {
 	var err error
+	var stdout io.ReadCloser
+
+	summary := Summary{}
 
 	command, args, err := getShellCommand(c.Command, c.Arguments)
 	if err != nil {
-		return err
+		return summary, err
 	}
 
 	cmd := exec.Command(command, args...)
 
-	cmd.Stdout = c.Stdout
+	if c.ScanOutput != nil {
+		// install a pipe for scanning the output
+		stdout, err = cmd.StdoutPipe()
+		if err != nil {
+			return summary, err
+		}
+	} else {
+		cmd.Stdout = c.Stdout
+	}
 	cmd.Stderr = c.Stderr
 	cmd.Stdin = c.Stdin
 
@@ -66,9 +83,11 @@ func (c *Command) Run() error {
 		cmd.Env = append(cmd.Env, c.Environ...)
 	}
 
+	start := time.Now()
+
 	// spawn the child process
 	if err = cmd.Start(); err != nil {
-		return err
+		return summary, err
 	}
 	if c.SetPID != nil {
 		// send the PID back (to write down in a lockfile)
@@ -81,7 +100,18 @@ func (c *Command) Run() error {
 		}()
 		go c.propagateSignal(cmd.Process)
 	}
-	return cmd.Wait()
+
+	// output scanner
+	if stdout != nil {
+		err = c.ScanOutput(stdout, c.Stdout)
+		if err != nil {
+			return summary, err
+		}
+	}
+
+	err = cmd.Wait()
+	summary.Duration = time.Since(start)
+	return summary, err
 }
 
 // getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
