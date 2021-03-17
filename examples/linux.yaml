@@ -70,10 +70,10 @@ longrun:
 
 self:
     inherit: default
+    status-file: /tmp/status.json
     backup:
+        extended-status: true
         source: ./
-    snapshots:
-        tag: self
 
 src:
     inherit: default

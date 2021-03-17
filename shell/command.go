@@ -70,6 +70,7 @@ func (c *Command) Run() (Summary, error) {
 		return summary, err
 	}
 
+	// clog.Tracef("command: %s %q", command, args)
 	cmd := exec.Command(command, args...)
 
 	if c.ScanOutput != nil {
