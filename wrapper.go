@@ -232,7 +232,13 @@ func (r *resticWrapper) runCommand(command string) error {
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	rCommand := r.prepareCommand(command, args)
 	if command == constants.CommandBackup && r.profile.StatusFile != "" {
-		rCommand.scanOutput = shell.ScanBackup
+		if r.profile.Backup != nil && r.profile.Backup.ExtendedStatus {
+			rCommand.scanOutput = shell.ScanBackupJson
+		} else {
+			// scan plain backup could have been a good idea,
+			// except restic detects its output is not a terminal and no longer displays the progress
+			// rCommand.scanOutput = shell.ScanBackupPlain
+		}
 	}
 	summary, err := runShellCommand(rCommand)
 	if err != nil {

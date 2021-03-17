@@ -24,6 +24,7 @@ With resticprofile:
 * You can generate a simple status file to send to some monitoring software and make sure your backups are running fine 
 * **[new for v0.10.0]** You can use a template syntax in your configuration file
 * **[new for v0.11.0]** You can generate scheduled tasks using *crond*
+* **[new for v0.12.0]** Get backup statistics in your status file
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -1216,7 +1217,7 @@ But sometimes we just need something simple that a monitoring system can regular
 In your profile, you simply need to add a new parameter, which is the location of your status file
 
 ```toml
-[my-backup]
+[profile]
 status-file = "backup-status.json"
 ```
 
@@ -1225,21 +1226,51 @@ Here's an example of a generated file, where you can see that the last check fai
 ```json
 {
   "profiles": {
-    "my-backup": {
+    "self": {
       "backup": {
         "success": true,
-        "time": "2020-07-31T23:54:00.401556+01:00",
-        "error": ""
+        "time": "2021-03-17T16:36:56.831077Z",
+        "error": "",
+        "duration": 2,
+        "files_new": 215,
+        "files_changed": 0,
+        "files_unmodified": 0,
+        "dirs_new": 58,
+        "dirs_changed": 0,
+        "dirs_unmodified": 0,
+        "files_total": 215,
+        "bytes_added": 296536447,
+        "bytes_total": 362952485
       },
       "check": {
         "success": false,
-        "time": "2020-07-31T23:47:22.311848+01:00",
-        "error": "exit status 1"
+        "time": "2021-03-17T16:34:32.807392Z",
+        "error": "exit status 1",
+        "duration": 1
       }
     }
   }
 }
 ```
+
+## Extended status
+
+On the previous example of a status file you can see some fields like `files_new`, `files_total`, etc. To be able to get this information from restic, you need to add the flag `extended-status` to your backup configuration.
+
+`extended-status` is **not set by default because it hides any output from restic**
+
+```yaml
+profile:
+    inherit: default
+    status-file: /home/backup/status.json
+    backup:
+        extended-status: true
+        source: /go
+        exclude:
+          - "/**/.git/"
+
+```
+
 # Variable expansion in configuration file
 
 You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where specific bits will be replaced by a variable.
