@@ -50,6 +50,7 @@ type BackupSection struct {
 	Iexclude        []string               `mapstructure:"iexclude" argument:"iexclude"`
 	ExcludeFile     []string               `mapstructure:"exclude-file" argument:"exclude-file"`
 	FilesFrom       []string               `mapstructure:"files-from" argument:"files-from"`
+	ExtendedStatus  bool                   `mapstructure:"extended-status" argument:"json"`
 	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
 

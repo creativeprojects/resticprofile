@@ -11,6 +11,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 )
@@ -193,7 +194,7 @@ func (r *resticWrapper) runInitialize() error {
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	// don't display any error
 	rCommand.stderr = nil
-	err := runShellCommand(rCommand)
+	_, err := runShellCommand(rCommand)
 	if err != nil {
 		return newCommandError(rCommand, fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err))
 	}
@@ -204,12 +205,12 @@ func (r *resticWrapper) runCheck() error {
 	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
 	rCommand := r.prepareCommand(constants.CommandCheck, args)
-	err := runShellCommand(rCommand)
+	summary, err := runShellCommand(rCommand)
 	if err != nil {
-		r.statusError(constants.CommandCheck, err)
+		r.statusError(constants.CommandCheck, summary, err)
 		return newCommandError(rCommand, fmt.Errorf("backup check on profile '%s': %w", r.profile.Name, err))
 	}
-	r.statusSuccess(constants.CommandCheck)
+	r.statusSuccess(constants.CommandCheck, summary)
 	return nil
 }
 
@@ -217,12 +218,12 @@ func (r *resticWrapper) runRetention() error {
 	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetRetentionFlags())
 	rCommand := r.prepareCommand(constants.CommandForget, args)
-	err := runShellCommand(rCommand)
+	summary, err := runShellCommand(rCommand)
 	if err != nil {
-		r.statusError(constants.SectionConfigurationRetention, err)
+		r.statusError(constants.SectionConfigurationRetention, summary, err)
 		return newCommandError(rCommand, fmt.Errorf("backup retention on profile '%s': %w", r.profile.Name, err))
 	}
-	r.statusSuccess(constants.SectionConfigurationRetention)
+	r.statusSuccess(constants.SectionConfigurationRetention, summary)
 	return nil
 }
 
@@ -230,12 +231,21 @@ func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	rCommand := r.prepareCommand(command, args)
-	err := runShellCommand(rCommand)
+	if command == constants.CommandBackup && r.profile.StatusFile != "" {
+		if r.profile.Backup != nil && r.profile.Backup.ExtendedStatus {
+			rCommand.scanOutput = shell.ScanBackupJson
+		} else {
+			// scan plain backup could have been a good idea,
+			// except restic detects its output is not a terminal and no longer displays the progress
+			// rCommand.scanOutput = shell.ScanBackupPlain
+		}
+	}
+	summary, err := runShellCommand(rCommand)
 	if err != nil {
-		r.statusError(r.command, err)
+		r.statusError(r.command, summary, err)
 		return newCommandError(rCommand, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 	}
-	r.statusSuccess(r.command)
+	r.statusSuccess(r.command, summary)
 	clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
 	return nil
 }
@@ -257,7 +267,7 @@ func (r *resticWrapper) runPreCommand(command string) error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		err := runShellCommand(rCommand)
+		_, err := runShellCommand(rCommand)
 		if err != nil {
 			return newCommandError(rCommand, fmt.Errorf("run-before backup on profile '%s': %w", r.profile.Name, err))
 		}
@@ -282,7 +292,7 @@ func (r *resticWrapper) runPostCommand(command string) error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		err := runShellCommand(rCommand)
+		_, err := runShellCommand(rCommand)
 		if err != nil {
 			return newCommandError(rCommand, fmt.Errorf("run-after backup on profile '%s': %w", r.profile.Name, err))
 		}
@@ -303,7 +313,7 @@ func (r *resticWrapper) runProfilePreCommand() error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		err := runShellCommand(rCommand)
+		_, err := runShellCommand(rCommand)
 		if err != nil {
 			return newCommandError(rCommand, fmt.Errorf("run-before on profile '%s': %w", r.profile.Name, err))
 		}
@@ -324,7 +334,7 @@ func (r *resticWrapper) runProfilePostCommand() error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		err := runShellCommand(rCommand)
+		_, err := runShellCommand(rCommand)
 		if err != nil {
 			return newCommandError(rCommand, fmt.Errorf("run-after on profile '%s': %w", r.profile.Name, err))
 		}
@@ -350,7 +360,7 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		err := runShellCommand(rCommand)
+		_, err := runShellCommand(rCommand)
 		if err != nil {
 			return newCommandError(rCommand, err)
 		}
@@ -384,7 +394,7 @@ func (r *resticWrapper) getProfileEnvironment() []string {
 	}
 }
 
-func (r *resticWrapper) statusSuccess(command string) {
+func (r *resticWrapper) statusSuccess(command string, summary shell.Summary) {
 	if r.profile.StatusFile == "" {
 		return
 	}
@@ -392,15 +402,15 @@ func (r *resticWrapper) statusSuccess(command string) {
 	switch command {
 	case constants.CommandBackup:
 		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).BackupSuccess()
+		status.Profile(r.profile.Name).BackupSuccess(summary)
 		err = status.Save()
 	case constants.CommandCheck:
 		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).CheckSuccess()
+		status.Profile(r.profile.Name).CheckSuccess(summary)
 		err = status.Save()
 	case constants.SectionConfigurationRetention, constants.CommandForget:
 		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).RetentionSuccess()
+		status.Profile(r.profile.Name).RetentionSuccess(summary)
 		err = status.Save()
 	}
 	if err != nil {
@@ -409,7 +419,7 @@ func (r *resticWrapper) statusSuccess(command string) {
 	}
 }
 
-func (r *resticWrapper) statusError(command string, fail error) {
+func (r *resticWrapper) statusError(command string, summary shell.Summary, fail error) {
 	if r.profile.StatusFile == "" {
 		return
 	}
@@ -417,15 +427,15 @@ func (r *resticWrapper) statusError(command string, fail error) {
 	switch command {
 	case constants.CommandBackup:
 		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).BackupError(fail)
+		status.Profile(r.profile.Name).BackupError(fail, summary)
 		err = status.Save()
 	case constants.CommandCheck:
 		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).CheckError(fail)
+		status.Profile(r.profile.Name).CheckError(fail, summary)
 		err = status.Save()
 	case constants.SectionConfigurationRetention, constants.CommandForget:
 		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).RetentionError(fail)
+		status.Profile(r.profile.Name).RetentionError(fail, summary)
 		err = status.Save()
 	}
 	if err != nil {

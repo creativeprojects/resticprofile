@@ -76,15 +76,15 @@ root:
 
 self:
     force-inactive-lock: true
-    initialize: true
+    initialize: false
     inherit: default
     status-file: /Volumes/RAMDisk/status.json
     backup:
-        check-before: true
+        extended-status: true
+        check-before: false
         source: {{ .CurrentDir }}
         exclude:
           - "/**/.git/"
-          - "resticp\\*"
         schedule:
         - "*:00,30"
         schedule-permission: user

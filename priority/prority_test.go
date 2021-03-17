@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -30,6 +31,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 			assert.Contains(t, output, "Priority: 0")
 		}
 	})
+	time.Sleep(30 * time.Millisecond)
 
 	t.Run("WithLowerPriority", func(t *testing.T) {
 		err := SetClass(Low)
@@ -48,6 +50,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 			assert.Contains(t, output, "Priority: 10")
 		}
 	})
+	time.Sleep(30 * time.Millisecond)
 
 	t.Run("WithBackgroundPriority", func(t *testing.T) {
 		err := SetClass(Background)
@@ -66,6 +69,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 			assert.Contains(t, output, "Priority: 15")
 		}
 	})
+	time.Sleep(30 * time.Millisecond)
 }
 
 func runChildProcess() (string, error) {
