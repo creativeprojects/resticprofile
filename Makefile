@@ -111,6 +111,7 @@ nightly:
 	goreleaser --snapshot --skip-publish --rm-dist
 
 toc:
+	go get github.com/ekalinin/github-markdown-toc.go
 	go install github.com/ekalinin/github-markdown-toc.go
 	go mod tidy
 	cat README.md | github-markdown-toc.go --hide-footer

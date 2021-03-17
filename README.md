@@ -32,7 +32,7 @@ The configuration file accepts various formats:
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
 * [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
 
-For the rest of the documentation, I'll be mostly showing examples using the TOML file configuration format (because it was the only one supported before version 0.6.0) but you can pick your favourite: they all work with resticprofile.
+For the rest of the documentation, I'll be showing examples using different formats, but mostly TOML and YAML.
 
 # Table of Contents
 * [resticprofile](#resticprofile)
@@ -81,6 +81,7 @@ For the rest of the documentation, I'll be mostly showing examples using the TOM
     * [Examples of scheduling commands under macOS](#examples-of-scheduling-commands-under-macos)
   * [Changing schedule\-permission from user to system, or system to user](#changing-schedule-permission-from-user-to-system-or-system-to-user)
 * [Status file for easy monitoring](#status-file-for-easy-monitoring)
+  * [Extended status](#extended-status)
 * [Variable expansion in configuration file](#variable-expansion-in-configuration-file)
   * [Pre\-defined variables](#pre-defined-variables)
   * [Hand\-made variables](#hand-made-variables)
@@ -1791,6 +1792,7 @@ Flags used by resticprofile only
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
 * **schedule-log**: string
+* **extended-status**: true / false
 
 Flags passed to the restic command line
 
