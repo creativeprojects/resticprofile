@@ -425,23 +425,44 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	for _, profileName := range selectProfiles(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-
-		scheduler, profile, schedules, err := getScheduleJobs(c, profileFlags)
-		if err == nil {
-			err = requireScheduleJobs(schedules, profileFlags)
-		}
+	if !containsString(args, "--all") {
+		// simple case of displaying status for one profile
+		scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 		if err != nil {
 			return err
 		}
-
-		displayProfileDeprecationNotices(profile)
-
-		err = statusJobs(scheduler, profileName, convertSchedules(schedules))
-		if err != nil {
-			return retryElevated(err, flags)
+		if len(schedules) == 0 {
+			clog.Warningf("profile %s has no schedule", flags.name)
+			return nil
 		}
+		return statusScheduleProfile(scheduler, profile, schedules, flags)
+	}
+
+	for _, profileName := range selectProfiles(c, flags, args) {
+		profileFlags := flagsForProfile(flags, profileName)
+		scheduler, profile, schedules, err := getScheduleJobs(c, profileFlags)
+		if err != nil {
+			return err
+		}
+		// it's all fine if this profile has no schedule
+		if len(schedules) == 0 {
+			continue
+		}
+		err = statusScheduleProfile(scheduler, profile, schedules, profileFlags)
+		if err != nil {
+			// display the error but keep going with the other profiles
+			clog.Error(err)
+		}
+	}
+	return nil
+}
+
+func statusScheduleProfile(scheduler string, profile *config.Profile, schedules []*config.ScheduleConfig, flags commandLineFlags) error {
+	displayProfileDeprecationNotices(profile)
+
+	err := statusJobs(scheduler, flags.name, convertSchedules(schedules))
+	if err != nil {
+		return retryElevated(err, flags)
 	}
 	return nil
 }
