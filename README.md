@@ -929,6 +929,10 @@ Install all the schedules defined on the selected profile or profiles.
 
 Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **dont' want** to start (and enable) it now, pass the `--no-start` flag to the command line.
 
+Also if you use the `--all` flag to schedule all your profiles at once, make sure you use only the `user` mode or `system` mode. A combination of both would not schedule the tasks properly:
+- if the user is not privileged, only the `user` tasks will be scheduled
+- if the user **is** privileged, **all schedule will end-up as a `system` schedule**
+
 ### unschedule command
 
 Remove all the schedules defined on the selected profile or profiles.
