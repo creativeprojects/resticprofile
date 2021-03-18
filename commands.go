@@ -424,7 +424,7 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 	return nil
 }
 
-func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+func statusSchedule(w io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	if !containsString(args, "--all") {
 		// simple case of displaying status for one profile
 		scheduler, profile, schedules, err := getScheduleJobs(c, flags)
@@ -448,6 +448,7 @@ func statusSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		if len(schedules) == 0 {
 			continue
 		}
+		clog.Infof("Profile %q:", profileName)
 		err = statusScheduleProfile(scheduler, profile, schedules, profileFlags)
 		if err != nil {
 			// display the error but keep going with the other profiles
