@@ -106,7 +106,7 @@ func TestRunShellEcho(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	cmd := NewCommand("echo", []string{"TestRunShellEcho"})
 	cmd.Stdout = buffer
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 
 	cmd := NewSignalledCommand("echo", []string{"TestRunShellEchoWithSignalling"}, c)
 	cmd.Stdout = buffer
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +157,7 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 // 		sigChan <- syscall.Signal(syscall.SIGINT)
 // 	}()
 // 	start := time.Now()
-// 	_, err := cmd.Run()
+// 	_, _, err := cmd.Run()
 // 	// GitHub Actions *sometimes* sends a different message: "signal: interrupt"
 // 	if err != nil && err.Error() != "exit status 1" && err.Error() != "signal: interrupt" {
 // 		t.Fatal(err)
@@ -177,7 +177,7 @@ func TestSetPIDCallback(t *testing.T) {
 	cmd.SetPID = func(pid int) {
 		called++
 	}
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -198,7 +198,7 @@ func TestSetPIDCallbackWithSignalling(t *testing.T) {
 	cmd.SetPID = func(pid int) {
 		called++
 	}
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -217,7 +217,7 @@ func TestSummaryDurationCommand(t *testing.T) {
 	cmd.Stdout = buffer
 
 	start := time.Now()
-	summary, err := cmd.Run()
+	summary, _, err := cmd.Run()
 	require.NoError(t, err)
 
 	// make sure the command ran properly
@@ -238,13 +238,42 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 	cmd.Stdout = buffer
 
 	start := time.Now()
-	summary, err := cmd.Run()
+	summary, _, err := cmd.Run()
 	require.NoError(t, err)
 
 	// make sure the command ran properly
 	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 500*time.Millisecond)
 	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
 	assert.Less(t, summary.Duration.Milliseconds(), int64(1500))
+}
+
+func TestStderr(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test not running on Windows")
+	}
+
+	cmd := NewCommand("echo", []string{"error message", ">&2"})
+	buffer := &bytes.Buffer{}
+	cmd.Stdout = buffer
+	_, stderr, err := cmd.Run()
+	require.NoError(t, err)
+	assert.Empty(t, buffer.String())
+	assert.Equal(t, "error message\n", stderr)
+}
+
+func TestStderrSignalledCommand(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test not running on Windows")
+	}
+
+	sigChan := make(chan os.Signal, 1)
+	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
+	buffer := &bytes.Buffer{}
+	cmd.Stdout = buffer
+	_, stderr, err := cmd.Run()
+	require.NoError(t, err)
+	assert.Empty(t, buffer.String())
+	assert.Equal(t, "error message\n", stderr)
 }
 
 // Try to make a test to make sure restic is catching the signal properly

@@ -21,7 +21,7 @@ func TestBackupSuccess(t *testing.T) {
 	profileName := "test profile"
 	status := NewStatus("")
 	assert.Nil(t, status.Profile(profileName).Backup)
-	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("2h45m")})
+	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("2h45m")}, "")
 	assert.True(t, status.Profile(profileName).Backup.Success)
 	assert.Empty(t, status.Profile(profileName).Backup.Error)
 	assert.Equal(t, int64((2*60+45)*60), status.Profile(profileName).Backup.Duration)
@@ -32,7 +32,7 @@ func TestBackupError(t *testing.T) {
 	profileName := "test profile"
 	status := NewStatus("")
 	assert.Nil(t, status.Profile(profileName).Backup)
-	status.Profile(profileName).BackupError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("45s")})
+	status.Profile(profileName).BackupError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("45s")}, "")
 	assert.False(t, status.Profile(profileName).Backup.Success)
 	assert.Equal(t, errorMessage, status.Profile(profileName).Backup.Error)
 	assert.Equal(t, int64(45), status.Profile(profileName).Backup.Duration)
@@ -42,7 +42,7 @@ func TestRetentionSuccess(t *testing.T) {
 	profileName := "test profile"
 	status := NewStatus("")
 	assert.Nil(t, status.Profile(profileName).Retention)
-	status.Profile(profileName).RetentionSuccess(shell.Summary{Duration: parseDuration("2h45m")})
+	status.Profile(profileName).RetentionSuccess(shell.Summary{Duration: parseDuration("2h45m")}, "")
 	assert.True(t, status.Profile(profileName).Retention.Success)
 	assert.Empty(t, status.Profile(profileName).Retention.Error)
 	assert.Equal(t, int64((2*60+45)*60), status.Profile(profileName).Retention.Duration)
@@ -53,7 +53,7 @@ func TestRetentionError(t *testing.T) {
 	profileName := "test profile"
 	status := NewStatus("")
 	assert.Nil(t, status.Profile(profileName).Retention)
-	status.Profile(profileName).RetentionError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("45s")})
+	status.Profile(profileName).RetentionError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("45s")}, "")
 	assert.False(t, status.Profile(profileName).Retention.Success)
 	assert.Equal(t, errorMessage, status.Profile(profileName).Retention.Error)
 	assert.Equal(t, int64(45), status.Profile(profileName).Retention.Duration)
@@ -63,7 +63,7 @@ func TestCheckSuccess(t *testing.T) {
 	profileName := "test profile"
 	status := NewStatus("")
 	assert.Nil(t, status.Profile(profileName).Check)
-	status.Profile(profileName).CheckSuccess(shell.Summary{Duration: parseDuration("2h45m")})
+	status.Profile(profileName).CheckSuccess(shell.Summary{Duration: parseDuration("2h45m")}, "")
 	assert.True(t, status.Profile(profileName).Check.Success)
 	assert.Empty(t, status.Profile(profileName).Check.Error)
 	assert.Equal(t, int64((2*60+45)*60), status.Profile(profileName).Check.Duration)
@@ -74,7 +74,7 @@ func TestCheckError(t *testing.T) {
 	profileName := "test profile"
 	status := NewStatus("")
 	assert.Nil(t, status.Profile(profileName).Check)
-	status.Profile(profileName).CheckError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("45s")})
+	status.Profile(profileName).CheckError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("45s")}, "")
 	assert.False(t, status.Profile(profileName).Check.Success)
 	assert.Equal(t, errorMessage, status.Profile(profileName).Check.Error)
 	assert.Equal(t, int64(45), status.Profile(profileName).Check.Duration)
@@ -102,7 +102,7 @@ func TestSaveAndLoadBackupSuccess(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 	status := newAferoStatus(fs, filename).Load()
-	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")})
+	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")}, "")
 	err := status.Save()
 	assert.NoError(t, err)
 
@@ -121,7 +121,7 @@ func TestSaveAndLoadBackupError(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 	status := newAferoStatus(fs, filename).Load()
-	status.Profile(profileName).BackupError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("1m")})
+	status.Profile(profileName).BackupError(errors.New(errorMessage), shell.Summary{Duration: parseDuration("1m")}, "")
 	err := status.Save()
 	assert.NoError(t, err)
 
@@ -140,12 +140,12 @@ func TestAddToExistingProfile(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 	status := newAferoStatus(fs, filename).Load()
-	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")})
+	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")}, "")
 	err := status.Save()
 	assert.NoError(t, err)
 
 	status = newAferoStatus(fs, filename).Load()
-	status.Profile(profileName).CheckSuccess(shell.Summary{Duration: parseDuration("45m")})
+	status.Profile(profileName).CheckSuccess(shell.Summary{Duration: parseDuration("45m")}, "")
 	err = status.Save()
 	assert.NoError(t, err)
 
@@ -165,12 +165,12 @@ func TestAddProfile(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 	status := newAferoStatus(fs, filename).Load()
-	status.Profile(profile1).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")})
+	status.Profile(profile1).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")}, "")
 	err := status.Save()
 	assert.NoError(t, err)
 
 	status = newAferoStatus(fs, filename).Load()
-	status.Profile(profile2).CheckSuccess(shell.Summary{Duration: parseDuration("45m")})
+	status.Profile(profile2).CheckSuccess(shell.Summary{Duration: parseDuration("45m")}, "")
 	err = status.Save()
 	assert.NoError(t, err)
 
@@ -194,12 +194,12 @@ func TestAddSuccessAfterError(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 	status := newAferoStatus(fs, filename).Load()
-	status.Profile(profileName).BackupError(errors.New("error message"), shell.Summary{Duration: parseDuration("45s")})
+	status.Profile(profileName).BackupError(errors.New("error message"), shell.Summary{Duration: parseDuration("45s")}, "")
 	err := status.Save()
 	assert.NoError(t, err)
 
 	status = newAferoStatus(fs, filename).Load()
-	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")})
+	status.Profile(profileName).BackupSuccess(shell.Summary{Duration: parseDuration("1h45m")}, "")
 	err = status.Save()
 	assert.NoError(t, err)
 

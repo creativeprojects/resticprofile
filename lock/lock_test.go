@@ -124,7 +124,7 @@ func TestProcessFinished(t *testing.T) {
 	cmd.SetPID = func(pid int) {
 		childPID = pid
 	}
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func TestProcessNotFinished(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, running)
 	}
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,7 +216,7 @@ func TestForceLockWithExpiredPID(t *testing.T) {
 
 	cmd := shell.NewSignalledCommand("echo", []string{"Hello World!"}, c)
 	cmd.SetPID = lock.SetPID
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,7 +265,7 @@ func TestForceLockWithRunningPID(t *testing.T) {
 		assert.False(t, other.ForceAcquire())
 		assert.False(t, other.HasLocked())
 	}
-	_, err := cmd.Run()
+	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}

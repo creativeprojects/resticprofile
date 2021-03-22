@@ -1,6 +1,8 @@
 package shell
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -32,7 +34,7 @@ type Command struct {
 	Stdout        io.Writer
 	Stderr        io.Writer
 	SetPID        SetPID
-	ScanOutput    ScanOutput
+	ScanStdout    ScanOutput
 	UsePowershell bool
 	sigChan       chan os.Signal
 	done          chan interface{}
@@ -59,30 +61,33 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 }
 
 // Run the command
-func (c *Command) Run() (Summary, error) {
+func (c *Command) Run() (Summary, string, error) {
 	var err error
-	var stdout io.ReadCloser
+	var stdout, stderr io.ReadCloser
 
 	summary := Summary{}
 
 	command, args, err := c.getShellCommand()
 	if err != nil {
-		return summary, err
+		return summary, "", err
 	}
 
 	// clog.Tracef("command: %s %q", command, args)
 	cmd := exec.Command(command, args...)
 
-	if c.ScanOutput != nil {
+	if c.ScanStdout != nil {
 		// install a pipe for scanning the output
 		stdout, err = cmd.StdoutPipe()
 		if err != nil {
-			return summary, err
+			return summary, "", err
 		}
 	} else {
 		cmd.Stdout = c.Stdout
 	}
-	cmd.Stderr = c.Stderr
+	stderr, err = cmd.StderrPipe()
+	if err != nil {
+		cmd.Stderr = c.Stderr
+	}
 	cmd.Stdin = c.Stdin
 
 	cmd.Env = os.Environ()
@@ -94,7 +99,7 @@ func (c *Command) Run() (Summary, error) {
 
 	// spawn the child process
 	if err = cmd.Start(); err != nil {
-		return summary, err
+		return summary, "", err
 	}
 	if c.SetPID != nil {
 		// send the PID back (to write down in a lockfile)
@@ -110,15 +115,27 @@ func (c *Command) Run() (Summary, error) {
 
 	// output scanner
 	if stdout != nil {
-		err = c.ScanOutput(stdout, &summary, c.Stdout)
+		err = c.ScanStdout(stdout, &summary, c.Stdout)
 		if err != nil {
-			return summary, err
+			return summary, "", err
+		}
+	}
+	errors := &bytes.Buffer{}
+	// send error output to buffer & stderr
+	if stderr != nil {
+		stderrOutput := c.Stderr
+		if stderrOutput == nil {
+			stderrOutput = os.Stderr
+		}
+		err = c.ScanStderr(stderr, stderrOutput, errors)
+		if err != nil {
+			return summary, errors.String(), err
 		}
 	}
 
 	err = cmd.Wait()
 	summary.Duration = time.Since(start)
-	return summary, err
+	return summary, errors.String(), err
 }
 
 // getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
@@ -145,6 +162,25 @@ func (c *Command) getShellCommand() (string, []string, error) {
 	// Flatten all arguments into one string, sh expects one big string
 	flatCommand := append([]string{c.Command}, c.Arguments...)
 	return shell, []string{"-c", strings.Join(flatCommand, " ")}, nil
+}
+
+func (c *Command) ScanStderr(r io.Reader, w1, w2 io.Writer) error {
+	eol := []byte("\n")
+	if runtime.GOOS == "windows" {
+		eol = []byte("\r\n")
+	}
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		w1.Write(scanner.Bytes())
+		w1.Write(eol)
+		w2.Write(scanner.Bytes())
+		w2.Write(eol)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // removeQuotes removes single and double quotes when the whole string is quoted

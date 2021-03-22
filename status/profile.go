@@ -23,6 +23,7 @@ type CommandStatus struct {
 	Success  bool      `json:"success"`
 	Time     time.Time `json:"time"`
 	Error    string    `json:"error"`
+	Stderr   string    `json:"stderr"`
 	Duration int64     `json:"duration"`
 }
 
@@ -41,12 +42,13 @@ type BackupStatus struct {
 }
 
 // BackupSuccess indicates the last backup was successful
-func (p *Profile) BackupSuccess(summary shell.Summary) *Profile {
+func (p *Profile) BackupSuccess(summary shell.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
 		CommandStatus: CommandStatus{
 			Success:  true,
 			Time:     time.Now(),
 			Duration: int64(math.Ceil(summary.Duration.Seconds())),
+			Stderr:   stderr,
 		},
 		FilesNew:        summary.FilesNew,
 		FilesChanged:    summary.FilesChanged,
@@ -62,13 +64,14 @@ func (p *Profile) BackupSuccess(summary shell.Summary) *Profile {
 }
 
 // BackupError sets the error of the last backup
-func (p *Profile) BackupError(err error, summary shell.Summary) *Profile {
+func (p *Profile) BackupError(err error, summary shell.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
 		CommandStatus: CommandStatus{
 			Success:  false,
 			Time:     time.Now(),
 			Error:    err.Error(),
 			Duration: int64(math.Ceil(summary.Duration.Seconds())),
+			Stderr:   stderr,
 		},
 		FilesNew:        0,
 		FilesChanged:    0,
@@ -84,42 +87,44 @@ func (p *Profile) BackupError(err error, summary shell.Summary) *Profile {
 }
 
 // RetentionSuccess indicates the last retention was successful
-func (p *Profile) RetentionSuccess(summary shell.Summary) *Profile {
-	p.Retention = newSuccess(summary.Duration)
+func (p *Profile) RetentionSuccess(summary shell.Summary, stderr string) *Profile {
+	p.Retention = newSuccess(summary.Duration, stderr)
 	return p
 }
 
 // RetentionError sets the error of the last retention
-func (p *Profile) RetentionError(err error, summary shell.Summary) *Profile {
-	p.Retention = newError(err, summary.Duration)
+func (p *Profile) RetentionError(err error, summary shell.Summary, stderr string) *Profile {
+	p.Retention = newError(err, summary.Duration, stderr)
 	return p
 }
 
 // CheckSuccess indicates the last check was successful
-func (p *Profile) CheckSuccess(summary shell.Summary) *Profile {
-	p.Check = newSuccess(summary.Duration)
+func (p *Profile) CheckSuccess(summary shell.Summary, stderr string) *Profile {
+	p.Check = newSuccess(summary.Duration, stderr)
 	return p
 }
 
 // CheckError sets the error of the last check
-func (p *Profile) CheckError(err error, summary shell.Summary) *Profile {
-	p.Check = newError(err, summary.Duration)
+func (p *Profile) CheckError(err error, summary shell.Summary, stderr string) *Profile {
+	p.Check = newError(err, summary.Duration, stderr)
 	return p
 }
 
-func newSuccess(duration time.Duration) *CommandStatus {
+func newSuccess(duration time.Duration, stderr string) *CommandStatus {
 	return &CommandStatus{
 		Success:  true,
 		Time:     time.Now(),
 		Duration: int64(math.Ceil(duration.Seconds())),
+		Stderr:   stderr,
 	}
 }
 
-func newError(err error, duration time.Duration) *CommandStatus {
+func newError(err error, duration time.Duration, stderr string) *CommandStatus {
 	return &CommandStatus{
 		Success:  false,
 		Time:     time.Now(),
 		Error:    err.Error(),
 		Duration: int64(math.Ceil(duration.Seconds())),
+		Stderr:   stderr,
 	}
 }

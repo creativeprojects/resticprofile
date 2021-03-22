@@ -76,7 +76,7 @@ root:
 
 self:
     force-inactive-lock: true
-    initialize: false
+    initialize: true
     inherit: default
     status-file: /Volumes/RAMDisk/status.json
     backup:

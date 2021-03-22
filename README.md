@@ -59,6 +59,8 @@ For the rest of the documentation, I'll be showing examples using different form
 * [Path resolution in configuration](#path-resolution-in-configuration)
 * [Run commands before, after success or after failure](#run-commands-before-after-success-or-after-failure)
   * [run before and after order during a backup](#run-before-and-after-order-during-a-backup)
+* [Warnings from restic](#warnings-from-restic)
+  * [no\-error\-on\-warning](#no-error-on-warning)
 * [Locks](#locks)
 * [Using resticprofile](#using-resticprofile)
 * [Command line reference](#command-line-reference)
@@ -586,6 +588,20 @@ The commands will be running in this order **during a backup**:
 - run the restic backup (with check and retention if configured) - if error, go to `run-after-fail`
 - `run-after` from the backup section - if error, go to `run-after-fail`
 - `run-after` from the profile - if error, go to `run-after-fail`
+
+# Warnings from restic
+
+Until version 0.13.0, restic was always considering a restic warning as an error. This will remain the default settings.
+But this version introduced a parameter to avoid this behavior: considering a restic warning as a success.
+
+## no-error-on-warning
+
+```yaml
+profile:
+    inherit: default
+    backup:
+        no-error-on-warning: true
+```
 
 # Locks
 
