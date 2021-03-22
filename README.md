@@ -591,7 +591,7 @@ The commands will be running in this order **during a backup**:
 
 # Warnings from restic
 
-Until version 0.13.0, restic was always considering a restic warning as an error. This will remain the default settings.
+Until version 0.13.0, resticprofile was always considering a restic warning as an error. This will remain the default settings.
 But this version introduced a parameter to avoid this behavior: considering a restic warning as a success.
 
 ## no-error-on-warning
@@ -1813,6 +1813,7 @@ Flags used by resticprofile only
 * **schedule-permission**: string (`user` or `system`)
 * **schedule-log**: string
 * **extended-status**: true / false
+* **no-error-on-warning**: true / false
 
 Flags passed to the restic command line
 
