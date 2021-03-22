@@ -39,19 +39,20 @@ type Profile struct {
 
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
-	ScheduleSection `mapstructure:",squash"`
-	CheckBefore     bool                   `mapstructure:"check-before"`
-	CheckAfter      bool                   `mapstructure:"check-after"`
-	RunBefore       []string               `mapstructure:"run-before"`
-	RunAfter        []string               `mapstructure:"run-after"`
-	UseStdin        bool                   `mapstructure:"stdin" argument:"stdin"`
-	Source          []string               `mapstructure:"source"`
-	Exclude         []string               `mapstructure:"exclude" argument:"exclude"`
-	Iexclude        []string               `mapstructure:"iexclude" argument:"iexclude"`
-	ExcludeFile     []string               `mapstructure:"exclude-file" argument:"exclude-file"`
-	FilesFrom       []string               `mapstructure:"files-from" argument:"files-from"`
-	ExtendedStatus  bool                   `mapstructure:"extended-status" argument:"json"`
-	OtherFlags      map[string]interface{} `mapstructure:",remain"`
+	ScheduleSection  `mapstructure:",squash"`
+	CheckBefore      bool                   `mapstructure:"check-before"`
+	CheckAfter       bool                   `mapstructure:"check-after"`
+	RunBefore        []string               `mapstructure:"run-before"`
+	RunAfter         []string               `mapstructure:"run-after"`
+	UseStdin         bool                   `mapstructure:"stdin" argument:"stdin"`
+	Source           []string               `mapstructure:"source"`
+	Exclude          []string               `mapstructure:"exclude" argument:"exclude"`
+	Iexclude         []string               `mapstructure:"iexclude" argument:"iexclude"`
+	ExcludeFile      []string               `mapstructure:"exclude-file" argument:"exclude-file"`
+	FilesFrom        []string               `mapstructure:"files-from" argument:"files-from"`
+	ExtendedStatus   bool                   `mapstructure:"extended-status" argument:"json"`
+	NoErrorOnWarning bool                   `mapstructure:"no-error-on-warning"`
+	OtherFlags       map[string]interface{} `mapstructure:",remain"`
 }
 
 // RetentionSection contains the specific configuration to

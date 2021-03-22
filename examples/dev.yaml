@@ -80,8 +80,9 @@ self:
     inherit: default
     status-file: /Volumes/RAMDisk/status.json
     backup:
-        extended-status: true
+        extended-status: false
         check-before: false
+        no-error-on-warning: true
         source: {{ .CurrentDir }}
         exclude:
           - "/**/.git/"

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -234,7 +236,7 @@ func (r *resticWrapper) runCommand(command string) error {
 	if command == constants.CommandBackup && r.profile.StatusFile != "" {
 		if r.profile.Backup != nil && r.profile.Backup.ExtendedStatus {
 			rCommand.scanOutput = shell.ScanBackupJson
-		} else {
+			// } else {
 			// scan plain backup could have been a good idea,
 			// except restic detects its output is not a terminal and no longer displays the progress
 			// rCommand.scanOutput = shell.ScanBackupPlain
@@ -242,6 +244,16 @@ func (r *resticWrapper) runCommand(command string) error {
 	}
 	summary, err := runShellCommand(rCommand)
 	if err != nil {
+		if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.NoErrorOnWarning {
+			// ignore restic warnings after a backup
+			exitErr := &exec.ExitError{}
+			if errors.As(err, &exitErr) && exitErr.ExitCode() == 3 {
+				// this is a restic warning only
+				r.statusSuccess(r.command, summary)
+				clog.Warningf("profile '%s': finished '%s' with warning: failed to read all source data during backup", r.profile.Name, command)
+				return nil
+			}
+		}
 		r.statusError(r.command, summary, err)
 		return newCommandError(rCommand, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 	}
