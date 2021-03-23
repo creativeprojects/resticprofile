@@ -578,7 +578,10 @@ A few environment variables will be set before running these commands:
 - `PROFILE_NAME`
 - `PROFILE_COMMAND`: backup, check, forget, etc.
 
-Additionally for the `run-after-fail` commands, the `ERROR` environment variable will be set to the latest error message and `ERROR_COMMANDLINE` to the commandline that failed.
+Additionally for the `run-after-fail` commands, these environment variables will also be available:
+- `ERROR` containing the latest error message
+- `ERROR_COMMANDLINE` containing the command line that failed
+- `RESTIC_STDERR` containing any message that restic sent to the standard error (stderr)
 
 ## run before and after order during a backup
 

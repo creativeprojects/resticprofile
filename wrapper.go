@@ -19,12 +19,17 @@ import (
 )
 
 type commandError struct {
-	scd shellCommandDefinition
-	err error
+	scd    shellCommandDefinition
+	stderr string
+	err    error
 }
 
-func newCommandError(command shellCommandDefinition, err error) *commandError {
-	return &commandError{scd: command, err: err}
+func newCommandError(command shellCommandDefinition, stderr string, err error) *commandError {
+	return &commandError{
+		scd:    command,
+		stderr: stderr,
+		err:    err,
+	}
 }
 
 func (c *commandError) Error() string {
@@ -37,6 +42,10 @@ func (c *commandError) Commandline() string {
 		args = fmt.Sprintf(" \"%s\"", strings.Join(c.scd.args, "\" \""))
 	}
 	return fmt.Sprintf("\"%s\"%s", c.scd.command, args)
+}
+
+func (c *commandError) Stderr() string {
+	return c.stderr
 }
 
 type resticWrapper struct {
@@ -196,9 +205,9 @@ func (r *resticWrapper) runInitialize() error {
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	// don't display any error
 	rCommand.stderr = nil
-	_, _, err := runShellCommand(rCommand)
+	_, stderr, err := runShellCommand(rCommand)
 	if err != nil {
-		return newCommandError(rCommand, fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err))
+		return newCommandError(rCommand, stderr, fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err))
 	}
 	return nil
 }
@@ -210,7 +219,7 @@ func (r *resticWrapper) runCheck() error {
 	summary, stderr, err := runShellCommand(rCommand)
 	if err != nil {
 		r.statusError(constants.CommandCheck, summary, stderr, err)
-		return newCommandError(rCommand, fmt.Errorf("backup check on profile '%s': %w", r.profile.Name, err))
+		return newCommandError(rCommand, stderr, fmt.Errorf("backup check on profile '%s': %w", r.profile.Name, err))
 	}
 	r.statusSuccess(constants.CommandCheck, summary, stderr)
 	return nil
@@ -223,7 +232,7 @@ func (r *resticWrapper) runRetention() error {
 	summary, stderr, err := runShellCommand(rCommand)
 	if err != nil {
 		r.statusError(constants.SectionConfigurationRetention, summary, stderr, err)
-		return newCommandError(rCommand, fmt.Errorf("backup retention on profile '%s': %w", r.profile.Name, err))
+		return newCommandError(rCommand, stderr, fmt.Errorf("backup retention on profile '%s': %w", r.profile.Name, err))
 	}
 	r.statusSuccess(constants.SectionConfigurationRetention, summary, stderr)
 	return nil
@@ -255,7 +264,7 @@ func (r *resticWrapper) runCommand(command string) error {
 			}
 		}
 		r.statusError(r.command, summary, stderr, err)
-		return newCommandError(rCommand, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
+		return newCommandError(rCommand, stderr, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 	}
 	r.statusSuccess(r.command, summary, stderr)
 	clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
@@ -279,9 +288,9 @@ func (r *resticWrapper) runPreCommand(command string) error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		_, _, err := runShellCommand(rCommand)
+		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
-			return newCommandError(rCommand, fmt.Errorf("run-before backup on profile '%s': %w", r.profile.Name, err))
+			return newCommandError(rCommand, stderr, fmt.Errorf("run-before backup on profile '%s': %w", r.profile.Name, err))
 		}
 	}
 	return nil
@@ -304,9 +313,9 @@ func (r *resticWrapper) runPostCommand(command string) error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		_, _, err := runShellCommand(rCommand)
+		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
-			return newCommandError(rCommand, fmt.Errorf("run-after backup on profile '%s': %w", r.profile.Name, err))
+			return newCommandError(rCommand, stderr, fmt.Errorf("run-after backup on profile '%s': %w", r.profile.Name, err))
 		}
 	}
 	return nil
@@ -325,9 +334,9 @@ func (r *resticWrapper) runProfilePreCommand() error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		_, _, err := runShellCommand(rCommand)
+		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
-			return newCommandError(rCommand, fmt.Errorf("run-before on profile '%s': %w", r.profile.Name, err))
+			return newCommandError(rCommand, stderr, fmt.Errorf("run-before on profile '%s': %w", r.profile.Name, err))
 		}
 	}
 	return nil
@@ -346,9 +355,9 @@ func (r *resticWrapper) runProfilePostCommand() error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		_, _, err := runShellCommand(rCommand)
+		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
-			return newCommandError(rCommand, fmt.Errorf("run-after on profile '%s': %w", r.profile.Name, err))
+			return newCommandError(rCommand, stderr, fmt.Errorf("run-after on profile '%s': %w", r.profile.Name, err))
 		}
 	}
 	return nil
@@ -363,7 +372,10 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 	env = append(env, fmt.Sprintf("ERROR=%s", fail.Error()))
 
 	if fail, ok := fail.(*commandError); ok {
-		env = append(env, fmt.Sprintf("ERROR_COMMANDLINE=%s", fail.Commandline()))
+		env = append(env,
+			fmt.Sprintf("ERROR_COMMANDLINE=%s", fail.Commandline()),
+			fmt.Sprintf("RESTIC_STDERR=%s", fail.Stderr()),
+		)
 	}
 
 	for i, postCommand := range r.profile.RunAfterFail {
@@ -372,9 +384,9 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
-		_, _, err := runShellCommand(rCommand)
+		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
-			return newCommandError(rCommand, err)
+			return newCommandError(rCommand, stderr, err)
 		}
 	}
 	return nil

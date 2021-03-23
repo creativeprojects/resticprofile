@@ -87,12 +87,15 @@ self:
         exclude:
           - "/**/.git/"
         schedule:
-        - "*:00,30"
+          - "*:00,30"
         schedule-permission: user
         {{ template "tags" . }}
+    run-after-fail:
+      - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"
+      - "echo restic stderr = ${RESTIC_STDERR}"
     check:
         schedule:
-        - "*:15,45"
+          - "*:15,45"
     retention:
         after-backup: true
     forget:
