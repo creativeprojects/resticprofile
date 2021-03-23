@@ -1,5 +1,12 @@
 ![Build](https://github.com/creativeprojects/resticprofile/workflows/Build/badge.svg)
+[![codecov](https://codecov.io/gh/creativeprojects/resticprofile/branch/master/graph/badge.svg?token=cUozgF9j4I)](https://codecov.io/gh/creativeprojects/resticprofile)
 [![Go Report Card](https://goreportcard.com/badge/github.com/creativeprojects/resticprofile)](https://goreportcard.com/report/github.com/creativeprojects/resticprofile)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=creativeprojects_resticprofile&metric=ncloc)](https://sonarcloud.io/dashboard?id=creativeprojects_resticprofile)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=creativeprojects_resticprofile&metric=bugs)](https://sonarcloud.io/dashboard?id=creativeprojects_resticprofile)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=creativeprojects_resticprofile&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=creativeprojects_resticprofile)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=creativeprojects_resticprofile&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=creativeprojects_resticprofile)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=creativeprojects_resticprofile&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=creativeprojects_resticprofile)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=creativeprojects_resticprofile&metric=security_rating)](https://sonarcloud.io/dashboard?id=creativeprojects_resticprofile)
 
 # resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)
