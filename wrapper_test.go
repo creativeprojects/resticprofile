@@ -217,15 +217,18 @@ func TestEnvErrorCommandLine(t *testing.T) {
 }
 
 func TestEnvStderr(t *testing.T) {
+	var mock string
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
 	if runtime.GOOS == "windows" {
 		profile.RunAfterFail = []string{"echo stderr: %RESTIC_STDERR%"}
+		mock = "mock"
 	} else {
 		profile.RunAfterFail = []string{"echo stderr: $RESTIC_STDERR"}
+		mock = "./mock"
 	}
-	wrapper := newResticWrapper("./mock", false, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
+	wrapper := newResticWrapper(mock, false, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
 	assert.Equal(t, "stderr: error_message\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))

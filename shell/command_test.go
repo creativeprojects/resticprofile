@@ -248,8 +248,9 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 }
 
 func TestStderr(t *testing.T) {
+	expected := "error message\n"
 	if runtime.GOOS == "windows" {
-		t.Skip("test not running on Windows")
+		expected = "\"error message\" \r\n"
 	}
 
 	cmd := NewCommand("echo", []string{"error message", ">&2"})
@@ -258,12 +259,13 @@ func TestStderr(t *testing.T) {
 	_, stderr, err := cmd.Run()
 	require.NoError(t, err)
 	assert.Empty(t, buffer.String())
-	assert.Equal(t, "error message\n", stderr)
+	assert.Equal(t, expected, stderr)
 }
 
 func TestStderrSignalledCommand(t *testing.T) {
+	expected := "error message\n"
 	if runtime.GOOS == "windows" {
-		t.Skip("test not running on Windows")
+		expected = "\"error message\" \r\n"
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -273,7 +275,7 @@ func TestStderrSignalledCommand(t *testing.T) {
 	_, stderr, err := cmd.Run()
 	require.NoError(t, err)
 	assert.Empty(t, buffer.String())
-	assert.Equal(t, "error message\n", stderr)
+	assert.Equal(t, expected, stderr)
 }
 
 // Try to make a test to make sure restic is catching the signal properly
