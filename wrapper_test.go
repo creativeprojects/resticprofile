@@ -14,12 +14,22 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+var (
+	mockBinary string
 )
 
 func init() {
 	// build restic mock
 	cmd := exec.Command("go", "build", "./shell/mock")
 	cmd.Run()
+	if runtime.GOOS == "windows" {
+		mockBinary = "mock.exe"
+	} else {
+		mockBinary = "./mock"
+	}
 }
 
 func TestGetEmptyEnvironment(t *testing.T) {
@@ -217,18 +227,15 @@ func TestEnvErrorCommandLine(t *testing.T) {
 }
 
 func TestEnvStderr(t *testing.T) {
-	var mock string
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
 	if runtime.GOOS == "windows" {
 		profile.RunAfterFail = []string{"echo stderr: %RESTIC_STDERR%"}
-		mock = "mock"
 	} else {
 		profile.RunAfterFail = []string{"echo stderr: $RESTIC_STDERR"}
-		mock = "./mock"
 	}
-	wrapper := newResticWrapper(mock, false, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
 	assert.Equal(t, "stderr: error_message\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
@@ -241,4 +248,96 @@ func TestRunProfileWithSetPIDCallback(t *testing.T) {
 	wrapper := newResticWrapper("echo", false, false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
+}
+
+func TestInitializeNoError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", nil, nil)
+	err := wrapper.runInitialize()
+	require.NoError(t, err)
+}
+
+func TestInitializeWithError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", []string{"--exit", "10"}, nil)
+	err := wrapper.runInitialize()
+	require.Error(t, err)
+}
+
+func TestCheckNoError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", nil, nil)
+	err := wrapper.runCheck()
+	require.NoError(t, err)
+}
+
+func TestCheckWithError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", []string{"--exit", "10"}, nil)
+	err := wrapper.runCheck()
+	require.Error(t, err)
+}
+
+func TestRetentionNoError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", nil, nil)
+	err := wrapper.runRetention()
+	require.NoError(t, err)
+}
+
+func TestRetentionWithError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", []string{"--exit", "10"}, nil)
+	err := wrapper.runRetention()
+	require.Error(t, err)
+}
+
+func TestBackupWithSuccess(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", nil, nil)
+	err := wrapper.runCommand("backup")
+	require.NoError(t, err)
+}
+
+func TestBackupWithError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", []string{"--exit", "1"}, nil)
+	err := wrapper.runCommand("backup")
+	require.Error(t, err)
+}
+
+func TestBackupWithWarningAsError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", []string{"--exit", "3"}, nil)
+	err := wrapper.runCommand("backup")
+	require.Error(t, err)
+}
+
+func TestBackupWithSupressedWarnings(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Backup = &config.BackupSection{NoErrorOnWarning: true}
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "", []string{"--exit", "3"}, nil)
+	err := wrapper.runCommand("backup")
+	require.NoError(t, err)
+}
+
+func TestRunBeforeBackupFailed(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Backup = &config.BackupSection{RunBefore: []string{"exit 2"}}
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
+	err := wrapper.runProfile()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "exit status 2")
+}
+
+func TestRunAfterBackupFailed(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Backup = &config.BackupSection{RunAfter: []string{"exit 2"}}
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
+	err := wrapper.runProfile()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "exit status 2")
 }

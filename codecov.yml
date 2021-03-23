@@ -1,0 +1,9 @@
+ignore:
+  - shell/mock/
+  - lock/test/
+  - priority/check/
+  - deprecation.go
+  - flags.go
+  - logger.go
+  - systemd.go
+  - update.go
