@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 )
 
 // Implementation of a mock command that mimics the output of restic during tests
@@ -19,10 +20,12 @@ func main() {
 	stderr := ""
 	exit := 0
 	arguments := false
+	sleep := 0
 	flags := flag.NewFlagSet("mock", flag.ExitOnError)
-	flags.StringVar(&stderr, "stderr", "", "")
-	flags.IntVar(&exit, "exit", 0, "")
-	flags.BoolVar(&arguments, "args", false, "")
+	flags.StringVar(&stderr, "stderr", "", "send this message to stderr")
+	flags.IntVar(&exit, "exit", 0, "set exit code")
+	flags.BoolVar(&arguments, "args", false, "display command line arguments")
+	flags.IntVar(&sleep, "sleep", 0, "sleep timer in ms")
 	flags.Parse(os.Args[2:])
 
 	if arguments {
@@ -33,6 +36,10 @@ func main() {
 
 	if stderr != "" {
 		fmt.Fprintf(os.Stderr, "%s\n", stderr)
+	}
+
+	if sleep > 0 {
+		time.Sleep(time.Duration(sleep * int(time.Millisecond)))
 	}
 	os.Exit(exit)
 }
