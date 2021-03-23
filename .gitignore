@@ -19,6 +19,7 @@
 /resticprofile_pi
 /resticprofile.exe
 /lock/locktest
+/mock
 
 # test output
 /coverage.out
