@@ -1,0 +1,4 @@
+ignore:
+  - shell/mock
+  - lock/test
+  - priority/check

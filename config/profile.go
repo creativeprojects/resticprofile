@@ -196,6 +196,11 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 
 // GetRetentionFlags returns the flags specific to the "forget" command being run as part of a backup
 func (p *Profile) GetRetentionFlags() map[string][]string {
+	// it shouldn't happen when started as a command, but can occur in a unit test
+	if p.Retention == nil {
+		return nil
+	}
+
 	// if there was no "other" flags, the map could be un-initialized
 	if p.Retention.OtherFlags == nil {
 		p.Retention.OtherFlags = make(map[string]interface{})
