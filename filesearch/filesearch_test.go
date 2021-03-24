@@ -3,6 +3,7 @@ package filesearch
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/adrg/xdg"
@@ -54,6 +55,9 @@ type testLocation struct {
 }
 
 func TestFindConfigurationFile(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip this test in short mode")
+	}
 	// Work from a temporary directory
 	err := os.Chdir(os.TempDir())
 	require.NoError(t, err)
@@ -201,5 +205,21 @@ func TestFindConfigurationFile(t *testing.T) {
 			err = os.RemoveAll(location.realPath)
 		}
 		require.NoError(t, err)
+	}
+}
+
+func TestCannotFindConfigurationFile(t *testing.T) {
+	found, err := FindConfigurationFile("some_config_file")
+	assert.Empty(t, found)
+	assert.Error(t, err)
+}
+
+func TestFindResticBinary(t *testing.T) {
+	binary, err := FindResticBinary("some_other_name")
+	if binary != "" {
+		assert.True(t, strings.HasSuffix(binary, getResticBinary()))
+		assert.NoError(t, err)
+	} else {
+		assert.Error(t, err)
 	}
 }

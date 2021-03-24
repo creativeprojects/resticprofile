@@ -8,6 +8,7 @@ import (
 
 func TestScheduleProperties(t *testing.T) {
 	schedule := ScheduleConfig{
+		configfile:       "config",
 		profileName:      "profile",
 		commandName:      "command name",
 		schedules:        []string{"1", "2", "3"},
@@ -21,6 +22,7 @@ func TestScheduleProperties(t *testing.T) {
 		logfile:          "log.txt",
 	}
 
+	assert.Equal(t, "config", schedule.Configfile())
 	assert.Equal(t, "profile", schedule.Title())
 	assert.Equal(t, "command name", schedule.SubTitle())
 	assert.Equal(t, "job", schedule.JobDescription())
@@ -54,4 +56,17 @@ func TestOtherPriority(t *testing.T) {
 		priority: "other",
 	}
 	assert.Equal(t, "background", schedule.Priority()) // default value
+}
+
+func TestScheduleFlags(t *testing.T) {
+	schedule := &ScheduleConfig{}
+
+	flag, found := schedule.GetFlag("unit")
+	assert.Empty(t, flag)
+	assert.False(t, found)
+
+	schedule.SetFlag("unit", "test")
+	flag, found = schedule.GetFlag("unit")
+	assert.Equal(t, "test", flag)
+	assert.True(t, found)
 }

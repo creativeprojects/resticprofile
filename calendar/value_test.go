@@ -96,7 +96,7 @@ func TestAddRanges(t *testing.T) {
 	max := 20
 	entries := []int{11, 12, 15}
 	value := NewValue(min, max)
-	value.AddRange(11, 12)
+	value.AddRange(12, 11) // wrong order on purpose
 	value.AddRange(15, 15)
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -144,6 +144,7 @@ func TestParseString(t *testing.T) {
 		{1, 12, "1,2,3", "01..03"},
 		{1, 12, "1..3", "01..03"},
 		{1, 12, "1..3,5..6,10..12", "01..03,05..06,10..12"},
+		{1, 12, "1..3,5..5,10..12", "01..03,05,10..12"},
 	}
 
 	for _, testItem := range testData {
@@ -152,6 +153,27 @@ func TestParseString(t *testing.T) {
 			err := value.Parse(testItem.input)
 			assert.NoError(t, err)
 			assert.Equal(t, testItem.expected, value.String())
+		})
+	}
+}
+
+func TestParseStringError(t *testing.T) {
+	testData := []struct {
+		min, max int
+		input    string
+	}{
+		{1, 12, ".."},
+		{1, 12, "1.."},
+		{1, 12, "..1"},
+		{1, 12, "0..10"},
+		{1, 12, "1..13"},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.input, func(t *testing.T) {
+			value := NewValue(testItem.min, testItem.max)
+			err := value.Parse(testItem.input)
+			assert.Error(t, err)
 		})
 	}
 }

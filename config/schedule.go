@@ -6,6 +6,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
+// ScheduleConfig contains all information to schedule a profile command
 type ScheduleConfig struct {
 	profileName      string
 	commandName      string
