@@ -16,6 +16,7 @@ BINARY_DARWIN=$(BINARY)_darwin
 BINARY_LINUX=$(BINARY)_linux
 BINARY_PI=$(BINARY)_pi
 BINARY_WINDOWS=$(BINARY).exe
+README=README.md
 
 TESTS=./...
 COVERAGE_FILE=coverage.out
@@ -37,6 +38,10 @@ endif
 ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
+
+TOC_START=<\!--ts-->
+TOC_END=<\!--te-->
+TOC_PATH=toc.md
 
 .PHONY: all test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk passphrase rest-server nightly toc staticcheck release-snapshot generate-install
 
@@ -114,7 +119,10 @@ toc:
 	go get github.com/ekalinin/github-markdown-toc.go
 	go install github.com/ekalinin/github-markdown-toc.go
 	go mod tidy
-	cat README.md | github-markdown-toc.go --hide-footer
+	cat ${README} | github-markdown-toc.go --hide-footer > ${TOC_PATH}
+	sed -i ".1" "/${TOC_START}/,/${TOC_END}/{//!d;}" "${README}"
+	sed -i ".2" "/${TOC_START}/r ${TOC_PATH}" "${README}"
+	rm ${README}.1 ${README}.2 ${TOC_PATH}
 
 staticcheck:
 	go get -u honnef.co/go/tools/cmd/staticcheck

@@ -42,6 +42,7 @@ The configuration file accepts various formats:
 For the rest of the documentation, I'll be showing examples using different formats, but mostly TOML and YAML.
 
 # Table of Contents
+<!--ts-->
 * [resticprofile](#resticprofile)
 * [Table of Contents](#table-of-contents)
 * [Requirements](#requirements)
@@ -110,6 +111,8 @@ For the rest of the documentation, I'll be showing examples using different form
   * [Daemon](#daemon)
 * [Contributions](#contributions)
 
+<!--te-->
+
 # Requirements
 
 Since version 0.6.0, resticprofile no longer needs python installed on your machine. It is distributed as an executable (same as restic).
@@ -167,13 +170,7 @@ Once installed, you can easily upgrade resticprofile to the latest release using
 $ resticprofile self-update
 ```
 
-Versions 0.6.x were using a flag instead, **this is deprecated since version 0.7.0**:
-
-```
-$ resticprofile --self-update
-```
-
-_Please note on versions before 0.10.0,  there was an issue with self-updating from linux with ARM processors (like a raspberry pi). This was fixed in version 0.10.0_
+_Please note on versions before 0.10.0, there was an issue with self-updating from linux with ARM processors (like a raspberry pi). This was fixed in version 0.10.0_
 
 resticprofile will check for a new version from GitHub releases and asks you if you want to update to the new version. If you add the flag `-q` or `--quiet` to the command line, it will update automatically without asking.
 
@@ -208,13 +205,14 @@ $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticpro
 
 ## Container host name
 
-Each time a container is started, it gets assigned a new random name. You should probably force a hostname to your container...
+Each time a container is started, it gets assigned a new random name.
 
+You can force a hostname
+- in your container:
 ```
 $ docker run -it --rm -v $PWD:/resticprofile -h my-machine creativeprojects/resticprofile -n profile backup
 ```
-
-... or in your configuration:
+- in your configuration:
 
 ```toml
 [profile]
@@ -392,6 +390,8 @@ schedule = "daily"
 schedule-permission = "system"
 # run this after a backup to share a repository between a user and root (via sudo)
 run-after = "chown -R $SUDO_USER $HOME/.cache/restic /backup"
+# ignore restic warnings (otherwise the backup is considered failed when restic couldn't read some files)
+no-error-on-warning = true
 
 # retention policy for profile root
 [root.retention]
@@ -477,7 +477,8 @@ source = [ "c:\\" ]
 check-after = true
 run-before = "dir /l"
 run-after = "echo All Done!"
-
+# ignore restic warnings (otherwise the backup is considered failed when restic couldn't read some files)
+no-error-on-warning = true
 ```
 
 ### Use stdin in configuration
@@ -601,8 +602,10 @@ The commands will be running in this order **during a backup**:
 
 # Warnings from restic
 
-Until version 0.13.0, resticprofile was always considering a restic warning as an error. This will remain the default settings.
-But this version introduced a parameter to avoid this behavior: considering a restic warning as a success.
+Until version 0.13.0, resticprofile was always considering a restic warning as an error. This will remain the **default**.
+But the version 0.13.0 introduced a parameter to avoid this behavior and consider that the backup was successful instead.
+
+A restic warning occurs when it cannot read some files, but a snapshot was successfully created.
 
 ## no-error-on-warning
 
@@ -640,7 +643,7 @@ src:
 
 For this profile, a lock will be set using the file `/tmp/resticprofile-profile-src.lock` for the duration of the profile: *check*, *backup* and *retention* (via the forget command)
 
-**Please note restic locks and resticprofile locks are completely independant**
+**Please note restic locks and resticprofile locks are completely independent**
 
 In some cases, you might want to override the resticprofile lock if the process died (or the machine rebooted) leaving a lockfile behind.
 
@@ -705,7 +708,8 @@ Display quick help
 $ resticprofile --help
 
 Usage of resticprofile:
-	resticprofile [resticprofile flags] [command] [restic flags]
+	resticprofile [resticprofile flags] [restic command] [restic flags]
+	resticprofile [resticprofile flags] [resticprofile command] [command specific flags]
 
 resticprofile flags:
   -c, --config string   configuration file (default "profiles")
@@ -1252,7 +1256,7 @@ In your profile, you simply need to add a new parameter, which is the location o
 status-file = "backup-status.json"
 ```
 
-Here's an example of a generated file, where you can see that the last check failed, whereas the last backup succeeded:
+Here's an example of a generated file, where you can see that the last `check` failed, whereas the last `backup` succeeded:
 
 ```json
 {
@@ -1260,9 +1264,10 @@ Here's an example of a generated file, where you can see that the last check fai
     "self": {
       "backup": {
         "success": true,
-        "time": "2021-03-17T16:36:56.831077Z",
+        "time": "2021-03-24T16:36:56.831077Z",
         "error": "",
-        "duration": 2,
+        "stderr": "",
+        "duration": 16,
         "files_new": 215,
         "files_changed": 0,
         "files_unmodified": 0,
@@ -1275,8 +1280,9 @@ Here's an example of a generated file, where you can see that the last check fai
       },
       "check": {
         "success": false,
-        "time": "2021-03-17T16:34:32.807392Z",
+        "time": "2021-03-24T15:23:40.270689Z",
         "error": "exit status 1",
+        "stderr": "unable to create lock in backend: repository is already locked exclusively by PID 18534 on dingo by cloud_user (UID 501, GID 20)\nlock was created at 2021-03-24 15:23:29 (10.42277s ago)\nstorage ID 1bf636d2\nthe `unlock` command can be used to remove stale locks\n",
         "duration": 1
       }
     }
@@ -1301,6 +1307,13 @@ profile:
           - "/**/.git/"
 
 ```
+
+`extended-status` is **not needed** for these fields:
+- success
+- time
+- error
+- stderr
+- duration
 
 # Variable expansion in configuration file
 
