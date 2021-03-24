@@ -214,10 +214,15 @@ func BenchmarkNextTrigger(b *testing.B) {
 }
 
 func TestEventAsTime(t *testing.T) {
-	testData := []struct{ input, expected string }{
-		{"2011-11-01", "2011-11-01 00:00:00"},
-		{"2011-11-01 10:01", "2011-11-01 10:01:00"},
-		{"2011-11-01 10:01:02", "2011-11-01 10:01:02"},
+	testData := []struct {
+		input    string
+		expected string
+		possible bool
+	}{
+		{"2011-11-01", "2011-11-01 00:00:00", true},
+		{"2011-11-01 10:01", "2011-11-01 10:01:00", true},
+		{"2011-11-01 10:01:02", "2011-11-01 10:01:02", true},
+		{"Mon", "", false},
 	}
 
 	for _, testItem := range testData {
@@ -226,8 +231,10 @@ func TestEventAsTime(t *testing.T) {
 			err := event.Parse(testItem.input)
 			assert.NoError(t, err)
 			datetime, ok := event.AsTime()
-			assert.True(t, ok)
-			assert.Equal(t, testItem.expected, datetime.Format("2006-01-02 15:04:05"))
+			assert.Equal(t, testItem.possible, ok)
+			if ok {
+				assert.Equal(t, testItem.expected, datetime.Format("2006-01-02 15:04:05"))
+			}
 		})
 	}
 }
@@ -367,4 +374,17 @@ func TestDaysOfWeekValues(t *testing.T) {
 			assert.Equal(t, testItem.dayOfWeek, event.WeekDay.singleValue)
 		})
 	}
+}
+
+func TestField(t *testing.T) {
+	event := NewEvent()
+	err := event.Parse("2003-03-05 06:40:11")
+	require.NoError(t, err)
+	assert.Equal(t, 2003, event.Field(TypeYear).singleValue)
+	assert.Equal(t, 3, event.Field(TypeMonth).singleValue)
+	assert.Equal(t, 0, event.Field(TypeWeekDay).singleValue)
+	assert.Equal(t, 5, event.Field(TypeDay).singleValue)
+	assert.Equal(t, 6, event.Field(TypeHour).singleValue)
+	assert.Equal(t, 40, event.Field(TypeMinute).singleValue)
+	assert.Equal(t, 11, event.Field(TypeSecond).singleValue)
 }
