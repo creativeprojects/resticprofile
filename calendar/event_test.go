@@ -387,4 +387,5 @@ func TestField(t *testing.T) {
 	assert.Equal(t, 6, event.Field(TypeHour).singleValue)
 	assert.Equal(t, 40, event.Field(TypeMinute).singleValue)
 	assert.Equal(t, 11, event.Field(TypeSecond).singleValue)
+	assert.Nil(t, event.Field(TypeUnknown))
 }
