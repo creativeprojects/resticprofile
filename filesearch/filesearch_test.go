@@ -3,6 +3,7 @@ package filesearch
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/adrg/xdg"
@@ -211,4 +212,14 @@ func TestCannotFindConfigurationFile(t *testing.T) {
 	found, err := FindConfigurationFile("some_config_file")
 	assert.Empty(t, found)
 	assert.Error(t, err)
+}
+
+func TestFindResticBinary(t *testing.T) {
+	binary, err := FindResticBinary("some_other_name")
+	if binary != "" {
+		assert.True(t, strings.HasSuffix(binary, getResticBinary()))
+		assert.NoError(t, err)
+	} else {
+		assert.Error(t, err)
+	}
 }

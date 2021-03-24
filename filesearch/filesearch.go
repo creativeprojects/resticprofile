@@ -172,5 +172,5 @@ func getResticBinary() string {
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
+	return err == nil
 }
