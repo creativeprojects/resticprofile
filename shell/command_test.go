@@ -279,11 +279,12 @@ func TestStderr(t *testing.T) {
 	}
 
 	cmd := NewCommand("echo", []string{"error message", ">&2"})
-	buffer := &bytes.Buffer{}
-	cmd.Stdout = buffer
+	bufferStdout, bufferStderr := &bytes.Buffer{}, &bytes.Buffer{}
+	cmd.Stdout = bufferStdout
+	cmd.Stderr = bufferStderr
 	_, stderr, err := cmd.Run()
 	require.NoError(t, err)
-	assert.Empty(t, buffer.String())
+	assert.Empty(t, bufferStdout.String())
 	assert.Equal(t, expected, stderr)
 }
 
@@ -295,12 +296,36 @@ func TestStderrSignalledCommand(t *testing.T) {
 
 	sigChan := make(chan os.Signal, 1)
 	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
-	buffer := &bytes.Buffer{}
-	cmd.Stdout = buffer
+	bufferStdout, bufferStderr := &bytes.Buffer{}, &bytes.Buffer{}
+	cmd.Stdout = bufferStdout
+	cmd.Stderr = bufferStderr
 	_, stderr, err := cmd.Run()
 	require.NoError(t, err)
-	assert.Empty(t, buffer.String())
+	assert.Empty(t, bufferStdout.String())
 	assert.Equal(t, expected, stderr)
+}
+
+func TestStderrNotRedirected(t *testing.T) {
+	cmd := NewCommand("echo", []string{"error message", ">&2"})
+	bufferStdout := &bytes.Buffer{}
+	cmd.Stdout = bufferStdout
+	cmd.Stderr = nil
+	_, stderr, err := cmd.Run()
+	require.NoError(t, err)
+	assert.Empty(t, bufferStdout.String())
+	assert.Equal(t, "", stderr)
+}
+
+func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
+	sigChan := make(chan os.Signal, 1)
+	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
+	bufferStdout := &bytes.Buffer{}
+	cmd.Stdout = bufferStdout
+	cmd.Stderr = nil
+	_, stderr, err := cmd.Run()
+	require.NoError(t, err)
+	assert.Empty(t, bufferStdout.String())
+	assert.Equal(t, "", stderr)
 }
 
 // Try to make a test to make sure restic is catching the signal properly

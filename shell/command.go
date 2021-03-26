@@ -84,9 +84,11 @@ func (c *Command) Run() (Summary, string, error) {
 	} else {
 		cmd.Stdout = c.Stdout
 	}
-	stderr, err = cmd.StderrPipe()
-	if err != nil {
-		cmd.Stderr = c.Stderr
+	if c.Stderr != nil {
+		stderr, err = cmd.StderrPipe()
+		if err != nil {
+			cmd.Stderr = c.Stderr
+		}
 	}
 	cmd.Stdin = c.Stdin
 
