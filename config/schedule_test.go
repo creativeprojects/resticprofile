@@ -1,7 +1,9 @@
 package config
 
 import (
+	"github.com/creativeprojects/resticprofile/constants"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,6 +22,8 @@ func TestScheduleProperties(t *testing.T) {
 		jobDescription:   "job",
 		timerDescription: "timer",
 		logfile:          "log.txt",
+		lockMode:         "undefined",
+		lockWait:         1 * time.Minute,
 	}
 
 	assert.Equal(t, "config", schedule.Configfile())
@@ -35,6 +39,30 @@ func TestScheduleProperties(t *testing.T) {
 	assert.Equal(t, "dev", schedule.Environment()["test"])
 	assert.Equal(t, "background", schedule.Priority()) // default value
 	assert.Equal(t, "log.txt", schedule.Logfile())
+	assert.Equal(t, ScheduleLockModeDefault, schedule.LockMode())
+	assert.Equal(t, 60*time.Second, schedule.LockWait())
+}
+
+func TestLockModes(t *testing.T) {
+	tests := map[ScheduleLockMode]ScheduleConfig{
+		ScheduleLockModeDefault: {lockMode: ""},
+		ScheduleLockModeFail:    {lockMode: constants.ScheduleLockModeOptionFail},
+		ScheduleLockModeIgnore:  {lockMode: constants.ScheduleLockModeOptionIgnore},
+	}
+	for mode, config := range tests {
+		assert.Equal(t, mode, config.LockMode())
+	}
+}
+
+func TestLockWait(t *testing.T) {
+	tests := map[time.Duration]ScheduleConfig{
+		0:               {lockWait: 2 * time.Second}, // min lock wait is is >2 seconds
+		3 * time.Second: {lockWait: 3 * time.Second},
+		120 * time.Hour: {lockWait: 120 * time.Hour},
+	}
+	for mode, config := range tests {
+		assert.Equal(t, mode, config.LockWait())
+	}
 }
 
 func TestStandardPriority(t *testing.T) {

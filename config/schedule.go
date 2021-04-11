@@ -2,8 +2,23 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
+)
+
+type ScheduleLockMode int8
+
+const (
+	// ScheduleLockModeDefault waits on acquiring a lock (local and remote) for up to ScheduleConfig lockWait (duration), before failing a schedule.
+	// With lockWait set to 0, ScheduleLockModeDefault and ScheduleLockModeFail behave the same.
+	ScheduleLockModeDefault = ScheduleLockMode(0)
+	// ScheduleLockModeFail fails immediately on a lock failure without waiting.
+	// This mode does not wait on `restic` remote locks but removes stale locks when `force-inactive-lock` is set to true.
+	ScheduleLockModeFail = ScheduleLockMode(1)
+	// ScheduleLockModeIgnore does not create or fail on resticprofile locks.
+	// This mode does not interfere with `restic` locks unless the profile configures restic specific lock flags.
+	ScheduleLockModeIgnore = ScheduleLockMode(2)
 )
 
 // ScheduleConfig contains all information to schedule a profile command
@@ -20,6 +35,8 @@ type ScheduleConfig struct {
 	timerDescription string
 	priority         string
 	logfile          string
+	lockMode         string
+	lockWait         time.Duration
 	configfile       string
 	flags            map[string]string
 }
@@ -90,6 +107,24 @@ func (s *ScheduleConfig) Priority() string {
 
 func (s *ScheduleConfig) Logfile() string {
 	return s.logfile
+}
+
+func (s *ScheduleConfig) LockMode() ScheduleLockMode {
+	switch s.lockMode {
+	case constants.ScheduleLockModeOptionFail:
+		return ScheduleLockModeFail
+	case constants.ScheduleLockModeOptionIgnore:
+		return ScheduleLockModeIgnore
+	default:
+		return ScheduleLockModeDefault
+	}
+}
+
+func (s *ScheduleConfig) LockWait() time.Duration {
+	if s.lockWait <= 2*time.Second {
+		return 0
+	}
+	return s.lockWait
 }
 
 func (s *ScheduleConfig) Configfile() string {

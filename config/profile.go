@@ -2,6 +2,7 @@ package config
 
 import (
 	"reflect"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
@@ -73,10 +74,12 @@ type OtherSectionWithSchedule struct {
 
 // ScheduleSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleSection struct {
-	Schedule           []string `mapstructure:"schedule"`
-	SchedulePermission string   `mapstructure:"schedule-permission"`
-	ScheduleLog        string   `mapstructure:"schedule-log"`
-	SchedulePriority   string   `mapstructure:"schedule-priority"`
+	Schedule           []string      `mapstructure:"schedule"`
+	SchedulePermission string        `mapstructure:"schedule-permission"`
+	ScheduleLog        string        `mapstructure:"schedule-log"`
+	SchedulePriority   string        `mapstructure:"schedule-priority"`
+	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode"`
+	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait"`
 }
 
 // NewProfile instantiates a new blank profile
@@ -260,6 +263,8 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				permission:  s.SchedulePermission,
 				environment: p.Environment,
 				logfile:     s.ScheduleLog,
+				lockMode:    s.ScheduleLockMode,
+				lockWait:    s.ScheduleLockWait,
 				priority:    s.SchedulePriority,
 				configfile:  p.config.configFile,
 			}
