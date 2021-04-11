@@ -350,6 +350,8 @@ func runProfile(
 		sigChan,
 	)
 
+	wrapper.setGlobal(global)
+
 	if flags.noLock {
 		wrapper.ignoreLock()
 	} else if flags.lockWait > 0 {

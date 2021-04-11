@@ -8,5 +8,6 @@ const (
 	CommandInit      = "init"
 	CommandPrune     = "prune"
 	CommandSnapshots = "snapshots"
+	CommandUnlock    = "unlock"
 	CommandMount     = "mount"
 )

@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
@@ -44,6 +45,8 @@ priority = "low"
 default-command = "version"
 initialize = true
 restic-binary = "/tmp/restic"
+restic-lock-retry-time = "2m30s"
+restic-stale-lock-age = "4h"
 `
 	global, err := getGlobalSection(configString)
 	if err != nil {
@@ -58,6 +61,8 @@ restic-binary = "/tmp/restic"
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.True(t, global.Initialize)
 	assert.Equal(t, "/tmp/restic", global.ResticBinary)
+	assert.Equal(t, 150*time.Second, global.ResticLockRetryTime)
+	assert.Equal(t, 4*time.Hour, global.ResticStaleLockAge)
 }
 
 func getGlobalSection(configString string) (*Global, error) {

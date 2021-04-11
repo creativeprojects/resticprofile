@@ -43,8 +43,14 @@ type Config struct {
 // For that matter, viper creates a slice of maps instead of a map for the other configuration file formats
 // This configOptionHCL deals with the slice to merge it into a single map
 var (
-	configOption    = viper.DecodeHook(nil)
-	configOptionHCL = viper.DecodeHook(sliceOfMapsToMapHookFunc())
+	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
+		mapstructure.StringToTimeDurationHookFunc(),
+	))
+
+	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
+		mapstructure.StringToTimeDurationHookFunc(),
+		sliceOfMapsToMapHookFunc(),
+	))
 )
 
 // newConfig instantiate a new Config object
@@ -212,7 +218,7 @@ func (c *Config) getCommandListHCL(sectionRawValue interface{}) []string {
 
 // GetGlobalSection returns the global configuration
 func (c *Config) GetGlobalSection() (*Global, error) {
-	global := newGlobal()
+	global := NewGlobal()
 	err := c.unmarshalKey(constants.SectionConfigurationGlobal, global)
 	if err != nil {
 		return nil, err
