@@ -355,3 +355,20 @@ func TestResticCanCatchInterruptSignal(t *testing.T) {
 	// _, err = cmd.Run()
 	// assert.Error(t, err)
 }
+
+func TestCanAnalyzeLockFailure(t *testing.T) {
+	file, err := ioutil.TempFile(".", "test-restic-lock-failure")
+	assert.NoError(t, err)
+	file.Write([]byte(ResticLockFailureOutput))
+	file.Close()
+	fileName := file.Name()
+	defer os.Remove(fileName)
+
+	cmd := NewCommand(mockBinary, []string{"test", "--stderr", fmt.Sprintf("@%s", fileName)})
+	cmd.Stderr = &bytes.Buffer{}
+
+	summary, _, err := cmd.Run()
+	assert.NoError(t, err)
+	assert.NotNil(t, summary.OutputAnalysis)
+	assert.True(t, summary.OutputAnalysis.ContainsRemoteLockFailure())
+}

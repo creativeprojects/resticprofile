@@ -2,15 +2,13 @@ package main
 
 import (
 	"errors"
-	"bytes"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -52,6 +50,14 @@ func (c *commandError) Stderr() string {
 	return c.stderr
 }
 
+func (c *commandError) ExitCode() (int, error) {
+	if exitError, ok := asExitError(c.err); ok {
+		return exitError.ExitCode(), nil
+	} else {
+		return 0, errors.New("not and exit error. Exit code not available")
+	}
+}
+
 type resticWrapper struct {
 	resticBinary string
 	initialize   bool
@@ -66,8 +72,10 @@ type resticWrapper struct {
 	setPID       func(pid int)
 
 	// States
-	startTime     time.Time
-	doneTryUnlock bool
+	startTime      time.Time
+	executionTime  time.Duration
+	doneTryUnlock  bool
+	lockWaitLogged time.Time
 }
 
 func newResticWrapper(
@@ -80,16 +88,20 @@ func newResticWrapper(
 	c chan os.Signal,
 ) *resticWrapper {
 	return &resticWrapper{
-		resticBinary: resticBinary,
-		initialize:   initialize,
-		dryRun:       dryRun,
-		noLock:       false,
-		lockWait:     nil,
-		profile:      profile,
-		global:       config.NewGlobal(),
-		command:      command,
-		moreArgs:     moreArgs,
-		sigChan:      c,
+		resticBinary:   resticBinary,
+		initialize:     initialize,
+		dryRun:         dryRun,
+		noLock:         false,
+		lockWait:       nil,
+		profile:        profile,
+		global:         config.NewGlobal(),
+		command:        command,
+		moreArgs:       moreArgs,
+		sigChan:        c,
+		startTime:      time.Unix(0, 0),
+		executionTime:  0,
+		doneTryUnlock:  false,
+		lockWaitLogged: time.Unix(0, 0),
 	}
 }
 
@@ -259,10 +271,10 @@ func (r *resticWrapper) runCheck() error {
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
 	for {
 		rCommand := r.prepareCommand(constants.CommandCheck, args)
-		output := captureCommandOutput(rCommand, 96*1024)
 		summary, stderr, err := runShellCommand(rCommand)
+		r.executionTime += summary.Duration
 		if err != nil {
-			if r.canRetryAfterError(rCommand, output, err) {
+			if r.canRetryAfterError(constants.CommandCheck, summary, err) {
 				continue
 			}
 			r.statusError(constants.CommandCheck, summary, stderr, err)
@@ -278,10 +290,10 @@ func (r *resticWrapper) runRetention() error {
 	args := convertIntoArgs(r.profile.GetRetentionFlags())
 	for {
 		rCommand := r.prepareCommand(constants.CommandForget, args)
-		output := captureCommandOutput(rCommand, 96*1024)
 		summary, stderr, err := runShellCommand(rCommand)
+		r.executionTime += summary.Duration
 		if err != nil {
-			if r.canRetryAfterError(rCommand, output, err) {
+			if r.canRetryAfterError(constants.CommandForget, summary, err) {
 				continue
 			}
 			r.statusError(constants.SectionConfigurationRetention, summary, stderr, err)
@@ -297,59 +309,46 @@ func (r *resticWrapper) runCommand(command string) error {
 	args := convertIntoArgs(r.profile.GetCommandFlags(command))
 	for {
 		rCommand := r.prepareCommand(command, args)
-		output := captureCommandOutput(rCommand, 96*1024)
-		err := runShellCommand(rCommand)
-		if err != nil {
-			if r.canRetryAfterError(rCommand, output, err) {
+
+		if command == constants.CommandBackup && r.profile.StatusFile != "" {
+			if r.profile.Backup != nil && r.profile.Backup.ExtendedStatus {
+				rCommand.scanOutput = shell.ScanBackupJson
+				// } else {
+				// scan plain backup could have been a good idea,
+				// except restic detects its output is not a terminal and no longer displays the progress
+				// rCommand.scanOutput = shell.ScanBackupPlain
+			}
+		}
+
+		summary, stderr, err := runShellCommand(rCommand)
+		r.executionTime += summary.Duration
+
+		if err != nil && !r.canSucceedAfterError(command, summary, err) {
+			if r.canRetryAfterError(command, summary, err) {
 				continue
 			}
-			r.statusError(r.command, err)
-			return newCommandError(rCommand, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
+
+			r.statusError(r.command, summary, stderr, err)
+			return newCommandError(rCommand, stderr, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 		}
-		r.statusSuccess(r.command)
+
+		r.statusSuccess(r.command, summary, stderr)
 		clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
 		return nil
 	}
-	rCommand := r.prepareCommand(command, args)
-	if command == constants.CommandBackup && r.profile.StatusFile != "" {
-		if r.profile.Backup != nil && r.profile.Backup.ExtendedStatus {
-			rCommand.scanOutput = shell.ScanBackupJson
-			// } else {
-			// scan plain backup could have been a good idea,
-			// except restic detects its output is not a terminal and no longer displays the progress
-			// rCommand.scanOutput = shell.ScanBackupPlain
-		}
-	}
-	summary, stderr, err := runShellCommand(rCommand)
-	if err != nil {
-		if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.NoErrorOnWarning {
-			// ignore restic warnings after a backup
-			exitErr := &exec.ExitError{}
-			if errors.As(err, &exitErr) && exitErr.ExitCode() == 3 {
-				// this is a restic warning only
-				r.statusSuccess(r.command, summary, stderr)
-				clog.Warningf("profile '%s': finished '%s' with warning: failed to read all source data during backup", r.profile.Name, command)
-				return nil
-			}
-		}
-		r.statusError(r.command, summary, stderr, err)
-		return newCommandError(rCommand, stderr, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
-	}
-	r.statusSuccess(r.command, summary, stderr)
-	clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
-	return nil
 }
 
 func (r *resticWrapper) runUnlock() error {
 	clog.Infof("profile '%s': unlock stale locks", r.profile.Name)
 	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandUnlock))
 	rCommand := r.prepareCommand(constants.CommandUnlock, args)
-	err := runShellCommand(rCommand)
+	summary, stderr, err := runShellCommand(rCommand)
+	r.executionTime += summary.Duration
 	if err != nil {
-		r.statusError(constants.CommandUnlock, err)
-		return newCommandError(rCommand, fmt.Errorf("unlock on profile '%s': %w", r.profile.Name, err))
+		r.statusError(constants.CommandUnlock, summary, stderr, err)
+		return newCommandError(rCommand, stderr, fmt.Errorf("unlock on profile '%s': %w", r.profile.Name, err))
 	}
-	r.statusSuccess(constants.CommandUnlock)
+	r.statusSuccess(constants.CommandUnlock, summary, stderr)
 	return nil
 }
 
@@ -454,8 +453,16 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 	env = append(env, fmt.Sprintf("ERROR=%s", fail.Error()))
 
 	if fail, ok := fail.(*commandError); ok {
+		exitCode := -1
+		if code, err := fail.ExitCode(); err == nil {
+			exitCode = code
+		}
+
 		env = append(env,
 			fmt.Sprintf("ERROR_COMMANDLINE=%s", fail.Commandline()),
+			fmt.Sprintf("ERROR_EXIT_CODE=%d", exitCode),
+			fmt.Sprintf("ERROR_STDERR=%s", fail.Stderr()),
+			// Deprecated: STDERR can originate from (pre/post)-command which doesn't need to be restic
 			fmt.Sprintf("RESTIC_STDERR=%s", fail.Stderr()),
 		)
 	}
@@ -550,108 +557,118 @@ func (r *resticWrapper) statusError(command string, summary shell.Summary, stder
 	}
 }
 
-var outputPatterns = map[string]*regexp.Regexp{
-	"lock-failure":       regexp.MustCompile("unable to create lock.+already locked.+"),
-	"lock-failure,age":   regexp.MustCompile("lock was created at.+\\(([^()]+)\\).+ago"),
-	"lock-failure,stale": regexp.MustCompile("the\\W+unlock\\W+command can be used to remove stale locks"),
-}
-
-type outputAnalysis struct {
-	counts  map[string]int
-	matches map[string][]string
-}
-
-func analyzeOutput(output bytes.Buffer) (a outputAnalysis) {
-	a = outputAnalysis{counts: map[string]int{}, matches: map[string][]string{}}
-
-	for {
-		line, err := output.ReadString('\n')
-
-		for name, pattern := range outputPatterns {
-			match := pattern.FindStringSubmatch(line)
-			if match != nil {
-				a.matches[name] = match
-				a.counts[strings.Split(name, ",")[0]]++
-			}
-		}
-
-		if err != nil {
-			break
-		}
+// canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
+func (r *resticWrapper) canSucceedAfterError(command string, summary shell.Summary, err error) bool {
+	if err == nil {
+		panic("Invalid usage. err is nil.")
 	}
 
-	return
-}
-
-func (r *resticWrapper) canRetryAfterError(command shellCommandDefinition, output bytes.Buffer, err error) bool {
-	if err != nil {
-		analysis := analyzeOutput(output)
-
-		if retry := r.canRetryAfterResticLockFailure(analysis); retry {
+	// Ignore restic warnings after a backup (if enabled)
+	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.NoErrorOnWarning {
+		if exitErr, ok := asExitError(err); ok && exitErr.ExitCode() == 3 {
+			clog.Warningf("profile '%s': finished '%s' with warning: failed to read all source data during backup", r.profile.Name, command)
 			return true
 		}
 	}
+
 	return false
 }
 
-func (r *resticWrapper) canRetryAfterResticLockFailure(analysis outputAnalysis) bool {
-	// Check if we have enough matched lines indicating a remote lock failure
-	if analysis.counts["lock-failure"] < 2 {
-		return false
+// canRetryAfterError returns true if an error reported by running restic in runCommand, runRetention or runCheck can be retried
+func (r *resticWrapper) canRetryAfterError(command string, summary shell.Summary, err error) bool {
+	if err == nil {
+		panic("Invalid usage. err is nil.")
 	}
 
-	// Check if the restic lock is stale
+	retry := false
+	sleep := time.Duration(0)
+	output := summary.OutputAnalysis
+
+	if output.ContainsRemoteLockFailure() {
+		clog.Infof("Remote lock failed when running '%s'", command)
+		retry, sleep = r.canRetryAfterRemoteLockFailure(output)
+	}
+
+	if retry && sleep > 0 {
+		time.Sleep(sleep)
+	}
+
+	return retry
+}
+
+func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalysis) (bool, time.Duration) {
+	if !output.ContainsRemoteLockFailure() {
+		return false, 0
+	}
+
+	// Check if the remote lock is stale
 	{
 		staleLock := false
-		if m, ok := analysis.matches["lock-failure,age"]; ok && len(m) > 1 {
-			if lockAge, err := time.ParseDuration(m[1]); err == nil {
-				requiredAge := r.global.ResticStaleLockAge
-				if requiredAge < constants.MinResticStaleLockAge {
-					requiredAge = constants.MinResticLockRetryTime
-				}
+		staleConditionText := ""
 
-				staleLock = lockAge >= requiredAge
-			} else {
-				clog.Warningf("Failed parsing restic lock age. Cause %s", err.Error())
+		if lockAge, ok := output.GetRemoteLockedSince(); ok {
+			requiredAge := r.global.ResticStaleLockAge
+			if requiredAge < constants.MinResticStaleLockAge {
+				requiredAge = constants.MinResticStaleLockAge
 			}
+
+			staleLock = lockAge >= requiredAge
+			staleConditionText = fmt.Sprintf("lock age %s >= %s", lockAge, requiredAge)
 		}
 
-		if staleLock {
-			if r.doneTryUnlock || !r.profile.ForceLock {
-				if !r.profile.ForceLock {
-					clog.Info("Possible stale lock detected. Set `force-inactive-lock` to `true` to enable automatic unlocking of stale locks.")
-				}
-				return false
+		if staleLock && r.global.ResticStaleLockAge > 0 {
+			staleConditionText = fmt.Sprintf("Possible stale lock detected (%s)", staleConditionText)
+
+			// Loop protection for stale unlock attempts
+			if r.doneTryUnlock {
+				clog.Infof("%s. Unlock already attempted, will not try again.", staleConditionText)
+				return false, 0
+			} else {
+				r.doneTryUnlock = true
 			}
 
-			r.doneTryUnlock = true
+			if !r.profile.ForceLock {
+				clog.Infof("%s. Set `force-inactive-lock` to `true` to enable automatic unlocking of stale locks.", staleConditionText)
+				return false, 0
+			}
 
+			clog.Infof("%s. Trying to unlock.", staleConditionText)
 			if err := r.runUnlock(); err != nil {
-				clog.Errorf("Failed removing stale lock: %s", err.Error())
-				return false
+				clog.Errorf("Failed removing stale lock. Cause: %s", err.Error())
+				return false, 0
 			}
-			return true
+			return true, 0
 		}
 	}
 
-	// Check if we have time left to wait on a non stale lock
-	if r.lockWait != nil && r.global.ResticLockRetryTime > constants.MinResticLockRetryTime {
+	// Check if we have time left to wait on a non-stale lock
+	retryDelay := r.global.ResticLockRetryTime
 
-		retryDelay := r.global.ResticLockRetryTime
+	if r.lockWait != nil && retryDelay >= constants.MinResticLockRetryTime {
+		elapsedTime := time.Now().Sub(r.startTime)
+		availableTime := *r.lockWait - elapsedTime + r.executionTime
+
 		if retryDelay > constants.MaxResticLockRetryTime {
 			retryDelay = constants.MaxResticLockRetryTime
 		}
 
-		elapsedTime := time.Now().Sub(r.startTime)
-
-		if canWait := elapsedTime+retryDelay <= *r.lockWait; canWait {
-			time.Sleep(r.global.ResticLockRetryTime)
-			return true
+		if retryDelay > availableTime {
+			retryDelay = availableTime
 		}
-		return false
+
+		if retryDelay >= constants.MinResticLockRetryTime {
+			lockName := fmt.Sprintf("%s", r.profile.Repository)
+			if lockedBy, ok := output.GetRemoteLockedBy(); ok {
+				lockName = fmt.Sprintf("%s locked by %s", lockName, lockedBy)
+			}
+			r.lockWaitLogged = logLockWait(lockName, r.startTime, r.lockWaitLogged, *r.lockWait)
+
+			return true, retryDelay
+		}
+		return false, 0
 	}
 
-	return false
+	return false, 0
 }
 
 func convertIntoArgs(flags map[string][]string) []string {
@@ -714,10 +731,18 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 	runLock := lock.NewLock(lockFile)
 	success := runLock.TryAcquire()
 	start := time.Now()
+	locker := ""
+	lockWaitLogged := time.Unix(0, 0)
 
 	for !success {
-		who, err := runLock.Who()
-		if err != nil {
+		if who, err := runLock.Who(); err == nil {
+			if locker != who {
+				lockWaitLogged = time.Unix(0, 0)
+			}
+			locker = who
+		} else if errors.Is(err, fs.ErrNotExist) {
+			locker = "none"
+		} else {
 			return fmt.Errorf("another process left the lockfile unreadable: %s", err)
 		}
 
@@ -726,7 +751,7 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 			success = runLock.ForceAcquire()
 
 			if lockWait == nil || success {
-				clog.Warningf("previous run of the profile started by %s hasn't finished properly", who)
+				clog.Warningf("previous run of the profile started by %s hasn't finished properly", locker)
 			}
 		} else {
 			success = runLock.TryAcquire()
@@ -735,11 +760,18 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 		// Retry or return?
 		if !success {
 			if lockWait == nil {
-				return fmt.Errorf("another process is already running this profile: %s", who)
+				return fmt.Errorf("another process is already running this profile: %s", locker)
 
 			} else {
 				if time.Now().Sub(start) < *lockWait {
-					time.Sleep(3 * time.Second)
+					lockName := fmt.Sprintf("%s locked by %s", lockFile, locker)
+					lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, *lockWait)
+
+					sleep := 3 * time.Second
+					if sleep > *lockWait {
+						sleep = *lockWait
+					}
+					time.Sleep(sleep)
 				} else {
 					clog.Warningf("previous run of the profile hasn't finished after %s", *lockWait)
 					lockWait = nil
@@ -753,6 +785,26 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 	return run(runLock.SetPID)
 }
 
+const logLockWaitEvery = 5 * time.Minute
+
+func logLockWait(lockName string, started, lastLogged time.Time, maxLockWait time.Duration) time.Time {
+	now := time.Now()
+	lastLog := now.Sub(lastLogged)
+	elapsed := now.Sub(started).Truncate(time.Millisecond)
+	remaining := (maxLockWait - elapsed).Truncate(time.Millisecond)
+
+	if lastLog > logLockWaitEvery {
+		if elapsed > 5*time.Second {
+			clog.Infof("Waiting for (elapsed %s / remaining %s): %s", elapsed, remaining, strings.TrimSpace(lockName))
+		} else {
+			clog.Infof("Waiting for (remaining %s): %s", remaining, strings.TrimSpace(lockName))
+		}
+		return now
+	}
+
+	return lastLogged
+}
+
 // runOnFailure will run the onFailure function if an error occurred in the run function
 func runOnFailure(run func() error, onFailure func(error)) error {
 	err := run()
@@ -762,55 +814,10 @@ func runOnFailure(run func() error, onFailure func(error)) error {
 	return err
 }
 
-// captureCommandOutput installs an output capture filter in the stdout & stderr streams of the specified command
-// the captured output can be read from the returned buffer after the command was executed.
-func captureCommandOutput(command shellCommandDefinition, captureLimit int) bytes.Buffer {
-	buffer := bytes.Buffer{}
-	mutex := sync.Mutex{}
-
-	bufferWriter := func(p []byte) (n int, err error) {
-		mutex.Lock()
-		defer mutex.Unlock()
-
-		n, err = buffer.Write(p)
-
-		if buffer.Len() > captureLimit {
-			data := buffer.Bytes()
-			newLen := len(data) / 2
-			copy(data, data[newLen:])
-			buffer.Truncate(newLen)
-		}
-
-		return
+func asExitError(err error) (*exec.ExitError, bool) {
+	exitErr := &exec.ExitError{}
+	if errors.As(err, &exitErr) {
+		return exitErr, true
 	}
-
-	// Capture stdout & stderr
-	command.stdout = newMultiWriter(command.stdout.Write, bufferWriter)
-	command.stderr = newMultiWriter(command.stderr.Write, bufferWriter)
-
-	return buffer
-}
-
-// multiWriter implements io.Writer and redirects to multiple outputs.
-type multiWriter struct {
-	outputs []func(p []byte) (n int, err error)
-}
-
-func newMultiWriter(outputs ...func(p []byte) (n int, err error)) *multiWriter {
-	return &multiWriter{outputs: outputs}
-}
-
-func (s *multiWriter) Write(p []byte) (n int, err error) {
-	for _, target := range s.outputs {
-		n, err = target(p)
-
-		if err != nil {
-			break
-		}
-
-		if n < len(p) {
-			p = p[0:n]
-		}
-	}
-	return
+	return nil, false
 }

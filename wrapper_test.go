@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -226,14 +228,29 @@ func TestEnvErrorCommandLine(t *testing.T) {
 	assert.Equal(t, "cmd: \"exit\" \"1\"\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
+func TestEnvErrorExitCode(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	profile := config.NewProfile(nil, "name")
+	if runtime.GOOS == "windows" {
+		profile.RunAfterFail = []string{"echo exit-code: %ERROR_EXIT_CODE%"}
+	} else {
+		profile.RunAfterFail = []string{"echo exit-code: $ERROR_EXIT_CODE"}
+	}
+	wrapper := newResticWrapper("exit", false, false, profile, "5", nil, nil)
+	err := wrapper.runProfile()
+	assert.Error(t, err)
+	assert.Equal(t, "exit-code: 5\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+}
+
 func TestEnvStderr(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
 	if runtime.GOOS == "windows" {
-		profile.RunAfterFail = []string{"echo stderr: %RESTIC_STDERR%"}
+		profile.RunAfterFail = []string{"echo stderr: %ERROR_STDERR%"}
 	} else {
-		profile.RunAfterFail = []string{"echo stderr: $RESTIC_STDERR"}
+		profile.RunAfterFail = []string{"echo stderr: $ERROR_STDERR"}
 	}
 	wrapper := newResticWrapper(mockBinary, false, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
 	err := wrapper.runProfile()
@@ -340,4 +357,173 @@ func TestRunAfterBackupFailed(t *testing.T) {
 	err := wrapper.runProfile()
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "exit status 2")
+}
+
+type mockOutputAnalysis struct {
+	shell.OutputAnalysis
+	lockWho      string
+	lockDuration time.Duration
+}
+
+func (m *mockOutputAnalysis) ContainsRemoteLockFailure() bool {
+	return m.lockWho != ""
+}
+
+func (m *mockOutputAnalysis) GetRemoteLockedSince() (time.Duration, bool) {
+	return m.lockDuration, m.lockDuration > 0
+}
+
+func (m *mockOutputAnalysis) GetRemoteLockedBy() (string, bool) {
+	return m.lockWho, len(m.lockWho) > 1
+}
+
+func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
+	mockOutput := &mockOutputAnalysis{lockWho: "TestCanRetryAfterRemoteStaleLockFailure"}
+
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Repository = "my-repo"
+	profile.ForceLock = true
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
+	wrapper.startTime = time.Now()
+	wrapper.global.ResticStaleLockAge = 0 // disable stale lock handling
+
+	// No retry when no stale remote-lock failure
+	assert.True(t, mockOutput.ContainsRemoteLockFailure())
+	retry, sleep := wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// Ignores stale lock when disabled
+	mockOutput.lockDuration = constants.MinResticStaleLockAge
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// Ignores non-stale lock
+	mockOutput.lockDuration = constants.MinResticStaleLockAge - time.Nanosecond
+	wrapper.global.ResticStaleLockAge = time.Millisecond
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// Unlocks stale lock
+	mockOutput.lockDuration = constants.MinResticStaleLockAge
+	assert.False(t, wrapper.doneTryUnlock)
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.True(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
+	assert.True(t, wrapper.doneTryUnlock)
+
+	// Unlock is run only once
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// Unlock is not run when ForceLock is disabled
+	wrapper.doneTryUnlock = false
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.True(t, retry)
+
+	profile.ForceLock = false
+	wrapper.doneTryUnlock = false
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+}
+
+func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
+	mockOutput := &mockOutputAnalysis{}
+
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Repository = "my-repo"
+	wrapper := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
+	wrapper.startTime = time.Now()
+	wrapper.global.ResticLockRetryTime = 0 // disable remote lock retry
+
+	// No retry when no remote-lock failure
+	assert.False(t, mockOutput.ContainsRemoteLockFailure())
+	retry, sleep := wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// No retry when lockWait is nil
+	mockOutput.lockWho = "TestCanRetryAfterRemoteLockFailure"
+	assert.True(t, mockOutput.ContainsRemoteLockFailure())
+	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// No retry when disabled
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
+	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// No retry when no time left
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime - time.Nanosecond)
+	wrapper.global.ResticLockRetryTime = constants.MinResticLockRetryTime // enable remote lock retry
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.False(t, retry)
+
+	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryTime)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.True(t, retry)
+	assert.Equal(t, constants.MinResticLockRetryTime, sleep)
+
+	wrapper.maxWaitOnLock(constants.MaxResticLockRetryTime + 50*time.Millisecond)
+	wrapper.global.ResticLockRetryTime = 2 * constants.MaxResticLockRetryTime
+	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
+	assert.True(t, retry)
+	assert.Equal(t, constants.MaxResticLockRetryTime, sleep)
+}
+
+func TestLocksAndLockWait(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	profile.Lock = filepath.Join(os.TempDir(), fmt.Sprintf("%s%d%d.tmp", "TestLockWait", time.Now().UnixNano(), os.Getpid()))
+	defer os.Remove(profile.Lock)
+
+	term.SetOutput(os.Stdout)
+
+	w1 := newResticWrapper(mockBinary, false, false, profile, "backup", []string{"--sleep", "1500"}, nil)
+	w2 := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
+	w3 := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
+
+	assertIsLockError := func(err error) bool {
+		return err != nil && strings.HasPrefix(err.Error(), "another process is already running this profile")
+	}
+
+	// Setup 2 processes (w1, w2), one that locks and one that fails on the lock
+	{
+		w1Chan := make(chan bool, 1)
+		defer func() { <-w1Chan }()
+
+		go func() {
+			for retries := 2; retries >= 0; retries-- {
+				if err := w1.runProfile(); err == nil {
+					break
+				} else if retries == 0 || !assertIsLockError(err) {
+					assert.NoError(t, err, "TestLockWait-w1")
+				}
+			}
+			w1Chan <- true
+		}()
+
+		for i := 10; i >= 0; i++ {
+			time.Sleep(20 * time.Millisecond)
+			if err := w2.runProfile(); assertIsLockError(err) {
+				break
+			}
+			if i == 0 {
+				assert.Fail(t, "Did not wait on lock file")
+			}
+		}
+	}
+
+	// W2: Run produces lock failure
+	assertIsLockError(w2.runProfile())
+
+	// W3: Ignore lock can run despite the lock
+	w3.ignoreLock()
+	assert.NoError(t, w3.runProfile())
+
+	// W2: Too little lock wait produces lock failure
+	w2.maxWaitOnLock(100 * time.Millisecond)
+	assertIsLockError(w2.runProfile())
+
+	// W2: Succeeds to wait when lockWait is large enough
+	w2.maxWaitOnLock(2 * time.Second)
+	assert.NoError(t, w2.runProfile())
 }

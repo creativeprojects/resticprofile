@@ -19,6 +19,12 @@ something = 1
 	}
 
 	assert.Equal(t, constants.DefaultCommand, global.DefaultCommand)
+	assert.Equal(t, constants.DefaultIONiceFlag, global.IONice)
+	assert.Equal(t, constants.DefaultStandardNiceFlag, global.Nice)
+	assert.Equal(t, constants.DefaultResticBinary, global.ResticBinary)
+	assert.Equal(t, constants.DefaultResticLockRetryTime, global.ResticLockRetryTime)
+	assert.Equal(t, constants.DefaultResticStaleLockAge, global.ResticStaleLockAge)
+	assert.Equal(t, uint64(constants.DefaultMinMemory), global.MinMemory)
 	assert.False(t, global.Initialize)
 }
 

@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -21,12 +23,19 @@ func main() {
 	exit := 0
 	arguments := false
 	sleep := 0
-	flags := flag.NewFlagSet("mock", flag.ExitOnError)
+	flags := flag.NewFlagSet("mock", flag.ContinueOnError)
 	flags.StringVar(&stderr, "stderr", "", "send this message to stderr")
 	flags.IntVar(&exit, "exit", 0, "set exit code")
 	flags.BoolVar(&arguments, "args", false, "display command line arguments")
 	flags.IntVar(&sleep, "sleep", 0, "sleep timer in ms")
-	flags.Parse(os.Args[2:])
+
+	if err := flags.Parse(os.Args[2:]); err != nil {
+		if err == flag.ErrHelp {
+			return
+		} else if !strings.Contains(err.Error(), "flag provided but not defined") {
+			os.Exit(1)
+		}
+	}
 
 	if arguments {
 		// echo command and arguments to stdout
@@ -35,6 +44,17 @@ func main() {
 	}
 
 	if stderr != "" {
+		if strings.HasPrefix(stderr, "@") {
+			if file, err := os.Open(stderr[1:]); err != nil {
+				stderr = err.Error()
+				exit = 3
+			} else {
+				io.CopyN(os.Stderr, file, 1024)
+				file.Close()
+				stderr = ""
+			}
+		}
+
 		fmt.Fprintf(os.Stderr, "%s\n", stderr)
 	}
 

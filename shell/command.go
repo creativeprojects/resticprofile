@@ -65,7 +65,8 @@ func (c *Command) Run() (Summary, string, error) {
 	var err error
 	var stdout, stderr io.ReadCloser
 
-	summary := Summary{}
+	analyzer := NewOutputAnalyser()
+	summary := Summary{OutputAnalysis: analyzer}
 
 	command, args, err := c.getShellCommand()
 	if err != nil {
@@ -122,7 +123,10 @@ func (c *Command) Run() (Summary, string, error) {
 			return summary, "", err
 		}
 	}
+
+	// handle command errors
 	errors := &bytes.Buffer{}
+
 	// send error output to buffer & stderr
 	if stderr != nil {
 		stderrOutput := c.Stderr
@@ -130,14 +134,20 @@ func (c *Command) Run() (Summary, string, error) {
 			stderrOutput = os.Stderr
 		}
 		err = c.ScanStderr(stderr, stderrOutput, errors)
-		if err != nil {
-			return summary, errors.String(), err
+
+		if e := cmd.Wait(); err == nil {
+			err = e
 		}
+	} else {
+		err = cmd.Wait()
 	}
 
-	err = cmd.Wait()
+	// finish summary
 	summary.Duration = time.Since(start)
-	return summary, errors.String(), err
+	errorText := errors.String()
+	analyzer.AnalyzeStringLines(errorText)
+
+	return summary, errorText, err
 }
 
 // getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
