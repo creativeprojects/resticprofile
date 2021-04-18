@@ -642,10 +642,10 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalys
 	}
 
 	// Check if we have time left to wait on a non-stale lock
-	retryDelay := r.global.ResticLockRetryTime
+	retryDelay := r.global.ResticLockRetryAfter
 
 	if r.lockWait != nil && retryDelay >= constants.MinResticLockRetryTime {
-		elapsedTime := time.Now().Sub(r.startTime)
+		elapsedTime := time.Since(r.startTime)
 		availableTime := *r.lockWait - elapsedTime + r.executionTime
 
 		if retryDelay > constants.MaxResticLockRetryTime {
@@ -763,7 +763,7 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 				return fmt.Errorf("another process is already running this profile: %s", locker)
 
 			} else {
-				if time.Now().Sub(start) < *lockWait {
+				if time.Since(start) < *lockWait {
 					lockName := fmt.Sprintf("%s locked by %s", lockFile, locker)
 					lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, *lockWait)
 

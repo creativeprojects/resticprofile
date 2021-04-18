@@ -356,7 +356,7 @@ func TestResticCanCatchInterruptSignal(t *testing.T) {
 	// assert.Error(t, err)
 }
 
-func TestCanAnalyzeLockFailure(t *testing.T) {
+func TestCanAnalyseLockFailure(t *testing.T) {
 	file, err := ioutil.TempFile(".", "test-restic-lock-failure")
 	assert.NoError(t, err)
 	file.Write([]byte(ResticLockFailureOutput))

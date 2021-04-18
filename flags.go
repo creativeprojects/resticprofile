@@ -59,7 +59,7 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	flagset.StringVarP(&flags.logFile, "log", "l", "", "logs into a file instead of the console")
 	flagset.BoolVar(&flags.dryRun, "dry-run", false, "display the restic commands instead of running them")
 
-	flagset.BoolVar(&flags.noLock, "no-lock", false, "ignore any profile lock")
+	flagset.BoolVar(&flags.noLock, "no-lock", false, "skip profile lock file")
 	flagset.DurationVar(&flags.lockWait, "lock-wait", 0, "wait up to duration to acquire a lock (syntax \"1h5m30s\")")
 
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")

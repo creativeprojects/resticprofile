@@ -712,19 +712,21 @@ Usage of resticprofile:
 	resticprofile [resticprofile flags] [resticprofile command] [command specific flags]
 
 resticprofile flags:
-  -c, --config string   configuration file (default "profiles")
-      --dry-run         display the restic commands instead of running them
-  -f, --format string   file format of the configuration (default is to use the file extension)
-  -h, --help            display this help
-  -l, --log string      logs into a file instead of the console
-  -n, --name string     profile name (default "default")
-      --no-ansi         disable ansi control characters (disable console colouring)
-      --no-prio         don't set any priority on load: used when started from a service that has already set the priority
-  -q, --quiet           display only warnings and errors
-      --theme string    console colouring theme (dark, light, none) (default "light")
-      --trace           display even more debugging information
-  -v, --verbose         display some debugging information
-  -w, --wait            wait at the end until the user presses the enter key
+  -c, --config string        configuration file (default "profiles")
+      --dry-run              display the restic commands instead of running them
+  -f, --format string        file format of the configuration (default is to use the file extension)
+  -h, --help                 display this help
+      --lock-wait duration   wait up to duration to acquire a lock (syntax "1h5m30s")
+  -l, --log string           logs into a file instead of the console
+  -n, --name string          profile name (default "default")
+      --no-ansi              disable ansi control characters (disable console colouring)
+      --no-lock              skip profile lock file
+      --no-prio              don't set any priority on load: used when started from a service that has already set the priority
+  -q, --quiet                display only warnings and errors
+      --theme string         console colouring theme (dark, light, none) (default "light")
+      --trace                display even more debugging information
+  -v, --verbose              display some debugging information
+  -w, --wait                 wait at the end until the user presses the enter key
 
 resticprofile own commands:
    version       display version (run in verbose mode for detailed information)
@@ -754,8 +756,10 @@ There are not many options on the command line, most of the options are in the c
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
+* **[--no-lock]**: Disable local locks, neither create nor fail on a lock. This options only operates on resticprofile locks.
 * **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
 light or dark terminal (none to disable colouring)
+* **[--lock-wait] duration**: Retry to acquire local (profile lock file) and repository locks (restic locks) for up to the specified amount of time before failing on a lock failure. 
 * **[-l | --log] log_file**: To write the logs in file instead of displaying on the console
 * **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
 * **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
@@ -767,6 +771,23 @@ restic can be memory hungry. I'm running a few servers with no swap (I know: it 
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
+
+# Repository lock management
+
+restic uses repository locks to protect from concurrent modifications. Locks can be shared or exclusive depending on the operation and may become stale when a restic process dies. 
+resticprofile can retry restic commands when they fail on acquiring the lock they need and can also ask restic to unlock stale locks. The behaviour is controlled by 2 settings inside the `global` section:
+
+```yaml
+global:
+  # Retry a restic command that failed on acquiring a lock every minute (or more
+  # frequent), for up to the time specified in "--lock-wait duration". 
+  restic-lock-retry-after: 1m
+  # Ask restic to unlock a stale lock when its age is more than 2 hours
+  # and option "force-inactive-lock" is enabled in the profile.
+  restic-stale-lock-age: 2h
+```
+
+The global settings default to the values above when not specified. Set to 0 to disable repository lock management.
 
 # Version
 
@@ -836,7 +857,10 @@ The schedule configuration consists of a few parameters which can be added on ea
 [profile.backup]
 schedule = "*:00,30"
 schedule-permission = "system"
+schedule-priority = "background"
 schedule-log = "profile-backup.log"
+schedule-lock-mode = "default"
+schedule-lock-wait = "15m30s"
 ```
 
 
@@ -854,6 +878,19 @@ schedule-log = "profile-backup.log"
 ### schedule-log
 
 Allow to redirect all output from resticprofile and restic to a file
+
+### schedule-lock-mode
+
+Starting from version 0.14.0, `schedule-lock-mode` accepts 3 values:
+- `default`: Wait on acquiring a lock (local and repository) when `schedule-lock-wait` is set, before failing a schedule.
+   Behaves like `fail` when `schedule-lock-wait` is `0` or not specified.
+- `fail`: A lock failure causes a schedule to abort immediately. 
+- `ignore`: Skip local locks (lock files defined in the profile).
+   Repository lock failures abort the schedule immediately.
+
+### schedule-lock-wait
+
+Sets the amount of time to wait in the default `schedule-lock-mode` for a lock to become available.
 
 ### schedule-priority (systemd and launchd only)
 

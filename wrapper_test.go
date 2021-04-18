@@ -433,7 +433,7 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	profile.Repository = "my-repo"
 	wrapper := newResticWrapper(mockBinary, false, false, profile, "backup", nil, nil)
 	wrapper.startTime = time.Now()
-	wrapper.global.ResticLockRetryTime = 0 // disable remote lock retry
+	wrapper.global.ResticLockRetryAfter = 0 // disable remote lock retry
 
 	// No retry when no remote-lock failure
 	assert.False(t, mockOutput.ContainsRemoteLockFailure())
@@ -453,18 +453,18 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 
 	// No retry when no time left
 	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime - time.Nanosecond)
-	wrapper.global.ResticLockRetryTime = constants.MinResticLockRetryTime // enable remote lock retry
+	wrapper.global.ResticLockRetryAfter = constants.MinResticLockRetryTime // enable remote lock retry
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
-	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryTime)
+	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryAfter)
 	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
 	assert.Equal(t, constants.MinResticLockRetryTime, sleep)
 
 	wrapper.maxWaitOnLock(constants.MaxResticLockRetryTime + 50*time.Millisecond)
-	wrapper.global.ResticLockRetryTime = 2 * constants.MaxResticLockRetryTime
+	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryTime
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
 	assert.Equal(t, constants.MaxResticLockRetryTime, sleep)

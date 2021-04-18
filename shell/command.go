@@ -65,8 +65,8 @@ func (c *Command) Run() (Summary, string, error) {
 	var err error
 	var stdout, stderr io.ReadCloser
 
-	analyzer := NewOutputAnalyser()
-	summary := Summary{OutputAnalysis: analyzer}
+	analyser := NewOutputAnalyser()
+	summary := Summary{OutputAnalysis: analyser}
 
 	command, args, err := c.getShellCommand()
 	if err != nil {
@@ -145,7 +145,7 @@ func (c *Command) Run() (Summary, string, error) {
 	// finish summary
 	summary.Duration = time.Since(start)
 	errorText := errors.String()
-	analyzer.AnalyzeStringLines(errorText)
+	analyser.AnalyseStringLines(errorText)
 
 	return summary, errorText, err
 }

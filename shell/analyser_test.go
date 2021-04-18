@@ -15,7 +15,7 @@ the 'unlock' command can be used to remove stale locks
 `
 
 func TestRemoteLockFailure(t *testing.T) {
-	analysis := NewOutputAnalyser().AnalyzeStringLines(ResticLockFailureOutput)
+	analysis := NewOutputAnalyser().AnalyseStringLines(ResticLockFailureOutput)
 
 	assert.Equal(t, true, analysis.ContainsRemoteLockFailure())
 

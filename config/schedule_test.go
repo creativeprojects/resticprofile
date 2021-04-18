@@ -1,10 +1,10 @@
 package config
 
 import (
-	"github.com/creativeprojects/resticprofile/constants"
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
 )
 

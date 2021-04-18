@@ -1,8 +1,9 @@
 package constants
 
 import (
-	"github.com/creativeprojects/resticprofile/priority"
 	"time"
+
+	"github.com/creativeprojects/resticprofile/priority"
 )
 
 // Scheduler type

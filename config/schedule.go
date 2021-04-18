@@ -10,14 +10,12 @@ import (
 type ScheduleLockMode int8
 
 const (
-	// ScheduleLockModeDefault waits on acquiring a lock (local and remote) for up to ScheduleConfig lockWait (duration), before failing a schedule.
+	// ScheduleLockModeDefault waits on acquiring a lock (local and repository) for up to ScheduleConfig lockWait (duration), before failing a schedule.
 	// With lockWait set to 0, ScheduleLockModeDefault and ScheduleLockModeFail behave the same.
 	ScheduleLockModeDefault = ScheduleLockMode(0)
 	// ScheduleLockModeFail fails immediately on a lock failure without waiting.
-	// This mode does not wait on `restic` remote locks but removes stale locks when `force-inactive-lock` is set to true.
 	ScheduleLockModeFail = ScheduleLockMode(1)
-	// ScheduleLockModeIgnore does not create or fail on resticprofile locks.
-	// This mode does not interfere with `restic` locks unless the profile configures restic specific lock flags.
+	// ScheduleLockModeIgnore does not create or fail on resticprofile locks. Repository locks cause an immediate failure.
 	ScheduleLockModeIgnore = ScheduleLockMode(2)
 )
 

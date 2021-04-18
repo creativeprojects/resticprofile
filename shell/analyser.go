@@ -17,7 +17,7 @@ type OutputAnalyser struct {
 	matches map[string][]string
 }
 
-var outputAnalyzerPatterns = map[string]*regexp.Regexp{
+var outputAnalyserPatterns = map[string]*regexp.Regexp{
 	"lock-failure,who":   regexp.MustCompile("unable to create lock.+already locked.+?by (.+)$"),
 	"lock-failure,age":   regexp.MustCompile("lock was created at.+\\(([^()]+)\\s+ago\\)"),
 	"lock-failure,stale": regexp.MustCompile("the\\W+unlock\\W+command can be used to remove stale locks"),
@@ -67,17 +67,17 @@ func (a OutputAnalyser) GetRemoteLockedBy() (string, bool) {
 	return "", false
 }
 
-func (a OutputAnalyser) AnalyzeStringLines(output string) OutputAnalysis {
-	return a.AnalyzeLines(strings.NewReader(output))
+func (a OutputAnalyser) AnalyseStringLines(output string) OutputAnalysis {
+	return a.AnalyseLines(strings.NewReader(output))
 }
 
-func (a OutputAnalyser) AnalyzeLines(output io.Reader) OutputAnalysis {
+func (a OutputAnalyser) AnalyseLines(output io.Reader) OutputAnalysis {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
 	scanner := bufio.NewScanner(output)
 	for scanner.Scan() {
-		a.analyzeLine(scanner.Text())
+		a.analyseLine(scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -87,8 +87,8 @@ func (a OutputAnalyser) AnalyzeLines(output io.Reader) OutputAnalysis {
 	return a
 }
 
-func (a OutputAnalyser) analyzeLine(line string) {
-	for name, pattern := range outputAnalyzerPatterns {
+func (a OutputAnalyser) analyseLine(line string) {
+	for name, pattern := range outputAnalyserPatterns {
 		match := pattern.FindStringSubmatch(line)
 		if match != nil {
 			a.matches[name] = match
@@ -99,5 +99,5 @@ func (a OutputAnalyser) analyzeLine(line string) {
 	}
 }
 
-// Ensure OutputAnalyzer implements OutputAnalysis
+// Ensure OutputAnalyser implements OutputAnalysis
 var _ = OutputAnalysis(NewOutputAnalyser())
