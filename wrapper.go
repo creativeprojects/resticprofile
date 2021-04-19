@@ -72,10 +72,9 @@ type resticWrapper struct {
 	setPID       func(pid int)
 
 	// States
-	startTime      time.Time
-	executionTime  time.Duration
-	doneTryUnlock  bool
-	lockWaitLogged time.Time
+	startTime     time.Time
+	executionTime time.Duration
+	doneTryUnlock bool
 }
 
 func newResticWrapper(
@@ -88,20 +87,19 @@ func newResticWrapper(
 	c chan os.Signal,
 ) *resticWrapper {
 	return &resticWrapper{
-		resticBinary:   resticBinary,
-		initialize:     initialize,
-		dryRun:         dryRun,
-		noLock:         false,
-		lockWait:       nil,
-		profile:        profile,
-		global:         config.NewGlobal(),
-		command:        command,
-		moreArgs:       moreArgs,
-		sigChan:        c,
-		startTime:      time.Unix(0, 0),
-		executionTime:  0,
-		doneTryUnlock:  false,
-		lockWaitLogged: time.Unix(0, 0),
+		resticBinary:  resticBinary,
+		initialize:    initialize,
+		dryRun:        dryRun,
+		noLock:        false,
+		lockWait:      nil,
+		profile:       profile,
+		global:        config.NewGlobal(),
+		command:       command,
+		moreArgs:      moreArgs,
+		sigChan:       c,
+		startTime:     time.Unix(0, 0),
+		executionTime: 0,
+		doneTryUnlock: false,
 	}
 }
 
@@ -560,7 +558,7 @@ func (r *resticWrapper) statusError(command string, summary shell.Summary, stder
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
 func (r *resticWrapper) canSucceedAfterError(command string, summary shell.Summary, err error) bool {
 	if err == nil {
-		panic("Invalid usage. err is nil.")
+		return true
 	}
 
 	// Ignore restic warnings after a backup (if enabled)
@@ -577,7 +575,7 @@ func (r *resticWrapper) canSucceedAfterError(command string, summary shell.Summa
 // canRetryAfterError returns true if an error reported by running restic in runCommand, runRetention or runCheck can be retried
 func (r *resticWrapper) canRetryAfterError(command string, summary shell.Summary, err error) bool {
 	if err == nil {
-		panic("Invalid usage. err is nil.")
+		panic("invalid usage. err is nil.")
 	}
 
 	retry := false
@@ -585,7 +583,7 @@ func (r *resticWrapper) canRetryAfterError(command string, summary shell.Summary
 	output := summary.OutputAnalysis
 
 	if output.ContainsRemoteLockFailure() {
-		clog.Infof("Remote lock failed when running '%s'", command)
+		clog.Debugf("repository lock failed when running '%s'", command)
 		retry, sleep = r.canRetryAfterRemoteLockFailure(output)
 	}
 
@@ -617,7 +615,7 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalys
 		}
 
 		if staleLock && r.global.ResticStaleLockAge > 0 {
-			staleConditionText = fmt.Sprintf("Possible stale lock detected (%s)", staleConditionText)
+			staleConditionText = fmt.Sprintf("restic: possible stale lock detected (%s)", staleConditionText)
 
 			// Loop protection for stale unlock attempts
 			if r.doneTryUnlock {
@@ -634,7 +632,7 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalys
 
 			clog.Infof("%s. Trying to unlock.", staleConditionText)
 			if err := r.runUnlock(); err != nil {
-				clog.Errorf("Failed removing stale lock. Cause: %s", err.Error())
+				clog.Errorf("failed removing stale lock. Cause: %s", err.Error())
 				return false, 0
 			}
 			return true, 0
@@ -644,11 +642,13 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalys
 	// Check if we have time left to wait on a non-stale lock
 	retryDelay := r.global.ResticLockRetryAfter
 
-	if r.lockWait != nil && retryDelay >= constants.MinResticLockRetryTime {
+	if r.lockWait != nil && retryDelay > 0 {
 		elapsedTime := time.Since(r.startTime)
 		availableTime := *r.lockWait - elapsedTime + r.executionTime
 
-		if retryDelay > constants.MaxResticLockRetryTime {
+		if retryDelay < constants.MinResticLockRetryTime {
+			retryDelay = constants.MinResticLockRetryTime
+		} else if retryDelay > constants.MaxResticLockRetryTime {
 			retryDelay = constants.MaxResticLockRetryTime
 		}
 
@@ -657,11 +657,11 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalys
 		}
 
 		if retryDelay >= constants.MinResticLockRetryTime {
-			lockName := fmt.Sprintf("%s", r.profile.Repository)
+			lockName := r.profile.Repository
 			if lockedBy, ok := output.GetRemoteLockedBy(); ok {
 				lockName = fmt.Sprintf("%s locked by %s", lockName, lockedBy)
 			}
-			r.lockWaitLogged = logLockWait(lockName, r.startTime, r.lockWaitLogged, *r.lockWait)
+			logLockWait(lockName, r.startTime, time.Unix(0, 0), *r.lockWait)
 
 			return true, retryDelay
 		}
@@ -790,14 +790,14 @@ const logLockWaitEvery = 5 * time.Minute
 func logLockWait(lockName string, started, lastLogged time.Time, maxLockWait time.Duration) time.Time {
 	now := time.Now()
 	lastLog := now.Sub(lastLogged)
-	elapsed := now.Sub(started).Truncate(time.Millisecond)
-	remaining := (maxLockWait - elapsed).Truncate(time.Millisecond)
+	elapsed := now.Sub(started).Truncate(time.Second)
+	remaining := (maxLockWait - elapsed).Truncate(time.Second)
 
 	if lastLog > logLockWaitEvery {
-		if elapsed > 5*time.Second {
-			clog.Infof("Waiting for (elapsed %s / remaining %s): %s", elapsed, remaining, strings.TrimSpace(lockName))
+		if elapsed > logLockWaitEvery {
+			clog.Infof("lock wait (remaining %s / elapsed %s): %s", remaining, elapsed, strings.TrimSpace(lockName))
 		} else {
-			clog.Infof("Waiting for (remaining %s): %s", remaining, strings.TrimSpace(lockName))
+			clog.Infof("lock wait (remaining %s): %s", remaining, strings.TrimSpace(lockName))
 		}
 		return now
 	}
