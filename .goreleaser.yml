@@ -31,8 +31,6 @@ builds:
     ignore:
       - goos: darwin
         goarch: arm
-      - goos: darwin
-        goarch: arm64
       - goos: freebsd
         goarch: arm64
       - goos: windows
@@ -87,7 +85,6 @@ dockers:
     dockerfile: build/Dockerfile
     extra_files:
     - build/restic
-
 
 brews:
   - 
