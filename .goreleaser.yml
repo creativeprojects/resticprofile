@@ -31,8 +31,6 @@ builds:
     ignore:
       - goos: darwin
         goarch: arm
-      - goos: darwin
-        goarch: arm64
       - goos: freebsd
         goarch: arm64
       - goos: windows
@@ -87,3 +85,34 @@ dockers:
     dockerfile: build/Dockerfile
     extra_files:
     - build/restic
+
+brews:
+  - 
+    ids:
+      - targz
+    tap:
+      owner: creativeprojects
+      name: "homebrew-{{{ .ProjectName }}"
+    folder: Formula
+    homepage: https://github.com/creativeprojects/{{ .ProjectName }}
+    description: Configuration profiles for restic backup
+    license: "GPL-3.0-only"
+    custom_block: |
+      head "https://github.com/creativeprojects/{{ .ProjectName }}.git"
+    dependencies:
+      - name: restic
+    test: |
+      (testpath/"restic_repo").mkdir
+      (testpath/"password.txt").write("key")
+      (testpath/"profiles.yaml").write <<~EOS
+        default:
+          repository: "local:#{testpath}/restic_repo"
+          password-file: "password.txt"
+          initialize: true
+      EOS
+
+      (testpath/"testfile").write("This is a testfile")
+
+      system "#{bin}/resticprofile", "backup", "testfile"
+      system "#{bin}/resticprofile", "restore", "latest", "-t", "#{testpath}/restore"
+      assert compare_file "testfile", "#{testpath}/restore/testfile"
