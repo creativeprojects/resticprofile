@@ -92,7 +92,7 @@ brews:
       - targz
     tap:
       owner: creativeprojects
-      name: "{{ .ProjectName }}"
+      name: "homebrew-{{{ .ProjectName }}"
     folder: Formula
     homepage: https://github.com/creativeprojects/{{ .ProjectName }}
     description: Configuration profiles for restic backup
