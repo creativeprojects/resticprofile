@@ -188,10 +188,10 @@ func TestInterruptShellCommand(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// check it ran for more than 100ms (but less than 200ms)
+	// check it ran for more than 100ms (but less than 300ms - the build agent can be very slow at times)
 	duration := time.Since(start)
 	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(100))
-	assert.Less(t, duration.Milliseconds(), int64(200))
+	assert.Less(t, duration.Milliseconds(), int64(300))
 }
 
 func TestSetPIDCallback(t *testing.T) {
