@@ -36,6 +36,10 @@ func TestScanJsonSummary(t *testing.T) {
 		lines := strings.Split(resticOutput, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
+			if runtime.GOOS == "windows" {
+				// https://github.com/restic/restic/issues/3111
+				writer.WriteString("\r\x1b[2K")
+			}
 			writer.WriteString(line + eol)
 		}
 		writer.Close()

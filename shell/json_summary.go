@@ -27,6 +27,7 @@ type ResticJsonSummary struct {
 
 // ScanBackupJson should populate the backup summary values from the output of the --json flag
 var ScanBackupJson ScanOutput = func(r io.Reader, summary *Summary, w io.Writer) error {
+	bogusPrefix := []byte("\r\x1b[2K")
 	jsonPrefix := []byte(`{"message_type":"`)
 	summaryPrefix := []byte(`{"message_type":"summary",`)
 	jsonSuffix := []byte("}")
@@ -37,6 +38,7 @@ var ScanBackupJson ScanOutput = func(r io.Reader, summary *Summary, w io.Writer)
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Bytes()
+		line = bytes.TrimPrefix(line, bogusPrefix)
 		if bytes.HasPrefix(line, jsonPrefix) && bytes.HasSuffix(line, jsonSuffix) {
 			if bytes.HasPrefix(line, summaryPrefix) {
 				jsonSummary := ResticJsonSummary{}
