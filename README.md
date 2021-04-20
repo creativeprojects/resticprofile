@@ -388,6 +388,7 @@ source = [ "/" ]
 # if scheduled, will run every day at midnight
 schedule = "daily"
 schedule-permission = "system"
+schedule-lock-wait = "2h"
 # run this after a backup to share a repository between a user and root (via sudo)
 run-after = "chown -R $SUDO_USER $HOME/.cache/restic /backup"
 # ignore restic warnings (otherwise the backup is considered failed when restic couldn't read some files)
@@ -433,6 +434,7 @@ run-after = "sync"
 # if scheduled, will run every 30 minutes
 schedule = "*:0,30"
 schedule-permission = "user"
+schedule-lock-wait = "10m"
 
 # retention policy for profile src
 [src.retention]
@@ -589,7 +591,8 @@ A few environment variables will be set before running these commands:
 Additionally for the `run-after-fail` commands, these environment variables will also be available:
 - `ERROR` containing the latest error message
 - `ERROR_COMMANDLINE` containing the command line that failed
-- `RESTIC_STDERR` containing any message that restic sent to the standard error (stderr)
+- `ERROR_EXIT_CODE` containing the exit code of the command line that failed
+- `ERROR_STDERR` containing any message that the failed command sent to the standard error (stderr)
 
 ## run before and after order during a backup
 
@@ -645,16 +648,50 @@ For this profile, a lock will be set using the file `/tmp/resticprofile-profile-
 
 **Please note restic locks and resticprofile locks are completely independent**
 
-In some cases, you might want to override the resticprofile lock if the process died (or the machine rebooted) leaving a lockfile behind.
+## Stale locks
 
-For that matter, if you add the flag `force-inactive-lock` to your profile, resticprofile will check for the presence of a process with the PID indicated in the lockfile. If it can't find any, it will try to delete the lock and continue the operation (locking again, running profile and so on...)
+In some cases, resticprofile as well as restic may leave a lock behind if the process died (or the machine rebooted).
+
+For that matter, if you add the flag `force-inactive-lock` to your profile, resticprofile will detect and remove stale locks: 
+* **resticprofile locks**: Check for the presence of a process with the PID indicated in the lockfile. If it can't find any, it will try to delete the lock and continue the operation (locking again, running profile and so on...)
+* **restic locks**: Evaluate if a restic command failed on acquiring a lock. If the lock is older than `restic-stale-lock-age`, invoke `restic unlock` and retry the command that failed (can be disabled by setting `restic-stale-lock-age` to 0, default is 2h).
 
 ```yaml
+global:
+  restic-stale-lock-age: 2h
+
 src:
     lock: "/tmp/resticprofile-profile-src.lock"
     force-inactive-lock: true
 ```
 
+## Lock wait
+
+By default, restic and resticprofile fail when a lock cannot be acquired as another process is currently holding it.
+
+Depending on the use case (e.g. scheduled backups), it may be more appropriate to wait on another process to finish instead of failing immediately.
+
+For that matter, if you add the commandline flag `--lock-wait` or configure schedules with `schedule-lock-wait`, resticprofile will wait on other backup processes:
+* **resticprofile locks**: Retry acquiring the lockfile until it either succeeds (when the other resticprofile process released the lock) or fail as the lock-wait duration has passed without success.
+* **restic locks**: Evaluate if a restic command failed on acquiring a lock. If the lock is not considered stale, retry the restic command every `restic-lock-retry-after` (default 1 minute) until it acquired the lock, or fail as the lock-wait duration has passed.
+
+Note: The lock wait duration is cumulative. If various locks in one profile-run require lock wait, the total wait time may not exceed the duration that was specified. 
+
+## restic lock management
+
+resticprofile can retry restic commands that fail on acquiring a lock and can also ask restic to unlock stale locks. The behaviour is controlled by 2 settings inside the `global` section:
+
+```yaml
+global:
+  # Retry a restic command that failed on acquiring a lock every minute 
+  # (at least), for up to the time specified in "--lock-wait duration". 
+  restic-lock-retry-after: 1m
+  # Ask restic to unlock a stale lock when its age is more than 2 hours
+  # and the option "force-inactive-lock" is enabled in the profile.
+  restic-stale-lock-age: 2h
+```
+
+If restic lock management is not desired, it can be disabled by setting both values to 0.
 
 # Using resticprofile
 
@@ -756,10 +793,10 @@ There are not many options on the command line, most of the options are in the c
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
-* **[--no-lock]**: Disable local locks, neither create nor fail on a lock. This options only operates on resticprofile locks.
+* **[--no-lock]**: Disable resticprofile locks, neither create nor fail on a lock. restic locks are unaffected by this option.
 * **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
 light or dark terminal (none to disable colouring)
-* **[--lock-wait] duration**: Retry to acquire local (profile lock file) and repository locks (restic locks) for up to the specified amount of time before failing on a lock failure. 
+* **[--lock-wait] duration**: Retry to acquire resticprofile and restic locks for up to the specified amount of time before failing on a lock failure. 
 * **[-l | --log] log_file**: To write the logs in file instead of displaying on the console
 * **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
 * **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
@@ -771,23 +808,6 @@ restic can be memory hungry. I'm running a few servers with no swap (I know: it 
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.
 
 It compares against `(total - used)` which is probably the best way to know how much memory is available (that is including the memory used for disk buffers/cache).
-
-# Repository lock management
-
-restic uses repository locks to protect from concurrent modifications. Locks can be shared or exclusive depending on the operation and may become stale when a restic process dies. 
-resticprofile can retry restic commands when they fail on acquiring the lock they need and can also ask restic to unlock stale locks. The behaviour is controlled by 2 settings inside the `global` section:
-
-```yaml
-global:
-  # Retry a restic command that failed on acquiring a lock every minute (or more
-  # frequent), for up to the time specified in "--lock-wait duration". 
-  restic-lock-retry-after: 1m
-  # Ask restic to unlock a stale lock when its age is more than 2 hours
-  # and option "force-inactive-lock" is enabled in the profile.
-  restic-stale-lock-age: 2h
-```
-
-The global settings default to the values above when not specified. Set to 0 to disable repository lock management.
 
 # Version
 
@@ -875,22 +895,21 @@ schedule-lock-wait = "15m30s"
 
 * *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user) and fallback to `user`
 
-### schedule-log
-
-Allow to redirect all output from resticprofile and restic to a file
-
 ### schedule-lock-mode
 
 Starting from version 0.14.0, `schedule-lock-mode` accepts 3 values:
-- `default`: Wait on acquiring a lock (local and repository) when `schedule-lock-wait` is set, before failing a schedule.
-   Behaves like `fail` when `schedule-lock-wait` is `0` or not specified.
-- `fail`: A lock failure causes a schedule to abort immediately. 
-- `ignore`: Skip local locks (lock files defined in the profile).
-   Repository lock failures abort the schedule immediately.
+- `default`: Wait on acquiring a lock for the time duration set in `schedule-lock-wait`, before failing a schedule.
+   Behaves like `fail` when `schedule-lock-wait` is "0" or not specified.
+- `fail`: Any lock failure causes a schedule to abort immediately. 
+- `ignore`: Skip resticprofile locks. restic locks are not skipped and can abort the schedule.
 
 ### schedule-lock-wait
 
-Sets the amount of time to wait in the default `schedule-lock-mode` for a lock to become available.
+Sets the amount of time to wait for a resticprofile and restic lock to become available. Is only used when `schedule-lock-mode` is unset or `default`.
+
+### schedule-log
+
+Allow to redirect all output from resticprofile and restic to a file
 
 ### schedule-priority (systemd and launchd only)
 
@@ -961,15 +980,20 @@ default:
 
 self:
     inherit: default
+    retention:
+      after-backup: true
+      keep-within: 14d
     backup:
         source: "."
         schedule:
         - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
         - "Sat,Sun 0,12:00"        # twice a day on week-ends
         schedule-permission: user
-    retention:
+        schedule-lock-wait: 10m
+    prune:
         schedule: "sun 3:30"
         schedule-permission: user
+        schedule-lock-wait: 1h
 ```
 
 ## Scheduling commands
@@ -1127,9 +1151,11 @@ test1:
         source: ./
         schedule: "*:00,15,30,45"
         schedule-permission: user
+        schedule-lock-wait: 15m
     check:
         schedule: "*-*-1"
         schedule-permission: user
+        schedule-lock-wait: 15m
 
 ```
 
@@ -1824,6 +1850,8 @@ None of these flags are passed on the restic command line
 * **default-command**: string
 * **initialize**: true / false
 * **restic-binary**: string
+* **restic-lock-retry-after**: duration
+* **restic-stale-lock-age**: duration
 * **min-memory**: integer (MB)
 * **scheduler**: string (`crond` is the only non-default value)
 
@@ -1871,6 +1899,8 @@ Flags used by resticprofile only
 * **check-after**: true / false
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-lock-mode**: string (`default`, `fail` or `ignore`) 
+* **schedule-lock-wait**: duration 
 * **schedule-log**: string
 * **extended-status**: true / false
 * **no-error-on-warning**: true / false
@@ -1903,6 +1933,8 @@ Flags used by resticprofile only
 * **after-backup**: true / false
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
+* **schedule-lock-wait**: duration
 * **schedule-log**: string
 
 Flags passed to the restic command line
@@ -1940,6 +1972,8 @@ Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
+* **schedule-lock-wait**: duration
 * **schedule-log**: string
 
 Flags passed to the restic command line
@@ -1966,6 +2000,8 @@ Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
+* **schedule-lock-wait**: duration
 * **schedule-log**: string
 
 Flags passed to the restic command line
@@ -1981,6 +2017,8 @@ Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
+* **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
+* **schedule-lock-wait**: duration
 * **schedule-log**: string
 
 `[profile.mount]`
