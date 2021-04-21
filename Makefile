@@ -130,4 +130,4 @@ staticcheck:
 	go run honnef.co/go/tools/cmd/staticcheck ./...
 
 generate-install:
-	godownloader .goreleaser.yml -r creativeprojects/resticprofile -o install.sh
+	godownloader .godownloader.yml -r creativeprojects/resticprofile -o install.sh
