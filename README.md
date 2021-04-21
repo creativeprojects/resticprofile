@@ -47,6 +47,8 @@ For the rest of the documentation, I'll be showing examples using different form
 * [Table of Contents](#table-of-contents)
 * [Requirements](#requirements)
 * [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
+  * [Homebrew (all macOS, Linux on amd64)](#homebrew-all-macos-linux-on-amd64)
+    * [Note on installing on Linux via Homebrew](#note-on-installing-on-linux-via-homebrew)
   * [Installation for Windows using bash](#installation-for-windows-using-bash)
   * [Manual installation (Windows)](#manual-installation-windows)
   * [Ansible](#ansible)
@@ -141,6 +143,37 @@ $ sudo ./install.sh -b /usr/local/bin
 ```
 
 It will install resticprofile in `/usr/local/bin/`
+
+## Homebrew (all macOS, Linux on amd64)
+
+There's an experimental [homebrew](https://brew.sh/) tap for resticprofile:
+
+```
+$ brew tap creativeprojects/tap
+$ brew install resticprofile
+```
+
+You can test that resticprofile is properly installed:
+
+```
+$ brew test resticprofile
+```
+
+Upgrading resticprofile installed via homebrew is very easy:
+
+```
+$ brew update
+$ brew upgrade resticprofile
+```
+
+### Note on installing on Linux via Homebrew
+
+When testing homebrew after spinning new Linux virtual machines, I noticed resticprofile wouldn't install without a compiler installed on the machine.
+Even though resticprofile is distributed as a **binary**, it looks like homebrew needs access to a compiler.
+
+Depending on your distribution you will need to install gcc:
+* `$ sudo yum install gcc`
+* `$ sudo apt install gcc`
 
 
 ## Installation for Windows using bash
