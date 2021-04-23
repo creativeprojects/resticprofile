@@ -3,6 +3,7 @@ package config
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -24,6 +25,10 @@ type testPerson struct {
 	Name       string              `mapstructure:"name"`
 	IsValid    bool                `mapstructure:"valid"`
 	Properties map[string][]string `mapstructure:"properties"`
+}
+
+type testStringer struct {
+	Age time.Duration `mapstructure:"age"`
 }
 
 type testPointer struct {
@@ -70,6 +75,14 @@ func TestShowStruct(t *testing.T) {
 		{
 			input:  testEmbedded{EmbeddedStruct{Value: true}, 1},
 			output: " value:   true\n inline:  1\n",
+		},
+		{
+			input:  testStringer{Age: 2*time.Minute + 5*time.Second},
+			output: " age:  2m5s\n",
+		},
+		{
+			input:  testStringer{},
+			output: "",
 		},
 	}
 

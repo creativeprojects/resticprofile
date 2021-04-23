@@ -349,6 +349,15 @@ func runProfile(
 		resticArguments,
 		sigChan,
 	)
+
+	wrapper.setGlobal(global)
+
+	if flags.noLock {
+		wrapper.ignoreLock()
+	} else if flags.lockWait > 0 {
+		wrapper.maxWaitOnLock(flags.lockWait)
+	}
+
 	err = wrapper.runProfile()
 	if err != nil {
 		return err

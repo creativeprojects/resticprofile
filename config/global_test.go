@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,12 @@ something = 1
 	}
 
 	assert.Equal(t, constants.DefaultCommand, global.DefaultCommand)
+	assert.Equal(t, constants.DefaultIONiceFlag, global.IONice)
+	assert.Equal(t, constants.DefaultStandardNiceFlag, global.Nice)
+	assert.Equal(t, constants.DefaultResticBinary, global.ResticBinary)
+	assert.Equal(t, constants.DefaultResticLockRetryAfter, global.ResticLockRetryAfter)
+	assert.Equal(t, constants.DefaultResticStaleLockAge, global.ResticStaleLockAge)
+	assert.Equal(t, uint64(constants.DefaultMinMemory), global.MinMemory)
 	assert.False(t, global.Initialize)
 }
 
@@ -44,6 +51,8 @@ priority = "low"
 default-command = "version"
 initialize = true
 restic-binary = "/tmp/restic"
+restic-lock-retry-after = "2m30s"
+restic-stale-lock-age = "4h"
 `
 	global, err := getGlobalSection(configString)
 	if err != nil {
@@ -58,6 +67,8 @@ restic-binary = "/tmp/restic"
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.True(t, global.Initialize)
 	assert.Equal(t, "/tmp/restic", global.ResticBinary)
+	assert.Equal(t, 150*time.Second, global.ResticLockRetryAfter)
+	assert.Equal(t, 4*time.Hour, global.ResticStaleLockAge)
 }
 
 func getGlobalSection(configString string) (*Global, error) {

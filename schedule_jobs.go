@@ -37,9 +37,19 @@ func scheduleJobs(schedulerType, profileName string, configs []*config.ScheduleC
 			"--name",
 			scheduleConfig.Title(),
 		}
+
 		if runtime.GOOS != "darwin" && scheduleConfig.Logfile() != "" {
 			args = append(args, "--log", scheduleConfig.Logfile())
 		}
+
+		if scheduleConfig.LockMode() == config.ScheduleLockModeDefault {
+			if scheduleConfig.LockWait() > 0 {
+				args = append(args, "--lock-wait", scheduleConfig.LockWait().String())
+			}
+		} else if scheduleConfig.LockMode() == config.ScheduleLockModeIgnore {
+			args = append(args, "--no-lock")
+		}
+
 		args = append(args, getResticCommand(scheduleConfig.SubTitle()))
 
 		scheduleConfig.SetCommand(wd, binary, args)

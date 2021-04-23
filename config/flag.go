@@ -53,10 +53,24 @@ func stringifyValueOf(value interface{}) ([]string, bool) {
 
 // stringifyValue returns a string representation of the value, and if it has any value at all
 func stringifyValue(value reflect.Value) ([]string, bool) {
+	// Check if the value can convert itself to String() (e.g. time.Duration)
+	stringer := fmt.Stringer(nil)
+	if value.CanInterface() {
+		vi := value.Interface()
+		if s, ok := vi.(fmt.Stringer); ok {
+			stringer = s
+		}
+	}
+
+	var stringVal string
 
 	switch value.Kind() {
 	case reflect.String:
-		stringVal := value.String()
+		if stringer != nil {
+			stringVal = stringer.String()
+		} else {
+			stringVal = value.String()
+		}
 		return []string{stringVal}, stringVal != ""
 
 	case reflect.Bool:
@@ -65,17 +79,29 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		intVal := value.Int()
-		stringVal := strconv.FormatInt(intVal, 10)
+		if stringer != nil {
+			stringVal = stringer.String()
+		} else {
+			stringVal = strconv.FormatInt(intVal, 10)
+		}
 		return []string{stringVal}, intVal != 0
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		intVal := value.Uint()
-		stringVal := strconv.FormatUint(intVal, 10)
+		if stringer != nil {
+			stringVal = stringer.String()
+		} else {
+			stringVal = strconv.FormatUint(intVal, 10)
+		}
 		return []string{stringVal}, intVal != 0
 
 	case reflect.Float32, reflect.Float64:
 		floatVal := value.Float()
-		stringVal := strconv.FormatFloat(floatVal, 'f', -1, 64)
+		if stringer != nil {
+			stringVal = stringer.String()
+		} else {
+			stringVal = strconv.FormatFloat(floatVal, 'f', -1, 64)
+		}
 		return []string{stringVal}, floatVal != 0
 
 	case reflect.Slice, reflect.Array:
