@@ -149,3 +149,13 @@ stdin:
     inherit: default
     snapshots:
         {{ template "tags" . }}
+
+dropbox:
+    initialize: false
+    inherit: default
+    initialize: false
+    backup:
+        extended-status: false
+        check-before: false
+        no-error-on-warning: true
+        source: "../../../../../Dropbox"
