@@ -65,7 +65,7 @@ build-pi:
 build-windows:
 		GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-all: build-mac build-linux build-windows
+build-all: build-mac build-linux build-pi build-windows
 
 test:
 		$(GOTEST) -v $(TESTS)
