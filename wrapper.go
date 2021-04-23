@@ -54,7 +54,7 @@ func (c *commandError) ExitCode() (int, error) {
 	if exitError, ok := asExitError(c.err); ok {
 		return exitError.ExitCode(), nil
 	} else {
-		return 0, errors.New("not and exit error. Exit code not available")
+		return 0, errors.New("exit code not available")
 	}
 }
 

@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/creativeprojects/clog"
 )
 
 const (
@@ -133,9 +135,13 @@ func (c *Command) Run() (Summary, string, error) {
 		if stderrOutput == nil {
 			stderrOutput = os.Stderr
 		}
-		err = c.ScanStderr(stderr, stderrOutput, errors)
 
-		if e := cmd.Wait(); err == nil {
+		err = c.ScanStderr(stderr, stderrOutput, errors)
+		if err != nil {
+			clog.Errorf("failed reading stderr from command: %s ; Cause: %s", command, err.Error())
+		}
+
+		if e := cmd.Wait(); e != nil {
 			err = e
 		}
 	} else {
