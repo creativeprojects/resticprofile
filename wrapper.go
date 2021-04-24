@@ -308,13 +308,13 @@ func (r *resticWrapper) runCommand(command string) error {
 	for {
 		rCommand := r.prepareCommand(command, args)
 
-		if command == constants.CommandBackup && r.profile.StatusFile != "" {
-			if r.profile.Backup != nil && r.profile.Backup.ExtendedStatus {
+		if command == constants.CommandBackup && r.profile.StatusFile != "" && r.profile.Backup != nil {
+			if r.profile.Backup.ExtendedStatus {
 				rCommand.scanOutput = shell.ScanBackupJson
-				// } else {
-				// scan plain backup could have been a good idea,
-				// except restic detects its output is not a terminal and no longer displays the progress
-				// rCommand.scanOutput = shell.ScanBackupPlain
+			} else if !term.OsStdoutIsTerminal() {
+				// restic detects its output is not a terminal and no longer displays the progress.
+				// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
+				rCommand.scanOutput = shell.ScanBackupPlain
 			}
 		}
 
