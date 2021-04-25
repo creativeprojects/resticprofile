@@ -72,6 +72,12 @@ func ReadLine() (string, error) {
 	return strings.TrimSpace(line), nil
 }
 
+// OsStdoutIsTerminal returns true as os.Stdout is a terminal session
+func OsStdoutIsTerminal() bool {
+	fd := int(os.Stdout.Fd())
+	return terminal.IsTerminal(fd)
+}
+
 // SetOutput changes the default output for the Print* functions
 func SetOutput(w io.Writer) {
 	terminalOutput = w
