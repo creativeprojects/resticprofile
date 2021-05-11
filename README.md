@@ -32,6 +32,7 @@ With resticprofile:
 * **[new for v0.10.0]** You can use a template syntax in your configuration file
 * **[new for v0.11.0]** You can generate scheduled tasks using *crond*
 * **[new for v0.12.0]** Get backup statistics in your status file
+* **[new for v0.14.0]** Automatically clear up [stale locks](#locks)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -46,9 +47,10 @@ For the rest of the documentation, I'll be showing examples using different form
 * [resticprofile](#resticprofile)
 * [Table of Contents](#table-of-contents)
 * [Requirements](#requirements)
-* [Installation (macOS, Linux &amp; other unixes)](#installation-macos-linux--other-unixes)
+* [Installation](#installation)
   * [Homebrew (all macOS, Linux on amd64)](#homebrew-all-macos-linux-on-amd64)
     * [Note on installing on Linux via Homebrew](#note-on-installing-on-linux-via-homebrew)
+  * [Via a script (macOS, Linux &amp; other unixes)](#via-a-script-macos-linux--other-unixes)
   * [Installation for Windows using bash](#installation-for-windows-using-bash)
   * [Manual installation (Windows)](#manual-installation-windows)
   * [Ansible](#ansible)
@@ -129,29 +131,11 @@ Please note I use resticprofile on multiple Debian (and Debian based) distributi
 
 **This is at _beta_ stage. Please avoid using it in production. Or at least test carefully first. Even though I'm using it on my servers, I cannot guarantee all combinations of configuration are going to work properly for you.**
 
-# Installation (macOS, Linux & other unixes)
-
-Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD and Linux:
-
-```
-$ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
-```
-
-It should copy resticprofile in a `bin` directory under your current directory.
-
-If you need more control, you can save the shell script and run it manually:
-
-```
-$ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh
-$ chmod +x install.sh
-$ sudo ./install.sh -b /usr/local/bin
-```
-
-It will install resticprofile in `/usr/local/bin/`
+# Installation
 
 ## Homebrew (all macOS, Linux on amd64)
 
-There's an experimental [homebrew](https://brew.sh/) tap for resticprofile:
+There's a [homebrew](https://brew.sh/) tap for resticprofile:
 
 ```
 $ brew tap creativeprojects/tap
@@ -180,6 +164,26 @@ Depending on your distribution you will need to install gcc:
 * `$ sudo yum install gcc`
 * `$ sudo apt install gcc`
 
+
+## Via a script (macOS, Linux & other unixes)
+
+Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD and Linux:
+
+```
+$ curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
+```
+
+It should copy resticprofile in a `bin` directory under your current directory.
+
+If you need more control, you can save the shell script and run it manually:
+
+```
+$ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh
+$ chmod +x install.sh
+$ sudo ./install.sh -b /usr/local/bin
+```
+
+It will install resticprofile in `/usr/local/bin/`
 
 ## Installation for Windows using bash
 
