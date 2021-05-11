@@ -1391,9 +1391,17 @@ Here's an example of a generated file, where you can see that the last `check` f
 }
 ```
 
-## Extended status
+Note: In the backup section above you can see some fields like `files_new`, `files_total`, etc. This information is only available when resticprofile's output is either *not* sent to the terminal (e.g. redirected) or when you add the flag `extended-status` to your backup configuration.
+This is a technical limitation to ensure restic displays terminal output correctly. 
 
-On the previous example of a status file you can see some fields like `files_new`, `files_total`, etc. To be able to get this information from restic, you need to add the flag `extended-status` to your backup configuration.
+`extended-status` or stdout redirection is **not needed** for these fields:
+- success
+- time
+- error
+- stderr
+- duration
+
+## Extended status
 
 `extended-status` is **not set by default because it hides any output from restic**
 
@@ -1408,13 +1416,6 @@ profile:
           - "/**/.git/"
 
 ```
-
-`extended-status` is **not needed** for these fields:
-- success
-- time
-- error
-- stderr
-- duration
 
 # Variable expansion in configuration file
 
