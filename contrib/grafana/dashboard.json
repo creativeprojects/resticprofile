@@ -1,0 +1,1189 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "iteration": 1621181727186,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 500000000
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reclaimed"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "purple",
+                      "value": null
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 12,
+      "maxDataPoints": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `Added to the repo:`\n        | regexp `.+repo: (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\n)",
+          "legendFormat": "Ingested",
+          "refId": "A"
+        },
+        {
+          "expr": "sum (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `will delete`    \n        |~ `will delete .+, this frees .+`\n        | regexp `.+this frees (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\nor\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `total prune:`\n        | regexp `total prune: .+ blobs / (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\n)",
+          "legendFormat": "Reclaimed",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Volume",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 500
+              },
+              {
+                "color": "orange",
+                "value": 10000
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 6,
+      "interval": "",
+      "maxDataPoints": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (data) (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"} \n      |~ \"Files:\" \n      | regexp \"(?P<kind>\\\\w+):.+ (?P<new>\\\\d+) new,\"\n      | label_format data=\"new\", kind=\"{{.kind | ToLower}}\"\n      | unwrap new [$__interval]\n  )\nor\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"} \n      |~ \"Files:\" \n      | regexp \"(?P<kind>\\\\w+):.+ (?P<changed>\\\\d+) changed,\"\n      | label_format data=\"changed\", kind=\"{{.kind | ToLower}}\"\n      | unwrap changed [$__interval]\n  )\n)",
+          "legendFormat": "{{data}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Ingested Files",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 7,
+      "links": [],
+      "maxDataPoints": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (action) (\n  count_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ ` on profile `\n        |~ `.+ on profile '.+': exit status \\d+`\n        | regexp `(?P<action>\\w+) on .+ exit status (?P<status>\\d+)`\n        | status != 0\n        [$__interval]      \n  )\n)",
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Failures",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              },
+              {
+                "color": "rgb(130, 130, 145)",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 8,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (action) (\n  count_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `profile '.*': finished`\n        | regexp `.+: finished '(?P<action>\\w+)'`\n        [$__interval]      \n  )\n)",
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Backups & Checks",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 500000000
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "maxDataPoints": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `Added to the repo:`\n        | regexp `.+repo: (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Ingest Volume",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 16,
+      "interval": "",
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  count_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ ` on profile `\n        |~ `.+ on profile '.+': exit status \\d+`\n        | regexp `.+ on .+ exit status (?P<status>\\d+)`\n        | status != 0\n        [$__interval]      \n  )\nor\n  count_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ ` starting 'backup'`\n        [$__interval]      \n  ) * 0\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Failed Backups",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 18,
+      "maxDataPoints": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `will delete`    \n        |~ `will delete .+, this frees .+`\n        | regexp `.+this frees (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\nor\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `total prune:`\n        | regexp `total prune: .+ blobs / (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Reclaimed Volume",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 9,
+      "maxDataPoints": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `processed`\n        |~ `processed .*files,.+ in \\d+:\\d+:\\d+`\n        | regexp `.+ in (?P<hours>\\d+):(?P<minutes>\\d+):(?P<seconds>\\d+)`\n        | label_format duration=\"{{.hours}}h{{.minutes}}m{{.seconds}}s\"\n        | unwrap duration_seconds(duration)\n        [$__interval]\n  )\nor\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `processed`\n        |~ `processed .*files,.+ in \\d+:\\d+`\n        | regexp `.+ in (?P<minutes>\\d+):(?P<seconds>\\d+)`\n        | label_format duration=\"{{.minutes}}m{{.seconds}}s\"\n        | unwrap duration_seconds(duration)\n        [$__interval]\n  )\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Time spent with Backups",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 120,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "maxDataPoints": 25,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.6",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `Added to the repo:`\n        | regexp `.+repo: (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Backup Ingest Graph",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:922",
+          "decimals": null,
+          "format": "bytes",
+          "label": "",
+          "logBase": 2,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:923",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              },
+              {
+                "color": "rgb(130, 130, 145)",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 10,
+      "interval": "",
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  count_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ ` finished 'backup'`\n        [$__interval]      \n  )\nor\n  count_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ ` starting 'backup'`\n        [$__interval]      \n  ) * 0\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Finished Backups",
+      "type": "stat"
+    },
+    {
+      "cards": {
+        "cardPadding": 0,
+        "cardRound": null
+      },
+      "color": {
+        "cardColor": "#3274D9",
+        "colorScale": "sqrt",
+        "colorScheme": "interpolatePurples",
+        "exponent": 0.4,
+        "max": 1500,
+        "min": null,
+        "mode": "opacity"
+      },
+      "dataFormat": "tsbuckets",
+      "datasource": "Loki",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "heatmap": {},
+      "hideZeroBuckets": true,
+      "highlightCards": true,
+      "id": 17,
+      "interval": "",
+      "legend": {
+        "show": false
+      },
+      "maxDataPoints": 25,
+      "pluginVersion": "7.5.1",
+      "reverseYBuckets": false,
+      "targets": [
+        {
+          "expr": "sum by (host, data) (\n  sum_over_time(\n    {app=~`^restic.*`,host=~\"(${host:pipe})\"} \n      |~ \"Dirs:|Files:\" \n      | regexp \"(?P<kind>\\\\w+):.+ (?P<changed>\\\\d+) changed,\"\n      | label_format kind=\"{{.kind | ToLower}}\"\n      | unwrap changed [$__interval]\n  )\n)",
+          "legendFormat": "{{host}} [C]",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (host, data) (\n  sum_over_time(\n    {app=~`^restic.*`,host=~\"(${host:pipe})\"} \n      |~ \"Dirs:|Files:\" \n      | regexp \"(?P<kind>\\\\w+):.+ (?P<new>\\\\d+) new,\"\n      | label_format kind=\"{{.kind | ToLower}}\"\n      | unwrap new [$__interval]\n  )\n)",
+          "hide": false,
+          "legendFormat": "{{host}} [N]",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "New & Changed Files",
+      "tooltip": {
+        "show": true,
+        "showHistogram": false
+      },
+      "type": "heatmap",
+      "xAxis": {
+        "show": true
+      },
+      "xBucketNumber": null,
+      "xBucketSize": null,
+      "yAxis": {
+        "decimals": 0,
+        "format": "short",
+        "logBase": 1,
+        "max": null,
+        "min": null,
+        "show": true,
+        "splitFactor": null
+      },
+      "yBucketBound": "middle",
+      "yBucketNumber": null,
+      "yBucketSize": null
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "hiddenSeries": false,
+      "id": 11,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 120,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "maxDataPoints": 25,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.6",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `will delete`\n        |~ `will delete .+, this frees .+`\n        | regexp `.+this frees (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\nor\n  sum_over_time(\n    {app=~`^restic.*`, host=~\"(${host:pipe})\"}\n        |~ `total prune:`\n        | regexp `total prune: .+ blobs / (?P<size>[\\d\\.]+ \\w+)`\n        | unwrap bytes(size)[$__interval]\n  )\n)",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Reclaimed Space Graph",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:922",
+          "decimals": null,
+          "format": "bytes",
+          "label": "",
+          "logBase": 2,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:923",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "alert": {
+        "alertRuleTags": {},
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                -5
+              ],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A",
+                "1h",
+                "now-1h"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "min"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "15m",
+        "frequency": "15m",
+        "handler": 1,
+        "message": "Finished less backups than expected",
+        "name": "Finished Backups Vs Average alert",
+        "noDataState": "no_data",
+        "notifications": []
+      },
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Loki",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 0,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 19,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "maxDataPoints": 75,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.6",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (host) (\n  count_over_time(\n    {app=~`^restic.*`}\n        |~ ` finished 'backup'`\n        [2d]      \n  )\n)\n-\n(sum by (host) (\n  count_over_time(\n    {app=~`^restic.*`}\n        |~ ` finished 'backup'`\n        [14d]      \n  )\n) / 7)",
+          "instant": false,
+          "legendFormat": "{{host}}",
+          "maxLines": null,
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "critical",
+          "fill": true,
+          "line": true,
+          "op": "lt",
+          "value": -5,
+          "visible": true
+        }
+      ],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Finished Backups Vs 14d Average",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:240",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:241",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 17,
+        "x": 7,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 14,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.6",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:152",
+          "alias": "/.+Vol1.*/",
+          "color": "#3274D9"
+        },
+        {
+          "$$hashKey": "object:610",
+          "alias": "/.+Size/",
+          "fill": 0
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/share/backup/vol1\"}\n- node_filesystem_free_bytes{mountpoint=\"/share/backup/vol1\"}",
+          "interval": "",
+          "legendFormat": "Vol1",
+          "refId": "A"
+        },
+        {
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/share/backup/vol1\"}",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Vol1 Size",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Used Backup Storage",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:71",
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:72",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": "15m",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [
+    "backup",
+    "health"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Loki",
+        "definition": "label_values(host)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Hosts",
+        "multi": true,
+        "name": "host",
+        "options": [],
+        "query": "label_values(host)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Restic Backup",
+  "uid": "d2goojkgk",
+  "version": 2
+}
