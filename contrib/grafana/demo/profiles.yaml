@@ -1,0 +1,21 @@
+global:
+  initialize: true
+
+default:
+  repository: local:/tmp/demo/repo
+  password-file: /demo/repo-password.txt
+  
+  retention:
+    keep-last: 30
+    after-backup: true
+    prune: true
+
+  backup:
+    source: 
+      - /tmp/demo
+    exclude:
+      - "**/repo/**"
+    run-before: 
+      - /demo/random-file-changer.sh
+    run-after:
+      - sleep 120

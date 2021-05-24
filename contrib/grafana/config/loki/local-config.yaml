@@ -1,0 +1,54 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+ingester:
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  # Let chunks sit idle for at least 24h before flushing, this helps to reduce total chunks in store
+  chunk_idle_period: 24h
+  # Let chunks get up to 48h old before flushing due to age, this helps to reduce total chunks in store
+  max_chunk_age: 48h
+  # Target chunks of 2MB, this helps to reduce total chunks in store
+  chunk_target_size: 2465792
+  # How long to retain a flushed chunk in memory
+  chunk_retain_period: 5m
+  chunk_encoding: lz4
+  max_transfer_retries: 0
+
+  wal:
+    enabled: true
+    dir: /loki/wal
+    replay_memory_ceiling: 512M
+
+schema_config:
+  configs:
+    - from: 2018-04-15
+      store: boltdb
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 168h
+
+storage_config:
+  boltdb:
+    directory: /loki/index
+
+  filesystem:
+    directory: /loki/chunks
+
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 672h

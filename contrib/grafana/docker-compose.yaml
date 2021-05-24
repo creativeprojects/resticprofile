@@ -1,0 +1,76 @@
+version: '3.4'
+
+services:
+  grafana:
+    image: grafana/grafana
+    restart: always
+    depends_on: 
+      - loki
+      - promtail
+    environment: 
+      GF_INSTALL_PLUGINS: ""
+      GF_SERVER_DOMAIN:   "${HOSTNAME}"
+    volumes:
+      - ./data/grafana/data:/var/lib/grafana
+      - ./data/grafana/log:/var/log/grafana
+    ports:
+      - 3000:3000
+    networks: 
+      default:
+        ipv4_address: 172.36.12.2
+
+  loki:
+    image: grafana/loki
+    restart: always
+    volumes:
+      - ./config/loki:/etc/loki:ro
+      - ./data/loki:/loki
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    #ports:
+    #  - 3100:3100
+    networks: 
+      default:
+        ipv4_address: 172.36.12.3
+
+  promtail:
+    image: grafana/promtail
+    restart: always
+    depends_on: 
+      - loki
+    volumes:
+      - ./config/loki:/etc/promtail:ro
+    command: ["-config.file=/etc/promtail/promtail.yaml"]
+    ports:
+      - 1514:1514
+    networks:
+      default:
+        ipv4_address: 172.36.12.4
+
+  resticprofile:
+    image: creativeprojects/resticprofile
+    restart: always
+    depends_on: 
+      - promtail
+    logging: 
+      driver: syslog
+      options: 
+        syslog-address: tcp://172.36.12.4:1514
+        syslog-format: rfc5424
+        tag: resticprofile
+    volumes:
+      - ./demo/profiles.yaml:/etc/resticprofile/profiles.yaml:ro
+      - ./demo:/demo:ro
+      - ./data/demo:/tmp/demo
+    tmpfs: 
+      - /tmp
+    command: ["backup"]
+    networks:
+      default:
+        ipv4_address: 172.36.12.200
+
+networks: 
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.36.12.0/24
