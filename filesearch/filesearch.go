@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/adrg/xdg"
+	"github.com/creativeprojects/clog"
 )
 
 var (
@@ -126,9 +127,15 @@ func findConfigurationFileWithExtension(configFile string) string {
 
 // FindResticBinary returns the path of restic executable
 func FindResticBinary(configLocation string) (string, error) {
-	// Start by the location from the configuration
-	if configLocation != "" && fileExists(configLocation) {
-		return configLocation, nil
+	if configLocation != "" {
+		// Start by the location from the configuration
+		configLocation, err := ShellExpand(configLocation)
+		if err != nil {
+			clog.Warning(err)
+		}
+		if configLocation != "" && fileExists(configLocation) {
+			return configLocation, nil
+		}
 	}
 	paths := getDefaultBinaryLocations()
 	binaryFile := getResticBinary()
@@ -146,6 +153,21 @@ func FindResticBinary(configLocation string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	return filename, nil
+}
+
+// ShellExpand uses the shell to expand variables and ~ from a filename.
+// On Windows the function simply returns the filename unchanged
+func ShellExpand(filename string) (string, error) {
+	if runtime.GOOS == "windows" {
+		return filename, nil
+	}
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s", strings.ReplaceAll(filename, " ", `\ `)))
+	result, err := cmd.Output()
+	if err != nil {
+		return filename, err
+	}
+	filename = strings.TrimSuffix(string(result), "\n")
 	return filename, nil
 }
 

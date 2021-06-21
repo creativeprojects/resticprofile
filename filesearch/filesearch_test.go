@@ -2,7 +2,9 @@ package filesearch
 
 import (
 	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -221,5 +223,57 @@ func TestFindResticBinary(t *testing.T) {
 		assert.NoError(t, err)
 	} else {
 		assert.Error(t, err)
+	}
+}
+
+func TestFindResticBinaryWithTilde(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("not supported on Windows")
+		return
+	}
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+
+	tempFile, err := os.CreateTemp(home, "TestFindResticBinaryWithTilde")
+	require.NoError(t, err)
+	tempFile.Close()
+	defer func() {
+		os.Remove(tempFile.Name())
+	}()
+
+	search := filepath.Join("~", filepath.Base(tempFile.Name()))
+	binary, err := FindResticBinary(search)
+	require.NoError(t, err)
+	assert.Equalf(t, tempFile.Name(), binary, "cannot find %q", search)
+}
+
+func TestShellExpand(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("not supported on Windows")
+		return
+	}
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+
+	user, err := user.Current()
+	require.NoError(t, err)
+
+	testData := []struct {
+		source   string
+		expected string
+	}{
+		{"/", "/"},
+		{"~", home},
+		{"$HOME", home},
+		{"~" + user.Username, user.HomeDir},
+		{"1 2", "1 2"},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.source, func(t *testing.T) {
+			result, err := ShellExpand(testItem.source)
+			require.NoError(t, err)
+			assert.Equal(t, testItem.expected, result)
+		})
 	}
 }

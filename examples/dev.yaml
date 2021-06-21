@@ -8,6 +8,7 @@ global:
     default-command: snapshots
     initialize: false
     priority: low
+    restic-binary: ~/fake_restic
 
 groups:
     full-backup:
