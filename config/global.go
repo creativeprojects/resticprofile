@@ -28,7 +28,6 @@ func NewGlobal() *Global {
 		IONice:               constants.DefaultIONiceFlag,
 		Nice:                 constants.DefaultStandardNiceFlag,
 		DefaultCommand:       constants.DefaultCommand,
-		ResticBinary:         constants.DefaultResticBinary,
 		ResticLockRetryAfter: constants.DefaultResticLockRetryAfter,
 		ResticStaleLockAge:   constants.DefaultResticStaleLockAge,
 		MinMemory:            constants.DefaultMinMemory,

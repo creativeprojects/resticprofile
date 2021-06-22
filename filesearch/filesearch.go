@@ -129,13 +129,14 @@ func findConfigurationFileWithExtension(configFile string) string {
 func FindResticBinary(configLocation string) (string, error) {
 	if configLocation != "" {
 		// Start by the location from the configuration
-		configLocation, err := ShellExpand(configLocation)
+		filename, err := ShellExpand(configLocation)
 		if err != nil {
 			clog.Warning(err)
 		}
-		if configLocation != "" && fileExists(configLocation) {
-			return configLocation, nil
+		if filename != "" && fileExists(filename) {
+			return filename, nil
 		}
+		clog.Warningf("cannot find or read the restic binary specified in the configuration: %q", configLocation)
 	}
 	paths := getDefaultBinaryLocations()
 	binaryFile := getResticBinary()

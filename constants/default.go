@@ -7,7 +7,6 @@ const (
 	DefaultConfigurationFile    = "profiles"
 	DefaultProfileName          = "default"
 	DefaultCommand              = "snapshots"
-	DefaultResticBinary         = "restic"
 	DefaultResticLockRetryAfter = 60 * time.Second
 	DefaultResticStaleLockAge   = 2 * time.Hour
 	DefaultTheme                = "light"
