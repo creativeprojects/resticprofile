@@ -13,6 +13,7 @@ type TemplateData struct {
 	Now        time.Time
 	CurrentDir string
 	ConfigDir  string
+	Hostname   string
 	Env        map[string]string
 }
 
@@ -27,6 +28,10 @@ func newTemplateData(configFile, profileName string) TemplateData {
 	configDir := filepath.Dir(configFile)
 	if !filepath.IsAbs(configDir) {
 		configDir = filepath.Join(currentDir, configDir)
+	}
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "localhost"
 	}
 	env := make(map[string]string, len(os.Environ()))
 	for _, envValue := range os.Environ() {
@@ -43,6 +48,7 @@ func newTemplateData(configFile, profileName string) TemplateData {
 		Now:        time.Now(),
 		ConfigDir:  configDir,
 		CurrentDir: currentDir,
+		Hostname:   hostname,
 		Env:        env,
 	}
 }
