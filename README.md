@@ -1438,6 +1438,7 @@ The list of pre-defined variables is:
 - **.Now** ([time.Time](https://golang.org/pkg/time/) object)
 - **.CurrentDir** (string)
 - **.ConfigDir** (string)
+- **.Hostname** (string)
 - **.Env.{NAME}** (string)
 
 Environment variables are accessible using `.Env.` followed by the name of the environment variable.
