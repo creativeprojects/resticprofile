@@ -12,6 +12,7 @@ import (
 type Profile struct {
 	config        *Config
 	Name          string
+	Description   string                    `mapstructure:"description"`
 	Quiet         bool                      `mapstructure:"quiet" argument:"quiet"`
 	Verbose       bool                      `mapstructure:"verbose" argument:"verbose"`
 	Repository    string                    `mapstructure:"repository" argument:"repo"`

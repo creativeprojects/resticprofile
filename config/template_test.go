@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -185,6 +186,27 @@ tag = ["test", "{{ .Profile.Name }}"]
 	require.NotEmpty(t, profile)
 
 	assert.Contains(t, profile.Snapshots["tag"], "profile1")
+}
+
+func TestResolveHostname(t *testing.T) {
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "localhost"
+	}
+
+	testConfig := `
+[profile1]
+[profile1.snapshots]
+tag = "{{ .Hostname }}"
+`
+	profile, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile)
+
+	assert.Contains(t, profile.Snapshots["tag"], hostname)
 }
 
 func TestInheritanceWithTemplates(t *testing.T) {

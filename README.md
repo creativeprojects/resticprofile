@@ -1906,6 +1906,7 @@ None of these flags are passed on the restic command line
 Flags used by resticprofile only
 
 * ****inherit****: string
+* **description**: string
 * **initialize**: true / false
 * **lock**: string: specify a local lockfile
 * **force-inactive-lock**: true / false
