@@ -62,7 +62,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 		`--exclude-file`,
 		`"excludes"`,
 		`--repo`,
-		`"/Volumes/RAMDisk"`,
+		`"/path/with space"`,
 		`backup`,
 		`.`,
 	}
@@ -84,7 +84,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 			`--exclude-file`,
 			`excludes`,
 			`--repo`,
-			`/Volumes/RAMDisk`,
+			`/path/with space`,
 			`backup`,
 			`.`,
 		}, args)
@@ -92,13 +92,13 @@ func TestShellCommandWithArguments(t *testing.T) {
 		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/sh"), command)
 		assert.Equal(t, []string{
 			"-c",
-			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
+			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	}
 }
 
 func TestShellCommand(t *testing.T) {
-	testCommand := "/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup ."
+	testCommand := "/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup ."
 	testArgs := []string{}
 	c := &Command{
 		Command:   testCommand,
@@ -113,13 +113,13 @@ func TestShellCommand(t *testing.T) {
 		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			"/C",
-			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
+			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	} else {
 		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/sh"), command)
 		assert.Equal(t, []string{
 			"-c",
-			"/bin/restic -v --exclude-file \"excludes\" --repo \"/Volumes/RAMDisk\" backup .",
+			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	}
 }

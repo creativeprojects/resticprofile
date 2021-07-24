@@ -3,10 +3,13 @@ package prom
 import (
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/push"
 )
 
 const namespace = "resticprofile"
 const backup = "backup"
+const groupLabel = "group"
+const profileLabel = "profile"
 
 type Status uint
 
@@ -17,7 +20,8 @@ const (
 )
 
 type Backup struct {
-	duration        prometheus.Gauge
+	group           string
+	duration        *prometheus.GaugeVec
 	filesNew        prometheus.Gauge
 	filesChanged    prometheus.Gauge
 	filesUnmodified prometheus.Gauge
@@ -27,16 +31,17 @@ type Backup struct {
 	filesTotal      prometheus.Gauge
 	bytesAdded      prometheus.Gauge
 	bytesTotal      prometheus.Gauge
-	status          prometheus.Gauge
+	status          *prometheus.GaugeVec
 	registry        *prometheus.Registry
 }
 
-func NewBackup() *Backup {
+func NewBackup(group string) *Backup {
 	registry := prometheus.NewRegistry()
 	p := &Backup{
+		group:    group,
 		registry: registry,
 	}
-	createMetrics(p)
+	createMetrics(p, group)
 
 	registry.MustRegister(
 		p.duration,
@@ -54,13 +59,20 @@ func NewBackup() *Backup {
 	return p
 }
 
-func createMetrics(p *Backup) {
-	p.duration = prometheus.NewGauge(prometheus.GaugeOpts{
+func createMetrics(p *Backup, group string) {
+	var labels []string
+	if group != "" {
+		labels = []string{groupLabel, profileLabel}
+	} else {
+		labels = []string{profileLabel}
+	}
+
+	p.duration = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: backup,
 		Name:      "duration_seconds",
 		Help:      "The duration of backup in seconds.",
-	})
+	}, labels)
 	p.filesNew = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: backup,
@@ -115,20 +127,41 @@ func createMetrics(p *Backup) {
 		Name:      "processed_bytes",
 		Help:      "Total number of bytes scanned for changes.",
 	})
-	p.status = prometheus.NewGauge(prometheus.GaugeOpts{
+	p.status = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: backup,
 		Name:      "status",
 		Help:      "Backup status: 0=fail, 1=warning, 2=success.",
-	})
+	}, labels)
 }
 
-func (p *Backup) Results(status Status, summary shell.Summary) {
+func (p *Backup) Results(profile string, status Status, summary shell.Summary) {
+	labels := prometheus.Labels{profileLabel: profile}
+	if p.group != "" {
+		labels[groupLabel] = p.group
+	}
+	p.duration.With(labels).Set(summary.Duration.Seconds())
+
+	p.filesNew.Set(float64(summary.FilesNew))
+	p.filesChanged.Set(float64(summary.FilesChanged))
+	p.filesUnmodified.Set(float64(summary.FilesUnmodified))
+
+	p.dirNew.Set(float64(summary.DirsNew))
+	p.dirChanged.Set(float64(summary.DirsChanged))
+	p.dirUnmodified.Set(float64(summary.DirsUnmodified))
+
+	p.filesTotal.Set(float64(summary.FilesTotal))
 	p.bytesAdded.Set(float64(summary.BytesAdded))
 	p.bytesTotal.Set(float64(summary.BytesTotal))
-	p.status.Set(float64(status))
+	p.status.With(labels).Set(float64(status))
 }
 
-func (p *Backup) SaveTo(filename string) {
-	prometheus.WriteToTextfile(filename, p.registry)
+func (p *Backup) SaveTo(filename string) error {
+	return prometheus.WriteToTextfile(filename, p.registry)
+}
+
+func (p *Backup) Push(url, jobName string) error {
+	return push.New(url, jobName).
+		Gatherer(p.registry).
+		Add()
 }

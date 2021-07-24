@@ -168,7 +168,7 @@ func main() {
 		}
 	}
 
-	if flags.noPriority == false {
+	if !flags.noPriority {
 		err = setPriority(global.Nice, global.Priority)
 		if err != nil {
 			clog.Warning(err)

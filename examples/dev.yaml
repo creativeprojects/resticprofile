@@ -24,6 +24,12 @@ default:
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
 
+space:
+    description: Repository contains space
+    initialize: false
+    password-file: key
+    repository: "/Volumes/RAMDisk/with space"
+
 documents:
     inherit: default
     backup:
@@ -103,6 +109,17 @@ self:
     forget:
         schedule: "weekly"
         schedule-priority: standard
+
+prom:
+    force-inactive-lock: true
+    initialize: true
+    inherit: default
+    prometheus-save-to-file: "test.prom"
+    backup:
+        extended-status: true
+        no-error-on-warning: true
+        source: {{ .CurrentDir }}
+        {{ template "tags" . }}
 
 system:
     initialize: true

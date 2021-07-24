@@ -10,33 +10,35 @@ import (
 
 // Profile contains the whole profile configuration
 type Profile struct {
-	config        *Config
-	Name          string
-	Description   string                    `mapstructure:"description"`
-	Quiet         bool                      `mapstructure:"quiet" argument:"quiet"`
-	Verbose       bool                      `mapstructure:"verbose" argument:"verbose"`
-	Repository    string                    `mapstructure:"repository" argument:"repo"`
-	PasswordFile  string                    `mapstructure:"password-file" argument:"password-file"`
-	CacheDir      string                    `mapstructure:"cache-dir" argument:"cache-dir"`
-	CACert        string                    `mapstructure:"cacert" argument:"cacert"`
-	TLSClientCert string                    `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
-	Initialize    bool                      `mapstructure:"initialize"`
-	Inherit       string                    `mapstructure:"inherit"`
-	Lock          string                    `mapstructure:"lock"`
-	ForceLock     bool                      `mapstructure:"force-inactive-lock"`
-	RunBefore     []string                  `mapstructure:"run-before"`
-	RunAfter      []string                  `mapstructure:"run-after"`
-	RunAfterFail  []string                  `mapstructure:"run-after-fail"`
-	StatusFile    string                    `mapstructure:"status-file"`
-	OtherFlags    map[string]interface{}    `mapstructure:",remain"`
-	Environment   map[string]string         `mapstructure:"env"`
-	Backup        *BackupSection            `mapstructure:"backup"`
-	Retention     *RetentionSection         `mapstructure:"retention"`
-	Check         *OtherSectionWithSchedule `mapstructure:"check"`
-	Prune         *OtherSectionWithSchedule `mapstructure:"prune"`
-	Snapshots     map[string]interface{}    `mapstructure:"snapshots"`
-	Forget        *OtherSectionWithSchedule `mapstructure:"forget"`
-	Mount         map[string]interface{}    `mapstructure:"mount"`
+	config               *Config
+	Name                 string
+	Description          string                    `mapstructure:"description"`
+	Quiet                bool                      `mapstructure:"quiet" argument:"quiet"`
+	Verbose              bool                      `mapstructure:"verbose" argument:"verbose"`
+	Repository           string                    `mapstructure:"repository" argument:"repo"`
+	PasswordFile         string                    `mapstructure:"password-file" argument:"password-file"`
+	CacheDir             string                    `mapstructure:"cache-dir" argument:"cache-dir"`
+	CACert               string                    `mapstructure:"cacert" argument:"cacert"`
+	TLSClientCert        string                    `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
+	Initialize           bool                      `mapstructure:"initialize"`
+	Inherit              string                    `mapstructure:"inherit"`
+	Lock                 string                    `mapstructure:"lock"`
+	ForceLock            bool                      `mapstructure:"force-inactive-lock"`
+	RunBefore            []string                  `mapstructure:"run-before"`
+	RunAfter             []string                  `mapstructure:"run-after"`
+	RunAfterFail         []string                  `mapstructure:"run-after-fail"`
+	StatusFile           string                    `mapstructure:"status-file"`
+	PrometheusSaveToFile string                    `mapstructure:"prometheus-save-to-file"`
+	PrometheusPush       string                    `mapstructure:"prometheus-push"`
+	OtherFlags           map[string]interface{}    `mapstructure:",remain"`
+	Environment          map[string]string         `mapstructure:"env"`
+	Backup               *BackupSection            `mapstructure:"backup"`
+	Retention            *RetentionSection         `mapstructure:"retention"`
+	Check                *OtherSectionWithSchedule `mapstructure:"check"`
+	Prune                *OtherSectionWithSchedule `mapstructure:"prune"`
+	Snapshots            map[string]interface{}    `mapstructure:"snapshots"`
+	Forget               *OtherSectionWithSchedule `mapstructure:"forget"`
+	Mount                map[string]interface{}    `mapstructure:"mount"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command

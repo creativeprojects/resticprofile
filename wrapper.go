@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
+	"github.com/creativeprojects/resticprofile/prom"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
@@ -308,7 +309,7 @@ func (r *resticWrapper) runCommand(command string) error {
 	for {
 		rCommand := r.prepareCommand(command, args)
 
-		if command == constants.CommandBackup && r.profile.StatusFile != "" && r.profile.Backup != nil {
+		if command == constants.CommandBackup && r.profile.Backup != nil && (r.profile.StatusFile != "" || r.profile.PrometheusSaveToFile != "" || r.profile.PrometheusPush != "") {
 			if r.profile.Backup.ExtendedStatus {
 				rCommand.scanOutput = shell.ScanBackupJson
 			} else if !term.OsStdoutIsTerminal() {
@@ -327,10 +328,12 @@ func (r *resticWrapper) runCommand(command string) error {
 			}
 
 			r.statusError(r.command, summary, stderr, err)
+			r.prometheus(r.command, prom.StatusFailed, summary)
 			return newCommandError(rCommand, stderr, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 		}
 
 		r.statusSuccess(r.command, summary, stderr)
+		r.prometheus(r.command, prom.StatusSuccess, summary)
 		clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
 		return nil
 	}
@@ -555,6 +558,29 @@ func (r *resticWrapper) statusError(command string, summary shell.Summary, stder
 	}
 }
 
+func (r *resticWrapper) prometheus(command string, status prom.Status, summary shell.Summary) {
+	if r.profile.PrometheusSaveToFile == "" && r.profile.PrometheusPush == "" || command != constants.CommandBackup {
+		return
+	}
+	p := prom.NewBackup("")
+	p.Results("", status, summary)
+
+	if r.profile.PrometheusSaveToFile != "" {
+		err := p.SaveTo(r.profile.PrometheusSaveToFile)
+		if err != nil {
+			// not important enough to throw an error here
+			clog.Warningf("saving prometheus file %q: %v", r.profile.PrometheusSaveToFile, err)
+		}
+	}
+	if r.profile.PrometheusPush != "" {
+		err := p.Push(r.profile.PrometheusPush, command)
+		if err != nil {
+			// not important enough to throw an error here
+			clog.Warningf("pushing prometheus metrics to %q: %v", r.profile.PrometheusPush, err)
+		}
+	}
+}
+
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
 func (r *resticWrapper) canSucceedAfterError(command string, summary shell.Summary, err error) bool {
 	if err == nil {
@@ -671,6 +697,7 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalys
 	return false, 0
 }
 
+// convertIntoArgs converts a map of arguments into a list of arguments to send on the command line
 func convertIntoArgs(flags map[string][]string) []string {
 	args := make([]string, 0)
 
@@ -699,15 +726,19 @@ func convertIntoArgs(flags map[string][]string) []string {
 		for _, value := range values {
 			args = append(args, fmt.Sprintf("--%s", key))
 			if value != "" {
-				if strings.Contains(value, " ") {
-					// quote the string containing spaces
-					value = fmt.Sprintf(`"%s"`, value)
-				}
-				args = append(args, value)
+				args = append(args, quoteArgument(value))
 			}
 		}
 	}
 	return args
+}
+
+func quoteArgument(value string) string {
+	if strings.Contains(value, " ") {
+		// quote the string containing spaces
+		value = fmt.Sprintf(`"%s"`, value)
+	}
+	return value
 }
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk
