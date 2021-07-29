@@ -17,6 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
+	"github.com/creativeprojects/resticprofile/prom"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
@@ -215,7 +216,7 @@ func main() {
 		defer notifyStop()
 
 		// Single profile run
-		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand)
+		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand, "")
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1
@@ -235,7 +236,7 @@ func main() {
 
 			for i, profileName := range group {
 				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
-				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand)
+				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
 				if err != nil {
 					clog.Error(err)
 					exitCode = 1
@@ -288,6 +289,7 @@ func runProfile(
 	resticBinary string,
 	resticArguments []string,
 	resticCommand string,
+	group string,
 ) error {
 	var err error
 
@@ -342,7 +344,6 @@ func runProfile(
 
 	wrapper := newResticWrapper(
 		resticBinary,
-		global.Initialize || profile.Initialize,
 		flags.dryRun,
 		profile,
 		resticCommand,
@@ -358,10 +359,36 @@ func runProfile(
 		wrapper.maxWaitOnLock(flags.lockWait)
 	}
 
+	var metrics *prom.Metrics
+	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
+		metrics = prom.NewMetrics(group)
+		wrapper.setPrometheus(metrics)
+	}
+
 	err = wrapper.runProfile()
 	if err != nil {
 		return err
 	}
+
+	if metrics == nil {
+		return nil
+	}
+
+	if profile.PrometheusSaveToFile != "" {
+		err := metrics.SaveTo(profile.PrometheusSaveToFile)
+		if err != nil {
+			// not important enough to throw an error here
+			clog.Warningf("saving prometheus file %q: %v", profile.PrometheusSaveToFile, err)
+		}
+	}
+	if profile.PrometheusPush != "" {
+		err := metrics.Push(profile.PrometheusPush, resticCommand)
+		if err != nil {
+			// not important enough to throw an error here
+			clog.Warningf("pushing prometheus metrics to %q: %v", profile.PrometheusPush, err)
+		}
+	}
+
 	return nil
 }
 

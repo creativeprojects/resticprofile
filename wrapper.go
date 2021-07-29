@@ -61,7 +61,6 @@ func (c *commandError) ExitCode() (int, error) {
 
 type resticWrapper struct {
 	resticBinary string
-	initialize   bool
 	dryRun       bool
 	noLock       bool
 	lockWait     *time.Duration
@@ -71,6 +70,7 @@ type resticWrapper struct {
 	moreArgs     []string
 	sigChan      chan os.Signal
 	setPID       func(pid int)
+	metrics      *prom.Metrics
 
 	// States
 	startTime     time.Time
@@ -80,7 +80,6 @@ type resticWrapper struct {
 
 func newResticWrapper(
 	resticBinary string,
-	initialize bool,
 	dryRun bool,
 	profile *config.Profile,
 	command string,
@@ -89,7 +88,6 @@ func newResticWrapper(
 ) *resticWrapper {
 	return &resticWrapper{
 		resticBinary:  resticBinary,
-		initialize:    initialize,
 		dryRun:        dryRun,
 		noLock:        false,
 		lockWait:      nil,
@@ -125,6 +123,11 @@ func (r *resticWrapper) maxWaitOnLock(duration time.Duration) {
 	}
 }
 
+// setPrometheus metrics instance if configured
+func (r *resticWrapper) setPrometheus(metrics *prom.Metrics) {
+	r.metrics = metrics
+}
+
 func (r *resticWrapper) runProfile() error {
 	lockFile := r.profile.Lock
 	if r.noLock {
@@ -147,7 +150,7 @@ func (r *resticWrapper) runProfile() error {
 
 				// breaking change from 0.7.0 and 0.7.1:
 				// run the initialization after the pre-profile commands
-				if r.initialize && r.command != constants.CommandInit {
+				if (r.global.Initialize || r.profile.Initialize) && r.command != constants.CommandInit {
 					_ = r.runInitialize()
 					// it's ok for the initialize to error out when the repository exists
 				}
@@ -559,25 +562,11 @@ func (r *resticWrapper) statusError(command string, summary shell.Summary, stder
 }
 
 func (r *resticWrapper) prometheus(command string, status prom.Status, summary shell.Summary) {
-	if r.profile.PrometheusSaveToFile == "" && r.profile.PrometheusPush == "" || command != constants.CommandBackup {
+	if r.metrics == nil {
 		return
 	}
-	p := prom.NewBackup("")
-	p.Results("", status, summary)
-
-	if r.profile.PrometheusSaveToFile != "" {
-		err := p.SaveTo(r.profile.PrometheusSaveToFile)
-		if err != nil {
-			// not important enough to throw an error here
-			clog.Warningf("saving prometheus file %q: %v", r.profile.PrometheusSaveToFile, err)
-		}
-	}
-	if r.profile.PrometheusPush != "" {
-		err := p.Push(r.profile.PrometheusPush, command)
-		if err != nil {
-			// not important enough to throw an error here
-			clog.Warningf("pushing prometheus metrics to %q: %v", r.profile.PrometheusPush, err)
-		}
+	if command == constants.CommandBackup {
+		r.metrics.BackupResults(r.profile.Name, status, summary)
 	}
 }
 

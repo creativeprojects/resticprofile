@@ -114,7 +114,7 @@ prom:
     force-inactive-lock: true
     initialize: true
     inherit: default
-    prometheus-save-to-file: "test.prom"
+    prometheus-save-to-file: "self.prom"
     backup:
         extended-status: true
         no-error-on-warning: true
