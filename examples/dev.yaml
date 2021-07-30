@@ -86,7 +86,7 @@ self:
     force-inactive-lock: true
     initialize: true
     inherit: default
-    status-file: /Volumes/RAMDisk/status.json
+    # status-file: /Volumes/RAMDisk/status.json
     backup:
         extended-status: false
         check-before: false
@@ -115,11 +115,16 @@ prom:
     initialize: true
     inherit: default
     prometheus-save-to-file: "self.prom"
+    prometheus-push: "http://localhost:9091/"
+    status-file: /Volumes/RAMDisk/status.json
     backup:
         extended-status: true
         no-error-on-warning: true
-        source: {{ .CurrentDir }}
+        source:
+          - {{ .CurrentDir }}
         {{ template "tags" . }}
+        # exclude:
+        #   - examples/private
 
 system:
     initialize: true

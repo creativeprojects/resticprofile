@@ -7,10 +7,12 @@ import (
 	"math"
 	"runtime"
 	"strings"
+
+	"github.com/creativeprojects/resticprofile/progress"
 )
 
 // ScanBackupPlain should populate the backup summary values from the standard output
-var ScanBackupPlain ScanOutput = func(r io.Reader, summary *Summary, w io.Writer) error {
+var ScanBackupPlain ScanOutput = func(r io.Reader, summary *progress.Summary, w io.Writer) error {
 	eol := "\n"
 	if runtime.GOOS == "windows" {
 		eol = "\r\n"

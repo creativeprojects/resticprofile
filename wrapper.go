@@ -15,49 +15,10 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
-	"github.com/creativeprojects/resticprofile/prom"
+	"github.com/creativeprojects/resticprofile/progress"
 	"github.com/creativeprojects/resticprofile/shell"
-	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 )
-
-type commandError struct {
-	scd    shellCommandDefinition
-	stderr string
-	err    error
-}
-
-func newCommandError(command shellCommandDefinition, stderr string, err error) *commandError {
-	return &commandError{
-		scd:    command,
-		stderr: stderr,
-		err:    err,
-	}
-}
-
-func (c *commandError) Error() string {
-	return c.err.Error()
-}
-
-func (c *commandError) Commandline() string {
-	args := ""
-	if c.scd.args != nil && len(c.scd.args) > 0 {
-		args = fmt.Sprintf(" \"%s\"", strings.Join(c.scd.args, "\" \""))
-	}
-	return fmt.Sprintf("\"%s\"%s", c.scd.command, args)
-}
-
-func (c *commandError) Stderr() string {
-	return c.stderr
-}
-
-func (c *commandError) ExitCode() (int, error) {
-	if exitError, ok := asExitError(c.err); ok {
-		return exitError.ExitCode(), nil
-	} else {
-		return 0, errors.New("exit code not available")
-	}
-}
 
 type resticWrapper struct {
 	resticBinary string
@@ -70,7 +31,7 @@ type resticWrapper struct {
 	moreArgs     []string
 	sigChan      chan os.Signal
 	setPID       func(pid int)
-	metrics      *prom.Metrics
+	progress     []progress.Receiver
 
 	// States
 	startTime     time.Time
@@ -96,6 +57,7 @@ func newResticWrapper(
 		command:       command,
 		moreArgs:      moreArgs,
 		sigChan:       c,
+		progress:      make([]progress.Receiver, 0),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
@@ -123,9 +85,15 @@ func (r *resticWrapper) maxWaitOnLock(duration time.Duration) {
 	}
 }
 
-// setPrometheus metrics instance if configured
-func (r *resticWrapper) setPrometheus(metrics *prom.Metrics) {
-	r.metrics = metrics
+// addProgress instance to report back
+func (r *resticWrapper) addProgress(p progress.Receiver) {
+	r.progress = append(r.progress, p)
+}
+
+func (r *resticWrapper) summary(command string, summary progress.Summary, stderr string, result error) {
+	for _, p := range r.progress {
+		p.Summary(command, summary, stderr, result)
+	}
 }
 
 func (r *resticWrapper) runProfile() error {
@@ -275,14 +243,13 @@ func (r *resticWrapper) runCheck() error {
 		rCommand := r.prepareCommand(constants.CommandCheck, args)
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
+		r.summary(constants.CommandCheck, summary, stderr, err)
 		if err != nil {
 			if r.canRetryAfterError(constants.CommandCheck, summary, err) {
 				continue
 			}
-			r.statusError(constants.CommandCheck, summary, stderr, err)
 			return newCommandError(rCommand, stderr, fmt.Errorf("backup check on profile '%s': %w", r.profile.Name, err))
 		}
-		r.statusSuccess(constants.CommandCheck, summary, stderr)
 		return nil
 	}
 }
@@ -294,14 +261,13 @@ func (r *resticWrapper) runRetention() error {
 		rCommand := r.prepareCommand(constants.CommandForget, args)
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
+		r.summary(constants.SectionConfigurationRetention, summary, stderr, err)
 		if err != nil {
 			if r.canRetryAfterError(constants.CommandForget, summary, err) {
 				continue
 			}
-			r.statusError(constants.SectionConfigurationRetention, summary, stderr, err)
 			return newCommandError(rCommand, stderr, fmt.Errorf("backup retention on profile '%s': %w", r.profile.Name, err))
 		}
-		r.statusSuccess(constants.SectionConfigurationRetention, summary, stderr)
 		return nil
 	}
 }
@@ -312,7 +278,7 @@ func (r *resticWrapper) runCommand(command string) error {
 	for {
 		rCommand := r.prepareCommand(command, args)
 
-		if command == constants.CommandBackup && r.profile.Backup != nil && (r.profile.StatusFile != "" || r.profile.PrometheusSaveToFile != "" || r.profile.PrometheusPush != "") {
+		if command == constants.CommandBackup && len(r.progress) > 0 {
 			if r.profile.Backup.ExtendedStatus {
 				rCommand.scanOutput = shell.ScanBackupJson
 			} else if !term.OsStdoutIsTerminal() {
@@ -324,19 +290,14 @@ func (r *resticWrapper) runCommand(command string) error {
 
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
+		r.summary(r.command, summary, stderr, err)
 
 		if err != nil && !r.canSucceedAfterError(command, summary, err) {
 			if r.canRetryAfterError(command, summary, err) {
 				continue
 			}
-
-			r.statusError(r.command, summary, stderr, err)
-			r.prometheus(r.command, prom.StatusFailed, summary)
 			return newCommandError(rCommand, stderr, fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 		}
-
-		r.statusSuccess(r.command, summary, stderr)
-		r.prometheus(r.command, prom.StatusSuccess, summary)
 		clog.Infof("profile '%s': finished '%s'", r.profile.Name, command)
 		return nil
 	}
@@ -348,11 +309,10 @@ func (r *resticWrapper) runUnlock() error {
 	rCommand := r.prepareCommand(constants.CommandUnlock, args)
 	summary, stderr, err := runShellCommand(rCommand)
 	r.executionTime += summary.Duration
+	r.summary(constants.CommandUnlock, summary, stderr, err)
 	if err != nil {
-		r.statusError(constants.CommandUnlock, summary, stderr, err)
 		return newCommandError(rCommand, stderr, fmt.Errorf("unlock on profile '%s': %w", r.profile.Name, err))
 	}
-	r.statusSuccess(constants.CommandUnlock, summary, stderr)
 	return nil
 }
 
@@ -511,67 +471,8 @@ func (r *resticWrapper) getProfileEnvironment() []string {
 	}
 }
 
-func (r *resticWrapper) statusSuccess(command string, summary shell.Summary, stderr string) {
-	if r.profile.StatusFile == "" {
-		return
-	}
-	var err error
-	switch command {
-	case constants.CommandBackup:
-		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).BackupSuccess(summary, stderr)
-		err = status.Save()
-	case constants.CommandCheck:
-		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).CheckSuccess(summary, stderr)
-		err = status.Save()
-	case constants.SectionConfigurationRetention, constants.CommandForget:
-		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).RetentionSuccess(summary, stderr)
-		err = status.Save()
-	}
-	if err != nil {
-		// not important enough to throw an error here
-		clog.Warningf("saving status file '%s': %v", r.profile.StatusFile, err)
-	}
-}
-
-func (r *resticWrapper) statusError(command string, summary shell.Summary, stderr string, fail error) {
-	if r.profile.StatusFile == "" {
-		return
-	}
-	var err error
-	switch command {
-	case constants.CommandBackup:
-		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).BackupError(fail, summary, stderr)
-		err = status.Save()
-	case constants.CommandCheck:
-		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).CheckError(fail, summary, stderr)
-		err = status.Save()
-	case constants.SectionConfigurationRetention, constants.CommandForget:
-		status := status.NewStatus(r.profile.StatusFile).Load()
-		status.Profile(r.profile.Name).RetentionError(fail, summary, stderr)
-		err = status.Save()
-	}
-	if err != nil {
-		// not important enough to throw an error here
-		clog.Warningf("saving status file '%s': %v", r.profile.StatusFile, err)
-	}
-}
-
-func (r *resticWrapper) prometheus(command string, status prom.Status, summary shell.Summary) {
-	if r.metrics == nil {
-		return
-	}
-	if command == constants.CommandBackup {
-		r.metrics.BackupResults(r.profile.Name, status, summary)
-	}
-}
-
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
-func (r *resticWrapper) canSucceedAfterError(command string, summary shell.Summary, err error) bool {
+func (r *resticWrapper) canSucceedAfterError(command string, summary progress.Summary, err error) bool {
 	if err == nil {
 		return true
 	}
@@ -588,7 +489,7 @@ func (r *resticWrapper) canSucceedAfterError(command string, summary shell.Summa
 }
 
 // canRetryAfterError returns true if an error reported by running restic in runCommand, runRetention or runCheck can be retried
-func (r *resticWrapper) canRetryAfterError(command string, summary shell.Summary, err error) bool {
+func (r *resticWrapper) canRetryAfterError(command string, summary progress.Summary, err error) bool {
 	if err == nil {
 		panic("invalid usage. err is nil.")
 	}
@@ -609,7 +510,7 @@ func (r *resticWrapper) canRetryAfterError(command string, summary shell.Summary
 	return retry
 }
 
-func (r *resticWrapper) canRetryAfterRemoteLockFailure(output shell.OutputAnalysis) (bool, time.Duration) {
+func (r *resticWrapper) canRetryAfterRemoteLockFailure(output progress.OutputAnalysis) (bool, time.Duration) {
 	if !output.ContainsRemoteLockFailure() {
 		return false, 0
 	}

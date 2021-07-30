@@ -19,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/prom"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
 )
@@ -359,36 +360,17 @@ func runProfile(
 		wrapper.maxWaitOnLock(flags.lockWait)
 	}
 
-	var metrics *prom.Metrics
+	if profile.StatusFile != "" {
+		wrapper.addProgress(status.NewProgress(profile))
+	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
-		metrics = prom.NewMetrics(group)
-		wrapper.setPrometheus(metrics)
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version)))
 	}
 
 	err = wrapper.runProfile()
 	if err != nil {
 		return err
 	}
-
-	if metrics == nil {
-		return nil
-	}
-
-	if profile.PrometheusSaveToFile != "" {
-		err := metrics.SaveTo(profile.PrometheusSaveToFile)
-		if err != nil {
-			// not important enough to throw an error here
-			clog.Warningf("saving prometheus file %q: %v", profile.PrometheusSaveToFile, err)
-		}
-	}
-	if profile.PrometheusPush != "" {
-		err := metrics.Push(profile.PrometheusPush, resticCommand)
-		if err != nil {
-			// not important enough to throw an error here
-			clog.Warningf("pushing prometheus metrics to %q: %v", profile.PrometheusPush, err)
-		}
-	}
-
 	return nil
 }
 

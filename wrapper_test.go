@@ -13,7 +13,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/progress"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -360,7 +360,7 @@ func TestRunAfterBackupFailed(t *testing.T) {
 }
 
 type mockOutputAnalysis struct {
-	shell.OutputAnalysis
+	progress.OutputAnalysis
 	lockWho      string
 	lockDuration time.Duration
 }

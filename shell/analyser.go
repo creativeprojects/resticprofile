@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/progress"
 )
 
 type OutputAnalyser struct {
@@ -67,11 +68,11 @@ func (a OutputAnalyser) GetRemoteLockedBy() (string, bool) {
 	return "", false
 }
 
-func (a OutputAnalyser) AnalyseStringLines(output string) OutputAnalysis {
+func (a OutputAnalyser) AnalyseStringLines(output string) progress.OutputAnalysis {
 	return a.AnalyseLines(strings.NewReader(output))
 }
 
-func (a OutputAnalyser) AnalyseLines(output io.Reader) OutputAnalysis {
+func (a OutputAnalyser) AnalyseLines(output io.Reader) progress.OutputAnalysis {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -100,4 +101,4 @@ func (a OutputAnalyser) analyseLine(line string) {
 }
 
 // Ensure OutputAnalyser implements OutputAnalysis
-var _ = OutputAnalysis(NewOutputAnalyser())
+var _ = progress.OutputAnalysis(NewOutputAnalyser())
