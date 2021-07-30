@@ -33,7 +33,7 @@ func NewMetrics(group, version string) *Metrics {
 		Name:      "build_info",
 		Help:      "resticprofile build information.",
 	}, []string{goVersionLabel, versionLabel})
-	p.info.With(prometheus.Labels{goVersionLabel: runtime.Version(), versionLabel: version})
+	p.info.With(prometheus.Labels{goVersionLabel: runtime.Version(), versionLabel: version}).Set(1)
 
 	p.backup = newBackupMetrics(group)
 
