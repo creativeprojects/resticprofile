@@ -1426,7 +1426,7 @@ profile:
 # Prometheus
 
 resticprofile can generate a prometheus file, or send the report to a push gateway. For now, only a `backup` command will generate a report.
-Here's a configuration example with both options:
+Here's a configuration example with both options to generate a file and send to a push gateway:
 
 ```yaml
 root:
@@ -1483,6 +1483,27 @@ resticprofile_backup_status{profile="root"} 1
 resticprofile_build_info{goversion="go1.16.6",version="0.15.0-dev"} 1
 
 ```
+
+## User defined labels
+
+You can add your own prometheus labels. Please note they will be applied to **all** the metrics.
+Here's an example:
+
+```yaml
+root:
+    inherit: default
+    prometheus-save-to-file: "root.prom"
+    prometheus-push: "http://localhost:9091/"
+    prometheus-labels:
+      - host: {{ .Hostname }}
+    backup:
+        extended-status: true
+        no-error-on-warning: true
+        source:
+          - /
+```
+
+which will add the `host` label to all your metrics.
 
 
 # Variable expansion in configuration file

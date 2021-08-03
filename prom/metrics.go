@@ -16,26 +16,28 @@ const goVersionLabel = "goversion"
 const versionLabel = "version"
 
 type Metrics struct {
-	group    string
-	registry *prometheus.Registry
-	info     *prometheus.GaugeVec
-	backup   BackupMetrics
+	group        string
+	configLabels map[string]string
+	registry     *prometheus.Registry
+	info         *prometheus.GaugeVec
+	backup       BackupMetrics
 }
 
-func NewMetrics(group, version string) *Metrics {
+func NewMetrics(group, version string, configLabels map[string]string) *Metrics {
 	registry := prometheus.NewRegistry()
 	p := &Metrics{
-		group:    group,
-		registry: registry,
+		group:        group,
+		configLabels: configLabels,
+		registry:     registry,
 	}
 	p.info = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "build_info",
 		Help:      "resticprofile build information.",
-	}, []string{goVersionLabel, versionLabel})
-	p.info.With(prometheus.Labels{goVersionLabel: runtime.Version(), versionLabel: version}).Set(1)
+	}, mergeKeys([]string{goVersionLabel, versionLabel}, configLabels))
+	p.info.With(mergeLabels(prometheus.Labels{goVersionLabel: runtime.Version(), versionLabel: version}, configLabels)).Set(1)
 
-	p.backup = newBackupMetrics(group)
+	p.backup = newBackupMetrics(group, configLabels)
 
 	registry.MustRegister(
 		p.info,
@@ -59,6 +61,7 @@ func (p *Metrics) BackupResults(profile string, status Status, summary progress.
 	if p.group != "" {
 		labels[groupLabel] = p.group
 	}
+	labels = mergeLabels(labels, p.configLabels)
 	p.backup.duration.With(labels).Set(summary.Duration.Seconds())
 
 	p.backup.filesNew.With(labels).Set(float64(summary.FilesNew))
@@ -83,4 +86,18 @@ func (p *Metrics) Push(url, jobName string) error {
 	return push.New(url, jobName).
 		Gatherer(p.registry).
 		Add()
+}
+
+func mergeKeys(keys []string, add map[string]string) []string {
+	for key := range add {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
+func mergeLabels(labels prometheus.Labels, add map[string]string) prometheus.Labels {
+	for key, value := range add {
+		labels[key] = value
+	}
+	return labels
 }

@@ -360,11 +360,12 @@ func runProfile(
 		wrapper.maxWaitOnLock(flags.lockWait)
 	}
 
+	// add progress receivers if necessary
 	if profile.StatusFile != "" {
 		wrapper.addProgress(status.NewProgress(profile))
 	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
-		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version)))
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version, profile.PrometheusLabels)))
 	}
 
 	err = wrapper.runProfile()

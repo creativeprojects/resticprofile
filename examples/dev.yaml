@@ -116,6 +116,8 @@ prom:
     inherit: default
     prometheus-save-to-file: "self.prom"
     prometheus-push: "http://localhost:9091/"
+    prometheus-labels:
+      - host: {{ .Hostname }}
     status-file: /Volumes/RAMDisk/status.json
     backup:
         extended-status: true

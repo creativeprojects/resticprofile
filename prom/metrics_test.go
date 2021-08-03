@@ -9,7 +9,7 @@ import (
 )
 
 func TestSaveSingleBackup(t *testing.T) {
-	p := NewMetrics("", "")
+	p := NewMetrics("", "", nil)
 	p.BackupResults("test", StatusSuccess, progress.Summary{
 		Duration:   time.Duration(11 * time.Second),
 		BytesAdded: 100,
@@ -19,8 +19,19 @@ func TestSaveSingleBackup(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
+	p := NewMetrics("", "", map[string]string{"test_label": "test_value"})
+	p.BackupResults("test", StatusSuccess, progress.Summary{
+		Duration:   time.Duration(11 * time.Second),
+		BytesAdded: 100,
+		BytesTotal: 1000,
+	})
+	err := p.SaveTo("test_add_label.prom")
+	require.NoError(t, err)
+}
+
 func TestSaveBackupsInGroup(t *testing.T) {
-	p := NewMetrics("full-backup", "")
+	p := NewMetrics("full-backup", "", nil)
 	p.BackupResults("test1", StatusSuccess, progress.Summary{
 		Duration:   time.Duration(11 * time.Second),
 		BytesAdded: 1001,
