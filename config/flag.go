@@ -123,6 +123,6 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 		return stringifyValue(value.Elem())
 
 	default:
-		panic(fmt.Errorf("unexpected type %s", value.Kind()))
+		return []string{fmt.Sprintf("ERROR: unexpected type %s", value.Kind())}, false
 	}
 }
