@@ -13,6 +13,7 @@ import (
 type shellCommandDefinition struct {
 	command    string
 	args       []string
+	publicArgs []string
 	env        []string
 	useStdin   bool
 	stdout     io.Writer
@@ -29,15 +30,16 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 		env = make([]string, 0)
 	}
 	return shellCommandDefinition{
-		command:  command,
-		args:     args,
-		env:      env,
-		useStdin: false,
-		stdout:   os.Stdout,
-		stderr:   os.Stderr,
-		dryRun:   dryRun,
-		sigChan:  sigChan,
-		setPID:   setPID,
+		command:    command,
+		args:       args,
+		publicArgs: args,
+		env:        env,
+		useStdin:   false,
+		stdout:     os.Stdout,
+		stderr:     os.Stderr,
+		dryRun:     dryRun,
+		sigChan:    sigChan,
+		setPID:     setPID,
 	}
 }
 
@@ -46,7 +48,7 @@ func runShellCommand(command shellCommandDefinition) (progress.Summary, string, 
 	var err error
 
 	if command.dryRun {
-		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.args, " "))
+		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
 		return progress.Summary{}, "", nil
 	}
 

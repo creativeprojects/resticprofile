@@ -26,8 +26,9 @@ func (c *commandError) Error() string {
 
 func (c *commandError) Commandline() string {
 	args := ""
-	if c.scd.args != nil && len(c.scd.args) > 0 {
-		args = fmt.Sprintf(" \"%s\"", strings.Join(c.scd.args, "\" \""))
+	argsList := c.scd.publicArgs
+	if argsList != nil && len(argsList) > 0 {
+		args = fmt.Sprintf(" \"%s\"", strings.Join(argsList, "\" \""))
 	}
 	return fmt.Sprintf("\"%s\"%s", c.scd.command, args)
 }
