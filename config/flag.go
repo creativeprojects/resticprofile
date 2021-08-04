@@ -33,7 +33,7 @@ func convertStructToFlags(orig interface{}) map[string][]string {
 		field := typeOf.Field(i)
 		if argument, ok := field.Tag.Lookup("argument"); ok {
 			if argument != "" {
-				convert, ok := stringifyValue(valueOf.Field(i))
+				convert, ok := stringifyConfidentialValue(valueOf.Field(i))
 				if ok {
 					flags[argument] = convert
 				}
@@ -49,6 +49,20 @@ func stringifyValueOf(value interface{}) ([]string, bool) {
 		return emptyStringArray, false
 	}
 	return stringifyValue(reflect.ValueOf(value))
+}
+
+// stringifyConfidentialValue returns a string representation of the value including confidential parts
+func stringifyConfidentialValue(value reflect.Value) ([]string, bool) {
+	if value.Type() == reflect.TypeOf(ConfidentialValue{}) {
+		method := value.MethodByName("Value")
+		if method.IsValid() {
+			values := method.Call([]reflect.Value{})
+			if len(values) == 1 {
+				value = values[0]
+			}
+		}
+	}
+	return stringifyValue(value)
 }
 
 // stringifyValue returns a string representation of the value, and if it has any value at all
@@ -123,6 +137,10 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 		return stringifyValue(value.Elem())
 
 	default:
+		if stringer != nil {
+			stringVal = stringer.String()
+			return []string{stringVal}, stringVal != ""
+		}
 		return []string{fmt.Sprintf("ERROR: unexpected type %s", value.Kind())}, false
 	}
 }

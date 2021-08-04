@@ -51,18 +51,23 @@ func showSubStruct(orig interface{}, stack []string, display *Display) error {
 				continue
 			}
 			if valueOf.Field(i).Kind() == reflect.Struct {
-				var err error
-				if key == ",squash" {
-					// display on the same level
-					err = showSubStruct(valueOf.Field(i).Interface(), stack, display)
+				fieldIf := valueOf.Field(i).Interface()
+				if _, ok := fieldIf.(fmt.Stringer); ok {
+					// Pass as is. The struct has its own String() implementation
 				} else {
-					// start of a new struct
-					err = showSubStruct(valueOf.Field(i).Interface(), append(stack, key), display)
+					var err error
+					if key == ",squash" {
+						// display on the same level
+						err = showSubStruct(fieldIf, stack, display)
+					} else {
+						// start of a new struct
+						err = showSubStruct(fieldIf, append(stack, key), display)
+					}
+					if err != nil {
+						return err
+					}
+					continue
 				}
-				if err != nil {
-					return err
-				}
-				continue
 			}
 			if valueOf.Field(i).Kind() == reflect.Map {
 				if valueOf.Field(i).Len() == 0 {
