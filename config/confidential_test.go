@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -35,6 +36,26 @@ func TestConfidentialHideSubmatch(t *testing.T) {
 
 	expected := fmt.Sprintf("some-%s-with-%s-parts", ConfidentialReplacement, ConfidentialReplacement)
 	assert.Equal(t, expected, value.String())
+}
+
+func TestFmtStringDoesntLeakConfidentialValues(t *testing.T) {
+	value := NewConfidentialValue("secret")
+	value.hideValue()
+
+	assert.Equal(t, ConfidentialReplacement, fmt.Sprintf("%s", value))
+	assert.Equal(t, ConfidentialReplacement, fmt.Sprintf("%v", value))
+	assert.Equal(t, ConfidentialReplacement, value.String())
+	assert.Equal(t, "secret", value.Value())
+}
+
+func TestStringifyPassesConfidentialValues(t *testing.T) {
+	value := NewConfidentialValue("secret")
+	value.hideValue()
+
+	v1, _ := stringifyValue(reflect.ValueOf(value))
+	v2, _ := stringifyConfidentialValue(reflect.ValueOf(value))
+	assert.Equal(t, []string{ConfidentialReplacement}, v1)
+	assert.Equal(t, []string{"secret"}, v2)
 }
 
 func TestConfidentialURLs(t *testing.T) {
