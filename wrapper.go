@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -195,18 +194,18 @@ func (r *resticWrapper) runProfile() error {
 	return nil
 }
 
-func (r *resticWrapper) prepareCommand(command string, args []string) shellCommandDefinition {
-	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
-	arguments := append([]string{command}, args...)
-
+func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCommandDefinition {
 	if r.moreArgs != nil && len(r.moreArgs) > 0 {
-		arguments = append(arguments, r.moreArgs...)
+		args.AddArgs(r.moreArgs, shell.ArgEscape)
 	}
 
 	// Special case for backup command
 	if command == constants.CommandBackup {
-		arguments = append(arguments, r.profile.GetBackupSource()...)
+		args.AddArgs(r.profile.GetBackupSource(), shell.ArgEscape)
 	}
+
+	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
+	arguments := append([]string{command}, args.GetAll()...)
 
 	// Create non-confidential arguments list for logging
 	publicArguments := config.GetNonConfidentialValues(r.profile, arguments)
@@ -229,7 +228,7 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 
 func (r *resticWrapper) runInitialize() error {
 	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandInit))
+	args := r.profile.GetCommandFlags(constants.CommandInit)
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	// don't display any error
 	rCommand.stderr = nil
@@ -242,7 +241,7 @@ func (r *resticWrapper) runInitialize() error {
 
 func (r *resticWrapper) runCheck() error {
 	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandCheck))
+	args := r.profile.GetCommandFlags(constants.CommandCheck)
 	for {
 		rCommand := r.prepareCommand(constants.CommandCheck, args)
 		summary, stderr, err := runShellCommand(rCommand)
@@ -260,7 +259,7 @@ func (r *resticWrapper) runCheck() error {
 
 func (r *resticWrapper) runRetention() error {
 	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetRetentionFlags())
+	args := r.profile.GetRetentionFlags()
 	for {
 		rCommand := r.prepareCommand(constants.CommandForget, args)
 		summary, stderr, err := runShellCommand(rCommand)
@@ -278,7 +277,7 @@ func (r *resticWrapper) runRetention() error {
 
 func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
-	args := convertIntoArgs(r.profile.GetCommandFlags(command))
+	args := r.profile.GetCommandFlags(command)
 	for {
 		rCommand := r.prepareCommand(command, args)
 
@@ -309,7 +308,7 @@ func (r *resticWrapper) runCommand(command string) error {
 
 func (r *resticWrapper) runUnlock() error {
 	clog.Infof("profile '%s': unlock stale locks", r.profile.Name)
-	args := convertIntoArgs(r.profile.GetCommandFlags(constants.CommandUnlock))
+	args := r.profile.GetCommandFlags(constants.CommandUnlock)
 	rCommand := r.prepareCommand(constants.CommandUnlock, args)
 	summary, stderr, err := runShellCommand(rCommand)
 	r.executionTime += summary.Duration
@@ -589,50 +588,6 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output progress.OutputAna
 	}
 
 	return false, 0
-}
-
-// convertIntoArgs converts a map of arguments into a list of arguments to send on the command line
-func convertIntoArgs(flags map[string][]string) []string {
-	args := make([]string, 0)
-
-	if len(flags) == 0 {
-		return args
-	}
-
-	// we make a list of keys first, so we can loop on the map from an ordered list of keys
-	keys := make([]string, 0, len(flags))
-	for key := range flags {
-		keys = append(keys, key)
-	}
-	// sort the keys in order
-	sort.Strings(keys)
-
-	// now we loop from the ordered list of keys
-	for _, key := range keys {
-		values := flags[key]
-		if values == nil {
-			continue
-		}
-		if len(values) == 0 {
-			args = append(args, fmt.Sprintf("--%s", key))
-			continue
-		}
-		for _, value := range values {
-			args = append(args, fmt.Sprintf("--%s", key))
-			if value != "" {
-				args = append(args, quoteArgument(value))
-			}
-		}
-	}
-	return args
-}
-
-func quoteArgument(value string) string {
-	if strings.Contains(value, " ") {
-		// quote the string containing spaces
-		value = fmt.Sprintf(`"%s"`, value)
-	}
-	return value
 }
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk

@@ -5,5 +5,8 @@
         "resticprofile",
         "systemd"
     ],
-    "files.eol": "\n"
+    "files.eol": "\n",
+    "go-template.languages": [
+        "yaml"
+    ]
 }

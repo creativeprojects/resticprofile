@@ -6,6 +6,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/shell"
 )
 
 // Profile contains the whole profile configuration
@@ -51,8 +52,8 @@ type BackupSection struct {
 	RunAfter         []string               `mapstructure:"run-after"`
 	UseStdin         bool                   `mapstructure:"stdin" argument:"stdin"`
 	Source           []string               `mapstructure:"source"`
-	Exclude          []string               `mapstructure:"exclude" argument:"exclude"`
-	Iexclude         []string               `mapstructure:"iexclude" argument:"iexclude"`
+	Exclude          []string               `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
+	Iexclude         []string               `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
 	ExcludeFile      []string               `mapstructure:"exclude-file" argument:"exclude-file"`
 	FilesFrom        []string               `mapstructure:"files-from" argument:"files-from"`
 	ExtendedStatus   bool                   `mapstructure:"extended-status" argument:"json"`
@@ -147,17 +148,17 @@ func (p *Profile) SetHost(hostname string) {
 }
 
 // GetCommonFlags returns the flags common to all commands
-func (p *Profile) GetCommonFlags() map[string][]string {
+func (p *Profile) GetCommonFlags() *shell.Args {
 	// Flags from the profile fields
-	flags := convertStructToFlags(*p)
+	flags := convertStructToArgs(*p, shell.NewArgs())
 
-	flags = addOtherFlags(flags, p.OtherFlags)
+	flags = addOtherArgs(flags, p.OtherFlags)
 
 	return flags
 }
 
 // GetCommandFlags returns the flags specific to the command (backup, snapshots, forget, etc.)
-func (p *Profile) GetCommandFlags(command string) map[string][]string {
+func (p *Profile) GetCommandFlags(command string) *shell.Args {
 	flags := p.GetCommonFlags()
 
 	switch command {
@@ -166,35 +167,32 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 			clog.Warning("No definition for backup command in this profile")
 			break
 		}
-		commandFlags := convertStructToFlags(*p.Backup)
-		if len(commandFlags) > 0 {
-			flags = mergeFlags(flags, commandFlags)
-		}
-		flags = addOtherFlags(flags, p.Backup.OtherFlags)
+		flags = convertStructToArgs(*p.Backup, flags)
+		flags = addOtherArgs(flags, p.Backup.OtherFlags)
 
 	case constants.CommandSnapshots:
 		if p.Snapshots != nil {
-			flags = addOtherFlags(flags, p.Snapshots)
+			flags = addOtherArgs(flags, p.Snapshots)
 		}
 
 	case constants.CommandCheck:
 		if p.Check != nil && p.Check.OtherFlags != nil {
-			flags = addOtherFlags(flags, p.Check.OtherFlags)
+			flags = addOtherArgs(flags, p.Check.OtherFlags)
 		}
 
 	case constants.CommandPrune:
 		if p.Prune != nil && p.Prune.OtherFlags != nil {
-			flags = addOtherFlags(flags, p.Prune.OtherFlags)
+			flags = addOtherArgs(flags, p.Prune.OtherFlags)
 		}
 
 	case constants.CommandForget:
 		if p.Forget != nil {
-			flags = addOtherFlags(flags, p.Forget.OtherFlags)
+			flags = addOtherArgs(flags, p.Forget.OtherFlags)
 		}
 
 	case constants.CommandMount:
 		if p.Mount != nil {
-			flags = addOtherFlags(flags, p.Mount)
+			flags = addOtherArgs(flags, p.Mount)
 		}
 	}
 
@@ -202,10 +200,10 @@ func (p *Profile) GetCommandFlags(command string) map[string][]string {
 }
 
 // GetRetentionFlags returns the flags specific to the "forget" command being run as part of a backup
-func (p *Profile) GetRetentionFlags() map[string][]string {
+func (p *Profile) GetRetentionFlags() *shell.Args {
 	// it shouldn't happen when started as a command, but can occur in a unit test
 	if p.Retention == nil {
-		return nil
+		return shell.NewArgs()
 	}
 
 	// if there was no "other" flags, the map could be un-initialized
@@ -218,7 +216,7 @@ func (p *Profile) GetRetentionFlags() map[string][]string {
 	if _, found := p.Retention.OtherFlags[constants.ParameterPath]; !found {
 		p.Retention.OtherFlags[constants.ParameterPath] = fixPaths(p.Backup.Source, absolutePath)
 	}
-	flags = addOtherFlags(flags, p.Retention.OtherFlags)
+	flags = addOtherArgs(flags, p.Retention.OtherFlags)
 	return flags
 }
 
@@ -307,33 +305,6 @@ func getScheduleSection(section interface{}) *ScheduleSection {
 		}
 	}
 	return nil
-}
-
-func addOtherFlags(flags map[string][]string, otherFlags map[string]interface{}) map[string][]string {
-	if len(otherFlags) == 0 {
-		return flags
-	}
-
-	// Add other flags
-	for name, value := range otherFlags {
-		if convert, ok := stringifyValueOf(value); ok {
-			flags[name] = convert
-		}
-	}
-	return flags
-}
-
-func mergeFlags(flags, newFlags map[string][]string) map[string][]string {
-	if len(flags) == 0 && newFlags != nil {
-		return newFlags
-	}
-	if flags != nil && len(newFlags) == 0 {
-		return flags
-	}
-	for key, value := range newFlags {
-		flags[key] = value
-	}
-	return flags
 }
 
 func replaceTrueValue(source map[string]interface{}, key, replace string) {

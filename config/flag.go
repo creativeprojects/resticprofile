@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"github.com/creativeprojects/resticprofile/shell"
 )
 
 var (
@@ -14,7 +16,7 @@ func init() {
 	emptyStringArray = make([]string, 0)
 }
 
-func convertStructToFlags(orig interface{}) map[string][]string {
+func convertStructToArgs(orig interface{}, args *shell.Args) *shell.Args {
 	typeOf := reflect.TypeOf(orig)
 	valueOf := reflect.ValueOf(orig)
 
@@ -24,7 +26,9 @@ func convertStructToFlags(orig interface{}) map[string][]string {
 		valueOf = valueOf.Elem()
 	}
 
-	flags := make(map[string][]string)
+	if args == nil {
+		args = shell.NewArgs()
+	}
 	// NumField() will panic if typeOf is not a struct
 	if typeOf.Kind() != reflect.Struct {
 		panic(fmt.Errorf("unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct))
@@ -35,12 +39,32 @@ func convertStructToFlags(orig interface{}) map[string][]string {
 			if argument != "" {
 				convert, ok := stringifyConfidentialValue(valueOf.Field(i))
 				if ok {
-					flags[argument] = convert
+					argType := shell.ArgEscape
+					// check if the argument type was specified
+					rawType, ok := field.Tag.Lookup("argument-type")
+					if ok && rawType == "no-glob" {
+						argType = shell.ArgNoGlobQuote
+					}
+					args.AddFlags(argument, convert, argType)
 				}
 			}
 		}
 	}
-	return flags
+	return args
+}
+
+func addOtherArgs(args *shell.Args, otherArgs map[string]interface{}) *shell.Args {
+	if len(otherArgs) == 0 {
+		return args
+	}
+
+	// Add other args
+	for name, value := range otherArgs {
+		if convert, ok := stringifyValueOf(value); ok {
+			args.AddFlags(name, convert, shell.ArgEscape)
+		}
+	}
+	return args
 }
 
 // stringifyValueOf returns a string representation of the value, and if it has any value at all
