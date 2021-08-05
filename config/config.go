@@ -170,52 +170,64 @@ func (c *Config) AllSettings() map[string]interface{} {
 }
 
 // GetProfileSections returns a list of profiles with all the sections defined inside each
-func (c *Config) GetProfileSections() map[string][]string {
-	profiles := map[string][]string{}
+func (c *Config) GetProfileSections() map[string]ProfileInfo {
+	profiles := map[string]ProfileInfo{}
 	allSettings := c.AllSettings()
 	for sectionKey, sectionRawValue := range allSettings {
 		if sectionKey == constants.SectionConfigurationGlobal || sectionKey == constants.SectionConfigurationGroups {
 			continue
 		}
-		var commandList []string
+		var profileInfo ProfileInfo
 		if c.format == "hcl" {
-			commandList = c.getCommandListHCL(sectionRawValue)
+			profileInfo = c.getProfileInfoHCL(sectionRawValue)
 		} else {
-			commandList = c.getCommandList(sectionRawValue)
+			profileInfo = c.getProfileInfo(sectionRawValue)
 		}
-		profiles[sectionKey] = commandList
+		profiles[sectionKey] = profileInfo
 	}
 	return profiles
 }
 
-func (c *Config) getCommandList(sectionRawValue interface{}) []string {
-	commandList := []string{}
+func (c *Config) getProfileInfo(sectionRawValue interface{}) ProfileInfo {
+	profileInfo := NewProfileInfo()
 	if sectionValues, ok := sectionRawValue.(map[string]interface{}); ok {
 		// For each value in here, if it's a map it means it's defining some command parameters
 		for key, value := range sectionValues {
+			if key == constants.ParameterDescription {
+				if description, ok := value.(string); ok {
+					profileInfo.Description = description
+					continue
+				}
+			}
 			if _, ok := value.(map[string]interface{}); ok {
-				commandList = append(commandList, key)
+				profileInfo.Sections = append(profileInfo.Sections, key)
 			}
 		}
 	}
-	return commandList
+	return profileInfo
 }
 
-func (c *Config) getCommandListHCL(sectionRawValue interface{}) []string {
-	commandList := []string{}
+func (c *Config) getProfileInfoHCL(sectionRawValue interface{}) ProfileInfo {
+	profileInfo := NewProfileInfo()
 	if sectionValues, ok := sectionRawValue.([]map[string]interface{}); ok {
 		// for each map in the array
 		for _, subMap := range sectionValues {
 			// for each value in here, if it's a map it means it's defining some command parameters
 			for key, value := range subMap {
+				if key == constants.ParameterDescription {
+					if description, ok := value.(string); ok {
+						profileInfo.Description = description
+						continue
+					}
+				}
 				// Special case for hcl where each map will be wrapped around a list
 				if _, ok := value.([]map[string]interface{}); ok {
-					commandList = append(commandList, key)
+					profileInfo.Sections = append(profileInfo.Sections, key)
 				}
 			}
 		}
 	}
-	return commandList
+	return profileInfo
 }
 
 // GetGlobalSection returns the global configuration

@@ -187,20 +187,20 @@ func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, 
 }
 
 func displayProfiles(output io.Writer, configuration *config.Config) {
-	profileSections := configuration.GetProfileSections()
-	keys := sortedMapKeys(profileSections)
-	if len(profileSections) == 0 {
+	profiles := configuration.GetProfileSections()
+	keys := sortedMapKeys(profiles)
+	if len(profiles) == 0 {
 		fmt.Fprintln(output, "\nThere's no available profile in the configuration")
 	} else {
-		fmt.Fprintln(output, "\nProfiles available:")
+		fmt.Fprintln(output, "\nProfiles available (name, sections, description):")
 		w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 		for _, name := range keys {
-			sections := profileSections[name]
+			sections := profiles[name].Sections
 			sort.Strings(sections)
 			if len(sections) == 0 {
-				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\n", name)
+				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\t%s\n", name, profiles[name].Description)
 			} else {
-				_, _ = fmt.Fprintf(w, "\t%s:\t(%s)\n", name, strings.Join(sections, ", "))
+				_, _ = fmt.Fprintf(w, "\t%s:\t(%s)\t%s\n", name, strings.Join(sections, ", "), profiles[name].Description)
 			}
 		}
 		_ = w.Flush()
@@ -213,7 +213,7 @@ func displayGroups(output io.Writer, configuration *config.Config) {
 	if len(groups) == 0 {
 		return
 	}
-	fmt.Fprintln(output, "Groups available:")
+	fmt.Fprintln(output, "Groups available (name, profiles):")
 	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 	for name, groupList := range groups {
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
@@ -243,7 +243,7 @@ func testCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) 
 	return nil
 }
 
-func sortedMapKeys(data map[string][]string) []string {
+func sortedMapKeys(data map[string]config.ProfileInfo) []string {
 	keys := make([]string, 0, len(data))
 	for key := range data {
 		keys = append(keys, key)
@@ -254,11 +254,9 @@ func sortedMapKeys(data map[string][]string) []string {
 
 // containsString returns true if arg is contained in args.
 func containsString(args []string, arg string) bool {
-	if args != nil {
-		for _, a := range args {
-			if a == arg {
-				return true
-			}
+	for _, a := range args {
+		if a == arg {
+			return true
 		}
 	}
 	return false

@@ -13,4 +13,5 @@ const (
 	ParameterInherit        = "inherit"
 	ParameterHost           = "host"
 	ParameterPath           = "path"
+	ParameterDescription    = "description"
 )

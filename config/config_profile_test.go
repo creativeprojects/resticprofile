@@ -159,9 +159,9 @@ profile3 {
 			assert.NotNil(t, profileSections)
 			assert.Len(t, profileSections, 3)
 
-			assert.ElementsMatch(t, []string{"backup"}, profileSections["profile1"], "expected ListA but found ListB")
-			assert.ElementsMatch(t, []string{"backup", "snapshots"}, profileSections["profile2"], "expected ListA but found ListB")
-			assert.ElementsMatch(t, []string{}, profileSections["profile3"], "expected ListA but found ListB")
+			assert.ElementsMatch(t, []string{"backup"}, profileSections["profile1"].Sections, "expected ListA but found ListB")
+			assert.ElementsMatch(t, []string{"backup", "snapshots"}, profileSections["profile2"].Sections, "expected ListA but found ListB")
+			assert.ElementsMatch(t, []string{}, profileSections["profile3"].Sections, "expected ListA but found ListB")
 		})
 	}
 }
