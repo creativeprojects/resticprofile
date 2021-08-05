@@ -22,8 +22,6 @@ TESTS=./...
 COVERAGE_FILE=coverage.out
 
 BUILD=build/
-RESTIC_VERSION=0.12.0
-GO_VERSION=1.16
 
 BUILD_DATE=`date`
 BUILD_COMMIT=`git rev-parse HEAD`

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/progress"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,7 +47,7 @@ func TestScanJsonSummary(t *testing.T) {
 	}()
 
 	// Read the stream and send back to output buffer
-	summary := &Summary{}
+	summary := &progress.Summary{}
 	output := &strings.Builder{}
 	err = ScanBackupJson(reader, summary, output)
 	require.NoError(t, err)
@@ -90,7 +91,7 @@ Is there a repository at the following location?
 	}()
 
 	// Read the stream and send back to output buffer
-	summary := &Summary{}
+	summary := &progress.Summary{}
 	output := &strings.Builder{}
 	err = ScanBackupJson(reader, summary, output)
 	require.NoError(t, err)

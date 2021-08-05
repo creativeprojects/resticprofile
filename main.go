@@ -17,14 +17,16 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
+	"github.com/creativeprojects/resticprofile/prom"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
 )
 
 // These fields are populated by the goreleaser build
 var (
-	version = "0.14.1-dev"
+	version = "0.15.0-dev"
 	commit  = ""
 	date    = ""
 	builtBy = ""
@@ -168,7 +170,7 @@ func main() {
 		}
 	}
 
-	if flags.noPriority == false {
+	if !flags.noPriority {
 		err = setPriority(global.Nice, global.Priority)
 		if err != nil {
 			clog.Warning(err)
@@ -215,7 +217,7 @@ func main() {
 		defer notifyStop()
 
 		// Single profile run
-		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand)
+		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand, "")
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1
@@ -235,7 +237,7 @@ func main() {
 
 			for i, profileName := range group {
 				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
-				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand)
+				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
 				if err != nil {
 					clog.Error(err)
 					exitCode = 1
@@ -288,6 +290,7 @@ func runProfile(
 	resticBinary string,
 	resticArguments []string,
 	resticCommand string,
+	group string,
 ) error {
 	var err error
 
@@ -342,7 +345,6 @@ func runProfile(
 
 	wrapper := newResticWrapper(
 		resticBinary,
-		global.Initialize || profile.Initialize,
 		flags.dryRun,
 		profile,
 		resticCommand,
@@ -356,6 +358,14 @@ func runProfile(
 		wrapper.ignoreLock()
 	} else if flags.lockWait > 0 {
 		wrapper.maxWaitOnLock(flags.lockWait)
+	}
+
+	// add progress receivers if necessary
+	if profile.StatusFile != "" {
+		wrapper.addProgress(status.NewProgress(profile))
+	}
+	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version, profile.PrometheusLabels)))
 	}
 
 	err = wrapper.runProfile()

@@ -29,3 +29,4 @@
 /*.log
 
 status.json
+*.prom

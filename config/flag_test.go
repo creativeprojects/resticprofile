@@ -8,12 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPointerValueShouldPanic(t *testing.T) {
+func TestPointerValueShouldReturnErrorMessage(t *testing.T) {
 	concrete := "test"
 	value := &concrete
-	assert.PanicsWithError(t, "unexpected type ptr", func() {
-		stringifyValueOf(value)
-	})
+	argValue, _ := stringifyValueOf(value)
+	assert.Equal(t, []string{"ERROR: unexpected type ptr"}, argValue)
 }
 
 func TestNilValueFlag(t *testing.T) {
