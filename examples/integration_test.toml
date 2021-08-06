@@ -1,0 +1,33 @@
+[default]
+repository = "rest:http://user:password@localhost:8000/path"
+password-file = "key"
+
+[simple]
+inherit = "default"
+[simple.backup]
+exclude = "/**/.git"
+source = "/source"
+
+[spaces]
+inherit = "default"
+[spaces.backup]
+exclude = "My Documents"
+source = "/source dir"
+
+[quotes]
+inherit = "default"
+[quotes.backup]
+exclude = ["My'Documents", "My\"Documents"]
+source = ["/source'dir", "/source\"dir"]
+
+[glob]
+inherit = "default"
+[glob.backup]
+exclude = ["examples/integration*"]
+source = ["examples/integration*"]
+
+[mixed]
+inherit = "default"
+[mixed.backup]
+exclude = ["examples/integration*"]
+source = ["/Côte d'Ivoire"]

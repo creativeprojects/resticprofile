@@ -21,6 +21,8 @@
 /lock/locktest
 /mock
 /mock.exe
+/echo
+/echo.exe
 
 # test output
 /coverage.out
