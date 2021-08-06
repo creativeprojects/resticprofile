@@ -53,14 +53,14 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			"snapshots",
 			[]string{},
 			`"snapshots" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path"`,
-			"",
+			`"snapshots" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path"`,
 		},
 		{
 			"simple",
 			"backup",
 			[]string{"--option"},
 			`"backup" "--exclude" "/**/.git" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "--option" "/source"`,
-			"",
+			`"backup" "--exclude" "/**/.git" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "--option" "/source"`,
 		},
 		{
 			"spaces",
@@ -68,7 +68,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			[]string{"some path"},
 			// `"backup" "--exclude" "My Documents" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "some" "path" "/source" "dir"`,
 			`"backup" "--exclude" "My Documents" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "some path" "/source dir"`,
-			"",
+			`"backup" "--exclude" "My Documents" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "some path" "/source dir"`,
 		},
 		{
 			"quotes",
@@ -76,22 +76,21 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			[]string{"quo'te", "quo\"te"},
 			// `"backup" "--exclude" "MyDocuments --exclude My\"Documents --password-file key --repo rest:http://user:password@localhost:8000/path quote" "quote /source'dir /sourcedir"`,
 			`"backup" "--exclude" "My'Documents" "--exclude" "My\"Documents" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "quo'te" "quo\"te" "/source'dir" "/source\"dir"`,
-			"",
+			`"backup" "--exclude" "My'Documents" "--exclude" "My\"Documents" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "quo'te" "quo\"te" "/source'dir" "/source\"dir"`,
 		},
 		{
 			"glob",
 			"backup",
 			[]string{"examples/integration*"},
-			// `"backup" "--exclude" ` + globFiles + ` "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles,
 			`"backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles,
-			`"backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "examples/integration*" "examples/integration*"`,
+			`"backup" "--exclude" "examples/integration*" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "examples/integration*" "examples/integration*"`,
 		},
 		{
 			"mixed",
 			"backup",
 			[]string{"/path/with space; echo foo"},
 			`"backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire"`,
-			"",
+			`"backup" "--exclude" "examples/integration*" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire"`,
 		},
 	}
 
