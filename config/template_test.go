@@ -234,7 +234,7 @@ repository = "/mnt/backup"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, "/mnt/backup", profile.Repository)
+	assert.Equal(t, "/mnt/backup", profile.Repository.String())
 }
 
 func TestNestedTemplate(t *testing.T) {

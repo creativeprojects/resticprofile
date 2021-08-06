@@ -43,8 +43,8 @@ func TestGetEmptyEnvironment(t *testing.T) {
 
 func TestGetSingleEnvironment(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
-	profile.Environment = map[string]string{
-		"User": "me",
+	profile.Environment = map[string]config.ConfidentialValue{
+		"User": config.NewConfidentialValue("me"),
 	}
 	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
@@ -53,9 +53,9 @@ func TestGetSingleEnvironment(t *testing.T) {
 
 func TestGetMultipleEnvironment(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
-	profile.Environment = map[string]string{
-		"User":     "me",
-		"Password": "secret",
+	profile.Environment = map[string]config.ConfidentialValue{
+		"User":     config.NewConfidentialValue("me"),
+		"Password": config.NewConfidentialValue("secret"),
 	}
 	wrapper := newResticWrapper("restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
@@ -381,7 +381,7 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 	mockOutput := &mockOutputAnalysis{lockWho: "TestCanRetryAfterRemoteStaleLockFailure"}
 
 	profile := config.NewProfile(&config.Config{}, "name")
-	profile.Repository = "my-repo"
+	profile.Repository = config.NewConfidentialValue("my-repo")
 	profile.ForceLock = true
 	wrapper := newResticWrapper(mockBinary, false, profile, "backup", nil, nil)
 	wrapper.startTime = time.Now()
@@ -430,7 +430,7 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	mockOutput := &mockOutputAnalysis{}
 
 	profile := config.NewProfile(&config.Config{}, "name")
-	profile.Repository = "my-repo"
+	profile.Repository = config.NewConfidentialValue("my-repo")
 	wrapper := newResticWrapper(mockBinary, false, profile, "backup", nil, nil)
 	wrapper.startTime = time.Now()
 	wrapper.global.ResticLockRetryAfter = 0 // disable remote lock retry

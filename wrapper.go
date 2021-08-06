@@ -208,10 +208,14 @@ func (r *resticWrapper) prepareCommand(command string, args []string) shellComma
 		arguments = append(arguments, r.profile.GetBackupSource()...)
 	}
 
+	// Create non-confidential arguments list for logging
+	publicArguments := config.GetNonConfidentialValues(r.profile, arguments)
+
 	env := append(os.Environ(), r.getEnvironment()...)
 
-	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(arguments, " "))
+	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(publicArguments, " "))
 	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan, r.setPID)
+	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()
 	rCommand.stderr = term.GetErrorOutput()
@@ -456,7 +460,7 @@ func (r *resticWrapper) getEnvironment() []string {
 		// env variables are always uppercase
 		key = strings.ToUpper(key)
 		clog.Debugf("setting up environment variable '%s'", key)
-		env[i] = fmt.Sprintf("%s=%s", key, value)
+		env[i] = fmt.Sprintf("%s=%s", key, value.Value())
 		i++
 	}
 	return env
@@ -573,7 +577,7 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output progress.OutputAna
 		}
 
 		if retryDelay >= constants.MinResticLockRetryTime {
-			lockName := r.profile.Repository
+			lockName := r.profile.Repository.String()
 			if lockedBy, ok := output.GetRemoteLockedBy(); ok {
 				lockName = fmt.Sprintf("%s locked by %s", lockName, lockedBy)
 			}

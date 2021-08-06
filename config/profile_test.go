@@ -133,7 +133,7 @@ quiet = false
 	}
 	assert.NotNil(t, profile)
 	assert.Equal(t, "profile", profile.Name)
-	assert.Equal(t, "parent", profile.Repository)
+	assert.Equal(t, "parent", profile.Repository.String())
 	assert.Equal(t, true, profile.Initialize)
 	assert.Equal(t, int64(1), profile.OtherFlags["first-value"])
 	assert.Equal(t, int64(2), profile.OtherFlags["second-value"])

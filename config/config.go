@@ -45,10 +45,12 @@ type Config struct {
 var (
 	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
+		confidentialValueDecoder(),
 	))
 
 	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
+		confidentialValueDecoder(),
 		sliceOfMapsToMapHookFunc(),
 	))
 )
@@ -305,6 +307,7 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if profile.Inherit != "" {
 		inherit := profile.Inherit
 		// Load inherited profile
@@ -323,6 +326,10 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 		// make sure it has the right name
 		profile.Name = profileKey
 	}
+
+	// Hide confidential values (keys, passwords) from the public representation
+	ProcessConfidentialValues(profile)
+
 	return profile, nil
 }
 
