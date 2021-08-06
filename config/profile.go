@@ -98,32 +98,32 @@ func NewProfile(c *Config, name string) *Profile {
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
 
-	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath), escapeSpaces)
-	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, absolutePrefix(rootPath), escapeSpaces)
-	p.CacheDir = fixPath(p.CacheDir, expandEnv, absolutePrefix(rootPath), escapeSpaces)
-	p.CACert = fixPath(p.CACert, expandEnv, absolutePrefix(rootPath), escapeSpaces)
-	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, absolutePrefix(rootPath), escapeSpaces)
+	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath))
+	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, absolutePrefix(rootPath))
+	p.CacheDir = fixPath(p.CacheDir, expandEnv, absolutePrefix(rootPath))
+	p.CACert = fixPath(p.CACert, expandEnv, absolutePrefix(rootPath))
+	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, absolutePrefix(rootPath))
 
 	if p.Backup != nil {
 		if p.Backup.ExcludeFile != nil && len(p.Backup.ExcludeFile) > 0 {
-			p.Backup.ExcludeFile = fixPaths(p.Backup.ExcludeFile, expandEnv, absolutePrefix(rootPath), escapeSpaces)
+			p.Backup.ExcludeFile = fixPaths(p.Backup.ExcludeFile, expandEnv, absolutePrefix(rootPath))
 		}
 
 		if p.Backup.FilesFrom != nil && len(p.Backup.FilesFrom) > 0 {
-			p.Backup.FilesFrom = fixPaths(p.Backup.FilesFrom, expandEnv, absolutePrefix(rootPath), escapeSpaces)
+			p.Backup.FilesFrom = fixPaths(p.Backup.FilesFrom, expandEnv, absolutePrefix(rootPath))
 		}
 
 		// Backup source is NOT relative to the configuration, but where the script was launched instead
 		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
-			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv, escapeSpaces)
+			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv)
 		}
 
 		if p.Backup.Exclude != nil && len(p.Backup.Exclude) > 0 {
-			p.Backup.Exclude = fixPaths(p.Backup.Exclude, expandEnv, escapeShellString)
+			p.Backup.Exclude = fixPaths(p.Backup.Exclude, expandEnv)
 		}
 
 		if p.Backup.Iexclude != nil && len(p.Backup.Iexclude) > 0 {
-			p.Backup.Iexclude = fixPaths(p.Backup.Iexclude, expandEnv, escapeShellString)
+			p.Backup.Iexclude = fixPaths(p.Backup.Iexclude, expandEnv)
 		}
 	}
 }

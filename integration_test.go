@@ -52,22 +52,22 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			"default",
 			"snapshots",
 			[]string{},
-			`"snapshots" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path"`,
+			`"snapshots" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path"`,
 			"",
 		},
 		{
 			"simple",
 			"backup",
 			[]string{"--option"},
-			`"backup" "--exclude" "/**/.git" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" "--option" "/source"`,
+			`"backup" "--exclude" "/**/.git" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "--option" "/source"`,
 			"",
 		},
 		{
 			"spaces",
 			"backup",
 			[]string{"some path"},
-			// `"backup" "--exclude" "My Documents" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" "some" "path" "/source" "dir"`,
-			`"backup" "--exclude" "My Documents" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" "some path" "/source dir"`,
+			// `"backup" "--exclude" "My Documents" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "some" "path" "/source" "dir"`,
+			`"backup" "--exclude" "My Documents" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "some path" "/source dir"`,
 			"",
 		},
 		{
@@ -75,22 +75,22 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			"backup",
 			[]string{"quo'te", "quo\"te"},
 			// `"backup" "--exclude" "MyDocuments --exclude My\"Documents --password-file key --repo rest:http://user:password@localhost:8000/path quote" "quote /source'dir /sourcedir"`,
-			`"backup" "--exclude" "My'Documents" "--exclude" "My\"Documents" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" "quo'te" "quo\"te" "/source'dir" "/source\"dir"`,
+			`"backup" "--exclude" "My'Documents" "--exclude" "My\"Documents" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "quo'te" "quo\"te" "/source'dir" "/source\"dir"`,
 			"",
 		},
 		{
 			"glob",
 			"backup",
 			[]string{"examples/integration*"},
-			// `"backup" "--exclude" ` + globFiles + ` "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles,
-			`"backup" "--exclude" "examples/integration*" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles,
-			`"backup" "--exclude" "examples/integration*" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" "examples/integration*" "examples/integration*"`,
+			// `"backup" "--exclude" ` + globFiles + ` "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles,
+			`"backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles,
+			`"backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "examples/integration*" "examples/integration*"`,
 		},
 		{
 			"mixed",
 			"backup",
 			[]string{"/path/with space; echo foo"},
-			`"backup" "--exclude" "examples/integration*" "--password-file" "key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire"`,
+			`"backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire"`,
 			"",
 		},
 	}
@@ -108,6 +108,8 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					profile, err := cfg.GetProfile(fixture.profileName)
 					require.NoError(t, err)
 					require.NotNil(t, profile)
+
+					profile.SetRootPath("./examples")
 
 					wrapper := newResticWrapper(
 						echoBinary,

@@ -31,6 +31,15 @@ func TestArgumentEscape(t *testing.T) {
 		{"/path/with space; echo foo", "/path/with\\ space\\;\\ echo\\ foo", "\"/path/with space; echo foo\""},
 		{"**/.git/", "**/.git/", "\"**/.git/\""},
 		{"[aA]*", "[aA]*", "\"[aA]*\""},
+		{"/dir", "/dir", "/dir"},
+		{"~/dir", "~/dir", "~/dir"},
+		{"/\\*\\*/.git", "/\\*\\*/.git", "/\\*\\*/.git"},
+		{`/?`, `/?`, `"/?"`},
+		{`/\?`, `/\?`, `/\?`},
+		{`/\\?`, `/\\?`, `/\\?`},
+		{`/\\\?`, `/\\\?`, `/\\\?`},
+		{`/\\\\?`, `/\\\\?`, `/\\\\?`},
+		{`/ ?*`, `/\ ?*`, `"/ ?*"`},
 	}
 
 	output := tabwriter.NewWriter(os.Stdout, 3, 2, 3, ' ', tabwriter.Debug)
