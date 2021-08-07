@@ -102,7 +102,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			[]string{"/path/with space; echo foo"},
 			`["backup" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with" "space"]` + "\n" + `foo /Côte dIvoire /path/with\ space;\ echo\ foo`,
 			`["backup" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire" "/path/with space; echo foo'"]`,
-			`["backup" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire"]`,
+			`["backup" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "/path/with space; echo foo" "/Côte d'Ivoire" "/path/with space; echo foo'"]`,
 		},
 		{
 			"mixed",
