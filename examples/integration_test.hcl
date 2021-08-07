@@ -13,6 +13,7 @@ simple {
 
 spaces {
     inherit = "default"
+    password-file = "different key"
     backup {
         exclude = "My Documents"
         source = "/source dir"
@@ -27,7 +28,15 @@ quotes {
     }
 }
 
-glob {
+glob1 {
+    inherit = "default"
+    backup {
+        exclude = ["[aA]*"]
+        source = ["/source"]
+    }
+}
+
+glob2 {
     inherit = "default"
     backup {
         exclude = ["examples/integration*"]
@@ -38,7 +47,6 @@ glob {
 mixed {
     inherit = "default"
     backup {
-        exclude = ["examples/integration*"]
-        source = ["/Côte d'Ivoire"]
+        source = ["/Côte d'Ivoire", "/path/with space; echo foo'"]
     }
 }

@@ -50,8 +50,8 @@ func TestArgumentEscape(t *testing.T) {
 			displayEscapedString(testItem.expectedEscape),
 			displayEscapedString(testItem.expectedNoGlobQuote))
 		t.Run(testItem.input, func(t *testing.T) {
-			assert.Equal(t, testItem.expectedEscape, NewArg(testItem.input, ArgEscape).String())
-			assert.Equal(t, testItem.expectedNoGlobQuote, NewArg(testItem.input, ArgNoGlobQuote).String())
+			assert.Equal(t, testItem.expectedEscape, NewArg(testItem.input, ArgConfigEscape).String())
+			assert.Equal(t, testItem.expectedNoGlobQuote, NewArg(testItem.input, ArgConfigNoGlobQuote).String())
 		})
 	}
 	output.Flush()

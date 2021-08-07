@@ -14,24 +14,24 @@ func TestEmptyConversionToArgs(t *testing.T) {
 
 func TestConversionToArgsFromFlags(t *testing.T) {
 	args := NewArgs()
-	args.AddFlags("aaa", []string{"one", "two"}, ArgEscape)
-	args.AddFlag("bbb", "three", ArgEscape)
+	args.AddFlags("aaa", []string{"one", "two"}, ArgConfigEscape)
+	args.AddFlag("bbb", "three", ArgConfigEscape)
 	assert.Equal(t, []string{"--aaa", "one", "--aaa", "two", "--bbb", "three"}, args.GetAll())
 }
 
 func TestConversionToArgsNoFlag(t *testing.T) {
 	args := NewArgs()
-	args.AddArgs([]string{"one", "two"}, ArgEscape)
-	args.AddArg("three", ArgEscape)
+	args.AddArgs([]string{"one", "two"}, ArgConfigEscape)
+	args.AddArg("three", ArgConfigEscape)
 	assert.Equal(t, []string{"one", "two", "three"}, args.GetAll())
 }
 
 func TestConversionToArgs(t *testing.T) {
 	args := NewArgs()
-	args.AddFlags("aaa", []string{"simple", "with space", "with\"quote"}, ArgEscape)
-	args.AddFlags("bbb", []string{"simple", "with space", "with\"quote"}, ArgNoGlobQuote)
-	args.AddArgs([]string{"with space", "with\"quote"}, ArgEscape)
-	args.AddArg("with space\"quote", ArgNoGlobQuote)
+	args.AddFlags("aaa", []string{"simple", "with space", "with\"quote"}, ArgConfigEscape)
+	args.AddFlags("bbb", []string{"simple", "with space", "with\"quote"}, ArgConfigNoGlobQuote)
+	args.AddArgs([]string{"with space", "with\"quote"}, ArgConfigEscape)
+	args.AddArg("with space\"quote", ArgConfigNoGlobQuote)
 
 	expected := []string{
 		"--aaa",

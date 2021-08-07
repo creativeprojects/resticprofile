@@ -12,6 +12,7 @@ import (
 // Profile contains the whole profile configuration
 type Profile struct {
 	config               *Config
+	legacyArg            bool
 	Name                 string
 	Description          string                       `mapstructure:"description"`
 	Quiet                bool                         `mapstructure:"quiet" argument:"quiet"`
@@ -95,6 +96,11 @@ func NewProfile(c *Config, name string) *Profile {
 	}
 }
 
+// SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
+func (p *Profile) SetLegacyArg(legacy bool) {
+	p.legacyArg = legacy
+}
+
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
 
@@ -150,7 +156,7 @@ func (p *Profile) SetHost(hostname string) {
 // GetCommonFlags returns the flags common to all commands
 func (p *Profile) GetCommonFlags() *shell.Args {
 	// Flags from the profile fields
-	flags := convertStructToArgs(*p, shell.NewArgs())
+	flags := convertStructToArgs(*p, shell.NewArgs().SetLegacyArg(p.legacyArg))
 
 	flags = addOtherArgs(flags, p.OtherFlags)
 

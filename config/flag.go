@@ -39,11 +39,11 @@ func convertStructToArgs(orig interface{}, args *shell.Args) *shell.Args {
 			if argument != "" {
 				convert, ok := stringifyConfidentialValue(valueOf.Field(i))
 				if ok {
-					argType := shell.ArgEscape
+					argType := shell.ArgConfigEscape
 					// check if the argument type was specified
 					rawType, ok := field.Tag.Lookup("argument-type")
 					if ok && rawType == "no-glob" {
-						argType = shell.ArgNoGlobQuote
+						argType = shell.ArgConfigNoGlobQuote
 					}
 					args.AddFlags(argument, convert, argType)
 				}
@@ -61,7 +61,7 @@ func addOtherArgs(args *shell.Args, otherArgs map[string]interface{}) *shell.Arg
 	// Add other args
 	for name, value := range otherArgs {
 		if convert, ok := stringifyValueOf(value); ok {
-			args.AddFlags(name, convert, shell.ArgEscape)
+			args.AddFlags(name, convert, shell.ArgConfigEscape)
 		}
 	}
 	return args

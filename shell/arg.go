@@ -15,8 +15,12 @@ var (
 type ArgType int
 
 const (
-	ArgEscape      ArgType = iota // escape each special character but don't add quotes
-	ArgNoGlobQuote                // use double quotes around argument when needed
+	ArgConfigEscape      ArgType = iota // escape each special character but don't add quotes
+	ArgConfigNoGlobQuote                // use double quotes around argument when needed
+	ArgCommandLineEscape                // same as ArgConfigEscape but argument coming from the command line
+	ArgLegacyEscape
+	ArgLegacyNoGlobQuote
+	ArgLegacyCommandLineEscape
 )
 
 type Arg struct {
@@ -43,12 +47,19 @@ func (a Arg) String() string {
 		return ""
 	}
 	switch a.argType {
-	case ArgNoGlobQuote:
+	case ArgConfigNoGlobQuote:
 		if doubleQuotePattern.MatchString(a.raw) {
 			return `"` + escapeString(a.raw, []byte{'"'}) + `"`
 		}
-	case ArgEscape:
+
+	case ArgConfigEscape, ArgCommandLineEscape:
 		return escapeString(a.raw, escapeNoGlobCharacters)
+
+	case ArgLegacyEscape:
+		return escapeString(a.raw, []byte{' '})
+
+	case ArgLegacyNoGlobQuote:
+		return escapeString(a.raw, []byte{' ', '*', '?'})
 	}
 	return a.raw
 }

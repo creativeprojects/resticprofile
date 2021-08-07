@@ -196,12 +196,12 @@ func (r *resticWrapper) runProfile() error {
 
 func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCommandDefinition {
 	if r.moreArgs != nil && len(r.moreArgs) > 0 {
-		args.AddArgs(r.moreArgs, shell.ArgEscape)
+		args.AddArgs(r.moreArgs, shell.ArgCommandLineEscape)
 	}
 
 	// Special case for backup command
 	if command == constants.CommandBackup {
-		args.AddArgs(r.profile.GetBackupSource(), shell.ArgEscape)
+		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigEscape)
 	}
 
 	// place the restic command first, there are some flags not recognized otherwise (like --stdin)

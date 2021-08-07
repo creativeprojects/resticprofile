@@ -6,8 +6,9 @@ import (
 )
 
 type Args struct {
-	args map[string][]Arg
-	more []Arg
+	args   map[string][]Arg
+	more   []Arg
+	legacy bool
 }
 
 func NewArgs() *Args {
@@ -17,29 +18,42 @@ func NewArgs() *Args {
 	}
 }
 
+// SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
+func (a *Args) SetLegacyArg(legacy bool) *Args {
+	a.legacy = legacy
+	return a
+}
+
+func (a *Args) addLegacy(argType ArgType) ArgType {
+	if a.legacy && argType <= ArgCommandLineEscape {
+		argType += 3
+	}
+	return argType
+}
+
 // AddFlag adds a value to a flag
 func (a *Args) AddFlag(key, value string, argType ArgType) {
-	a.args[key] = []Arg{NewArg(value, argType)}
+	a.args[key] = []Arg{NewArg(value, a.addLegacy(argType))}
 }
 
 // AddFlags adds a slice of values for the same flag
 func (a *Args) AddFlags(key string, values []string, argType ArgType) {
 	args := make([]Arg, len(values))
 	for i, value := range values {
-		args[i] = NewArg(value, argType)
+		args[i] = NewArg(value, a.addLegacy(argType))
 	}
 	a.args[key] = args
 }
 
 // AddArg adds a single argument with no flag
 func (a *Args) AddArg(arg string, argType ArgType) {
-	a.more = append(a.more, NewArg(arg, argType))
+	a.more = append(a.more, NewArg(arg, a.addLegacy(argType)))
 }
 
 // AddArgs adds multiple arguments not associated with a flag
 func (a *Args) AddArgs(args []string, argType ArgType) {
 	for _, arg := range args {
-		a.more = append(a.more, NewArg(arg, argType))
+		a.more = append(a.more, NewArg(arg, a.addLegacy(argType)))
 	}
 }
 

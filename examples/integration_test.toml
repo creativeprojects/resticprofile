@@ -10,6 +10,7 @@ source = "/source"
 
 [spaces]
 inherit = "default"
+password-file = "different key"
 [spaces.backup]
 exclude = "My Documents"
 source = "/source dir"
@@ -20,14 +21,19 @@ inherit = "default"
 exclude = ["My'Documents", "My\"Documents"]
 source = ["/source'dir", "/source\"dir"]
 
-[glob]
+[glob1]
 inherit = "default"
-[glob.backup]
+[glob1.backup]
+exclude = ["[aA]*"]
+source = ["/source"]
+
+[glob2]
+inherit = "default"
+[glob2.backup]
 exclude = ["examples/integration*"]
 source = ["examples/integration*"]
 
 [mixed]
 inherit = "default"
 [mixed.backup]
-exclude = ["examples/integration*"]
-source = ["/Côte d'Ivoire"]
+source = ["/Côte d'Ivoire", "/path/with space; echo foo'"]
