@@ -125,6 +125,45 @@ func findConfigurationFileWithExtension(configFile string) string {
 	return ""
 }
 
+// FindConfigurationIncludes finds includes (glob patterns) relative to the configuration file.
+func FindConfigurationIncludes(configFile string, includes []string) ([]string, error) {
+	if !filepath.IsAbs(configFile) {
+		if dir, err := os.Getwd(); err == nil {
+			configFile = filepath.Join(dir, configFile)
+		} else {
+			return nil, err
+		}
+	}
+
+	var files []string
+	addFile := func(file string) {
+		if file != configFile {
+			files = append(files, file)
+		}
+	}
+
+	base := filepath.Dir(configFile)
+	for _, include := range includes {
+		if !filepath.IsAbs(include) {
+			include = filepath.Join(base, include)
+		}
+
+		if fileExists(include) {
+			addFile(include)
+		} else {
+			if matches, err := filepath.Glob(include); err == nil {
+				for _, match := range matches {
+					addFile(match)
+				}
+			} else {
+				return nil, err
+			}
+		}
+	}
+
+	return files, nil
+}
+
 // FindResticBinary returns the path of restic executable
 func FindResticBinary(configLocation string) (string, error) {
 	if configLocation != "" {
