@@ -84,7 +84,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			"spaces",
 			"backup",
 			[]string{"some path"},
-			`["backup" "--exclude" "My Documents" "--password-file" "examples/different key" "--repo" "rest:http://user:password@localhost:8000/path" "some" "path" "/source dir"]`,
+			`["backup" "--exclude" "My\\ Documents" "--password-file" "examples/different\\ key" "--repo" "rest:http://user:password@localhost:8000/path" "some" "path" "/source dir"]`,
 			`["backup" "--exclude" "My Documents" "--password-file" "examples/different key" "--repo" "rest:http://user:password@localhost:8000/path" "some path" "/source dir"]`,
 			`["backup" "--exclude" "My Documents" "--password-file" "examples\\different key" "--repo" "rest:http://user:password@localhost:8000/path" "some path" "/source dir"]`,
 		},

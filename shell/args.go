@@ -25,8 +25,8 @@ func (a *Args) SetLegacyArg(legacy bool) *Args {
 }
 
 func (a *Args) addLegacy(argType ArgType) ArgType {
-	if a.legacy && argType <= ArgCommandLineEscape {
-		argType += 3
+	if a.legacy && argType <= ArgConfigBackupSource {
+		argType += ArgTypeCount
 	}
 	return argType
 }

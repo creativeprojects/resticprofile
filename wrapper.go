@@ -201,7 +201,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCo
 
 	// Special case for backup command
 	if command == constants.CommandBackup {
-		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigEscape)
+		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
 	}
 
 	// place the restic command first, there are some flags not recognized otherwise (like --stdin)

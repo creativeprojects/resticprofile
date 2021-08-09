@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"fmt"
 	"regexp"
 	"runtime"
 	"strings"
@@ -14,13 +15,17 @@ var (
 
 type ArgType int
 
+const ArgTypeCount = 4
+
 const (
-	ArgConfigEscape      ArgType = iota // escape each special character but don't add quotes
-	ArgConfigNoGlobQuote                // use double quotes around argument when needed
-	ArgCommandLineEscape                // same as ArgConfigEscape but argument coming from the command line
+	ArgConfigEscape       ArgType = iota // escape each special character but don't add quotes
+	ArgConfigNoGlobQuote                 // use double quotes around argument when needed
+	ArgCommandLineEscape                 // same as ArgConfigEscape but argument coming from the command line
+	ArgConfigBackupSource                // same as ArgConfigEscape but represents the folders to add at the end of a backup command
 	ArgLegacyEscape
 	ArgLegacyNoGlobQuote
 	ArgLegacyCommandLineEscape
+	ArgLegacyConfigBackupSource
 )
 
 type Arg struct {
@@ -52,14 +57,18 @@ func (a Arg) String() string {
 			return `"` + escapeString(a.raw, []byte{'"'}) + `"`
 		}
 
-	case ArgConfigEscape, ArgCommandLineEscape:
+	case ArgConfigEscape, ArgCommandLineEscape, ArgConfigBackupSource:
 		return escapeString(a.raw, escapeNoGlobCharacters)
 
+	// legacy mode was a mess: 4 different ways of escaping arguments!
 	case ArgLegacyEscape:
-		return escapeString(a.raw, []byte{' '})
+		return quoteArgument(escapeString(a.raw, []byte{' '}))
 
 	case ArgLegacyNoGlobQuote:
-		return escapeString(a.raw, []byte{' ', '*', '?'})
+		return quoteArgument(escapeString(a.raw, []byte{' ', '*', '?'}))
+
+	case ArgLegacyConfigBackupSource:
+		return escapeString(a.raw, []byte{' '})
 	}
 	return a.raw
 }
@@ -89,4 +98,13 @@ func escapeString(value string, chars []byte) string {
 		output.WriteByte(value[i])
 	}
 	return output.String()
+}
+
+// quoteArgument is used for the legacy mode only
+func quoteArgument(value string) string {
+	if strings.Contains(value, " ") {
+		// quote the string containing spaces
+		value = fmt.Sprintf(`"%s"`, value)
+	}
+	return value
 }
