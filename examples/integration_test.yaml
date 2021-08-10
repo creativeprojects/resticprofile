@@ -48,3 +48,10 @@ mixed:
     source:
       - "/Côte d'Ivoire"
       - "/path/with space; echo foo'"
+
+fix:
+  inherit: default
+  password-file: "different\ key"
+  backup:
+    exclude: "My\ Documents"
+    source: "/source\ dir"

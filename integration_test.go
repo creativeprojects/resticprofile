@@ -112,6 +112,14 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			`["backup" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" "/Côte d'Ivoire" "/path/with space; echo foo'"]`,
 			`["backup" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "/Côte d'Ivoire" "/path/with space; echo foo'"]`,
 		},
+		{
+			"fix",
+			"backup",
+			[]string{},
+			`["backup" "--exclude" "My\\ Documents" "--password-file" "examples/different\\ key" "--repo" "rest:http://user:password@localhost:8000/path" "/source dir"]`,
+			`["backup" "--exclude" "My Documents" "--password-file" "examples/different key" "--repo" "rest:http://user:password@localhost:8000/path" "/source dir"]`,
+			``,
+		},
 	}
 
 	// try all the config files one by one
@@ -148,8 +156,12 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NoError(t, err)
 
 					expected := fixture.expected
-					if fixture.expectedOnWindows != "" && runtime.GOOS == "windows" {
-						expected = fixture.expectedOnWindows
+					if runtime.GOOS == "windows" {
+						if fixture.expectedOnWindows != "" {
+							expected = fixture.expectedOnWindows
+						} else {
+							t.SkipNow()
+						}
 					}
 					assert.Equal(t, expected, strings.TrimSpace(buffer.String()))
 				})

@@ -37,3 +37,10 @@ source = ["examples/integration*"]
 inherit = "default"
 [mixed.backup]
 source = ["/Côte d'Ivoire", "/path/with space; echo foo'"]
+
+[fix]
+inherit = "default"
+password-file = "different\\ key"
+[fix.backup]
+exclude = "My\\ Documents"
+source = "/source\\ dir"
