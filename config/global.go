@@ -20,6 +20,7 @@ type Global struct {
 	ResticStaleLockAge   time.Duration `mapstructure:"restic-stale-lock-age"`
 	MinMemory            uint64        `mapstructure:"min-memory"`
 	Scheduler            string        `mapstructure:"scheduler"`
+	LegacyArguments      bool          `mapstructure:"legacy-arguments"` // broken arguments mode (before v0.15.0)
 }
 
 // NewGlobal instantiates a new Global with default values

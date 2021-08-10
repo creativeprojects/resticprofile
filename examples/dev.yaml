@@ -9,6 +9,7 @@ global:
     initialize: false
     priority: low
     # restic-binary: ~/fake_restic
+    # legacy-arguments: true
 
 groups:
     full-backup:
