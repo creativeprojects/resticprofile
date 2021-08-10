@@ -55,6 +55,7 @@ For the rest of the documentation, I'll be showing examples using different form
   * [Installation for Windows using bash](#installation-for-windows-using-bash)
   * [Manual installation (Windows)](#manual-installation-windows)
   * [Ansible](#ansible)
+  * [Installation from source](#installation-from-source)
 * [Upgrade](#upgrade)
 * [Using docker image](#using-docker-image)
   * [Container host name](#container-host-name)
@@ -103,6 +104,7 @@ For the rest of the documentation, I'll be showing examples using different form
 * [Status file for easy monitoring](#status-file-for-easy-monitoring)
   * [Extended status](#extended-status)
 * [Prometheus](#prometheus)
+  * [User defined labels](#user-defined-labels)
 * [Variable expansion in configuration file](#variable-expansion-in-configuration-file)
   * [Pre\-defined variables](#pre-defined-variables)
   * [Hand\-made variables](#hand-made-variables)
@@ -205,6 +207,29 @@ It will create a `bin` directory under your current directory and place `resticp
 ## Ansible
 
 Installation using Ansible is not supported out of the box yet, but since I'm using it on my servers I thought I could [share the playbook](https://github.com/creativeprojects/resticprofile/tree/master/contrib/ansible)
+
+
+## Installation from source
+
+You can download the source code and recompile it, it's actually very easy! all you need to have on your machine is:
+- `git`
+- [go compiler](https://golang.org/dl/)
+- `GNU Make` which is installed by default on many unix boxes. On debian based distributions (Ubuntu included) the package is called `build-essential`.
+
+To compile from sources:
+```
+$ git clone https://github.com/creativeprojects/resticprofile.git
+$ cd resticprofile
+$ make build
+```
+
+Your compiled binary (`resticprofile` or `resticprofile.exe`) is available in the current folder.
+
+To install the binary in your user path:
+
+```
+$ make install
+```
 
 # Upgrade
 
