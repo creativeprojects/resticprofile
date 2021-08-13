@@ -332,6 +332,28 @@ host = %s
 	}
 }
 
+func TestResolveGlobSourcesInBackup(t *testing.T) {
+	root, err := filepath.Abs("/")
+	require.NoError(t, err)
+	root = filepath.ToSlash(root)
+	sourcePattern := filepath.ToSlash(root) + "/*"
+	testConfig := `
+[profile.backup]
+source = "` + sourcePattern + `"
+`
+	profile, err := getProfile("toml", testConfig, "profile")
+	require.NoError(t, err)
+	assert.NotNil(t, profile)
+
+	sources, err := filepath.Glob(sourcePattern)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{sourcePattern}, profile.Backup.Source)
+
+	profile.SetRootPath(root)
+	assert.Equal(t, sources, profile.Backup.Source)
+}
+
 func TestKeepPathInRetention(t *testing.T) {
 	assert := assert.New(t)
 	root, err := filepath.Abs("/")

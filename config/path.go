@@ -31,6 +31,23 @@ func fixPaths(sources []string, callbacks ...pathFix) []string {
 	return fixed
 }
 
+// resolveGlob evaluates glob expressions in a slice of paths and returns a resolved slice
+func resolveGlob(sources []string) []string {
+	resolved := make([]string, 0, len(sources))
+	for _, source := range sources {
+		if strings.ContainsAny(source, "?*") {
+			if matches, err := filepath.Glob(source); err == nil {
+				resolved = append(resolved, matches...)
+			} else {
+				clog.Warningf("cannot evaluate glob expression '%s' : %v", source, err)
+			}
+		} else {
+			resolved = append(resolved, source)
+		}
+	}
+	return resolved
+}
+
 func expandEnv(value string) string {
 	if strings.Contains(value, "$") || strings.Contains(value, "%") {
 		value = os.ExpandEnv(value)
