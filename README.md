@@ -477,8 +477,9 @@ keep-within = "3h"
 keep-tag = [ "forever" ]
 compact = false
 prune = false
-# if path is NOT specified, it will be copied from the 'backup' source
-# path = []
+# path can be a boolean ('true' meaning to copy source paths from 'backup') 
+# or a path or list of paths to use instead. Default is `true` if not specified.
+#path = []
 # the tags are NOT copied from the 'backup' command
 tag = [ "test", "dev" ]
 # host can be a boolean ('true' meaning current hostname) or a string to specify a different hostname
@@ -2106,7 +2107,7 @@ Flags passed to the restic command line
 * **keep-tag**: string OR list of strings
 * **host**: true / false OR string
 * **tag**: string OR list of strings
-* **path**: string OR list of strings
+* **path**: true / false, string OR list of strings
 * **compact**: true / false
 * **group-by**: string
 * **dry-run**: true / false

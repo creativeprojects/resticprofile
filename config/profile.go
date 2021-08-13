@@ -219,9 +219,22 @@ func (p *Profile) GetRetentionFlags() *shell.Args {
 
 	flags := p.GetCommonFlags()
 	// Special case of retention: we do copy the "source" from "backup" as "path" if it hasn't been redefined in "retention"
-	if _, found := p.Retention.OtherFlags[constants.ParameterPath]; !found {
+	addSources := func() {
 		p.Retention.OtherFlags[constants.ParameterPath] = fixPaths(p.Backup.Source, absolutePath)
 	}
+
+	if value, found := p.Retention.OtherFlags[constants.ParameterPath]; found {
+		if add, isBoolean := value.(bool); isBoolean {
+			if add {
+				addSources()
+			} else {
+				delete(p.Retention.OtherFlags, constants.ParameterPath)
+			}
+		}
+	} else {
+		addSources()
+	}
+
 	flags = addOtherArgs(flags, p.Retention.OtherFlags)
 	return flags
 }

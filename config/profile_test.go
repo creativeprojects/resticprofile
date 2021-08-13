@@ -383,6 +383,29 @@ path = "/"
 	assert.Equal([]string{"/"}, flags["path"])
 }
 
+func TestNoPathInRetention(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile]
+initialize = true
+
+[profile.backup]
+source = "/some_other_path"
+
+[profile.retention]
+path = false
+`
+	profile, err := getProfile("toml", testConfig, "profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(profile)
+
+	flags := profile.GetRetentionFlags()
+	assert.NotNil(flags)
+	assert.NotContains(flags, "path")
+}
+
 func TestForgetCommandFlags(t *testing.T) {
 	testData := []testTemplate{
 		{"toml", `
