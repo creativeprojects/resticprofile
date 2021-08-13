@@ -1,0 +1,38 @@
+##
+# The "root" profile
+#
+# Backup $HOME of root and 'etc' folders once a day
+#
+# Usage:
+# - `resticprofile -n root show`
+# - `resticprofile -n root --dry-run backup`
+# - `resticprofile -n root backup`
+# - `resticprofile -n root snapshots`
+# - `resticprofile -n root mount /restore`
+# - `resticprofile -n root status`
+# - `resticprofile -n root schedule`
+# - `resticprofile -n root unschedule`
+#
+[root]
+inherit = "base"
+
+##
+# Backup sources and schedule
+[root.backup]
+source = [
+  "/etc",
+  "/usr/local/etc",
+  "/opt/local/etc",
+  "~root/",
+]
+schedule = "daily"
+
+##
+# Keep last 14 days and the latest from each of last 8 weeks and 6 months
+# Total snapshots to keep: 24
+# (14 days, weeks not covered by days and months not covered by weeks)
+[root.retention]
+keep-last = false
+keep-daily = 14
+keep-weekly = 8
+keep-monthly = 6
