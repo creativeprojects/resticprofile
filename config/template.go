@@ -13,6 +13,7 @@ type TemplateData struct {
 	Now        time.Time
 	CurrentDir string
 	ConfigDir  string
+	TempDir    string
 	Hostname   string
 	Env        map[string]string
 }
@@ -48,6 +49,7 @@ func newTemplateData(configFile, profileName string) TemplateData {
 		Now:        time.Now(),
 		ConfigDir:  configDir,
 		CurrentDir: currentDir,
+		TempDir:    os.TempDir(),
 		Hostname:   hostname,
 		Env:        env,
 	}
