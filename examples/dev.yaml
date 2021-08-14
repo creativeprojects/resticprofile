@@ -9,6 +9,7 @@ global:
     initialize: false
     priority: low
     # restic-binary: ~/fake_restic
+    # legacy-arguments: true
 
 groups:
     full-backup:
@@ -20,6 +21,7 @@ default:
     env:
         tmp: /tmp
     initialize: false
+    cleanup-cache: true
     password-file: key
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
@@ -167,6 +169,12 @@ src:
     snapshots:
         {{ template "tags" . }}
         
+home:
+    inherit: default
+    # cache-dir: "${TMPDIR}.restic/"
+    backup:
+        source: "${HOME}/Projects"
+
 stdin:
     backup:
         stdin: true
@@ -179,9 +187,25 @@ stdin:
 dropbox:
     initialize: false
     inherit: default
-    initialize: false
     backup:
         extended-status: false
         check-before: false
         no-error-on-warning: true
         source: "../../../../../Dropbox"
+
+escape:
+    initialize: true
+    inherit: default
+    backup:
+        source:
+            - {{ .CurrentDir }}/examples/private/file with space
+            - {{ .CurrentDir }}/examples/private/quoted"file
+            - {{ .CurrentDir }}/examples/private/Côte d'Ivoire
+        exclude:
+            #- file with space
+            - "**/.git"
+            - quoted"file
+            - Côte d'Ivoire
+    retention:
+        after-backup: true
+        

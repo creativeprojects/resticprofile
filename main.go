@@ -321,6 +321,11 @@ func runProfile(
 		changeLevelFilter(clog.LevelDebug)
 	}
 
+	// use the broken arguments escaping (before v0.15.0)
+	if global.LegacyArguments {
+		profile.SetLegacyArg(true)
+	}
+
 	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(c.GetConfigFile())

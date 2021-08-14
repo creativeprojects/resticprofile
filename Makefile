@@ -9,6 +9,7 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOTOOL=$(GOCMD) tool
 GOGET=$(GOCMD) get
+GOMOD=$(GOCMD) mod
 GOPATH?=`$(GOCMD) env GOPATH`
 
 BINARY=resticprofile
@@ -41,34 +42,37 @@ TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
-.PHONY: all test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk passphrase rest-server nightly toc staticcheck release-snapshot generate-install
+.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk passphrase rest-server nightly toc staticcheck release-snapshot generate-install
 
-all: test build
+all: download test build
 
-build:
+download:
+		$(GOMOD) download
+
+build: download
 		$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-install:
+install: download
 		$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-mac:
+build-mac: download
 		GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-linux:
+build-linux: download
 		GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-pi:
+build-pi: download
 		GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-windows:
+build-windows: download
 		GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-all: build-mac build-linux build-pi build-windows
 
-test:
+test: download
 		$(GOTEST) -v $(TESTS)
 
-test-ci:
+test-ci: download
 		$(GOTEST) -v -short ./...
 		$(GOTEST) -v ./priority
 

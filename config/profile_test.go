@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -157,7 +158,7 @@ repository = "test"
 	}
 	assert.NotNil(profile)
 
-	flags := profile.GetCommonFlags()
+	flags := profile.GetCommonFlags().ToMap()
 	assert.NotNil(flags)
 	assert.Contains(flags, "quiet")
 	assert.NotContains(flags, "verbose")
@@ -186,7 +187,7 @@ array2 = ["one", "two"]
 	}
 	assert.NotNil(profile)
 
-	flags := profile.GetCommonFlags()
+	flags := profile.GetCommonFlags().ToMap()
 	assert.NotNil(flags)
 	assert.Contains(flags, "bool-true")
 	assert.NotContains(flags, "bool-false")
@@ -259,12 +260,12 @@ host = "ConfigHost"
 
 	profile.SetHost("TestHost")
 
-	flags := profile.GetCommandFlags(constants.CommandBackup)
+	flags := profile.GetCommandFlags(constants.CommandBackup).ToMap()
 	assert.NotNil(flags)
 	assert.Contains(flags, "host")
 	assert.Equal([]string{"TestHost"}, flags["host"])
 
-	flags = profile.GetCommandFlags(constants.CommandSnapshots)
+	flags = profile.GetCommandFlags(constants.CommandSnapshots).ToMap()
 	assert.NotNil(flags)
 	assert.Contains(flags, "host")
 	assert.Equal([]string{"ConfigHost"}, flags["host"])
@@ -285,16 +286,16 @@ func TestHostInAllSupportedSections(t *testing.T) {
 	assertHostIs := func(expectedHost []string, profile *Profile, section string) {
 		assert.NotNil(profile)
 
-		var flags = map[string][]string{}
+		flags := shell.NewArgs()
 		if section == constants.SectionConfigurationRetention {
-			flags = addOtherFlags(flags, profile.Retention.OtherFlags)
+			flags = addOtherArgs(flags, profile.Retention.OtherFlags)
 		} else {
 			flags = profile.GetCommandFlags(section)
 		}
 
 		assert.NotNil(flags)
-		assert.Contains(flags, "host")
-		assert.Equal(expectedHost, flags["host"])
+		assert.Contains(flags.ToMap(), "host")
+		assert.Equal(expectedHost, flags.ToMap()["host"])
 	}
 
 	testConfig := func(section, host string) string {
@@ -352,7 +353,7 @@ host = false
 	}
 	assert.NotNil(profile)
 
-	flags := profile.GetRetentionFlags()
+	flags := profile.GetRetentionFlags().ToMap()
 	assert.NotNil(flags)
 	assert.Contains(flags, "path")
 	assert.Equal([]string{root}, flags["path"])
@@ -376,7 +377,7 @@ path = "/"
 	}
 	assert.NotNil(profile)
 
-	flags := profile.GetRetentionFlags()
+	flags := profile.GetRetentionFlags().ToMap()
 	assert.NotNil(flags)
 	assert.Contains(flags, "path")
 	assert.Equal([]string{"/"}, flags["path"])
@@ -686,92 +687,49 @@ profile:
 			require.NotNil(t, profile.Snapshots)
 
 			flags := profile.GetCommonFlags()
-			assert.Equal(t, 1, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
+			assert.Equal(t, 1, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
 
 			flags = profile.GetCommandFlags("backup")
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			assert.ElementsMatch(t, []string{"backup"}, flags["other-flag-backup"])
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			assert.ElementsMatch(t, []string{"backup"}, flags.ToMap()["other-flag-backup"])
 
 			flags = profile.GetRetentionFlags()
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			_, found := flags["other-flag-retention"]
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found := flags.ToMap()["other-flag-retention"]
 			assert.True(t, found)
 
 			flags = profile.GetCommandFlags("snapshots")
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			_, found = flags["other-flag-snapshots"]
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found = flags.ToMap()["other-flag-snapshots"]
 			assert.True(t, found)
 
 			flags = profile.GetCommandFlags("check")
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			_, found = flags["other-flag-check"]
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found = flags.ToMap()["other-flag-check"]
 			assert.True(t, found)
 
 			flags = profile.GetCommandFlags("forget")
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			_, found = flags["other-flag-forget"]
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found = flags.ToMap()["other-flag-forget"]
 			assert.True(t, found)
 
 			flags = profile.GetCommandFlags("prune")
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			_, found = flags["other-flag-prune"]
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found = flags.ToMap()["other-flag-prune"]
 			assert.True(t, found)
 
 			flags = profile.GetCommandFlags("mount")
-			assert.Equal(t, 2, len(flags))
-			assert.ElementsMatch(t, []string{"1"}, flags["other-flag"])
-			_, found = flags["other-flag-mount"]
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found = flags.ToMap()["other-flag-mount"]
 			assert.True(t, found)
-		})
-	}
-}
-
-func TestMergeFlags(t *testing.T) {
-	testData := []struct{ first, second, final map[string][]string }{
-		{nil, nil, nil},
-		{
-			map[string][]string{"key1": {"value"}},
-			nil,
-			map[string][]string{"key1": {"value"}},
-		},
-		{
-			nil,
-			map[string][]string{"key1": {"value"}},
-			map[string][]string{"key1": {"value"}},
-		},
-		{
-			map[string][]string{"key1": {"value"}},
-			map[string][]string{"key1": {"other", "one"}},
-			map[string][]string{"key1": {"other", "one"}},
-		},
-		{
-			map[string][]string{"key1": {"value"}},
-			map[string][]string{"key1": nil},
-			map[string][]string{"key1": nil},
-		},
-		{
-			map[string][]string{"key1": {"value"}},
-			map[string][]string{"key2": {"other", "one"}},
-			map[string][]string{"key1": {"value"}, "key2": {"other", "one"}},
-		},
-	}
-
-	for _, testItem := range testData {
-		t.Run("", func(t *testing.T) {
-			result := mergeFlags(testItem.first, testItem.second)
-			assert.Equal(t, len(testItem.final), len(result))
-			for key, value := range testItem.final {
-				finalValue, found := result[key]
-				assert.True(t, found)
-				assert.ElementsMatch(t, value, finalValue)
-			}
 		})
 	}
 }

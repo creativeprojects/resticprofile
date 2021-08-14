@@ -12,6 +12,7 @@
     },
     "spaces": {
         "inherit": "default",
+        "password-file": "different key",
         "backup": {
             "exclude": "My Documents",
             "source": "/source dir"
@@ -24,7 +25,14 @@
             "source": ["/source'dir", "/source\"dir"]
         }
     },
-    "glob": {
+    "glob1": {
+        "inherit": "default",
+        "backup": {
+            "exclude": ["[aA]*"],
+            "source": ["/source"]
+        }
+    },
+    "glob2": {
         "inherit": "default",
         "backup": {
             "exclude": ["examples/integration*"],
@@ -34,8 +42,15 @@
     "mixed": {
         "inherit": "default",
         "backup": {
-            "exclude": ["examples/integration*"],
-            "source": ["/Côte d'Ivoire"]
+            "source": ["/Côte d'Ivoire", "/path/with space; echo foo'"]
+        }
+    },
+    "fix": {
+        "inherit": "default",
+        "password-file": "different\\ key",
+        "backup": {
+            "exclude": "My\\ Documents",
+            "source": "/source\\ dir"
         }
     }
 }

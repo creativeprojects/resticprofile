@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -107,51 +108,56 @@ func TestSliceOfStringValueFlag(t *testing.T) {
 }
 
 type testStruct struct {
-	someBool1   bool   `argument:"some-bool-1"`
-	someBool2   bool   `argument:"some-bool-2"`
-	someString1 string `argument:"some-string-1"`
-	someString2 string `argument:"some-string-2"`
-	someInt1    int    `argument:"some-int-1"`
-	someInt2    int    `argument:"some-int-2"`
-	notIncluded bool
+	someBoolTrue  bool   `argument:"some-bool-true"`
+	someBoolFalse bool   `argument:"some-bool-false"`
+	emptyString   string `argument:"empty-string"`
+	globString    string `argument:"glob-string"`
+	noGlobString  string `argument:"no-glob-string" argument-type:"no-glob"`
+	emptyInt      int    `argument:"empty-int"`
+	someInt       int    `argument:"some-int"`
+	notIncluded   bool
 }
 
-func TestConvertStructToFlag(t *testing.T) {
+func TestConvertStructToArgs(t *testing.T) {
 	testElement := testStruct{
-		someBool1:   true,
-		someBool2:   false,
-		someInt1:    0,
-		someInt2:    10,
-		someString1: "",
-		someString2: "test",
-		notIncluded: true,
+		someBoolTrue:  true,
+		someBoolFalse: false,
+		emptyInt:      0,
+		someInt:       10,
+		emptyString:   "",
+		globString:    "test",
+		noGlobString:  "test",
+		notIncluded:   true,
 	}
-	flags := convertStructToFlags(testElement)
-	assert.NotNil(t, flags)
+	args := convertStructToArgs(testElement, shell.NewArgs())
+	assert.NotNil(t, args)
 	assert.Equal(t, map[string][]string{
-		"some-bool-1":   {},
-		"some-int-2":    {"10"},
-		"some-string-2": {"test"},
-	}, flags)
+		"some-bool-true": {},
+		"some-int":       {"10"},
+		"glob-string":    {"test"},
+		"no-glob-string": {"test"},
+	}, args.ToMap())
 }
 
-func TestConvertPointerStructToFlag(t *testing.T) {
+func TestConvertPointerStructToArgs(t *testing.T) {
 	testElement := &testStruct{
-		someBool1:   true,
-		someBool2:   false,
-		someInt1:    0,
-		someInt2:    10,
-		someString1: "",
-		someString2: "test",
-		notIncluded: true,
+		someBoolTrue:  true,
+		someBoolFalse: false,
+		emptyInt:      0,
+		someInt:       10,
+		emptyString:   "",
+		globString:    "test",
+		noGlobString:  "test",
+		notIncluded:   true,
 	}
-	flags := convertStructToFlags(testElement)
-	assert.NotNil(t, flags)
+	args := convertStructToArgs(testElement, shell.NewArgs())
+	assert.NotNil(t, args)
 	assert.Equal(t, map[string][]string{
-		"some-bool-1":   {},
-		"some-int-2":    {"10"},
-		"some-string-2": {"test"},
-	}, flags)
+		"some-bool-true": {},
+		"some-int":       {"10"},
+		"glob-string":    {"test"},
+		"no-glob-string": {"test"},
+	}, args.ToMap())
 }
 
 func BenchmarkFormatInt(b *testing.B) {

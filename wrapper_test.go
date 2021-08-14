@@ -64,35 +64,6 @@ func TestGetMultipleEnvironment(t *testing.T) {
 	assert.Contains(t, env, "PASSWORD=secret")
 }
 
-func TestEmptyConversionToArgs(t *testing.T) {
-	flags := map[string][]string{}
-	args := convertIntoArgs(flags)
-	assert.Equal(t, []string{}, args)
-}
-
-func TestConversionToArgs(t *testing.T) {
-	flags := map[string][]string{
-		"bool1":   {},
-		"bool2":   {""},
-		"int1":    {"0"},
-		"int2":    {"-100"},
-		"string1": {"test"},
-		"string2": {"with space"},
-		"list":    {"test1", "test2", "test3"},
-	}
-	args := convertIntoArgs(flags)
-	assert.Len(t, args, 16)
-	assert.Contains(t, args, "--bool1")
-	assert.Contains(t, args, "--bool2")
-	assert.Contains(t, args, "0")
-	assert.Contains(t, args, "-100")
-	assert.Contains(t, args, "test")
-	assert.Contains(t, args, "\"with space\"")
-	assert.Contains(t, args, "test1")
-	assert.Contains(t, args, "test2")
-	assert.Contains(t, args, "test3")
-}
-
 func TestPreProfileScriptFail(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
