@@ -169,6 +169,12 @@ src:
     snapshots:
         {{ template "tags" . }}
         
+home:
+    inherit: default
+    # cache-dir: "${TMPDIR}.restic/"
+    backup:
+        source: "${HOME}/Projects"
+
 stdin:
     backup:
         stdin: true
@@ -200,3 +206,6 @@ escape:
             - "**/.git"
             - quoted"file
             - Côte d'Ivoire
+    retention:
+        after-backup: true
+        

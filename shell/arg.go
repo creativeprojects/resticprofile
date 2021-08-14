@@ -18,12 +18,12 @@ type ArgType int
 const ArgTypeCount = 4
 
 const (
-	ArgConfigEscape       ArgType = iota // escape each special character but don't add quotes
-	ArgConfigNoGlobQuote                 // use double quotes around argument when needed
-	ArgCommandLineEscape                 // same as ArgConfigEscape but argument coming from the command line
-	ArgConfigBackupSource                // same as ArgConfigEscape but represents the folders to add at the end of a backup command
+	ArgConfigEscape        ArgType = iota // escape each special character but don't add quotes
+	ArgConfigKeepGlobQuote                // use double quotes around argument when needed so the shell doesn't resolve glob patterns
+	ArgCommandLineEscape                  // same as ArgConfigEscape but argument is coming from the command line
+	ArgConfigBackupSource                 // same as ArgConfigEscape but represents the folders to add at the end of a backup command
 	ArgLegacyEscape
-	ArgLegacyNoGlobQuote
+	ArgLegacyKeepGlobQuote
 	ArgLegacyCommandLineEscape
 	ArgLegacyConfigBackupSource
 )
@@ -52,7 +52,7 @@ func (a Arg) String() string {
 		return ""
 	}
 	switch a.argType {
-	case ArgConfigNoGlobQuote:
+	case ArgConfigKeepGlobQuote:
 		if doubleQuotePattern.MatchString(a.raw) {
 			return `"` + escapeString(a.raw, []byte{'"'}) + `"`
 		}
@@ -64,7 +64,7 @@ func (a Arg) String() string {
 	case ArgLegacyEscape:
 		return quoteArgument(escapeString(a.raw, []byte{' '}))
 
-	case ArgLegacyNoGlobQuote:
+	case ArgLegacyKeepGlobQuote:
 		return quoteArgument(escapeString(a.raw, []byte{' ', '*', '?'}))
 
 	case ArgLegacyConfigBackupSource:

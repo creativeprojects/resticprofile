@@ -43,7 +43,7 @@ func convertStructToArgs(orig interface{}, args *shell.Args) *shell.Args {
 					// check if the argument type was specified
 					rawType, ok := field.Tag.Lookup("argument-type")
 					if ok && rawType == "no-glob" {
-						argType = shell.ArgConfigNoGlobQuote
+						argType = shell.ArgConfigKeepGlobQuote
 					}
 					args.AddFlags(argument, convert, argType)
 				}

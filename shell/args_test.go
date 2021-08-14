@@ -29,9 +29,10 @@ func TestConversionToArgsNoFlag(t *testing.T) {
 func TestConversionToArgs(t *testing.T) {
 	args := NewArgs()
 	args.AddFlags("aaa", []string{"simple", "with space", "with\"quote"}, ArgConfigEscape)
-	args.AddFlags("bbb", []string{"simple", "with space", "with\"quote"}, ArgConfigNoGlobQuote)
-	args.AddArgs([]string{"with space", "with\"quote"}, ArgConfigEscape)
-	args.AddArg("with space\"quote", ArgConfigNoGlobQuote)
+	args.AddFlags("bbb", []string{"simple", "with space", "with\"quote"}, ArgConfigKeepGlobQuote)
+	args.AddArgs([]string{"with space", "with\"quote", "with$variable"}, ArgConfigEscape)
+	args.AddArg("with space\"quote", ArgConfigKeepGlobQuote)
+	args.AddArg("with$variable", ArgConfigKeepGlobQuote)
 
 	expected := []string{
 		"--aaa",
@@ -48,7 +49,9 @@ func TestConversionToArgs(t *testing.T) {
 		`"with\"quote"`,
 		`with\ space`,
 		`with\"quote`,
+		"with\\$variable",
 		`"with space\"quote"`,
+		"\"with$variable\"",
 	}
 	if runtime.GOOS == "windows" {
 		expected = []string{
@@ -66,7 +69,9 @@ func TestConversionToArgs(t *testing.T) {
 			"with\"quote",
 			"with space",
 			"with\"quote",
+			"with$variable",
 			"with space\"quote",
+			"with$variable",
 		}
 	}
 	assert.Equal(t, expected, args.GetAll())
