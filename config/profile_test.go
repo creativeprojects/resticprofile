@@ -401,7 +401,7 @@ path = false
 	}
 	assert.NotNil(profile)
 
-	flags := profile.GetRetentionFlags()
+	flags := profile.GetRetentionFlags().ToMap()
 	assert.NotNil(flags)
 	assert.NotContains(flags, "path")
 }
