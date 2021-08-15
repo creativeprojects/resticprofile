@@ -78,7 +78,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 			[]string{"examples/integration*"},
 			`["backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles + "]",
 			`["backup" "--exclude" "examples/integration*" "--password-file" "examples/key" "--repo" "rest:http://user:password@localhost:8000/path" ` + globFiles + " " + globFiles + "]",
-			`["backup" "--exclude" "examples/integration*" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "examples/integration*" "examples/integration*"]`,
+			`["backup" "--exclude" "examples/integration*" "--password-file" "examples\\key" "--repo" "rest:http://user:password@localhost:8000/path" "examples/integration*" ` + globFiles + "]",
 		},
 		{
 			"spaces",
