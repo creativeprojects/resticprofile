@@ -18,6 +18,33 @@ func NewArgs() *Args {
 	}
 }
 
+func (a *Args) Clone() *Args {
+	clone := NewArgs()
+	for name, args := range a.args {
+		if args != nil {
+			args = append(make([]Arg, 0, len(args)), args...)
+		}
+		clone.args[name] = args
+	}
+	clone.more = append(clone.more, a.more...)
+	clone.legacy = a.legacy
+	return clone
+}
+
+func (a *Args) Walk(callback func(name string, arg *Arg) *Arg) {
+	processArgs := func(name string, args []Arg) {
+		for i, arg := range args {
+			if newArg := callback(name, &arg); newArg != nil && newArg != &arg {
+				args[i] = *newArg
+			}
+		}
+	}
+	for name, args := range a.args {
+		processArgs(name, args)
+	}
+	processArgs("", a.more)
+}
+
 // SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
 func (a *Args) SetLegacyArg(legacy bool) *Args {
 	a.legacy = legacy

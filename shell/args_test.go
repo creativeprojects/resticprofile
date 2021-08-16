@@ -26,6 +26,42 @@ func TestConversionToArgsNoFlag(t *testing.T) {
 	assert.Equal(t, []string{"one", "two", "three"}, args.GetAll())
 }
 
+func TestClone(t *testing.T) {
+	args := NewArgs()
+	args.AddFlag("x", "y", ArgConfigEscape)
+	args.AddArg("more", ArgConfigEscape)
+	args.SetLegacyArg(true)
+
+	clone := args.Clone()
+	assert.Equal(t, args.GetAll(), clone.GetAll())
+	assert.Equal(t, args.ToMap(), clone.ToMap())
+	assert.Equal(t, args.legacy, clone.legacy)
+
+	assert.NotSame(t, args, clone)
+	assert.NotSame(t, args.args, clone.args)
+	assert.NotSame(t, args.args["x"], clone.args["x"])
+	assert.NotSame(t, args.more, clone.more)
+}
+
+func TestWalk(t *testing.T) {
+	args := NewArgs()
+	args.AddFlag("x", "y", ArgConfigEscape)
+	args.AddArg("more", ArgConfigEscape)
+
+	var walked []string
+	args.Walk(func(name string, arg *Arg) *Arg {
+		walked = append(walked, arg.Value())
+		if name == "x" {
+			a := NewArg("newY", arg.Type())
+			arg = &a
+		}
+		return arg
+	})
+
+	assert.Equal(t, []string{"y", "more"}, walked)
+	assert.Equal(t, []string{"--x", "newY", "more"}, args.GetAll())
+}
+
 func TestConversionToArgs(t *testing.T) {
 	args := NewArgs()
 	args.AddFlags("aaa", []string{"simple", "with space", "with\"quote"}, ArgConfigEscape)
