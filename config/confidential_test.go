@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -210,4 +212,24 @@ profile:
 
 	result := GetNonConfidentialValues(profile, []string{"a", defaultUrl, "b", "otherval", "c"})
 	assert.Equal(t, []string{"a", defaultUrlReplaced, "b", ConfidentialReplacement, "c"}, result)
+}
+
+func TestGetNonConfidentialArgs(t *testing.T) {
+	repo := "local:user:%s@host/path with space"
+	testConfig := `
+profile:
+  repository: "` + fmt.Sprintf(repo, "password") + `"
+`
+	profile, err := getProfile("yaml", testConfig, "profile")
+	assert.NoError(t, err)
+	assert.NotNil(t, profile)
+
+	args := profile.GetCommandFlags(constants.CommandBackup)
+	result := GetNonConfidentialArgs(profile, args)
+
+	expectedSecret := shell.NewArg(fmt.Sprintf(repo, "password"), shell.ArgConfigEscape).String()
+	expectedPublic := shell.NewArg(fmt.Sprintf(repo, ConfidentialReplacement), shell.ArgConfigEscape).String()
+
+	assert.Equal(t, []string{"--repo", expectedSecret}, args.GetAll())
+	assert.Equal(t, []string{"--repo", expectedPublic}, result.GetAll())
 }

@@ -208,7 +208,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCo
 	arguments := append([]string{command}, args.GetAll()...)
 
 	// Create non-confidential arguments list for logging
-	publicArguments := config.GetNonConfidentialValues(r.profile, arguments)
+	publicArguments := append([]string{command}, config.GetNonConfidentialArgs(r.profile, args).GetAll()...)
 
 	env := append(os.Environ(), r.getEnvironment()...)
 

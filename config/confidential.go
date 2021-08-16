@@ -3,9 +3,11 @@ package config
 import (
 	"reflect"
 	"regexp"
+
+	"github.com/creativeprojects/resticprofile/shell"
 )
 
-const ConfidentialReplacement = "***"
+const ConfidentialReplacement = "×××"
 
 // ConfidentialValue is a string value with a public and a confidential representation
 type ConfidentialValue struct {
@@ -105,28 +107,61 @@ func ProcessConfidentialValues(profile *Profile) {
 	}
 }
 
-// GetNonConfidentialValues returns a new list with confidential values being replaced with their public representation
-func GetNonConfidentialValues(profile *Profile, values []string) []string {
-	if profile == nil {
-		return values
+func getAllConfidentialValues(profile *Profile) []*ConfidentialValue {
+	var confidentials []*ConfidentialValue
+
+	if profile != nil {
+		confidentials = append(confidentials, &profile.Repository)
+		for _, value := range profile.Environment {
+			confidentials = append(confidentials, &value)
+		}
 	}
 
-	confidentials := []*ConfidentialValue{&profile.Repository}
-	for _, value := range profile.Environment {
-		confidentials = append(confidentials, &value)
-	}
+	return confidentials
+}
 
-	target := make([]string, len(values))
-
-	for i := len(values) - 1; i >= 0; i-- {
-		target[i] = values[i]
-
+func convertToNonConfidential(confidentials []*ConfidentialValue, value string) string {
+	if confidentials != nil {
 		for _, c := range confidentials {
-			if c.IsConfidential() && target[i] == c.Value() {
-				target[i] = c.String()
+			if c != nil && c.IsConfidential() && value == c.Value() {
+				return c.String()
 			}
 		}
 	}
+	return value
+}
+
+// GetNonConfidentialValues returns a new list with confidential values being replaced with their public representation
+func GetNonConfidentialValues(profile *Profile, values []string) []string {
+	target := make([]string, len(values))
+	confidentials := getAllConfidentialValues(profile)
+
+	for i := len(values) - 1; i >= 0; i-- {
+		target[i] = convertToNonConfidential(confidentials, values[i])
+	}
+
+	return target
+}
+
+// GetNonConfidentialArgs returns new shell.Args with confidential values being replaced with their public representation
+func GetNonConfidentialArgs(profile *Profile, args *shell.Args) *shell.Args {
+	if args == nil {
+		return nil
+	}
+
+	target := args.Clone()
+	confidentials := getAllConfidentialValues(profile)
+
+	target.Walk(func(name string, arg *shell.Arg) *shell.Arg {
+		if arg.HasValue() {
+			value := convertToNonConfidential(confidentials, arg.Value())
+			if value != arg.Value() {
+				a := shell.NewArg(value, arg.Type())
+				return &a
+			}
+		}
+		return arg
+	})
 
 	return target
 }
