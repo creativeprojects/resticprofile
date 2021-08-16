@@ -90,6 +90,9 @@ func (r *resticWrapper) addProgress(p progress.Receiver) {
 }
 
 func (r *resticWrapper) summary(command string, summary progress.Summary, stderr string, result error) {
+	if r.dryRun {
+		return
+	}
 	for _, p := range r.progress {
 		p.Summary(command, summary, stderr, result)
 	}
