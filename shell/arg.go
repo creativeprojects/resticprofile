@@ -44,6 +44,14 @@ func (a Arg) HasValue() bool {
 	return a.raw != ""
 }
 
+func (a Arg) Value() string {
+	return a.raw
+}
+
+func (a Arg) Type() ArgType {
+	return a.argType
+}
+
 func (a Arg) String() string {
 	if runtime.GOOS == "windows" {
 		return a.raw
