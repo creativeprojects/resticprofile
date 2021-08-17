@@ -140,13 +140,10 @@ func (c *Config) getIncludes() []string {
 	var files []string
 
 	if c.IsSet(constants.SectionConfigurationIncludes) {
-		single := ""
-		list := []string{}
+		includes := make([]string, 0, 8)
 
-		if err := c.unmarshalKey(constants.SectionConfigurationIncludes, &list); err == nil {
-			files = append(files, list...)
-		} else if err = c.unmarshalKey(constants.SectionConfigurationIncludes, &single); err == nil {
-			files = append(files, single)
+		if err := c.unmarshalKey(constants.SectionConfigurationIncludes, &includes); err == nil {
+			files = append(files, includes...)
 		} else {
 			clog.Errorf("Failed parsing includes definition: %v", err)
 		}

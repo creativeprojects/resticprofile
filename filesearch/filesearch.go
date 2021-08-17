@@ -128,15 +128,17 @@ func findConfigurationFileWithExtension(configFile string) string {
 // FindConfigurationIncludes finds includes (glob patterns) relative to the configuration file.
 func FindConfigurationIncludes(configFile string, includes []string) ([]string, error) {
 	if !filepath.IsAbs(configFile) {
-		if dir, err := os.Getwd(); err == nil {
-			configFile = filepath.Join(dir, configFile)
-		} else {
+		var err error
+		if configFile, err = filepath.Abs(configFile); err != nil {
 			return nil, err
 		}
 	}
 
+	configFile = filepath.FromSlash(filepath.Clean(configFile))
+
 	var files []string
 	addFile := func(file string) {
+		file = filepath.FromSlash(filepath.Clean(file))
 		if file != configFile {
 			files = append(files, file)
 		}

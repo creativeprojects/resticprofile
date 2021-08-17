@@ -636,7 +636,6 @@ includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 # Defaults
 [global]
 initialize = true
-...
 ```
 
 Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
