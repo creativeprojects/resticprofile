@@ -2,7 +2,8 @@ package config
 
 import (
 	"os"
-	"path"
+	"os/user"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -18,6 +19,9 @@ func TestFixUnixPaths(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
+	usr, err := user.Current()
+	require.NoError(t, err)
+
 	paths := []struct {
 		source   string
 		expected string
@@ -25,7 +29,9 @@ func TestFixUnixPaths(t *testing.T) {
 		{"", ""},
 		{"dir", "/prefix/dir"},
 		{"/dir", "/dir"},
-		{"~/dir", path.Join(home, "dir")},
+		{"~/dir", filepath.Join(home, "dir")},
+		{"~" + usr.Username + "/dir", filepath.Join(home, "dir")},
+		{"~" + usr.Username, home},
 		{"~", home},
 		{"~file", "/prefix/~file"},
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
@@ -60,7 +66,8 @@ func TestFixWindowsPaths(t *testing.T) {
 		{`dir`, `c:\prefix\dir`},
 		{`\dir`, `c:\prefix\dir`},
 		{`c:\dir`, `c:\dir`},
-		{`~\dir`, home + `\dir`},
+		{`~\dir`, filepath.Join(home, "dir")},
+		{`~/dir`, home + `/dir`},
 		{`~`, home},
 		{`~file`, `c:\prefix\~file`},
 		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},

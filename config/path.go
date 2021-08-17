@@ -1,8 +1,11 @@
 package config
 
 import (
+	"errors"
 	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -39,19 +42,34 @@ func expandEnv(value string) string {
 }
 
 func isUserHomePath(value string) bool {
-	// Only "~" and "~/path" but not "~somefile"
-	return strings.HasPrefix(value, "~") &&
-		(len(value) < 2 || strings.ContainsAny(value[1:2], `/\`))
+	return value != expandUserHome(value)
 }
 
 func expandUserHome(value string) string {
-	if isUserHomePath(value) {
-		if home, err := os.UserHomeDir(); err == nil {
-			value = home + value[1:]
-		} else {
-			clog.Warningf("cannot resolve user home dir for path %s : %v", value, err)
+	// "~", "~/path" and "~unix-user/" but not "~somefile"
+	if strings.HasPrefix(value, "~") {
+		delimiter := strings.IndexAny(value, `/\`)
+		if delimiter < 0 {
+			delimiter = len(value)
+		}
+
+		if delimiter == 1 {
+			if path, err := os.UserHomeDir(); err == nil {
+				value = path + value[1:]
+			} else {
+				clog.Warningf("cannot resolve user home dir for path %s : %v", value, err)
+			}
+		} else if runtime.GOOS != "windows" { // Windows uses "domain\user", skipping User lookup for this OS
+			username := value[1:delimiter]
+
+			if u, err := user.Lookup(username); err == nil {
+				value = u.HomeDir + value[delimiter:]
+			} else if !errors.Is(err, user.UnknownUserError(username)) {
+				clog.Warningf("cannot resolve user home dir for user %s in path %s : %v", username, value, err)
+			}
 		}
 	}
+
 	return value
 }
 
