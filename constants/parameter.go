@@ -13,5 +13,6 @@ const (
 	ParameterInherit        = "inherit"
 	ParameterHost           = "host"
 	ParameterPath           = "path"
+	ParameterTag            = "tag"
 	ParameterDescription    = "description"
 )

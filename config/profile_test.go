@@ -406,6 +406,62 @@ path = false
 	assert.NotContains(flags, "path")
 }
 
+func TestCopyTagInRetention(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile.backup]
+tag = ["one", "two"]
+
+[profile.retention]
+tag = true
+`
+	profile, err := getProfile("toml", testConfig, "profile")
+	require.NoError(t, err)
+	assert.NotNil(profile)
+
+	flags := profile.GetRetentionFlags().ToMap()
+	assert.NotNil(flags)
+	assert.Contains(flags, "tag")
+	assert.Equal([]string{"one", "two"}, flags["tag"])
+}
+
+func TestReplaceTagInRetention(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile.backup]
+tag = ["one", "two"]
+
+[profile.retention]
+tag = ["a", "b"]
+`
+	profile, err := getProfile("toml", testConfig, "profile")
+	require.NoError(t, err)
+	assert.NotNil(profile)
+
+	flags := profile.GetRetentionFlags().ToMap()
+	assert.NotNil(flags)
+	assert.Contains(flags, "tag")
+	assert.Equal([]string{"a", "b"}, flags["tag"])
+}
+
+func TestNoTagInRetention(t *testing.T) {
+	assert := assert.New(t)
+	testConfig := `
+[profile.backup]
+tag = ["one", "two"]
+
+[profile.retention]
+tag = false
+`
+	profile, err := getProfile("toml", testConfig, "profile")
+	require.NoError(t, err)
+	assert.NotNil(profile)
+
+	flags := profile.GetRetentionFlags().ToMap()
+	assert.NotNil(flags)
+	assert.NotContains(flags, "tag")
+}
+
 func TestForgetCommandFlags(t *testing.T) {
 	testData := []testTemplate{
 		{"toml", `

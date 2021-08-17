@@ -480,8 +480,9 @@ prune = false
 # path can be a boolean ('true' meaning to copy source paths from 'backup') 
 # or a path or list of paths to use instead. Default is `true` if not specified.
 #path = []
-# the tags are NOT copied from the 'backup' command
-tag = [ "test", "dev" ]
+# tag can be a boolean ('true' meaning to copy tag set from 'backup') 
+# or a custom set of tags. Default is 'false', meaning that tags are NOT used.
+tag = true
 # host can be a boolean ('true' meaning current hostname) or a string to specify a different hostname
 host = true
 
@@ -2106,7 +2107,7 @@ Flags passed to the restic command line
 * **keep-within**: string
 * **keep-tag**: string OR list of strings
 * **host**: true / false OR string
-* **tag**: string OR list of strings
+* **tag**: true / false, string OR list of strings
 * **path**: true / false, string OR list of strings
 * **compact**: true / false
 * **group-by**: string
