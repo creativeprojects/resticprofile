@@ -121,7 +121,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 
 		// Backup source is NOT relative to the configuration, but where the script was launched instead
 		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
-			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv)
+			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv, expandUserHome)
 			if !p.legacyArg {
 				p.Backup.Source = resolveGlob(p.Backup.Source)
 			}

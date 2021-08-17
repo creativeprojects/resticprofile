@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path"
 	"runtime"
 	"testing"
 
@@ -14,6 +15,9 @@ func TestFixUnixPaths(t *testing.T) {
 		t.SkipNow()
 	}
 
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+
 	paths := []struct {
 		source   string
 		expected string
@@ -21,16 +25,18 @@ func TestFixUnixPaths(t *testing.T) {
 		{"", ""},
 		{"dir", "/prefix/dir"},
 		{"/dir", "/dir"},
-		{"~/dir", "~/dir"},
+		{"~/dir", path.Join(home, "dir")},
+		{"~", home},
+		{"~file", "/prefix/~file"},
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
 		{"some file.txt", "/prefix/some file.txt"},
 	}
 
-	err := os.Setenv("TEMP_TEST_DIR", "/home")
+	err = os.Setenv("TEMP_TEST_DIR", "/home")
 	require.NoError(t, err)
 
 	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("/prefix"))
+		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("/prefix"), expandUserHome)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 		// running it again should not change the value
 		fixed = fixPath(fixed, expandEnv, absolutePrefix("/prefix"))
@@ -43,6 +49,9 @@ func TestFixWindowsPaths(t *testing.T) {
 		t.SkipNow()
 	}
 
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+
 	paths := []struct {
 		source   string
 		expected string
@@ -51,15 +60,19 @@ func TestFixWindowsPaths(t *testing.T) {
 		{`dir`, `c:\prefix\dir`},
 		{`\dir`, `c:\prefix\dir`},
 		{`c:\dir`, `c:\dir`},
+		{`~\dir`, home + `\dir`},
+		{`~`, home},
+		{`~file`, `c:\prefix\~file`},
 		{`%TEMP_TEST_DIR%\dir`, `%TEMP_TEST_DIR%\dir`},
+		{`${TEMP_TEST_DIR}\dir`, `c:\home\dir`},
 		{"some file.txt", `c:\prefix\some file.txt`},
 	}
 
-	err := os.Setenv("TEMP_TEST_DIR", "/home")
+	err = os.Setenv("TEMP_TEST_DIR", "c:\\home")
 	require.NoError(t, err)
 
 	for _, testPath := range paths {
-		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("c:\\prefix"))
+		fixed := fixPath(testPath.source, expandEnv, absolutePrefix("c:\\prefix"), expandUserHome)
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 		// running it again should not change the value
 		fixed = fixPath(fixed, expandEnv, absolutePrefix("c:\\prefix"))
