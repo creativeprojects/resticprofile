@@ -189,6 +189,9 @@ func (r *resticWrapper) runProfile() error {
 			func(err error) {
 				_ = r.runProfilePostFailCommand(err)
 			},
+			func(err error) {
+				r.runFinalCommand(r.command, err)
+			},
 		)
 	})
 	if err != nil {
@@ -420,22 +423,7 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 	}
 	env := append(os.Environ(), r.getEnvironment()...)
 	env = append(env, r.getProfileEnvironment()...)
-	env = append(env, fmt.Sprintf("ERROR=%s", fail.Error()))
-
-	if fail, ok := fail.(*commandError); ok {
-		exitCode := -1
-		if code, err := fail.ExitCode(); err == nil {
-			exitCode = code
-		}
-
-		env = append(env,
-			fmt.Sprintf("ERROR_COMMANDLINE=%s", fail.Commandline()),
-			fmt.Sprintf("ERROR_EXIT_CODE=%d", exitCode),
-			fmt.Sprintf("ERROR_STDERR=%s", fail.Stderr()),
-			// Deprecated: STDERR can originate from (pre/post)-command which doesn't need to be restic
-			fmt.Sprintf("RESTIC_STDERR=%s", fail.Stderr()),
-		)
-	}
+	env = append(env, r.getFailEnvironment(fail)...)
 
 	for i, postCommand := range r.profile.RunAfterFail {
 		clog.Debugf("starting 'run-after-fail' profile command %d/%d", i+1, len(r.profile.RunAfterFail))
@@ -449,6 +437,37 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 		}
 	}
 	return nil
+}
+
+func (r *resticWrapper) runFinalCommand(command string, fail error) {
+	var commands []string
+
+	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.RunFinally != nil {
+		commands = append(commands, r.profile.Backup.RunFinally...)
+	}
+	if r.profile.RunFinally != nil {
+		commands = append(commands, r.profile.RunFinally...)
+	}
+
+	env := append(os.Environ(), r.getEnvironment()...)
+	env = append(env, r.getProfileEnvironment()...)
+	env = append(env, r.getFailEnvironment(fail)...)
+
+	for i := len(commands) - 1; i >= 0; i-- {
+		// Using defer stack for "finally" to ensure every command is run even on panic
+		defer func(index int, cmd string) {
+			clog.Debugf("starting final command %d/%d", index+1, len(commands))
+			rCommand := newShellCommand(cmd, nil, env, r.dryRun, r.sigChan, r.setPID)
+			// stdout are stderr are coming from the default terminal (in case they're redirected)
+			rCommand.stdout = term.GetOutput()
+			rCommand.stderr = term.GetErrorOutput()
+			_, _, err := runShellCommand(rCommand)
+			if err != nil {
+				clog.Errorf("run-finally command %d/%d failed ('%s' on profile '%s'): %w",
+					index+1, len(commands), command, r.profile.Name, err)
+			}
+		}(i, commands[i])
+	}
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration
@@ -475,6 +494,31 @@ func (r *resticWrapper) getProfileEnvironment() []string {
 		fmt.Sprintf("PROFILE_NAME=%s", r.profile.Name),
 		fmt.Sprintf("PROFILE_COMMAND=%s", r.command),
 	}
+}
+
+// getFailEnvironment returns additional environment variables describing the fail reason
+func (r *resticWrapper) getFailEnvironment(err error) (env []string) {
+	if err == nil {
+		return
+	}
+
+	env = []string{fmt.Sprintf("ERROR=%s", err.Error())}
+
+	if fail, ok := err.(*commandError); ok {
+		exitCode := -1
+		if code, err := fail.ExitCode(); err == nil {
+			exitCode = code
+		}
+
+		env = append(env,
+			fmt.Sprintf("ERROR_COMMANDLINE=%s", fail.Commandline()),
+			fmt.Sprintf("ERROR_EXIT_CODE=%d", exitCode),
+			fmt.Sprintf("ERROR_STDERR=%s", fail.Stderr()),
+			// Deprecated: STDERR can originate from (pre/post)-command which doesn't need to be restic
+			fmt.Sprintf("RESTIC_STDERR=%s", fail.Stderr()),
+		)
+	}
+	return
 }
 
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
@@ -689,12 +733,20 @@ func logLockWait(lockName string, started, lastLogged time.Time, maxLockWait tim
 }
 
 // runOnFailure will run the onFailure function if an error occurred in the run function
-func runOnFailure(run func() error, onFailure func(error)) error {
-	err := run()
+func runOnFailure(run func() error, onFailure func(error), finally func(error)) (err error) {
+	// Using "defer" for finally to ensure it runs even on panic
+	if finally != nil {
+		defer func() {
+			finally(err)
+		}()
+	}
+
+	err = run()
 	if err != nil {
 		onFailure(err)
 	}
-	return err
+
+	return
 }
 
 func asExitError(err error) (*exec.ExitError, bool) {

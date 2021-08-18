@@ -111,6 +111,51 @@ func TestPostFailProfile(t *testing.T) {
 	_ = os.Remove(testFile)
 }
 
+func TestFinallyProfile(t *testing.T) {
+	testFile := "TestFinallyProfile.txt"
+	defer os.Remove(testFile)
+
+	var profile *config.Profile
+	newProfile := func() {
+		_ = os.Remove(testFile)
+		profile = config.NewProfile(nil, "name")
+		profile.RunFinally = []string{"echo finally > " + testFile}
+		profile.Backup = &config.BackupSection{}
+		profile.Backup.RunFinally = []string{"echo finally-backup > " + testFile}
+	}
+
+	assertFileEquals := func(t *testing.T, expected string) {
+		content, err := os.ReadFile(testFile)
+		require.NoError(t, err)
+		assert.Equal(t, strings.TrimSpace(string(content)), expected)
+	}
+
+	t.Run("backup-before-profile", func(t *testing.T) {
+		newProfile()
+		wrapper := newResticWrapper("echo", false, profile, "backup", nil, nil)
+		err := wrapper.runProfile()
+		assert.NoError(t, err)
+		assertFileEquals(t, "finally")
+	})
+
+	t.Run("on-backup-only", func(t *testing.T) {
+		newProfile()
+		profile.RunFinally = nil
+		wrapper := newResticWrapper("echo", false, profile, "backup", nil, nil)
+		err := wrapper.runProfile()
+		assert.NoError(t, err)
+		assertFileEquals(t, "finally-backup")
+	})
+
+	t.Run("on-error", func(t *testing.T) {
+		newProfile()
+		wrapper := newResticWrapper("exit", false, profile, "1", nil, nil)
+		err := wrapper.runProfile()
+		assert.EqualError(t, err, "1 on profile 'name': exit status 1")
+		assertFileEquals(t, "finally")
+	})
+}
+
 func Example_runProfile() {
 	term.SetOutput(os.Stdout)
 	profile := config.NewProfile(nil, "name")
