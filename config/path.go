@@ -106,7 +106,7 @@ func absolutePath(value string) string {
 func resolveGlob(sources []string) []string {
 	resolved := make([]string, 0, len(sources))
 	for _, source := range sources {
-		if strings.ContainsAny(source, "?*") {
+		if strings.ContainsAny(source, "?*[") {
 			if matches, err := filepath.Glob(source); err == nil {
 				resolved = append(resolved, matches...)
 			} else {

@@ -333,10 +333,9 @@ host = %s
 }
 
 func TestResolveGlobSourcesInBackup(t *testing.T) {
-	root, err := filepath.Abs("/")
+	examples, err := filepath.Abs("../examples")
 	require.NoError(t, err)
-	root = filepath.ToSlash(root)
-	sourcePattern := filepath.ToSlash(root) + "/*"
+	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
 	testConfig := `
 [profile.backup]
 source = "` + sourcePattern + `"
@@ -347,10 +346,11 @@ source = "` + sourcePattern + `"
 
 	sources, err := filepath.Glob(sourcePattern)
 	require.NoError(t, err)
+	assert.Greater(t, len(sources), 5)
 
 	assert.Equal(t, []string{sourcePattern}, profile.Backup.Source)
 
-	profile.SetRootPath(root)
+	profile.SetRootPath(examples)
 	assert.Equal(t, sources, profile.Backup.Source)
 }
 
