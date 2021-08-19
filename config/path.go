@@ -1,8 +1,11 @@
 package config
 
 import (
+	"errors"
 	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -38,11 +41,43 @@ func expandEnv(value string) string {
 	return value
 }
 
+func isUserHomePath(value string) bool {
+	return value != expandUserHome(value)
+}
+
+func expandUserHome(value string) string {
+	// "~", "~/path" and "~unix-user/" but not "~somefile"
+	if strings.HasPrefix(value, "~") {
+		delimiter := strings.IndexAny(value, `/\`)
+		if delimiter < 0 {
+			delimiter = len(value)
+		}
+
+		if delimiter == 1 {
+			if path, err := os.UserHomeDir(); err == nil {
+				value = path + value[1:]
+			} else {
+				clog.Warningf("cannot resolve user home dir for path %s : %v", value, err)
+			}
+		} else if runtime.GOOS != "windows" { // Windows uses "domain\user", skipping User lookup for this OS
+			username := value[1:delimiter]
+
+			if u, err := user.Lookup(username); err == nil {
+				value = u.HomeDir + value[delimiter:]
+			} else if !errors.Is(err, user.UnknownUserError(username)) {
+				clog.Warningf("cannot resolve user home dir for user %s in path %s : %v", username, value, err)
+			}
+		}
+	}
+
+	return value
+}
+
 func absolutePrefix(prefix string) pathFix {
 	return func(value string) string {
 		if value == "" ||
 			filepath.IsAbs(value) ||
-			strings.HasPrefix(value, "~") ||
+			isUserHomePath(value) ||
 			strings.HasPrefix(value, "$") ||
 			strings.HasPrefix(value, "%") {
 			return value
@@ -54,7 +89,7 @@ func absolutePrefix(prefix string) pathFix {
 func absolutePath(value string) string {
 	if value == "" ||
 		filepath.IsAbs(value) ||
-		strings.HasPrefix(value, "~") ||
+		isUserHomePath(value) ||
 		strings.HasPrefix(value, "$") ||
 		strings.HasPrefix(value, "%") {
 		return value
@@ -65,4 +100,21 @@ func absolutePath(value string) string {
 	// looks like we can't get an absolute version...
 	clog.Errorf("cannot determine absolute path for '%s'", value)
 	return value
+}
+
+// resolveGlob evaluates glob expressions in a slice of paths and returns a resolved slice
+func resolveGlob(sources []string) []string {
+	resolved := make([]string, 0, len(sources))
+	for _, source := range sources {
+		if strings.ContainsAny(source, "?*[") {
+			if matches, err := filepath.Glob(source); err == nil {
+				resolved = append(resolved, matches...)
+			} else {
+				clog.Warningf("cannot evaluate glob expression '%s' : %v", source, err)
+			}
+		} else {
+			resolved = append(resolved, source)
+		}
+	}
+	return resolved
 }
