@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/adrg/xdg"
@@ -153,7 +154,8 @@ func FindConfigurationIncludes(configFile string, includes []string) ([]string, 
 		if fileExists(include) {
 			addFile(include)
 		} else {
-			if matches, err := filepath.Glob(include); err == nil {
+			if matches, err := filepath.Glob(include); err == nil && matches != nil {
+				sort.Strings(matches)
 				for _, match := range matches {
 					addFile(match)
 				}
