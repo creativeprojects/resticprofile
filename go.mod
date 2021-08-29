@@ -15,7 +15,7 @@ require (
 	github.com/mackerelio/go-osstat v0.2.0
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rickb777/date v1.16.0
+	github.com/rickb777/date v1.15.3
 	github.com/shirou/gopsutil/v3 v3.21.7
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.6.0
