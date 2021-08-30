@@ -70,6 +70,7 @@ For the rest of the documentation, I'll be showing examples using different form
   * [macOS X](#macos-x)
   * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
   * [Windows](#windows)
+* [Includes](#includes)
 * [Path resolution in configuration](#path-resolution-in-configuration)
 * [Run commands before, after success or after failure](#run-commands-before-after-success-or-after-failure)
   * [run before and after order during a backup](#run-before-and-after-order-during-a-backup)

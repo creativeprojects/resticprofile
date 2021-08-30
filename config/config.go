@@ -81,7 +81,7 @@ func LoadFile(configFile, format string) (*Config, error) {
 	c.configFile = configFile
 
 	readAndAdd := func(configFile string, replace bool) error {
-		clog.Debugf("Loading: %s", configFile)
+		clog.Debugf("loading: %s", configFile)
 		file, err := os.Open(configFile)
 		if err != nil {
 			return fmt.Errorf("cannot open configuration file for reading: %w", err)
