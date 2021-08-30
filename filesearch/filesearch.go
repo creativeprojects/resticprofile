@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/adrg/xdg"
@@ -123,6 +124,48 @@ func findConfigurationFileWithExtension(configFile string) string {
 	}
 	// Not found
 	return ""
+}
+
+// FindConfigurationIncludes finds includes (glob patterns) relative to the configuration file.
+func FindConfigurationIncludes(configFile string, includes []string) ([]string, error) {
+	if !filepath.IsAbs(configFile) {
+		var err error
+		if configFile, err = filepath.Abs(configFile); err != nil {
+			return nil, err
+		}
+	}
+
+	configFile = filepath.FromSlash(filepath.Clean(configFile))
+
+	var files []string
+	addFile := func(file string) {
+		file = filepath.FromSlash(filepath.Clean(file))
+		if file != configFile {
+			files = append(files, file)
+		}
+	}
+
+	base := filepath.Dir(configFile)
+	for _, include := range includes {
+		if !filepath.IsAbs(include) {
+			include = filepath.Join(base, include)
+		}
+
+		if fileExists(include) {
+			addFile(include)
+		} else {
+			if matches, err := filepath.Glob(include); err == nil && matches != nil {
+				sort.Strings(matches)
+				for _, match := range matches {
+					addFile(match)
+				}
+			} else {
+				return nil, err
+			}
+		}
+	}
+
+	return files, nil
 }
 
 // FindResticBinary returns the path of restic executable

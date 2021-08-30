@@ -1,12 +1,16 @@
 package filesearch
 
 import (
+	"fmt"
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/stretchr/testify/assert"
@@ -274,6 +278,59 @@ func TestShellExpand(t *testing.T) {
 			result, err := ShellExpand(testItem.source)
 			require.NoError(t, err)
 			assert.Equal(t, testItem.expected, result)
+		})
+	}
+}
+
+func TestFindConfigurationIncludes(t *testing.T) {
+	testID := fmt.Sprintf("%d", uint32(time.Now().UnixNano()))
+	tempDir := os.TempDir()
+	files := []string{
+		filepath.Join(tempDir, "base."+testID+".conf"),
+		filepath.Join(tempDir, "inc1."+testID+".conf"),
+		filepath.Join(tempDir, "inc2."+testID+".conf"),
+		filepath.Join(tempDir, "inc3."+testID+".conf"),
+	}
+
+	for _, file := range files {
+		require.NoError(t, ioutil.WriteFile(file, []byte{}, fs.ModePerm))
+		defer os.Remove(file) // defer stack is ok for cleanup
+	}
+
+	testData := []struct {
+		includes []string
+		expected []string
+	}{
+		// Invalid pattern
+		{[]string{"[--]"}, nil},
+		// Empty
+		{[]string{"no-match"}, []string{}},
+		// Existing files
+		{files[2:4], files[2:4]},
+		// GLOB patterns
+		{[]string{"inc*." + testID + ".conf"}, files[1:]},
+		{[]string{"*inc*." + testID + ".*"}, files[1:]},
+		{[]string{"inc1." + testID + ".conf"}, files[1:2]},
+		{[]string{"inc3." + testID + ".conf", "inc1." + testID + ".conf"}, []string{files[3], files[1]}},
+		// Does not include self
+		{[]string{"base." + testID + ".conf"}, []string{}},
+		{files[0:1], []string{}},
+	}
+
+	for _, test := range testData {
+		t.Run(strings.Join(test.includes, ","), func(t *testing.T) {
+			result, err := FindConfigurationIncludes(files[0], test.includes)
+			if test.expected == nil {
+				assert.Nil(t, result)
+				assert.NotNil(t, err)
+			} else {
+				assert.NoError(t, err)
+				if len(test.expected) == 0 {
+					assert.Nil(t, result)
+				} else {
+					assert.Equal(t, test.expected, result)
+				}
+			}
 		})
 	}
 }

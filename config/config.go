@@ -13,18 +13,20 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
 // Config wraps up a viper configuration object
 type Config struct {
-	keyDelim       string
-	format         string
-	configFile     string
-	viper          *viper.Viper
-	groups         map[string][]string
-	sourceTemplate *template.Template
+	keyDelim        string
+	format          string
+	configFile      string
+	includeFiles    []string
+	viper           *viper.Viper
+	groups          map[string][]string
+	sourceTemplates *template.Template
 }
 
 // This is where things are getting hairy:
@@ -64,81 +66,178 @@ func newConfig(format string) *Config {
 	}
 }
 
+func formatFromExtension(configFile string) string {
+	return strings.TrimPrefix(filepath.Ext(configFile), ".")
+}
+
 // LoadFile loads configuration from file
 // Leave format blank for auto-detection from the file extension
 func LoadFile(configFile, format string) (*Config, error) {
 	if format == "" {
-		// use file extension as format
-		format = strings.TrimPrefix(filepath.Ext(configFile), ".")
+		format = formatFromExtension(configFile)
 	}
-	file, err := os.Open(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("cannot open configuration file for reading: %w", err)
-	}
+
 	c := newConfig(format)
 	c.configFile = configFile
-	// err = c.load(file)
-	err = c.loadTemplate(file)
+
+	readAndAdd := func(configFile string, replace bool) error {
+		clog.Debugf("Loading: %s", configFile)
+		file, err := os.Open(configFile)
+		if err != nil {
+			return fmt.Errorf("cannot open configuration file for reading: %w", err)
+		}
+		defer file.Close()
+
+		return c.addTemplate(file, configFile, replace)
+	}
+
+	// Load config file
+	err := readAndAdd(configFile, true)
 	if err != nil {
 		return c, err
 	}
-	return c, nil
+
+	// Load includes (if any).
+	var includes []string
+	if includes, err = filesearch.FindConfigurationIncludes(configFile, c.getIncludes()); err == nil {
+		for _, include := range includes {
+			format := formatFromExtension(include)
+
+			if format == "hcl" && c.format != "hcl" {
+				err = fmt.Errorf("hcl format (%s) cannot be used in includes from %s: %s", include, c.format, c.configFile)
+			} else if c.format == "hcl" && format != "hcl" {
+				err = fmt.Errorf("%s is in hcl format, includes must use the same format. Cannot load %s", c.configFile, include)
+			} else {
+				err = readAndAdd(include, false)
+				if err == nil {
+					c.includeFiles = append(c.includeFiles, include)
+				}
+			}
+
+			if err != nil {
+				break
+			}
+		}
+	}
+	if err == nil && c.includeFiles != nil {
+		err = c.loadTemplates()
+	}
+
+	return c, err
 }
 
 // Load configuration from reader
 func Load(input io.Reader, format string) (*Config, error) {
 	c := newConfig(format)
-	// err := c.load(input)
-	err := c.loadTemplate(input)
+	err := c.addTemplate(input, c.configFile, true)
 	if err != nil {
 		return c, err
 	}
 	return c, nil
 }
 
-func (c *Config) loadTemplate(input io.Reader) error {
+func (c *Config) getIncludes() []string {
+	var files []string
+
+	if c.IsSet(constants.SectionConfigurationIncludes) {
+		includes := make([]string, 0, 8)
+
+		if err := c.unmarshalKey(constants.SectionConfigurationIncludes, &includes); err == nil {
+			files = append(files, includes...)
+		} else {
+			clog.Errorf("Failed parsing includes definition: %v", err)
+		}
+	}
+
+	return files
+}
+
+func (c *Config) templateName(name string) string {
+	return "__config:" + name // prefixing name to avoid clash with named template defines
+}
+
+func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 	inputString := &strings.Builder{}
 	_, err := io.Copy(inputString, input)
 	if err != nil {
 		return err
 	}
-	c.sourceTemplate, err = template.New(filepath.Base(c.configFile)).Parse(inputString.String())
+
+	var source *template.Template
+	if c.sourceTemplates == nil || replace {
+		source = template.New(c.templateName(name))
+		c.sourceTemplates = source
+	} else {
+		source = c.sourceTemplates.New(c.templateName(name))
+	}
+
+	_, err = source.Parse(inputString.String())
 	if err != nil {
 		return fmt.Errorf("cannot compile %w", err)
 	}
-	buffer := &bytes.Buffer{}
-	err = c.sourceTemplate.Execute(buffer, newTemplateData(c.configFile, "default"))
-	if err != nil {
-		return fmt.Errorf("cannot execute %w", err)
+
+	if replace {
+		err = c.loadTemplates()
 	}
-	traceConfig("default", buffer.String())
-	return c.load(buffer)
+	return err
 }
 
-func (c *Config) load(input io.Reader) error {
+func (c *Config) load(input io.Reader, format string, replace bool) error {
 	// For compatibility with the previous versions, a .conf file is TOML format
-	if c.format == "conf" {
-		c.format = "toml"
+	if format == "conf" {
+		format = "toml"
 	}
-	c.viper.SetConfigType(c.format)
-	err := c.viper.ReadConfig(input)
+	c.viper.SetConfigType(format)
+
+	var err error
+	if replace {
+		err = c.viper.ReadConfig(input)
+	} else {
+		err = c.viper.MergeConfig(input)
+	}
+
 	if err != nil {
-		return fmt.Errorf("cannot parse %s configuration: %w", c.format, err)
+		return fmt.Errorf("cannot parse %s configuration: %w", format, err)
 	}
 	return nil
 }
 
-func (c *Config) reloadTemplate(data TemplateData) error {
-	if c.sourceTemplate == nil {
+func (c *Config) loadTemplates() error {
+	return c.reloadTemplates(newTemplateData(c.configFile, "default"))
+}
+
+func (c *Config) reloadTemplates(data TemplateData) error {
+	if c.sourceTemplates == nil {
 		return errors.New("no available template to execute, please load it first")
 	}
+
 	buffer := &bytes.Buffer{}
-	err := c.sourceTemplate.Execute(buffer, data)
-	if err != nil {
-		return fmt.Errorf("cannot execute %w", err)
+	executeTemplate := func(name, format string, replace bool) error {
+		buffer.Reset()
+		err := c.sourceTemplates.ExecuteTemplate(buffer, c.templateName(name), data)
+		if err != nil {
+			return fmt.Errorf("cannot execute %w", err)
+		}
+
+		traceConfig(data.Profile.Name, name, replace, buffer.String())
+		return c.load(buffer, format, replace)
 	}
-	traceConfig(data.Profile.Name, buffer.String())
-	return c.load(buffer)
+
+	// Load main config file
+	var err error
+	err = executeTemplate(c.configFile, c.format, true)
+
+	// Load includes
+	if err == nil && c.includeFiles != nil {
+		for _, file := range c.includeFiles {
+			err = executeTemplate(file, formatFromExtension(file), false)
+			if err != nil {
+				break
+			}
+		}
+	}
+
+	return err
 }
 
 // IsSet checks if the key contains a value
@@ -296,8 +395,8 @@ func (c *Config) loadGroups() error {
 
 // GetProfile in configuration
 func (c *Config) GetProfile(profileKey string) (*Profile, error) {
-	if c.sourceTemplate != nil {
-		err := c.reloadTemplate(newTemplateData(c.configFile, profileKey))
+	if c.sourceTemplates != nil {
+		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey))
 		if err != nil {
 			return nil, err
 		}
@@ -382,11 +481,14 @@ func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
-func traceConfig(profileName, config string) {
+func traceConfig(profileName, name string, replace bool, config string) {
 	lines := strings.Split(config, "\n")
 	output := ""
 	for i := 0; i < len(lines); i++ {
 		output += fmt.Sprintf("%3d: %s\n", i+1, lines[i])
 	}
-	clog.Tracef("Resulting configuration for profile '%s':\n====================\n%s====================\n", profileName, output)
+	clog.Tracef("Resulting configuration for profile '%s' ('%s' / replace=%v):\n"+
+		"====================\n"+
+		"%s"+
+		"====================\n", profileName, name, replace, output)
 }
