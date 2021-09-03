@@ -220,11 +220,39 @@ func (p *Profile) GetRetentionFlags() *shell.Args {
 		p.Retention.OtherFlags = make(map[string]interface{})
 	}
 
-	flags := p.GetCommonFlags()
-	// Special case of retention: we do copy the "source" from "backup" as "path" if it hasn't been redefined in "retention"
-	if _, found := p.Retention.OtherFlags[constants.ParameterPath]; !found {
-		p.Retention.OtherFlags[constants.ParameterPath] = fixPaths(p.Backup.Source, absolutePath)
+	// Special cases of retention:
+
+	// Copy "source" from "backup" as "path" if it hasn't been redefined or is boolean and 'true'
+	{
+		setSources := func() {
+			p.Retention.OtherFlags[constants.ParameterPath] = fixPaths(p.Backup.Source, absolutePath)
+		}
+
+		if value, found := p.Retention.OtherFlags[constants.ParameterPath]; found {
+			if set, isBoolean := value.(bool); isBoolean {
+				if set {
+					setSources()
+				} else {
+					delete(p.Retention.OtherFlags, constants.ParameterPath)
+				}
+			}
+		} else {
+			setSources()
+		}
 	}
+
+	// Copy "tag" from "backup" if "tag" is boolean and 'true'
+	if value, found := p.Retention.OtherFlags[constants.ParameterTag]; found {
+		if set, isBoolean := value.(bool); isBoolean {
+			if set {
+				p.Retention.OtherFlags[constants.ParameterTag] = p.Backup.OtherFlags[constants.ParameterTag]
+			} else {
+				delete(p.Retention.OtherFlags, constants.ParameterTag)
+			}
+		}
+	}
+
+	flags := p.GetCommonFlags()
 	flags = addOtherArgs(flags, p.Retention.OtherFlags)
 	return flags
 }
