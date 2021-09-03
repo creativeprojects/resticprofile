@@ -29,6 +29,7 @@ type Profile struct {
 	RunBefore            []string                     `mapstructure:"run-before"`
 	RunAfter             []string                     `mapstructure:"run-after"`
 	RunAfterFail         []string                     `mapstructure:"run-after-fail"`
+	RunFinally           []string                     `mapstructure:"run-finally"`
 	StatusFile           string                       `mapstructure:"status-file"`
 	PrometheusSaveToFile string                       `mapstructure:"prometheus-save-to-file"`
 	PrometheusPush       string                       `mapstructure:"prometheus-push"`
@@ -51,6 +52,7 @@ type BackupSection struct {
 	CheckAfter       bool                   `mapstructure:"check-after"`
 	RunBefore        []string               `mapstructure:"run-before"`
 	RunAfter         []string               `mapstructure:"run-after"`
+	RunFinally       []string               `mapstructure:"run-finally"`
 	UseStdin         bool                   `mapstructure:"stdin" argument:"stdin"`
 	Source           []string               `mapstructure:"source"`
 	Exclude          []string               `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
