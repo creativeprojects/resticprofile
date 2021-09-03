@@ -73,7 +73,7 @@ For the rest of the documentation, I'll be showing examples using different form
 * [Includes](#includes)
 * [Path resolution in configuration](#path-resolution-in-configuration)
 * [Run commands before, after success or after failure](#run-commands-before-after-success-or-after-failure)
-  * [run before and after order during a backup](#run-before-and-after-order-during-a-backup)
+  * [order of run\-\* during a backup](#order-of-run--during-a-backup)
 * [Warnings from restic](#warnings-from-restic)
   * [no\-error\-on\-warning](#no-error-on-warning)
 * [Locks](#locks)
@@ -688,7 +688,7 @@ Additionally, for the `run-after-fail` commands, these environment variables wil
 The commands of `run-finally` get the environment of `run-after-fail` when `run-before`, `run-after` or `restic` failed. 
 Failures in `run-finally` are logged but do not influence environment or return code.
 
-## run before and after order during a backup
+## order of `run-*` during a backup
 
 The commands will be running in this order **during a backup**:
 - `run-before` from the profile - if error, go to `run-after-fail`
@@ -699,6 +699,10 @@ The commands will be running in this order **during a backup**:
 - If error: `run-after-fail` from the profile - if error, go to `run-finally`
 - `run-finally` from the backup section - if error, log and continue with next
 - `run-finally` from the profile - if error, log and continue with next
+
+Maybe it's easier to understand with a flow diagram:
+
+![run flow diagram](https://github.com/creativeprojects/resticprofile/raw/master/run-flow.svg)
 
 # Warnings from restic
 
