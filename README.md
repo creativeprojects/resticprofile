@@ -31,9 +31,10 @@ With resticprofile:
 * You can generate a simple status file to send to some monitoring software and make sure your backups are running fine 
 * You can use a template syntax in your configuration file
 * You can generate scheduled tasks using *crond*
-* **[new for v0.12.0]** Get backup statistics in your status file
+* Get backup statistics in your status file
 * **[new for v0.14.0]** Automatically clear up [stale locks](#locks)
 * **[new for v0.15.0]** Export a **prometheus** file after a backup, or send the report to a push gateway automatically
+* **[new for v0.16.0]** Full support for the copy command (which scheduling)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0

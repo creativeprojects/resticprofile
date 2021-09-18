@@ -25,6 +25,9 @@ default:
     password-file: key
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
+    copy:
+        password-file: key
+        repository: "/Volumes/RAMDisk/{{ .Profile.Name }}-copy"
 
 space:
     description: Repository contains space
@@ -105,12 +108,15 @@ self:
       - "echo restic stderr = ${RESTIC_STDERR}"
     check:
         schedule:
-          - "*:15,45"
+          - "*:15"
     retention:
         after-backup: true
     forget:
         schedule: "weekly"
         schedule-priority: standard
+    copy:
+        schedule:
+          - "*:45"
 
 prom:
     force-inactive-lock: true
