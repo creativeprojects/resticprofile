@@ -18,6 +18,7 @@ type Profile struct {
 	Quiet                bool                         `mapstructure:"quiet" argument:"quiet"`
 	Verbose              bool                         `mapstructure:"verbose" argument:"verbose"`
 	Repository           ConfidentialValue            `mapstructure:"repository" argument:"repo"`
+	RepositoryFile       string                       `mapstructure:"repository-file" argument:"repository-file"`
 	PasswordFile         string                       `mapstructure:"password-file" argument:"password-file"`
 	CacheDir             string                       `mapstructure:"cache-dir" argument:"cache-dir"`
 	CACert               string                       `mapstructure:"cacert" argument:"cacert"`
@@ -43,6 +44,7 @@ type Profile struct {
 	Snapshots            map[string]interface{}       `mapstructure:"snapshots"`
 	Forget               *OtherSectionWithSchedule    `mapstructure:"forget"`
 	Mount                map[string]interface{}       `mapstructure:"mount"`
+	Copy                 *CopySection                 `mapstructure:"copy"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command
@@ -90,6 +92,18 @@ type ScheduleSection struct {
 	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait"`
 }
 
+// CopySection contains the destination parameters for a copy command
+type CopySection struct {
+	Initialize      bool              `mapstructure:"initialize"`
+	Repository      ConfidentialValue `mapstructure:"repository" argument:"repo2"`
+	RepositoryFile  string            `mapstructure:"repository-file" argument:"repository-file2"`
+	PasswordFile    string            `mapstructure:"password-file" argument:"password-file2"`
+	PasswordCommand string            `mapstructure:"password-command" argument:"password-command2"`
+	KeyHint         string            `mapstructure:"key-hint" argument:"key-hint2"`
+	ScheduleSection `mapstructure:",squash"`
+	OtherFlags      map[string]interface{} `mapstructure:",remain"`
+}
+
 // NewProfile instantiates a new blank profile
 func NewProfile(c *Config, name string) *Profile {
 	return &Profile{
@@ -108,6 +122,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 
 	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath))
 	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, absolutePrefix(rootPath))
+	p.RepositoryFile = fixPath(p.RepositoryFile, expandEnv, absolutePrefix(rootPath))
 	p.CacheDir = fixPath(p.CacheDir, expandEnv, absolutePrefix(rootPath))
 	p.CACert = fixPath(p.CACert, expandEnv, absolutePrefix(rootPath))
 	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, absolutePrefix(rootPath))
@@ -136,6 +151,11 @@ func (p *Profile) SetRootPath(rootPath string) {
 		if p.Backup.Iexclude != nil && len(p.Backup.Iexclude) > 0 {
 			p.Backup.Iexclude = fixPaths(p.Backup.Iexclude, expandEnv)
 		}
+	}
+
+	if p.Copy != nil {
+		p.Copy.PasswordFile = fixPath(p.Copy.PasswordFile, expandEnv, absolutePrefix(rootPath))
+		p.Copy.RepositoryFile = fixPath(p.Copy.RepositoryFile, expandEnv, absolutePrefix(rootPath))
 	}
 }
 
@@ -204,6 +224,14 @@ func (p *Profile) GetCommandFlags(command string) *shell.Args {
 	case constants.CommandMount:
 		if p.Mount != nil {
 			flags = addOtherArgs(flags, p.Mount)
+		}
+
+	case constants.CommandCopy:
+		if p.Copy != nil {
+			flags = convertStructToArgs(*p.Copy, flags)
+			if p.Copy.OtherFlags != nil {
+				flags = addOtherArgs(flags, p.Copy.OtherFlags)
+			}
 		}
 	}
 
@@ -329,6 +357,7 @@ func (p *Profile) allSchedulableSections() map[string]interface{} {
 		constants.CommandCheck:                  p.Check,
 		constants.CommandForget:                 p.Forget,
 		constants.CommandPrune:                  p.Prune,
+		constants.CommandCopy:                   p.Copy,
 	}
 }
 
@@ -338,6 +367,8 @@ func getScheduleSection(section interface{}) *ScheduleSection {
 		case *BackupSection:
 			return &v.ScheduleSection
 		case *RetentionSection:
+			return &v.ScheduleSection
+		case *CopySection:
 			return &v.ScheduleSection
 		case *OtherSectionWithSchedule:
 			return &v.ScheduleSection

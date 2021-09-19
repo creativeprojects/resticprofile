@@ -3,6 +3,7 @@ package shell
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 type Args struct {
@@ -43,6 +44,22 @@ func (a *Args) Walk(callback func(name string, arg *Arg) *Arg) {
 		processArgs(name, args)
 	}
 	processArgs("", a.more)
+}
+
+// PromoteSecondaryToPrimary removes a "2" at the end of each flag
+func (a *Args) PromoteSecondaryToPrimary() {
+	override := make(map[string][]Arg, len(a.args))
+	for name, args := range a.args {
+		if strings.HasSuffix(name, "2") {
+			name = strings.TrimSuffix(name, "2")
+			override[name] = args
+		}
+	}
+	// now override the original arguments, and delete any secondary one
+	for name, args := range override {
+		a.args[name] = args
+		delete(a.args, name+"2")
+	}
 }
 
 // SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line

@@ -112,3 +112,20 @@ func TestConversionToArgs(t *testing.T) {
 	}
 	assert.Equal(t, expected, args.GetAll())
 }
+
+func TestPromoteSecondaryToPrimary(t *testing.T) {
+	args := NewArgs()
+	args.AddFlag("initialize", "true", ArgConfigEscape)
+	args.AddFlag("repo", "first", ArgConfigEscape)
+	args.AddFlag("password-file", "key1", ArgConfigEscape)
+	args.AddFlag("repo2", "second", ArgConfigEscape)
+	args.AddFlag("password-file2", "key2", ArgConfigEscape)
+
+	args.PromoteSecondaryToPrimary()
+	result := args.ToMap()
+	assert.Equal(t, map[string][]string{
+		"initialize":    {"true"},
+		"password-file": {"key2"},
+		"repo":          {"second"},
+	}, result)
+}

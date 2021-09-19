@@ -10,4 +10,5 @@ const (
 	CommandSnapshots = "snapshots"
 	CommandUnlock    = "unlock"
 	CommandMount     = "mount"
+	CommandCopy      = "copy"
 )

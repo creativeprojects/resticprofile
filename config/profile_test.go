@@ -223,6 +223,8 @@ exclude-file = "exclude"
 files-from = "include"
 exclude = "exclude"
 iexclude = "iexclude"
+[profile.copy]
+password-file = "key"
 `
 	profile, err := getProfile("toml", testConfig, "profile")
 	if err != nil {
@@ -240,6 +242,7 @@ iexclude = "iexclude"
 	assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
 	assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 	assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
+	assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
 }
 
 func TestHostInProfile(t *testing.T) {
@@ -556,7 +559,7 @@ initialize = true
 	}
 
 	sections := NewProfile(nil, "").SchedulableCommands()
-	assert.Len(sections, 5)
+	assert.Len(sections, 6)
 
 	for _, command := range sections {
 		// Check that schedule is supported
@@ -711,6 +714,8 @@ other-flag-forget = true
 other-flag-prune = true
 [profile.mount]
 other-flag-mount = true
+[profile.copy]
+other-flag-copy = true
 `},
 		{"json", `
 {
@@ -722,7 +727,8 @@ other-flag-mount = true
     "check": {"other-flag-check": true},
     "forget": {"other-flag-forget": true},
     "prune": {"other-flag-prune": true},
-    "mount": {"other-flag-mount": true}
+    "mount": {"other-flag-mount": true},
+    "copy": {"other-flag-copy": true}
   }
 }`},
 		{"yaml", `---
@@ -742,6 +748,8 @@ profile:
     other-flag-prune: true
   mount:
     other-flag-mount: true
+  copy:
+    other-flag-copy: true
 `},
 		{"hcl", `
 "profile" = {
@@ -767,6 +775,9 @@ profile:
 	mount = {
 		other-flag-mount = true
 	}
+	copy = {
+		other-flag-copy = true
+	}
 }
 `},
 	}
@@ -786,6 +797,7 @@ profile:
 			require.NotNil(t, profile.Mount)
 			require.NotNil(t, profile.Prune)
 			require.NotNil(t, profile.Snapshots)
+			require.NotNil(t, profile.Copy)
 
 			flags := profile.GetCommonFlags()
 			assert.Equal(t, 1, len(flags.ToMap()))
@@ -830,6 +842,12 @@ profile:
 			assert.Equal(t, 2, len(flags.ToMap()))
 			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
 			_, found = flags.ToMap()["other-flag-mount"]
+			assert.True(t, found)
+
+			flags = profile.GetCommandFlags("copy")
+			assert.Equal(t, 2, len(flags.ToMap()))
+			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+			_, found = flags.ToMap()["other-flag-copy"]
 			assert.True(t, found)
 		})
 	}

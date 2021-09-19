@@ -40,7 +40,7 @@ func (c *ConfidentialValue) hideSubmatches(pattern *regexp.Regexp) {
 		return
 	}
 
-	if matches := pattern.FindStringSubmatchIndex(c.confidential); matches != nil && len(matches) > 2 {
+	if matches := pattern.FindStringSubmatchIndex(c.confidential); len(matches) > 2 {
 		c.public = c.confidential
 
 		for i := len(matches) - 2; i > 1; i -= 2 {
@@ -121,11 +121,9 @@ func getAllConfidentialValues(profile *Profile) []*ConfidentialValue {
 }
 
 func convertToNonConfidential(confidentials []*ConfidentialValue, value string) string {
-	if confidentials != nil {
-		for _, c := range confidentials {
-			if c != nil && c.IsConfidential() && value == c.Value() {
-				return c.String()
-			}
+	for _, c := range confidentials {
+		if c != nil && c.IsConfidential() && value == c.Value() {
+			return c.String()
 		}
 	}
 	return value

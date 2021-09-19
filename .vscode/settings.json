@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
+        "crond",
+        "ionice",
         "launchd",
         "restic",
         "resticprofile",
