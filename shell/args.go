@@ -48,13 +48,18 @@ func (a *Args) Walk(callback func(name string, arg *Arg) *Arg) {
 
 // PromoteSecondaryToPrimary removes a "2" at the end of each flag
 func (a *Args) PromoteSecondaryToPrimary() {
-	newArgs := make(map[string][]Arg, len(a.args))
+	override := make(map[string][]Arg, len(a.args))
 	for name, args := range a.args {
-		name = strings.TrimSuffix(name, "2")
-		// TODO: make sure the promoted secondary value doesn't get overwritten by an original primary value
-		newArgs[name] = args
+		if strings.HasSuffix(name, "2") {
+			name = strings.TrimSuffix(name, "2")
+			override[name] = args
+		}
 	}
-	a.args = newArgs
+	// now override the original arguments, and delete any secondary one
+	for name, args := range override {
+		a.args[name] = args
+		delete(a.args, name+"2")
+	}
 }
 
 // SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line

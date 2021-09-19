@@ -556,7 +556,7 @@ initialize = true
 	}
 
 	sections := NewProfile(nil, "").SchedulableCommands()
-	assert.Len(sections, 5)
+	assert.Len(sections, 6)
 
 	for _, command := range sections {
 		// Check that schedule is supported

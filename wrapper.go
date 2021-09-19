@@ -257,7 +257,7 @@ func (r *resticWrapper) runInitializeCopy() error {
 	clog.Infof("profile '%s': initializing secondary repository (if not existing)", r.profile.Name)
 	args := r.profile.GetCommandFlags(constants.CommandCopy)
 	// the copy command adds a 2 behind each flag about the secondary repository
-	// but in the case of init, we want to promote the secondary repository as primary
+	// in the case of init, we want to promote the secondary repository as primary
 	args.PromoteSecondaryToPrimary()
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	// don't display any error
