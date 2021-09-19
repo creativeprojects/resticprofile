@@ -115,6 +115,7 @@ self:
         schedule: "weekly"
         schedule-priority: standard
     copy:
+        initialize: true
         schedule:
           - "*:45"
 

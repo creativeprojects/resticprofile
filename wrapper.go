@@ -125,6 +125,12 @@ func (r *resticWrapper) runProfile() error {
 					// it's ok for the initialize to error out when the repository exists
 				}
 
+				// in case of a copy command, we might need to initialize the secondary repository
+				if r.command == constants.CommandCopy && (r.global.Initialize || (r.profile.Copy != nil && r.profile.Copy.Initialize)) {
+					_ = r.runInitializeCopy()
+					// it's ok if the initialization returned an error
+				}
+
 				// pre-commands (for backup)
 				if r.command == constants.CommandBackup {
 					// Shell commands
@@ -232,9 +238,27 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCo
 	return rCommand
 }
 
+// runInitialize tries to initialize the repository
 func (r *resticWrapper) runInitialize() error {
 	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
 	args := r.profile.GetCommandFlags(constants.CommandInit)
+	rCommand := r.prepareCommand(constants.CommandInit, args)
+	// don't display any error
+	rCommand.stderr = nil
+	_, stderr, err := runShellCommand(rCommand)
+	if err != nil {
+		return newCommandError(rCommand, stderr, fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err))
+	}
+	return nil
+}
+
+// runInitializeCopy tries to initialize the secondary repository used by the copy command
+func (r *resticWrapper) runInitializeCopy() error {
+	clog.Infof("profile '%s': initializing secondary repository (if not existing)", r.profile.Name)
+	args := r.profile.GetCommandFlags(constants.CommandCopy)
+	// the copy command adds a 2 behind each flag about the secondary repository
+	// but in the case of init, we want to promote the secondary repository as primary
+	args.PromoteSecondaryToPrimary()
 	rCommand := r.prepareCommand(constants.CommandInit, args)
 	// don't display any error
 	rCommand.stderr = nil
