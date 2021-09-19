@@ -34,7 +34,7 @@ With resticprofile:
 * Get backup statistics in your status file
 * **[new for v0.14.0]** Automatically clear up [stale locks](#locks)
 * **[new for v0.15.0]** Export a **prometheus** file after a backup, or send the report to a push gateway automatically
-* **[new for v0.16.0]** Full support for the copy command (which scheduling)
+* **[new for v0.16.0]** Full support for the copy command (with scheduling)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -66,7 +66,8 @@ For the rest of the documentation, I'll be showing examples using different form
   * [Simple YAML configuration](#simple-yaml-configuration)
   * [More complex configuration in TOML](#more-complex-configuration-in-toml)
   * [TOML configuration example for Windows](#toml-configuration-example-for-windows)
-    * [Use stdin in configuration](#use-stdin-in-configuration)
+  * [Use stdin in configuration](#use-stdin-in-configuration)
+  * [Special case for the copy command section](#special-case-for-the-copy-command-section)
 * [Configuration paths](#configuration-paths)
   * [macOS X](#macos-x)
   * [Other unixes (Linux and BSD)](#other-unixes-linux-and-bsd)
@@ -213,7 +214,7 @@ Installation using Ansible is not supported out of the box yet, but since I'm us
 
 ## Installation from source
 
-You can download the source code and recompile it, it's actually very easy! all you need to have on your machine is:
+You can download the source code and compile it, it's actually very easy! all you need to have on your machine is:
 - `git`
 - [go compiler](https://golang.org/dl/)
 - `GNU Make` which is installed by default on many unix boxes. On debian based distributions (Ubuntu included) the package is called `build-essential`.
@@ -556,7 +557,7 @@ run-after = "echo All Done!"
 no-error-on-warning = true
 ```
 
-### Use stdin in configuration
+## Use stdin in configuration
 
 Simple example sending a file via stdin
 
@@ -571,6 +572,37 @@ stdin = true
 stdin-filename = "stdin-test"
 tag = [ 'stdin' ]
 
+```
+
+## Special case for the `copy` command section
+
+The copy command needs two repository (and quite likely 2 different set of keys). You can configure a `copy` section like this:
+
+```toml
+[default]
+initialize = false
+repository = "/backup/original"
+password-file = "key"
+
+    [default.copy]
+    initialize = true
+    repository = "/backup/copy"
+    password-file = "other_key"
+```
+
+You will note that the secondary repository doesn't need to have a `2` behind its flags (`repository2`, `password-file2`, etc.). It's because the flags are well separated in the configuration.
+
+Here's the same configuration in YAML format:
+
+```yaml
+default:
+    initialize: false
+    repository: "/backup/original"
+    password-file: key
+    copy:
+        initialize: true
+        repository: "/backup/copy"
+        password-file: other_key
 ```
 
 # Configuration paths
@@ -958,13 +990,14 @@ global:
 
 Each profile can be scheduled independently (groups are not available for scheduling yet).
 
-These 4 profile sections are accepting a schedule configuration:
+These 5 profile sections are accepting a schedule configuration:
 - backup
 - check
 - forget (version 0.11.0)
 - prune (version 0.11.0)
+- copy (version 0.16.0)
 
-which mean you can schedule `backup`, `forget`, `prune` and `check` independently (I recommend to use a local `lock` in this case).
+which mean you can schedule `backup`, `forget`, `prune`, `check` and `copy` independently (I recommend to use a local `lock` in this case).
 
 ## retention schedule is deprecated
 **Important**:
@@ -2076,6 +2109,7 @@ Flags passed to the restic command line
 * **password-file**: string
 * **quiet**: true / false
 * **repository**: string **(will be passed as 'repo' to the command line)**
+* **repository-file**: string
 * **tls-client-cert**: string
 * **verbose**: true / false OR integer
 
@@ -2223,6 +2257,24 @@ Flags passed to the restic command line
 * **path**: string OR list of strings
 * **snapshot-template**: string
 * **tag**: string OR list of strings
+
+`[profile.copy]`
+
+Flags used by resticprofile only
+
+* **initialize**: true / false
+
+
+Flags passed to the restic command line
+
+* **key-hint**: string
+* **password-command**: command
+* **password-file**: string
+* **path**: string OR list of strings
+* **repository**: repository
+* **repository-file**: string
+* **tag**: string OR list of strings
+
 
 # Appendix
 
