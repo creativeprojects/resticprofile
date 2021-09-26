@@ -4,17 +4,43 @@ package systemd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerate(t *testing.T) {
+func TestGenerateSystemUnit(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	systemdDir := GetSystemDir()
+	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
+	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
+
+	assertNoFileExists(t, serviceFile)
+	assertNoFileExists(t, timerFile)
+
+	err := Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+	})
+	require.NoError(t, err)
+	requireFileExists(t, serviceFile)
+	requireFileExists(t, timerFile)
+}
+
+func TestGenerateUserUnit(t *testing.T) {
 	const expectedService = `[Unit]
 Description=job description
 
@@ -36,6 +62,7 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 `
+	fs = afero.NewMemMapFs()
 	u, err := user.Current()
 	require.NoError(t, err)
 	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
@@ -44,14 +71,10 @@ WantedBy=timers.target
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	defer func() {
-		os.Remove(serviceFile)
-		os.Remove(timerFile)
-	}()
-	assert.NoFileExists(t, serviceFile)
-	assert.NoFileExists(t, timerFile)
+	assertNoFileExists(t, serviceFile)
+	assertNoFileExists(t, timerFile)
 
-	err = Generate(
+	err = Generate(Config{
 		"commandLine",
 		"workdir",
 		"name",
@@ -61,16 +84,28 @@ WantedBy=timers.target
 		[]string{"daily"},
 		UserUnit,
 		"low",
-	)
+	})
 	require.NoError(t, err)
-	require.FileExists(t, serviceFile)
-	require.FileExists(t, timerFile)
+	requireFileExists(t, serviceFile)
+	requireFileExists(t, timerFile)
 
-	service, err := ioutil.ReadFile(serviceFile)
+	service, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
 	assert.Equal(t, fmt.Sprintf(expectedService, home), string(service))
 
-	timer, err := ioutil.ReadFile(timerFile)
+	timer, err := afero.ReadFile(fs, timerFile)
 	require.NoError(t, err)
 	assert.Equal(t, expectedTimer, string(timer))
+}
+
+func assertNoFileExists(t *testing.T, filename string) {
+	exists, err := afero.Exists(fs, filename)
+	require.NoError(t, err)
+	assert.Falsef(t, exists, "file %q exists", filename)
+}
+
+func requireFileExists(t *testing.T, filename string) {
+	exists, err := afero.Exists(fs, filename)
+	require.NoError(t, err)
+	require.Truef(t, exists, "file %q does not exist", filename)
 }

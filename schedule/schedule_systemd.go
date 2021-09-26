@@ -82,16 +82,17 @@ var _ Scheduler = &SystemdSchedule{}
 
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
-	err := systemd.Generate(
-		j.config.Command()+" --no-prio "+strings.Join(j.config.Arguments(), " "),
-		j.config.WorkingDirectory(),
-		j.config.Title(),
-		j.config.SubTitle(),
-		j.config.JobDescription(),
-		j.config.TimerDescription(),
-		j.config.Schedules(),
-		unitType,
-		j.config.Priority())
+	err := systemd.Generate(systemd.Config{
+		CommandLine:      j.config.Command() + " --no-prio " + strings.Join(j.config.Arguments(), " "),
+		WorkingDirectory: j.config.WorkingDirectory(),
+		Title:            j.config.Title(),
+		SubTitle:         j.config.SubTitle(),
+		JobDescription:   j.config.JobDescription(),
+		TimerDescription: j.config.TimerDescription(),
+		Schedules:        j.config.Schedules(),
+		UnitType:         unitType,
+		Priority:         j.config.Priority(),
+	})
 	if err != nil {
 		return err
 	}
