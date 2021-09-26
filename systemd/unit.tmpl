@@ -1,0 +1,11 @@
+[Unit]
+Description={{ .JobDescription }}
+
+[Service]
+Type=notify
+WorkingDirectory={{ .WorkingDirectory }}
+ExecStart={{ .CommandLine }}
+{{ if .Nice }}Nice={{ .Nice }}{{ end }}
+{{ range .Environment -}}
+Environment="{{ . }}"
+{{ end -}}

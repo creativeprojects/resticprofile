@@ -1,0 +1,12 @@
+[Unit]
+Description={{ .TimerDescription }}
+
+[Timer]
+{{ range .OnCalendar -}}
+OnCalendar={{ . }}
+{{ end -}}
+Unit={{ .SystemdProfile }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
