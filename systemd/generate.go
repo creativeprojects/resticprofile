@@ -19,7 +19,7 @@ const (
 	defaultPermission = 0644
 	systemdSystemDir  = "/etc/systemd/system/"
 
-	systemdUnitBackupUnitTmpl = `[Unit]
+	systemdUnitTmpl = `[Unit]
 Description={{ .JobDescription }}
 
 [Service]
@@ -32,7 +32,7 @@ Environment="{{ . }}"
 {{ end -}}
 `
 
-	systemdUnitBackupTimerTmpl = `[Unit]
+	systemdTimerTmpl = `[Unit]
 Description={{ .TimerDescription }}
 
 [Timer]
@@ -130,7 +130,10 @@ func Generate(config Config) error {
 	}
 
 	var data bytes.Buffer
-	unitTmpl := template.Must(template.New("systemd.unit").Parse(systemdUnitBackupUnitTmpl))
+	unitTmpl, err := template.New("systemd.unit").Parse(systemdUnitTmpl)
+	if err != nil {
+		return err
+	}
 	if err := unitTmpl.Execute(&data, info); err != nil {
 		return err
 	}
@@ -141,7 +144,10 @@ func Generate(config Config) error {
 	}
 	data.Reset()
 
-	timerTmpl := template.Must(template.New("timer.unit").Parse(systemdUnitBackupTimerTmpl))
+	timerTmpl, err := template.New("timer.unit").Parse(systemdTimerTmpl)
+	if err != nil {
+		return err
+	}
 	if err := timerTmpl.Execute(&data, info); err != nil {
 		return err
 	}
