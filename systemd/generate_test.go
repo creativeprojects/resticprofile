@@ -34,6 +34,8 @@ func TestGenerateSystemUnit(t *testing.T) {
 		[]string{"daily"},
 		SystemUnit,
 		"low",
+		"",
+		"",
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
@@ -84,6 +86,8 @@ WantedBy=timers.target
 		[]string{"daily"},
 		UserUnit,
 		"low",
+		"",
+		"",
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
@@ -96,6 +100,194 @@ WantedBy=timers.target
 	timer, err := afero.ReadFile(fs, timerFile)
 	require.NoError(t, err)
 	assert.Equal(t, expectedTimer, string(timer))
+}
+
+func TestGenerateUnitTemplateNotFound(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	err := Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"unit-file",
+		"",
+	})
+	require.Error(t, err)
+}
+
+func TestGenerateTimerTemplateNotFound(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	err := Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"",
+		"timer-file",
+	})
+	require.Error(t, err)
+}
+
+func TestGenerateUnitTemplateFailed(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	err := afero.WriteFile(fs, "unit", []byte("{{ ."), 0600)
+	require.NoError(t, err)
+
+	err = Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"unit",
+		"",
+	})
+	require.Error(t, err)
+}
+
+func TestGenerateTimerTemplateFailed(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	err := afero.WriteFile(fs, "timer", []byte("{{ ."), 0600)
+	require.NoError(t, err)
+
+	err = Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"",
+		"timer",
+	})
+	require.Error(t, err)
+}
+
+func TestGenerateUnitTemplateFailedToExecute(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	err := afero.WriteFile(fs, "unit", []byte("{{ .Toto }}"), 0600)
+	require.NoError(t, err)
+
+	err = Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"unit",
+		"",
+	})
+	require.Error(t, err)
+}
+
+func TestGenerateTimerTemplateFailedToExecute(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	err := afero.WriteFile(fs, "timer", []byte("{{ .Toto }}"), 0600)
+	require.NoError(t, err)
+
+	err = Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"",
+		"timer",
+	})
+	require.Error(t, err)
+}
+
+func TestGenerateFromUserDefinedTemplates(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	systemdDir := GetSystemDir()
+	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
+	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
+
+	assertNoFileExists(t, serviceFile)
+	assertNoFileExists(t, timerFile)
+
+	err := afero.WriteFile(fs, "unit", []byte("{{ .JobDescription }}"), 0600)
+	require.NoError(t, err)
+	err = afero.WriteFile(fs, "timer", []byte("{{ .TimerDescription }}"), 0600)
+	require.NoError(t, err)
+
+	err = Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"unit",
+		"timer",
+	})
+	require.NoError(t, err)
+	requireFileExists(t, serviceFile)
+	requireFileExists(t, timerFile)
+}
+
+func TestGetUserDirOnReadOnlyFs(t *testing.T) {
+	fs = afero.NewReadOnlyFs(afero.NewMemMapFs())
+	_, err := GetUserDir()
+	assert.Error(t, err)
+}
+
+func TestGenerateOnReadOnlyFs(t *testing.T) {
+	fs = afero.NewMemMapFs()
+	_, err := GetUserDir()
+	assert.NoError(t, err)
+	// now make the FS readonly
+	fs = afero.NewReadOnlyFs(fs)
+
+	err = Generate(Config{
+		"commandLine",
+		"workdir",
+		"name",
+		"backup",
+		"job description",
+		"timer description",
+		[]string{"daily"},
+		SystemUnit,
+		"low",
+		"",
+		"",
+	})
+	require.Error(t, err)
 }
 
 func assertNoFileExists(t *testing.T, filename string) {

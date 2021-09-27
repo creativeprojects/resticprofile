@@ -21,6 +21,8 @@ type Global struct {
 	MinMemory            uint64        `mapstructure:"min-memory"`
 	Scheduler            string        `mapstructure:"scheduler"`
 	LegacyArguments      bool          `mapstructure:"legacy-arguments"` // broken arguments mode (before v0.15.0)
+	SystemdUnitTemplate  string        `mapstructure:"systemd-unit-template"`
+	SystemdTimerTemplate string        `mapstructure:"systemd-timer-template"`
 }
 
 // NewGlobal instantiates a new Global with default values

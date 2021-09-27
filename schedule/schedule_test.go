@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +31,7 @@ func TestExecutableIsAbsoluteOnAllPlatforms(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	scheduler := NewScheduler("", "profile")
+	scheduler := NewScheduler(&SchedulerDefaultOS{}, "profile")
 	err := scheduler.Init()
 	defer scheduler.Close()
 	require.NoError(t, err)
@@ -42,7 +41,35 @@ func TestCrondInit(t *testing.T) {
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
 		t.Skip("crond scheduler is not supported on this platform")
 	}
-	scheduler := NewScheduler(constants.SchedulerCrond, "profile")
+	scheduler := NewScheduler(&SchedulerCrond{}, "profile")
+	err := scheduler.Init()
+	defer scheduler.Close()
+	require.NoError(t, err)
+}
+
+func TestSystemdInit(t *testing.T) {
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		t.Skip("systemd scheduler is not supported on this platform")
+	}
+	scheduler := NewScheduler(&SchedulerSystemd{}, "profile")
+	err := scheduler.Init()
+	defer scheduler.Close()
+	require.NoError(t, err)
+}
+func TestLaunchdInit(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("launchd scheduler is not supported on this platform")
+	}
+	scheduler := NewScheduler(&SchedulerLaunchd{}, "profile")
+	err := scheduler.Init()
+	defer scheduler.Close()
+	require.NoError(t, err)
+}
+func TestWindowsInit(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("windows scheduler is not supported on this platform")
+	}
+	scheduler := NewScheduler(&SchedulerWindows{}, "profile")
 	err := scheduler.Init()
 	defer scheduler.Close()
 	require.NoError(t, err)

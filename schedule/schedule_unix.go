@@ -16,14 +16,20 @@ import (
 )
 
 // NewScheduler creates a Scheduler interface, which is either a CrondSchedule or a SystemdSchedule object
-func NewScheduler(scheduler, profileName string) Scheduler {
-	if scheduler == constants.SchedulerCrond {
+func NewScheduler(scheduler SchedulerType, profileName string) Scheduler {
+	if scheduler.String() == constants.SchedulerCrond {
 		return &CrondSchedule{
 			profileName: profileName,
 		}
 	}
+	config, ok := scheduler.(SchedulerSystemd)
+	if !ok {
+		return &SystemdSchedule{}
+	}
 	return &SystemdSchedule{
-		profileName: profileName,
+		profileName:   profileName,
+		unitTemplate:  config.UnitTemplate,
+		timerTemplate: config.TimerTemplate,
 	}
 }
 

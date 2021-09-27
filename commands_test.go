@@ -112,7 +112,7 @@ schedule = "daily"
 	declaredCount := 0
 
 	for _, jobConfig := range schedules {
-		scheduler := schedule.NewScheduler("", jobConfig.Title())
+		scheduler := schedule.NewScheduler(schedule.SchedulerDefaultOS{}, jobConfig.Title())
 		defer func(s schedule.Scheduler) { s.Close() }(scheduler) // Capture current ref to scheduler to be able to close it when function returns.
 
 		if jobConfig.SubTitle() == "check" {

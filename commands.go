@@ -357,8 +357,9 @@ func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlag
 // createSchedule accepts one argument from the commandline: --no-start
 func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	type profileJobs struct {
-		scheduler, profile string
-		jobs               []*config.ScheduleConfig
+		scheduler schedule.SchedulerType
+		profile   string
+		jobs      []*config.ScheduleConfig
 	}
 
 	allJobs := make([]profileJobs, 0, 1)
@@ -456,7 +457,7 @@ func statusSchedule(w io.Writer, c *config.Config, flags commandLineFlags, args 
 	return nil
 }
 
-func statusScheduleProfile(scheduler string, profile *config.Profile, schedules []*config.ScheduleConfig, flags commandLineFlags) error {
+func statusScheduleProfile(scheduler schedule.SchedulerType, profile *config.Profile, schedules []*config.ScheduleConfig, flags commandLineFlags) error {
 	displayProfileDeprecationNotices(profile)
 
 	err := statusJobs(scheduler, flags.name, convertSchedules(schedules))
@@ -466,21 +467,21 @@ func statusScheduleProfile(scheduler string, profile *config.Profile, schedules 
 	return nil
 }
 
-func getScheduleJobs(c *config.Config, flags commandLineFlags) (string, *config.Profile, []*config.ScheduleConfig, error) {
+func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerType, *config.Profile, []*config.ScheduleConfig, error) {
 	global, err := c.GetGlobalSection()
 	if err != nil {
-		return "", nil, nil, fmt.Errorf("cannot load global section: %w", err)
+		return nil, nil, nil, fmt.Errorf("cannot load global section: %w", err)
 	}
 
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
-		return "", nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
 	}
 	if profile == nil {
-		return "", nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
+		return nil, nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
-	return global.Scheduler, profile, profile.Schedules(), nil
+	return schedule.NewSchedulerType(global), profile, profile.Schedules(), nil
 }
 
 func requireScheduleJobs(schedules []*config.ScheduleConfig, flags commandLineFlags) error {
@@ -490,10 +491,10 @@ func requireScheduleJobs(schedules []*config.ScheduleConfig, flags commandLineFl
 	return nil
 }
 
-func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (string, *config.Profile, []schedule.Config, error) {
+func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerType, *config.Profile, []schedule.Config, error) {
 	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
-		return "", nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	configs := convertSchedules(schedules)

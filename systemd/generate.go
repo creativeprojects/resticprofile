@@ -5,9 +5,11 @@ package systemd
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/creativeprojects/clog"
@@ -19,7 +21,7 @@ const (
 	defaultPermission = 0644
 	systemdSystemDir  = "/etc/systemd/system/"
 
-	systemdUnitTmpl = `[Unit]
+	systemdUnitDefaultTmpl = `[Unit]
 Description={{ .JobDescription }}
 
 [Service]
@@ -32,7 +34,7 @@ Environment="{{ . }}"
 {{ end -}}
 `
 
-	systemdTimerTmpl = `[Unit]
+	systemdTimerDefaultTmpl = `[Unit]
 Description={{ .TimerDescription }}
 
 [Timer]
@@ -83,6 +85,8 @@ type Config struct {
 	Schedules        []string
 	UnitType         UnitType
 	Priority         string
+	UnitFile         string
+	TimerFile        string
 }
 
 func init() {
@@ -130,6 +134,11 @@ func Generate(config Config) error {
 	}
 
 	var data bytes.Buffer
+
+	systemdUnitTmpl, err := loadTemplate(config.UnitFile, systemdUnitDefaultTmpl)
+	if err != nil {
+		return err
+	}
 	unitTmpl, err := template.New("systemd.unit").Parse(systemdUnitTmpl)
 	if err != nil {
 		return err
@@ -144,6 +153,10 @@ func Generate(config Config) error {
 	}
 	data.Reset()
 
+	systemdTimerTmpl, err := loadTemplate(config.TimerFile, systemdTimerDefaultTmpl)
+	if err != nil {
+		return err
+	}
 	timerTmpl, err := template.New("timer.unit").Parse(systemdTimerTmpl)
 	if err != nil {
 		return err
@@ -186,4 +199,24 @@ func GetUserDir() (string, error) {
 // GetSystemDir returns the path where the local systemd units are stored
 func GetSystemDir() string {
 	return systemdSystemDir
+}
+
+// loadTemplate loads the content of the filename if the parameter is not empty,
+// or returns the default template if the filename parameter is empty
+func loadTemplate(filename, defaultTmpl string) (string, error) {
+	if filename == "" {
+		return defaultTmpl, nil
+	}
+	file, err := fs.Open(filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	output := &strings.Builder{}
+	_, err = io.Copy(output, file)
+	if err != nil {
+		return "", err
+	}
+	return output.String(), nil
 }

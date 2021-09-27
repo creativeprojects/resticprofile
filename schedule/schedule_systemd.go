@@ -33,7 +33,9 @@ const (
 
 // SystemdSchedule is a Scheduler using systemd
 type SystemdSchedule struct {
-	profileName string
+	profileName   string
+	unitTemplate  string
+	timerTemplate string
 }
 
 // Init verifies systemd is available on this system

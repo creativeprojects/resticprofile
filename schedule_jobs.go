@@ -12,7 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(schedulerType, profileName string, configs []*config.ScheduleConfig) error {
+func scheduleJobs(schedulerType schedule.SchedulerType, profileName string, configs []*config.ScheduleConfig) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func convertSchedules(configs []*config.ScheduleConfig) []schedule.Config {
 	return sc
 }
 
-func removeJobs(schedulerType, profileName string, configs []schedule.Config) error {
+func removeJobs(schedulerType schedule.SchedulerType, profileName string, configs []schedule.Config) error {
 	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err := scheduler.Init()
 	if err != nil {
@@ -116,7 +116,7 @@ func removeJobs(schedulerType, profileName string, configs []schedule.Config) er
 	return nil
 }
 
-func statusJobs(schedulerType, profileName string, configs []schedule.Config) error {
+func statusJobs(schedulerType schedule.SchedulerType, profileName string, configs []schedule.Config) error {
 	scheduler := schedule.NewScheduler(schedulerType, profileName)
 	err := scheduler.Init()
 	if err != nil {
