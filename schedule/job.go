@@ -36,7 +36,7 @@ type SchedulerJob interface {
 // Job scheduler
 type Job struct {
 	config    Config
-	scheduler string
+	scheduler SchedulerType
 }
 
 var ErrorJobCanBeRemovedOnly = errors.New("job can be removed only")
