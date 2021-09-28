@@ -115,6 +115,7 @@ type testStruct struct {
 	noGlobString  string `argument:"no-glob-string" argument-type:"no-glob"`
 	emptyInt      int    `argument:"empty-int"`
 	someInt       int    `argument:"some-int"`
+	uInt          uint   `argument:"u-int"`
 	notIncluded   bool
 }
 
@@ -124,6 +125,7 @@ func TestConvertStructToArgs(t *testing.T) {
 		someBoolFalse: false,
 		emptyInt:      0,
 		someInt:       10,
+		uInt:          20,
 		emptyString:   "",
 		globString:    "test",
 		noGlobString:  "test",
@@ -134,6 +136,7 @@ func TestConvertStructToArgs(t *testing.T) {
 	assert.Equal(t, map[string][]string{
 		"some-bool-true": {},
 		"some-int":       {"10"},
+		"u-int":          {"20"},
 		"glob-string":    {"test"},
 		"no-glob-string": {"test"},
 	}, args.ToMap())
@@ -145,6 +148,7 @@ func TestConvertPointerStructToArgs(t *testing.T) {
 		someBoolFalse: false,
 		emptyInt:      0,
 		someInt:       10,
+		uInt:          20,
 		emptyString:   "",
 		globString:    "test",
 		noGlobString:  "test",
@@ -155,6 +159,7 @@ func TestConvertPointerStructToArgs(t *testing.T) {
 	assert.Equal(t, map[string][]string{
 		"some-bool-true": {},
 		"some-int":       {"10"},
+		"u-int":          {"20"},
 		"glob-string":    {"test"},
 		"no-glob-string": {"test"},
 	}, args.ToMap())

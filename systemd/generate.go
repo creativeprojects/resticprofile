@@ -207,6 +207,7 @@ func loadTemplate(filename, defaultTmpl string) (string, error) {
 	if filename == "" {
 		return defaultTmpl, nil
 	}
+	clog.Debugf("using template file %q", filename)
 	file, err := fs.Open(filename)
 	if err != nil {
 		return "", err

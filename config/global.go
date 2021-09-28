@@ -36,3 +36,8 @@ func NewGlobal() *Global {
 		MinMemory:            constants.DefaultMinMemory,
 	}
 }
+
+func (p *Global) SetRootPath(rootPath string) {
+	p.SystemdUnitTemplate = fixPath(p.SystemdUnitTemplate, expandEnv, absolutePrefix(rootPath))
+	p.SystemdTimerTemplate = fixPath(p.SystemdTimerTemplate, expandEnv, absolutePrefix(rootPath))
+}

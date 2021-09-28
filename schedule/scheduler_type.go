@@ -1,6 +1,8 @@
 package schedule
 
 import (
+	"runtime"
+
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 )
@@ -45,25 +47,31 @@ func (s SchedulerSystemd) String() string {
 func NewSchedulerType(global *config.Global) SchedulerType {
 	switch global.Scheduler {
 	case constants.SchedulerCrond:
-		return &SchedulerCrond{}
+		return SchedulerCrond{}
 	case constants.SchedulerLaunchd:
-		return &SchedulerLaunchd{}
+		return SchedulerLaunchd{}
 	case constants.SchedulerSystemd:
-		return &SchedulerSystemd{
+		return SchedulerSystemd{
 			UnitTemplate:  global.SystemdUnitTemplate,
 			TimerTemplate: global.SystemdTimerTemplate,
 		}
 	case constants.SchedulerWindows:
-		return &SchedulerWindows{}
+		return SchedulerWindows{}
 	default:
-		return &SchedulerDefaultOS{}
+		if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
+			return SchedulerSystemd{
+				UnitTemplate:  global.SystemdUnitTemplate,
+				TimerTemplate: global.SystemdTimerTemplate,
+			}
+		}
+		return SchedulerDefaultOS{}
 	}
 }
 
 var (
-	_ SchedulerType = &SchedulerDefaultOS{}
-	_ SchedulerType = &SchedulerCrond{}
-	_ SchedulerType = &SchedulerLaunchd{}
-	_ SchedulerType = &SchedulerSystemd{}
-	_ SchedulerType = &SchedulerWindows{}
+	_ SchedulerType = SchedulerDefaultOS{}
+	_ SchedulerType = SchedulerCrond{}
+	_ SchedulerType = SchedulerLaunchd{}
+	_ SchedulerType = SchedulerSystemd{}
+	_ SchedulerType = SchedulerWindows{}
 )

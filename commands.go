@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -281,14 +280,6 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	}
 	// Display deprecation notice
 	displayProfileDeprecationNotices(profile)
-
-	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
-	// So we need to fix all relative files
-	rootPath := filepath.Dir(c.GetConfigFile())
-	if rootPath != "." {
-		clog.Debugf("files in configuration are relative to '%s'", rootPath)
-	}
-	profile.SetRootPath(rootPath)
 
 	config.ShowStruct(os.Stdout, profile, flags.name)
 	fmt.Println("")

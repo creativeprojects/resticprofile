@@ -6,7 +6,7 @@ import (
 
 // Helpers for tests
 
-func getProfile(configFormat, configString, profileKey string) (*Profile, error) {
+func getProfile(configFormat, configString, profileKey, rootPath string) (*Profile, error) {
 	c, err := Load(bytes.NewBufferString(configString), configFormat)
 	if err != nil {
 		return nil, err
@@ -15,6 +15,9 @@ func getProfile(configFormat, configString, profileKey string) (*Profile, error)
 	profile, err := c.getProfile(profileKey)
 	if err != nil {
 		return nil, err
+	}
+	if rootPath != "" {
+		profile.SetRootPath(rootPath)
 	}
 	return profile, nil
 }

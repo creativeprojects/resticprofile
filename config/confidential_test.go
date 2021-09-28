@@ -85,7 +85,7 @@ func TestConfidentialURLs(t *testing.T) {
 repository = "%s"
 `, url)
 
-		profile, err := getProfile("toml", testConfig, "profile")
+		profile, err := getProfile("toml", testConfig, "profile", "")
 		assert.Nil(t, err)
 		assert.NotNil(t, profile)
 
@@ -149,7 +149,7 @@ func TestConfidentialEnvironment(t *testing.T) {
 %s = "%s"
 `, name, defaultUrl)
 
-		profile, err := getProfile("toml", testConfig, "profile")
+		profile, err := getProfile("toml", testConfig, "profile", "")
 		assert.Nil(t, err)
 		assert.NotNil(t, profile)
 
@@ -180,7 +180,7 @@ profile:
     MY_TOKEN: false
     MY_PASSWORD: "otherval"
 `
-	profile, err := getProfile("yaml", testConfig, "profile")
+	profile, err := getProfile("yaml", testConfig, "profile", "")
 	assert.Nil(t, err)
 	assert.NotNil(t, profile)
 
@@ -206,7 +206,7 @@ profile:
   env:
     MY_PASSWORD: "otherval"
 `
-	profile, err := getProfile("yaml", testConfig, "profile")
+	profile, err := getProfile("yaml", testConfig, "profile", "")
 	assert.Nil(t, err)
 	assert.NotNil(t, profile)
 
@@ -220,7 +220,7 @@ func TestGetNonConfidentialArgs(t *testing.T) {
 profile:
   repository: "` + fmt.Sprintf(repo, "password") + `"
 `
-	profile, err := getProfile("yaml", testConfig, "profile")
+	profile, err := getProfile("yaml", testConfig, "profile", "")
 	assert.NoError(t, err)
 	assert.NotNil(t, profile)
 

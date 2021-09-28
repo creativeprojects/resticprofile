@@ -15,7 +15,7 @@ import (
 
 func TestNoProfile(t *testing.T) {
 	testConfig := ""
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestNoProfile(t *testing.T) {
 func TestEmptyProfile(t *testing.T) {
 	testConfig := `[profile]
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +36,7 @@ func TestEmptyProfile(t *testing.T) {
 func TestNoInitializeValue(t *testing.T) {
 	testConfig := `[profile]
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestInitializeValueFalse(t *testing.T) {
 	testConfig := `[profile]
 initialize = false
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestInitializeValueTrue(t *testing.T) {
 	testConfig := `[profile]
 initialize = true
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ initialize = true
 [profile]
 inherit = "parent"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +91,7 @@ initialize = true
 initialize = false
 inherit = "parent"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestUnknownParent(t *testing.T) {
 	testConfig := `[profile]
 inherit = "parent"
 `
-	_, err := getProfile("toml", testConfig, "profile")
+	_, err := getProfile("toml", testConfig, "profile", "")
 	assert.Error(t, err)
 }
 
@@ -128,7 +128,7 @@ third-value = 3
 verbose = true
 quiet = false
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ quiet = true
 verbose = false
 repository = "test"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +181,7 @@ array0 = []
 array1 = [1]
 array2 = ["one", "two"]
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ iexclude = "iexclude"
 [profile.copy]
 password-file = "key"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -255,7 +255,7 @@ host = true
 [profile.snapshots]
 host = "ConfigHost"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,7 +312,7 @@ host = %s
 
 	for _, section := range sections {
 		// Check that host can be set globally
-		profile, err := getProfile("toml", testConfig(section, "true"), "profile")
+		profile, err := getProfile("toml", testConfig(section, "true"), "profile", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -323,7 +323,7 @@ host = %s
 		assertHostIs([]string{"TestHost"}, profile, section)
 
 		// Ensure host is set only when host value is true
-		profile, err = getProfile("toml", testConfig(section, `"OtherTestHost"`), "profile")
+		profile, err = getProfile("toml", testConfig(section, `"OtherTestHost"`), "profile", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -343,17 +343,13 @@ func TestResolveGlobSourcesInBackup(t *testing.T) {
 [profile.backup]
 source = "` + sourcePattern + `"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "./examples")
 	require.NoError(t, err)
 	assert.NotNil(t, profile)
 
 	sources, err := filepath.Glob(sourcePattern)
 	require.NoError(t, err)
 	assert.Greater(t, len(sources), 5)
-
-	assert.Equal(t, []string{sourcePattern}, profile.Backup.Source)
-
-	profile.SetRootPath(examples)
 	assert.Equal(t, sources, profile.Backup.Source)
 }
 
@@ -372,7 +368,7 @@ source = "` + root + `"
 [profile.retention]
 host = false
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -396,7 +392,7 @@ source = "/some_other_path"
 [profile.retention]
 path = "/"
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -420,7 +416,7 @@ source = "/some_other_path"
 [profile.retention]
 path = false
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -440,7 +436,7 @@ tag = ["one", "two"]
 [profile.retention]
 tag = true
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	require.NoError(t, err)
 	assert.NotNil(profile)
 
@@ -459,7 +455,7 @@ tag = ["one", "two"]
 [profile.retention]
 tag = ["a", "b"]
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	require.NoError(t, err)
 	assert.NotNil(profile)
 
@@ -478,7 +474,7 @@ tag = ["one", "two"]
 [profile.retention]
 tag = false
 `
-	profile, err := getProfile("toml", testConfig, "profile")
+	profile, err := getProfile("toml", testConfig, "profile", "")
 	require.NoError(t, err)
 	assert.NotNil(profile)
 
@@ -529,7 +525,7 @@ profile:
 		format := testItem.format
 		testConfig := testItem.config
 		t.Run(format, func(t *testing.T) {
-			profile, err := getProfile(format, testConfig, "profile")
+			profile, err := getProfile(format, testConfig, "profile", "")
 			require.NoError(t, err)
 
 			assert.NotNil(t, profile)
@@ -563,7 +559,7 @@ initialize = true
 
 	for _, command := range sections {
 		// Check that schedule is supported
-		profile, err := getProfile("toml", testConfig(command, true), "profile")
+		profile, err := getProfile("toml", testConfig(command, true), "profile", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -576,7 +572,7 @@ initialize = true
 		assert.Equal(config[0].schedules[0], "@hourly")
 
 		// Check that schedule is optional
-		profile, err = getProfile("toml", testConfig(command, false), "profile")
+		profile, err = getProfile("toml", testConfig(command, false), "profile", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -629,7 +625,7 @@ profile:
 		format := testItem.format
 		testConfig := testItem.config
 		t.Run(format, func(t *testing.T) {
-			profile, err := getProfile(format, testConfig, "profile")
+			profile, err := getProfile(format, testConfig, "profile", "")
 			require.NoError(t, err)
 
 			assert.NotNil(t, profile)
@@ -684,7 +680,7 @@ profile:
 		format := testItem.format
 		testConfig := testItem.config
 		t.Run(format, func(t *testing.T) {
-			profile, err := getProfile(format, testConfig, "profile")
+			profile, err := getProfile(format, testConfig, "profile", "")
 			require.NoError(t, err)
 
 			assert.NotNil(t, profile)
@@ -786,7 +782,7 @@ profile:
 		format := testItem.format
 		testConfig := testItem.config
 		t.Run(format, func(t *testing.T) {
-			profile, err := getProfile(format, testConfig, "profile")
+			profile, err := getProfile(format, testConfig, "profile", "")
 			require.NoError(t, err)
 
 			require.NotNil(t, profile)

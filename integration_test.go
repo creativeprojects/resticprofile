@@ -137,8 +137,6 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NoError(t, err)
 					require.NotNil(t, profile)
 
-					profile.SetRootPath("./examples")
-
 					wrapper := newResticWrapper(
 						echoBinary,
 						false,
@@ -178,7 +176,6 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NotNil(t, profile)
 
 					profile.SetLegacyArg(true)
-					profile.SetRootPath("./examples")
 
 					wrapper := newResticWrapper(
 						echoBinary,
