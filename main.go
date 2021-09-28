@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"syscall"
@@ -325,14 +324,6 @@ func runProfile(
 	if global.LegacyArguments {
 		profile.SetLegacyArg(true)
 	}
-
-	// All files in the configuration are relative to the configuration file, NOT the folder where resticprofile is started
-	// So we need to fix all relative files
-	rootPath := filepath.Dir(c.GetConfigFile())
-	if rootPath != "." {
-		clog.Debugf("files in configuration are relative to '%s'", rootPath)
-	}
-	profile.SetRootPath(rootPath)
 
 	// Specific case for the "host" flag where an empty value should be replaced by the hostname
 	hostname := "none"

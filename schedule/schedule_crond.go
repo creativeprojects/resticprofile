@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 )
 
@@ -38,7 +37,7 @@ func (s *CrondSchedule) Close() {
 func (s *CrondSchedule) NewJob(config Config) SchedulerJob {
 	return &Job{
 		config:    config,
-		scheduler: constants.SchedulerCrond,
+		scheduler: SchedulerCrond{},
 	}
 }
 

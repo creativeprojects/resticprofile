@@ -1,4 +1,5 @@
-//+build darwin
+//go:build darwin
+// +build darwin
 
 // Documentation about launchd plist file format:
 // https://www.launchd.info
@@ -48,7 +49,7 @@ type Schedule struct {
 
 // NewScheduler creates a Schedule object (of Scheduler interface)
 // On macOS only launchd scheduler is supported
-func NewScheduler(scheduler, profileName string) Scheduler {
+func NewScheduler(scheduler SchedulerType, profileName string) Scheduler {
 	return &Schedule{}
 }
 

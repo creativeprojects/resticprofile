@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/creativeprojects/clog"
@@ -55,6 +56,8 @@ var (
 		confidentialValueDecoder(),
 		sliceOfMapsToMapHookFunc(),
 	))
+
+	rootPathMessage = sync.Once{}
 )
 
 // newConfig instantiate a new Config object
@@ -127,6 +130,7 @@ func LoadFile(configFile, format string) (*Config, error) {
 }
 
 // Load configuration from reader
+// This should only be used for unit tests
 func Load(input io.Reader, format string) (*Config, error) {
 	c := newConfig(format)
 	err := c.addTemplate(input, c.configFile, true)
@@ -336,6 +340,18 @@ func (c *Config) GetGlobalSection() (*Global, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// All files in the configuration are relative to the configuration file,
+	// NOT the folder where resticprofile is started
+	// So we need to fix all relative files
+	rootPath := filepath.Dir(c.GetConfigFile())
+	if rootPath != "." {
+		rootPathMessage.Do(func() {
+			clog.Debugf("files in configuration are relative to %q", rootPath)
+		})
+	}
+	global.SetRootPath(rootPath)
+
 	return global, nil
 }
 
@@ -401,7 +417,21 @@ func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 			return nil, err
 		}
 	}
-	return c.getProfile(profileKey)
+	profile, err := c.getProfile(profileKey)
+	if err != nil {
+		return nil, err
+	}
+	// profile returned CAN be nil
+	if profile == nil {
+		return nil, nil
+	}
+	// All files in the configuration are relative to the configuration file,
+	// NOT the folder where resticprofile is started
+	// So we need to fix all relative files
+	rootPath := filepath.Dir(c.GetConfigFile())
+	profile.SetRootPath(rootPath)
+
+	return profile, nil
 }
 
 // getProfile from configuration
@@ -410,6 +440,7 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 	var profile *Profile
 
 	if !c.IsSet(profileKey) {
+		// key not found => returns a nil profile
 		return nil, nil
 	}
 

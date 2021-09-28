@@ -3,6 +3,7 @@
 package schedule
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -33,7 +34,9 @@ const (
 
 // SystemdSchedule is a Scheduler using systemd
 type SystemdSchedule struct {
-	profileName string
+	profileName   string
+	unitTemplate  string
+	timerTemplate string
 }
 
 // Init verifies systemd is available on this system
@@ -52,8 +55,11 @@ func (s *SystemdSchedule) Close() {
 // NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
 func (s *SystemdSchedule) NewJob(config Config) SchedulerJob {
 	return &Job{
-		config:    config,
-		scheduler: constants.SchedulerSystemd,
+		config: config,
+		scheduler: SchedulerSystemd{
+			UnitTemplate:  s.unitTemplate,
+			TimerTemplate: s.timerTemplate,
+		},
 	}
 }
 
@@ -82,16 +88,23 @@ var _ Scheduler = &SystemdSchedule{}
 
 // createSystemdJob is creating the systemd unit and activating it
 func (j *Job) createSystemdJob(unitType systemd.UnitType) error {
-	err := systemd.Generate(
-		j.config.Command()+" --no-prio "+strings.Join(j.config.Arguments(), " "),
-		j.config.WorkingDirectory(),
-		j.config.Title(),
-		j.config.SubTitle(),
-		j.config.JobDescription(),
-		j.config.TimerDescription(),
-		j.config.Schedules(),
-		unitType,
-		j.config.Priority())
+	sch, ok := j.scheduler.(SchedulerSystemd)
+	if !ok {
+		return errors.New("incompatible scheduler type")
+	}
+	err := systemd.Generate(systemd.Config{
+		CommandLine:      j.config.Command() + " --no-prio " + strings.Join(j.config.Arguments(), " "),
+		WorkingDirectory: j.config.WorkingDirectory(),
+		Title:            j.config.Title(),
+		SubTitle:         j.config.SubTitle(),
+		JobDescription:   j.config.JobDescription(),
+		TimerDescription: j.config.TimerDescription(),
+		Schedules:        j.config.Schedules(),
+		UnitType:         unitType,
+		Priority:         j.config.Priority(),
+		UnitFile:         sch.UnitTemplate,
+		TimerFile:        sch.TimerTemplate,
+	})
 	if err != nil {
 		return err
 	}

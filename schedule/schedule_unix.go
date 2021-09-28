@@ -16,14 +16,18 @@ import (
 )
 
 // NewScheduler creates a Scheduler interface, which is either a CrondSchedule or a SystemdSchedule object
-func NewScheduler(scheduler, profileName string) Scheduler {
-	if scheduler == constants.SchedulerCrond {
-		return &CrondSchedule{
-			profileName: profileName,
-		}
+func NewScheduler(scheduler SchedulerType, profileName string) Scheduler {
+	if scheduler.String() == constants.SchedulerCrond {
+		return &CrondSchedule{profileName: profileName}
+	}
+	config, ok := scheduler.(SchedulerSystemd)
+	if !ok {
+		return &SystemdSchedule{profileName: profileName}
 	}
 	return &SystemdSchedule{
-		profileName: profileName,
+		profileName:   profileName,
+		unitTemplate:  config.UnitTemplate,
+		timerTemplate: config.TimerTemplate,
 	}
 }
 
@@ -34,7 +38,7 @@ func (j *Job) createJob(schedules []*calendar.Event) error {
 	if !ok {
 		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
 	}
-	if j.scheduler == constants.SchedulerCrond {
+	if j.scheduler.String() == constants.SchedulerCrond {
 		return j.createCrondJob(schedules)
 	}
 	if os.Geteuid() == 0 {
@@ -57,7 +61,7 @@ func (j *Job) removeJob() error {
 	if !ok {
 		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
 	}
-	if j.scheduler == constants.SchedulerCrond {
+	if j.scheduler.String() == constants.SchedulerCrond {
 		return j.removeCrondJob()
 	}
 	if os.Geteuid() == 0 {
@@ -69,7 +73,7 @@ func (j *Job) removeJob() error {
 
 // displayStatus of a schedule
 func (j *Job) displayStatus(command string) error {
-	if j.scheduler == constants.SchedulerCrond {
+	if j.scheduler.String() == constants.SchedulerCrond {
 		return j.displayCrondStatus(command)
 	}
 	return j.displaySystemdStatus(command)

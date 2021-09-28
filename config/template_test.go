@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -24,6 +25,10 @@ lock = "/tmp/{{ .Profile.Name }}.lock"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
+	if runtime.GOOS == "windows" {
+		assert.Equal(t, "tmp\\profile1.lock", profile.Lock)
+		return
+	}
 	assert.Equal(t, "/tmp/profile1.lock", profile.Lock)
 }
 
@@ -169,6 +174,10 @@ inherit = "profile1"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
+	if runtime.GOOS == "windows" {
+		assert.Equal(t, "tmp\\profile2.lock", profile.Lock)
+		return
+	}
 	assert.Equal(t, "/tmp/profile2.lock", profile.Lock)
 }
 

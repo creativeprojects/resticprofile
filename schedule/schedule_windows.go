@@ -1,4 +1,5 @@
-//+build windows
+//go:build windows
+// +build windows
 
 package schedule
 
@@ -16,7 +17,7 @@ type Schedule struct {
 
 // NewScheduler creates a Schedule onject (of Scheduler interface)
 // On windows, only the task manager is supported
-func NewScheduler(scheduler, profileName string) Scheduler {
+func NewScheduler(scheduler SchedulerType, profileName string) Scheduler {
 	return &Schedule{}
 }
 

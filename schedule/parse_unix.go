@@ -17,7 +17,7 @@ import (
 )
 
 func (j *Job) loadSchedules(command string, schedules []string) ([]*calendar.Event, error) {
-	if j.scheduler == constants.SchedulerCrond {
+	if j.scheduler.String() == constants.SchedulerCrond {
 		return loadParsedSchedules(command, schedules)
 	}
 	return loadSystemdSchedules(command, schedules)

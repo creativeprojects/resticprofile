@@ -1,8 +1,9 @@
 package schedule
 
 import (
-	"github.com/creativeprojects/resticprofile/config"
 	"testing"
+
+	"github.com/creativeprojects/resticprofile/config"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +43,7 @@ func TestDetectRemoveOnlyConfig(t *testing.T) {
 
 func TestRemoveOnlyJob(t *testing.T) {
 	profile := "non-existent"
-	scheduler := NewScheduler("", profile)
+	scheduler := NewScheduler(&SchedulerDefaultOS{}, profile)
 	defer scheduler.Close()
 
 	config := NewRemoveOnlyConfig(profile, "check")

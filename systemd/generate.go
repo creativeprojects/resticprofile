@@ -5,21 +5,23 @@ package systemd
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/spf13/afero"
 )
 
 const (
 	defaultPermission = 0644
 	systemdSystemDir  = "/etc/systemd/system/"
 
-	systemdUnitBackupUnitTmpl = `[Unit]
+	systemdUnitDefaultTmpl = `[Unit]
 Description={{ .JobDescription }}
 
 [Service]
@@ -32,7 +34,7 @@ Environment="{{ . }}"
 {{ end -}}
 `
 
-	systemdUnitBackupTimerTmpl = `[Unit]
+	systemdTimerDefaultTmpl = `[Unit]
 Description={{ .TimerDescription }}
 
 [Timer]
@@ -56,8 +58,12 @@ const (
 	SystemUnit
 )
 
-// TemplateInfo to create systemd unit
-type TemplateInfo struct {
+var (
+	fs afero.Fs
+)
+
+// templateInfo to create systemd unit
+type templateInfo struct {
 	JobDescription   string
 	TimerDescription string
 	WorkingDirectory string
@@ -68,14 +74,33 @@ type TemplateInfo struct {
 	Environment      []string
 }
 
+// Config for generating systemd unit and timer files
+type Config struct {
+	CommandLine      string
+	WorkingDirectory string
+	Title            string
+	SubTitle         string
+	JobDescription   string
+	TimerDescription string
+	Schedules        []string
+	UnitType         UnitType
+	Priority         string
+	UnitFile         string
+	TimerFile        string
+}
+
+func init() {
+	fs = afero.NewOsFs()
+}
+
 // Generate systemd unit
-func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription string, onCalendar []string, unitType UnitType, priority string) error {
+func Generate(config Config) error {
 	var err error
-	systemdProfile := GetServiceFile(title, subTitle)
-	timerProfile := GetTimerFile(title, subTitle)
+	systemdProfile := GetServiceFile(config.Title, config.SubTitle)
+	timerProfile := GetTimerFile(config.Title, config.SubTitle)
 
 	systemdUserDir := systemdSystemDir
-	if unitType == UserUnit {
+	if config.UnitType == UserUnit {
 		systemdUserDir, err = GetUserDir()
 		if err != nil {
 			return err
@@ -93,40 +118,55 @@ func Generate(commandLine, wd, title, subTitle, jobDescription, timerDescription
 	}
 
 	nice := constants.DefaultBackgroundNiceFlag
-	if priority == constants.SchedulePriorityStandard {
+	if config.Priority == constants.SchedulePriorityStandard {
 		nice = constants.DefaultStandardNiceFlag
 	}
 
-	info := TemplateInfo{
-		JobDescription:   jobDescription,
-		TimerDescription: timerDescription,
-		WorkingDirectory: wd,
-		CommandLine:      commandLine,
-		OnCalendar:       onCalendar,
+	info := templateInfo{
+		JobDescription:   config.JobDescription,
+		TimerDescription: config.TimerDescription,
+		WorkingDirectory: config.WorkingDirectory,
+		CommandLine:      config.CommandLine,
+		OnCalendar:       config.Schedules,
 		SystemdProfile:   systemdProfile,
 		Nice:             nice,
 		Environment:      environment,
 	}
 
 	var data bytes.Buffer
-	unitTmpl := template.Must(template.New("systemd.unit").Parse(systemdUnitBackupUnitTmpl))
+
+	systemdUnitTmpl, err := loadTemplate(config.UnitFile, systemdUnitDefaultTmpl)
+	if err != nil {
+		return err
+	}
+	unitTmpl, err := template.New("systemd.unit").Parse(systemdUnitTmpl)
+	if err != nil {
+		return err
+	}
 	if err := unitTmpl.Execute(&data, info); err != nil {
 		return err
 	}
 	filePathName := filepath.Join(systemdUserDir, systemdProfile)
 	clog.Infof("writing %v", filePathName)
-	if err := ioutil.WriteFile(filePathName, data.Bytes(), defaultPermission); err != nil {
+	if err := afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 	data.Reset()
 
-	timerTmpl := template.Must(template.New("timer.unit").Parse(systemdUnitBackupTimerTmpl))
+	systemdTimerTmpl, err := loadTemplate(config.TimerFile, systemdTimerDefaultTmpl)
+	if err != nil {
+		return err
+	}
+	timerTmpl, err := template.New("timer.unit").Parse(systemdTimerTmpl)
+	if err != nil {
+		return err
+	}
 	if err := timerTmpl.Execute(&data, info); err != nil {
 		return err
 	}
 	filePathName = filepath.Join(systemdUserDir, timerProfile)
 	clog.Infof("writing %v", filePathName)
-	if err := ioutil.WriteFile(filePathName, data.Bytes(), defaultPermission); err != nil {
+	if err := afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 	return nil
@@ -150,7 +190,7 @@ func GetUserDir() (string, error) {
 	}
 
 	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
-	if err := os.MkdirAll(systemdUserDir, 0700); err != nil {
+	if err := fs.MkdirAll(systemdUserDir, 0700); err != nil {
 		return "", err
 	}
 	return systemdUserDir, nil
@@ -159,4 +199,25 @@ func GetUserDir() (string, error) {
 // GetSystemDir returns the path where the local systemd units are stored
 func GetSystemDir() string {
 	return systemdSystemDir
+}
+
+// loadTemplate loads the content of the filename if the parameter is not empty,
+// or returns the default template if the filename parameter is empty
+func loadTemplate(filename, defaultTmpl string) (string, error) {
+	if filename == "" {
+		return defaultTmpl, nil
+	}
+	clog.Debugf("using template file %q", filename)
+	file, err := fs.Open(filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	output := &strings.Builder{}
+	_, err = io.Copy(output, file)
+	if err != nil {
+		return "", err
+	}
+	return output.String(), nil
 }
