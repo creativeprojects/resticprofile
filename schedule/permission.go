@@ -11,6 +11,7 @@ const (
 	PermissionSystem
 )
 
+// String returns either "user" or "system"
 func (p Permission) String() string {
 	if p == PermissionSystem {
 		return constants.SchedulePermissionSystem

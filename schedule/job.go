@@ -3,7 +3,7 @@ package schedule
 import "errors"
 
 //
-// Schedule: common code for all systems
+// Job: common code for all systems
 //
 
 // Config contains all the information needed to schedule a Job

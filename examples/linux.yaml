@@ -5,8 +5,11 @@ global:
 
 default:
     password-file: key
-    repository: /tmp/backup
+    repository: /tmp/backup/{{ .Profile.Name }}
     lock: "/tmp/backup/resticprofile-{{ .Profile.Name }}.lock"
+    copy:
+        password-file: key
+        repository: "/tmp/backup/{{ .Profile.Name }}-copy"
 
 documents:
     inherit: default
@@ -74,6 +77,11 @@ self:
     backup:
         extended-status: true
         source: ./
+    copy:
+        initialize: true
+        schedule-permission: user
+        schedule:
+          - "*:45"
 
 src:
     inherit: default
