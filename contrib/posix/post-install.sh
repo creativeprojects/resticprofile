@@ -28,10 +28,11 @@ fi
 
 # Unwrap dist files (if target is missing)
 cd "${CONFIG_PATH}"
-for file in conf.d/*.dist profiles.d/*.dist ; do
+for file in conf.d/*.dist profiles.d/*.dist templates/*.dist ; do
   target_file="$(dirname "${file}")/$(basename -s ".dist" "${file}")"
   if [ -e "${target_file}" ] ; then
     echo "Skipping ${target_file}. File already exists"
+    rm "${file}"
   else
     mv -f "${file}" "${target_file}"
   fi
