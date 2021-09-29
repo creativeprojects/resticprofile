@@ -1,4 +1,5 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
+// +build !darwin,!windows
 
 package schedule
 
@@ -41,11 +42,7 @@ type SystemdSchedule struct {
 
 // Init verifies systemd is available on this system
 func (s *SystemdSchedule) Init() error {
-	found, err := exec.LookPath(systemctlBin)
-	if err != nil || found == "" {
-		return fmt.Errorf("it doesn't look like systemd is installed on your system (cannot find %q command in path)", systemctlBin)
-	}
-	return nil
+	return lookupBinary("systemd", systemctlBin)
 }
 
 // Close does nothing when using systemd

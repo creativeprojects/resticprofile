@@ -1,10 +1,9 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
+// +build !darwin,!windows
 
 package schedule
 
 import (
-	"fmt"
-	"os/exec"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -22,11 +21,7 @@ type CrondSchedule struct {
 
 // Init verifies crond is available on this system
 func (s *CrondSchedule) Init() error {
-	found, err := exec.LookPath(crontabBin)
-	if err != nil || found == "" {
-		return fmt.Errorf("it doesn't look like crond is installed on your system (cannot find %q command in path)", crontabBin)
-	}
-	return nil
+	return lookupBinary("crond", crontabBin)
 }
 
 // Close does nothing when using crond
