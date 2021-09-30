@@ -6,7 +6,8 @@ import (
 )
 
 type Handler interface {
-	Available() error
+	Init() error
+	Close()
 }
 
 func lookupBinary(name, binary string) error {

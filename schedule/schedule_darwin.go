@@ -43,43 +43,6 @@ const (
 	codeServiceNotFound = 113
 )
 
-// Schedule using launchd
-type Schedule struct {
-}
-
-// NewScheduler creates a Schedule object (of Scheduler interface)
-// On macOS only launchd scheduler is supported
-func NewScheduler(scheduler SchedulerType, profileName string) Scheduler {
-	return &Schedule{}
-}
-
-// Init verifies launchd is available on this system
-func (s *Schedule) Init() error {
-	found, err := exec.LookPath(launchdBin)
-	if err != nil || found == "" {
-		return errors.New("it doesn't look like launchd is installed on your system")
-	}
-	return nil
-}
-
-// Close does nothing with launchd
-func (s *Schedule) Close() {
-}
-
-// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
-func (s *Schedule) NewJob(config Config) SchedulerJob {
-	return &Job{
-		config: config,
-	}
-}
-
-// DisplayStatus does nothing on launchd
-func (s *Schedule) DisplayStatus() {
-}
-
-// Verify interface
-var _ Scheduler = &Schedule{}
-
 // LaunchJob is an agent definition for launchd
 type LaunchJob struct {
 	Label                 string             `plist:"Label"`
@@ -100,29 +63,6 @@ type LaunchJob struct {
 var priorityValues = map[string]string{
 	constants.SchedulePriorityBackground: "Background",
 	constants.SchedulePriorityStandard:   "Standard",
-}
-
-// CalendarInterval contains date and time trigger definition inside a map.
-// keys of the map should be:
-//  "Month"   Month of year (1..12, 1 being January)
-// 	"Day"     Day of month (1..31)
-// 	"Weekday" Day of week (0..7, 0 and 7 being Sunday)
-// 	"Hour"    Hour of day (0..23)
-// 	"Minute"  Minute of hour (0..59)
-type CalendarInterval map[string]int
-
-// newCalendarInterval creates a new map of 5 elements
-func newCalendarInterval() *CalendarInterval {
-	var value CalendarInterval = make(map[string]int, 5)
-	return &value
-}
-
-func (c *CalendarInterval) clone() *CalendarInterval {
-	clone := newCalendarInterval()
-	for key, value := range *c {
-		(*clone)[key] = value
-	}
-	return clone
 }
 
 // createJob creates a plist file and register it with launchd
