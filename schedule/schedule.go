@@ -10,18 +10,18 @@ type Scheduler struct {
 }
 
 // NewScheduler creates a Scheduler object
-func NewScheduler(scheduler SchedulerType, profileName string) *Scheduler {
+func NewScheduler(schedulerType SchedulerType, profileName string) *Scheduler {
 	return &Scheduler{
-		handler: NewHandler(),
+		handler: NewHandler(schedulerType),
 	}
 }
 
-// Init verifies launchd is available on this system
+// Init
 func (s *Scheduler) Init() error {
 	return s.handler.Init()
 }
 
-// Close does nothing with launchd
+// Close
 func (s *Scheduler) Close() {
 	s.handler.Close()
 }

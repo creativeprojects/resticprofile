@@ -7,7 +7,7 @@ type HandlerLaunchd struct {
 	//
 }
 
-func NewHandler() *HandlerLaunchd {
+func NewHandler(schedulerType SchedulerType) *HandlerLaunchd {
 	return &HandlerLaunchd{}
 }
 
