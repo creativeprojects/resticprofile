@@ -20,13 +20,13 @@ func (r *RemoveOnlyConfig) Logfile() string                { return "" }
 func (r *RemoveOnlyConfig) Configfile() string             { return "" }
 func (r *RemoveOnlyConfig) GetFlag(string) (string, bool)  { return "", false }
 
-func isRemoveOnlyConfig(config Config) bool {
+func isRemoveOnlyConfig(config JobConfig) bool {
 	_, ok := config.(*RemoveOnlyConfig)
 	return ok
 }
 
 // NewRemoveOnlyConfig creates a job config that may be used to call Job.Remove() on a scheduled job
-func NewRemoveOnlyConfig(profileName, commandName string) Config {
+func NewRemoveOnlyConfig(profileName, commandName string) JobConfig {
 	return &RemoveOnlyConfig{
 		title:    profileName,
 		subTitle: commandName,

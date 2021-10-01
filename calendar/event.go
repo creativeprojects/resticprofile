@@ -13,6 +13,7 @@ import (
 // Event represents a calendar event.
 // It can be one specific point in time, or a recurring event
 type Event struct {
+	input   string
 	WeekDay *Value
 	Year    *Value
 	Month   *Value
@@ -40,6 +41,11 @@ func NewEvent(initValues ...func(*Event)) *Event {
 	return event
 }
 
+// Input represents the original input if parsed
+func (e *Event) Input() string {
+	return e.input
+}
+
 // String representation
 func (e *Event) String() string {
 	output := ""
@@ -58,6 +64,7 @@ func (e *Event) String() string {
 
 // Parse a string into an event
 func (e *Event) Parse(input string) error {
+	e.input = input
 	if input == "" {
 		return errors.New("calendar event cannot be an empty string")
 	}

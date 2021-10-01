@@ -32,7 +32,7 @@ func TestNewRemoveOnlyConfig(t *testing.T) {
 }
 
 func TestDetectRemoveOnlyConfig(t *testing.T) {
-	assertRemoveOnly := func(expected bool, config Config) {
+	assertRemoveOnly := func(expected bool, config JobConfig) {
 		assert.Equal(t, expected, isRemoveOnlyConfig(config))
 	}
 

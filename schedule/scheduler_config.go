@@ -7,31 +7,32 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
-type SchedulerType interface {
-	String() string
+type SchedulerConfig interface {
+	// Type of scheduler config ("windows", "launchd", "crond", "systemd" or "" for OS default)
+	Type() string
 }
 
 type SchedulerDefaultOS struct{}
 
-func (s SchedulerDefaultOS) String() string {
+func (s SchedulerDefaultOS) Type() string {
 	return ""
 }
 
 type SchedulerWindows struct{}
 
-func (s SchedulerWindows) String() string {
+func (s SchedulerWindows) Type() string {
 	return constants.SchedulerWindows
 }
 
 type SchedulerLaunchd struct{}
 
-func (s SchedulerLaunchd) String() string {
+func (s SchedulerLaunchd) Type() string {
 	return constants.SchedulerLaunchd
 }
 
 type SchedulerCrond struct{}
 
-func (s SchedulerCrond) String() string {
+func (s SchedulerCrond) Type() string {
 	return constants.SchedulerCrond
 }
 
@@ -40,11 +41,11 @@ type SchedulerSystemd struct {
 	TimerTemplate string
 }
 
-func (s SchedulerSystemd) String() string {
+func (s SchedulerSystemd) Type() string {
 	return constants.SchedulerSystemd
 }
 
-func NewSchedulerType(global *config.Global) SchedulerType {
+func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 	switch global.Scheduler {
 	case constants.SchedulerCrond:
 		return SchedulerCrond{}
@@ -69,9 +70,9 @@ func NewSchedulerType(global *config.Global) SchedulerType {
 }
 
 var (
-	_ SchedulerType = SchedulerDefaultOS{}
-	_ SchedulerType = SchedulerCrond{}
-	_ SchedulerType = SchedulerLaunchd{}
-	_ SchedulerType = SchedulerSystemd{}
-	_ SchedulerType = SchedulerWindows{}
+	_ SchedulerConfig = SchedulerDefaultOS{}
+	_ SchedulerConfig = SchedulerCrond{}
+	_ SchedulerConfig = SchedulerLaunchd{}
+	_ SchedulerConfig = SchedulerSystemd{}
+	_ SchedulerConfig = SchedulerWindows{}
 )
