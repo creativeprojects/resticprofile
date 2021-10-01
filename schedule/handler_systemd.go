@@ -40,7 +40,9 @@ type HandlerSystemd struct {
 func NewHandlerSystemd(config SchedulerConfig) *HandlerSystemd {
 	cfg, ok := config.(SchedulerSystemd)
 	if !ok {
-		panic("unexpected configuration object passed to systemd handler")
+		return &HandlerSystemd{
+			config: SchedulerSystemd{},
+		}
 	}
 	return &HandlerSystemd{
 		config: cfg,
