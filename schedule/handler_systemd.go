@@ -33,15 +33,17 @@ const (
 	codeStopUnitNotFound   = 5 // undocumented
 )
 
+// HandlerSystemd is a handler to schedule tasks using systemd
 type HandlerSystemd struct {
 	config SchedulerSystemd
 }
 
+// NewHandlerSystemd creates a new handler to schedule jobs using systemd
 func NewHandlerSystemd(config SchedulerConfig) *HandlerSystemd {
 	cfg, ok := config.(SchedulerSystemd)
 	if !ok {
 		return &HandlerSystemd{
-			config: SchedulerSystemd{},
+			config: SchedulerSystemd{}, // empty configuration
 		}
 	}
 	return &HandlerSystemd{

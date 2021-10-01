@@ -14,10 +14,12 @@ const (
 	crontabBinary = "crontab"
 )
 
+// HandlerCrond is a handler for crond scheduling
 type HandlerCrond struct {
 	config SchedulerConfig
 }
 
+// NewHandlerCrond creates a new handler for crond scheduling
 func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
 	return &HandlerCrond{
 		config: config,
@@ -26,7 +28,7 @@ func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
 
 // Init verifies crond is available on this system
 func (h *HandlerCrond) Init() error {
-	return lookupBinary("crond", systemctlBinary)
+	return lookupBinary("crond", crontabBinary)
 }
 
 // Close does nothing with crond
