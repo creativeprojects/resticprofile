@@ -1,9 +1,10 @@
+//go:build windows
+
 package schedule
 
 import (
 	"errors"
 
-	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
@@ -14,6 +15,7 @@ type HandlerWindows struct {
 	config SchedulerConfig
 }
 
+// NewHandler creates a new handler for windows task manager
 func NewHandler(config SchedulerConfig) *HandlerWindows {
 	return &HandlerWindows{
 		config: config,
@@ -30,10 +32,12 @@ func (h *HandlerWindows) Close() {
 	schtasks.Close()
 }
 
+// ParseSchedules into *calendar.Event
 func (h *HandlerWindows) ParseSchedules(schedules []string) ([]*calendar.Event, error) {
 	return parseSchedules(schedules)
 }
 
+// DisplayParsedSchedules via term output
 func (h *HandlerWindows) DisplayParsedSchedules(command string, events []*calendar.Event) {
 	displayParsedSchedules(command, events)
 }
@@ -83,37 +87,5 @@ func (h *HandlerWindows) DisplayJobStatus(job JobConfig) error {
 		}
 		return err
 	}
-	return nil
-}
-
-// getSchedulePermission returns the permission defined from the configuration,
-// or the best guess considering the current user permission.
-// If the permission can only be guessed, this method will also display a warning
-func getSchedulePermission(permission string) string {
-	permission, safe := detectSchedulePermission(permission)
-	if !safe {
-		clog.Warningf("you have not specified the permission for your schedule (\"system\" or \"user\"): assuming %q", permission)
-	}
-	return permission
-}
-
-// detectSchedulePermission returns the permission defined from the configuration,
-// or the best guess considering the current user permission.
-// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
-func detectSchedulePermission(permission string) (detected string, safe bool) {
-	if permission == constants.SchedulePermissionUser {
-		return constants.SchedulePermissionUser, true
-	}
-	return constants.SchedulePermissionSystem, true
-}
-
-// checkPermission returns true if the user is allowed to access the job.
-// This is always true on Windows
-func checkPermission(permission string) bool {
-	return true
-}
-
-// permissionError is not used in Windows
-func permissionError(string) error {
 	return nil
 }
