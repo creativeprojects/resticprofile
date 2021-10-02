@@ -3,6 +3,7 @@ package schedule
 import (
 	"bytes"
 	"os"
+	"os/exec"
 	"runtime"
 	"testing"
 
@@ -53,15 +54,16 @@ func TestDisplaySystemdSchedulesWithEmpty(t *testing.T) {
 }
 
 func TestDisplaySystemdSchedules(t *testing.T) {
-	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
-		t.Skip()
+	_, err := exec.LookPath("systemd-analyze")
+	if err != nil {
+		t.Skip("systemd-analyze not available")
 	}
 
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	defer term.SetOutput(os.Stdout)
 
-	err := displaySystemdSchedules("command", []string{"daily"})
+	err = displaySystemdSchedules("command", []string{"daily"})
 	assert.NoError(t, err)
 
 	output := buffer.String()
