@@ -13,6 +13,7 @@ const (
 	displayHeader = "\nAnalyzing %s schedule %d/%d\n=================================\n"
 )
 
+// parseSchedules creates a *calendar.Event from a string
 func parseSchedules(schedules []string) ([]*calendar.Event, error) {
 	events := make([]*calendar.Event, 0, len(schedules))
 	for _, schedule := range schedules {
