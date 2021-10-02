@@ -4,7 +4,6 @@ package schedule
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -14,6 +13,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -72,7 +72,7 @@ func (h *HandlerSystemd) DisplaySchedules(command string, schedules []string) er
 	return displaySystemdSchedules(command, schedules)
 }
 
-func (h *HandlerSystemd) DisplayStatus(profileName string, w io.Writer) error {
+func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 	var (
 		status string
 		err    error
@@ -88,7 +88,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string, w io.Writer) error {
 		// fail silently
 		return nil
 	}
-	fmt.Printf("\nTimers summary\n===============\n%s\n", status)
+	fmt.Fprintf(term.GetOutput(), "\nTimers summary\n===============\n%s\n", status)
 	return nil
 }
 
@@ -150,19 +150,9 @@ func (h *HandlerSystemd) CreateJob(job JobConfig, schedules []*calendar.Event, p
 }
 
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
-func (h *HandlerSystemd) RemoveJob(job JobConfig) error {
+func (h *HandlerSystemd) RemoveJob(job JobConfig, permission string) error {
 	removeOnly := isRemoveOnlyConfig(job)
-	var permission string
-	if removeOnly {
-		permission, _ = detectSchedulePermission(job.Permission()) // silent call for possibly non-existent job
-	} else {
-		permission = getSchedulePermission(job.Permission())
-	}
 
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("remove")
-	}
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
@@ -206,7 +196,7 @@ func (h *HandlerSystemd) RemoveJob(job JobConfig) error {
 }
 
 // DisplayJobStatus displays information of a systemd service/timer
-func (h *HandlerSystemd) DisplayJobStatus(job JobConfig, w io.Writer) error {
+func (h *HandlerSystemd) DisplayJobStatus(job JobConfig) error {
 	timerName := systemd.GetTimerFile(job.Title(), job.SubTitle())
 	permission := getSchedulePermission(job.Permission())
 	if permission == constants.SchedulePermissionSystem {
@@ -254,8 +244,8 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 
 	cmd := exec.Command(systemctlBinary, args...)
 	if !silent {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stdout = term.GetOutput()
+		cmd.Stderr = term.GetErrorOutput()
 	}
 	err := cmd.Run()
 	if command == systemctlStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
@@ -278,8 +268,8 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 		args = append(args, flagUserUnit)
 	}
 	cmd := exec.Command(journalctlBinary, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = term.GetOutput()
+	cmd.Stderr = term.GetErrorOutput()
 	err := cmd.Run()
 	fmt.Println("")
 	return err

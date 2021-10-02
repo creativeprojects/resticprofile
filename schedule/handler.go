@@ -2,7 +2,6 @@ package schedule
 
 import (
 	"fmt"
-	"io"
 	"os/exec"
 
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -14,10 +13,10 @@ type Handler interface {
 	ParseSchedules(schedules []string) ([]*calendar.Event, error)
 	DisplayParsedSchedules(command string, events []*calendar.Event)
 	DisplaySchedules(command string, schedules []string) error
-	DisplayStatus(profileName string, w io.Writer) error
+	DisplayStatus(profileName string) error
 	CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error
-	RemoveJob(job JobConfig) error
-	DisplayJobStatus(job JobConfig, w io.Writer) error
+	RemoveJob(job JobConfig, permission string) error
+	DisplayJobStatus(job JobConfig) error
 }
 
 func lookupBinary(name, binary string) error {

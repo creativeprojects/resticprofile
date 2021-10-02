@@ -2,7 +2,6 @@ package schedule
 
 import (
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/term"
 )
 
 // Scheduler
@@ -39,7 +38,7 @@ func (s *Scheduler) NewJob(config JobConfig) SchedulerJob {
 
 // DisplayStatus
 func (s *Scheduler) DisplayStatus() {
-	err := s.handler.DisplayStatus(s.profileName, term.GetOutput())
+	err := s.handler.DisplayStatus(s.profileName)
 	if err != nil {
 		clog.Error(err)
 	}

@@ -4,7 +4,6 @@ package schedule
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -95,7 +94,7 @@ func (h *HandlerLaunchd) DisplaySchedules(command string, schedules []string) er
 	return nil
 }
 
-func (h *HandlerLaunchd) DisplayStatus(profileName string, w io.Writer) error {
+func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 	return nil
 }
 
@@ -197,12 +196,7 @@ func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, sched
 }
 
 // removeJob stops and unloads the agent from launchd, then removes the configuration file
-func (h *HandlerLaunchd) RemoveJob(job JobConfig) error {
-	permission := getSchedulePermission(job.Permission())
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("remove")
-	}
+func (h *HandlerLaunchd) RemoveJob(job JobConfig, permission string) error {
 	name := getJobName(job.Title(), job.SubTitle())
 	filename, err := getFilename(name, permission)
 	if err != nil {
@@ -235,7 +229,7 @@ func (h *HandlerLaunchd) RemoveJob(job JobConfig) error {
 	return nil
 }
 
-func (h *HandlerLaunchd) DisplayJobStatus(job JobConfig, w io.Writer) error {
+func (h *HandlerLaunchd) DisplayJobStatus(job JobConfig) error {
 	permission := getSchedulePermission(job.Permission())
 	ok := checkPermission(permission)
 	if !ok {
@@ -260,7 +254,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job JobConfig, w io.Writer) error {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
-	writer := tabwriter.NewWriter(w, 0, 0, 0, ' ', tabwriter.AlignRight)
+	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
 	for _, key := range keys {
 		fmt.Fprintf(writer, "%s:\t %s\n", key, status[key])
 	}

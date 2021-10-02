@@ -3,7 +3,6 @@
 package schedule
 
 import (
-	"io"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -48,7 +47,7 @@ func (h *HandlerCrond) DisplaySchedules(command string, schedules []string) erro
 }
 
 // DisplayStatus does nothing with launchd
-func (h *HandlerCrond) DisplayStatus(profileName string, w io.Writer) error {
+func (h *HandlerCrond) DisplayStatus(profileName string) error {
 	return nil
 }
 
@@ -73,19 +72,7 @@ func (h *HandlerCrond) CreateJob(job JobConfig, schedules []*calendar.Event, per
 	return nil
 }
 
-func (h *HandlerCrond) RemoveJob(job JobConfig) error {
-	removeOnly := isRemoveOnlyConfig(job)
-	var permission string
-	if removeOnly {
-		permission, _ = detectSchedulePermission(job.Permission()) // silent call for possibly non-existent job
-	} else {
-		permission = getSchedulePermission(job.Permission())
-	}
-
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("remove")
-	}
+func (h *HandlerCrond) RemoveJob(job JobConfig, permission string) error {
 	entries := []crond.Entry{
 		crond.NewEntry(
 			calendar.NewEvent(),
@@ -105,7 +92,7 @@ func (h *HandlerCrond) RemoveJob(job JobConfig) error {
 }
 
 // DisplayJobStatus has nothing to display (crond doesn't provide running information)
-func (h *HandlerCrond) DisplayJobStatus(job JobConfig, w io.Writer) error {
+func (h *HandlerCrond) DisplayJobStatus(job JobConfig) error {
 	return nil
 }
 

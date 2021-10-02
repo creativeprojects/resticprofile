@@ -2,7 +2,6 @@ package schedule
 
 import (
 	"errors"
-	"io"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -45,7 +44,7 @@ func (h *HandlerWindows) DisplaySchedules(command string, schedules []string) er
 }
 
 // DisplayStatus does nothing on windows task manager
-func (h *HandlerWindows) DisplayStatus(profileName string, w io.Writer) error {
+func (h *HandlerWindows) DisplayStatus(profileName string) error {
 	return nil
 }
 
@@ -64,7 +63,7 @@ func (h *HandlerWindows) CreateJob(job JobConfig, schedules []*calendar.Event, p
 }
 
 // RemoveJob is deleting the task scheduler job
-func (h *HandlerWindows) RemoveJob(job JobConfig) error {
+func (h *HandlerWindows) RemoveJob(job JobConfig, permission string) error {
 	err := schtasks.Delete(job.Title(), job.SubTitle())
 	if err != nil {
 		if errors.Is(err, schtasks.ErrorNotRegistered) {
@@ -76,7 +75,7 @@ func (h *HandlerWindows) RemoveJob(job JobConfig) error {
 }
 
 // DisplayStatus display some information about the task scheduler job
-func (h *HandlerWindows) DisplayJobStatus(job JobConfig, w io.Writer) error {
+func (h *HandlerWindows) DisplayJobStatus(job JobConfig) error {
 	err := schtasks.Status(job.Title(), job.SubTitle())
 	if err != nil {
 		if errors.Is(err, schtasks.ErrorNotRegistered) {

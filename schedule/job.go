@@ -2,8 +2,6 @@ package schedule
 
 import (
 	"errors"
-
-	"github.com/creativeprojects/resticprofile/term"
 )
 
 //
@@ -87,7 +85,18 @@ func (j *Job) Create() error {
 
 // Remove a job
 func (j *Job) Remove() error {
-	err := j.handler.RemoveJob(j.config)
+	var permission string
+	if j.RemoveOnly() {
+		permission, _ = detectSchedulePermission(j.config.Permission()) // silent call for possibly non-existent job
+	} else {
+		permission = getSchedulePermission(j.config.Permission())
+	}
+	ok := checkPermission(permission)
+	if !ok {
+		return permissionError("remove")
+	}
+
+	err := j.handler.RemoveJob(j.config, permission)
 	if err != nil {
 		return err
 	}
@@ -119,7 +128,7 @@ func (j *Job) Status() error {
 		}
 	}
 
-	err = j.handler.DisplayJobStatus(j.config, term.GetOutput())
+	err = j.handler.DisplayJobStatus(j.config)
 	if err != nil {
 		return err
 	}
