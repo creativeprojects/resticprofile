@@ -1,13 +1,15 @@
 package schedule
 
-import "errors"
+import (
+	"errors"
+)
 
 //
 // Job: common code for all systems
 //
 
-// Config contains all the information needed to schedule a Job
-type Config interface {
+// JobConfig contains all the information needed to schedule a Job
+type JobConfig interface {
 	Title() string
 	SubTitle() string
 	JobDescription() string
@@ -35,16 +37,16 @@ type SchedulerJob interface {
 
 // Job scheduler
 type Job struct {
-	config    Config
-	scheduler SchedulerType
+	config  JobConfig
+	handler Handler
 }
 
 var ErrorJobCanBeRemovedOnly = errors.New("job can be removed only")
 
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {
-	permission, _ := j.detectSchedulePermission()
-	return j.checkPermission(permission)
+	permission, _ := detectSchedulePermission(j.config.Permission())
+	return checkPermission(permission)
 }
 
 // Create a new job
@@ -53,12 +55,27 @@ func (j *Job) Create() error {
 		return ErrorJobCanBeRemovedOnly
 	}
 
-	schedules, err := j.loadSchedules(j.config.SubTitle(), j.config.Schedules())
+	permission := getSchedulePermission(j.config.Permission())
+	ok := checkPermission(permission)
+	if !ok {
+		return permissionError("create")
+	}
+
+	schedules, err := j.handler.ParseSchedules(j.config.Schedules())
 	if err != nil {
 		return err
 	}
 
-	err = j.createJob(schedules)
+	if len(schedules) > 0 {
+		j.handler.DisplayParsedSchedules(j.config.SubTitle(), schedules)
+	} else {
+		err := j.handler.DisplaySchedules(j.config.SubTitle(), j.config.Schedules())
+		if err != nil {
+			return err
+		}
+	}
+
+	err = j.handler.CreateJob(j.config, schedules, permission)
 	if err != nil {
 		return err
 	}
@@ -68,7 +85,18 @@ func (j *Job) Create() error {
 
 // Remove a job
 func (j *Job) Remove() error {
-	err := j.removeJob()
+	var permission string
+	if j.RemoveOnly() {
+		permission, _ = detectSchedulePermission(j.config.Permission()) // silent call for possibly non-existent job
+	} else {
+		permission = getSchedulePermission(j.config.Permission())
+	}
+	ok := checkPermission(permission)
+	if !ok {
+		return permissionError("remove")
+	}
+
+	err := j.handler.RemoveJob(j.config, permission)
 	if err != nil {
 		return err
 	}
@@ -86,12 +114,21 @@ func (j *Job) Status() error {
 		return ErrorJobCanBeRemovedOnly
 	}
 
-	_, err := j.loadSchedules(j.config.SubTitle(), j.config.Schedules())
+	schedules, err := j.handler.ParseSchedules(j.config.Schedules())
 	if err != nil {
 		return err
 	}
 
-	err = j.displayStatus(j.config.SubTitle())
+	if len(schedules) > 0 {
+		j.handler.DisplayParsedSchedules(j.config.SubTitle(), schedules)
+	} else {
+		err := j.handler.DisplaySchedules(j.config.SubTitle(), j.config.Schedules())
+		if err != nil {
+			return err
+		}
+	}
+
+	err = j.handler.DisplayJobStatus(j.config)
 	if err != nil {
 		return err
 	}

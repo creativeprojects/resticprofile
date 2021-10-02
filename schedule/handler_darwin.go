@@ -1,13 +1,8 @@
 //go:build darwin
-// +build darwin
-
-// Documentation about launchd plist file format:
-// https://www.launchd.info
 
 package schedule
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -20,18 +15,22 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/spf13/afero"
 	"howett.net/plist"
 )
+
+// Documentation about launchd plist file format:
+// https://www.launchd.info
 
 // Default paths for launchd files
 const (
 	launchdBin      = "launchd"
 	launchctlBin    = "launchctl"
-	commandStart    = "start"
-	commandStop     = "stop"
-	commandLoad     = "load"
-	commandUnload   = "unload"
-	commandList     = "list"
+	launchdStart    = "start"
+	launchdStop     = "stop"
+	launchdLoad     = "load"
+	launchdUnload   = "unload"
+	launchdList     = "list"
 	UserAgentPath   = "Library/LaunchAgents"
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
@@ -43,45 +42,8 @@ const (
 	codeServiceNotFound = 113
 )
 
-// Schedule using launchd
-type Schedule struct {
-}
-
-// NewScheduler creates a Schedule object (of Scheduler interface)
-// On macOS only launchd scheduler is supported
-func NewScheduler(scheduler SchedulerType, profileName string) Scheduler {
-	return &Schedule{}
-}
-
-// Init verifies launchd is available on this system
-func (s *Schedule) Init() error {
-	found, err := exec.LookPath(launchdBin)
-	if err != nil || found == "" {
-		return errors.New("it doesn't look like launchd is installed on your system")
-	}
-	return nil
-}
-
-// Close does nothing with launchd
-func (s *Schedule) Close() {
-}
-
-// NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
-func (s *Schedule) NewJob(config Config) SchedulerJob {
-	return &Job{
-		config: config,
-	}
-}
-
-// DisplayStatus does nothing on launchd
-func (s *Schedule) DisplayStatus() {
-}
-
-// Verify interface
-var _ Scheduler = &Schedule{}
-
 // LaunchJob is an agent definition for launchd
-type LaunchJob struct {
+type LaunchdJob struct {
 	Label                 string             `plist:"Label"`
 	Program               string             `plist:"Program"`
 	ProgramArguments      []string           `plist:"ProgramArguments"`
@@ -101,6 +63,213 @@ var priorityValues = map[string]string{
 	constants.SchedulePriorityBackground: "Background",
 	constants.SchedulePriorityStandard:   "Standard",
 }
+
+type HandlerLaunchd struct {
+	config SchedulerConfig
+	fs     afero.Fs
+}
+
+func NewHandler(config SchedulerConfig) *HandlerLaunchd {
+	return &HandlerLaunchd{
+		config: config,
+		fs:     afero.NewOsFs(),
+	}
+}
+
+// Init verifies launchd is available on this system
+func (h *HandlerLaunchd) Init() error {
+	return lookupBinary("launchd", launchdBin)
+}
+
+// Close does nothing with launchd
+func (h *HandlerLaunchd) Close() {}
+
+func (h *HandlerLaunchd) ParseSchedules(schedules []string) ([]*calendar.Event, error) {
+	return parseSchedules(schedules)
+}
+
+func (h *HandlerLaunchd) DisplayParsedSchedules(command string, events []*calendar.Event) {
+	displayParsedSchedules(command, events)
+}
+
+// DisplaySchedules does nothing with launchd
+func (h *HandlerLaunchd) DisplaySchedules(command string, schedules []string) error {
+	return nil
+}
+
+func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
+	return nil
+}
+
+// CreateJob creates a plist file and registers it with launchd
+func (h *HandlerLaunchd) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
+	filename, err := h.createPlistFile(job, permission, schedules)
+	if err != nil {
+		if filename != "" {
+			os.Remove(filename)
+		}
+		return err
+	}
+
+	// load the service
+	cmd := exec.Command(launchctlBin, launchdLoad, filename)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	if _, noStart := job.GetFlag("no-start"); !noStart {
+		// ask the user if he wants to start the service now
+		name := getJobName(job.Title(), job.SubTitle())
+		message := `
+By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
+You have to start it manually the first time to accept the requests for access:
+
+%% %s %s %s
+
+Do you want to start it now?`
+		answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, launchdStart, name), true)
+		if answer {
+			// start the service
+			cmd := exec.Command(launchctlBin, launchdStart, name)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err = cmd.Run()
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, schedules []*calendar.Event) (string, error) {
+	name := getJobName(job.Title(), job.SubTitle())
+	logfile := job.Logfile()
+	if logfile == "" {
+		logfile = name + ".log"
+	}
+
+	// Add path to env variables
+	env := make(map[string]string, 1)
+	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
+		env["PATH"] = pathEnv
+	}
+
+	lowPriorityIO := true
+	nice := constants.DefaultBackgroundNiceFlag
+	if job.Priority() == constants.SchedulePriorityStandard {
+		lowPriorityIO = false
+		nice = constants.DefaultStandardNiceFlag
+	}
+
+	launchdJob := &LaunchdJob{
+		Label:                 name,
+		Program:               job.Command(),
+		ProgramArguments:      append([]string{job.Command(), "--no-prio"}, job.Arguments()...),
+		StandardOutPath:       logfile,
+		StandardErrorPath:     logfile,
+		WorkingDirectory:      job.WorkingDirectory(),
+		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
+		EnvironmentVariables:  env,
+		Nice:                  nice,
+		ProcessType:           priorityValues[job.Priority()],
+		LowPriorityIO:         lowPriorityIO,
+	}
+
+	filename, err := getFilename(name, permission)
+	if err != nil {
+		return "", err
+	}
+	file, err := h.fs.Create(filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	encoder := plist.NewEncoder(file)
+	encoder.Indent("\t")
+	err = encoder.Encode(launchdJob)
+	if err != nil {
+		return filename, err
+	}
+	return filename, nil
+}
+
+// removeJob stops and unloads the agent from launchd, then removes the configuration file
+func (h *HandlerLaunchd) RemoveJob(job JobConfig, permission string) error {
+	name := getJobName(job.Title(), job.SubTitle())
+	filename, err := getFilename(name, permission)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
+		return ErrorServiceNotFound
+	}
+	// stop the service in case it's already running
+	stop := exec.Command(launchctlBin, launchdStop, name)
+	stop.Stdout = os.Stdout
+	stop.Stderr = os.Stderr
+	// keep going if there's an error here
+	_ = stop.Run()
+
+	// unload the service
+	unload := exec.Command(launchctlBin, launchdUnload, filename)
+	unload.Stdout = os.Stdout
+	unload.Stderr = os.Stderr
+	err = unload.Run()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(filename)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *HandlerLaunchd) DisplayJobStatus(job JobConfig) error {
+	permission := getSchedulePermission(job.Permission())
+	ok := checkPermission(permission)
+	if !ok {
+		return permissionError("view")
+	}
+	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.Title(), job.SubTitle()))
+	output, err := cmd.Output()
+	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
+		return ErrorServiceNotFound
+	}
+	if err != nil {
+		return err
+	}
+	status := parseStatus(string(output))
+	if len(status) == 0 {
+		// output was not parsed, it could mean output format has changed
+		fmt.Println(string(output))
+	}
+	// order keys alphabetically
+	keys := make([]string, 0, len(status))
+	for key := range status {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
+	for _, key := range keys {
+		fmt.Fprintf(writer, "%s:\t %s\n", key, status[key])
+	}
+	writer.Flush()
+	fmt.Println("")
+
+	return nil
+}
+
+var (
+	_ Handler = &HandlerLaunchd{}
+)
 
 // CalendarInterval contains date and time trigger definition inside a map.
 // keys of the map should be:
@@ -123,182 +292,6 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 		(*clone)[key] = value
 	}
 	return clone
-}
-
-// createJob creates a plist file and register it with launchd
-func (j *Job) createJob(schedules []*calendar.Event) error {
-	permission := j.getSchedulePermission()
-	ok := j.checkPermission(permission)
-	if !ok {
-		return errors.New("user is not allowed to create a system job: please restart resticprofile as root (with sudo)")
-	}
-	filename, err := j.createPlistFile(schedules)
-	if err != nil {
-		if filename != "" {
-			os.Remove(filename)
-		}
-		return err
-	}
-
-	// load the service
-	cmd := exec.Command(launchctlBin, commandLoad, filename)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	if _, noStart := j.config.GetFlag("no-start"); !noStart {
-		// ask the user if he want to start the service now
-		name := getJobName(j.config.Title(), j.config.SubTitle())
-		message := `
-By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
-You have to start it manually the first time to accept the requests for access:
-
-%% %s %s %s
-
-Do you want to start it now?`
-		answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, commandStart, name), true)
-		if answer {
-			// start the service
-			cmd := exec.Command(launchctlBin, commandStart, name)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err = cmd.Run()
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (j *Job) createPlistFile(schedules []*calendar.Event) (string, error) {
-	name := getJobName(j.config.Title(), j.config.SubTitle())
-	logfile := j.config.Logfile()
-	if logfile == "" {
-		logfile = name + ".log"
-	}
-
-	// Add path to env variables
-	env := make(map[string]string, 1)
-	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
-		env["PATH"] = pathEnv
-	}
-
-	lowPriorityIO := true
-	nice := constants.DefaultBackgroundNiceFlag
-	if j.config.Priority() == constants.SchedulePriorityStandard {
-		lowPriorityIO = false
-		nice = constants.DefaultStandardNiceFlag
-	}
-
-	job := &LaunchJob{
-		Label:                 name,
-		Program:               j.config.Command(),
-		ProgramArguments:      append([]string{j.config.Command(), "--no-prio"}, j.config.Arguments()...),
-		StandardOutPath:       logfile,
-		StandardErrorPath:     logfile,
-		WorkingDirectory:      j.config.WorkingDirectory(),
-		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
-		EnvironmentVariables:  env,
-		Nice:                  nice,
-		ProcessType:           priorityValues[j.config.Priority()],
-		LowPriorityIO:         lowPriorityIO,
-	}
-
-	filename, err := getFilename(name, j.getSchedulePermission())
-	if err != nil {
-		return "", err
-	}
-	file, err := os.Create(filename)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	encoder := plist.NewEncoder(file)
-	encoder.Indent("\t")
-	err = encoder.Encode(job)
-	if err != nil {
-		return filename, err
-	}
-	return filename, nil
-}
-
-// removeJob stops and unloads the agent from launchd, then removes the configuration file
-func (j *Job) removeJob() error {
-	permission := j.getSchedulePermission()
-	ok := j.checkPermission(permission)
-	if !ok {
-		return errors.New("user is not allowed to remove a system job: please restart resticprofile as root (with sudo)")
-	}
-	name := getJobName(j.config.Title(), j.config.SubTitle())
-	filename, err := getFilename(name, j.getSchedulePermission())
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
-		return ErrorServiceNotFound
-	}
-	// stop the service in case it's already running
-	stop := exec.Command(launchctlBin, commandStop, name)
-	stop.Stdout = os.Stdout
-	stop.Stderr = os.Stderr
-	// keep going if there's an error here
-	_ = stop.Run()
-
-	// unload the service
-	unload := exec.Command(launchctlBin, commandUnload, filename)
-	unload.Stdout = os.Stdout
-	unload.Stderr = os.Stderr
-	err = unload.Run()
-	if err != nil {
-		return err
-	}
-	err = os.Remove(filename)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (j *Job) displayStatus(command string) error {
-	permission := j.getSchedulePermission()
-	ok := j.checkPermission(permission)
-	if !ok {
-		return errors.New("user is not allowed view a system job: please restart resticprofile as root (with sudo)")
-	}
-	cmd := exec.Command(launchctlBin, commandList, getJobName(j.config.Title(), j.config.SubTitle()))
-	output, err := cmd.Output()
-	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
-		return ErrorServiceNotFound
-	}
-	if err != nil {
-		return err
-	}
-	status := parseStatus(string(output))
-	if len(status) == 0 {
-		// output was not parsed, it could mean output format has changed
-		fmt.Println(string(output))
-	}
-	// order keys alphabetically
-	keys := make([]string, 0, len(status))
-	for key := range status {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight)
-	for _, key := range keys {
-		fmt.Fprintf(writer, "%s:\t %s\n", key, status[key])
-	}
-	writer.Flush()
-	fmt.Println("")
-
-	return nil
 }
 
 func getJobName(profileName, command string) string {

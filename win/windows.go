@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package win
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"golang.org/x/sys/windows"
 )
@@ -31,6 +33,8 @@ func RunElevated(port int) error {
 	argPtr, _ := syscall.UTF16PtrFromString(args)
 
 	var showCmd int32 = 1 //SW_NORMAL
+
+	clog.Debugf("starting command \"%s %s %s\", current directory = %q", verb, exe, args, cwd)
 
 	err := windows.ShellExecute(GetConsoleWindow(), verbPtr, exePtr, argPtr, cwdPtr, showCmd)
 	if err != nil {

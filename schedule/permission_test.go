@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
@@ -15,4 +16,27 @@ func TestPermissionUserString(t *testing.T) {
 func TestPermissionSystemString(t *testing.T) {
 	permission := PermissionSystem
 	assert.Equal(t, constants.SchedulePermissionSystem, permission.String())
+}
+
+func TestDetectSchedulePermissionOnWindows(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip()
+	}
+	fixtures := []struct {
+		input    string
+		expected string
+		safe     bool
+	}{
+		{"", "system", true},
+		{"something", "system", true},
+		{"system", "system", true},
+		{"user", "user", true},
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.input, func(t *testing.T) {
+			perm, safe := detectSchedulePermission(fixture.input)
+			assert.Equal(t, fixture.expected, perm)
+			assert.Equal(t, fixture.safe, safe)
+		})
+	}
 }

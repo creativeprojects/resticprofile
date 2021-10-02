@@ -1,4 +1,4 @@
-//+build windows
+//go:build windows
 
 package schtasks
 
@@ -11,9 +11,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/creativeprojects/clog"
-
 	"github.com/capnspacehook/taskmaster"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rickb777/date/period"

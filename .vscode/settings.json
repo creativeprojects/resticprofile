@@ -3,6 +3,7 @@
         "afero",
         "crond",
         "ionice",
+        "journalctl",
         "launchd",
         "restic",
         "resticprofile",

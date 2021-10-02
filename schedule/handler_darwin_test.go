@@ -1,4 +1,5 @@
-//+build darwin
+//go:build darwin
+// +build darwin
 
 package schedule
 
@@ -7,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"howett.net/plist"
@@ -112,4 +115,36 @@ func TestParseStatus(t *testing.T) {
 
 	output := parseStatus(status)
 	assert.Equal(t, expected, output)
+}
+
+func TestHandlerInstanceDefault(t *testing.T) {
+	handler := NewHandler(SchedulerDefaultOS{})
+	assert.NotNil(t, handler)
+}
+
+func TestHandlerInstanceLaunchd(t *testing.T) {
+	handler := NewHandler(SchedulerLaunchd{})
+	assert.NotNil(t, handler)
+}
+
+func TestCreateUserPlist(t *testing.T) {
+	handler := NewHandler(SchedulerLaunchd{})
+	handler.fs = afero.NewMemMapFs()
+
+	plist, err := handler.createPlistFile(&config.ScheduleConfig{}, "user", []*calendar.Event{calendar.NewEvent()})
+	require.NoError(t, err)
+
+	_, err = handler.fs.Stat(plist)
+	assert.NoError(t, err)
+}
+
+func TestCreateSystemPlist(t *testing.T) {
+	handler := NewHandler(SchedulerLaunchd{})
+	handler.fs = afero.NewMemMapFs()
+
+	plist, err := handler.createPlistFile(&config.ScheduleConfig{}, "system", []*calendar.Event{calendar.NewEvent()})
+	require.NoError(t, err)
+
+	_, err = handler.fs.Stat(plist)
+	assert.NoError(t, err)
 }
