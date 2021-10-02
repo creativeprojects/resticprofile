@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
