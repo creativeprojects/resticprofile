@@ -48,6 +48,21 @@ func TestDisplayParseSchedules(t *testing.T) {
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00\n")
 }
 
+func TestDisplayParseSchedulesIndexAndTotal(t *testing.T) {
+	events, err := parseSchedules([]string{"daily", "monthly", "yearly"})
+	assert.NoError(t, err)
+
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	defer term.SetOutput(os.Stdout)
+
+	displayParsedSchedules("command", events)
+	output := buffer.String()
+	assert.Contains(t, output, "schedule 1/3")
+	assert.Contains(t, output, "schedule 2/3")
+	assert.Contains(t, output, "schedule 3/3")
+}
+
 func TestDisplaySystemdSchedulesWithEmpty(t *testing.T) {
 	err := displaySystemdSchedules("command", []string{""})
 	assert.Error(t, err)

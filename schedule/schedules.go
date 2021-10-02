@@ -40,7 +40,6 @@ func displayParsedSchedules(command string, events []*calendar.Event) {
 		term.Printf("    Next elapse: %s\n", next.Format(time.UnixDate))
 		term.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
 		term.Printf("       From now: %s left\n", next.Sub(now))
-		events = append(events, event)
 	}
 	term.Print("\n")
 }
