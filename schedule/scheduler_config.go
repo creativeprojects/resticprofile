@@ -5,6 +5,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/spf13/afero"
 )
 
 type SchedulerConfig interface {
@@ -24,19 +25,24 @@ func (s SchedulerWindows) Type() string {
 	return constants.SchedulerWindows
 }
 
-type SchedulerLaunchd struct{}
+type SchedulerLaunchd struct {
+	Fs afero.Fs
+}
 
 func (s SchedulerLaunchd) Type() string {
 	return constants.SchedulerLaunchd
 }
 
-type SchedulerCrond struct{}
+type SchedulerCrond struct {
+	Fs afero.Fs
+}
 
 func (s SchedulerCrond) Type() string {
 	return constants.SchedulerCrond
 }
 
 type SchedulerSystemd struct {
+	Fs            afero.Fs
 	UnitTemplate  string
 	TimerTemplate string
 }

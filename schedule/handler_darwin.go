@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/spf13/afero"
 	"howett.net/plist"
 )
 
@@ -65,11 +66,13 @@ var priorityValues = map[string]string{
 
 type HandlerLaunchd struct {
 	config SchedulerConfig
+	fs     afero.Fs
 }
 
 func NewHandler(config SchedulerConfig) *HandlerLaunchd {
 	return &HandlerLaunchd{
 		config: config,
+		fs:     afero.NewOsFs(),
 	}
 }
 
@@ -118,7 +121,7 @@ func (h *HandlerLaunchd) CreateJob(job JobConfig, schedules []*calendar.Event, p
 	}
 
 	if _, noStart := job.GetFlag("no-start"); !noStart {
-		// ask the user if he want to start the service now
+		// ask the user if he wants to start the service now
 		name := getJobName(job.Title(), job.SubTitle())
 		message := `
 By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
@@ -180,7 +183,7 @@ func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, sched
 	if err != nil {
 		return "", err
 	}
-	file, err := os.Create(filename)
+	file, err := h.fs.Create(filename)
 	if err != nil {
 		return "", err
 	}
