@@ -67,8 +67,8 @@ func TestDisplaySystemdSchedules(t *testing.T) {
 	assert.NoError(t, err)
 
 	output := buffer.String()
-	assert.Contains(t, output, "Original form: daily\n")
-	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00\n")
+	assert.Contains(t, output, "Original form: daily")
+	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00")
 }
 
 func TestDisplaySystemdSchedulesError(t *testing.T) {
