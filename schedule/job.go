@@ -57,6 +57,12 @@ func (j *Job) Create() error {
 		return ErrorJobCanBeRemovedOnly
 	}
 
+	permission := getSchedulePermission(j.config.Permission())
+	ok := checkPermission(permission)
+	if !ok {
+		return permissionError("create")
+	}
+
 	schedules, err := j.handler.ParseSchedules(j.config.Schedules())
 	if err != nil {
 		return err
@@ -71,7 +77,7 @@ func (j *Job) Create() error {
 		}
 	}
 
-	err = j.handler.CreateJob(j.config, schedules)
+	err = j.handler.CreateJob(j.config, schedules, permission)
 	if err != nil {
 		return err
 	}

@@ -99,13 +99,8 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string, w io.Writer) error {
 	return nil
 }
 
-// createJob creates a plist file and registers it with launchd
-func (h *HandlerLaunchd) CreateJob(job JobConfig, schedules []*calendar.Event) error {
-	permission := getSchedulePermission(job.Permission())
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("create")
-	}
+// CreateJob creates a plist file and registers it with launchd
+func (h *HandlerLaunchd) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
 	filename, err := h.createPlistFile(job, permission, schedules)
 	if err != nil {
 		if filename != "" {

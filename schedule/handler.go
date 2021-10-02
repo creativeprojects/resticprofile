@@ -15,7 +15,7 @@ type Handler interface {
 	DisplayParsedSchedules(command string, events []*calendar.Event)
 	DisplaySchedules(command string, schedules []string) error
 	DisplayStatus(profileName string, w io.Writer) error
-	CreateJob(job JobConfig, schedules []*calendar.Event) error
+	CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error
 	RemoveJob(job JobConfig) error
 	DisplayJobStatus(job JobConfig, w io.Writer) error
 }

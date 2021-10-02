@@ -13,9 +13,10 @@ import (
 
 // getSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission.
+// If the permission can only be guessed, this method will also display a warning
 func getSchedulePermission(permission string) string {
-	permission, unsafe := detectSchedulePermission(permission)
-	if unsafe {
+	permission, safe := detectSchedulePermission(permission)
+	if !safe {
 		clog.Warningf("you have not specified the permission for your schedule (\"system\" or \"user\"): assuming %q", permission)
 	}
 	return permission
@@ -23,24 +24,22 @@ func getSchedulePermission(permission string) string {
 
 // detectSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission.
-// unsafe specifies whether a guess may lead to a too broad or too narrow file access permission.
-func detectSchedulePermission(permission string) (detected string, unsafe bool) {
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func detectSchedulePermission(permission string) (detected string, safe bool) {
 	if permission == constants.SchedulePermissionSystem ||
 		permission == constants.SchedulePermissionUser {
 		// well defined
-		detected = permission
-		unsafe = false
-
-	} else {
-		// best guess is depending on the user being root or not:
-		if os.Geteuid() == 0 {
-			detected = constants.SchedulePermissionSystem
-		} else {
-			detected = constants.SchedulePermissionUser
-		}
-		// darwin can backup protected files without the need of a system task; Guess based on UID is never unsafe
-		unsafe = runtime.GOOS != "darwin"
+		return permission, true
 	}
+	// best guess is depending on the user being root or not:
+	if os.Geteuid() == 0 {
+		detected = constants.SchedulePermissionSystem
+	} else {
+		detected = constants.SchedulePermissionUser
+	}
+	// darwin can backup protected files without the need of a system task
+	// otherwise guess based on UID is never safe
+	safe = runtime.GOOS == "darwin"
 
 	return
 }

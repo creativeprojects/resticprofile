@@ -53,12 +53,7 @@ func (h *HandlerCrond) DisplayStatus(profileName string, w io.Writer) error {
 }
 
 // CreateJob is creating the crontab
-func (h *HandlerCrond) CreateJob(job JobConfig, schedules []*calendar.Event) error {
-	permission := getSchedulePermission(job.Permission())
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("create")
-	}
+func (h *HandlerCrond) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
 	entries := make([]crond.Entry, len(schedules))
 	for i, event := range schedules {
 		entries[i] = crond.NewEntry(

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
@@ -49,13 +50,13 @@ func (h *HandlerWindows) DisplayStatus(profileName string, w io.Writer) error {
 }
 
 // CreateJob is creating the task scheduler job.
-func (h *HandlerWindows) CreateJob(job JobConfig, schedules []*calendar.Event) error {
+func (h *HandlerWindows) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
 	// default permission will be system
-	permission := schtasks.SystemAccount
-	if p, _ := detectSchedulePermission(job.Permission()); p == constants.SchedulePermissionUser {
-		permission = schtasks.UserAccount
+	perm := schtasks.SystemAccount
+	if permission == constants.SchedulePermissionUser {
+		perm = schtasks.UserAccount
 	}
-	err := schtasks.Create(job, schedules, permission)
+	err := schtasks.Create(job, schedules, perm)
 	if err != nil {
 		return err
 	}
@@ -86,18 +87,34 @@ func (h *HandlerWindows) DisplayJobStatus(job JobConfig, w io.Writer) error {
 	return nil
 }
 
+// getSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// If the permission can only be guessed, this method will also display a warning
+func getSchedulePermission(permission string) string {
+	permission, safe := detectSchedulePermission(permission)
+	if !safe {
+		clog.Warningf("you have not specified the permission for your schedule (\"system\" or \"user\"): assuming %q", permission)
+	}
+	return permission
+}
+
 // detectSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission.
-// unsafe specifies whether a guess may lead to a too broad or too narrow file access permission.
-func detectSchedulePermission(permission string) (detected string, unsafe bool) {
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func detectSchedulePermission(permission string) (detected string, safe bool) {
 	if permission == constants.SchedulePermissionUser {
-		return constants.SchedulePermissionUser, false
+		return constants.SchedulePermissionUser, true
 	}
-	return constants.SchedulePermissionSystem, false
+	return constants.SchedulePermissionSystem, true
 }
 
 // checkPermission returns true if the user is allowed to access the job.
 // This is always true on Windows
 func checkPermission(permission string) bool {
 	return true
+}
+
+// permissionError is not used in Windows
+func permissionError(string) error {
+	return nil
 }

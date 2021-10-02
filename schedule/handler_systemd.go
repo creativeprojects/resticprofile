@@ -93,12 +93,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string, w io.Writer) error {
 }
 
 // CreateJob is creating the systemd unit and activating it
-func (h *HandlerSystemd) CreateJob(job JobConfig, schedules []*calendar.Event) error {
-	permission := getSchedulePermission(job.Permission())
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("create")
-	}
+func (h *HandlerSystemd) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
