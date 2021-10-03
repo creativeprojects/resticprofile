@@ -17,8 +17,6 @@ import (
 )
 
 const (
-	journalctlBinary = "journalctl"
-	systemctlBinary  = "systemctl"
 	systemctlStart   = "start"
 	systemctlStop    = "stop"
 	systemctlEnable  = "enable"
@@ -31,6 +29,11 @@ const (
 	codeStatusNotRunning   = 3
 	codeStatusUnitNotFound = 4
 	codeStopUnitNotFound   = 5 // undocumented
+)
+
+var (
+	journalctlBinary = "journalctl"
+	systemctlBinary  = "systemctl"
 )
 
 // HandlerSystemd is a handler to schedule tasks using systemd
@@ -224,6 +227,7 @@ func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error)
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
+	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	buffer := &strings.Builder{}
 	cmd := exec.Command(systemctlBinary, args...)
 	cmd.Stdout = buffer
@@ -242,6 +246,7 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 	}
 	args = append(args, command, timerName)
 
+	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	cmd := exec.Command(systemctlBinary, args...)
 	if !silent {
 		cmd.Stdout = term.GetOutput()
@@ -267,6 +272,7 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
+	clog.Debugf("starting command \"%s %s\"", journalctlBinary, strings.Join(args, " "))
 	cmd := exec.Command(journalctlBinary, args...)
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()

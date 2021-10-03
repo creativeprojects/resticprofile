@@ -9,7 +9,7 @@ import (
 	"github.com/creativeprojects/resticprofile/crond"
 )
 
-const (
+var (
 	crontabBinary = "crontab"
 )
 
