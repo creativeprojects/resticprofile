@@ -84,9 +84,12 @@ func (h *HandlerCrond) RemoveJob(job JobConfig, permission string) error {
 		),
 	}
 	crontab := crond.NewCrontab(entries)
-	err := crontab.Remove()
+	num, err := crontab.Remove()
 	if err != nil {
 		return err
+	}
+	if num == 0 {
+		return ErrorServiceNotFound
 	}
 	return nil
 }

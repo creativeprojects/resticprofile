@@ -96,11 +96,7 @@ func (j *Job) Remove() error {
 		return permissionError("remove")
 	}
 
-	err := j.handler.RemoveJob(j.config, permission)
-	if err != nil {
-		return err
-	}
-	return nil
+	return j.handler.RemoveJob(j.config, permission)
 }
 
 // RemoveOnly returns true if this job can be removed only

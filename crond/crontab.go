@@ -31,64 +31,76 @@ func NewCrontab(entries []Entry) *Crontab {
 	}
 }
 
-func (c *Crontab) Update(source string, addEntries bool, w io.StringWriter) error {
+// Update crontab entries:
+//
+// If addEntries is set to true, it will delete and add all new entries
+//
+// If addEntries is set to false, it will only delete the matching entries
+//
+// Return values are the number of entries deleted, and an error if any
+func (c *Crontab) Update(source string, addEntries bool, w io.StringWriter) (int, error) {
 	var err error
+	var deleted int
 
 	before, crontab, after, sectionFound := extractOwnSection(source)
 
 	if sectionFound && len(c.entries) > 0 {
 		for _, entry := range c.entries {
-			crontab, _, err = deleteLine(crontab, entry)
+			var found bool
+			crontab, found, err = deleteLine(crontab, entry)
 			if err != nil {
-				return err
+				return deleted, err
+			}
+			if found {
+				deleted++
 			}
 		}
 	}
 
 	_, err = w.WriteString(before)
 	if err != nil {
-		return err
+		return deleted, err
 	}
 
 	if !sectionFound {
 		// add a new line at the end of the file before adding our stuff
 		_, err = w.WriteString("\n")
 		if err != nil {
-			return err
+			return deleted, err
 		}
 	}
 
 	_, err = w.WriteString(startMarker)
 	if err != nil {
-		return err
+		return deleted, err
 	}
 
 	if sectionFound {
 		_, err = w.WriteString(crontab)
 		if err != nil {
-			return err
+			return deleted, err
 		}
 	}
 
 	if addEntries {
 		err = c.Generate(w)
 		if err != nil {
-			return err
+			return deleted, err
 		}
 	}
 
 	_, err = w.WriteString(endMarker)
 	if err != nil {
-		return err
+		return deleted, err
 	}
 
 	if sectionFound {
 		_, err = w.WriteString(after)
 		if err != nil {
-			return err
+			return deleted, err
 		}
 	}
-	return nil
+	return deleted, nil
 }
 
 func (c *Crontab) Generate(w io.StringWriter) error {
@@ -125,7 +137,7 @@ func (c *Crontab) Rewrite() error {
 		return err
 	}
 	input := &bytes.Buffer{}
-	err = c.Update(crontab, true, input)
+	_, err = c.Update(crontab, true, input)
 	if err != nil {
 		return err
 	}
@@ -140,15 +152,15 @@ func (c *Crontab) Rewrite() error {
 	return nil
 }
 
-func (c *Crontab) Remove() error {
+func (c *Crontab) Remove() (int, error) {
 	crontab, err := c.LoadCurrent()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	buffer := &bytes.Buffer{}
-	err = c.Update(crontab, false, buffer)
+	num, err := c.Update(crontab, false, buffer)
 	if err != nil {
-		return err
+		return num, err
 	}
 
 	cmd := exec.Command(crontabBinary, "-")
@@ -156,9 +168,9 @@ func (c *Crontab) Remove() error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return err
+		return num, err
 	}
-	return nil
+	return num, nil
 }
 
 func cleanupCrontab(crontab string) string {

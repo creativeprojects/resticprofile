@@ -111,8 +111,9 @@ func TestSectionOnItsOwn(t *testing.T) {
 func TestUpdateEmptyCrontab(t *testing.T) {
 	crontab := NewCrontab(nil)
 	buffer := &strings.Builder{}
-	err := crontab.Update("", true, buffer)
+	deleted, err := crontab.Update("", true, buffer)
 	require.NoError(t, err)
+	assert.Equal(t, 0, deleted)
 	assert.Equal(t, "\n"+startMarker+endMarker, buffer.String())
 }
 
@@ -122,8 +123,9 @@ func TestUpdateSimpleCrontab(t *testing.T) {
 		event.Hour.MustAddValue(1)
 	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
-	err := crontab.Update("", true, buffer)
+	deleted, err := crontab.Update("", true, buffer)
 	require.NoError(t, err)
+	assert.Equal(t, 0, deleted)
 	assert.Equal(t, "\n"+startMarker+"01 01 * * *\tresticprofile backup\n"+endMarker, buffer.String())
 }
 
@@ -133,8 +135,9 @@ func TestUpdateExistingCrontab(t *testing.T) {
 		event.Hour.MustAddValue(1)
 	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
-	err := crontab.Update("something\n"+startMarker+endMarker, true, buffer)
+	deleted, err := crontab.Update("something\n"+startMarker+endMarker, true, buffer)
 	require.NoError(t, err)
+	assert.Equal(t, 0, deleted)
 	assert.Equal(t, "something\n"+startMarker+"01 01 * * *\tresticprofile backup\n"+endMarker, buffer.String())
 }
 
@@ -144,8 +147,9 @@ func TestRemoveCrontab(t *testing.T) {
 		event.Hour.MustAddValue(1)
 	}), "config.yaml", "profile", "backup", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
-	err := crontab.Update("something\n"+startMarker+"01 01 * * *\t/opt/resticprofile --no-ansi --config config.yaml --name profile backup\n"+endMarker, false, buffer)
+	deleted, err := crontab.Update("something\n"+startMarker+"01 01 * * *\t/opt/resticprofile --no-ansi --config config.yaml --name profile backup\n"+endMarker, false, buffer)
 	require.NoError(t, err)
+	assert.Equal(t, 1, deleted)
 	assert.Equal(t, "something\n"+startMarker+endMarker, buffer.String())
 }
 
