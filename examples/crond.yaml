@@ -49,19 +49,19 @@ test_user2:
         schedule-permission: user
         schedule-log: check-{{ .Profile.Name }}.log
 
-test_root:
-    inherit: default
-    verbose: true
-    backup:
-        source: ./
-        exclude:
-          - "/**/.git/"
-          - "resticp\\*"
-        schedule: "*:05,20,35,50"
-        schedule-permission: system
-        schedule-log: backup-{{ .Profile.Name }}.log
-        run-after: "chown -R $SUDO_USER $HOME/.cache/restic /tmp/backup"
-    check:
-        schedule: "*-*-2"
-        schedule-permission: system
-        schedule-log: check-{{ .Profile.Name }}.log
+# test_root:
+#     inherit: default
+#     verbose: true
+#     backup:
+#         source: ./
+#         exclude:
+#           - "/**/.git/"
+#           - "resticp\\*"
+#         schedule: "*:05,20,35,50"
+#         schedule-permission: system
+#         schedule-log: backup-{{ .Profile.Name }}.log
+#         run-after: "chown -R $SUDO_USER $HOME/.cache/restic /tmp/backup"
+#     check:
+#         schedule: "*-*-2"
+#         schedule-permission: system
+#         schedule-log: check-{{ .Profile.Name }}.log

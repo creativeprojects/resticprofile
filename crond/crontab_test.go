@@ -3,6 +3,8 @@
 package crond
 
 import (
+	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -134,4 +136,31 @@ func TestUpdateExistingCrontab(t *testing.T) {
 	err := crontab.Update("something\n"+startMarker+endMarker, true, buffer)
 	require.NoError(t, err)
 	assert.Equal(t, "something\n"+startMarker+"01 01 * * *\tresticprofile backup\n"+endMarker, buffer.String())
+}
+
+func TestRemoveCrontab(t *testing.T) {
+	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
+		event.Minute.MustAddValue(1)
+		event.Hour.MustAddValue(1)
+	}), "config.yaml", "profile", "backup", "resticprofile backup", "")})
+	buffer := &strings.Builder{}
+	err := crontab.Update("something\n"+startMarker+"01 01 * * *\t/opt/resticprofile --no-ansi --config config.yaml --name profile backup\n"+endMarker, false, buffer)
+	require.NoError(t, err)
+	assert.Equal(t, "something\n"+startMarker+endMarker, buffer.String())
+}
+
+func TestLoadCurrent(t *testing.T) {
+	defer func() {
+		_ = os.Remove("./crontab")
+	}()
+	cmd := exec.Command("go", "build", "-o", "crontab", "./stdin")
+	err := cmd.Run()
+	require.NoError(t, err)
+	crontabBinary = "./crontab"
+
+	crontab := NewCrontab(nil)
+	assert.NotNil(t, crontab)
+	result, err := crontab.LoadCurrent()
+	assert.NoError(t, err)
+	assert.Equal(t, "", result)
 }

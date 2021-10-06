@@ -180,6 +180,8 @@ func extractOwnSection(crontab string) (string, string, string, bool) {
 	return crontab[:start], crontab[start+len(startMarker) : end], crontab[end+len(endMarker):], true
 }
 
+// deleteLine scans crontab for a line with the same config file, profile name and command name,
+// and removes it from the output. It returns true when at least one corresponding line was found.
 func deleteLine(crontab string, entry Entry) (string, bool, error) {
 	// should match a line like:
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
