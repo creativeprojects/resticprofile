@@ -38,6 +38,5 @@ jobs:
       shell: bash
 
     - name: Code coverage
-      run: "if [ -f coverage.out ]; then bash <(curl -s https://codecov.io/bash); fi"
-      shell: bash
+      uses: codecov/codecov-action@v2
 
