@@ -333,6 +333,16 @@ func (c *Config) getProfileInfoHCL(sectionRawValue interface{}) ProfileInfo {
 	return profileInfo
 }
 
+// GetVersion returns the version of the configuration file.
+// Default is Version00 if not specified or invalid
+func (c *Config) GetVersion() ConfigVersion {
+	version := c.viper.GetString(constants.ParameterVersion)
+	if version == "" {
+		return Version00
+	}
+	return ParseVersion(version)
+}
+
 // GetGlobalSection returns the global configuration
 func (c *Config) GetGlobalSection() (*Global, error) {
 	global := NewGlobal()

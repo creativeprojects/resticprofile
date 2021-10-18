@@ -15,4 +15,5 @@ const (
 	ParameterPath           = "path"
 	ParameterTag            = "tag"
 	ParameterDescription    = "description"
+	ParameterVersion        = "version"
 )
