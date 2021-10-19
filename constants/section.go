@@ -7,6 +7,7 @@ const (
 	SectionConfigurationEnvironment = "env"
 	SectionConfigurationGroups      = "groups"
 	SectionConfigurationIncludes    = "includes"
+	SectionConfigurationProfiles    = "profiles"
 
 	SectionDefinitionCommon = "common"
 	SectionDefinitionForget = "forget"

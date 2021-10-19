@@ -212,10 +212,10 @@ func displayGroups(output io.Writer, configuration *config.Config) {
 	if len(groups) == 0 {
 		return
 	}
-	fmt.Fprintln(output, "Groups available (name, profiles):")
+	fmt.Fprintln(output, "Groups available (name, profiles, description):")
 	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 	for name, groupList := range groups {
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", name, strings.Join(groupList, ", "))
+		_, _ = fmt.Fprintf(w, "\t%s:\t[%s]\t%s\n", name, strings.Join(groupList.Profiles, ", "), groupList.Description)
 	}
 	_ = w.Flush()
 	fmt.Fprintln(output, "")
@@ -262,15 +262,18 @@ func containsString(args []string, arg string) bool {
 }
 
 func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	// Show global section first
+	// 1. Show version
+	fmt.Fprintf(os.Stdout, "version: %d\n\n", c.GetVersion())
+
+	// 2. Show global section first
 	global, err := c.GetGlobalSection()
 	if err != nil {
 		return fmt.Errorf("cannot show global: %w", err)
 	}
 	config.ShowStruct(os.Stdout, global, constants.SectionConfigurationGlobal)
-	fmt.Println("")
+	fmt.Fprintln(os.Stdout, "")
 
-	// Then show profile
+	// 3. Show profile
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot show profile '%s': %w", flags.name, err)
@@ -282,7 +285,7 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	displayProfileDeprecationNotices(profile)
 
 	config.ShowStruct(os.Stdout, profile, flags.name)
-	fmt.Println("")
+	fmt.Fprintln(os.Stdout, "")
 	return nil
 }
 
@@ -327,7 +330,7 @@ func selectProfiles(c *config.Config, flags commandLineFlags, args []string) []s
 
 	} else if !c.HasProfile(flags.name) {
 		if names, err := c.GetProfileGroup(flags.name); err == nil && names != nil {
-			profiles = names
+			profiles = names.Profiles
 		}
 	}
 

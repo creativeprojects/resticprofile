@@ -15,10 +15,10 @@ type testGroupData struct {
 
 func TestGetProfileGroupsWithNothing(t *testing.T) {
 	testData := []testGroupData{
-		{"toml", ""},
-		{"json", "{}"},
-		{"yaml", ""},
-		{"hcl", ""},
+		{FormatTOML, ""},
+		{FormatJSON, "{}"},
+		{FormatYAML, ""},
+		{FormatHCL, ""},
 	}
 
 	for _, testItem := range testData {
@@ -38,20 +38,36 @@ func TestGetProfileGroupsWithNothing(t *testing.T) {
 func TestGetProfileGroupsWithEmpty(t *testing.T) {
 	testData := []testGroupData{
 		{
-			"toml",
+			FormatTOML,
 			"[groups]\n",
 		},
 		{
-			"json",
+			FormatJSON,
 			`{ "groups": { } }`,
 		},
 		{
-			"yaml",
+			FormatYAML,
 			"\ngroups:\n",
 		},
 		{
-			"hcl",
-			`groups = { }`,
+			FormatHCL,
+			"groups = { }",
+		},
+		{
+			FormatTOML,
+			"version = 2\n[groups]\n",
+		},
+		{
+			FormatJSON,
+			`{ "version": 2, "groups": { } }`,
+		},
+		{
+			FormatYAML,
+			"\nversion: 1\ngroups:\n",
+		},
+		{
+			FormatHCL,
+			"version = 2\ngroups = { }",
 		},
 	}
 
@@ -70,32 +86,77 @@ func TestGetProfileGroupsWithEmpty(t *testing.T) {
 }
 
 func TestGetProfileGroups(t *testing.T) {
-	testConfig := `[groups]
+	testData := []testGroupData{
+		{FormatTOML, `[groups]
 first = ["backup"]
 second = ["root", "dev"]
-`
-	c, err := Load(bytes.NewBufferString(testConfig), "toml")
-	require.NoError(t, err)
-
-	groups := c.GetProfileGroups()
-	assert.NotNil(t, groups)
-	assert.Len(t, groups, 2)
+`},
+		{FormatJSON, `{"groups": {"first": ["backup"], "second": ["root","dev"]}}`},
+		{FormatYAML, `---
+groups:
+  first: "backup"
+  second: ["root", "dev"]
+`},
+		{FormatHCL, `
+"groups" = {
+	"first" = ["backup"]
+	second = ["root","dev"]
 }
+`},
+		{FormatHCL, `
+"groups" = {
+	"first" = ["backup"]
+}
+groups = {
+	second = ["root","dev"]
+}
+`},
+		{FormatTOML, `version = 2
+[groups]
+[groups.first]
+profiles = ["backup"]
+[groups.second]
+profiles = ["root", "dev"]
+`},
+		{FormatJSON, `{"version": 2, "groups": {"first": {"profiles": ["backup"]}, "second": {"profiles": ["root","dev"]}}}`},
+		{FormatYAML, `---
+version: 2
+groups:
+  first:
+    profiles: "backup"
+  second:
+    profiles: ["root", "dev"]
+`},
+	}
+	for _, fixture := range testData {
+		t.Run(fixture.format, func(t *testing.T) {
+			c, err := Load(bytes.NewBufferString(fixture.config), fixture.format)
+			require.NoError(t, err)
+
+			groups := c.GetProfileGroups()
+			assert.NotNil(t, groups)
+			assert.Len(t, groups, 2)
+			assert.Len(t, groups["first"].Profiles, 1)
+			assert.Len(t, groups["second"].Profiles, 2)
+		})
+	}
+}
+
 func TestGetProfileGroup(t *testing.T) {
 	testData := []testGroupData{
 		{
-			"toml",
+			FormatTOML,
 			`
 [groups]
 test = ["first", "second", "third"]
 `,
 		},
 		{
-			"json",
+			FormatJSON,
 			`{ "groups": { "test": ["first", "second", "third"] } }`,
 		},
 		{
-			"yaml",
+			FormatYAML,
 			`
 groups:
   test:
@@ -105,11 +166,36 @@ groups:
 `,
 		},
 		{
-			"hcl",
+			FormatHCL,
 			`
 groups = {
 	"test" = ["first", "second", "third"]
 }
+`,
+		},
+		{
+			FormatTOML,
+			`
+version = 2
+[groups]
+[groups.test]
+profiles = ["first", "second", "third"]
+`,
+		},
+		{
+			FormatJSON,
+			`{ "version": 2, "groups": { "test": {"profiles": ["first", "second", "third"] } } }`,
+		},
+		{
+			FormatYAML,
+			`
+version: 2
+groups:
+  test:
+    profiles:
+    - first
+    - second
+    - third
 `,
 		},
 	}
@@ -126,7 +212,7 @@ groups = {
 
 			group, err := c.GetProfileGroup("test")
 			require.NoError(t, err)
-			assert.Equal(t, []string{"first", "second", "third"}, group)
+			assert.Equal(t, &Group{Profiles: []string{"first", "second", "third"}}, group)
 
 			_, err = c.GetProfileGroup("my-group")
 			assert.Error(t, err)

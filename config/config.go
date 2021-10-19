@@ -26,8 +26,9 @@ type Config struct {
 	configFile      string
 	includeFiles    []string
 	viper           *viper.Viper
-	groups          map[string][]string
+	groups          map[string]Group
 	sourceTemplates *template.Template
+	version         ConfigVersion
 }
 
 // This is where things are getting hairy:
@@ -106,10 +107,10 @@ func LoadFile(configFile, format string) (*Config, error) {
 		for _, include := range includes {
 			format := formatFromExtension(include)
 
-			if format == "hcl" && c.format != "hcl" {
+			if format == FormatHCL && c.format != FormatHCL {
 				err = fmt.Errorf("hcl format (%s) cannot be used in includes from %s: %s", include, c.format, c.configFile)
-			} else if c.format == "hcl" && format != "hcl" {
-				err = fmt.Errorf("%s is in hcl format, includes must use the same format. Cannot load %s", c.configFile, include)
+			} else if c.format == FormatHCL && format != FormatHCL {
+				err = fmt.Errorf("%s is in hcl format, includes must use the same format: cannot load %s", c.configFile, include)
 			} else {
 				err = readAndAdd(include, false)
 				if err == nil {
@@ -244,10 +245,11 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 	return err
 }
 
-// IsSet checks if the key contains a value
+// IsSet checks if the key contains a value. Keys and subkeys can be separated by a "."
 func (c *Config) IsSet(key string) bool {
-	if strings.Contains(key, ".") {
-		clog.Warningf("it should not search for a subkey: %s", key)
+	if strings.Contains(key, ".") && c.format == FormatHCL {
+		clog.Error("HCL format is not supported in version 1, please use version 0 or another file format")
+		return false
 	}
 	return c.viper.IsSet(key)
 }
@@ -264,24 +266,28 @@ func (c *Config) Get(key string) interface{} {
 
 // HasProfile returns true if the profile exists in the configuration
 func (c *Config) HasProfile(profileKey string) bool {
-	return c.IsSet(profileKey)
-}
-
-// AllSettings merges all settings and returns them as a map[string]interface{}.
-func (c *Config) AllSettings() map[string]interface{} {
-	return c.viper.AllSettings()
+	return c.IsSet(c.getProfilePath(profileKey))
 }
 
 // GetProfileSections returns a list of profiles with all the sections defined inside each
 func (c *Config) GetProfileSections() map[string]ProfileInfo {
 	profiles := map[string]ProfileInfo{}
-	allSettings := c.AllSettings()
+	viper := c.viper
+	if c.GetVersion() >= Version02 {
+		// move to the profiles subsection
+		viper = viper.Sub(constants.SectionConfigurationProfiles)
+		if viper == nil {
+			// there's no such subsection, so return the empty map
+			return profiles
+		}
+	}
+	allSettings := viper.AllSettings()
 	for sectionKey, sectionRawValue := range allSettings {
 		if sectionKey == constants.SectionConfigurationGlobal || sectionKey == constants.SectionConfigurationGroups {
 			continue
 		}
 		var profileInfo ProfileInfo
-		if c.format == "hcl" {
+		if c.format == FormatHCL {
 			profileInfo = c.getProfileInfoHCL(sectionRawValue)
 		} else {
 			profileInfo = c.getProfileInfo(sectionRawValue)
@@ -334,13 +340,13 @@ func (c *Config) getProfileInfoHCL(sectionRawValue interface{}) ProfileInfo {
 }
 
 // GetVersion returns the version of the configuration file.
-// Default is Version00 if not specified or invalid
+// Default is Version01 if not specified or invalid
 func (c *Config) GetVersion() ConfigVersion {
-	version := c.viper.GetString(constants.ParameterVersion)
-	if version == "" {
-		return Version00
+	if c.version > VersionUnknown {
+		return c.version
 	}
-	return ParseVersion(version)
+	c.version = ParseVersion(c.viper.GetString(constants.ParameterVersion))
+	return c.version
 }
 
 // GetGlobalSection returns the global configuration
@@ -379,7 +385,7 @@ func (c *Config) HasProfileGroup(groupKey string) bool {
 }
 
 // GetProfileGroup returns the list of profiles in a group
-func (c *Config) GetProfileGroup(groupKey string) ([]string, error) {
+func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 	err := c.loadGroups()
 	if err != nil {
 		return nil, err
@@ -389,13 +395,13 @@ func (c *Config) GetProfileGroup(groupKey string) ([]string, error) {
 	if !ok {
 		return nil, fmt.Errorf("group '%s' not found", groupKey)
 	}
-	return group, nil
+	return &group, nil
 }
 
 // GetProfileGroups returns all groups from the configuration
 //
 // If the groups section does not exist, it returns an empty map
-func (c *Config) GetProfileGroups() map[string][]string {
+func (c *Config) GetProfileGroups() map[string]Group {
 	err := c.loadGroups()
 	if err != nil {
 		return nil
@@ -405,11 +411,28 @@ func (c *Config) GetProfileGroups() map[string][]string {
 
 func (c *Config) loadGroups() error {
 	if !c.IsSet(constants.SectionConfigurationGroups) {
-		c.groups = map[string][]string{}
+		c.groups = map[string]Group{}
 		return nil
 	}
+	// load groups only once
 	if c.groups == nil {
-		groups := map[string][]string{}
+		if c.GetVersion() == Version01 {
+			c.groups = map[string]Group{}
+			groups := map[string][]string{}
+			err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
+			if err != nil {
+				return err
+			}
+			// fits previous version into new structure
+			for groupName, group := range groups {
+				c.groups[groupName] = Group{
+					Profiles: group,
+				}
+			}
+			return nil
+		}
+		// Version 2 onwards
+		groups := map[string]Group{}
 		err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
 		if err != nil {
 			return err
@@ -449,13 +472,13 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 	var err error
 	var profile *Profile
 
-	if !c.IsSet(profileKey) {
+	if !c.IsSet(c.getProfilePath(profileKey)) {
 		// key not found => returns a nil profile
 		return nil, nil
 	}
 
 	profile = NewProfile(c, profileKey)
-	err = c.unmarshalKey(profileKey, profile)
+	err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +494,7 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 			return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
 		}
 		// and reload this profile onto the inherited one
-		err = c.unmarshalKey(profileKey, profile)
+		err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
 		if err != nil {
 			return nil, err
 		}
@@ -483,6 +506,14 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 	ProcessConfidentialValues(profile)
 
 	return profile, nil
+}
+
+// getProfilePath returns the key prefixed with "profiles" if the configuration file version is >= 2
+func (c *Config) getProfilePath(key string) string {
+	if c.GetVersion() == Version01 {
+		return key
+	}
+	return constants.SectionConfigurationProfiles + "." + key
 }
 
 // unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options

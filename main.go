@@ -229,13 +229,13 @@ func main() {
 		if err != nil {
 			clog.Errorf("cannot load group '%s': %v", flags.name, err)
 		}
-		if len(group) > 0 {
+		if group != nil && len(group.Profiles) > 0 {
 			// if running as a systemd timer
 			notifyStart()
 			defer notifyStop()
 
-			for i, profileName := range group {
-				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
+			for i, profileName := range group.Profiles {
+				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group.Profiles), profileName, flags.name)
 				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
 				if err != nil {
 					clog.Error(err)

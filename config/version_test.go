@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfigVersion00(t *testing.T) {
+func TestConfigVersion01(t *testing.T) {
 	testData := []testTemplate{
 		{"toml", `
 version = "unknown"
@@ -46,25 +46,25 @@ other = "unknown"
 			require.NoError(t, err)
 
 			version := c.GetVersion()
-			assert.Equal(t, Version00, version)
+			assert.Equal(t, Version01, version)
 		})
 	}
 }
 
-func TestConfigVersion1(t *testing.T) {
+func TestConfigVersion02(t *testing.T) {
 	testData := []testTemplate{
 		{"toml", `
-version = 1
+version = 2
 `},
 		{"json", `
 {
-  "version": 1
+  "version": 2
 }`},
 		{"yaml", `---
-version: 1
+version: 2
 `},
 		{"hcl", `
-version = 1
+version = 2
 `},
 	}
 
@@ -76,7 +76,7 @@ version = 1
 			require.NoError(t, err)
 
 			version := c.GetVersion()
-			assert.Equal(t, Version01, version)
+			assert.Equal(t, Version02, version)
 		})
 	}
 }

@@ -15,10 +15,10 @@ type testProfileData struct {
 
 func TestGetProfileSectionsWithNothing(t *testing.T) {
 	testData := []testProfileData{
-		{"toml", ""},
-		{"json", "{}"},
-		{"yaml", ""},
-		{"hcl", ""},
+		{FormatTOML, ""},
+		{FormatJSON, "{}"},
+		{FormatYAML, ""},
+		{FormatHCL, ""},
 	}
 
 	for _, testItem := range testData {
@@ -37,18 +37,42 @@ func TestGetProfileSectionsWithNothing(t *testing.T) {
 
 func TestGetProfileSectionsWithNoProfile(t *testing.T) {
 	testData := []testProfileData{
-		{"toml", `
+		{FormatTOML, `
 [global]
 [groups]
 `},
-		{"json", `{"global":{}, "groups": {}}`},
-		{"yaml", `---
+		{FormatJSON, `{"global":{}, "groups": {}}`},
+		{FormatYAML, `---
 global:
 groups:
 `},
-		{"hcl", `
+		{FormatHCL, `
 global = {}
 groups = {}
+`},
+		{FormatTOML, `
+version = 2
+[global]
+[groups]
+`},
+		{FormatJSON, `{"version":2, "global":{}, "groups": {}}`},
+		{FormatYAML, `---
+version: 2
+global:
+groups:
+`},
+		{FormatTOML, `
+version = 2
+[global]
+[groups]
+[profiles]
+`},
+		{FormatJSON, `{"version":2, "global":{}, "groups": {}, "profiles": {}}`},
+		{FormatYAML, `---
+version: 2
+global:
+groups:
+profiles:
 `},
 	}
 
@@ -68,7 +92,7 @@ groups = {}
 
 func TestGetProfileSections(t *testing.T) {
 	testData := []testProfileData{
-		{"toml", `
+		{FormatTOML, `
 [profile1]
 [profile1.backup]
 source = "/"
@@ -82,7 +106,7 @@ some = "value"
 [global]
 something = true
 `},
-		{"json", `{"global":{"something": true},
+		{FormatJSON, `{"global":{"something": true},
 "profile1": {
 	"backup": {"source": "/"}
 },
@@ -94,7 +118,7 @@ something = true
 	"some": "value"
 }
 }`},
-		{"yaml", `---
+		{FormatYAML, `---
 global:
   something: true
 profile1:
@@ -108,7 +132,7 @@ profile2:
 profile3:
   some: "value"
 `},
-		{"hcl", `
+		{FormatHCL, `
 global = {
 	something = true
 }
@@ -129,7 +153,7 @@ profile3 = {
   some = "value"
 }
 `},
-		{"hcl", `
+		{FormatHCL, `
 global = {
 	something = true
 }
@@ -146,6 +170,50 @@ profile3 {
   some = "value"
 }
 `},
+		{FormatTOML, `
+version = 2
+[profiles]
+[profiles.profile1]
+[profiles.profile1.backup]
+source = "/"
+[profiles.profile2]
+[profiles.profile2.backup]
+source = "/"
+[profiles.profile2.snapshots]
+host = true
+[profiles.profile3]
+some = "value"
+[global]
+something = true
+`},
+		{FormatJSON, `{"version": 2, "global":{"something": true}, "profiles": {
+"profile1": {
+"backup": {"source": "/"}
+},
+"profile2": {
+"backup": {"source": "/"},
+"snapshots": {"host": true}
+},
+"profile3": {
+"some": "value"
+}
+}}`},
+		{FormatYAML, `---
+version: 2
+global:
+  something: true
+profiles:
+  profile1:
+    backup:
+      source: "/"
+  profile2:
+    backup:
+      source: "/"
+    snapshots:
+      host: true
+  profile3:
+    some: "value"
+`},
 	}
 
 	for _, testItem := range testData {
@@ -155,13 +223,18 @@ profile3 {
 			c, err := Load(bytes.NewBufferString(testConfig), format)
 			require.NoError(t, err)
 
+			assert.False(t, c.HasProfile("something"))
+			assert.True(t, c.HasProfile("profile1"))
+			assert.True(t, c.HasProfile("profile2"))
+			assert.True(t, c.HasProfile("profile3"))
+
 			profileSections := c.GetProfileSections()
 			assert.NotNil(t, profileSections)
 			assert.Len(t, profileSections, 3)
 
-			assert.ElementsMatch(t, []string{"backup"}, profileSections["profile1"].Sections, "expected ListA but found ListB")
-			assert.ElementsMatch(t, []string{"backup", "snapshots"}, profileSections["profile2"].Sections, "expected ListA but found ListB")
-			assert.ElementsMatch(t, []string{}, profileSections["profile3"].Sections, "expected ListA but found ListB")
+			assert.ElementsMatch(t, []string{"backup"}, profileSections["profile1"].Sections)
+			assert.ElementsMatch(t, []string{"backup", "snapshots"}, profileSections["profile2"].Sections)
+			assert.ElementsMatch(t, []string{}, profileSections["profile3"].Sections)
 		})
 	}
 }

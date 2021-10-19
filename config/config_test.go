@@ -16,16 +16,55 @@ type testTemplate struct {
 	config string
 }
 
+func TestIsSet(t *testing.T) {
+	testData := []testTemplate{
+		{FormatTOML, `
+[first]
+[first.second]
+key="value"
+`},
+		{FormatJSON, `
+{
+  "first": {
+    "second": {
+		"key": "value"
+	}
+  }
+}`},
+		{FormatYAML, `---
+first:
+  second:
+    key: value
+`},
+	}
+
+	for _, testItem := range testData {
+		format := testItem.format
+		testConfig := testItem.config
+		t.Run(format, func(t *testing.T) {
+			c, err := Load(bytes.NewBufferString(testConfig), format)
+			require.NoError(t, err)
+
+			// if format == FormatHCL {
+			// 	t.Skip()
+			// }
+			assert.True(t, c.IsSet("first"))
+			assert.True(t, c.IsSet("first.second"))
+			assert.True(t, c.IsSet("first.second.key"))
+		})
+	}
+}
+
 func TestGetGlobal(t *testing.T) {
 	testData := []testTemplate{
-		{"toml", `
+		{FormatTOML, `
 [global]
 priority = "low"
 default-command = "version"
 # initialize a repository if none exist at location
 initialize = false
 `},
-		{"json", `
+		{FormatJSON, `
 {
   "global": {
     "default-command": "version",
@@ -33,20 +72,64 @@ initialize = false
     "priority": "low"
   }
 }`},
-		{"yaml", `---
+		{FormatYAML, `---
 global:
     default-command: version
     initialize: false
     priority: low
 `},
-		{"hcl", `
+		{FormatHCL, `
 "global" = {
     default-command = "version"
     initialize = false
     priority = "low"
 }
 `},
-		{"hcl", `
+		{FormatHCL, `
+"global" = {
+    default-command = "version"
+    initialize = true
+}
+
+"global" = {
+    initialize = false
+    priority = "low"
+}
+`},
+		{FormatTOML, `
+version = 2
+[global]
+priority = "low"
+default-command = "version"
+# initialize a repository if none exist at location
+initialize = false
+`},
+		{FormatJSON, `
+{
+  "version": 2,
+  "global": {
+    "default-command": "version",
+    "initialize": false,
+    "priority": "low"
+  }
+}`},
+		{FormatYAML, `---
+version: 2
+global:
+    default-command: version
+    initialize: false
+    priority: low
+`},
+		{FormatHCL, `
+version = 2
+"global" = {
+    default-command = "version"
+    initialize = false
+    priority = "low"
+}
+`},
+		{FormatHCL, `
+version = 2
 "global" = {
     default-command = "version"
     initialize = true

@@ -100,7 +100,7 @@ func (r *resticWrapper) summary(command string, summary progress.Summary, stderr
 
 func (r *resticWrapper) runProfile() error {
 	lockFile := r.profile.Lock
-	if r.noLock {
+	if r.noLock || r.dryRun {
 		lockFile = ""
 	}
 
