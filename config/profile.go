@@ -35,6 +35,7 @@ type Profile struct {
 	PrometheusSaveToFile string                       `mapstructure:"prometheus-save-to-file"`
 	PrometheusPush       string                       `mapstructure:"prometheus-push"`
 	PrometheusLabels     map[string]string            `mapstructure:"prometheus-labels"`
+	DefaultCommand       string                       `mapstructure:"default-command"`
 	OtherFlags           map[string]interface{}       `mapstructure:",remain"`
 	Environment          map[string]ConfidentialValue `mapstructure:"env"`
 	Backup               *BackupSection               `mapstructure:"backup"`

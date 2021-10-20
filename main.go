@@ -193,15 +193,30 @@ func main() {
 
 	// The remaining arguments are going to be sent to the restic command line
 	resticArguments := flags.resticArgs
-	resticCommand := global.DefaultCommand
-	if len(resticArguments) > 0 {
-		resticCommand = resticArguments[0]
-		resticArguments = resticArguments[1:]
-	}
+	resticCommand := func() func(profile string) string {
+		if len(resticArguments) > 0 {
+			command := resticArguments[0]
+			resticArguments = resticArguments[1:]
+			// Command specified in arguments list
+			return func(profile string) string {
+				return command
+			}
+		} else {
+			// Default command (as defined in global or profile)
+			return func(profile string) string {
+				if c.HasProfile(profile) {
+					if p, err := c.GetProfile(profile); err == nil && p.DefaultCommand != "" {
+						return p.DefaultCommand
+					}
+				}
+				return global.DefaultCommand
+			}
+		}
+	}()
 
 	// resticprofile own commands (with configuration file)
-	if isOwnCommand(resticCommand, true) {
-		err = runOwnCommand(c, resticCommand, flags, resticArguments)
+	if isOwnCommand(resticCommand(flags.name), true) {
+		err = runOwnCommand(c, resticCommand(flags.name), flags, resticArguments)
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1
@@ -216,7 +231,7 @@ func main() {
 		defer notifyStop()
 
 		// Single profile run
-		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand, "")
+		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand(flags.name), "")
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1
@@ -236,7 +251,7 @@ func main() {
 
 			for i, profileName := range group {
 				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group), profileName, flags.name)
-				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
+				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand(profileName), flags.name)
 				if err != nil {
 					clog.Error(err)
 					exitCode = 1
