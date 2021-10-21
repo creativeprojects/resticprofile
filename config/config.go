@@ -248,7 +248,7 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 // IsSet checks if the key contains a value. Keys and subkeys can be separated by a "."
 func (c *Config) IsSet(key string) bool {
 	if strings.Contains(key, ".") && c.format == FormatHCL {
-		clog.Error("HCL format is not supported in version 1, please use version 0 or another file format")
+		clog.Error("HCL format is not supported in version 2, please use version 1 or another file format")
 		return false
 	}
 	return c.viper.IsSet(key)
@@ -442,7 +442,7 @@ func (c *Config) loadGroups() error {
 	return nil
 }
 
-// GetProfile in configuration
+// GetProfile in configuration. If the profile is not found, it returns nil (with no error)
 func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	if c.sourceTemplates != nil {
 		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey))
@@ -493,7 +493,9 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 		if profile == nil {
 			return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
 		}
-		// and reload this profile onto the inherited one
+		// It doesn't make sense to inherit the Description field
+		profile.Description = ""
+		// Reload this profile onto the inherited one
 		err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
 		if err != nil {
 			return nil, err

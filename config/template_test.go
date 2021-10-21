@@ -181,6 +181,29 @@ inherit = "profile1"
 	assert.Equal(t, "/tmp/profile2.lock", profile.Lock)
 }
 
+func TestNoInheritanceOfProfileDescription(t *testing.T) {
+	// clog.SetTestLog(t)
+	// defer clog.CloseTestLog()
+
+	testConfig := `
+[profile1]
+description = "something cool"
+[profile2]
+inherit = "profile1"
+`
+	profile1, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile1)
+
+	assert.Equal(t, "something cool", profile1.Description)
+
+	profile2, err := getResolvedProfile("toml", testConfig, "profile2")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile2)
+
+	assert.Equal(t, "", profile2.Description)
+}
+
 func TestResolveSnapshotTag(t *testing.T) {
 	// clog.SetTestLog(t)
 	// defer clog.CloseTestLog()

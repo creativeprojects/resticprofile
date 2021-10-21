@@ -262,10 +262,7 @@ func containsString(args []string, arg string) bool {
 }
 
 func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	// 1. Show version
-	fmt.Fprintf(os.Stdout, "version: %d\n\n", c.GetVersion())
-
-	// 2. Show global section first
+	// Show global section first
 	global, err := c.GetGlobalSection()
 	if err != nil {
 		return fmt.Errorf("cannot show global: %w", err)
@@ -273,7 +270,7 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	config.ShowStruct(os.Stdout, global, constants.SectionConfigurationGlobal)
 	fmt.Fprintln(os.Stdout, "")
 
-	// 3. Show profile
+	// Show profile
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		return fmt.Errorf("cannot show profile '%s': %w", flags.name, err)
