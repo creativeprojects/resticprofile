@@ -12,5 +12,6 @@
     "files.eol": "\n",
     "go-template.languages": [
         "yaml"
-    ]
+    ],
+    "go.lintTool": "golangci-lint"
 }

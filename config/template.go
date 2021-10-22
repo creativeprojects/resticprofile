@@ -10,6 +10,7 @@ import (
 // TemplateData contain the variables fed to a config template
 type TemplateData struct {
 	Profile    ProfileTemplateData
+	Schedule   ScheduleTemplateData
 	Now        time.Time
 	CurrentDir string
 	ConfigDir  string
@@ -23,8 +24,13 @@ type ProfileTemplateData struct {
 	Name string
 }
 
+// ScheduleTemplateData contains schedule data
+type ScheduleTemplateData struct {
+	Name string
+}
+
 // newTemplateData populates a TemplateData struct ready to use
-func newTemplateData(configFile, profileName string) TemplateData {
+func newTemplateData(configFile, profileName, scheduleName string) TemplateData {
 	currentDir, _ := os.Getwd()
 	configDir := filepath.Dir(configFile)
 	if !filepath.IsAbs(configDir) {
@@ -45,6 +51,9 @@ func newTemplateData(configFile, profileName string) TemplateData {
 	return TemplateData{
 		Profile: ProfileTemplateData{
 			Name: profileName,
+		},
+		Schedule: ScheduleTemplateData{
+			Name: scheduleName,
 		},
 		Now:        time.Now(),
 		ConfigDir:  configDir,

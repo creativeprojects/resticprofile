@@ -265,15 +265,18 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	// Show global section first
 	global, err := c.GetGlobalSection()
 	if err != nil {
-		return fmt.Errorf("cannot show global: %w", err)
+		return fmt.Errorf("cannot load global section: %w", err)
 	}
-	config.ShowStruct(os.Stdout, global, constants.SectionConfigurationGlobal)
-	fmt.Fprintln(os.Stdout, "")
+	err = config.ShowStruct(output, global, constants.SectionConfigurationGlobal)
+	if err != nil {
+		return fmt.Errorf("cannot show global section: %w", err)
+	}
+	fmt.Fprintln(output, "")
 
 	// Show profile
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
-		return fmt.Errorf("cannot show profile '%s': %w", flags.name, err)
+		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
 	}
 	if profile == nil {
 		return fmt.Errorf("profile '%s' not found", flags.name)
@@ -281,9 +284,25 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	// Display deprecation notice
 	displayProfileDeprecationNotices(profile)
 
-	config.ShowStruct(os.Stdout, profile, flags.name)
-	fmt.Fprintln(os.Stdout, "")
+	err = config.ShowStruct(output, profile, "profile "+flags.name)
+	if err != nil {
+		return fmt.Errorf("cannot show profile '%s': %w", flags.name, err)
+	}
+	fmt.Fprintln(output, "")
+
+	showSchedules(output, profile.Schedules())
 	return nil
+}
+
+func showSchedules(output io.Writer, schedulesConfig []*config.ScheduleConfig) {
+	for _, schedule := range schedulesConfig {
+		export := schedule.Export()
+		err := config.ShowStruct(output, export, "schedule "+export.Profiles[0]+"-"+export.Command)
+		if err != nil {
+			fmt.Fprintln(output, err)
+		}
+		fmt.Fprintln(output, "")
+	}
 }
 
 // randomKey simply display a base64'd random key to the console
@@ -321,7 +340,7 @@ func selectProfiles(c *config.Config, flags commandLineFlags, args []string) []s
 
 	// Check for --all or groups
 	if containsString(args, "--all") {
-		for profileName, _ := range c.GetProfileSections() {
+		for profileName := range c.GetProfileSections() {
 			profiles = append(profiles, profileName)
 		}
 
@@ -512,7 +531,10 @@ func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags,
 		term.Print("first line", "\n")
 		term.Println("second", "one")
 		term.Printf("value = %d", 11)
-		client.Done()
+		err := client.Done()
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 

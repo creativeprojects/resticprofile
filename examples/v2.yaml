@@ -2,7 +2,7 @@
         tag:
         - dev
         - {{ .Profile.Name }}
-{{ end }}
+{{ end -}}
 
 version: 2
 

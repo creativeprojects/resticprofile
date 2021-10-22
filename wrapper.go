@@ -614,9 +614,8 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output progress.OutputAna
 			if r.doneTryUnlock {
 				clog.Infof("%s. Unlock already attempted, will not try again.", staleConditionText)
 				return false, 0
-			} else {
-				r.doneTryUnlock = true
 			}
+			r.doneTryUnlock = true
 
 			if !r.profile.ForceLock {
 				clog.Infof("%s. Set `force-inactive-lock` to `true` to enable automatic unlocking of stale locks.", staleConditionText)
@@ -715,21 +714,19 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 		if !success {
 			if lockWait == nil {
 				return fmt.Errorf("another process is already running this profile: %s", locker)
+			}
+			if time.Since(start) < *lockWait {
+				lockName := fmt.Sprintf("%s locked by %s", lockFile, locker)
+				lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, *lockWait)
 
-			} else {
-				if time.Since(start) < *lockWait {
-					lockName := fmt.Sprintf("%s locked by %s", lockFile, locker)
-					lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, *lockWait)
-
-					sleep := 3 * time.Second
-					if sleep > *lockWait {
-						sleep = *lockWait
-					}
-					time.Sleep(sleep)
-				} else {
-					clog.Warningf("previous run of the profile hasn't finished after %s", *lockWait)
-					lockWait = nil
+				sleep := 3 * time.Second
+				if sleep > *lockWait {
+					sleep = *lockWait
 				}
+				time.Sleep(sleep)
+			} else {
+				clog.Warningf("previous run of the profile hasn't finished after %s", *lockWait)
+				lockWait = nil
 			}
 		}
 	}

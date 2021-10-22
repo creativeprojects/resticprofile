@@ -2,10 +2,10 @@ package config
 
 import "strconv"
 
-type ConfigVersion int
+type Version int
 
 const (
-	VersionUnknown ConfigVersion = iota
+	VersionUnknown Version = iota
 	Version01
 	Version02
 	VersionMax = Version02
@@ -13,7 +13,7 @@ const (
 
 // ParseVersion return the version number,
 // if invalid the default version is Version01
-func ParseVersion(raw string) ConfigVersion {
+func ParseVersion(raw string) Version {
 	if raw == "" {
 		return Version01
 	}
@@ -21,7 +21,7 @@ func ParseVersion(raw string) ConfigVersion {
 	if err != nil {
 		return Version01
 	}
-	vers := ConfigVersion(version)
+	vers := Version(version)
 	if vers > VersionMax {
 		return VersionMax
 	}

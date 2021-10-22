@@ -28,7 +28,7 @@ type Config struct {
 	viper           *viper.Viper
 	groups          map[string]Group
 	sourceTemplates *template.Template
-	version         ConfigVersion
+	version         Version
 }
 
 // This is where things are getting hairy:
@@ -107,11 +107,12 @@ func LoadFile(configFile, format string) (*Config, error) {
 		for _, include := range includes {
 			format := formatFromExtension(include)
 
-			if format == FormatHCL && c.format != FormatHCL {
+			switch {
+			case format == FormatHCL && c.format != FormatHCL:
 				err = fmt.Errorf("hcl format (%s) cannot be used in includes from %s: %s", include, c.format, c.configFile)
-			} else if c.format == FormatHCL && format != FormatHCL {
+			case c.format == FormatHCL && format != FormatHCL:
 				err = fmt.Errorf("%s is in hcl format, includes must use the same format: cannot load %s", c.configFile, include)
-			} else {
+			default:
 				err = readAndAdd(include, false)
 				if err == nil {
 					c.includeFiles = append(c.includeFiles, include)
@@ -141,11 +142,12 @@ func Load(input io.Reader, format string) (*Config, error) {
 	return c, nil
 }
 
+// getIncludes returns a list of configuration files to include in the current configuration
 func (c *Config) getIncludes() []string {
 	var files []string
 
 	if c.IsSet(constants.SectionConfigurationIncludes) {
-		includes := make([]string, 0, 8)
+		includes := make([]string, 0)
 
 		if err := c.unmarshalKey(constants.SectionConfigurationIncludes, &includes); err == nil {
 			files = append(files, includes...)
@@ -187,6 +189,7 @@ func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 	return err
 }
 
+// load configuration from an io.Reader
 func (c *Config) load(input io.Reader, format string, replace bool) error {
 	// For compatibility with the previous versions, a .conf file is TOML format
 	if format == "conf" {
@@ -194,6 +197,8 @@ func (c *Config) load(input io.Reader, format string, replace bool) error {
 	}
 	c.viper.SetConfigType(format)
 
+	previousVersion := c.version
+	c.version = VersionUnknown
 	var err error
 	if replace {
 		err = c.viper.ReadConfig(input)
@@ -204,11 +209,15 @@ func (c *Config) load(input io.Reader, format string, replace bool) error {
 	if err != nil {
 		return fmt.Errorf("cannot parse %s configuration: %w", format, err)
 	}
+
+	if previousVersion != c.GetVersion() && previousVersion > VersionUnknown {
+		return errors.New("cannot include different versions of the configuration file, all files must use the same version")
+	}
 	return nil
 }
 
 func (c *Config) loadTemplates() error {
-	return c.reloadTemplates(newTemplateData(c.configFile, "default"))
+	return c.reloadTemplates(newTemplateData(c.configFile, "default", ""))
 }
 
 func (c *Config) reloadTemplates(data TemplateData) error {
@@ -272,16 +281,16 @@ func (c *Config) HasProfile(profileKey string) bool {
 // GetProfileSections returns a list of profiles with all the sections defined inside each
 func (c *Config) GetProfileSections() map[string]ProfileInfo {
 	profiles := map[string]ProfileInfo{}
-	viper := c.viper
+	viperScope := c.viper
 	if c.GetVersion() >= Version02 {
 		// move to the profiles subsection
-		viper = viper.Sub(constants.SectionConfigurationProfiles)
-		if viper == nil {
+		viperScope = viperScope.Sub(constants.SectionConfigurationProfiles)
+		if viperScope == nil {
 			// there's no such subsection, so return the empty map
 			return profiles
 		}
 	}
-	allSettings := viper.AllSettings()
+	allSettings := viperScope.AllSettings()
 	for sectionKey, sectionRawValue := range allSettings {
 		if sectionKey == constants.SectionConfigurationGlobal || sectionKey == constants.SectionConfigurationGroups {
 			continue
@@ -341,7 +350,7 @@ func (c *Config) getProfileInfoHCL(sectionRawValue interface{}) ProfileInfo {
 
 // GetVersion returns the version of the configuration file.
 // Default is Version01 if not specified or invalid
-func (c *Config) GetVersion() ConfigVersion {
+func (c *Config) GetVersion() Version {
 	if c.version > VersionUnknown {
 		return c.version
 	}
@@ -376,8 +385,7 @@ func (c *Config) HasProfileGroup(groupKey string) bool {
 	if !c.IsSet(constants.SectionConfigurationGroups) {
 		return false
 	}
-	err := c.loadGroups()
-	if err != nil {
+	if err := c.loadGroups(); err != nil {
 		return false
 	}
 	_, ok := c.groups[groupKey]
@@ -386,8 +394,7 @@ func (c *Config) HasProfileGroup(groupKey string) bool {
 
 // GetProfileGroup returns the list of profiles in a group
 func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
-	err := c.loadGroups()
-	if err != nil {
+	if err := c.loadGroups(); err != nil {
 		return nil, err
 	}
 
@@ -402,8 +409,7 @@ func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 //
 // If the groups section does not exist, it returns an empty map
 func (c *Config) GetProfileGroups() map[string]Group {
-	err := c.loadGroups()
-	if err != nil {
+	if err := c.loadGroups(); err != nil {
 		return nil
 	}
 	return c.groups
@@ -445,7 +451,7 @@ func (c *Config) loadGroups() error {
 // GetProfile in configuration. If the profile is not found, it returns nil (with no error)
 func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	if c.sourceTemplates != nil {
-		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey))
+		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
 		if err != nil {
 			return nil, err
 		}
@@ -518,6 +524,68 @@ func (c *Config) getProfilePath(key string) string {
 	return constants.SectionConfigurationProfiles + "." + key
 }
 
+// GetSchedules loads all schedules from the configuration
+func (c *Config) GetSchedules() ([]*ScheduleConfig, error) {
+	if c.GetVersion() == Version01 {
+		return c.getSchedulesV1()
+	}
+	return nil, nil
+}
+
+// getSchedulesV1 loads schedules from profiles
+func (c *Config) getSchedulesV1() ([]*ScheduleConfig, error) {
+	profiles := c.GetProfileSections()
+	if len(profiles) == 0 {
+		return nil, nil
+	}
+	schedules := []*ScheduleConfig{}
+	for profileName := range profiles {
+		profile, err := c.GetProfile(profileName)
+		if err != nil {
+			return nil, fmt.Errorf("cannot load profile %q: %w", profileName, err)
+		}
+		profileSchedules, err := profile.config.GetSchedules()
+		if err != nil {
+			return nil, fmt.Errorf("cannot load profile %q schedules: %w", profileName, err)
+		}
+		schedules = append(schedules, profileSchedules...)
+	}
+	return schedules, nil
+}
+
+// GetScheduleSections returns a list of schedules
+func (c *Config) GetScheduleSections() (map[string]Schedule, error) {
+	schedules := map[string]Schedule{}
+	if c.GetVersion() < Version02 {
+		return nil, errors.New("expected configuration >= version 2")
+	}
+	// move to the schedules subsection
+	viperScope := c.viper.Sub(constants.SectionConfigurationSchedules)
+	if viperScope == nil {
+		// there's no such subsection, so return the empty map
+		return schedules, nil
+	}
+
+	allSettings := viperScope.AllSettings()
+	for sectionKey := range allSettings {
+		schedule, err := c.getSchedule(sectionKey)
+		if err != nil {
+			return schedules, err
+		}
+		schedules[sectionKey] = schedule
+	}
+	return schedules, nil
+}
+
+func (c *Config) getSchedule(key string) (Schedule, error) {
+	schedule := Schedule{}
+	err := c.unmarshalKey(constants.SectionConfigurationSchedules+"."+key, &schedule)
+	if err != nil {
+		return schedule, err
+	}
+	return schedule, nil
+}
+
 // unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options
 func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
 	if c.format == "hcl" {
@@ -530,7 +598,6 @@ func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
 func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
 		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map && (to.Kind() == reflect.Struct || to.Kind() == reflect.Map) {
-			// clog.Debugf("hook: from slice %+v to %+v", from.Elem(), to)
 			source, ok := data.([]map[string]interface{})
 			if !ok {
 				return data, nil
@@ -550,11 +617,11 @@ func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 			}
 			return convert, nil
 		}
-		// clog.Debugf("default from %+v to %+v", from, to)
 		return data, nil
 	}
 }
 
+// traceConfig sends a log of level trace to show the resulting configuration after resolving the template
 func traceConfig(profileName, name string, replace bool, config string) {
 	lines := strings.Split(config, "\n")
 	output := ""

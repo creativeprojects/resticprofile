@@ -45,9 +45,6 @@ first:
 			c, err := Load(bytes.NewBufferString(testConfig), format)
 			require.NoError(t, err)
 
-			// if format == FormatHCL {
-			// 	t.Skip()
-			// }
 			assert.True(t, c.IsSet("first"))
 			assert.True(t, c.IsSet("first.second"))
 			assert.True(t, c.IsSet("first.second.key"))
@@ -234,7 +231,8 @@ func TestIncludes(t *testing.T) {
 	}
 	defer cleanFiles()
 
-	createFile := func(suffix, content string) string {
+	createFile := func(t *testing.T, suffix, content string) string {
+		t.Helper()
 		name := ""
 		file, err := os.CreateTemp("", "*-"+suffix)
 		if err == nil {
@@ -247,7 +245,8 @@ func TestIncludes(t *testing.T) {
 		return name
 	}
 
-	mustLoadConfig := func(configFile string) *Config {
+	mustLoadConfig := func(t *testing.T, configFile string) *Config {
+		t.Helper()
 		config, err := LoadFile(configFile, "")
 		require.NoError(t, err)
 		return config
@@ -259,12 +258,12 @@ func TestIncludes(t *testing.T) {
 		defer cleanFiles()
 		content := fmt.Sprintf(`includes=['*%[1]s.inc.toml','*%[1]s.inc.yaml','*%[1]s.inc.json']`, testID)
 
-		configFile := createFile("profiles.conf", content)
-		createFile("d-"+testID+".inc.toml", `[one]`)
-		createFile("o-"+testID+".inc.yaml", `two: {}`)
-		createFile("j-"+testID+".inc.json", `{"three":{}}`)
+		configFile := createFile(t, "profiles.conf", content)
+		createFile(t, "d-"+testID+".inc.toml", `[one]`)
+		createFile(t, "o-"+testID+".inc.yaml", `two: {}`)
+		createFile(t, "j-"+testID+".inc.json", `{"three":{}}`)
 
-		config := mustLoadConfig(configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.IsSet("includes"))
 		assert.True(t, config.HasProfile("one"))
 		assert.True(t, config.HasProfile("two"))
@@ -274,16 +273,16 @@ func TestIncludes(t *testing.T) {
 	t.Run("overrides", func(t *testing.T) {
 		defer cleanFiles()
 
-		configFile := createFile("profiles.conf", `
+		configFile := createFile(t, "profiles.conf", `
 includes = "*`+testID+`.inc.toml"
 [default]
 repository = "default-repo"`)
 
-		createFile("override-"+testID+".inc.toml", `
+		createFile(t, "override-"+testID+".inc.toml", `
 [default]
 repository = "overridden-repo"`)
 
-		config := mustLoadConfig(configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
@@ -294,13 +293,13 @@ repository = "overridden-repo"`)
 	t.Run("hcl-includes-only-hcl", func(t *testing.T) {
 		defer cleanFiles()
 
-		configFile := createFile("profiles.hcl", `includes = "*`+testID+`.inc.*"`)
-		createFile("pass-"+testID+".inc.hcl", `one { }`)
+		configFile := createFile(t, "profiles.hcl", `includes = "*`+testID+`.inc.*"`)
+		createFile(t, "pass-"+testID+".inc.hcl", `one { }`)
 
-		config := mustLoadConfig(configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("one"))
 
-		createFile("fail-"+testID+".inc.toml", `[two]`)
+		createFile(t, "fail-"+testID+".inc.toml", `[two]`)
 		_, err := LoadFile(configFile, "")
 		assert.Error(t, err)
 		assert.Regexp(t, ".+ is in hcl format, includes must use the same format", err.Error())
@@ -309,15 +308,39 @@ repository = "overridden-repo"`)
 	t.Run("non-hcl-include-no-hcl", func(t *testing.T) {
 		defer cleanFiles()
 
-		configFile := createFile("profiles.toml", `includes = "*`+testID+`.inc.*"`)
-		createFile("pass-"+testID+".inc.toml", `[one]`)
+		configFile := createFile(t, "profiles.toml", `includes = "*`+testID+`.inc.*"`)
+		createFile(t, "pass-"+testID+".inc.toml", `[one]`)
 
-		config := mustLoadConfig(configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("one"))
 
-		createFile("fail-"+testID+".inc.hcl", `one { }`)
+		createFile(t, "fail-"+testID+".inc.hcl", `one { }`)
 		_, err := LoadFile(configFile, "")
 		assert.Error(t, err)
 		assert.Regexp(t, "hcl format .+ cannot be used in includes from toml", err.Error())
+	})
+
+	t.Run("cannot-load-different-versions", func(t *testing.T) {
+		defer cleanFiles()
+		content := fmt.Sprintf(`includes=['*%s.inc.json']`, testID)
+
+		configFile := createFile(t, "profiles.conf", content)
+		createFile(t, "a-"+testID+".inc.json", `{"version": 2, "profiles": {"one":{}}}`)
+		createFile(t, "b-"+testID+".inc.json", `{"two":{}}`)
+
+		_, err := LoadFile(configFile, "")
+		assert.Error(t, err)
+	})
+
+	t.Run("cannot-load-different-versions", func(t *testing.T) {
+		defer cleanFiles()
+		content := fmt.Sprintf(`{"version": 2, "includes"=[\"*%s.inc.json\"}]`, testID)
+
+		configFile := createFile(t, "profiles.json", content)
+		createFile(t, "c-"+testID+".inc.json", `{"two":{}}`)
+		createFile(t, "d-"+testID+".inc.json", `{"version": 2, "profiles": {"one":{}}}`)
+
+		_, err := LoadFile(configFile, "")
+		assert.Error(t, err)
 	})
 }

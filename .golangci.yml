@@ -1,0 +1,54 @@
+linters-settings:
+  govet:
+    check-shadowing: true
+  gocyclo:
+    min-complexity: 20
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  lll:
+    line-length: 160
+  nakedret:
+    max-func-lines: 20
+  gocritic:
+    enabled-tags:
+      - performance
+      - style
+      - diagnostic
+    disabled-checks:
+      - dupImport # https://github.com/go-critic/go-critic/issues/845
+    settings:
+      rangeValCopy:
+        sizeThreshold: 512
+      hugeParam:
+        sizeThreshold: 512
+linters:
+  enable-all: true
+  disable:
+    - interfacer
+    - scopelint
+    - golint
+    - maligned
+    - godot
+    - gochecknoglobals
+    - exhaustivestruct
+    - wsl
+    - nestif
+    - goerr113
+    - nlreturn
+    - wrapcheck
+    - misspell
+    - cyclop
+    - whitespace
+    - paralleltest
+
+  fast: false
+
+run:
+  tests: true
+
+issues:
+  exclude-use-default: true
+

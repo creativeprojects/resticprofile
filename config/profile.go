@@ -24,7 +24,7 @@ type Profile struct {
 	CACert               string                       `mapstructure:"cacert" argument:"cacert"`
 	TLSClientCert        string                       `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
 	Initialize           bool                         `mapstructure:"initialize"`
-	Inherit              string                       `mapstructure:"inherit"`
+	Inherit              string                       `mapstructure:"inherit" show:"noshow"`
 	Lock                 string                       `mapstructure:"lock"`
 	ForceLock            bool                         `mapstructure:"force-inactive-lock"`
 	RunBefore            []string                     `mapstructure:"run-before"`
@@ -84,12 +84,12 @@ type OtherSectionWithSchedule struct {
 
 // ScheduleSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleSection struct {
-	Schedule           []string      `mapstructure:"schedule"`
-	SchedulePermission string        `mapstructure:"schedule-permission"`
-	ScheduleLog        string        `mapstructure:"schedule-log"`
-	SchedulePriority   string        `mapstructure:"schedule-priority"`
-	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode"`
-	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait"`
+	Schedule           []string      `mapstructure:"schedule" show:"noshow"`
+	SchedulePermission string        `mapstructure:"schedule-permission" show:"noshow"`
+	ScheduleLog        string        `mapstructure:"schedule-log" show:"noshow"`
+	SchedulePriority   string        `mapstructure:"schedule-priority" show:"noshow"`
+	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode" show:"noshow"`
+	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait" show:"noshow"`
 }
 
 // CopySection contains the destination parameters for a copy command
@@ -119,7 +119,6 @@ func (p *Profile) SetLegacyArg(legacy bool) {
 
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
-
 	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath))
 	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, absolutePrefix(rootPath))
 	p.RepositoryFile = fixPath(p.RepositoryFile, expandEnv, absolutePrefix(rootPath))

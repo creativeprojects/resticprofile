@@ -8,7 +8,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/creativeprojects/clog v0.9.0
 	github.com/creativeprojects/go-selfupdate v0.6.1
-	github.com/mackerelio/go-osstat v0.2.0
+	github.com/mackerelio/go-osstat v0.2.1
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rickb777/date v1.12.3
@@ -18,7 +18,7 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/sys v0.0.0-20211002104244-808efd93c36d
+	golang.org/x/sys v0.0.0-20211025112917-711f33c9992c
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06
 )
 
