@@ -154,7 +154,13 @@ $ brew tap creativeprojects/tap
 $ brew install resticprofile
 ```
 
-You can test that resticprofile is properly installed:
+You can also install `restic` at the same time with `--with-restic` flag:
+
+```
+$ brew install resticprofile --with-restic
+```
+
+You can test that resticprofile is properly installed (make sure you have restic installed or the test will fail):
 
 ```
 $ brew test resticprofile
