@@ -207,6 +207,9 @@ func (r *resticWrapper) runProfile() error {
 }
 
 func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCommandDefinition {
+	// Create local instance to allow modification
+	args = args.Clone()
+
 	if r.moreArgs != nil && len(r.moreArgs) > 0 {
 		args.AddArgs(r.moreArgs, shell.ArgCommandLineEscape)
 	}
