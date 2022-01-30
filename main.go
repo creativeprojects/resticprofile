@@ -358,7 +358,7 @@ func runProfile(
 
 	// add progress receivers if necessary
 	if profile.StatusFile != "" {
-		wrapper.addProgress(status.NewProgress(profile))
+		wrapper.addProgress(status.NewProgress(profile, status.NewStatus(profile.StatusFile)))
 	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
 		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version, profile.PrometheusLabels)))

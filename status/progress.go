@@ -8,13 +8,24 @@ import (
 )
 
 type Progress struct {
-	profile *config.Profile
+	profile   *config.Profile
+	generator *Status
 }
 
-func NewProgress(profile *config.Profile) *Progress {
+func NewProgress(profile *config.Profile, statusGenerator *Status) *Progress {
 	return &Progress{
-		profile: profile,
+		profile:   profile,
+		generator: statusGenerator,
 	}
+}
+
+// getGenerator returns the default status file generator.
+// Please note the status file is loaded every time you call this function.
+func (p *Progress) getGenerator() *Status {
+	if p.generator == nil {
+		p.generator = NewStatus(p.profile.StatusFile)
+	}
+	return p.generator.Load()
 }
 
 func (p *Progress) Status(status progress.Status) {
@@ -30,7 +41,11 @@ func (p *Progress) Summary(command string, summary progress.Summary, stderr stri
 		p.success(command, summary, stderr)
 
 	case progress.IsWarning(result):
-		p.success(command, summary, stderr)
+		if command == constants.CommandBackup && p.profile.Backup.NoErrorOnWarning {
+			p.success(command, summary, stderr)
+		} else {
+			p.error(command, summary, stderr, result)
+		}
 
 	case progress.IsError(result):
 		p.error(command, summary, stderr, result)
@@ -41,15 +56,15 @@ func (p *Progress) success(command string, summary progress.Summary, stderr stri
 	var err error
 	switch command {
 	case constants.CommandBackup:
-		status := NewStatus(p.profile.StatusFile).Load()
+		status := p.getGenerator()
 		status.Profile(p.profile.Name).BackupSuccess(summary, stderr)
 		err = status.Save()
 	case constants.CommandCheck:
-		status := NewStatus(p.profile.StatusFile).Load()
+		status := p.getGenerator()
 		status.Profile(p.profile.Name).CheckSuccess(summary, stderr)
 		err = status.Save()
 	case constants.SectionConfigurationRetention, constants.CommandForget:
-		status := NewStatus(p.profile.StatusFile).Load()
+		status := p.getGenerator()
 		status.Profile(p.profile.Name).RetentionSuccess(summary, stderr)
 		err = status.Save()
 	}
@@ -63,15 +78,15 @@ func (p *Progress) error(command string, summary progress.Summary, stderr string
 	var err error
 	switch command {
 	case constants.CommandBackup:
-		status := NewStatus(p.profile.StatusFile).Load()
+		status := p.getGenerator()
 		status.Profile(p.profile.Name).BackupError(fail, summary, stderr)
 		err = status.Save()
 	case constants.CommandCheck:
-		status := NewStatus(p.profile.StatusFile).Load()
+		status := p.getGenerator()
 		status.Profile(p.profile.Name).CheckError(fail, summary, stderr)
 		err = status.Save()
 	case constants.SectionConfigurationRetention, constants.CommandForget:
-		status := NewStatus(p.profile.StatusFile).Load()
+		status := p.getGenerator()
 		status.Profile(p.profile.Name).RetentionError(fail, summary, stderr)
 		err = status.Save()
 	}
