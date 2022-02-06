@@ -21,6 +21,7 @@ import (
 	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
+	"github.com/spf13/pflag"
 )
 
 // These fields are populated by the goreleaser build
@@ -46,7 +47,13 @@ func main() {
 		}
 	}()
 
-	flagset, flags := loadFlags()
+	flagset, flags, flagErr := loadFlags(os.Args[1:])
+	if flagErr != nil && flagErr != pflag.ErrHelp {
+		fmt.Println(flagErr)
+		flagset.Usage()
+		exitCode = 2
+		return
+	}
 
 	if flags.wait {
 		// keep the console running at the end of the program
@@ -65,7 +72,7 @@ func main() {
 	}
 
 	// help
-	if flags.help {
+	if flags.help || flagErr == pflag.ErrHelp {
 		flagset.Usage()
 		return
 	}

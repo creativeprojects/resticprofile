@@ -33,8 +33,8 @@ type commandLineFlags struct {
 }
 
 // loadFlags loads command line flags (before any command)
-func loadFlags() (*pflag.FlagSet, commandLineFlags) {
-	flagset := pflag.NewFlagSet("resticprofile", pflag.ExitOnError)
+func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
+	flagset := pflag.NewFlagSet("resticprofile", pflag.ContinueOnError)
 
 	flagset.Usage = func() {
 		fmt.Println("\nUsage of resticprofile:")
@@ -83,10 +83,13 @@ func loadFlags() (*pflag.FlagSet, commandLineFlags) {
 	// stop at the first non flag found; the rest will be sent to the restic command line
 	flagset.SetInterspersed(false)
 
-	_ = flagset.Parse(os.Args[1:])
+	err := flagset.Parse(args)
+	if err != nil {
+		return flagset, flags, err
+	}
 
 	// remaining flags
 	flags.resticArgs = flagset.Args()
 
-	return flagset, flags
+	return flagset, flags, nil
 }
