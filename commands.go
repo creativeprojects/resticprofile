@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	_ "embed"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -28,12 +29,19 @@ type ownCommand struct {
 	description       string
 	action            func(io.Writer, *config.Config, commandLineFlags, []string) error
 	needConfiguration bool              // true if the action needs a configuration file loaded
-	hide              bool              // don't display the command in the help
+	hide              bool              // don't display the command in help and completion
+	hideInCompletion  bool              // don't display the command in completion
 	flags             map[string]string // own command flags should be simple enough to be handled manually for now
 }
 
-var (
-	ownCommands = []ownCommand{
+var ownCommands []ownCommand
+
+func init() {
+	ownCommands = getOwnCommands()
+}
+
+func getOwnCommands() []ownCommand {
+	return []ownCommand{
 		{
 			name:              "version",
 			description:       "display version (run in verbose mode for detailed information)",
@@ -93,7 +101,26 @@ var (
 			hide:              false,
 			flags:             map[string]string{"--all": "display the status of all scheduled jobs of all profiles"},
 		},
+		{
+			name:              "completion-script",
+			description:       "generate a shell completion script (use --bash or --zsh to choose format)",
+			action:            completionScriptCommand,
+			needConfiguration: false,
+			hide:              false,
+			hideInCompletion:  true,
+			flags: map[string]string{
+				"--zsh":  "create zsh completion script",
+				"--bash": "create bash completion script",
+			},
+		},
 		// hidden commands
+		{
+			name:              "complete",
+			description:       "create commandline completion results based on given args",
+			action:            completeCommand,
+			needConfiguration: false,
+			hide:              true,
+		},
 		{
 			name:              "elevation",
 			description:       "test windows elevated mode",
@@ -116,7 +143,7 @@ var (
 			hide:              true,
 		},
 	}
-)
+}
 
 func displayOwnCommands(output io.Writer) {
 	commandsWriter := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
@@ -239,6 +266,31 @@ func panicCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string)
 
 func testCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
 	clog.Info("Nothing to test")
+	return nil
+}
+
+func completeCommand(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) error {
+	completions := (&Completer{}).Complete(args)
+	if len(completions) > 0 {
+		for _, completion := range completions {
+			fmt.Fprintln(output, completion)
+		}
+	}
+	return nil
+}
+
+//go:embed contrib/completion/bash-completion.sh
+var bashCompletionScript string
+
+//go:embed contrib/completion/zsh-completion.sh
+var zshCompletionScript string
+
+func completionScriptCommand(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) error {
+	if containsString(args, "--zsh") {
+		fmt.Fprintln(output, zshCompletionScript)
+	} else {
+		fmt.Fprintln(output, bashCompletionScript)
+	}
 	return nil
 }
 
