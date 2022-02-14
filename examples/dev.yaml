@@ -216,3 +216,13 @@ escape:
     retention:
         after-backup: true
         
+nobackup:
+    initialize: false
+    repository: /Volumes/RAMDisk/{{ .Profile.Name }}
+    password-command: echo test
+    status-file: /Volumes/RAMDisk/status.json
+
+    copy:
+        initialize: false
+        repository: /Volumes/RAMDisk/{{ .Profile.Name }}_copy
+        password-command2: echo test

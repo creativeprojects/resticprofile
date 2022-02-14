@@ -315,12 +315,14 @@ func (r *resticWrapper) runCommand(command string) error {
 		rCommand := r.prepareCommand(command, args)
 
 		if command == constants.CommandBackup && len(r.progress) > 0 {
-			if r.profile.Backup.ExtendedStatus {
-				rCommand.scanOutput = shell.ScanBackupJson
-			} else if !term.OsStdoutIsTerminal() {
-				// restic detects its output is not a terminal and no longer displays the progress.
-				// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
-				rCommand.scanOutput = shell.ScanBackupPlain
+			if r.profile.Backup != nil {
+				if r.profile.Backup.ExtendedStatus {
+					rCommand.scanOutput = shell.ScanBackupJson
+				} else if !term.OsStdoutIsTerminal() {
+					// restic detects its output is not a terminal and no longer displays the progress.
+					// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
+					rCommand.scanOutput = shell.ScanBackupPlain
+				}
 			}
 		}
 

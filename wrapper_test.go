@@ -14,6 +14,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -337,6 +338,22 @@ func TestBackupWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	wrapper := newResticWrapper(mockBinary, false, profile, "", []string{"--exit", "1"}, nil)
+	err := wrapper.runCommand("backup")
+	require.Error(t, err)
+}
+
+func TestBackupWithNoConfiguration(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(mockBinary, false, profile, "", []string{"--exit", "1"}, nil)
+	err := wrapper.runCommand("backup")
+	require.Error(t, err)
+}
+
+func TestBackupWithNoConfigurationButStatusFile(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	profile.StatusFile = "status.json"
+	wrapper := newResticWrapper(mockBinary, false, profile, "", []string{"--exit", "1"}, nil)
+	wrapper.addProgress(status.NewProgress(profile, status.NewStatus("status.json")))
 	err := wrapper.runCommand("backup")
 	require.Error(t, err)
 }
