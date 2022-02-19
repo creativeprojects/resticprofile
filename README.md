@@ -251,7 +251,7 @@ $ make install
 
 Shell commandline completions are provided for `bash` and `zsh`. 
 
-To load completions in the shell (user) profile, use:
+To load completions in shell or profile, use:
 
 ```shell
 # bash
@@ -267,8 +267,6 @@ To install them permanently:
 $ resticprofile completion-script --bash > /etc/bash_completion.d/resticprofile
 $ chmod +x /etc/bash_completion.d/resticprofile
 ```
-
-Note: Check path, might be `/etc/...` or `/usr/local/etc/...`
 
 
 # Upgrade

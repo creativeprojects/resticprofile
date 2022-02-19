@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/spf13/pflag"
@@ -19,10 +20,11 @@ const (
 
 // Completer provides context aware shell completions for the current commandline argument(s)
 type Completer struct {
-	flags       *pflag.FlagSet
-	flagsInArgs []*pflag.Flag
-	ownCommands []ownCommand
-	profiles    []string
+	flags                 *pflag.FlagSet
+	flagsInArgs           []*pflag.Flag
+	ownCommands           []ownCommand
+	profiles              []string
+	enableProfilePrefixes bool
 }
 
 func (c *Completer) init(args []string) {
@@ -30,6 +32,13 @@ func (c *Completer) init(args []string) {
 	c.flagsInArgs = nil
 	c.ownCommands = getOwnCommands()
 	c.profiles = nil
+
+	c.enableProfilePrefixes = true
+	for _, arg := range args {
+		if arg == "--name" || arg == "-n" {
+			c.enableProfilePrefixes = false
+		}
+	}
 }
 
 func (c *Completer) formatFlag(flag *pflag.Flag, shorthand bool) string {
@@ -110,8 +119,13 @@ func (c *Completer) listProfileNames() (list []string) {
 				for name, _ := range conf.GetProfileGroups() {
 					list = append(list, name)
 				}
+			} else {
+				clog.Debug(err)
 			}
+		} else {
+			clog.Debug(err)
 		}
+
 		if list == nil {
 			list = make([]string, 0)
 		}
@@ -125,13 +139,15 @@ func (c *Completer) listProfileNames() (list []string) {
 }
 
 func (c *Completer) completeProfileNamePrefixes(word string) (completions []string) {
-	for _, profile := range c.listProfileNames() {
-		completions = c.appendMatches(completions, word, profile+ProfileCommandDelimiter)
+	if c.enableProfilePrefixes {
+		for _, profile := range c.listProfileNames() {
+			completions = c.appendMatches(completions, word, profile+ProfileCommandDelimiter)
+		}
 	}
 	return
 }
 
-func (c *Completer) formatCommand(command ownCommand) string {
+func (c *Completer) formatOwnCommand(command ownCommand) string {
 	return command.name
 }
 
@@ -140,7 +156,7 @@ func (c *Completer) completeOwnCommands(word string) (completions []string) {
 		if command.hide || command.hideInCompletion {
 			continue
 		}
-		completions = c.appendMatches(completions, word, c.formatCommand(command))
+		completions = c.appendMatches(completions, word, c.formatOwnCommand(command))
 	}
 
 	if completions != nil {
@@ -199,7 +215,7 @@ func (c *Completer) sortedListContains(list []string, word string) bool {
 }
 
 func (c *Completer) toCompletionsWithProfilePrefix(completions []string, profile string) (result []string) {
-	if c.sortedListContains(c.listProfileNames(), profile) {
+	if c.enableProfilePrefixes && c.sortedListContains(c.listProfileNames(), profile) {
 		prefix := profile + ProfileCommandDelimiter
 
 		for _, item := range completions {
@@ -230,7 +246,8 @@ func (c *Completer) isOwnCommand(command string, configurationLoaded bool) bool 
 }
 
 // Complete returns shell completions for the specified commandline args.
-// Use "__POS:{FOLLOWING-ARG-INDEX}" if completions should not be provided for the last args element
+// By default, completions are generated for the last element in args.
+// To get completions for a specific element use "__POS:{FOLLOWING-ARG-INDEX}" in args.
 func (c *Completer) Complete(args []string) (completions []string) {
 	args = append([]string{}, args...)
 	c.init(args)
@@ -257,16 +274,23 @@ func (c *Completer) Complete(args []string) (completions []string) {
 	// Parse cursor position (specified as "__POS:{FOLLOWING-ARG-INDEX}")
 	for i, length := 0, len(args); i < length; i++ {
 		if strings.HasPrefix(args[i], "__POS:") {
-			if pos, err := strconv.Atoi(strings.Split(args[i], ":")[1]); err == nil && pos >= 0 && pos < length-i {
-				length = i + pos + 1
-				args = args[0:length]
+			if pos, err := strconv.Atoi(strings.Split(args[i], ":")[1]); err == nil && pos >= 0 {
+				if pos < length-i {
+					length = i + pos + 1
+					args = args[0:length]
+				} else {
+					args = append(args, "")
+					length++
+				}
+			} else {
+				clog.Debugf("failed on arg \"%s\" ; cause %v", args[i], err)
 			}
 			args = append(args[0:i], args[i+1:]...)[0 : length-1]
 			break
 		}
 	}
 
-	// Parsing the CLI args and setup state
+	// Parsing CLI args and setting the completion context
 	var currentFlag *pflag.Flag
 	inFlagSet := true
 	atCommand := false
@@ -276,7 +300,7 @@ func (c *Completer) Complete(args []string) (completions []string) {
 		currentFlag = nil
 		atCommand = false
 
-		// Unknown command, delegate to restic completion
+		// Unknown command: Delegate to restic completion
 		if !inFlagSet && !isAnyOwnCommand(commandName) {
 			completions = []string{RequestResticCompletion}
 			break

@@ -6,7 +6,7 @@ function _resticprofile() {
   local resticprofile="${COMP_WORDS[0]}"
   COMP_WORDS[0]="__POS:${COMP_CWORD}"
 
-  # Get completions for resticprofile
+  # Get completions from resticprofile
   COMPREPLY=($("$resticprofile" complete "${COMP_WORDS[@]}"))
 
   # Handle completion requests (last item in result of prev command)
@@ -25,7 +25,7 @@ function _resticprofile() {
         local action="${COMPREPLY[-1]##*.}" # everything after last dot
         unset COMPREPLY[-1]
 
-        # Remove prefixes that restic doesn't understand (must remove all prefix.value, keep paths)
+        # Remove prefixes that restic doesn't understand (removes any [prefix.]value, keeps paths)
         for (( i=0 ; i<${#COMP_WORDS[@]} ; i++ )) ; do
           [[ "${COMP_WORDS[-1]}" =~ (.*/.*) ]] \
             || COMP_WORDS[$i]="${COMP_WORDS[$i]##*.}"
@@ -41,7 +41,7 @@ function _resticprofile() {
           done
         fi
 
-          # Add command prefix and append
+        # Add command prefix and append to completions
         if ((${#restic_values[@]})) ; then
           if [[ -n $prefix && "$prefix" != "$action" ]] ; then
             for (( i=0 ; i<${#restic_values[@]} ; i++ )) ; do
@@ -82,6 +82,15 @@ function __resticprofile_get_other_completions() {
 
     # determine completion function
     completion=$(complete -p "$1" 2>/dev/null | awk '{print $(NF-1)}')
+
+    # run _completion_loader only if necessary
+    [[ -n $completion ]] || declare -F _completion_loader &>/dev/null && {
+        # load completion
+        _completion_loader "$1"
+
+        # detect completion
+        completion=$(complete -p "$1" 2>/dev/null | awk '{print $(NF-1)}')
+    }
 
     # ensure completion was detected
     [[ -n $completion ]] || return 1

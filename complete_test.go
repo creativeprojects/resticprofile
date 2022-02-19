@@ -129,22 +129,19 @@ func TestCompleter(t *testing.T) {
 
 	// Profile completion
 	t.Run("Profiles", func(t *testing.T) {
-		// Profiles from "examples/dev.yaml"
-		profiles := []string{
-			"default", "documents", "dropbox", "escape", "full-backup", "home",
-			"nobackup", "prom", "root", "self", "space", "src", "stdin", "system",
-		}
+		const DevConfig = "examples/dev.conf"
+		profiles := []string{"default", "full-backup", "repo-from-env", "rest", "root", "self", "src", "stdin"}
 
 		t.Run("Loading", func(t *testing.T) {
 			t.Run("LoadsConfig", func(t *testing.T) {
-				completer.Complete(newArgs("--config", "examples/dev.yaml"))
+				completer.Complete(newArgs("--config", DevConfig))
 				assert.Equal(t, profiles, completer.listProfileNames())
 			})
 
 			t.Run("RespectsFormat", func(t *testing.T) {
-				completer.Complete(newArgs("--format", "toml", "--config", "examples/dev.yaml"))
+				completer.Complete(newArgs("--format", "json", "--config", DevConfig))
 				assert.Equal(t, []string{}, completer.listProfileNames())
-				completer.Complete(newArgs("--format", "yaml", "--config", "examples/dev.yaml"))
+				completer.Complete(newArgs("--format", "toml", "--config", DevConfig))
 				assert.Equal(t, profiles, completer.listProfileNames())
 			})
 
@@ -156,7 +153,7 @@ func TestCompleter(t *testing.T) {
 
 		t.Run("CompletesPrefix", func(t *testing.T) {
 			t.Run("AllProfiles", func(t *testing.T) {
-				completions := completer.Complete(newArgs("--config", "examples/dev.yaml", ""))
+				completions := completer.Complete(newArgs("--config", DevConfig, ""))
 				for _, profile := range profiles {
 					assert.Contains(t, completions, fmt.Sprintf("%s.", profile))
 				}
@@ -175,7 +172,7 @@ func TestCompleter(t *testing.T) {
 
 				for _, profile := range profiles {
 					prefix := fmt.Sprintf("%s.", profile)
-					completions := completer.Complete(newArgs("--config", "examples/dev.yaml", prefix))
+					completions := completer.Complete(newArgs("--config", DevConfig, prefix))
 
 					var expected []string
 					for _, commandName := range commands {
@@ -282,7 +279,11 @@ func TestCompleter(t *testing.T) {
 			{args: []string{"__POS:1", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{RequestFileCompletion}},
 			{args: []string{"__POS:2", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{RequestFileCompletion}},
 			{args: []string{"__POS:4", "--log", "out.log", "--verbose", "schedule", "-"}, expected: nil},
+			{args: []string{"__POS:4", "--log", "out.log", "--verbose", "schedule"}, expected: nil},
 			{args: []string{"__POS:5", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start"}},
+			{args: []string{"__POS:5", "--log", "out.log", "--verbose", "schedule"}, expected: []string{"--all", "--no-start"}},
+			{args: []string{"__POS:INVALID", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start"}},
+			{args: []string{"__POS:INVALID", "--log", "out.log", "--verbose", "schedule"}, expected: nil},
 
 			// Unknown is delegated to restic
 			{args: []string{"unknown-cmd"}, expected: []string{RequestResticCompletion}},
@@ -290,9 +291,11 @@ func TestCompleter(t *testing.T) {
 			{args: []string{"--log", "file", "unknown-cmd"}, expected: []string{RequestResticCompletion}},
 			{args: []string{"--log", "file", "unknown-cmd", "--a-flag"}, expected: []string{RequestResticCompletion}},
 
-			// Adds profile prefixes (but only for existing profiles)
+			// Adds profile prefixes (for existing profiles, when name flag is not set)
 			{args: []string{"unknown-profile.schedul"}, expected: []string{"schedule", RequestResticCompletion}},
 			{args: []string{"full-backup.schedul"}, expected: []string{"full-backup.schedule", "full-backup." + RequestResticCompletion}},
+			{args: []string{"--name", "something", "full-backup.schedul"}, expected: []string{"schedule", RequestResticCompletion}},
+			{args: []string{"-n", "something", "full-backup.schedul"}, expected: []string{"schedule", RequestResticCompletion}},
 			{args: []string{"full-backup.unknown-cmd"}, expected: []string{"full-backup." + RequestResticCompletion}},
 
 			// Regression: Flag value completion does not complete flags matching value names
