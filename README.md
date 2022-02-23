@@ -943,7 +943,7 @@ There are not many options on the command line, most of the options are in the c
 * **[-f | --format] configuration_format**: Specify the configuration file format: `toml`, `yaml`, `json` or `hcl`
 * **[-n | --name] profile_name**: Profile section to use from the configuration file.
   You can also use `[profile_name].[command]` syntax instead, this will only work if `-n` is not set.
-  Bot using `-n [profile_name] [command]` and `[profile_name].[command]` are supported.
+  Using `-n [profile_name] [command]` or `[profile_name].[command]` both select profile and command and are technically equivalent.
 * **[--dry-run]**: Doesn't run the restic command but display the command line instead
 * **[-q | --quiet]**: Force resticprofile and restic to be quiet (override any configuration from the profile)
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
