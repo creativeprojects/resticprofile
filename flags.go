@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 	"time"
+	"strings"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/pflag"
@@ -30,6 +31,7 @@ type commandLineFlags struct {
 	isChild     bool
 	parentPort  int
 	noPriority  bool
+	run         string
 }
 
 // loadFlags loads command line flags (before any command)
@@ -38,8 +40,8 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	flagset.Usage = func() {
 		fmt.Println("\nUsage of resticprofile:")
-		fmt.Println("\tresticprofile [resticprofile flags] [restic command] [restic flags]")
-		fmt.Println("\tresticprofile [resticprofile flags] [resticprofile command] [command specific flags]")
+		fmt.Println("\tresticprofile [resticprofile flags] [profile name.][restic command] [restic flags]")
+		fmt.Println("\tresticprofile [resticprofile flags] [profile name.][resticprofile command] [command specific flags]")
 		fmt.Println("\nresticprofile flags:")
 		flagset.PrintDefaults()
 		fmt.Println("\nresticprofile own commands:")
@@ -90,6 +92,36 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	// remaining flags
 	flags.resticArgs = flagset.Args()
+
+	// if there are no further arguments, no further parsing is needed
+	if len(flags.resticArgs) == 0 {
+		return flagset, flags, err
+	}
+
+	// parse first postitional argument as <profile>.<command> if the profile was not set via name
+	nameFlag := flagset.Lookup("name")
+	if (nameFlag == nil || !nameFlag.Changed) && strings.Contains(flags.resticArgs[0] , ".") {
+		// split first argument at `.`
+		profileAndCommand := strings.Split(flags.resticArgs[0], ".")
+		// last element will be used as restic command
+		command := profileAndCommand[len(profileAndCommand)-1]
+		// remaining elements will be stiched together with `.` and used as profile name
+		profile := strings.Join(profileAndCommand[0:len(profileAndCommand)-1], ".")
+
+		// set command
+		if len(command) == 0 {
+			// take default command by removing it from resticArgs
+			flags.resticArgs = flags.resticArgs[1:]
+		} else {
+			flags.resticArgs[0] = command
+		}
+
+		// set profile
+		if len(profile) == 0 {
+			profile = constants.DefaultProfileName
+		}
+		flags.name = profile
+	}
 
 	return flagset, flags, nil
 }
