@@ -7,6 +7,7 @@ help() {
   Usage $1 [options] user1@domain user2@domain ...
   Options:
    -s         Only send mail when operating on schedule (RESTICPROFILE_ON_SCHEDULE=1)
+   -o name,.. Only send mail when PROFILE_COMMAND is in the list of specified names
    -c command Set the profile command (instead of PROFILE_COMMAND)
    -n name    Set the profile name (instead of PROFILE_NAME)
    -p         Print mail to stdout instead of sending it
@@ -17,9 +18,11 @@ HELP
 # Parse CLI args
 FORCE_SENDING=0
 SEND_COMMAND=""
-while getopts 'c:fhn:ps' flag ; do
+LIMIT_COMMAND_NAMES=""
+while getopts 'c:fhn:o:ps' flag ; do
   case "${flag}" in
     c) PROFILE_COMMAND="${OPTARG}" ;;
+    o) LIMIT_COMMAND_NAMES="${OPTARG}" ;;
     f) FORCE_SENDING=1 ;;
     n) PROFILE_NAME="${OPTARG}" ;;
     p) SEND_COMMAND="cat -" ;;
@@ -51,20 +54,36 @@ RC_FILE="/etc/resticprofile/$(basename "$0").rc}"
 [[ -f "${RC_FILE}" ]] && source "${RC_FILE}"
 
 main() {
-  if [[ -n "${PROFILE_NAME}" || "${FORCE_SENDING}" == "1" ]] ; then
+  if can_send ; then
     if [[ -n "${DETAILS_COMMAND}" ]] ; then
       DETAILS_COMMAND_RESULT="$(${DETAILS_COMMAND})"
     fi
 
     for email in "$@" "${MAIL_TO}" ; do
       if [[ "${email}" =~ ^[a-zA-Z0-9_.%+-]+@[a-zA-Z0-9_]+[a-zA-Z0-9_.-]+$ ]] ; then
-        send_mail "${email}" || echo "Failed sending to \"${email}\""
+        send_mail "${email}" || echo "Failed sending to \"${email}\" using '${SEND_COMMAND}' exit code $?"
       elif [[ -n "${email}" ]] ; then
         echo "Skipping notification for invalid address \"${email}\""
       fi
     done
   fi
   return 0
+}
+
+can_send() {
+  if [[ -n "${PROFILE_NAME}" ]] ; then
+    if [[ -n "${LIMIT_COMMAND_NAMES}" ]] ; then
+      local IFS=",; "
+      for cmd in ${LIMIT_COMMAND_NAMES} ; do
+        [[ "${PROFILE_COMMAND}" == "$cmd" ]] && return 0
+      done
+    else
+      return 0
+    fi
+  fi
+
+  [[ "${FORCE_SENDING}" == "1" ]]
+  return $?
 }
 
 send_mail() {

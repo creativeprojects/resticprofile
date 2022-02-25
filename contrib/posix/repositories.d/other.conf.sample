@@ -1,0 +1,69 @@
+##
+# Example: Secondary repository
+#
+# Usage:
+#
+# [profiles.my-profile-other]
+# inherit = "base-other"
+# [profiles.my-profile-other.backup]
+# source = "/path"
+#
+
+
+# -----------------------------------------------------------------------------
+##
+# Secondary repository for profiles inheriting from "other-base"
+[profiles.base-other]
+# Inherit all settings from base
+inherit = "base"
+
+#
+# Repository password for the secondary repository
+#
+# Generate with: 
+# - "resticprofile random-key > repositories.d/other-repository.secret"
+password-file = "repositories.d/other-repository.secret"
+
+#
+# See "default.conf" for more examples
+repository = "local:/backup-other"
+
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+##
+# Setup repository maintenance for "base-other"
+[profiles.maintenance-other]
+description = "Maintenance for other repository"
+inherit = "base-other"
+initialize = false
+
+
+##
+# Configuring "check" schedule in maintenance profile
+[profiles.maintenance-other.check]
+
+# Schedule at 5th, 10th, 15th, 20th, 25th and 30th day in month at 04:15
+schedule = "*-*-5,10,15,20,25,30 04:15:00"
+
+# Read repository data for verification every 15th day in month
+{{ if .Now.Day | eq 15 -}}
+read-data = true
+{{ end -}}
+#read-data-subset = "100%"
+
+
+##
+# Configuring "prune" schedule in maintenance profile
+[profiles.maintenance-other.prune]
+schedule = "daily"
+#schedule = "weekly"
+
+
+##
+# Add "maintenance-other" to "maintenance-all"
+[groups.maintenance-all]
+profiles = [ "maintenance-other" ]
+
+# -----------------------------------------------------------------------------

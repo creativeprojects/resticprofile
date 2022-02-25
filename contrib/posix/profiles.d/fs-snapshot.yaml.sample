@@ -1,54 +1,65 @@
+# -----------------------------------------------------------------------------
 ##
-# Example profile for applications whose files must be backed-up from a readonly snapshot.
+# Example profile for applications whose files must be backed-up from a
+# readonly snapshot.
 #
-applications:
-  inherit: base
+profiles:
+  applications:
+    description: Applications backup
+    inherit: base
 
-  backup:
-    source:
-      - /opt/apps/_backup
-      - /mnt/data_backup
-      - /opt/vms/my-vm1.xml
-      - /opt/vms/my-vm1.qcow2
+    backup:
+      source:
+        - /opt/apps/_backup
+        - /mnt/data_backup
+        - /opt/vms/my-vm1.xml
+        - /opt/vms/my-vm1.qcow2
 
-    # Create snapshots of supported sources prior to running a backup
-    run-before:
-      # Snapshot on Btrfs (mounted on /opt/apps/_backup)
-      - btrfs subvolume snapshot -r /opt/apps/ /opt/apps/_backup
+      # Create snapshots of supported sources prior to running a backup
+      run-before:
+        # Snapshot on Btrfs (mounted on /opt/apps/_backup)
+        - btrfs subvolume snapshot -r /opt/apps/ /opt/apps/_backup
 
-      # Snapshot on LVM (mounted on /opt/apps/_backup)
-      - lvcreate -l100%FREE -s -n data_backup /dev/vg00/data && mount /dev/vg00/data_backup /mnt/data_backup
+        # Snapshot on LVM (mounted on /opt/apps/_backup)
+        - lvcreate -l100%FREE -s -n data_backup /dev/vg00/data && mount /dev/vg00/data_backup /mnt/data_backup
 
-      # Snapshot & config dump for libvirt VMs (VM disk images are readonly during backup)
-      - virsh dumpxml "my-vm1" > /opt/vms/my-vm1.xml
-      - {{template "libvirt-create-snapshot" "my-vm1"}}
+        # Snapshot & config dump for libvirt VMs (VM disk images are readonly during backup)
+        - virsh dumpxml "my-vm1" > /opt/vms/my-vm1.xml
+        - {{ template "libvirt-create-snapshot" "my-vm1" }}
 
-    # Release snapshots after backup
-    run-finally:
-      # Cleanup on Btrfs
-      - btrfs subvolume delete /opt/apps/_backup
+      # Release snapshots after backup
+      run-finally:
+        # Cleanup on Btrfs
+        - btrfs subvolume delete /opt/apps/_backup
 
-      # Cleanup on LVM
-      - umount /mnt/data_backup && lvremove -f /dev/vg00/data_backup
+        # Cleanup on LVM
+        - umount /mnt/data_backup && lvremove -f /dev/vg00/data_backup
 
-      # Cleanup for libvirt VMs (VM disk image receives changes from livedata file)
-      - {{template "libvirt-delete-snapshot" "my-vm1"}}
+        # Cleanup for libvirt VMs (VM disk image receives changes from livedata file)
+        - {{ template "libvirt-delete-snapshot" "my-vm1" }}
 
+
+groups:
+  backup-all:
+    profiles: [ "applications" ]
 
 #####
-# Config Templates
-# Use
-# - `resticprofile -n applications show` to see rendered result
+# Config templates
+# Notes:
+# - "resticprofile applications.show" shows rendered template output
+# - Could also be saved to "templates/my-libvirt-utils.conf" and shared
 #
-{{define "libvirt-create-snapshot" -}}
+{{ define "libvirt-create-snapshot" -}}
   virsh snapshot-create-as --domain "{{.}}" --name "{{.}}-backup"               {{- " " -}}
         --diskspec "vda,file=/var/db/{{.}}-livedata.qcow2"                      {{- " " -}}
         --disk-only --atomic --no-metadata --quiesce
-{{- end}}
+{{- end }}
 #
-{{define "libvirt-delete-snapshot" -}}
+{{ define "libvirt-delete-snapshot" -}}
   virsh blockcommit --domain "{{.}}" vda --wait --active                        {{- " " -}}
      && virsh blockjob --domain "{{.}}" "/var/db/{{.}}-livedata.qcow2" --pivot  {{- " " -}}
      && rm -f /var/db/{{.}}-livedata.qcow2
-{{- end}}
+{{- end }}
 #####
+
+# -----------------------------------------------------------------------------

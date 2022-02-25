@@ -153,15 +153,24 @@ nfpms:
       postinstall: "contrib/posix/post-install.sh"
     contents:
       - { type: config, src: contrib/posix/profiles.conf, dst: /etc/resticprofile/profiles.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/backup.conf, dst: /etc/resticprofile/conf.d/backup.conf.dist }
       - { type: config, src: contrib/posix/conf.d/check.conf, dst: /etc/resticprofile/conf.d/check.conf.dist }
       - { type: config, src: contrib/posix/conf.d/hooks.conf, dst: /etc/resticprofile/conf.d/hooks.conf.dist }
       - { type: config, src: contrib/posix/conf.d/metrics.conf, dst: /etc/resticprofile/conf.d/metrics.conf.dist }
       - { type: config, src: contrib/posix/conf.d/prune.conf, dst: /etc/resticprofile/conf.d/prune.conf.dist }
-      - { type: config, src: contrib/posix/conf.d/repository.conf, dst: /etc/resticprofile/conf.d/repository.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/z_overrides.conf, dst: /etc/resticprofile/conf.d/z_overrides.conf.dist }
       - { type: config, src: contrib/posix/profiles.d/fs-snapshot.yaml.sample, dst: /etc/resticprofile/profiles.d/fs-snapshot.yaml.sample }
-      - { type: config, src: contrib/posix/profiles.d/system.toml, dst: /etc/resticprofile/profiles.d/system.toml.dist }
+      - { type: config, src: contrib/posix/profiles.d/minimal.conf.sample, dst: /etc/resticprofile/profiles.d/minimal.conf.sample }
+      - { type: config, src: contrib/posix/profiles.d/minimal.yaml.sample, dst: /etc/resticprofile/profiles.d/minimal.yaml.sample }
+      - { type: config, src: contrib/posix/profiles.d/system.conf, dst: /etc/resticprofile/profiles.d/system.conf.dist }
+      - { type: config, src: contrib/posix/repository.d/default.conf, dst: /etc/resticprofile/repository.d/default.conf.dist }
+      - { type: config, src: contrib/posix/repository.d/other.conf.sample, dst: /etc/resticprofile/repository.d/other.conf.sample }
+      - { type: config, src: contrib/posix/templates/default-host.conf, dst: /etc/resticprofile/templates/default-host.conf.dist }
+      - { type: config, src: contrib/posix/templates/default-tags.conf, dst: /etc/resticprofile/templates/default-tags.conf.dist }
       - { type: config, src: contrib/posix/templates/systemd.timer.in, dst: /etc/resticprofile/templates/systemd.timer.in.dist }
       - { type: config, src: contrib/posix/templates/systemd.unit.in, dst: /etc/resticprofile/templates/systemd.unit.in.dist }
-      - src: contrib/systemd/resticprofile-send-error.sh
+      - src: contrib/posix/resticprofile-send-error.rc
+        dst: /etc/resticprofile/resticprofile-send-error.rc.dist
+      - src: contrib/notification-scripts/resticprofile-send-error.sh
         dst: /usr/local/bin/resticprofile-send-error
-        file_info: { mode: 0640, owner: root, group: root }
+        file_info: { mode: 0755, owner: root, group: root }

@@ -1,0 +1,39 @@
+# -----------------------------------------------------------------------------
+#
+# Configuration for "resticprofile-send-error"
+#
+# Usage, see:
+#   resticprofile-send-error -h
+#
+# Examples:
+#
+# Test mail sending:
+#   resticprofile-send-error -f user@domain.org
+#
+# Send if PROFILE_NAME is set
+#   resticprofile-send-error user@domain.org
+#
+# Send if PROFILE_NAME & MAIL_TO are set
+#   resticprofile-send-error
+#
+# Send if PROFILE_COMMAND is "check" "backup" or "prune":
+#   resticprofile-send-error -o check,backup,prune user@domain.org
+#
+# Send only if RESTICPROFILE_ON_SCHEDULE is set to 1
+#   resticprofile-send-error -s user@domain.org
+#
+# -----------------------------------------------------------------------------
+
+##
+# Sender address
+#MAIL_FROM="\"resticprofile $(hostname -f)\" <$USER@$(hostname -f)>"
+
+##
+# Subject line
+#MAIL_SUBJECT="restic failed: \"${PROFILE_COMMAND}\" in \"${PROFILE_NAME}\""
+
+##
+# Recipients (are combined with recipients specified in CLI)
+# Use space as delimiter when declaring more than one recipient
+#MAIL_TO="admin1@mynet.org admin2@mynet.org ..."
+#MAIL_TO=""

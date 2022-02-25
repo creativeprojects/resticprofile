@@ -1,0 +1,28 @@
+##
+# Minimal backup configuration example
+#
+# Usage:
+# - "resticprofile minimal.show"
+# - "resticprofile --dry-run minimal.backup"
+# - "resticprofile minimal.backup"
+# - "resticprofile minimal.snapshots"
+# - "resticprofile minimal.mount /restore"
+# - "resticprofile minimal.status"
+# - "resticprofile minimal.schedule"
+# - "resticprofile minimal.unschedule"
+#
+profiles:
+  minimal:
+    description: Minimal backup example
+    inherit: base
+
+    backup:
+      schedule: daily
+      source:
+        - /path/to/backup
+        - /other/path/to/backup
+
+
+groups:
+  backup-all:
+    profiles: [ "minimal" ]

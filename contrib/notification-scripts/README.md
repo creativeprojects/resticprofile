@@ -15,6 +15,7 @@ Usage:
 resticprofile-send-error.sh [options] user1@domain user2@domain ...
 Options:
    -s         Only send mail when operating on schedule (RESTICPROFILE_ON_SCHEDULE=1)
+   -o name,.. Only send mail when PROFILE_NAME is in the list of specified names
    -c command Set the profile command (instead of PROFILE_COMMAND)
    -n name    Set the profile name (instead of PROFILE_NAME)
    -p         Print mail to stdout instead of sending it

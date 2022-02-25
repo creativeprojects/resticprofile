@@ -2,18 +2,20 @@
 
 **Layout for `/etc/resticprofile`**:
 
-* `profiles.conf` - host centric default configuration
+* `conf.d/*` - default configuration and config overrides
+* `profiles.conf` - main configuration file 
 * `profiles.d/*` - host centric backup profiles (`*.toml` & `*.yaml`)
-* `conf.d/*` - overrides & extra configuration
+* `repositories.d/*` - restic repository configuration
+* `templates/*` - reusable config blocks and system templates
 
 The layout is used in `deb`, `rpm` and `apk` packages of `resticprofile`
 
 **Generated files**:
-* `conf.d/default-repository.secret` - during installation, only if missing
+* `repositories.d/default-repository.secret` - during installation, only if missing
 
 **Referenced files and paths**:
-* `conf.d/default-repository-self-signed-pub.pem` - TLS public cert (self-signed only)
-* `conf.d/default-repository-client.pem` - TLS client cert
+* `repositories.d/default-repository-self-signed-pub.pem` - TLS public cert (self-signed only)
+* `repositories.d/default-repository-client.pem` - TLS client cert
 * `/var/lib/prometheus/node-exporter/resticprofile-*.prom` - Prometheus files
 * `$TMPDIR/resticprofile-*` - Status and lock files
 
@@ -28,13 +30,23 @@ The layout is used in `deb`, `rpm` and `apk` packages of `resticprofile`
 Setup repository and validate system backup profile:
 ```shell
 cd /etc/resticprofile/
-vim conf.d/repository.conf
+vim repositories.d/default.conf
 vim profiles.d/system.toml
 ```
 
-## Test config and backup
+## Verify configuration, backup & restore
 ```shell
-resticprofile -n root show
-resticprofile -n root --dry-run backup
-resticprofile -n root backup
+resticprofile root.show
+resticprofile --dry-run root.backup
+resticprofile root.backup
+resticprofile root.snapshots
+resticprofile root.mount /mnt/restore &
+```
+
+## Maintenance (check & prune)
+```shell
+resticprofile maintenance.check
+resticprofile maintenance.prune
+resticprofile maintenance.schedule
+resticprofile maintenance.unschedule
 ```
