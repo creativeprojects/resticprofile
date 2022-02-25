@@ -141,6 +141,7 @@ func FindConfigurationIncludes(configFile string, includes []string) ([]string, 
 	addFile := func(file string) {
 		file = filepath.FromSlash(filepath.Clean(file))
 		if file != configFile {
+			clog.Tracef("include: %s", file)
 			files = append(files, file)
 		}
 	}
@@ -159,8 +160,10 @@ func FindConfigurationIncludes(configFile string, includes []string) ([]string, 
 				for _, match := range matches {
 					addFile(match)
 				}
+			} else if err == nil {
+				clog.Debugf("no match: %s", include)
 			} else {
-				return nil, err
+				return nil, fmt.Errorf("%w: %q", err, include)
 			}
 		}
 	}
