@@ -1,4 +1,5 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
+// +build !darwin,!windows
 
 package systemd
 
@@ -29,6 +30,7 @@ Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
 {{ if .Nice }}Nice={{ .Nice }}{{ end }}
+Environment="RESTICPROFILE_ON_SCHEDULE=1"
 {{ range .Environment -}}
 Environment="{{ . }}"
 {{ end -}}

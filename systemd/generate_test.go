@@ -1,4 +1,5 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
+// +build !darwin,!windows
 
 package systemd
 
@@ -51,6 +52,7 @@ Type=notify
 WorkingDirectory=workdir
 ExecStart=commandLine
 Nice=5
+Environment="RESTICPROFILE_ON_SCHEDULE=1"
 Environment="HOME=%s"
 `
 	const expectedTimer = `[Unit]
