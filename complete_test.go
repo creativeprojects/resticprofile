@@ -15,6 +15,10 @@ func TestCompleter(t *testing.T) {
 	completer := &Completer{}
 	completer.init(nil)
 
+	expectedProfiles := func() []string {
+		return []string{"default", "full-backup", "linux", "no-cache", "root", "src", "stdin"}
+	}
+
 	newArgs := func(args ...string) (result []string) {
 		result = append(result, "--config", "examples/profiles.conf")
 		result = append(result, args...)
@@ -130,19 +134,22 @@ func TestCompleter(t *testing.T) {
 	// Profile completion
 	t.Run("Profiles", func(t *testing.T) {
 		const DevConfig = "examples/dev.conf"
-		profiles := []string{"default", "full-backup", "repo-from-env", "rest", "root", "self", "src", "stdin"}
+
+		expectedProfiles := func() []string {
+			return []string{"default", "full-backup", "repo-from-env", "rest", "root", "self", "src", "stdin"}
+		}
 
 		t.Run("Loading", func(t *testing.T) {
 			t.Run("LoadsConfig", func(t *testing.T) {
 				completer.Complete(newArgs("--config", DevConfig))
-				assert.Equal(t, profiles, completer.listProfileNames())
+				assert.Equal(t, expectedProfiles(), completer.listProfileNames())
 			})
 
 			t.Run("RespectsFormat", func(t *testing.T) {
 				completer.Complete(newArgs("--format", "json", "--config", DevConfig))
 				assert.Equal(t, []string{}, completer.listProfileNames())
 				completer.Complete(newArgs("--format", "toml", "--config", DevConfig))
-				assert.Equal(t, profiles, completer.listProfileNames())
+				assert.Equal(t, expectedProfiles(), completer.listProfileNames())
 			})
 
 			t.Run("HandleNonExisting", func(t *testing.T) {
@@ -154,7 +161,7 @@ func TestCompleter(t *testing.T) {
 		t.Run("CompletesPrefix", func(t *testing.T) {
 			t.Run("AllProfiles", func(t *testing.T) {
 				completions := completer.Complete(newArgs("--config", DevConfig, ""))
-				for _, profile := range profiles {
+				for _, profile := range expectedProfiles() {
 					assert.Contains(t, completions, fmt.Sprintf("%s.", profile))
 				}
 			})
@@ -170,7 +177,7 @@ func TestCompleter(t *testing.T) {
 				require.NotEmpty(t, commands)
 				sort.Strings(commands)
 
-				for _, profile := range profiles {
+				for _, profile := range expectedProfiles() {
 					prefix := fmt.Sprintf("%s.", profile)
 					completions := completer.Complete(newArgs("--config", DevConfig, prefix))
 
@@ -301,6 +308,10 @@ func TestCompleter(t *testing.T) {
 			// Regression: Flag value completion does not complete flags matching value names
 			{args: []string{"--log", "f"}, expected: []string{RequestFileCompletion}},
 			{args: []string{"--log", "theme"}, expected: []string{RequestFileCompletion}},
+
+			// Regression: Config loading respects flags when cursor position is specified
+			{args: []string{"__POS:END", "--name"}, expected: expectedProfiles()},
+			{args: []string{"__POS:END", "--format=json", "--name"}, expected: nil},
 		}
 
 		for index, test := range tests {

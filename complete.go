@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,6 +17,8 @@ const (
 	RequestFileCompletion   = "__complete_file"
 	RequestResticCompletion = "__complete_restic"
 	ProfileCommandDelimiter = "."
+	CursorPositionDelimiter = ":"
+	CursorPositionPrefix    = "__POS" + CursorPositionDelimiter
 )
 
 // Completer provides context aware shell completions for the current commandline argument(s)
@@ -28,17 +31,24 @@ type Completer struct {
 }
 
 func (c *Completer) init(args []string) {
-	c.flags, _, _ = loadFlags(args)
+	var initArgs []string
+	nameFlagFound := false
+	nameFlagMatcher := regexp.MustCompile("^-{1,2}(n|name)(=.*|$)")
+
+	for _, arg := range args {
+		if nameFlagMatcher.MatchString(arg) {
+			nameFlagFound = true
+		}
+		if !strings.HasPrefix(arg, CursorPositionPrefix) {
+			initArgs = append(initArgs, arg)
+		}
+	}
+
+	c.flags, _, _ = loadFlags(initArgs)
 	c.flagsInArgs = nil
 	c.ownCommands = getOwnCommands()
 	c.profiles = nil
-
-	c.enableProfilePrefixes = true
-	for _, arg := range args {
-		if arg == "--name" || arg == "-n" {
-			c.enableProfilePrefixes = false
-		}
-	}
+	c.enableProfilePrefixes = !nameFlagFound
 }
 
 func (c *Completer) formatFlag(flag *pflag.Flag, shorthand bool) string {
@@ -273,8 +283,8 @@ func (c *Completer) Complete(args []string) (completions []string) {
 
 	// Parse cursor position (specified as "__POS:{FOLLOWING-ARG-INDEX}")
 	for i, length := 0, len(args); i < length; i++ {
-		if strings.HasPrefix(args[i], "__POS:") {
-			if pos, err := strconv.Atoi(strings.Split(args[i], ":")[1]); err == nil && pos >= 0 {
+		if strings.HasPrefix(args[i], CursorPositionPrefix) {
+			if pos, err := strconv.Atoi(strings.Split(args[i], CursorPositionDelimiter)[1]); err == nil && pos >= 0 {
 				if pos < length-i {
 					length = i + pos + 1
 					args = args[0:length]
