@@ -228,6 +228,8 @@ exclude = "exclude"
 iexclude = "iexclude"
 [profile.copy]
 password-file = "key"
+[profile.dump]
+password-file = "key"
 `
 	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
@@ -246,6 +248,7 @@ password-file = "key"
 	assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 	assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
 	assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
+	assert.Equal(t, []string{"/wd/key"}, profile.Dump["password-file"])
 }
 
 func TestHostInProfile(t *testing.T) {
@@ -287,6 +290,13 @@ func TestHostInAllSupportedSections(t *testing.T) {
 		constants.CommandSnapshots,
 		constants.CommandMount,
 		constants.SectionConfigurationRetention,
+		constants.CommandCopy,
+		constants.CommandDump,
+		constants.CommandFind,
+		constants.CommandLs,
+		constants.CommandRestore,
+		constants.CommandStats,
+		constants.CommandTag,
 	}
 
 	assertHostIs := func(expectedHost []string, profile *Profile, section string) {
@@ -356,134 +366,115 @@ source = "` + sourcePattern + `"
 	assert.Equal(t, sources, profile.Backup.Source)
 }
 
-func TestKeepPathInRetention(t *testing.T) {
-	assert := assert.New(t)
-	root, err := filepath.Abs("/")
+func TestPathAndTagInRetention(t *testing.T) {
+	cwd, err := filepath.Abs(".")
 	require.NoError(t, err)
-	root = filepath.ToSlash(root)
-	testConfig := `
-[profile]
-initialize = true
+	examples := filepath.Join(cwd, "../examples")
+	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
+	backupSource, err := filepath.Glob(sourcePattern)
+	require.Greater(t, len(backupSource), 5)
+	require.NoError(t, err)
 
-[profile.backup]
-source = "` + root + `"
+	backupTags := []string{"one", "two"}
 
-[profile.retention]
-host = false
-`
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
+	testProfile := func(t *testing.T, version Version, retention string) *Profile {
+		p := ""
+		if version > Version01 {
+			p = "profiles."
+		}
+
+		config := `
+			version = ` + fmt.Sprintf("%d", version) + `
+
+			[` + p + `profile.backup]
+			tag = ["one", "two"]
+			source = ["` + sourcePattern + `"]
+
+			[` + p + `profile.retention]
+			` + retention
+
+		profile, err := getResolvedProfile("toml", config, "profile")
+		profile.SetRootPath(examples) // ensure relative paths are converted to absolute paths
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+
+		return profile
 	}
-	assert.NotNil(profile)
 
-	flags := profile.GetRetentionFlags().ToMap()
-	assert.NotNil(flags)
-	assert.Contains(flags, "path")
-	assert.Equal([]string{root}, flags["path"])
-}
+	t.Run("Path", func(t *testing.T) {
+		pathFlag := func(t *testing.T, profile *Profile) interface{} {
+			flags := profile.GetRetentionFlags().ToMap()
+			assert.NotNil(t, flags)
+			return flags["path"]
+		}
 
-func TestReplacePathInRetention(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile]
-initialize = true
+		t.Run("ImplicitCopyPath", func(t *testing.T) {
+			profile := testProfile(t, Version01, ``)
+			assert.Equal(t, backupSource, pathFlag(t, profile))
+		})
 
-[profile.backup]
-source = "/some_other_path"
+		t.Run("ExplicitCopyPath", func(t *testing.T) {
+			expectedIssues := map[string][]string{
+				`path (from source) "` + sourcePattern + `"`: backupSource,
+			}
+			profile := testProfile(t, Version01, `path = true`)
+			assert.Equal(t, backupSource, pathFlag(t, profile))
+			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
+		})
 
-[profile.retention]
-path = "/"
-`
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(profile)
+		t.Run("ReplacePath", func(t *testing.T) {
+			expected := []string{
+				filepath.Join(cwd, "relative/custom/path"),
+				cwd,
+			}
+			expectedIssues := map[string][]string{
+				`path "relative/custom/path"`: {expected[0]},
+				`path "."`:                    {expected[1]},
+			}
+			profile := testProfile(t, Version01, `path = ["relative/custom/path", "."]`)
+			assert.Equal(t, expected, pathFlag(t, profile))
+			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
+		})
 
-	flags := profile.GetRetentionFlags().ToMap()
-	assert.NotNil(flags)
-	assert.Contains(flags, "path")
-	assert.Equal([]string{"/"}, flags["path"])
-}
+		t.Run("NoPath", func(t *testing.T) {
+			profile := testProfile(t, Version01, `path = false`)
+			assert.Nil(t, pathFlag(t, profile))
+		})
+	})
 
-func TestNoPathInRetention(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile]
-initialize = true
+	t.Run("Tag", func(t *testing.T) {
+		tagFlag := func(t *testing.T, profile *Profile) interface{} {
+			flags := profile.GetRetentionFlags().ToMap()
+			assert.NotNil(t, flags)
+			return flags["tag"]
+		}
 
-[profile.backup]
-source = "/some_other_path"
+		t.Run("NoImplicitCopyTagInV1", func(t *testing.T) {
+			profile := testProfile(t, Version01, ``)
+			assert.Nil(t, tagFlag(t, profile))
+		})
 
-[profile.retention]
-path = false
-`
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(profile)
+		t.Run("ImplicitCopyTagInV2", func(t *testing.T) {
+			profile := testProfile(t, Version02, ``)
+			assert.Equal(t, backupTags, tagFlag(t, profile))
+		})
 
-	flags := profile.GetRetentionFlags().ToMap()
-	assert.NotNil(flags)
-	assert.NotContains(flags, "path")
-}
+		t.Run("CopyTag", func(t *testing.T) {
+			profile := testProfile(t, Version01, `tag = true`)
+			assert.Equal(t, backupTags, tagFlag(t, profile))
+		})
 
-func TestCopyTagInRetention(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile.backup]
-tag = ["one", "two"]
+		t.Run("ReplaceTag", func(t *testing.T) {
+			profile := testProfile(t, Version01, `tag = ["a", "b"]`)
+			expected := []string{"a", "b"}
+			assert.Equal(t, expected, tagFlag(t, profile))
+		})
 
-[profile.retention]
-tag = true
-`
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	require.NoError(t, err)
-	assert.NotNil(profile)
-
-	flags := profile.GetRetentionFlags().ToMap()
-	assert.NotNil(flags)
-	assert.Contains(flags, "tag")
-	assert.Equal([]string{"one", "two"}, flags["tag"])
-}
-
-func TestReplaceTagInRetention(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile.backup]
-tag = ["one", "two"]
-
-[profile.retention]
-tag = ["a", "b"]
-`
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	require.NoError(t, err)
-	assert.NotNil(profile)
-
-	flags := profile.GetRetentionFlags().ToMap()
-	assert.NotNil(flags)
-	assert.Contains(flags, "tag")
-	assert.Equal([]string{"a", "b"}, flags["tag"])
-}
-
-func TestNoTagInRetention(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile.backup]
-tag = ["one", "two"]
-
-[profile.retention]
-tag = false
-`
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	require.NoError(t, err)
-	assert.NotNil(profile)
-
-	flags := profile.GetRetentionFlags().ToMap()
-	assert.NotNil(flags)
-	assert.NotContains(flags, "tag")
+		t.Run("NoTag", func(t *testing.T) {
+			profile := testProfile(t, Version01, `tag = false`)
+			assert.Nil(t, tagFlag(t, profile))
+		})
+	})
 }
 
 func TestForgetCommandFlags(t *testing.T) {
@@ -715,6 +706,18 @@ other-flag-prune = true
 other-flag-mount = true
 [profile.copy]
 other-flag-copy = true
+[profile.dump]
+other-flag-dump = true
+[profile.find]
+other-flag-find = true
+[profile.ls]
+other-flag-ls = true
+[profile.restore]
+other-flag-restore = true
+[profile.stats]
+other-flag-stats = true
+[profile.tag]
+other-flag-tag = true
 `},
 		{"json", `
 {
@@ -727,7 +730,13 @@ other-flag-copy = true
     "forget": {"other-flag-forget": true},
     "prune": {"other-flag-prune": true},
     "mount": {"other-flag-mount": true},
-    "copy": {"other-flag-copy": true}
+    "copy": {"other-flag-copy": true},
+    "dump": {"other-flag-dump": true},
+    "find": {"other-flag-find": true},
+    "ls": {"other-flag-ls": true},
+    "restore": {"other-flag-restore": true},
+    "stats": {"other-flag-stats": true},
+    "tag": {"other-flag-tag": true}
   }
 }`},
 		{"yaml", `---
@@ -749,6 +758,18 @@ profile:
     other-flag-mount: true
   copy:
     other-flag-copy: true
+  dump:
+    other-flag-dump: true
+  find:
+    other-flag-find: true
+  ls:
+    other-flag-ls: true
+  restore:
+    other-flag-restore: true
+  stats:
+    other-flag-stats: true
+  tag:
+    other-flag-tag: true
 `},
 		{"hcl", `
 "profile" = {
@@ -777,6 +798,24 @@ profile:
 	copy = {
 		other-flag-copy = true
 	}
+	dump = {
+		other-flag-dump = true
+	}
+	find = {
+		other-flag-find = true
+	}
+	ls = {
+		other-flag-ls = true
+	}
+	restore = {
+		other-flag-restore = true
+	}
+	stats = {
+		other-flag-stats = true
+	}
+	tag = {
+		other-flag-tag = true
+	}
 }
 `},
 	}
@@ -797,15 +836,16 @@ profile:
 			require.NotNil(t, profile.Prune)
 			require.NotNil(t, profile.Snapshots)
 			require.NotNil(t, profile.Copy)
+			require.NotNil(t, profile.Dump)
+			require.NotNil(t, profile.Find)
+			require.NotNil(t, profile.Ls)
+			require.NotNil(t, profile.Restore)
+			require.NotNil(t, profile.Stats)
+			require.NotNil(t, profile.Tag)
 
 			flags := profile.GetCommonFlags()
 			assert.Equal(t, 1, len(flags.ToMap()))
 			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-
-			flags = profile.GetCommandFlags("backup")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			assert.ElementsMatch(t, []string{"backup"}, flags.ToMap()["other-flag-backup"])
 
 			flags = profile.GetRetentionFlags()
 			assert.Equal(t, 2, len(flags.ToMap()))
@@ -813,41 +853,32 @@ profile:
 			_, found := flags.ToMap()["other-flag-retention"]
 			assert.True(t, found)
 
-			flags = profile.GetCommandFlags("snapshots")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			_, found = flags.ToMap()["other-flag-snapshots"]
-			assert.True(t, found)
+			commands := []string{
+				constants.CommandBackup,
+				constants.CommandCheck,
+				constants.CommandCopy,
+				constants.CommandDump,
+				constants.CommandFind,
+				constants.CommandForget,
+				constants.CommandLs,
+				constants.CommandPrune,
+				constants.CommandMount,
+				constants.CommandRestore,
+				constants.CommandSnapshots,
+				constants.CommandStats,
+				constants.CommandTag,
+			}
 
-			flags = profile.GetCommandFlags("check")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			_, found = flags.ToMap()["other-flag-check"]
-			assert.True(t, found)
-
-			flags = profile.GetCommandFlags("forget")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			_, found = flags.ToMap()["other-flag-forget"]
-			assert.True(t, found)
-
-			flags = profile.GetCommandFlags("prune")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			_, found = flags.ToMap()["other-flag-prune"]
-			assert.True(t, found)
-
-			flags = profile.GetCommandFlags("mount")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			_, found = flags.ToMap()["other-flag-mount"]
-			assert.True(t, found)
-
-			flags = profile.GetCommandFlags("copy")
-			assert.Equal(t, 2, len(flags.ToMap()))
-			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
-			_, found = flags.ToMap()["other-flag-copy"]
-			assert.True(t, found)
+			for _, command := range commands {
+				t.Run(command, func(t *testing.T) {
+					flags = profile.GetCommandFlags(command)
+					commandFlagName := "other-flag-" + command
+					assert.Equal(t, 2, len(flags.ToMap()))
+					assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
+					_, found = flags.ToMap()[commandFlagName]
+					assert.True(t, found, commandFlagName)
+				})
+			}
 		})
 	}
 }

@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"reflect"
+	"sort"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -49,6 +51,12 @@ type Profile struct {
 	Forget               *OtherSectionWithSchedule    `mapstructure:"forget"`
 	Mount                map[string]interface{}       `mapstructure:"mount"`
 	Copy                 *CopySection                 `mapstructure:"copy"`
+	Dump                 map[string]interface{}       `mapstructure:"dump"`
+	Find                 map[string]interface{}       `mapstructure:"find"`
+	Ls                   map[string]interface{}       `mapstructure:"ls"`
+	Restore              map[string]interface{}       `mapstructure:"restore"`
+	Stats                map[string]interface{}       `mapstructure:"stats"`
+	Tag                  map[string]interface{}       `mapstructure:"tag"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command
@@ -124,6 +132,41 @@ func NewProfile(c *Config, name string) *Profile {
 	}
 }
 
+// resolveConfiguration resolves dependencies between profile config flags
+func (p *Profile) resolveConfiguration() {
+	// Copy tag and path parameters from Backup where requested
+	if p.Backup != nil {
+		// Special cases of retention
+		if p.Retention != nil {
+			if p.Retention.OtherFlags == nil {
+				p.Retention.OtherFlags = make(map[string]interface{})
+			}
+			// Copy "source" from "backup" as "path" if it hasn't been redefined
+			if _, found := p.Retention.OtherFlags[constants.ParameterPath]; !found {
+				p.Retention.OtherFlags[constants.ParameterPath] = true
+			}
+
+			// Copy "tag" from "backup" if it hasn't been redefined (only for Version >= 2 to be backward compatible)
+			if p.config.version >= Version02 {
+				if _, found := p.Retention.OtherFlags[constants.ParameterTag]; !found {
+					p.Retention.OtherFlags[constants.ParameterTag] = true
+				}
+			}
+		}
+
+		// Copy tags from backup if tag is set to boolean true
+		if tags, ok := stringifyValueOf(p.Backup.OtherFlags[constants.ParameterTag]); ok {
+			p.SetTag(tags...)
+		}
+
+		// Copy parameter path from backup sources if path is set to boolean true
+		p.SetPath(p.Backup.Source...)
+	} else {
+		// Resolve path parameter (no copy since backup is not defined)
+		p.SetPath()
+	}
+}
+
 // SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
 func (p *Profile) SetLegacyArg(legacy bool) {
 	p.legacyArg = legacy
@@ -147,13 +190,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 			p.Backup.FilesFrom = fixPaths(p.Backup.FilesFrom, expandEnv, absolutePrefix(rootPath))
 		}
 
-		// Backup source is NOT relative to the configuration, but where the script was launched instead
-		if p.Backup.Source != nil && len(p.Backup.Source) > 0 {
-			p.Backup.Source = fixPaths(p.Backup.Source, expandEnv, expandUserHome)
-			if !p.legacyArg {
-				p.Backup.Source = resolveGlob(p.Backup.Source)
-			}
-		}
+		p.Backup.Source = p.resolveSourcePath(p.Backup.Source...)
 
 		if p.Backup.Exclude != nil && len(p.Backup.Exclude) > 0 {
 			p.Backup.Exclude = fixPaths(p.Backup.Exclude, expandEnv)
@@ -168,25 +205,126 @@ func (p *Profile) SetRootPath(rootPath string) {
 		p.Copy.PasswordFile = fixPath(p.Copy.PasswordFile, expandEnv, absolutePrefix(rootPath))
 		p.Copy.RepositoryFile = fixPath(p.Copy.RepositoryFile, expandEnv, absolutePrefix(rootPath))
 	}
+
+	// Handle dynamic flags dealing with paths that are relative to root path
+	filepathFlags := []string{
+		"cacert",
+		"tls-client-cert",
+		"cache-dir",
+		"repository-file",
+		"password-file",
+	}
+	for _, section := range p.allFlagsSections() {
+		for _, flag := range filepathFlags {
+			if paths, ok := stringifyValueOf(section[flag]); ok && len(paths) > 0 {
+				for i, path := range paths {
+					if len(path) > 0 {
+						paths[i] = fixPath(path, expandEnv, absolutePrefix(rootPath))
+					}
+				}
+				section[flag] = paths
+			}
+		}
+	}
+}
+
+func (p *Profile) resolveSourcePath(sourcePaths ...string) []string {
+	if len(sourcePaths) > 0 {
+		// Backup source is NOT relative to the configuration, but where the script was launched instead
+		sourcePaths = fixPaths(sourcePaths, expandEnv, expandUserHome)
+		sourcePaths = resolveGlob(sourcePaths)
+	}
+	return sourcePaths
 }
 
 // SetHost will replace any host value from a boolean to the hostname
 func (p *Profile) SetHost(hostname string) {
-	if p.Backup != nil && p.Backup.OtherFlags != nil {
-		replaceTrueValue(p.Backup.OtherFlags, constants.ParameterHost, hostname)
+	for _, section := range p.allFlagsSections() {
+		replaceTrueValue(section, constants.ParameterHost, hostname)
 	}
-	if p.Retention != nil && p.Retention.OtherFlags != nil {
-		replaceTrueValue(p.Retention.OtherFlags, constants.ParameterHost, hostname)
+}
+
+// SetTag will replace any tag value from a boolean to the tags
+func (p *Profile) SetTag(tags ...string) {
+	for _, section := range p.allFlagsSections() {
+		replaceTrueValue(section, constants.ParameterTag, tags...)
 	}
-	if p.Snapshots != nil {
-		replaceTrueValue(p.Snapshots, constants.ParameterHost, hostname)
+}
+
+// SetPath will replace any path value from a boolean to sourcePaths and change paths to absolute
+func (p *Profile) SetPath(sourcePaths ...string) {
+	resolvePath := func(origin string, paths []string, revolver func(string) []string) (resolved []string) {
+		for _, path := range paths {
+			if len(path) > 0 {
+				for _, rp := range revolver(path) {
+					if rp != path {
+						if p.config.issues.changedPaths == nil {
+							p.config.issues.changedPaths = make(map[string][]string)
+						}
+						key := fmt.Sprintf(`%s "%s"`, origin, path)
+						p.config.issues.changedPaths[key] = append(p.config.issues.changedPaths[key], rp)
+					}
+					resolved = append(resolved, rp)
+				}
+			}
+		}
+		return resolved
 	}
-	if p.Forget != nil {
-		replaceTrueValue(p.Forget.OtherFlags, constants.ParameterHost, hostname)
+
+	sourcePathsResolved := false
+
+	// Resolve 'path' to absolute paths as anything else will not select any snapshots
+	for _, section := range p.allFlagsSections() {
+		value, hasValue := section[constants.ParameterPath]
+		if !hasValue {
+			continue
+		}
+
+		if replace, ok := value.(bool); ok && replace {
+			// Replace bool-true with absolute sourcePaths
+			if !sourcePathsResolved {
+				sourcePaths = resolvePath("path (from source)", sourcePaths, func(path string) []string {
+					return fixPaths(p.resolveSourcePath(path), absolutePath)
+				})
+				sourcePathsResolved = true
+			}
+			section[constants.ParameterPath] = sourcePaths
+
+		} else if paths, ok := stringifyValueOf(value); ok && len(paths) > 0 {
+			// Resolve path strings to absolute paths
+			paths = resolvePath("path", paths, func(path string) []string {
+				return []string{fixPath(path, expandEnv, absolutePath)}
+			})
+			section[constants.ParameterPath] = paths
+		}
 	}
-	if p.Mount != nil {
-		replaceTrueValue(p.Mount, constants.ParameterHost, hostname)
+}
+
+func (p *Profile) allFlagsSections() (sections []map[string]interface{}) {
+	for _, section := range p.allSections() {
+		if flags := p.getSectionOtherFlags(section); flags != nil {
+			sections = append(sections, flags)
+		}
 	}
+	return
+}
+
+func (p *Profile) getSectionOtherFlags(section interface{}) map[string]interface{} {
+	if !reflect.ValueOf(section).IsNil() {
+		switch v := section.(type) {
+		case *BackupSection:
+			return v.OtherFlags
+		case *CopySection:
+			return v.OtherFlags
+		case *OtherSectionWithSchedule:
+			return v.OtherFlags
+		case *RetentionSection:
+			return v.OtherFlags
+		case map[string]interface{}:
+			return v
+		}
+	}
+	return nil
 }
 
 // GetCommonFlags returns the flags common to all commands
@@ -210,40 +348,16 @@ func (p *Profile) GetCommandFlags(command string) *shell.Args {
 			break
 		}
 		flags = convertStructToArgs(*p.Backup, flags)
-		flags = addOtherArgs(flags, p.Backup.OtherFlags)
-
-	case constants.CommandSnapshots:
-		if p.Snapshots != nil {
-			flags = addOtherArgs(flags, p.Snapshots)
-		}
-
-	case constants.CommandCheck:
-		if p.Check != nil && p.Check.OtherFlags != nil {
-			flags = addOtherArgs(flags, p.Check.OtherFlags)
-		}
-
-	case constants.CommandPrune:
-		if p.Prune != nil && p.Prune.OtherFlags != nil {
-			flags = addOtherArgs(flags, p.Prune.OtherFlags)
-		}
-
-	case constants.CommandForget:
-		if p.Forget != nil {
-			flags = addOtherArgs(flags, p.Forget.OtherFlags)
-		}
-
-	case constants.CommandMount:
-		if p.Mount != nil {
-			flags = addOtherArgs(flags, p.Mount)
-		}
 
 	case constants.CommandCopy:
 		if p.Copy != nil {
 			flags = convertStructToArgs(*p.Copy, flags)
-			if p.Copy.OtherFlags != nil {
-				flags = addOtherArgs(flags, p.Copy.OtherFlags)
-			}
 		}
+	}
+
+	// Add generic section flags
+	if section := p.allSections()[command]; section != nil {
+		flags = addOtherArgs(flags, p.getSectionOtherFlags(section))
 	}
 
 	return flags
@@ -254,43 +368,6 @@ func (p *Profile) GetRetentionFlags() *shell.Args {
 	// it shouldn't happen when started as a command, but can occur in a unit test
 	if p.Retention == nil {
 		return shell.NewArgs()
-	}
-
-	// if there was no "other" flags, the map could be un-initialized
-	if p.Retention.OtherFlags == nil {
-		p.Retention.OtherFlags = make(map[string]interface{})
-	}
-
-	// Special cases of retention:
-
-	// Copy "source" from "backup" as "path" if it hasn't been redefined or is boolean and 'true'
-	{
-		setSources := func() {
-			p.Retention.OtherFlags[constants.ParameterPath] = fixPaths(p.Backup.Source, absolutePath)
-		}
-
-		if value, found := p.Retention.OtherFlags[constants.ParameterPath]; found {
-			if set, isBoolean := value.(bool); isBoolean {
-				if set {
-					setSources()
-				} else {
-					delete(p.Retention.OtherFlags, constants.ParameterPath)
-				}
-			}
-		} else {
-			setSources()
-		}
-	}
-
-	// Copy "tag" from "backup" if "tag" is boolean and 'true'
-	if value, found := p.Retention.OtherFlags[constants.ParameterTag]; found {
-		if set, isBoolean := value.(bool); isBoolean {
-			if set {
-				p.Retention.OtherFlags[constants.ParameterTag] = p.Backup.OtherFlags[constants.ParameterTag]
-			} else {
-				delete(p.Retention.OtherFlags, constants.ParameterTag)
-			}
-		}
 	}
 
 	flags := p.GetCommonFlags()
@@ -318,6 +395,38 @@ func (p *Profile) GetBackupSource() []string {
 	return p.Backup.Source
 }
 
+// DefinedCommands returns all commands (also called sections) defined in the profile (backup, check, forget, etc.)
+func (p *Profile) DefinedCommands() []string {
+	sections := p.allSections()
+	commands := make([]string, 0, len(sections))
+	for name, section := range sections {
+		if !reflect.ValueOf(section).IsNil() {
+			commands = append(commands, name)
+		}
+	}
+	sort.Strings(commands)
+	return commands
+}
+
+func (p *Profile) allSections() map[string]interface{} {
+	return map[string]interface{}{
+		constants.CommandBackup:                 p.Backup,
+		constants.CommandCheck:                  p.Check,
+		constants.CommandCopy:                   p.Copy,
+		constants.CommandDump:                   p.Dump,
+		constants.CommandForget:                 p.Forget,
+		constants.CommandFind:                   p.Find,
+		constants.CommandLs:                     p.Ls,
+		constants.CommandMount:                  p.Mount,
+		constants.CommandPrune:                  p.Prune,
+		constants.CommandRestore:                p.Restore,
+		constants.CommandSnapshots:              p.Snapshots,
+		constants.CommandStats:                  p.Stats,
+		constants.CommandTag:                    p.Tag,
+		constants.SectionConfigurationRetention: p.Retention,
+	}
+}
+
 // SchedulableCommands returns all command names that could have a schedule
 func (p *Profile) SchedulableCommands() []string {
 	sections := p.allSchedulableSections()
@@ -325,6 +434,7 @@ func (p *Profile) SchedulableCommands() []string {
 	for name := range sections {
 		commands = append(commands, name)
 	}
+	sort.Strings(commands)
 	return commands
 }
 
@@ -335,7 +445,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 	configs := make([]*ScheduleConfig, 0, len(sections))
 
 	for name, section := range sections {
-		if s := getScheduleSection(section); s != nil && s.Schedule != nil && len(s.Schedule) > 0 {
+		if s, ok := getScheduleSection(section); ok && s != nil && s.Schedule != nil && len(s.Schedule) > 0 {
 			env := map[string]string{}
 			for key, value := range p.Environment {
 				env[key] = value.Value()
@@ -361,65 +471,43 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 	return configs
 }
 
-// DefinedCommands returns all commands (also called sections) defined in the profile (backup, check, forget, etc.)
-func (p *Profile) DefinedCommands() []string {
-	commands := make([]string, 0)
-	// it seems we have to go through all of them (we can't use a Zero interface as some of them are maps)
-	if p.Backup != nil {
-		commands = append(commands, constants.CommandBackup)
-	}
-	if p.Retention != nil {
-		commands = append(commands, constants.SectionConfigurationRetention)
-	}
-	if p.Check != nil {
-		commands = append(commands, constants.CommandCheck)
-	}
-	if p.Copy != nil {
-		commands = append(commands, constants.CommandCopy)
-	}
-	if p.Forget != nil {
-		commands = append(commands, constants.CommandForget)
-	}
-	if p.Mount != nil {
-		commands = append(commands, constants.CommandMount)
-	}
-	if p.Prune != nil {
-		commands = append(commands, constants.CommandPrune)
-	}
-	if p.Snapshots != nil {
-		commands = append(commands, constants.CommandSnapshots)
-	}
-	return commands
-}
-
 func (p *Profile) allSchedulableSections() map[string]interface{} {
-	return map[string]interface{}{
-		constants.CommandBackup:                 p.Backup,
-		constants.SectionConfigurationRetention: p.Retention,
-		constants.CommandCheck:                  p.Check,
-		constants.CommandForget:                 p.Forget,
-		constants.CommandPrune:                  p.Prune,
-		constants.CommandCopy:                   p.Copy,
-	}
-}
-
-func getScheduleSection(section interface{}) *ScheduleSection {
-	if !reflect.ValueOf(section).IsNil() {
-		switch v := section.(type) {
-		case *BackupSection:
-			return &v.ScheduleSection
-		case *RetentionSection:
-			return &v.ScheduleSection
-		case *CopySection:
-			return &v.ScheduleSection
-		case *OtherSectionWithSchedule:
-			return &v.ScheduleSection
+	sections := p.allSections()
+	for name, section := range sections {
+		if _, schedulable := getScheduleSection(section); !schedulable {
+			delete(sections, name)
 		}
 	}
-	return nil
+	return sections
 }
 
-func replaceTrueValue(source map[string]interface{}, key, replace string) {
+func getScheduleSection(section interface{}) (schedule *ScheduleSection, schedulable bool) {
+	switch v := section.(type) {
+	case *BackupSection:
+		schedulable = true
+		if v != nil {
+			schedule = &v.ScheduleSection
+		}
+	case *CopySection:
+		schedulable = true
+		if v != nil {
+			schedule = &v.ScheduleSection
+		}
+	case *RetentionSection:
+		schedulable = true
+		if v != nil {
+			schedule = &v.ScheduleSection
+		}
+	case *OtherSectionWithSchedule:
+		schedulable = true
+		if v != nil {
+			schedule = &v.ScheduleSection
+		}
+	}
+	return
+}
+
+func replaceTrueValue(source map[string]interface{}, key string, replace ...string) {
 	if genericValue, ok := source[key]; ok {
 		if value, ok := genericValue.(bool); ok {
 			if value {

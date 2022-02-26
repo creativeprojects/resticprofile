@@ -2234,8 +2234,8 @@ Flags passed to the restic command line
 * **group-by**: string
 * **host**: true / false OR string
 * **last**: true / false
-* **path**: string OR list of strings
-* **tag**: string OR list of strings
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
 
 `[profile.forget]`
 
@@ -2258,8 +2258,8 @@ Flags passed to the restic command line
 * **keep-within**: string
 * **keep-tag**: string OR list of strings
 * **host**: true / false OR string
-* **tag**: string OR list of strings
-* **path**: string OR list of strings
+* **tag**: true / false, string OR list of strings
+* **path**: true / false, string OR list of strings
 * **compact**: true / false
 * **group-by**: string
 * **dry-run**: true / false
@@ -2301,26 +2301,79 @@ Flags passed to the restic command line
 * **host**: true / false OR string
 * **no-default-permissions**: true / false
 * **owner-root**: true / false
-* **path**: string OR list of strings
+* **path**: true / false, string OR list of strings
 * **snapshot-template**: string
-* **tag**: string OR list of strings
+* **tag**: true / false, string OR list of strings
 
 `[profile.copy]`
 
 Flags used by resticprofile only
 
 * **initialize**: true / false
-
+* **schedule**: string OR list of strings
+* **schedule-permission**: string (`user` or `system`)
+* **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
+* **schedule-lock-wait**: duration
+* **schedule-log**: string
 
 Flags passed to the restic command line
 
-* **key-hint**: string
-* **password-command**: command
-* **password-file**: string
-* **path**: string OR list of strings
-* **repository**: repository
-* **repository-file**: string
-* **tag**: string OR list of strings
+* **key-hint**: string **(will be passed as 'key-hint2')**
+* **password-command**: command **(will be passed as 'password-command2')**
+* **password-file**: string **(will be passed as 'password-file2')**
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **repository**: repository **(will be passed as 'repo2')**
+* **repository-file**: string **(will be passed as 'repository-file2')**
+* **tag**: true / false, string OR list of strings
+
+`[profile.dump]`
+
+Flags passed to the restic command line
+
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
+
+`[profile.find]`
+
+Flags passed to the restic command line
+
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
+
+`[profile.ls]`
+
+Flags passed to the restic command line
+
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
+
+`[profile.restore]`
+
+Flags passed to the restic command line
+
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
+
+`[profile.stats]`
+
+Flags passed to the restic command line
+
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
+
+`[profile.tag]`
+
+Flags passed to the restic command line
+
+* **host**: true / false OR string
+* **path**: true / false, string OR list of strings
+* **tag**: true / false, string OR list of strings
 
 
 # Appendix
