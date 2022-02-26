@@ -4,6 +4,8 @@
 # Usage: source this script in your bash profile (or add to bash_completion.d)
 function _resticprofile() {
   local resticprofile="${COMP_WORDS[0]}"
+
+  # Pass current cursor position as first argument
   COMP_WORDS[0]="__POS:${COMP_CWORD}"
 
   # Get completions from resticprofile
@@ -22,34 +24,39 @@ function _resticprofile() {
 
       **__complete_restic)
         local prefix="${COMPREPLY[-1]%.*}"  # everything before last dot
-        local action="${COMPREPLY[-1]##*.}" # everything after last dot
+        local suffix="${COMPREPLY[-1]##*.}" # everything after last dot
         unset COMPREPLY[-1]
 
-        # Remove prefixes that restic doesn't understand (removes any [prefix.]value, keeps paths)
-        for (( i=0 ; i<${#COMP_WORDS[@]} ; i++ )) ; do
-          [[ "${COMP_WORDS[-1]}" =~ (.*/.*) ]] \
-            || COMP_WORDS[$i]="${COMP_WORDS[$i]##*.}"
+        # Remove profile prefixes before passing args to restic (removes any [prefix.]value, keeps paths)
+        local restic_words=()
+        for (( i=1 ; i<${#COMP_WORDS[@]} ; i++ )) ; do
+          local word="${COMP_WORDS[$i]}"
+          if [[ "${word}" =~ (.*/.*) ]] ; then
+            restic_words+=("${word}")
+          else
+            restic_words+=("${word##*.}")
+          fi
         done
 
         # Get restic completions
-        local restic_values=($(__resticprofile_get_other_completions restic "${COMP_WORDS[@]}"))
+        local restic_values=($(__resticprofile_get_other_completions restic "${restic_words[@]}"))
 
-        # Remove any empty trailing values
         if ((${#restic_values[@]})) ; then
-          while [[ "${restic_values[-1]}" =~ (^[\r\n\t ]+$) ]] ; do
-            unset restic_values[-1]
+          for (( i=0 ; i<${#restic_values[@]} ; i++ )) ; do
+            local value="${restic_values[$i]}"
+
+            # Remove any empty values
+            if [[ "${value}" =~ (^[\r\n\t ]+$) ]] ; then
+              continue
+            fi
+
+            # Add profile prefix if requested and append to completions
+            if [[ -n $prefix && "$prefix" != "$suffix" ]] ; then
+              COMPREPLY+=("${prefix}.${value}")
+            else
+              COMPREPLY+=("${value}")
+            fi
           done
-        fi
-
-        # Add command prefix and append to completions
-        if ((${#restic_values[@]})) ; then
-          if [[ -n $prefix && "$prefix" != "$action" ]] ; then
-            for (( i=0 ; i<${#restic_values[@]} ; i++ )) ; do
-              restic_values[$i]="${prefix}.${restic_values[$i]}"
-            done
-          fi
-
-          COMPREPLY+=("${restic_values[@]}")
         fi
       ;;
     esac
@@ -84,7 +91,7 @@ function __resticprofile_get_other_completions() {
     completion=$(complete -p "$1" 2>/dev/null | awk '{print $(NF-1)}')
 
     # run _completion_loader only if necessary
-    [[ -n $completion ]] || declare -F _completion_loader &>/dev/null && {
+    [[ -z $completion ]] && declare -F _completion_loader &>/dev/null && {
         # load completion
         _completion_loader "$1"
 
