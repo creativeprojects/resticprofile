@@ -607,6 +607,15 @@ stdin = true
 stdin-filename = "stdin-test"
 tag = [ 'stdin' ]
 
+
+[send-stdout]
+inherit = "stdin"
+
+[send-stdout.backup]
+stdin-command = [ 'mysqldump --all-databases --order-by-primary' ]
+stdin-filename = "dump.sql"
+tag = [ 'send-stdout' ]
+
 ```
 
 ## Special case for the `copy` command section
@@ -903,11 +912,15 @@ $ resticprofile full-backup.backup
 Assuming the _stdin_ profile from the configuration file shown before, the command to send a mysqldump to the backup is as simple as:
 
 ```
-$ mysqldump --all-databases | resticprofile --name stdin backup
+$ mysqldump --all-databases --order-by-primary | resticprofile --name stdin backup
 ```
 or
 ```
-$ mysqldump --all-databases | resticprofile stdin.backup
+$ mysqldump --all-databases --order-by-primary | resticprofile stdin.backup
+```
+or when resticprofile runs "mysqldump" (can be scheduled):
+```
+$ resticprofile send-stdout.backup
 ```
 
 Mount the default profile (_default_) in /mnt/restic:
@@ -2173,6 +2186,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`) 
 * **schedule-lock-wait**: duration 
 * **schedule-log**: string
+* **stdin-command**: string OR list of strings
 * **extended-status**: true / false
 * **no-error-on-warning**: true / false
 

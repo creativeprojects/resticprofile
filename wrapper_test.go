@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -352,6 +354,152 @@ func TestRetentionWithError(t *testing.T) {
 	wrapper := newResticWrapper(mockBinary, false, profile, "", []string{"--exit", "10"}, nil)
 	err := wrapper.runRetention()
 	require.Error(t, err)
+}
+
+func TestBackupWithStreamSource(t *testing.T) {
+	expected := "---Backup-Content---"
+	expectedInterruptedError := []string{
+		"stdin-test on profile 'name': exit status 128",
+		"stdin-test on profile 'name': signal: interrupt",
+	}
+
+	fillBufferCommand := func() (cmds []string) {
+		cmd := "echo " + strings.Repeat("-", 240)
+		for i := 0; i < 35; i++ { // 35 * 240 = 8400 (buffer is 8192)
+			cmds = append(cmds, cmd)
+		}
+		return
+	}
+
+	profileAndWrapper := func(*testing.T) (profile *config.Profile, wrapper *resticWrapper) {
+		profile = config.NewProfile(nil, "name")
+		profile.Backup = &config.BackupSection{}
+		signals := make(chan os.Signal, 1)
+		wrapper = newResticWrapper(mockBinary, false, profile, "stdin-test", nil, signals)
+		return
+	}
+
+	run := func(t *testing.T, wrapper *resticWrapper) (string, error) {
+		file := path.Join(os.TempDir(), fmt.Sprintf("TestBackupWithStreamSource.%d.txt", rand.Int()))
+		defer os.Remove(file)
+
+		args := wrapper.moreArgs
+		wrapper.moreArgs = append([]string{"--stdout-file=" + file}, args...)
+		err := wrapper.runCommand("backup")
+		wrapper.moreArgs = args
+		if err != nil {
+			return "", err
+		}
+
+		content, err := os.ReadFile(file)
+		if wrapper.dryRun {
+			require.Error(t, err, "mock was called")
+			content = []byte{}
+		} else {
+			require.NoError(t, err, "mock was not called")
+		}
+		return string(content), nil
+	}
+
+	t.Run("ReadStdin", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		profile.Backup.UseStdin = true
+		wrapper.stdin = io.NopCloser(strings.NewReader(expected))
+
+		content, err := run(t, wrapper)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, content)
+		assert.Nil(t, wrapper.stdin, "stdin must be set to nil when consumed")
+	})
+
+	t.Run("ReadStdinNotTwice", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		profile.Backup.UseStdin = true
+		require.NotNil(t, wrapper.stdin)
+		wrapper.stdin = nil
+
+		_, err := run(t, wrapper)
+
+		assert.EqualError(t, err, "stdin-test on profile 'name': stdin was already consumed. cannot read it twice")
+	})
+
+	t.Run("ReadStreamSource", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		profile.Backup.StdinCommand = []string{
+			fmt.Sprintf("echo %s", expected),
+			fmt.Sprintf("echo %s", expected),
+			fmt.Sprintf("echo %s", expected),
+		}
+		profile.ResolveConfiguration()
+
+		expectedResult := strings.Repeat(fmt.Sprintln(expected), 3)
+
+		// can be retried, test multiple invocations
+		for i := 0; i < 3; i++ {
+			content, err := run(t, wrapper)
+			assert.NoError(t, err)
+			assert.Equal(t, expectedResult, strings.ReplaceAll(content, "\r\n", "\n"))
+		}
+	})
+
+	t.Run("StreamSourceReportsInitialError", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		profile.Backup.StdinCommand = []string{"exit 2"}
+		profile.ResolveConfiguration()
+
+		_, err := run(t, wrapper)
+		require.NotNil(t, err)
+		assert.EqualError(t, err, "stdin-test on profile 'name': 'stdin-command' on profile 'name': exit status 2")
+	})
+
+	t.Run("StreamSourceWorksWithDryRun", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		wrapper.dryRun = true
+		profile.Backup.StdinCommand = []string{"exit 2"}
+		profile.ResolveConfiguration()
+
+		_, err := run(t, wrapper)
+		assert.Nil(t, err)
+	})
+
+	t.Run("StreamSourceErrorSendsSIGINT", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("signal handling is not supported on Windows")
+		}
+		profile, wrapper := profileAndWrapper(t)
+		wrapper.moreArgs = []string{"--sleep", "12000"}
+
+		profile.Backup.StdinCommand = append(fillBufferCommand(), "exit 2")
+		profile.ResolveConfiguration()
+
+		start := time.Now()
+		_, err := run(t, wrapper)
+		assert.Less(t, time.Now().Sub(start), time.Second*10, "timeout, interrupt not sent to restic")
+
+		require.NotNil(t, err)
+		assert.Contains(t, expectedInterruptedError, err.Error())
+	})
+
+	t.Run("CanTerminateStreamSource", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("signal handling is not supported on Windows")
+		}
+		profile, wrapper := profileAndWrapper(t)
+		profile.Backup.StdinCommand = append(fillBufferCommand(), mockBinary+" cmd --sleep 12000")
+		profile.ResolveConfiguration()
+
+		go func() {
+			time.Sleep(500 * time.Millisecond)
+			wrapper.sigChan <- os.Interrupt
+		}()
+		start := time.Now()
+		_, err := run(t, wrapper)
+		assert.Less(t, time.Now().Sub(start), time.Second*10, "timeout, interrupt not sent to stdin-command")
+
+		require.NotNil(t, err)
+		assert.EqualError(t, err, "stdin-test on profile 'name': io: read/write on closed pipe")
+	})
 }
 
 func TestBackupWithSuccess(t *testing.T) {

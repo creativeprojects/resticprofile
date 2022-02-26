@@ -116,7 +116,14 @@ func (c *Command) Run() (progress.Summary, string, error) {
 		defer func() {
 			close(c.done)
 		}()
-		go c.propagateSignal(cmd.Process)
+		go func() {
+			// send INT signal
+			c.propagateSignal(cmd.Process)
+			// close stdin (if possible) to unblock Wait on cmd.Process
+			if in, canClose := cmd.Stdin.(io.Closer); canClose && in != nil {
+				in.Close()
+			}
+		}()
 	}
 
 	// output scanner
@@ -174,7 +181,11 @@ func (c *Command) getShellCommand() (string, []string, error) {
 		return shell, args, nil
 	}
 
-	shell, err := exec.LookPath("sh")
+	// prefer bash if available as it has better signal propagation (sh may fail to forward signals)
+	shell, err := exec.LookPath("bash")
+	if err != nil {
+		shell, err = exec.LookPath("sh")
+	}
 	if err != nil {
 		return "", nil, fmt.Errorf("cannot find shell executable (sh) in path")
 	}
