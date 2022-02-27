@@ -1,0 +1,4 @@
+includes:
+  - /some/path/some.file
+  - bad[pattern
+

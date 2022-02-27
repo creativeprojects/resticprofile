@@ -292,7 +292,9 @@ func (c *Config) GetProfileSections() map[string]ProfileInfo {
 	}
 	allSettings := viperScope.AllSettings()
 	for sectionKey, sectionRawValue := range allSettings {
-		if sectionKey == constants.SectionConfigurationGlobal || sectionKey == constants.SectionConfigurationGroups {
+		if sectionKey == constants.SectionConfigurationGlobal ||
+			sectionKey == constants.SectionConfigurationGroups ||
+			sectionKey == constants.SectionConfigurationIncludes {
 			continue
 		}
 		var profileInfo ProfileInfo

@@ -38,15 +38,18 @@ func TestGetProfileSectionsWithNothing(t *testing.T) {
 func TestGetProfileSectionsWithNoProfile(t *testing.T) {
 	testData := []testProfileData{
 		{FormatTOML, `
+includes = ""
 [global]
 [groups]
 `},
 		{FormatJSON, `{"global":{}, "groups": {}}`},
 		{FormatYAML, `---
+includes:
 global:
 groups:
 `},
 		{FormatHCL, `
+includes = ""
 global = {}
 groups = {}
 `},
@@ -92,7 +95,7 @@ profiles:
 
 func TestGetProfileSections(t *testing.T) {
 	testData := []testProfileData{
-		{FormatTOML, `
+		{FormatTOML, `includes = "somefile"
 [profile1]
 [profile1.backup]
 source = "/"
@@ -107,6 +110,7 @@ some = "value"
 something = true
 `},
 		{FormatJSON, `{"global":{"something": true},
+"includes": ["somefile"],
 "profile1": {
 	"backup": {"source": "/"}
 },
@@ -121,6 +125,7 @@ something = true
 		{FormatYAML, `---
 global:
   something: true
+includes: somefile
 profile1:
   backup:
     source: "/"
@@ -136,6 +141,7 @@ profile3:
 global = {
 	something = true
 }
+includes = "somefile"
 profile1 {
 	backup {
       source = "/"
@@ -157,6 +163,7 @@ profile3 = {
 global = {
 	something = true
 }
+includes = ["somefile"]
 profile1 "backup" {
     source = "/"
 }
