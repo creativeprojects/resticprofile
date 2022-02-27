@@ -312,6 +312,7 @@ func TestFindConfigurationIncludes(t *testing.T) {
 		{[]string{"*inc*." + testID + ".*"}, files[1:]},
 		{[]string{"inc1." + testID + ".conf"}, files[1:2]},
 		{[]string{"inc3." + testID + ".conf", "inc1." + testID + ".conf"}, []string{files[3], files[1]}},
+		{[]string{"inc3." + testID + ".conf", "no-match"}, []string{files[3]}},
 		// Does not include self
 		{[]string{"base." + testID + ".conf"}, []string{}},
 		{files[0:1], []string{}},
