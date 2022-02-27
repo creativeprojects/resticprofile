@@ -9,7 +9,7 @@ function _resticprofile() {
   COMP_WORDS[0]="__POS:${COMP_CWORD}"
 
   # Get completions from resticprofile
-  COMPREPLY=($("$resticprofile" complete "${COMP_WORDS[@]}"))
+  COMPREPLY=($("$resticprofile" complete "bash:v1" "${COMP_WORDS[@]}"))
 
   # Handle completion requests (last item in result of prev command)
   if ((${#COMPREPLY[@]})) ; then

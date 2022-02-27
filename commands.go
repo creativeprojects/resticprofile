@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -270,6 +271,31 @@ func testCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) 
 }
 
 func completeCommand(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) error {
+	requester := "unknown"
+	requesterVersion := 0
+
+	// Parse requester as first argument. Format "[kind]:v[version]", e.g. "bash:v1"
+	if len(args) > 0 {
+		matcher := regexp.MustCompile("^(bash|zsh):v(\\d+)$")
+		if matches := matcher.FindStringSubmatch(args[0]); matches != nil {
+			requester = matches[1]
+			if v, err := strconv.Atoi(matches[2]); err == nil {
+				requesterVersion = v
+			}
+			args = args[1:]
+		}
+	}
+
+	// Log when requester isn't specified.
+	if requester == "unknown" || requesterVersion < 1 {
+		clog.Warningf("Requester %q version %d not explicitly supported", requester, requesterVersion)
+	}
+
+	// Ensure newer completion scripts will not fail on outdated resticprofile
+	if requester == "zsh" || requesterVersion > 9 {
+		return nil
+	}
+
 	completions := (&Completer{}).Complete(args)
 	if len(completions) > 0 {
 		for _, completion := range completions {
