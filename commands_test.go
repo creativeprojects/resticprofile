@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -233,4 +234,46 @@ func TestFlagsForProfile(t *testing.T) {
 	assert.NotEqual(t, flags, profileFlags)
 	assert.Equal(t, "_", flags.name)
 	assert.Equal(t, "test", profileFlags.name)
+}
+
+func TestCompleteCall(t *testing.T) {
+	flags := commandLineFlags{}
+
+	completer := &Completer{}
+	completer.init(nil)
+	newline := fmt.Sprintln("")
+	expectedFlags := strings.Join(completer.completeFlagSet(""), newline) + newline
+
+	testTable := []struct {
+		args     []string
+		expected string
+	}{
+		{args: []string{"--"}, expected: expectedFlags},
+		{args: []string{"bash:v1", "--"}, expected: expectedFlags},
+		{args: []string{"bash:v10", "--"}, expected: ""},
+		{args: []string{"zsh:v1", "--"}, expected: ""},
+	}
+
+	for _, test := range testTable {
+		t.Run(strings.Join(test.args, " "), func(t *testing.T) {
+			buffer := &strings.Builder{}
+			assert.Nil(t, completeCommand(buffer, nil, flags, test.args))
+			assert.Equal(t, test.expected, buffer.String())
+		})
+	}
+}
+
+func TestCompletionScriptCall(t *testing.T) {
+	flags := commandLineFlags{}
+	buffer := &strings.Builder{}
+
+	buffer.Reset()
+	assert.Nil(t, completionScriptCommand(buffer, nil, flags, nil))
+	assert.Equal(t, strings.TrimSpace(bashCompletionScript), strings.TrimSpace(buffer.String()))
+	assert.Contains(t, bashCompletionScript, "#!/usr/bin/env bash")
+
+	buffer.Reset()
+	assert.Nil(t, completionScriptCommand(buffer, nil, flags, []string{"--zsh"}))
+	assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
+	assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
 }

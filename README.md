@@ -58,6 +58,7 @@ For the rest of the documentation, I'll be showing examples using different form
   * [Manual installation (Windows)](#manual-installation-windows)
   * [Ansible](#ansible)
   * [Installation from source](#installation-from-source)
+  * [Shell completion](#shell-completion)
 * [Upgrade](#upgrade)
 * [Using docker image](#using-docker-image)
   * [Container host name](#container-host-name)
@@ -244,6 +245,29 @@ To install the binary in your user path:
 ```
 $ make install
 ```
+
+
+## Shell completion
+
+Shell commandline completions are provided for `bash` and `zsh`. 
+
+To load completions in shell or profile, use:
+
+```shell
+# bash
+eval "$(resticprofile completion-script --bash)"
+
+# zsh
+eval "$(resticprofile completion-script --zsh)"
+```
+
+To install them permanently:
+
+```
+$ resticprofile completion-script --bash > /etc/bash_completion.d/resticprofile
+$ chmod +x /etc/bash_completion.d/resticprofile
+```
+
 
 # Upgrade
 
