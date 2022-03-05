@@ -16,15 +16,19 @@ import (
 func TestNoProfile(t *testing.T) {
 	testConfig := ""
 	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.ErrorIs(t, err, ErrNotFound)
+	assert.Nil(t, profile)
+}
+
+func TestProfileNotFound(t *testing.T) {
+	testConfig := "[profile]\n"
+	profile, err := getProfile("toml", testConfig, "other", "")
+	assert.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, profile)
 }
 
 func TestEmptyProfile(t *testing.T) {
-	testConfig := `[profile]
-`
+	testConfig := "[profile]\n"
 	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)
@@ -34,8 +38,7 @@ func TestEmptyProfile(t *testing.T) {
 }
 
 func TestNoInitializeValue(t *testing.T) {
-	testConfig := `[profile]
-`
+	testConfig := "[profile]\n"
 	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
 		t.Fatal(err)

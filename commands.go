@@ -214,15 +214,15 @@ func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, 
 }
 
 func displayProfiles(output io.Writer, configuration *config.Config) {
-	profiles := configuration.GetProfileSections()
-	keys := sortedMapKeys(profiles)
+	profiles := configuration.GetProfiles()
+	keys := sortedProfileKeys(profiles)
 	if len(profiles) == 0 {
 		fmt.Fprintln(output, "\nThere's no available profile in the configuration")
 	} else {
 		fmt.Fprintln(output, "\nProfiles available (name, sections, description):")
 		w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 		for _, name := range keys {
-			sections := profiles[name].Sections
+			sections := profiles[name].DefinedCommands()
 			sort.Strings(sections)
 			if len(sections) == 0 {
 				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\t%s\n", name, profiles[name].Description)
@@ -320,7 +320,7 @@ func completionScriptCommand(output io.Writer, _ *config.Config, _ commandLineFl
 	return nil
 }
 
-func sortedMapKeys(data map[string]config.ProfileInfo) []string {
+func sortedProfileKeys(data map[string]*config.Profile) []string {
 	keys := make([]string, 0, len(data))
 	for key := range data {
 		keys = append(keys, key)
@@ -354,11 +354,12 @@ func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, arg
 	// Show profile
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
+		if errors.Is(err, config.ErrNotFound) {
+			return fmt.Errorf("profile '%s' not found", flags.name)
+		}
 		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
 	}
-	if profile == nil {
-		return fmt.Errorf("profile '%s' not found", flags.name)
-	}
+
 	// Display deprecation notice
 	displayProfileDeprecationNotices(profile)
 
@@ -418,9 +419,7 @@ func selectProfiles(c *config.Config, flags commandLineFlags, args []string) []s
 
 	// Check for --all or groups
 	if containsString(args, "--all") {
-		for profileName := range c.GetProfileSections() {
-			profiles = append(profiles, profileName)
-		}
+		profiles = c.GetProfileNames()
 
 	} else if !c.HasProfile(flags.name) {
 		if names, err := c.GetProfileGroup(flags.name); err == nil && names != nil {
@@ -563,10 +562,10 @@ func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.Schedul
 
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
+		if errors.Is(err, config.ErrNotFound) {
+			return nil, nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
+		}
 		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-	}
-	if profile == nil {
-		return nil, nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
 	}
 
 	return schedule.NewSchedulerConfig(global), profile, profile.Schedules(), nil

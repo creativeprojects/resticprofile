@@ -123,9 +123,7 @@ func (c *Completer) listProfileNames() (list []string) {
 
 		if file, err := filesearch.FindConfigurationFile(filename); err == nil {
 			if conf, err := config.LoadFile(file, format); err == nil {
-				for name, _ := range conf.GetProfileSections() {
-					list = append(list, name)
-				}
+				list = append(list, conf.GetProfileNames()...)
 				for name, _ := range conf.GetProfileGroups() {
 					list = append(list, name)
 				}

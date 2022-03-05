@@ -13,7 +13,7 @@ type testProfileData struct {
 	config string
 }
 
-func TestGetProfileSectionsWithNothing(t *testing.T) {
+func TestGetProfileNamesWithNothing(t *testing.T) {
 	testData := []testProfileData{
 		{FormatTOML, ""},
 		{FormatJSON, "{}"},
@@ -28,14 +28,14 @@ func TestGetProfileSectionsWithNothing(t *testing.T) {
 			c, err := Load(bytes.NewBufferString(testConfig), format)
 			require.NoError(t, err)
 
-			profiles := c.GetProfileSections()
+			profiles := c.GetProfileNames()
 			assert.NotNil(t, profiles)
 			assert.Empty(t, profiles)
 		})
 	}
 }
 
-func TestGetProfileSectionsWithNoProfile(t *testing.T) {
+func TestGetProfileNamesWithNoProfile(t *testing.T) {
 	testData := []testProfileData{
 		{FormatTOML, `
 includes = ""
@@ -86,14 +86,14 @@ profiles:
 			c, err := Load(bytes.NewBufferString(testConfig), format)
 			require.NoError(t, err)
 
-			profiles := c.GetProfileSections()
+			profiles := c.GetProfileNames()
 			assert.NotNil(t, profiles)
 			assert.Empty(t, profiles)
 		})
 	}
 }
 
-func TestGetProfileSections(t *testing.T) {
+func TestGetProfileNames(t *testing.T) {
 	testData := []testProfileData{
 		{FormatTOML, `includes = "somefile"
 [profile1]
@@ -235,13 +235,14 @@ profiles:
 			assert.True(t, c.HasProfile("profile2"))
 			assert.True(t, c.HasProfile("profile3"))
 
-			profileSections := c.GetProfileSections()
+			profileSections := c.GetProfileNames()
 			assert.NotNil(t, profileSections)
 			assert.Len(t, profileSections, 3)
 
-			assert.ElementsMatch(t, []string{"backup"}, profileSections["profile1"].Sections)
-			assert.ElementsMatch(t, []string{"backup", "snapshots"}, profileSections["profile2"].Sections)
-			assert.ElementsMatch(t, []string{}, profileSections["profile3"].Sections)
+			profiles := c.GetProfiles()
+			assert.ElementsMatch(t, []string{"backup"}, profiles["profile1"].DefinedCommands())
+			assert.ElementsMatch(t, []string{"backup", "snapshots"}, profiles["profile2"].DefinedCommands())
+			assert.ElementsMatch(t, []string{}, profiles["profile3"].DefinedCommands())
 		})
 	}
 }

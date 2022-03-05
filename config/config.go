@@ -278,9 +278,9 @@ func (c *Config) HasProfile(profileKey string) bool {
 	return c.IsSet(c.getProfilePath(profileKey))
 }
 
-// GetProfileSections returns a list of profiles with all the sections defined inside each
-func (c *Config) GetProfileSections() map[string]ProfileInfo {
-	profiles := map[string]ProfileInfo{}
+// GetProfileNames returns all profile names defined in the configuration
+func (c *Config) GetProfileNames() []string {
+	profiles := make([]string, 0)
 	viperScope := c.viper
 	if c.GetVersion() >= Version02 {
 		// move to the profiles subsection
@@ -291,63 +291,30 @@ func (c *Config) GetProfileSections() map[string]ProfileInfo {
 		}
 	}
 	allSettings := viperScope.AllSettings()
-	for sectionKey, sectionRawValue := range allSettings {
-		if sectionKey == constants.SectionConfigurationGlobal ||
-			sectionKey == constants.SectionConfigurationGroups ||
-			sectionKey == constants.SectionConfigurationIncludes {
+	for sectionKey := range allSettings {
+		if c.GetVersion() == Version01 &&
+			(sectionKey == constants.SectionConfigurationGlobal ||
+				sectionKey == constants.SectionConfigurationGroups ||
+				sectionKey == constants.SectionConfigurationIncludes) {
 			continue
 		}
-		var profileInfo ProfileInfo
-		if c.format == FormatHCL {
-			profileInfo = c.getProfileInfoHCL(sectionRawValue)
-		} else {
-			profileInfo = c.getProfileInfo(sectionRawValue)
-		}
-		profiles[sectionKey] = profileInfo
+		profiles = append(profiles, sectionKey)
 	}
 	return profiles
 }
 
-func (c *Config) getProfileInfo(sectionRawValue interface{}) ProfileInfo {
-	profileInfo := NewProfileInfo()
-	if sectionValues, ok := sectionRawValue.(map[string]interface{}); ok {
-		// For each value in here, if it's a map it means it's defining some command parameters
-		for key, value := range sectionValues {
-			if key == constants.ParameterDescription {
-				if description, ok := value.(string); ok {
-					profileInfo.Description = description
-					continue
-				}
-			}
-			if _, ok := value.(map[string]interface{}); ok {
-				profileInfo.Sections = append(profileInfo.Sections, key)
-			}
+// GetProfiles returns a map of all available profiles with their configuration
+func (c *Config) GetProfiles() map[string]*Profile {
+	profiles := make(map[string]*Profile)
+	for _, profileName := range c.GetProfileNames() {
+		profile, err := c.GetProfile(profileName)
+		if err != nil {
+			clog.Error(err)
+			continue
 		}
+		profiles[profileName] = profile
 	}
-	return profileInfo
-}
-
-func (c *Config) getProfileInfoHCL(sectionRawValue interface{}) ProfileInfo {
-	profileInfo := NewProfileInfo()
-	if sectionValues, ok := sectionRawValue.([]map[string]interface{}); ok {
-		// for each map in the array
-		for _, subMap := range sectionValues {
-			// for each value in here, if it's a map it means it's defining some command parameters
-			for key, value := range subMap {
-				if key == constants.ParameterDescription {
-					if description, ok := value.(string); ok {
-						profileInfo.Description = description
-						continue
-					}
-				}
-				// Special case for hcl where each map will be wrapped around a list
-				if _, ok := value.([]map[string]interface{}); ok {
-					profileInfo.Sections = append(profileInfo.Sections, key)
-				}
-			}
-		}
-	}
-	return profileInfo
+	return profiles
 }
 
 // GetVersion returns the version of the configuration file.
@@ -450,7 +417,7 @@ func (c *Config) loadGroups() error {
 	return nil
 }
 
-// GetProfile in configuration. If the profile is not found, it returns nil (with no error)
+// GetProfile in configuration. If the profile is not found, it returns errNotFound
 func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	if c.sourceTemplates != nil {
 		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
@@ -462,9 +429,9 @@ func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	// profile returned CAN be nil
+	// profile shouldn't be nil with no error, but better safe than sorry
 	if profile == nil {
-		return nil, nil
+		return nil, errors.New("unexpected nil profile")
 	}
 	// All files in the configuration are relative to the configuration file,
 	// NOT the folder where resticprofile is started
@@ -475,14 +442,14 @@ func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	return profile, nil
 }
 
-// getProfile from configuration
+// getProfile from configuration. If the profile is not found, it returns errNotFound
 func (c *Config) getProfile(profileKey string) (*Profile, error) {
 	var err error
 	var profile *Profile
 
 	if !c.IsSet(c.getProfilePath(profileKey)) {
-		// key not found => returns a nil profile
-		return nil, nil
+		// profile key not found
+		return nil, ErrNotFound
 	}
 
 	profile = NewProfile(c, profileKey)
@@ -496,10 +463,10 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 		// Load inherited profile
 		profile, err = c.getProfile(inherit)
 		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
+			}
 			return nil, err
-		}
-		if profile == nil {
-			return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
 		}
 		// It doesn't make sense to inherit the Description field
 		profile.Description = ""
@@ -526,7 +493,8 @@ func (c *Config) getProfilePath(key string) string {
 	return constants.SectionConfigurationProfiles + "." + key
 }
 
-// GetSchedules loads all schedules from the configuration
+// GetSchedules loads all schedules from the configuration.
+// !!! Nothing is using this method yet !!!
 func (c *Config) GetSchedules() ([]*ScheduleConfig, error) {
 	if c.GetVersion() == Version01 {
 		return c.getSchedulesV1()
@@ -536,20 +504,17 @@ func (c *Config) GetSchedules() ([]*ScheduleConfig, error) {
 
 // getSchedulesV1 loads schedules from profiles
 func (c *Config) getSchedulesV1() ([]*ScheduleConfig, error) {
-	profiles := c.GetProfileSections()
+	profiles := c.GetProfileNames()
 	if len(profiles) == 0 {
 		return nil, nil
 	}
 	schedules := []*ScheduleConfig{}
-	for profileName := range profiles {
+	for _, profileName := range profiles {
 		profile, err := c.GetProfile(profileName)
 		if err != nil {
 			return nil, fmt.Errorf("cannot load profile %q: %w", profileName, err)
 		}
-		profileSchedules, err := profile.config.GetSchedules()
-		if err != nil {
-			return nil, fmt.Errorf("cannot load profile %q schedules: %w", profileName, err)
-		}
+		profileSchedules := profile.Schedules()
 		schedules = append(schedules, profileSchedules...)
 	}
 	return schedules, nil

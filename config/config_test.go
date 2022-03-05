@@ -344,3 +344,103 @@ repository = "overridden-repo"`)
 		assert.Error(t, err)
 	})
 }
+
+func TestGetProfiles(t *testing.T) {
+	var fixtures = []struct {
+		format  string
+		content string
+	}{
+		{
+			FormatTOML, `[default]
+repository="1"
+[default.snapshots]
+tags=true
+[default.check]
+tags=true
+[one]
+inherit="default"
+[two]
+repository="2"
+`,
+		},
+		{
+			FormatYAML, `---
+default:
+  repository: "1"
+  snapshots:
+    tags: true
+  check:
+    tags: true
+one:
+  inherit: "default"
+two:
+  repository: "2"
+`,
+		},
+		{
+			FormatJSON, `{"default":{
+  "repository":"1",
+  "snapshots":{
+    "tags":"true"
+  },
+  "check":{
+    "tags":"true"
+  }
+},
+"one":{
+  "inherit":"default"
+},
+"two":{
+  "repository":"2"
+}
+}`,
+		},
+	}
+
+	for _, fixture := range fixtures {
+		t.Run(fixture.format, func(t *testing.T) {
+			buffer := bytes.NewBufferString(fixture.content)
+			cfg, err := Load(buffer, fixture.format)
+			require.NoError(t, err)
+			assert.NotNil(t, cfg)
+
+			configs := cfg.GetProfiles()
+			assert.Len(t, configs, 3)
+
+			profile, ok := configs["default"]
+			require.True(t, ok)
+			require.NotNil(t, profile)
+
+			profile, ok = configs["one"]
+			require.True(t, ok)
+			require.NotNil(t, profile)
+
+			commands := profile.DefinedCommands()
+			assert.ElementsMatch(t, []string{"check", "snapshots"}, commands)
+
+			profile, ok = configs["two"]
+			require.True(t, ok)
+			require.NotNil(t, profile)
+
+			assert.Empty(t, profile.DefinedCommands())
+		})
+	}
+}
+
+func TestGetSchedules(t *testing.T) {
+	content := `---
+profile:
+  backup:
+    schedule: daily
+`
+	buffer := bytes.NewBufferString(content)
+	cfg, err := Load(buffer, FormatYAML)
+	require.NoError(t, err)
+	assert.NotNil(t, cfg)
+
+	schedules, err := cfg.GetSchedules()
+	require.NoError(t, err)
+	assert.Len(t, schedules, 1)
+
+	assert.Equal(t, []string{"daily"}, schedules[0].Schedules())
+}

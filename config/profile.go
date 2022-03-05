@@ -9,6 +9,10 @@ import (
 	"github.com/creativeprojects/resticprofile/shell"
 )
 
+type Empty interface {
+	IsEmpty() bool
+}
+
 // Profile contains the whole profile configuration
 type Profile struct {
 	config               *Config
@@ -66,6 +70,8 @@ type BackupSection struct {
 	OtherFlags       map[string]interface{} `mapstructure:",remain"`
 }
 
+func (s *BackupSection) IsEmpty() bool { return s == nil }
+
 // RetentionSection contains the specific configuration to
 // the 'forget' command when running as part of a backup
 type RetentionSection struct {
@@ -75,12 +81,16 @@ type RetentionSection struct {
 	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
 
+func (s *RetentionSection) IsEmpty() bool { return s == nil }
+
 // OtherSectionWithSchedule is a section containing schedule only specific parameters
 // (the other parameters being for restic)
 type OtherSectionWithSchedule struct {
 	ScheduleSection `mapstructure:",squash"`
 	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
+
+func (s *OtherSectionWithSchedule) IsEmpty() bool { return s == nil }
 
 // ScheduleSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleSection struct {
@@ -103,6 +113,8 @@ type CopySection struct {
 	ScheduleSection `mapstructure:",squash"`
 	OtherFlags      map[string]interface{} `mapstructure:",remain"`
 }
+
+func (s *CopySection) IsEmpty() bool { return s == nil }
 
 // NewProfile instantiates a new blank profile
 func NewProfile(c *Config, name string) *Profile {
@@ -347,6 +359,37 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 	}
 
 	return configs
+}
+
+// DefinedCommands returns all commands (also called sections) defined in the profile (backup, check, forget, etc.)
+func (p *Profile) DefinedCommands() []string {
+	commands := make([]string, 0)
+	// it seems we have to go through all of them (we can't use a Zero interface as some of them are maps)
+	if p.Backup != nil {
+		commands = append(commands, constants.CommandBackup)
+	}
+	if p.Retention != nil {
+		commands = append(commands, constants.SectionConfigurationRetention)
+	}
+	if p.Check != nil {
+		commands = append(commands, constants.CommandCheck)
+	}
+	if p.Copy != nil {
+		commands = append(commands, constants.CommandCopy)
+	}
+	if p.Forget != nil {
+		commands = append(commands, constants.CommandForget)
+	}
+	if p.Mount != nil {
+		commands = append(commands, constants.CommandMount)
+	}
+	if p.Prune != nil {
+		commands = append(commands, constants.CommandPrune)
+	}
+	if p.Snapshots != nil {
+		commands = append(commands, constants.CommandSnapshots)
+	}
+	return commands
 }
 
 func (p *Profile) allSchedulableSections() map[string]interface{} {

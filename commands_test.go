@@ -99,7 +99,7 @@ schedule = "daily"
 	parsedConfig, err := config.Load(bytes.NewBufferString(testConfig), "toml")
 	assert.Nil(t, err)
 
-	// Test that errors from getScheduleJobs are passed thru
+	// Test that errors from getScheduleJobs are passed through
 	_, _, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "non-existent"})
 	assert.EqualError(t, notFoundErr, "profile 'non-existent' not found")
 

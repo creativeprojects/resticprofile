@@ -226,3 +226,39 @@ nobackup:
         initialize: false
         repository: /Volumes/RAMDisk/{{ .Profile.Name }}_copy
         password-command2: echo test
+
+copytag:
+    inherit: default
+    backup:
+        source:
+            - "."
+            - "{{ .CurrentDir }}"
+        exclude: "private"
+        {{ template "tags" . }}
+    snapshots:
+        tag: true
+    forget:
+        tag: true
+    retention:
+        after-backup: true
+        tag: true
+
+copypath:
+    inherit: default
+    backup:
+        source:
+            - "."
+            - "{{ .CurrentDir }}"
+            - ".*"
+        exclude: "private"
+    snapshots:
+        path: false
+    forget:
+        path: true
+    retention:
+        after-backup: true
+        keep-last: 3
+        path: true
+
+documents2:
+    inherit: documents
