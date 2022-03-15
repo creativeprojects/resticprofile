@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -29,6 +30,9 @@ type Config struct {
 	groups          map[string]Group
 	sourceTemplates *template.Template
 	version         Version
+	issues          struct {
+		changedPaths map[string][]string // 'path' items that had been changed to absolute paths
+	}
 }
 
 // This is where things are getting hairy:
@@ -254,6 +258,26 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 	return err
 }
 
+// DisplayConfigurationIssues logs issues in the configuration for all profiles previously returned by GetProfile
+func (c *Config) DisplayConfigurationIssues() {
+	if len(c.issues.changedPaths) > 0 {
+		var msg []string
+		for path, resolved := range c.issues.changedPaths {
+			msg = append(msg, fmt.Sprintf(`> %s changes to "%s"`, path, strings.Join(resolved, `", "`)))
+		}
+		sort.Strings(msg)
+		msg = append([]string{
+			"the configuration contains relative 'path' items which may lead to unstable results in restic " +
+				"commands that select snapshots. Consider using absolute paths in 'path' (and 'source') or use " +
+				"'tag' instead of 'path' (path = false) to select snapshots for restic commands. Affected paths:",
+		}, msg...)
+		clog.Info(strings.Join(msg, fmt.Sprintln()))
+	}
+
+	// Reset issues
+	c.issues.changedPaths = nil
+}
+
 // IsSet checks if the key contains a value. Keys and subkeys can be separated by a "."
 func (c *Config) IsSet(key string) bool {
 	if strings.Contains(key, ".") && c.format == FormatHCL {
@@ -433,6 +457,10 @@ func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	if profile == nil {
 		return nil, errors.New("unexpected nil profile")
 	}
+
+	// Resolve config dependencies
+	profile.resolveConfiguration()
+
 	// All files in the configuration are relative to the configuration file,
 	// NOT the folder where resticprofile is started
 	// So we need to fix all relative files

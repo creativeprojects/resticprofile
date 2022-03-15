@@ -11,4 +11,10 @@ const (
 	CommandUnlock    = "unlock"
 	CommandMount     = "mount"
 	CommandCopy      = "copy"
+	CommandDump      = "dump"
+	CommandFind      = "find"
+	CommandLs        = "ls"
+	CommandRestore   = "restore"
+	CommandStats     = "stats"
+	CommandTag       = "tag"
 )

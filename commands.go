@@ -340,6 +340,8 @@ func containsString(args []string, arg string) bool {
 }
 
 func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+	defer c.DisplayConfigurationIssues()
+
 	// Show global section first
 	global, err := c.GetGlobalSection()
 	if err != nil {
@@ -443,6 +445,8 @@ func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlag
 
 // createSchedule accepts one argument from the commandline: --no-start
 func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+	defer c.DisplayConfigurationIssues()
+
 	type profileJobs struct {
 		scheduler schedule.SchedulerConfig
 		profile   string
@@ -511,6 +515,8 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 }
 
 func statusSchedule(w io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+	defer c.DisplayConfigurationIssues()
+
 	if !containsString(args, "--all") {
 		// simple case of displaying status for one profile
 		scheduler, profile, schedules, err := getScheduleJobs(c, flags)

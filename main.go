@@ -309,6 +309,7 @@ func runProfile(
 	}
 
 	displayProfileDeprecationNotices(profile)
+	c.DisplayConfigurationIssues()
 
 	// Send the quiet/verbose down to restic as well (override profile configuration)
 	if flags.quiet {
