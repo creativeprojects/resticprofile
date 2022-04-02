@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"runtime/debug"
+	"strings"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -415,8 +415,37 @@ Can you please open an issue on github including these details:
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "compiled", date)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "by", builtBy)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "error", r)
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "stack", string(debug.Stack()))
+		_, _ = fmt.Fprintf(w, "\t%s:\n%s\n", "stack", getStack())
 		w.Flush()
 		fmt.Fprint(os.Stderr, "===============================================================\n")
 	}
+}
+
+func getStack() string {
+	stack := ""
+	pc := make([]uintptr, 10)
+	n := runtime.Callers(4, pc)
+	if n == 0 {
+		return ""
+	}
+
+	pc = pc[:n] // pass only valid pcs to runtime.CallersFrames
+	frames := runtime.CallersFrames(pc)
+
+	// Loop to get frames.
+	// A fixed number of PCs can expand to an indefinite number of Frames.
+	for {
+		frame, more := frames.Next()
+
+		// stop when we get to the runtime bootstrap
+		if strings.Contains(frame.File, "runtime/") {
+			break
+		}
+		stack += fmt.Sprintf("%s\n\t%s:%d\n", frame.Function, frame.File, frame.Line)
+
+		if !more {
+			break
+		}
+	}
+	return stack
 }
