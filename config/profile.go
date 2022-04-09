@@ -37,6 +37,7 @@ type Profile struct {
 	RunAfter             []string                     `mapstructure:"run-after"`
 	RunAfterFail         []string                     `mapstructure:"run-after-fail"`
 	RunFinally           []string                     `mapstructure:"run-finally"`
+	StreamError          []StreamErrorSection         `mapstructure:"stream-error"`
 	StatusFile           string                       `mapstructure:"status-file"`
 	PrometheusSaveToFile string                       `mapstructure:"prometheus-save-to-file"`
 	PrometheusPush       string                       `mapstructure:"prometheus-push"`
@@ -124,6 +125,13 @@ type CopySection struct {
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
+
+type StreamErrorSection struct {
+	Pattern    string `mapstructure:"pattern"`
+	MinMatches int    `mapstructure:"min-matches"`
+	MaxRuns    int    `mapstructure:"max-runs"`
+	Run        string `mapstructure:"run"`
+}
 
 // NewProfile instantiates a new blank profile
 func NewProfile(c *Config, name string) *Profile {

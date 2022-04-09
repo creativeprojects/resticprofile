@@ -1,7 +1,6 @@
 package shell
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -41,6 +40,7 @@ type Command struct {
 	UsePowershell bool
 	sigChan       chan os.Signal
 	done          chan interface{}
+	analyser      *OutputAnalyser
 }
 
 // NewCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
@@ -49,6 +49,7 @@ func NewCommand(command string, args []string) *Command {
 		Command:   command,
 		Arguments: args,
 		Environ:   []string{},
+		analyser:  NewOutputAnalyser(),
 	}
 }
 
@@ -60,7 +61,13 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 		Environ:   []string{},
 		sigChan:   c,
 		done:      make(chan interface{}),
+		analyser:  NewOutputAnalyser(),
 	}
+}
+
+// OnErrorCallback registers a custom callback that is invoked when pattern (regex) matches a line in stderr.
+func (c *Command) OnErrorCallback(name, pattern string, minCount, maxCalls int, callback func(line string) error) error {
+	return c.analyser.SetCallback(name, pattern, minCount, maxCalls, false, callback)
 }
 
 // Run the command
@@ -68,8 +75,7 @@ func (c *Command) Run() (progress.Summary, string, error) {
 	var err error
 	var stdout, stderr io.ReadCloser
 
-	analyser := NewOutputAnalyser()
-	summary := progress.Summary{OutputAnalysis: analyser}
+	summary := progress.Summary{OutputAnalysis: c.analyser.Reset()}
 
 	command, args, err := c.getShellCommand()
 	if err != nil {
@@ -144,7 +150,7 @@ func (c *Command) Run() (progress.Summary, string, error) {
 			stderrOutput = os.Stderr
 		}
 
-		err = c.ScanStderr(stderr, stderrOutput, errors)
+		err = c.analyser.AnalyseLines(io.TeeReader(stderr, io.MultiWriter(stderrOutput, errors)))
 		if err != nil {
 			clog.Errorf("failed reading stderr from command: %s ; Cause: %s", command, err.Error())
 		}
@@ -159,8 +165,6 @@ func (c *Command) Run() (progress.Summary, string, error) {
 	// finish summary
 	summary.Duration = time.Since(start)
 	errorText := errors.String()
-	analyser.AnalyseStringLines(errorText)
-
 	return summary, errorText, err
 }
 
@@ -192,25 +196,6 @@ func (c *Command) getShellCommand() (string, []string, error) {
 	// Flatten all arguments into one string, sh expects one big string
 	flatCommand := append([]string{c.Command}, c.Arguments...)
 	return shell, []string{"-c", strings.Join(flatCommand, " ")}, nil
-}
-
-func (c *Command) ScanStderr(r io.Reader, w1, w2 io.Writer) error {
-	eol := []byte("\n")
-	if runtime.GOOS == "windows" {
-		eol = []byte("\r\n")
-	}
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		w1.Write(scanner.Bytes())
-		w1.Write(eol)
-		w2.Write(scanner.Bytes())
-		w2.Write(eol)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
 }
 
 // removeQuotes removes single and double quotes when the whole string is quoted.

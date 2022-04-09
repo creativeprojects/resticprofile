@@ -35,6 +35,11 @@ func (d *Display) addEntry(stack []string, key string, values []string) {
 	d.entries = append(d.entries, entry)
 }
 
+func (d *Display) addKeyOnlyEntry(stack []string, key string) {
+	d.addEntry(stack, key, nil)
+	d.entries[len(d.entries)-1].keyOnly = true
+}
+
 func (d *Display) Flush() {
 	tabWriter := tabwriter.NewWriter(d.writer, 0, 2, 2, ' ', 0)
 	// title
@@ -57,6 +62,10 @@ func (d *Display) Flush() {
 		if entry.key == "" {
 			continue
 		}
+		if entry.keyOnly {
+			fmt.Fprintf(tabWriter, "%s%s\n", prefix, entry.key)
+			continue
+		}
 		if len(entry.values) > 0 {
 			fmt.Fprintf(tabWriter, "%s%s:\t%s\n", prefix, entry.key, entry.values[0])
 		}
@@ -73,5 +82,6 @@ func (d *Display) Flush() {
 type Entry struct {
 	section string
 	key     string
+	keyOnly bool
 	values  []string
 }

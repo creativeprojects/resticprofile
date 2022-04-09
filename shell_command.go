@@ -1,27 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/progress"
 	"github.com/creativeprojects/resticprofile/shell"
 )
 
 type shellCommandDefinition struct {
-	command    string
-	args       []string
-	publicArgs []string
-	env        []string
-	stdin      io.ReadCloser
-	stdout     io.Writer
-	stderr     io.Writer
-	dryRun     bool
-	sigChan    chan os.Signal
-	setPID     shell.SetPID
-	scanOutput shell.ScanOutput
+	command     string
+	args        []string
+	publicArgs  []string
+	env         []string
+	stdin       io.ReadCloser
+	stdout      io.Writer
+	stderr      io.Writer
+	dryRun      bool
+	sigChan     chan os.Signal
+	setPID      shell.SetPID
+	scanOutput  shell.ScanOutput
+	streamError []config.StreamErrorSection
 }
 
 // newShellCommand creates a new shell command definition
@@ -44,12 +47,10 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 }
 
 // runShellCommand instantiates a shell.Command and sends the information to run the shell command
-func runShellCommand(command shellCommandDefinition) (progress.Summary, string, error) {
-	var err error
-
+func runShellCommand(command shellCommandDefinition) (summary progress.Summary, stderr string, err error) {
 	if command.dryRun {
 		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
-		return progress.Summary{}, "", nil
+		return
 	}
 
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
@@ -76,9 +77,40 @@ func runShellCommand(command shellCommandDefinition) (progress.Summary, string, 
 		shellCmd.ScanStdout = command.scanOutput
 	}
 
-	summary, stderr, err := shellCmd.Run()
-	if err != nil {
-		return summary, stderr, err
+	// stderr callbacks
+	if err = setupStreamErrorHandlers(&command, shellCmd); err != nil {
+		return
 	}
-	return summary, stderr, nil
+
+	summary, stderr, err = shellCmd.Run()
+	return
+}
+
+func setupStreamErrorHandlers(command *shellCommandDefinition, shellCmd *shell.Command) error {
+	for i, e := range command.streamError {
+		commandLine := e.Run
+
+		callback := func(line string) error {
+			errorCmd := shell.NewSignalledCommand(commandLine, nil, command.sigChan)
+			errorCmd.Environ = shellCmd.Environ
+			errorCmd.Stdout = command.stdout
+			errorCmd.Stderr = command.stderr
+
+			clog.Debugf(`starting stream error callback "%s" for line "%s"`, errorCmd.Command, line)
+			errorCmd.Stdin = strings.NewReader(line)
+
+			_, stderr, err := errorCmd.Run()
+			if err != nil {
+				err = newCommandError(shellCommandDefinition{publicArgs: []string{commandLine}}, stderr, err)
+			}
+			return err
+		}
+
+		err := shellCmd.OnErrorCallback(fmt.Sprintf("%d", i+1), e.Pattern, e.MinMatches, e.MaxRuns, callback)
+		if err != nil {
+			err = fmt.Errorf("stream error callback: %s failed to register %s: %w", e.Run, e.Pattern, err)
+			return err
+		}
+	}
+	return nil
 }

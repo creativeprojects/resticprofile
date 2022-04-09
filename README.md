@@ -2178,6 +2178,12 @@ Flags passed to the restic command line
 * **tls-client-cert**: string
 * **verbose**: true / false OR integer
 
+`[[profile.stream-error]]`
+* **pattern**: regex (pattern matching stderr of `restic`) 
+* **run**: string (command to run when stderr line is matched)
+* **max-runs**: number
+* **min-matches**: number
+
 `[profile.backup]`
 
 Flags used by resticprofile only
@@ -2456,6 +2462,11 @@ root:
         tag:
         - test
         - dev
+        
+    stream-error:
+        -
+          pattern: "/tmp/restic-check-cache.+no space left on device"
+          run: "rm -Rf /tmp/restic-check-cache*"          
 
 self:
     backup:
