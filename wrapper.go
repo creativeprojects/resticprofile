@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -206,12 +207,57 @@ func (r *resticWrapper) runProfile() error {
 	return nil
 }
 
-func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCommandDefinition {
+var commonResticArgsList = []string{
+	"--cacert",
+	"--cache-dir",
+	"--cleanup-cache",
+	"-h", "--help",
+	"--insecure-tls",
+	"--json",
+	"--key-hint",
+	"--limit-download",
+	"--limit-upload",
+	"--no-cache",
+	"-o", "--option",
+	"--password-command",
+	"-p", "--password-file",
+	"-q", "--quiet",
+	"-r", "--repo",
+	"--repository-file",
+	"--tls-client-cert",
+	"-v", "--verbose",
+}
+
+// commonResticArgs turns args into commonArgs containing only those args that all restic commands understand
+func (r *resticWrapper) commonResticArgs(args []string) (commonArgs []string) {
+	if !sort.StringsAreSorted(commonResticArgsList) {
+		sort.Strings(commonResticArgsList)
+	}
+	skipValue := true
+
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "-") {
+			lookup := strings.TrimSpace(strings.Split(arg, "=")[0])
+			index := sort.SearchStrings(commonResticArgsList, lookup)
+			if index < len(commonResticArgsList) && commonResticArgsList[index] == lookup {
+				commonArgs = append(commonArgs, arg)
+				skipValue = strings.Contains(arg, "=")
+				continue
+			}
+		} else if !skipValue {
+			commonArgs = append(commonArgs, arg)
+		}
+		skipValue = true
+	}
+	return
+}
+
+func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArgs ...string) shellCommandDefinition {
 	// Create local instance to allow modification
 	args = args.Clone()
 
-	if r.moreArgs != nil && len(r.moreArgs) > 0 {
-		args.AddArgs(r.moreArgs, shell.ArgCommandLineEscape)
+	if len(moreArgs) > 0 {
+		args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
 	}
 
 	// Special case for backup command
@@ -245,7 +291,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args) shellCo
 func (r *resticWrapper) runInitialize() error {
 	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
 	args := r.profile.GetCommandFlags(constants.CommandInit)
-	rCommand := r.prepareCommand(constants.CommandInit, args)
+	rCommand := r.prepareCommand(constants.CommandInit, args, r.commonResticArgs(r.moreArgs)...)
 	// don't display any error
 	rCommand.stderr = nil
 	_, stderr, err := runShellCommand(rCommand)
@@ -262,7 +308,7 @@ func (r *resticWrapper) runInitializeCopy() error {
 	// the copy command adds a 2 behind each flag about the secondary repository
 	// in the case of init, we want to promote the secondary repository as primary
 	args.PromoteSecondaryToPrimary()
-	rCommand := r.prepareCommand(constants.CommandInit, args)
+	rCommand := r.prepareCommand(constants.CommandInit, args, r.commonResticArgs(r.moreArgs)...)
 	// don't display any error
 	rCommand.stderr = nil
 	_, stderr, err := runShellCommand(rCommand)
@@ -276,7 +322,7 @@ func (r *resticWrapper) runCheck() error {
 	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
 	args := r.profile.GetCommandFlags(constants.CommandCheck)
 	for {
-		rCommand := r.prepareCommand(constants.CommandCheck, args)
+		rCommand := r.prepareCommand(constants.CommandCheck, args, r.commonResticArgs(r.moreArgs)...)
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
 		r.summary(constants.CommandCheck, summary, stderr, err)
@@ -294,7 +340,7 @@ func (r *resticWrapper) runRetention() error {
 	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
 	args := r.profile.GetRetentionFlags()
 	for {
-		rCommand := r.prepareCommand(constants.CommandForget, args)
+		rCommand := r.prepareCommand(constants.CommandForget, args, r.commonResticArgs(r.moreArgs)...)
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
 		r.summary(constants.SectionConfigurationRetention, summary, stderr, err)
@@ -312,7 +358,7 @@ func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
 	args := r.profile.GetCommandFlags(command)
 	for {
-		rCommand := r.prepareCommand(command, args)
+		rCommand := r.prepareCommand(command, args, r.moreArgs...)
 
 		if command == constants.CommandBackup && len(r.progress) > 0 {
 			if r.profile.Backup != nil {
@@ -344,7 +390,7 @@ func (r *resticWrapper) runCommand(command string) error {
 func (r *resticWrapper) runUnlock() error {
 	clog.Infof("profile '%s': unlock stale locks", r.profile.Name)
 	args := r.profile.GetCommandFlags(constants.CommandUnlock)
-	rCommand := r.prepareCommand(constants.CommandUnlock, args)
+	rCommand := r.prepareCommand(constants.CommandUnlock, args, r.commonResticArgs(r.moreArgs)...)
 	summary, stderr, err := runShellCommand(rCommand)
 	r.executionTime += summary.Duration
 	r.summary(constants.CommandUnlock, summary, stderr, err)
