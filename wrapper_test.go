@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,6 +33,33 @@ func init() {
 		mockBinary = "mock.exe"
 	} else {
 		mockBinary = "./mock"
+	}
+
+	// Add params that need to be passed to the mock binary
+	commonResticArgsList = append(commonResticArgsList, "--exit")
+}
+
+func TestCommonResticArgs(t *testing.T) {
+	wrapper := &resticWrapper{}
+	for _, arg := range commonResticArgsList {
+		var args []string
+		list := []string{"-x", "-x=1", "-x 2 x=y", "--xxx", "--xxx=v", "--xxx k=v", arg, arg + "=1", arg + " ka=va"}
+
+		for i := 0; i < 20; i++ {
+			rand.Shuffle(len(list), func(i, j int) { list[i], list[j] = list[j], list[i] })
+			args = args[:0]
+			for _, item := range list {
+				args = append(args, strings.Split(item, " ")...)
+			}
+
+			args = wrapper.commonResticArgs(args)
+
+			assert.Len(t, args, 4)
+			assert.Subset(t, args, []string{arg, arg + "=1", "ka=va"})
+			for _, item := range []string{"-x", "--xxx", "x=y", "k=v", "2"} {
+				assert.NotContains(t, args, item)
+			}
+		}
 	}
 }
 
