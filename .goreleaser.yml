@@ -1,6 +1,6 @@
 project_name: resticprofile
 env:
-  - RESTIC_VERSION=0.12.1
+  - RESTIC_VERSION=0.13.1
 
 before:
   hooks:
@@ -21,13 +21,13 @@ builds:
       - linux
       - windows
     goarch:
-      - 386
+      - "386"
       - amd64
       - arm
       - arm64
     goarm:
-      - 6
-      - 7
+      - "6"
+      - "7"
     ignore:
       - goos: darwin
         goarch: arm
@@ -45,7 +45,7 @@ builds:
       - darwin
       - windows
     goarch:
-      - 386
+      - "386"
       - amd64
 
 archives:
@@ -81,7 +81,6 @@ dockers:
     image_templates:
     - "creativeprojects/resticprofile:latest"
     - "creativeprojects/resticprofile:{{ .RawVersion }}"
-    skip_push: false
     dockerfile: build/Dockerfile
     extra_files:
     - build/restic
@@ -91,7 +90,7 @@ brews:
     name: resticprofile
     ids:
       - targz
-    goarm: 6
+    goarm: "6"
     tap:
       owner: creativeprojects
       name: "homebrew-tap"

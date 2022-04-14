@@ -191,6 +191,17 @@ stdin:
     snapshots:
         {{ template "tags" . }}
 
+stdin-command:
+    backup:
+        stdin-command:
+          - "cat *.go | gzip"
+          - "cat shell/*.go | gzip"
+        stdin-filename: stdin-test
+        {{ template "tags" . }}
+    inherit: default
+    snapshots:
+        {{ template "tags" . }}
+
 dropbox:
     initialize: false
     inherit: default
