@@ -123,7 +123,7 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 			if err != nil && err != io.EOF {
 				clog.Errorf("interrupting '%s' after stdin read error: %s", r.command, err)
 				if runtime.GOOS == "windows" {
-					os.Exit(1) // no signalling on Windows, use os.Exit() instead
+					return // that will close stdin and stops restic
 				} else if r.sigChan != nil {
 					r.sigChan <- os.Interrupt
 				}
