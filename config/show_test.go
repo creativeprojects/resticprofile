@@ -21,10 +21,12 @@ type testObject struct {
 	Person     testPerson             `mapstructure:"person"`
 	Persons    []testPerson           `mapstructure:"persons"`
 	Pointer    *testPointer           `mapstructure:"pointer"`
+	OtherShown string                 `show:"other-shown"`
 	Other      string                 `mapstructure:"other" show:"noshow"`
 	Hidden     string                 `mapstructure:""`
 	AlsoHidden string                 `mapstructure:"use"`
 	Map        map[string]interface{} `mapstructure:",remain"`
+	RemainMap  map[string]interface{} `show:",remain"`
 }
 
 type testPerson struct {
@@ -65,12 +67,24 @@ func TestShowStruct(t *testing.T) {
 			output: " id:  11\n\n person:\n  name:   test\n  valid:  true\n",
 		},
 		{
+			input:  testObject{Id: 11, Map: map[string]interface{}{"person": testPerson{Name: "test", IsValid: true}}},
+			output: " id:  11\n\n person:\n  name:   test\n  valid:  true\n",
+		},
+		{
 			input:  testObject{Id: 11, Persons: []testPerson{{Name: "p1", IsValid: true}, {Name: "p2", IsValid: false}}},
+			output: " id:  11\n\n persons:\n  name:   p1\n  valid:  true\n  -\n  name:  p2\n",
+		},
+		{
+			input:  testObject{Id: 11, Map: map[string]interface{}{"persons": []testPerson{{Name: "p1", IsValid: true}, {Name: "p2", IsValid: false}}}},
 			output: " id:  11\n\n persons:\n  name:   p1\n  valid:  true\n  -\n  name:  p2\n",
 		},
 		{
 			input:  testObject{Id: 11, Pointer: &testPointer{IsValid: true}},
 			output: " id:  11\n\n pointer:\n  valid:  true\n",
+		},
+		{
+			input:  testObject{Id: 11, OtherShown: "test"},
+			output: " id:     11\n other-shown:  test\n",
 		},
 		{
 			input: testObject{Id: 11, Person: testPerson{Properties: map[string][]string{
@@ -80,6 +94,10 @@ func TestShowStruct(t *testing.T) {
 		},
 		{
 			input:  testObject{Id: 11, Name: "test", Map: map[string]interface{}{"left": []string{"over"}}},
+			output: " id: 11\n name:  test\n left:  over\n",
+		},
+		{
+			input:  testObject{Id: 11, Name: "test", RemainMap: map[string]interface{}{"left": []string{"over"}}},
 			output: " id: 11\n name:  test\n left:  over\n",
 		},
 		{

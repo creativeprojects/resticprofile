@@ -134,19 +134,22 @@ func (c *Config) getSchedulesV1() ([]*ScheduleConfig, error) {
 	return schedules, nil
 }
 
-// unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options
-func (c *Config) unmarshalKeyV1(key string, rawVal interface{}) error {
+// unmarshalConfigV1 returns the viper.DecoderConfigOption to use for V1 configuration files
+func (c *Config) unmarshalConfigV1() viper.DecoderConfigOption {
+	c.requireVersion(Version01)
+
 	if c.format == "hcl" {
-		return c.viper.UnmarshalKey(key, rawVal, configOptionV1HCL)
+		return configOptionV1HCL
 	} else {
-		return c.viper.UnmarshalKey(key, rawVal, configOptionV1)
+		return configOptionV1
 	}
 }
 
 // sliceOfMapsToMapHookFunc merges a slice of maps to a map
 func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map && (to.Kind() == reflect.Struct || to.Kind() == reflect.Map) {
+		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map {
+			// unpack single slice always (needed for nested maps like OtherFlags)
 			source, ok := data.([]map[string]interface{})
 			if !ok {
 				return data, nil
@@ -157,14 +160,16 @@ func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 			if len(source) == 1 {
 				return source[0], nil
 			}
-			// flatten the slice into one map
-			convert := make(map[string]interface{})
-			for _, mapItem := range source {
-				for key, value := range mapItem {
-					convert[key] = value
+			// flatten slice of maps into one map
+			if to.Kind() == reflect.Struct || to.Kind() == reflect.Map {
+				convert := make(map[string]interface{})
+				for _, mapItem := range source {
+					for key, value := range mapItem {
+						convert[key] = value
+					}
 				}
+				return convert, nil
 			}
-			return convert, nil
 		}
 		return data, nil
 	}

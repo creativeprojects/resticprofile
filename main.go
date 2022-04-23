@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/bools"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
@@ -20,7 +19,9 @@ import (
 	"github.com/creativeprojects/resticprofile/preventsleep"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/spf13/pflag"
 )
@@ -236,6 +237,15 @@ func main() {
 		return
 	}
 
+	// detect restic version
+	if len(global.ResticVersion) == 0 {
+		if global.ResticVersion, err = restic.GetVersion(resticBinary); err != nil {
+			clog.Warningf("assuming restic is at latest known version ; %s", err.Error())
+			global.ResticVersion = restic.AnyVersion
+		}
+	}
+	clog.Debugf("restic %s", global.ResticVersion)
+
 	if c.HasProfile(flags.name) {
 		// if running as a systemd timer
 		notifyStart()
@@ -338,23 +348,32 @@ func runProfile(
 	// Send the quiet/verbose down to restic as well (override profile configuration)
 	if flags.quiet {
 		profile.Quiet = true
-		profile.Verbose = false
+		profile.Verbose = constants.VerbosityNone
 	}
 	if flags.verbose {
-		profile.Verbose = true
+		profile.Verbose = constants.VerbosityLevel1
+		profile.Quiet = false
+	}
+	if flags.veryVerbose {
+		profile.Verbose = constants.VerbosityLevel3
 		profile.Quiet = false
 	}
 
 	// change log filter according to profile settings
 	if profile.Quiet {
 		changeLevelFilter(clog.LevelWarning)
-	} else if profile.Verbose {
+	} else if profile.Verbose > constants.VerbosityNone && !flags.veryVerbose {
 		changeLevelFilter(clog.LevelDebug)
 	}
 
 	// use the broken arguments escaping (before v0.15.0)
 	if global.LegacyArguments {
 		profile.SetLegacyArg(true)
+	}
+
+	// tell the profile what version of restic is in use
+	if e := profile.SetResticVersion(global.ResticVersion); e != nil {
+		clog.Warningf("restic version %q is no valid semver: %s", global.ResticVersion, e.Error())
 	}
 
 	// Specific case for the "host" flag where an empty value should be replaced by the hostname

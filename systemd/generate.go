@@ -1,4 +1,4 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
 
 package systemd
 
@@ -10,10 +10,10 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/spf13/afero"
 )
 
@@ -139,7 +139,7 @@ func Generate(config Config) error {
 	if err != nil {
 		return err
 	}
-	unitTmpl, err := template.New("systemd.unit").Parse(systemdUnitTmpl)
+	unitTmpl, err := templates.New("systemd.unit").Parse(systemdUnitTmpl)
 	if err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func Generate(config Config) error {
 	if err != nil {
 		return err
 	}
-	timerTmpl, err := template.New("timer.unit").Parse(systemdTimerTmpl)
+	timerTmpl, err := templates.New("timer.unit").Parse(systemdTimerTmpl)
 	if err != nil {
 		return err
 	}

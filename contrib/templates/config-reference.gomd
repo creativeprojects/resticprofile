@@ -1,0 +1,334 @@
+{{- /* ------------------------------------------------------------------------------
+
+  Template that creates a configuration reference in markdown format
+
+  Usage: resticprofile generate --config-reference
+
+  Note: resticprofile bundles this template and uses it when no other
+        template was specified with command generate.
+
+  Template data type:
+    - github.com/creativeprojects/resticprofile/config.TemplateInfoData
+
+  Available extra functions (in addition to default funcs):
+    - {{ .Profile | properties }} - get all []PropertyInfo from a PropertySet
+    - {{ .. properties | own }} - select all resticprofile own properties
+    - {{ .. properties | restic }} - select all restic properties
+
+------------------------------------------------------------------------------ */ -}}
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+{{ if .Env.META_TITLE -}}
+  title: {{ .Env.META_TITLE }}
+{{- else -}}
+  title: "Reference"
+{{- end }}
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+{{ if .Env.META_WEIGHT -}}
+  weight: {{ .Env.META_WEIGHT }}
+{{- end }}
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+{{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
+
+{{ define "printCell" -}}
+    {{ . | replace "|" "/" | replace "\n" " " }}
+{{- end }}
+
+{{ define "printRange" -}}
+    {{- range $index, $item := . -}}
+        {{- if gt $index 0 }}, {{ end -}}
+        `{{ template "printCell" $item }}`
+    {{- end -}}
+{{- end }}
+
+{{ define "printPropertyType" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
+    {{- $more := 0 -}}
+    {{- $single := .IsSingle -}}
+    {{- if .CanBeBool -}}
+      `true` / `false`
+      {{- $more = 1 -}}
+    {{- end -}}
+    {{- if .CanBeNumeric -}}
+        {{- if $more }} OR {{ end -}}
+        {{- if .MustBeInteger -}}
+          `integer`
+        {{- else -}}
+          `numeric`
+        {{- end -}}
+        {{- $more = 1 -}}
+    {{- end -}}
+    {{- if .CanBeString -}}
+        {{- if $more }} OR {{ end -}}
+        {{- if $single -}}
+          `{{ if .Format }}{{ .Format }}{{ else }}string{{ end }}`
+        {{- else -}}
+          one or more `{{ if .Format }}{{ .Format }}{{ else }}string{{ end }}s`
+        {{- end -}}
+        {{- $more = 1 -}}
+    {{- end -}}
+    {{- if .CanBePropertySet -}}
+        {{- if $more }} OR {{ end -}}
+        {{- with .PropertySet -}}
+            {{- if .TypeName -}}
+                {{- if not $single }} one or more {{ end -}}
+                nested *[{{ .TypeName }}](#nested-{{ .TypeName | lower }})*
+            {{- else -}}
+                {{- if .OtherPropertyInfo -}}
+                  `key` => {{ template "printPropertyType" .OtherPropertyInfo }}
+                {{- else -}}
+                  `key` => `value`
+                {{- end -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- end }}
+
+{{ define "printPropertyTable" -}}
+    {{- "| Name              | Type                    | Default  | Notes |\n" -}}
+    {{- "|:------------------|:------------------------|:---------|:------|\n" -}}
+    {{ range . -}}
+        {{ template "printPropertyRow" . }}
+    {{- end -}}
+    {{- "\n\n" -}}
+{{ end }}
+
+{{ define "printPropertyRow" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
+    {{- if .IsDeprecated -}}
+      | ~~{{ template "printCell" .Name }}~~ |
+    {{- else -}}
+      | **{{ template "printCell" .Name }}** |
+    {{- end -}}
+    {{- template "printPropertyType" . }} |
+    {{- template "printRange" .DefaultValue }} |
+    {{- template "printDescription" . }} |
+{{ end }}
+
+{{ define "printDescription" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
+    {{- template "printCell" .Description
+    | regex "(\\s|$)(https://[^/\\s]+/resticprofile/)([^\\s]+)(\\s|$)" "$1[$3]($2$3)$4"
+    | trim
+    | trimSuffix "." -}}
+    {{- if .EnumValues -}}
+        {{- ". Is one of " }}{{ template "printRange" .EnumValues }}{{ " " -}}
+    {{- end -}}
+    {{- with .NumericRange -}}
+        {{- if .From | or .To -}}
+            {{- ". Must be " -}}
+            {{- if .From -}}
+              >{{ if not .FromExclusive }}={{ end }} {{.From}}
+              {{- if .To }} and {{ end -}}
+            {{- end -}}
+            {{- if .To }} <{{- if not .FromExclusive }}={{ end }} {{.To}}{{ end -}}
+            {{- " " -}}
+        {{- end -}}
+    {{- end -}}
+    {{- if .ExampleValues -}}
+        {{- ". **Examples**: " }}{{ template "printRange" .ExampleValues }}{{ " " -}}
+    {{- end -}}
+    {{- if .IsOption -}}
+        {{- with .Option -}}
+            {{- if .FromVersion | or .RemovedInVersion -}}
+                {{- ". `restic" -}}
+                {{- if .FromVersion }} >= {{ template "printCell" .FromVersion }}{{ end -}}
+                {{- if .RemovedInVersion }} < {{ template "printCell" .RemovedInVersion }}{{ end -}}
+                {{- "` " -}}
+            {{- end -}}
+            {{- if .OnlyInOS -}}
+                {{- ". Available only for " }}{{ template "printRange" .OnlyInOS }}{{ " " -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{ end }}
+
+{{ if not .Env.LAYOUT_NO_HEADLINE -}}
+    {{ $layoutHeadings -}}# Resticprofile configuration reference
+{{- end }}
+
+{{ $layoutNoticeStart }}
+The configuration file reference is generated from resticprofile's data model and restic's manual pages.
+{{ $layoutNoticeEnd }}
+
+{{ $layoutHeadings -}}# Sections
+
+{{ $layoutHeadings -}}## Section **global**
+
+The `global` section is at the root of the configuration file and contains the global
+settings for resticprofile.
+
+{{ template "printPropertyTable" .Global | properties }}
+
+{{ $layoutHeadings -}}## Profile sections
+
+In config file format v1, the name of this section is the name of your profile
+(excluding reserved names like `global`, `groups`, `includes` & `version`).
+
+From config file format v2, profile sections are declared as named configuration
+structure below section `profiles` (see [Configuration v2]({{- $configWebUrl -}}/v2/)
+for details).
+
+{{ $layoutHeadings -}}### Section **profile**
+
+{{ with .Profile | properties | own -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags used by **resticprofile** only:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+{{ with .Profile | properties | restic -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags passed to the **restic** command line:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+
+{{ $layoutNoticeStart }}
+Most **restic** command flags defined in profile sections below can also be set at profile level.
+They will be inherited in all sections that define these flags and ignored in all others.
+{{ $layoutNoticeEnd }}
+
+{{ range .ProfileSections -}}{{ $layoutHeadings -}}### Section profile.**{{.Name}}**
+
+{{ if .IsCommandSection -}}
+  This section configures restic command `{{.Command.GetName}}` {{- " " -}}
+  {{- if .Command.GetFromVersion | or .Command.GetRemovedInVersion -}}
+      {{- if .Command.GetFromVersion }} available since `{{ .Command.GetFromVersion }}` {{ end -}}
+      {{- if .Command.GetRemovedInVersion }} removed in `{{ .Command.GetRemovedInVersion }}` {{ end -}}
+  {{- end -}}.
+  Information on command and flags is copied from the [restic](https://github.com/restic/restic) {{- " " -}}
+  manual pages.
+{{- end }}
+
+{{ .Description }}
+
+{{ with . | properties | own -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags used by **resticprofile** only:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+{{ with . | properties | restic -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags passed to the **restic** command line:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+{{ $layoutHintStart }}
+Flags declared for the **restic** command line in section *[profile](#section-profile)*
+can be overridden in this section.
+{{ $layoutHintEnd }}
+{{ end }}
+
+{{ $layoutHeadings -}}## Nested profile sections
+
+Nested sections describe configuration structure that is assigned to flags within the
+configuration, see [HTTP Hooks]({{- $configWebUrl -}}/http_hooks/) as an example.
+
+{{ range .NestedProfileSections -}}{{ $layoutHeadings -}}### Nested *{{ .Name }}*
+
+{{ .Description }}
+
+{{ with . | properties -}}
+    {{- if . -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+{{- end }}
+
+{{ $layoutHeadings -}}## Section **groups**
+
+Config file format v1 uses a simplified groups section. Every named item below `groups`
+maps to one or more `profile` names (list of strings).
+
+From file format v2, every named item in the groups section is configuration structure
+following the format described below (see [Configuration v2]({{- $configWebUrl -}}/v2/)
+for details):
+
+{{ template "printPropertyTable" .Group | properties }}
+
+{{ $layoutHeadings -}}# Value types
+
+**Type**: `true` / `false`
+: Is a boolean value to toggle a flag or specific behaviour that has
+to match the syntax for booleans in the used file format.
+
+**Type**: `numeric` & `integer`
+: Is a numeric value (whole-number for `integer`) that has to match the
+syntax for numbers in the used file format.
+
+**Type**: `string`
+: Is a sequence of UTF-8 characters that usually have to be placed in
+quotes and must match the syntax for strings in the used file format.
+
+**Type**: `duration`
+: A duration `string` is a sequence of decimal numbers, each with optional
+fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid
+time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+
+**Type**: `uri`
+: An uri `string` must be a valid URI or URL.
+
+**Type**: `hostname`
+: A hostname `string` must be a valid hostname or FQDN.
+
+**Type**: one or more `[type]s`
+: Indicates that multiple values of `[type]` can be specified as a list.
+The list syntax depends on the used file format.
+
+**Type**: one or more nested `[type]`
+: Is a value or a list of values that follow the configuration structure declared
+in `[type]`.
+
+**Type**: `key` => `[type]`
+: Is a value that is configuration structure of `string` keys and values of `[type]`.
+
+**Type**: `key` => `value`
+: Is a value that is configuration structure of `string` keys and values of any type.
+
+{{ $layoutHeadings -}}# JSON schema
+
+resticprofile provides a JSON schema for v1 & v2 configuration files. The schema may be
+used to validate configuration files in JSON format (and possibly others), see
+[JSON schema]({{- $configWebUrl -}}/jsonschema/) for details.
+
+JSON schema URLs for **any** *restic* version:
+
+* Config V1: {{ $webBaseUrl }}/jsonschema/config-1.json
+* Config V2: {{ $webBaseUrl }}/jsonschema/config-2.json
+
+JSON schema URLs for a specific *restic* version:
+
+* `.../config-1-restic-{MAJOR}-{MINOR}.json`
+* `.../config-2-restic-{MAJOR}-{MINOR}.json`
+
+Available URLs:
+{{ range $v := .KnownResticVersions }}
+  * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $v | replace "." "-" }}.json
+  * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $v | replace "." "-" }}.json
+{{- end }}

@@ -28,6 +28,13 @@ COVERAGE_FILE=coverage.out
 
 BUILD=build/
 
+RESTIC_GEN=$(BUILD)restic-generator
+RESTIC_DIR=$(BUILD)restic-
+RESTIC_CMD=$(BUILD)restic-commands.json
+
+JSONSCHEMA_DIR=docs/static/jsonschema
+CONFIG_REFERENCE_DIR=docs/content/configuration/reference
+
 BUILD_DATE=`date`
 BUILD_COMMIT=`git rev-parse HEAD`
 
@@ -48,7 +55,7 @@ TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
-all: download test build
+all: prepare test build
 .PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc generate-install syslog checkdoc
 
 $(GOBIN)/eget:
@@ -59,50 +66,52 @@ $(GOBIN)/goreleaser: $(GOBIN)/eget
 	@echo "[*] $@"
 	eget goreleaser/goreleaser --to $(GOBIN)
 
-$(GOBIN)/mockery: $(GOBIN)/eget
+.PHONY: prepare
+prepare: download
 	@echo "[*] $@"
-	eget vektra/mockery --to $(GOBIN)
-
-.PHONY: mocks
-mocks: $(GOBIN)/mockery
-	@echo "[*] $@"
-	mockery --name=Handler --dir schedule --recursive
+	GOPATH="$(GOPATH)" \
+ 	$(GOCMD) generate ./...
 
 download:
 	@echo "[*] $@"
 	@$(GOMOD) download
 
-build: download
+download-restic-key:
 	@echo "[*] $@"
-	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	KEY_FILE=$(abspath restic/gpg-key.asc)
+	curl https://restic.net/gpg-key-alex.asc > $(KEY_FILE)
 
-install: download
+install: prepare
 	@echo "[*] $@"
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-mac: download
+build: prepare
+	@echo "[*] $@"
+	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+
+build-mac: prepare
 	@echo "[*] $@"
 	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-linux: download
+build-linux: prepare
 	@echo "[*] $@"
 	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-pi: download
+build-pi: prepare
 	@echo "[*] $@"
 	GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-windows: download
+build-windows: prepare
 	@echo "[*] $@"
 	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-all: build-mac build-linux build-pi build-windows
 
-test: download mocks
+test: prepare
 	@echo "[*] $@"
 	$(GOTEST) -v $(TESTS)
 
-test-ci: download mocks
+test-ci: prepare
 	@echo "[*] $@"
 	$(GOTEST) -v -short ./...
 	$(GOTEST) -v ./priority
@@ -155,6 +164,54 @@ toc:
 generate-install:
 	@echo "[*] $@"
 	godownloader .godownloader.yml -r creativeprojects/resticprofile -o install.sh
+
+generate-restic:
+	@echo "[*] $@"
+	$(GOBUILD) -o $(RESTIC_GEN) $(abspath restic/generator)
+
+	rm $(RESTIC_CMD) || echo "clean $(RESTIC_CMD)"
+
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.9.4 --version=0.9.4 --base-version --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.10.0 --version=0.10.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.11.0 --version=0.11.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.12.0 --version=0.12.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.13.0 --version=0.13.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.14.0 --version=0.14.0 --commands $(RESTIC_CMD)
+
+	cp $(RESTIC_CMD) restic/commands.json
+
+generate-jsonschema: build
+	@echo "[*] $@"
+
+	mkdir -p $(JSONSCHEMA_DIR) || echo "$(JSONSCHEMA_DIR) exists"
+
+	$(abspath $(BINARY)) generate --json-schema v1 > $(JSONSCHEMA_DIR)/config-1.json
+	$(abspath $(BINARY)) generate --json-schema v2 > $(JSONSCHEMA_DIR)/config-2.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.9 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-9.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.9 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-9.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.10 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-10.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.10 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-10.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.11 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-11.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.11 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-11.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.12 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-12.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.12 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-12.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.13 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-13.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.13 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-13.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.14 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-14.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.14 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-14.json
+
+generate-config-reference: build
+	@echo "[*] $@"
+
+	META_TITLE="Reference" \
+	META_WEIGHT="50" \
+	LAYOUT_NO_HEADLINE="1" \
+	LAYOUT_HEADINGS_START="#" \
+	LAYOUT_NOTICE_START="{{% notice note %}}" \
+	LAYOUT_NOTICE_END="{{% /notice %}}" \
+	LAYOUT_HINT_START="{{% notice hint %}}" \
+	LAYOUT_HINT_END="{{% /notice %}}" \
+	$(abspath $(BINARY)) generate --config-reference > $(CONFIG_REFERENCE_DIR)/index.md
 
 syslog:
 	@echo "[*] $@"

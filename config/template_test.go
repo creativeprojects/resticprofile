@@ -7,9 +7,12 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"text/template"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/restic"
+	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -218,7 +221,7 @@ tag = ["test", "{{ .Profile.Name }}"]
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Contains(t, profile.Snapshots.OtherFlags["tag"], "profile1")
+	assert.Contains(t, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"], "profile1")
 }
 
 func TestResolveHostname(t *testing.T) {
@@ -239,7 +242,7 @@ tag = "{{ .Hostname }}"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Contains(t, profile.Snapshots.OtherFlags["tag"], hostname)
+	assert.Contains(t, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"], hostname)
 }
 
 func TestResolveCurrentDir(t *testing.T) {
@@ -257,7 +260,7 @@ tag = "{{ .CurrentDir }}"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, currentDir, profile.Snapshots.OtherFlags["tag"])
+	assert.Equal(t, currentDir, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"])
 }
 
 func TestResolveBinaryDir(t *testing.T) {
@@ -275,7 +278,7 @@ tag = "{{ .BinaryDir }}"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, binaryDir, profile.Snapshots.OtherFlags["tag"])
+	assert.Equal(t, binaryDir, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"])
 }
 
 func TestInheritanceWithTemplates(t *testing.T) {
@@ -292,7 +295,7 @@ repository = "/mnt/backup"
 `
 
 	// try compiling the template manually first
-	temp, err := template.New("").Parse(testConfig)
+	temp, err := templates.New("").Parse(testConfig)
 	require.NoError(t, err)
 	buffer := &strings.Builder{}
 	err = temp.Execute(buffer, nil)
@@ -382,4 +385,74 @@ profile:
 			assert.Contains(t, profile.Forget.OtherFlags["tag"], "profile")
 		})
 	}
+}
+
+func TestInfoData(t *testing.T) {
+	data := NewTemplateInfoData(restic.AnyVersion)
+
+	assert.Equal(t, time.Now().Truncate(time.Minute), data.Now.Truncate(time.Minute))
+	assert.NotEmpty(t, data.TempDir)
+	assert.NotEmpty(t, data.Env)
+	assert.NotEmpty(t, data.CurrentDir)
+	assert.NotEmpty(t, data.Hostname)
+	assert.NotEmpty(t, data.ConfigDir)
+	assert.NotEmpty(t, data.BinaryDir)
+	assert.Empty(t, data.TemplateData.Profile.Name)
+	assert.Empty(t, data.TemplateData.Schedule.Name)
+
+	assert.IsType(t, new(profileInfo), data.Profile)
+	assert.Equal(t, NewGlobalInfo(), data.Global)
+	assert.Equal(t, NewGroupInfo(), data.Group)
+	assert.Equal(t, restic.KnownVersions(), data.KnownResticVersions)
+
+	assert.NotEmpty(t, data.ProfileSections())
+
+	t.Run("NestedProfileSections", func(t *testing.T) {
+		sections := data.NestedProfileSections()
+		assert.NotEmpty(t, sections)
+		assert.Subset(t, collect.From(sections, SectionInfo.Name), []string{
+			"SendMonitoringHeader",
+			"SendMonitoringSection",
+			"StreamErrorSection",
+		})
+	})
+
+	funcs := data.GetFuncs()
+	props := collect.From(data.Profile.Properties(), data.Profile.PropertyInfo)
+	assert.Len(t, funcs, 3)
+	assert.NotEmpty(t, props)
+
+	t.Run("properties", func(t *testing.T) {
+		fn, ok := funcs["properties"].(func(set PropertySet) []PropertyInfo)
+		require.True(t, ok)
+		assert.Equal(t, props, fn(data.Profile))
+	})
+
+	t.Run("own/restic", func(t *testing.T) {
+		own, ok := funcs["own"].(func(p []PropertyInfo) []PropertyInfo)
+		require.True(t, ok)
+		notOwn, ok := funcs["restic"].(func(p []PropertyInfo) []PropertyInfo)
+		require.True(t, ok)
+
+		ownProps := own(props)
+		notOwnProps := notOwn(props)
+
+		assert.NotEqual(t, props, ownProps)
+		assert.NotEqual(t, props, notOwnProps)
+		assert.Subset(t, props, ownProps)
+		assert.Subset(t, props, notOwnProps)
+		assert.ElementsMatch(t, props, append(notOwnProps, ownProps...))
+
+		for _, prop := range ownProps {
+			assert.NotContains(t, notOwnProps, prop)
+			assert.Contains(t, props, prop)
+			assert.False(t, prop.IsOption())
+		}
+
+		for _, prop := range notOwnProps {
+			assert.NotContains(t, ownProps, prop)
+			assert.Contains(t, props, prop)
+			assert.True(t, prop.IsOption())
+		}
+	})
 }

@@ -15,12 +15,16 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/config/jsonschema"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/creativeprojects/resticprofile/win"
+	"golang.org/x/exp/slices"
 )
 
 type ownCommand struct {
@@ -38,6 +42,11 @@ var ownCommands []ownCommand
 
 func init() {
 	ownCommands = getOwnCommands()
+
+	// own commands have no profile section, prevent their definition
+	for _, command := range ownCommands {
+		config.ExcludeProfileSection(command.name)
+	}
 }
 
 func getOwnCommands() []ownCommand {
@@ -124,9 +133,11 @@ func getOwnCommands() []ownCommand {
 			needConfiguration: false,
 			hide:              false,
 			flags: map[string]string{
-				"--random-key [size]": "generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)",
-				"--bash-completion":   "generate a shell completion script for bash",
-				"--zsh-completion":    "generate a shell completion script for zsh",
+				"--random-key [size]":                            "generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)",
+				"--config-reference [--version 0.14] [template]": "generate a config file reference from a go template (defaults to the built-in markdown template when omitted)",
+				"--json-schema [--version 0.14] [v1|v2]":         "generate a JSON schema that validates resticprofile configuration files in YAML or JSON format",
+				"--bash-completion":                              "generate a shell completion script for bash",
+				"--zsh-completion":                               "generate a shell completion script for zsh",
 			},
 		},
 		// hidden commands
@@ -173,7 +184,7 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 func runOwnCommand(configuration *config.Config, commandName string, flags commandLineFlags, args []string) error {
 	for _, command := range ownCommands {
 		if command.name == commandName {
-			if help := containsString(args, "--help") || containsString(args, "-h"); help && !command.hide {
+			if help := slices.Contains(args, "--help") || slices.Contains(args, "-h"); help && !command.hide {
 				args = append([]string{command.name}, args...)
 				return displayHelpCommand(os.Stdout, configuration, flags, args)
 			} else {
@@ -248,19 +259,77 @@ var zshCompletionScript string
 
 func generateCommand(output io.Writer, config *config.Config, flags commandLineFlags, args []string) (err error) {
 	// enforce no-log
-	clog.GetDefaultLogger().SetHandler(clog.NewDiscardHandler())
+	logger := clog.GetDefaultLogger()
+	handler := logger.GetHandler()
+	logger.SetHandler(clog.NewDiscardHandler())
 
-	if containsString(args, "--bash-completion") {
+	if slices.Contains(args, "--bash-completion") {
 		_, err = fmt.Fprintln(output, bashCompletionScript)
-	} else if containsString(args, "--random-key") {
-		flags.resticArgs = args
+	} else if slices.Contains(args, "--config-reference") {
+		err = generateConfigReference(output, config, flags, args[slices.Index(args, "--config-reference")+1:])
+	} else if slices.Contains(args, "--json-schema") {
+		err = generateJsonSchema(output, config, flags, args[slices.Index(args, "--json-schema")+1:])
+	} else if slices.Contains(args, "--random-key") {
+		flags.resticArgs = args[slices.Index(args, "--random-key"):]
 		err = randomKey(output, config, flags, args)
-	} else if containsString(args, "--zsh-completion") {
+	} else if slices.Contains(args, "--zsh-completion") {
 		_, err = fmt.Fprintln(output, zshCompletionScript)
 	} else {
 		err = fmt.Errorf("nothing to generate for: %s", strings.Join(args, ", "))
 	}
+
+	if err != nil {
+		logger.SetHandler(handler)
+	}
 	return
+}
+
+//go:embed contrib/templates/config-reference.gomd
+var configReferenceTemplate string
+
+func generateConfigReference(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) (err error) {
+	resticVersion := restic.AnyVersion
+	if slices.Contains(args, "--version") {
+		args = args[slices.Index(args, "--version"):]
+		if len(args) > 1 {
+			resticVersion = args[1]
+			args = args[2:]
+		}
+	}
+
+	data := config.NewTemplateInfoData(resticVersion)
+	tpl := templates.New("config-reference", data.GetFuncs())
+
+	if len(args) > 0 {
+		tpl, err = tpl.ParseFiles(args...)
+	} else {
+		tpl, err = tpl.Parse(configReferenceTemplate)
+	}
+
+	if err != nil {
+		err = fmt.Errorf("parsing failed: %w", err)
+	} else {
+		err = tpl.Execute(output, data)
+	}
+	return
+}
+
+func generateJsonSchema(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) (err error) {
+	resticVersion := restic.AnyVersion
+	if slices.Contains(args, "--version") {
+		args = args[slices.Index(args, "--version"):]
+		if len(args) > 1 {
+			resticVersion = args[1]
+			args = args[2:]
+		}
+	}
+
+	version := config.Version02
+	if len(args) > 0 && args[0] == "v1" {
+		version = config.Version01
+	}
+
+	return jsonschema.WriteJsonSchema(version, resticVersion, output)
 }
 
 func sortedProfileKeys(data map[string]*config.Profile) []string {
@@ -270,16 +339,6 @@ func sortedProfileKeys(data map[string]*config.Profile) []string {
 	}
 	sort.Strings(keys)
 	return keys
-}
-
-// containsString returns true if arg is contained in args.
-func containsString(args []string, arg string) bool {
-	for _, a := range args {
-		if a == arg {
-			return true
-		}
-	}
-	return false
 }
 
 func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
@@ -363,7 +422,7 @@ func selectProfiles(c *config.Config, flags commandLineFlags, args []string) []s
 	profiles := make([]string, 0, 1)
 
 	// Check for --all or groups
-	if containsString(args, "--all") {
+	if slices.Contains(args, "--all") {
 		profiles = c.GetProfileNames()
 
 	} else if !c.HasProfile(flags.name) {
@@ -407,7 +466,7 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 			err = requireScheduleJobs(jobs, profileFlags)
 
 			// Skip profile with no schedules when "--all" option is set.
-			if err != nil && containsString(args, "--all") {
+			if err != nil && slices.Contains(args, "--all") {
 				continue
 			}
 		}
@@ -418,7 +477,7 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 		displayProfileDeprecationNotices(profile)
 
 		// add the no-start flag to all the jobs
-		if containsString(args, "--no-start") {
+		if slices.Contains(args, "--no-start") {
 			for id := range jobs {
 				jobs[id].SetFlag("no-start", "")
 			}
@@ -460,7 +519,7 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 func statusSchedule(w io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
 	defer c.DisplayConfigurationIssues()
 
-	if !containsString(args, "--all") {
+	if !slices.Contains(args, "--all") {
 		// simple case of displaying status for one profile
 		scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 		if err != nil {

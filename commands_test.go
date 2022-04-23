@@ -188,28 +188,6 @@ schedule = "daily"
 	}
 }
 
-func TestContainsString(t *testing.T) {
-	list := []string{"3a", "2b", "1c"}
-
-	tests := map[string]bool{
-		"":   false,
-		"3b": false,
-		"3a": true,
-		"2b": true,
-		"1c": true,
-		"0d": false,
-		"1":  false,
-	}
-
-	for value, contained := range tests {
-		assert.Equal(t, contained, containsString(list, value))
-	}
-
-	assert.False(t, containsString(nil, ""))
-	assert.False(t, containsString([]string{}, ""))
-	assert.True(t, containsString([]string{""}, ""))
-}
-
 func TestSelectProfiles(t *testing.T) {
 	testConfig := `
 [global]
@@ -300,6 +278,37 @@ func TestGenerateCommand(t *testing.T) {
 		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--zsh-completion"}))
 		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
+	})
+
+	t.Run("--config-reference", func(t *testing.T) {
+		buffer.Reset()
+		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--config-reference"}))
+		ref := buffer.String()
+		assert.Contains(t, ref, "| **ionice-class** |")
+		assert.Contains(t, ref, "| **check-after** |")
+		assert.Contains(t, ref, "| **continue-on-error** |")
+	})
+
+	t.Run("--json-schema", func(t *testing.T) {
+		buffer.Reset()
+		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--json-schema"}))
+		ref := buffer.String()
+		assert.Contains(t, ref, "\"profiles\":")
+		assert.Contains(t, ref, "/jsonschema/config-2.json")
+	})
+
+	t.Run("--json-schema v1", func(t *testing.T) {
+		buffer.Reset()
+		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--json-schema", "v1"}))
+		ref := buffer.String()
+		assert.Contains(t, ref, "/jsonschema/config-1.json")
+	})
+
+	t.Run("--json-schema --version 0.13 v1", func(t *testing.T) {
+		buffer.Reset()
+		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--json-schema", "--version", "0.13", "v1"}))
+		ref := buffer.String()
+		assert.Contains(t, ref, "/jsonschema/config-1-restic-0-13.json")
 	})
 
 	t.Run("--random-key", func(t *testing.T) {

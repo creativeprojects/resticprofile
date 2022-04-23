@@ -9,9 +9,11 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/maps"
 )
 
 func runForVersions(t *testing.T, runner func(t *testing.T, version, prefix string)) {
@@ -153,7 +155,7 @@ quiet = true
 [` + prefix + `profile]
 inherit = "parent"
 third-value = 3
-verbose = true
+verbose = 1
 quiet = false
 `
 		profile, err := getProfile("toml", testConfig, "profile", "")
@@ -169,7 +171,7 @@ quiet = false
 		assert.Equal(t, int64(3), profile.OtherFlags["third-value"])
 		assert.Equal(t, int64(2), profile.OtherFlags["override-value"])
 		assert.Equal(t, false, profile.Quiet)
-		assert.Equal(t, true, profile.Verbose)
+		assert.Equal(t, constants.VerbosityLevel1, profile.Verbose)
 	})
 }
 
@@ -308,7 +310,7 @@ from-password-file = "key"
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
 		assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
-		assert.Equal(t, []string{"/wd/key"}, profile.Dump.OtherFlags["password-file"])
+		assert.Equal(t, []string{"/wd/key"}, profile.OtherSections[constants.CommandDump].OtherFlags["password-file"])
 		assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
 		assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
 	})
@@ -367,7 +369,7 @@ func TestHostInAllSupportedSections(t *testing.T) {
 
 		flags := shell.NewArgs()
 		if section == constants.SectionConfigurationRetention {
-			flags = addOtherArgs(flags, profile.Retention.OtherFlags)
+			addArgsFromMap(flags, nil, profile.Retention.OtherFlags)
 		} else {
 			flags = profile.GetCommandFlags(section)
 		}
@@ -411,6 +413,69 @@ host = %s
 	}
 }
 
+func TestFillGenericSections(t *testing.T) {
+	t.Run("FillAllSections", func(t *testing.T) {
+		profile, err := getProfile("toml", `[profile]`, "profile", "./examples")
+		require.NoError(t, err)
+
+		assert.NotEmpty(t, profile.OtherSections)
+		assert.Subset(t, maps.Keys(profile.AllSections()), maps.Keys(profile.OtherSections))
+
+		sectionStructs := profile.allSectionStructs()
+		assert.Subset(t, maps.Keys(sectionStructs), []string{
+			constants.CommandBackup,
+			constants.CommandCheck,
+			constants.CommandCopy,
+			constants.CommandForget,
+			constants.CommandPrune,
+			constants.CommandInit,
+			constants.SectionConfigurationRetention,
+		})
+
+		for _, name := range restic.CommandNamesForVersion(restic.AnyVersion) {
+			if _, found := sectionStructs[name]; found {
+				assert.NotContains(t, profile.OtherSections, name)
+			} else {
+				assert.Contains(t, profile.OtherSections, name)
+				assert.Nil(t, profile.OtherSections[name])
+			}
+		}
+	})
+
+	t.Run("ParseGenericSection", func(t *testing.T) {
+		profile, err := getProfile("toml", `
+			[profile.`+constants.CommandLs+`]
+			run-before = "single"
+			run-after = ["one", "two"]
+			some-other-flag = 1
+			`, "profile", "./examples")
+		require.NoError(t, err)
+
+		profile.ResolveConfiguration()
+		section := profile.OtherSections[constants.CommandLs]
+		require.NotNil(t, section)
+		assert.Equal(t, int64(1), section.OtherFlags["some-other-flag"])
+		assert.Equal(t, []string{"single"}, section.RunBefore)
+		assert.Equal(t, []string{"one", "two"}, section.RunAfter)
+	})
+
+	t.Run("ParseError", func(t *testing.T) {
+		profile, err := getProfile("toml", `
+			[profile]
+			`+constants.CommandLs+`="value"
+			`, "profile", "./examples")
+		require.NoError(t, err)
+
+		profile.ResolveConfiguration()
+		issues := &profile.config.issues
+		assert.Contains(t, issues.failedSection, constants.CommandLs)
+		assert.ErrorContains(t, issues.failedSection[constants.CommandLs], "expected a map, got 'string'")
+
+		profile.config.DisplayConfigurationIssues()
+		assert.Empty(t, issues.failedSection)
+	})
+}
+
 func TestResolveGlobSourcesInBackup(t *testing.T) {
 	examples, err := filepath.Abs("../examples")
 	require.NoError(t, err)
@@ -420,6 +485,7 @@ func TestResolveGlobSourcesInBackup(t *testing.T) {
 source = "` + sourcePattern + `"
 `
 	profile, err := getProfile("toml", testConfig, "profile", "./examples")
+	profile.ResolveConfiguration()
 	require.NoError(t, err)
 	assert.NotNil(t, profile)
 
@@ -483,6 +549,9 @@ func TestPathAndTagInRetention(t *testing.T) {
 			profile := testProfile(t, Version01, `path = true`)
 			assert.Equal(t, backupSource, pathFlag(t, profile))
 			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
+
+			profile.config.DisplayConfigurationIssues()
+			assert.Empty(t, profile.config.issues.changedPaths)
 		})
 
 		t.Run("ReplacePath", func(t *testing.T) {
@@ -891,6 +960,24 @@ profile:
 `},
 	}
 
+	commands := []string{
+		constants.CommandBackup,
+		constants.CommandCheck,
+		constants.CommandCopy,
+		constants.CommandDump,
+		constants.CommandFind,
+		constants.CommandForget,
+		constants.CommandLs,
+		constants.CommandPrune,
+		constants.CommandMount,
+		constants.CommandRestore,
+		constants.SectionConfigurationRetention,
+		constants.CommandSnapshots,
+		constants.CommandStats,
+		constants.CommandTag,
+		constants.CommandInit,
+	}
+
 	for _, testItem := range testData {
 		format := testItem.format
 		testConfig := testItem.config
@@ -899,21 +986,10 @@ profile:
 			require.NoError(t, err)
 
 			require.NotNil(t, profile)
-			require.NotNil(t, profile.Backup)
-			require.NotNil(t, profile.Retention)
-			require.NotNil(t, profile.Check)
-			require.NotNil(t, profile.Forget)
-			require.NotNil(t, profile.Mount)
-			require.NotNil(t, profile.Prune)
-			require.NotNil(t, profile.Snapshots)
-			require.NotNil(t, profile.Copy)
-			require.NotNil(t, profile.Dump)
-			require.NotNil(t, profile.Find)
-			require.NotNil(t, profile.Ls)
-			require.NotNil(t, profile.Restore)
-			require.NotNil(t, profile.Stats)
-			require.NotNil(t, profile.Tag)
-			require.NotNil(t, profile.Init)
+			sections := profile.AllSections()
+			for _, command := range commands {
+				require.NotNil(t, sections[command])
+			}
 
 			flags := profile.GetCommonFlags()
 			assert.Equal(t, 1, len(flags.ToMap()))
@@ -924,23 +1000,6 @@ profile:
 			assert.ElementsMatch(t, []string{"1"}, flags.ToMap()["other-flag"])
 			_, found := flags.ToMap()["other-flag-retention"]
 			assert.True(t, found)
-
-			commands := []string{
-				constants.CommandBackup,
-				constants.CommandCheck,
-				constants.CommandCopy,
-				constants.CommandDump,
-				constants.CommandFind,
-				constants.CommandForget,
-				constants.CommandLs,
-				constants.CommandPrune,
-				constants.CommandMount,
-				constants.CommandRestore,
-				constants.CommandSnapshots,
-				constants.CommandStats,
-				constants.CommandTag,
-				constants.CommandInit,
-			}
 
 			for _, command := range commands {
 				t.Run(command, func(t *testing.T) {
@@ -1055,7 +1114,7 @@ func TestSetRootPathOnMonitoringSections(t *testing.T) {
 		},
 	}
 
-	setRootPathOnMonitoringSections(&sections, "root")
+	sections.setRootPath(nil, "root")
 	assert.Equal(t, "root/file", sections.SendBefore[0].BodyTemplate)
 
 	assert.Equal(t, "root/file", sections.SendAfter[0].BodyTemplate)
@@ -1065,4 +1124,152 @@ func TestSetRootPathOnMonitoringSections(t *testing.T) {
 	assert.Equal(t, "root/file", sections.SendAfterFail[1].BodyTemplate)
 
 	assert.Equal(t, "root/file", sections.SendFinally[0].BodyTemplate)
+}
+
+func TestGetInitStructFields(t *testing.T) {
+	init := &InitSection{
+		FromKeyHint:         "key-hint",
+		FromRepository:      NewConfidentialValue("repo"),
+		FromRepositoryFile:  "repo-file",
+		FromPasswordFile:    "pw-file",
+		FromPasswordCommand: "pw-command",
+	}
+	init.OtherFlags = map[string]any{"option": "opt=init"}
+
+	profile := NewProfile(nil, "")
+	profile.OtherFlags = map[string]any{"option": "opt=profile", "repository-version": "latest"}
+
+	t.Run("restic<14", func(t *testing.T) {
+		require.NoError(t, profile.SetResticVersion(""))
+		assert.Equal(t, map[string][]string{
+			"key-hint2":         {"key-hint"},
+			"repo2":             {"repo"},
+			"repository-file2":  {"repo-file"},
+			"password-file2":    {"pw-file"},
+			"password-command2": {"pw-command"},
+
+			"option":             {"opt=init"}, // TODO: review when partitioning is supported in flags
+			"repository-version": {"latest"},
+		}, init.getCommandFlags(profile).ToMap())
+	})
+
+	t.Run("restic>=14", func(t *testing.T) {
+		require.NoError(t, profile.SetResticVersion(resticVersion14.Original()))
+		assert.Equal(t, map[string][]string{
+			"from-key-hint":         {"key-hint"},
+			"from-repo":             {"repo"},
+			"from-repository-file":  {"repo-file"},
+			"from-password-file":    {"pw-file"},
+			"from-password-command": {"pw-command"},
+
+			"option":             {"opt=init"}, // TODO: review when partitioning is supported in flags
+			"repository-version": {"latest"},
+		}, init.getCommandFlags(profile).ToMap())
+	})
+}
+
+func TestGetCopyStructFields(t *testing.T) {
+	copy := &CopySection{
+		Repository:      NewConfidentialValue("dest-repo"),
+		RepositoryFile:  "dest-repo-file",
+		PasswordFile:    "dest-pw-file",
+		PasswordCommand: "dest-pw-command",
+		KeyHint:         "dest-key-hint",
+	}
+
+	copy.OtherFlags = map[string]any{"option": "opt=dest"}
+
+	profile := NewProfile(nil, "")
+	profile.Repository = NewConfidentialValue("src-repo")
+	profile.RepositoryFile = "src-repo-file"
+	profile.PasswordFile = "src-pw-file"
+	profile.PasswordCommand = "src-pw-command"
+	profile.KeyHint = "src-key-hint"
+
+	profile.OtherFlags = map[string]any{"option": "opt=src"}
+
+	t.Run("restic<14", func(t *testing.T) {
+		require.NoError(t, profile.SetResticVersion(""))
+
+		// copy
+		assert.Equal(t, map[string][]string{
+			"key-hint2":         {"dest-key-hint"},
+			"repo2":             {"dest-repo"},
+			"repository-file2":  {"dest-repo-file"},
+			"password-file2":    {"dest-pw-file"},
+			"password-command2": {"dest-pw-command"},
+
+			"option": {"opt=dest"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"src-key-hint"},
+			"repo":             {"src-repo"},
+			"repository-file":  {"src-repo-file"},
+			"password-file":    {"src-pw-file"},
+			"password-command": {"src-pw-command"},
+		}, copy.getCommandFlags(profile).ToMap())
+
+		// init
+		assert.Equal(t, map[string][]string{
+			"copy-chunker-params": {},
+			"key-hint2":           {"src-key-hint"},
+			"repo2":               {"src-repo"},
+			"repository-file2":    {"src-repo-file"},
+			"password-file2":      {"src-pw-file"},
+			"password-command2":   {"src-pw-command"},
+
+			"option": {"opt=src"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copy.getInitFlags(profile).ToMap())
+	})
+
+	t.Run("restic>=14", func(t *testing.T) {
+		require.NoError(t, profile.SetResticVersion(resticVersion14.Original()))
+
+		// copy
+		assert.Equal(t, map[string][]string{
+			"from-key-hint":         {"src-key-hint"},
+			"from-repo":             {"src-repo"},
+			"from-repository-file":  {"src-repo-file"},
+			"from-password-file":    {"src-pw-file"},
+			"from-password-command": {"src-pw-command"},
+
+			"option": {"opt=dest"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copy.getCommandFlags(profile).ToMap())
+
+		// init
+		assert.Equal(t, map[string][]string{
+			"copy-chunker-params":   {},
+			"from-key-hint":         {"src-key-hint"},
+			"from-repo":             {"src-repo"},
+			"from-repository-file":  {"src-repo-file"},
+			"from-password-file":    {"src-pw-file"},
+			"from-password-command": {"src-pw-command"},
+
+			"option": {"opt=src"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copy.getInitFlags(profile).ToMap())
+	})
+
+	t.Run("get-init-flags-from-profile", func(t *testing.T) {
+		p := &(*profile)
+		assert.Nil(t, p.GetCopyInitializeFlags())
+		p.Copy = copy
+		assert.Equal(t, copy.getInitFlags(p), p.GetCopyInitializeFlags())
+	})
 }

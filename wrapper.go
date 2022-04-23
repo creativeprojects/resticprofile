@@ -19,8 +19,11 @@ import (
 	"github.com/creativeprojects/resticprofile/lock"
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/monitor/hook"
+	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/collect"
+	"golang.org/x/exp/slices"
 )
 
 type resticWrapper struct {
@@ -247,76 +250,126 @@ func (r *resticWrapper) runProfile() error {
 	return nil
 }
 
-var commonResticArgsList = []string{
-	"--cacert",
-	"--cache-dir",
-	"--cleanup-cache",
-	"-h", "--help",
-	"--insecure-tls",
-	"--json",
-	"--key-hint",
-	"--limit-download",
-	"--limit-upload",
-	"--no-cache",
-	"-o", "--option",
-	"--password-command",
-	"-p", "--password-file",
-	"-q", "--quiet",
-	"-r", "--repo",
-	"--repository-file",
-	"--tls-client-cert",
-	"-v", "--verbose",
+func (r *resticWrapper) getResticVersion() string {
+	if r.global != nil {
+		return r.global.ResticVersion
+	}
+	return restic.AnyVersion
 }
 
-// commonResticArgs turns args into commonArgs containing only those args that all restic commands understand
-func (r *resticWrapper) commonResticArgs(args []string) (commonArgs []string) {
-	if !sort.StringsAreSorted(commonResticArgsList) {
-		sort.Strings(commonResticArgsList)
+func (r *resticWrapper) validResticArgumentsList(command string) (allValidArgs []string) {
+	var opts [][]restic.Option
+	if cmd, found := restic.GetCommandForVersion(command, r.getResticVersion(), true); found {
+		opts = append(opts, cmd.GetOptions())
 	}
-	skipValue := true
+	if o := restic.GetDefaultOptionsForVersion(r.getResticVersion(), true); o != nil {
+		opts = append(opts, o)
+	}
 
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "-") {
-			lookup := strings.TrimSpace(strings.Split(arg, "=")[0])
-			index := sort.SearchStrings(commonResticArgsList, lookup)
-			if index < len(commonResticArgsList) && commonResticArgsList[index] == lookup {
-				commonArgs = append(commonArgs, arg)
-				skipValue = strings.Contains(arg, "=")
+	for _, options := range opts {
+		for _, option := range options {
+			if !option.AvailableForOS() {
 				continue
 			}
-		} else if !skipValue {
-			commonArgs = append(commonArgs, arg)
+			if len(option.Alias) == 1 {
+				allValidArgs = append(allValidArgs, fmt.Sprintf("-%s", option.Alias))
+			}
+			if len(option.Name) > 0 {
+				allValidArgs = append(allValidArgs, fmt.Sprintf("--%s", option.Name))
+			}
 		}
-		skipValue = true
 	}
 	return
+}
+
+type argumentsFilter func(args []string, allowExtraValues bool) (filteredArgs []string)
+
+// validArgumentsFilter returns a filter that removes args not valid for the specified restic command
+func (r *resticWrapper) validArgumentsFilter(validArgs []string) argumentsFilter {
+	validArgs = slices.Clone(validArgs)
+	sort.Strings(validArgs)
+
+	return func(args []string, allowExtraValues bool) (filteredArgs []string) {
+		skipValue := !allowExtraValues
+
+		for _, arg := range args {
+			if strings.HasPrefix(arg, "-") {
+				av := strings.Split(arg, "=")
+				includesValue := len(av) > 1
+
+				lookup := strings.TrimSpace(av[0])
+				index := sort.SearchStrings(validArgs, lookup)
+				if found := index < len(validArgs) && validArgs[index] == lookup; found {
+					filteredArgs = append(filteredArgs, arg)
+					if !includesValue {
+						skipValue = false
+					}
+				} else {
+					skipValue = !includesValue
+				}
+				continue
+			} else if !skipValue {
+				filteredArgs = append(filteredArgs, arg)
+			}
+			skipValue = !allowExtraValues
+		}
+		return
+	}
 }
 
 func (r *resticWrapper) getShell() (shell []string) {
 	if r.global != nil {
-		shell = r.global.ShellBinary
+		shell = collect.All(r.global.ShellBinary, func(s string) bool { return s != "auto" })
 	}
 	return
 }
 
-func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArgs ...string) shellCommandDefinition {
+// getCommandArgumentsFilter returns a filter to remove unsupported args or nil when the binary
+// is not restic (ignoring shim or mock binaries) or filtering was disabled
+func (r *resticWrapper) getCommandArgumentsFilter(command string) argumentsFilter {
+	binaryIsRestic := strings.EqualFold(
+		"restic",
+		strings.TrimSuffix(filepath.Base(r.resticBinary), filepath.Ext(r.resticBinary)),
+	)
+	if binaryIsRestic && (r.global == nil || r.global.FilterResticFlags) {
+		if validArgs := r.validResticArgumentsList(command); len(validArgs) > 0 {
+			return r.validArgumentsFilter(validArgs)
+		} else {
+			clog.Warningf("failed building valid arguments filter for command %q", command)
+		}
+	}
+	return nil
+}
+
+func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowExtraValues bool) shellCommandDefinition {
 	// Create local instance to allow modification
 	args = args.Clone()
 
-	if len(moreArgs) > 0 {
-		args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
+	filter := r.getCommandArgumentsFilter(command)
+
+	// Add extra commandline arguments
+	moreArgs := slices.Clone(r.moreArgs)
+	if filter != nil {
+		clog.Debugf("unfiltered extra flags: %s", strings.Join(config.GetNonConfidentialValues(r.profile, moreArgs), " "))
+		moreArgs = filter(moreArgs, allowExtraValues)
 	}
+	args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
 
 	// Special case for backup command
 	if command == constants.CommandBackup {
 		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
 	}
 
-	// place the restic command first, there are some flags not recognized otherwise (like --stdin)
-	arguments := append([]string{command}, args.GetAll()...)
+	// Build arguments and publicArguments (for logging)
+	arguments, publicArguments := args.GetAll(), config.GetNonConfidentialArgs(r.profile, args).GetAll()
+	if filter != nil {
+		clog.Debugf("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
+		arguments, publicArguments = filter(arguments, true), filter(publicArguments, true)
+	}
 
-	// Create non-confidential arguments list for logging
-	publicArguments := append([]string{command}, config.GetNonConfidentialArgs(r.profile, args).GetAll()...)
+	// Add restic command
+	arguments = append([]string{command}, arguments...)
+	publicArguments = append([]string{command}, publicArguments...)
 
 	env := append(os.Environ(), r.getEnvironment()...)
 	env = append(env, r.getProfileEnvironment()...)
@@ -336,7 +389,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArg
 func (r *resticWrapper) runInitialize() error {
 	clog.Infof("profile '%s': initializing repository (if not existing)", r.profile.Name)
 	args := r.profile.GetCommandFlags(constants.CommandInit)
-	rCommand := r.prepareCommand(constants.CommandInit, args, r.commonResticArgs(r.moreArgs)...)
+	rCommand := r.prepareCommand(constants.CommandInit, args, false)
 	// don't display any error
 	rCommand.stderr = nil
 	_, stderr, err := runShellCommand(rCommand)
@@ -349,19 +402,11 @@ func (r *resticWrapper) runInitialize() error {
 // runInitializeCopy tries to initialize the secondary repository used by the copy command
 func (r *resticWrapper) runInitializeCopy() error {
 	clog.Infof("profile '%s': initializing secondary repository (if not existing)", r.profile.Name)
-	args := r.profile.GetCommandFlags(constants.CommandCopy)
-	swap := false
-	if r.profile.Copy != nil && r.profile.Copy.InitializeCopyChunkerParams {
-		swap = true
-		// this a bit hacky, but we need to add this flag manually since it's coming from
-		// the configuration of the "copy" section, but cannot be a flag of the copy section
-		args.AddFlag(constants.ParameterCopyChunkerParams, "", shell.ArgConfigEscape)
+	args := r.profile.GetCopyInitializeFlags()
+	if args == nil {
+		return nil // copy is not configured, do nothing
 	}
-	// the copy command adds a "2" behind each flag about the secondary repository
-	// in the case of init, we want to promote the secondary repository as primary
-	// but if we use the copy-chunker-params we actually need to swap primary with secondary
-	args.PromoteSecondaryToPrimary(swap)
-	rCommand := r.prepareCommand(constants.CommandInit, args, r.commonResticArgs(r.moreArgs)...)
+	rCommand := r.prepareCommand(constants.CommandInit, args, false)
 	// don't display any error
 	rCommand.stderr = nil
 	_, stderr, err := runShellCommand(rCommand)
@@ -376,7 +421,7 @@ func (r *resticWrapper) runCheck() error {
 	r.start(constants.CommandCheck)
 	args := r.profile.GetCommandFlags(constants.CommandCheck)
 	for {
-		rCommand := r.prepareCommand(constants.CommandCheck, args, r.commonResticArgs(r.moreArgs)...)
+		rCommand := r.prepareCommand(constants.CommandCheck, args, false)
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
 		r.summary(constants.CommandCheck, summary, stderr, err)
@@ -395,7 +440,7 @@ func (r *resticWrapper) runRetention() error {
 	r.start(constants.SectionConfigurationRetention)
 	args := r.profile.GetRetentionFlags()
 	for {
-		rCommand := r.prepareCommand(constants.CommandForget, args, r.commonResticArgs(r.moreArgs)...)
+		rCommand := r.prepareCommand(constants.CommandForget, args, false)
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
 		r.summary(constants.SectionConfigurationRetention, summary, stderr, err)
@@ -422,7 +467,7 @@ func (r *resticWrapper) runCommand(command string) error {
 			return fmt.Errorf("%s on profile '%s'. Failed closing stream source: %w", r.command, r.profile.Name, err)
 		}
 
-		rCommand := r.prepareCommand(command, args, r.moreArgs...)
+		rCommand := r.prepareCommand(command, args, true)
 
 		if command == constants.CommandBackup && r.profile.Backup != nil {
 			// Add output scanners
@@ -466,7 +511,7 @@ func (r *resticWrapper) runUnlock() error {
 	clog.Infof("profile '%s': unlock stale locks", r.profile.Name)
 	r.start(constants.CommandUnlock)
 	args := r.profile.GetCommandFlags(constants.CommandUnlock)
-	rCommand := r.prepareCommand(constants.CommandUnlock, args, r.commonResticArgs(r.moreArgs)...)
+	rCommand := r.prepareCommand(constants.CommandUnlock, args, false)
 	summary, stderr, err := runShellCommand(rCommand)
 	r.executionTime += summary.Duration
 	r.summary(constants.CommandUnlock, summary, stderr, err)

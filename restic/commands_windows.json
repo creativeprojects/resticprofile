@@ -1,0 +1,13 @@
+{
+  "backup": [
+    {
+      "Name": "use-fs-snapshot",
+      "Alias": "",
+      "Default": "false",
+      "Description": "use filesystem snapshot where possible (currently only Windows VSS)",
+      "Once": true,
+      "FromVersion": "0.12.0",
+      "RemovedInVersion": ""
+    }
+  ]
+}

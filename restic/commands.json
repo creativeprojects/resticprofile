@@ -1,0 +1,2036 @@
+[
+  {
+    "Name": "backup",
+    "Description": "The \"backup\" command creates a new snapshot and saves the files and directories\ngiven as the arguments.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "dry-run",
+        "Alias": "n",
+        "Default": "false",
+        "Description": "do not upload or write any data, just show what would be done",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude",
+        "Alias": "e",
+        "Default": "",
+        "Description": "exclude a pattern (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude-caches",
+        "Alias": "",
+        "Default": "false",
+        "Description": "excludes cache directories that are marked with a CACHEDIR.TAG file. See https://bford.info/cachedir/ for the Cache Directory Tagging Standard",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "read exclude patterns from a file (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude-if-present",
+        "Alias": "",
+        "Default": "",
+        "Description": "takes filename[:header], exclude contents of directories containing filename (except filename itself) if header of that file is as provided (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude-larger-than",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "max size of the files to be backed up (allowed suffixes: k/K, m/M, g/G, t/T)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "files-from",
+        "Alias": "",
+        "Default": "",
+        "Description": "read the files to backup from file (can be combined with file args; can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "files-from-raw",
+        "Alias": "",
+        "Default": "",
+        "Description": "read the files to backup from file (can be combined with file args; can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "files-from-verbatim",
+        "Alias": "",
+        "Default": "",
+        "Description": "read the files to backup from file (can be combined with file args; can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "force",
+        "Alias": "f",
+        "Default": "false",
+        "Description": "force re-reading the target files/directories (overrides the \"parent\" flag)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for backup",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "\"\"",
+        "Description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iexclude",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --exclude pattern but ignores the casing of filenames",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iexclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --exclude-file but ignores casing of filenames in patterns",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "ignore-ctime",
+        "Alias": "",
+        "Default": "false",
+        "Description": "ignore ctime changes when checking for modified files",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "ignore-inode",
+        "Alias": "",
+        "Default": "false",
+        "Description": "ignore inode number changes when checking for modified files",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "one-file-system",
+        "Alias": "x",
+        "Default": "false",
+        "Description": "exclude other file systems, don't cross filesystem boundaries and subvolumes",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "parent",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "use this parent snapshot (default: last snapshot in the repository that has the same target files/directories, and is not newer than the snapshot time)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "stdin",
+        "Alias": "",
+        "Default": "false",
+        "Description": "read backup from stdin",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "stdin-filename",
+        "Alias": "",
+        "Default": "\"stdin\"",
+        "Description": "filename to use when reading from stdin",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "add tags for the new snapshot in the format tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "time",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "time of the backup (ex. '2012-11-01 22:08:41') (default: now)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "with-atime",
+        "Alias": "",
+        "Default": "false",
+        "Description": "store the atime for all files and directories",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "cache",
+    "Description": "The \"cache\" command allows listing and cleaning local cache directories.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "cleanup",
+        "Alias": "",
+        "Default": "false",
+        "Description": "remove old cache directories",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for cache",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "max-age",
+        "Alias": "",
+        "Default": "30",
+        "Description": "max age in days for cache directories to be considered old",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "no-size",
+        "Alias": "",
+        "Default": "false",
+        "Description": "do not output the size of the cache directories",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "cat",
+    "Description": "The \"cat\" command is used to print internal objects to stdout.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for cat",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "check",
+    "Description": "The \"check\" command tests the repository for errors and reports any errors it\nfinds. It can also be used to read all data and therefore simulate a restore.\n\nBy default, the \"check\" command will always load all data directly from the\nrepository and not use a local cache.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "check-unused",
+        "Alias": "",
+        "Default": "false",
+        "Description": "find unused blobs",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for check",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "read-data",
+        "Alias": "",
+        "Default": "false",
+        "Description": "read all data blobs",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "read-data-subset",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "read a subset of data packs, specified as 'n/t' for specific part, or either 'x%' or 'x.y%' or a size in bytes with suffixes k/K, m/M, g/G, t/T for a random subset",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "with-cache",
+        "Alias": "",
+        "Default": "false",
+        "Description": "use the cache",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "copy",
+    "Description": "The \"copy\" command copies one or more snapshots from one repository to another.\n\nNOTE: This process will have to both download (read) and upload (write) the\nentire snapshot(s) due to the different encryption keys used in the source and\ndestination repositories. This /may incur higher bandwidth usage and costs/ than\nexpected during normal backup runs.\n\nNOTE: The copying process does not re-chunk files, which may break deduplication\nbetween the files copied and files already stored in the destination repository.\nThis means that copied files, which existed in both the source and destination\nrepository, /may occupy up to twice their space/ in the destination repository.\nThis can be mitigated by the \"--copy-chunker-params\" option when initializing a\nnew destination repository using the \"init\" command.",
+    "FromVersion": "0.10.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "from-key-hint",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-password-command",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "shell command to obtain the source repository password from (default: $RESTIC_FROM_PASSWORD_COMMAND)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-password-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file to read the source repository password from (default: $RESTIC_FROM_PASSWORD_FILE)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-repo",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "source repository to copy snapshots from (default: $RESTIC_FROM_REPOSITORY)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-repository-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the source repository location to copy snapshots from (default: $RESTIC_FROM_REPOSITORY_FILE)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for copy",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host, when no snapshot ID is given (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "key-hint2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "key ID of key to try decrypting the destination repository first (default: $RESTIC_KEY_HINT2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "password-command2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "shell command to obtain the destination repository password from (default: $RESTIC_PASSWORD_COMMAND2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "password-file2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file to read the destination repository password from (default: $RESTIC_PASSWORD_FILE2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path, when no snapshot ID is given",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repo2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "destination repository to copy snapshots to (default: $RESTIC_REPOSITORY2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "repository-file2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the destination repository location to copy snapshots to (default: $RESTIC_REPOSITORY_FILE2)",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist, when no snapshot ID is given",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "diff",
+    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for diff",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "metadata",
+        "Alias": "",
+        "Default": "false",
+        "Description": "print changes in metadata",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "dump",
+    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshot \"latest\" can be used to use the latest snapshot in the\nrepository.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "archive",
+        "Alias": "a",
+        "Default": "\"tar\"",
+        "Description": "set archive format as \"tar\" or \"zip\"",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for dump",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host when the snapshot ID is \"latest\" (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path for snapshot ID \"latest\"",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist for snapshot ID \"latest\"",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "find",
+    "Description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "blob",
+        "Alias": "",
+        "Default": "false",
+        "Description": "pattern is a blob-ID",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for find",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host, when no snapshot ID is given (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "ignore-case",
+        "Alias": "i",
+        "Default": "false",
+        "Description": "ignore case for pattern",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "long",
+        "Alias": "l",
+        "Default": "false",
+        "Description": "use a long listing format showing size and mode",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "newest",
+        "Alias": "N",
+        "Default": "\"\"",
+        "Description": "newest modification date/time",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "oldest",
+        "Alias": "O",
+        "Default": "\"\"",
+        "Description": "oldest modification date/time",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "pack",
+        "Alias": "",
+        "Default": "false",
+        "Description": "pattern is a pack-ID",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path, when no snapshot-ID is given",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "show-pack-id",
+        "Alias": "",
+        "Default": "false",
+        "Description": "display the pack-ID the blobs belong to (with --blob or --tree)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "snapshot",
+        "Alias": "s",
+        "Default": "",
+        "Description": "snapshot id to search in (can be given multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist, when no snapshot-ID is given",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tree",
+        "Alias": "",
+        "Default": "false",
+        "Description": "pattern is a tree-ID",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "forget",
+    "Description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-*\" options is applied to each group individually.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "compact",
+        "Alias": "c",
+        "Default": "false",
+        "Description": "use compact output format",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "dry-run",
+        "Alias": "n",
+        "Default": "false",
+        "Description": "do not delete anything, just print what would be done",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "group-by",
+        "Alias": "g",
+        "Default": "\"host,paths\"",
+        "Description": "group snapshots by host, paths and/or tags, separated by comma (disable grouping with '')",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for forget",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots with the given host (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-daily",
+        "Alias": "d",
+        "Default": "0",
+        "Description": "keep the last n daily snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-hourly",
+        "Alias": "H",
+        "Default": "0",
+        "Description": "keep the last n hourly snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-last",
+        "Alias": "l",
+        "Default": "0",
+        "Description": "keep the last n snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-monthly",
+        "Alias": "m",
+        "Default": "0",
+        "Description": "keep the last n monthly snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep snapshots with this taglist (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-weekly",
+        "Alias": "w",
+        "Default": "0",
+        "Description": "keep the last n weekly snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-within",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep snapshots that are newer than duration (eg. 1y5m7d2h) relative to the latest snapshot",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-within-daily",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep daily snapshots that are newer than duration (eg. 1y5m7d2h) relative to the latest snapshot",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-within-hourly",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep hourly snapshots that are newer than duration (eg. 1y5m7d2h) relative to the latest snapshot",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-within-monthly",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep monthly snapshots that are newer than duration (eg. 1y5m7d2h) relative to the latest snapshot",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-within-weekly",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep weekly snapshots that are newer than duration (eg. 1y5m7d2h) relative to the latest snapshot",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-within-yearly",
+        "Alias": "",
+        "Default": "",
+        "Description": "keep yearly snapshots that are newer than duration (eg. 1y5m7d2h) relative to the latest snapshot",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "keep-yearly",
+        "Alias": "y",
+        "Default": "0",
+        "Description": "keep the last n yearly snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "max-repack-size",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T)",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "max-unused",
+        "Alias": "",
+        "Default": "\"5%\"",
+        "Description": "tolerate given limit of unused data (absolute value in bytes with suffixes k/K, m/M, g/G, t/T, a value in % or the word 'unlimited')",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "prune",
+        "Alias": "",
+        "Default": "false",
+        "Description": "automatically run the 'prune' command if snapshots have been removed",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-cacheable-only",
+        "Alias": "",
+        "Default": "false",
+        "Description": "only repack packs which are cacheable",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-small",
+        "Alias": "",
+        "Default": "false",
+        "Description": "repack pack files below 80% of target pack size",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-uncompressed",
+        "Alias": "",
+        "Default": "false",
+        "Description": "repack all uncompressed data",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist in the format tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "generate",
+    "Description": "The \"generate\" command writes automatically generated files (like the man pages\nand the auto-completion files for bash, fish and zsh).",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "bash-completion",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "write bash completion file",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "fish-completion",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "write fish completion file",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for generate",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "man",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "write man pages to directory",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "zsh-completion",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "write zsh completion file",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "init",
+    "Description": "The \"init\" command initializes a new repository.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "copy-chunker-params",
+        "Alias": "",
+        "Default": "false",
+        "Description": "copy chunker parameters from the secondary repository (useful with the copy command)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-key-hint",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-password-command",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "shell command to obtain the source repository password from (default: $RESTIC_FROM_PASSWORD_COMMAND)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-password-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file to read the source repository password from (default: $RESTIC_FROM_PASSWORD_FILE)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-repo",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "source repository to copy chunker parameters from (default: $RESTIC_FROM_REPOSITORY)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-repository-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the source repository location to copy chunker parameters from (default: $RESTIC_FROM_REPOSITORY_FILE)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for init",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "key-hint2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "key ID of key to try decrypting the secondary repository first (default: $RESTIC_KEY_HINT2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "password-command2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "shell command to obtain the secondary repository password from (default: $RESTIC_PASSWORD_COMMAND2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "password-file2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file to read the secondary repository password from (default: $RESTIC_PASSWORD_FILE2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "repo2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "secondary repository to copy chunker parameters from (default: $RESTIC_REPOSITORY2)",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "repository-file2",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the secondary repository location to copy chunker parameters from (default: $RESTIC_REPOSITORY_FILE2)",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "repository-version",
+        "Alias": "",
+        "Default": "\"stable\"",
+        "Description": "repository format version to use, allowed values are a format version, 'latest' and 'stable'",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "key",
+    "Description": "The \"key\" command manages keys (passwords) for accessing the repository.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for key",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "the hostname for new keys",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "new-password-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the new password",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "user",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "the username for new keys",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "list",
+    "Description": "The \"list\" command allows listing objects in the repository based on type.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for list",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "ls",
+    "Description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for ls",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "long",
+        "Alias": "l",
+        "Default": "false",
+        "Description": "use a long listing format showing size and mode",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "recursive",
+        "Alias": "",
+        "Default": "false",
+        "Description": "include files in subfolders of the listed directories",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "migrate",
+    "Description": "The \"migrate\" command checks which migrations can be applied for a repository\nand prints a list with available migration names. If one or more migration\nnames are specified, these migrations are applied.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "force",
+        "Alias": "f",
+        "Default": "false",
+        "Description": "apply a migration a second time",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for migrate",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "mount",
+    "Description": "The \"mount\" command mounts the repository via fuse to a directory. This is a\nread-only mount.\n\n\nIf you need a different template for directories that contain snapshots,\nyou can pass a time template via --time-template and path templates via\n--path-template.\n\nExample time template without colons:\n\n\n--time-template \"2006-01-02_15-04-05\"\n\n\nYou need to specify a sample format for exactly the following timestamp:\n\n\nMon Jan 2 15:04:05 -0700 MST 2006\n\n\nFor details please see the documentation for time.Format() at:\n  https://godoc.org/time#Time.Format\n\nFor path templates, you can use the following patterns which will be replaced:\n    %i by short snapshot ID\n    %I by long snapshot ID\n    %u by username\n    %h by hostname\n    %t by tags\n    %T by timestamp as specified by --time-template\n\nThe default path templates are:\n    \"ids/%i\"\n    \"snapshots/%T\"\n    \"hosts/%h/%T\"\n    \"tags/%t/%T\"",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "allow-other",
+        "Alias": "",
+        "Default": "false",
+        "Description": "allow other users to access the data in the mounted directory",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "allow-root",
+        "Alias": "",
+        "Default": "false",
+        "Description": "allow root user to access the data in the mounted directory",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": "0.10.0"
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for mount",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "no-default-permissions",
+        "Alias": "",
+        "Default": "false",
+        "Description": "for 'allow-other', ignore Unix permissions and allow users to read all snapshot files",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "owner-root",
+        "Alias": "",
+        "Default": "false",
+        "Description": "use 'root' as the owner of files and dirs",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path-template",
+        "Alias": "",
+        "Default": "",
+        "Description": "set template for path names (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "snapshot-template",
+        "Alias": "",
+        "Default": "\"2006-01-02T15:04:05Z07:00\"",
+        "Description": "set template to use for snapshot dirs",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": "0.14.0"
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "time-template",
+        "Alias": "",
+        "Default": "\"2006-01-02T15:04:05Z07:00\"",
+        "Description": "set template to use for times",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "prune",
+    "Description": "The \"prune\" command checks the repository and removes data that is not\nreferenced and therefore not needed any more.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "dry-run",
+        "Alias": "n",
+        "Default": "false",
+        "Description": "do not modify the repository, just print what would be done",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for prune",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "max-repack-size",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T)",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "max-unused",
+        "Alias": "",
+        "Default": "\"5%\"",
+        "Description": "tolerate given limit of unused data (absolute value in bytes with suffixes k/K, m/M, g/G, t/T, a value in % or the word 'unlimited')",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-cacheable-only",
+        "Alias": "",
+        "Default": "false",
+        "Description": "only repack packs which are cacheable",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-small",
+        "Alias": "",
+        "Default": "false",
+        "Description": "repack pack files below 80% of target pack size",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-uncompressed",
+        "Alias": "",
+        "Default": "false",
+        "Description": "repack all uncompressed data",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "unsafe-recover-no-free-space",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "UNSAFE, READ THE DOCUMENTATION BEFORE USING! Try to recover a repository stuck with no free space. Do not use without trying out 'prune --max-repack-size 0' first.",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "rebuild-index",
+    "Description": "The \"rebuild-index\" command creates a new index based on the pack files in the\nrepository.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for rebuild-index",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "read-all-packs",
+        "Alias": "",
+        "Default": "false",
+        "Description": "read all pack files to generate new index from scratch",
+        "Once": true,
+        "FromVersion": "0.12.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "recover",
+    "Description": "The \"recover\" command builds a new snapshot from all directories it can find in\nthe raw data of the repository which are not referenced in an existing snapshot.\nIt can be used if, for example, a snapshot has been removed by accident with \"forget\".",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for recover",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "restore",
+    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshot \"latest\" can be used to restore the latest snapshot in the\nrepository.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "exclude",
+        "Alias": "e",
+        "Default": "",
+        "Description": "exclude a pattern (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for restore",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host when the snapshot ID is \"latest\" (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iexclude",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --exclude but ignores the casing of filenames",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iinclude",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --include but ignores the casing of filenames",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "include",
+        "Alias": "i",
+        "Default": "",
+        "Description": "include a pattern, exclude everything else (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path for snapshot ID \"latest\"",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist for snapshot ID \"latest\"",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "target",
+        "Alias": "t",
+        "Default": "\"\"",
+        "Description": "directory to extract data to",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "verify",
+        "Alias": "",
+        "Default": "false",
+        "Description": "verify restored files content",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "self-update",
+    "Description": "The command \"self-update\" downloads the latest stable release of restic from\nGitHub and replaces the currently running binary. After download, the\nauthenticity of the binary is verified using the GPG signature on the release\nfiles.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for self-update",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "output",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "Save the downloaded file as filename (default: running binary itself)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "snapshots",
+    "Description": "The \"snapshots\" command lists all snapshots stored in the repository.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "compact",
+        "Alias": "c",
+        "Default": "false",
+        "Description": "use compact output format",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "group-by",
+        "Alias": "g",
+        "Default": "\"\"",
+        "Description": "group snapshots by host, paths and/or tags, separated by comma",
+        "Once": true,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for snapshots",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "last",
+        "Alias": "",
+        "Default": "false",
+        "Description": "only show the last snapshot for each host and path",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": "0.13.0"
+      },
+      {
+        "Name": "latest",
+        "Alias": "",
+        "Default": "0",
+        "Description": "only show the last n snapshots for each host and path",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots for this path (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist in the format tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "stats",
+    "Description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for stats",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots with the given host (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "mode",
+        "Alias": "",
+        "Default": "\"restore-size\"",
+        "Description": "counting mode: restore-size (default), files-by-contents, blobs-per-file or raw-data",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist in the format tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "tag",
+    "Description": "The \"tag\" command allows you to modify tags on exiting snapshots.\n\nYou can either set/replace the entire set of tags on a snapshot, or\nadd tags to/remove tags from the existing set.\n\nWhen no snapshot-ID is given, all snapshots matching the host, tag and path filter criteria are modified.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "add",
+        "Alias": "",
+        "Default": "",
+        "Description": "tags which will be added to the existing tags in the format tag[,tag,...] (can be given multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for tag",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host, when no snapshot ID is given (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this (absolute) path, when no snapshot-ID is given",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "remove",
+        "Alias": "",
+        "Default": "",
+        "Description": "tags which will be removed from the existing tags in the format tag[,tag,...] (can be given multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "set",
+        "Alias": "",
+        "Default": "",
+        "Description": "tags which will replace the existing tags in the format tag[,tag,...] (can be given multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots which include this taglist, when no snapshot-ID is given",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "unlock",
+    "Description": "The \"unlock\" command removes stale locks that have been created by other restic processes.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for unlock",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "remove-all",
+        "Alias": "",
+        "Default": "false",
+        "Description": "remove all locks, even non-stale ones",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "version",
+    "Description": "The \"version\" command prints detailed information about the build environment\nand the version of this software.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for version",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "__default",
+    "Description": "restic is a backup program which allows saving multiple revisions of files and\ndirectories in an encrypted repository stored on different backends.",
+    "FromVersion": "",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "cacert",
+        "Alias": "",
+        "Default": "",
+        "Description": "file to load root certificates from (default: use system certificates)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "cache-dir",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "set the cache directory\u0026. (default: use system default cache directory)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "cleanup-cache",
+        "Alias": "",
+        "Default": "false",
+        "Description": "auto remove old cache directories",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "compression",
+        "Alias": "",
+        "Default": "auto",
+        "Description": "compression mode (only available for repository format version 2), one of (auto|off|max)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for restic",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "insecure-tls",
+        "Alias": "",
+        "Default": "false",
+        "Description": "skip TLS certificate verification when connecting to the repository (insecure)",
+        "Once": true,
+        "FromVersion": "0.13.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "json",
+        "Alias": "",
+        "Default": "false",
+        "Description": "set output mode to JSON for commands that support it",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "key-hint",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "limit-download",
+        "Alias": "",
+        "Default": "0",
+        "Description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "limit-upload",
+        "Alias": "",
+        "Default": "0",
+        "Description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "no-cache",
+        "Alias": "",
+        "Default": "false",
+        "Description": "do not use a local cache",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "no-lock",
+        "Alias": "",
+        "Default": "false",
+        "Description": "do not lock the repository, this allows some operations on read-only repositories",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "option",
+        "Alias": "o",
+        "Default": "",
+        "Description": "set extended option (key=value, can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "pack-size",
+        "Alias": "",
+        "Default": "0",
+        "Description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE)",
+        "Once": true,
+        "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "password-command",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "password-file",
+        "Alias": "p",
+        "Default": "\"\"",
+        "Description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "quiet",
+        "Alias": "q",
+        "Default": "false",
+        "Description": "do not output comprehensive progress report",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repo",
+        "Alias": "r",
+        "Default": "\"\"",
+        "Description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repository-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE)",
+        "Once": true,
+        "FromVersion": "0.11.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tls-client-cert",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "path to a file containing PEM encoded TLS client certificate and private key",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "verbose",
+        "Alias": "v",
+        "Default": "0",
+        "Description": "be verbose (specify multiple times or a level using --verbose=n, max level/times is 3)",
+        "Once": true,
+        "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  }
+]

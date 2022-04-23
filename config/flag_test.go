@@ -137,7 +137,7 @@ type testStruct struct {
 	noGlobString  string `argument:"no-glob-string" argument-type:"no-glob"`
 	emptyInt      int    `argument:"empty-int"`
 	someInt       int    `argument:"some-int"`
-	uInt          uint   `argument:"u-int"`
+	uInt          uint   `mapstructure:"unsigned-int" argument:"u-int"`
 	notIncluded   bool
 }
 
@@ -153,7 +153,8 @@ func TestConvertStructToArgs(t *testing.T) {
 		noGlobString:  "test",
 		notIncluded:   true,
 	}
-	args := convertStructToArgs(testElement, shell.NewArgs())
+	args := shell.NewArgs()
+	addArgsFromStruct(args, testElement)
 	assert.NotNil(t, args)
 	assert.Equal(t, map[string][]string{
 		"some-bool-true": {},
@@ -176,7 +177,8 @@ func TestConvertPointerStructToArgs(t *testing.T) {
 		noGlobString:  "test",
 		notIncluded:   true,
 	}
-	args := convertStructToArgs(testElement, shell.NewArgs())
+	args := shell.NewArgs()
+	addArgsFromStruct(args, testElement)
 	assert.NotNil(t, args)
 	assert.Equal(t, map[string][]string{
 		"some-bool-true": {},
@@ -185,6 +187,17 @@ func TestConvertPointerStructToArgs(t *testing.T) {
 		"glob-string":    {"test"},
 		"no-glob-string": {"test"},
 	}, args.ToMap())
+}
+
+func TestGetArgAliasesFromStruct(t *testing.T) {
+	testElement := testStruct{}
+	for i, element := range []any{testElement, &testElement} {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			aliases := argAliasesFromStruct(element)
+			assert.NotNil(t, aliases)
+			assert.Equal(t, map[string]string{"unsigned-int": "u-int"}, aliases)
+		})
+	}
 }
 
 func BenchmarkFormatInt(b *testing.B) {

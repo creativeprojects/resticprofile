@@ -230,6 +230,6 @@ profile:
 	expectedSecret := shell.NewArg(fmt.Sprintf(repo, "password"), shell.ArgConfigEscape).String()
 	expectedPublic := shell.NewArg(fmt.Sprintf(repo, ConfidentialReplacement), shell.ArgConfigEscape).String()
 
-	assert.Equal(t, []string{"--repo", expectedSecret}, args.GetAll())
-	assert.Equal(t, []string{"--repo", expectedPublic}, result.GetAll())
+	assert.Equal(t, []string{"--repo=" + expectedSecret}, args.GetAll())
+	assert.Equal(t, []string{"--repo=" + expectedPublic}, result.GetAll())
 }

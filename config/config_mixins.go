@@ -16,7 +16,7 @@ import (
 
 // mixin describes a parsed mixin definition (mixins: ...)
 type mixin struct {
-	DefaultVariables map[string]interface{} `mapstructure:"default-vars"`
+	DefaultVariables map[string]interface{} `mapstructure:"default-vars" description:"default values for mixin variables"`
 	Source           map[string]interface{} `mapstructure:",remain"`
 }
 
@@ -114,8 +114,8 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 
 // mixinUse the use of a mixin within the configuration (profiles.name.use: ...)
 type mixinUse struct {
-	Name              string                 `mapstructure:"name"`
-	Variables         map[string]interface{} `mapstructure:"vars"`
+	Name              string                 `mapstructure:"name" description:"name of the mixin to use"`
+	Variables         map[string]interface{} `mapstructure:"vars" description:"mixin variables to apply"`
 	ImplicitVariables map[string]interface{} `mapstructure:",remain"`
 }
 
@@ -156,7 +156,7 @@ func parseMixinUses(rawValue interface{}) (uses []*mixinUse, err error) {
 						use.normalizeVariables()
 					} else {
 						v, _ := stringifyValueOf(item)
-						err = fmt.Errorf("cannot parse mixin use %s: %s", v, err.Error())
+						err = fmt.Errorf("cannot parse mixin use %s: %w", v, err)
 						return
 					}
 				}
@@ -228,7 +228,7 @@ func applyMixins(config *viper.Viper, keyDelimiter string, mixinUses map[string]
 
 		if err != nil {
 			useKey := strings.ReplaceAll(configKey, keyDelimiter, ".") + "." + constants.SectionConfigurationMixinUse
-			err = fmt.Errorf("failed applying %s: %s", useKey, err.Error())
+			err = fmt.Errorf("failed applying %s: %w", useKey, err)
 			break
 		}
 	}

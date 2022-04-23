@@ -192,7 +192,7 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 	}
 
 	if err != nil {
-		err = fmt.Errorf("cannot find shell: %s (tried %s)", err.Error(), strings.Join(searchList, ", "))
+		err = fmt.Errorf("cannot find shell: %w (tried %s)", err, strings.Join(searchList, ", "))
 		return
 	}
 

@@ -1,5 +1,5 @@
 ---
-title: "Configuration templates"
+title: "Templates"
 date: 2022-05-16T20:04:35+01:00
 weight: 26
 ---
@@ -565,4 +565,21 @@ And now you no longer end up with duplicated sections.
 There are a lot more you can do with configuration templates. If you're brave enough, [you can read the full documentation of the Go templates](https://golang.org/pkg/text/template/).
 
 For a more end-user kind of documentation, you can also read [hugo documentation on templates](https://gohugo.io/templates/introduction/) which is using the same Go implementation, but don't talk much about the developer side of it.
-Please note there are some functions only made available by hugo though.
+Please note there are some functions only made available by hugo though, resticprofile adds its own set of functions.
+
+## Template functions
+
+In addition to the defaults, resticprofile provides the following functions in all templates:
+
+* `{{ "some old string" | replace "old" "new" }}` => `"some new string"`
+* `{{ "some old string" | regex "(old)" "$1 and new" }}` => `"some old and new string"`
+* `{{ "ABC" | lower }}` => `"abc"`
+* `{{ "abc" | upper }}` => `"ABC"`
+* `{{ "  A " | trim }}` => `"A"`
+* `{{ "--A-" | trimPrefix "--" }}` => `"A-"`
+* `{{ "--A-" | trimSuffix "-" }}` => `"--A"`
+* `{{ "A,B,C" | split "," }}` => `["A", "B", "C"]`
+* `{{ "A,B,C" | split "," | join ";" }}` => `"A;B;C"`
+* `{{ range $v := list "A" "B" "C" }} ({{ $v }}) {{ end }}` => ` (A)  (B)  (C) `
+
+Please refer to the official documentation for the set of default functions provided in go templates. 

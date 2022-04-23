@@ -486,4 +486,33 @@ profiles:
 		assert.Equal(t, "status-one", p.StatusFile)
 		assert.Equal(t, "u-lock-file", p.Lock)
 	})
+
+	t.Run("use-is-supported-in-list-of-objects", func(t *testing.T) {
+		t.Skip("requires fixing")
+		config := load(t, `
+  my-send-dest:
+    method: POST
+    url: https://myhost/
+
+profiles:
+  profile:
+    backup:
+      send-before:
+        - use: my-send-dest
+          body: before-backup
+      send-after:
+        use: my-send-dest
+        body: before-backup
+`)
+		p, err := config.getProfile("profile")
+		require.NoError(t, err)
+		require.NotEmpty(t, p.Backup.SendBefore)
+		assert.Equal(t, "https://myhost/", p.Backup.SendBefore[0].URL)
+		assert.Equal(t, "POST", p.Backup.SendBefore[0].Method)
+		assert.Equal(t, "before-backup", p.Backup.SendBefore[0].Body)
+		require.NotEmpty(t, p.Backup.SendAfter)
+		assert.Equal(t, "https://myhost/", p.Backup.SendAfter[0].URL)
+		assert.Equal(t, "POST", p.Backup.SendAfter[0].Method)
+		assert.Equal(t, "before-backup", p.Backup.SendAfter[0].Body)
+	})
 }

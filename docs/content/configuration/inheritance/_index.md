@@ -261,9 +261,7 @@ use = "name-of-mixin"
 
 [profiles.profile-non-default]
 # set parametrized-config-key to "Hello Mixin" in "profile-non-default"
-[[profiles.profile-non-default.use]]
-name = "name-of-mixin"
-WHAT = "Mixin"
+use = { name = "name-of-mixin", WHAT = "Mixin" }
 ```
 
 {{% /tab %}}
@@ -368,8 +366,7 @@ version = 2
   password-file = "alternate-repo.key"
   
   [mixins.retain-last]
-    [mixins.retain-last.default-vars]
-    LAST = 30
+    default-vars = { LAST = 30 }
     [mixins.retain-last.retention]
     keep-last = "$LAST"
     keep-hourly = false
@@ -400,13 +397,10 @@ version = 2
   
   
   [profiles.select-all-and-retain-last-60]
-    [[profiles.select-all-and-retain-last-60.use]]
-    name = "alternate-repository"
-      
-    [[profiles.select-all-and-retain-last-60.use]]
-    name = "retain-last"
-    LAST = 60
-
+  use = [
+      "alternate-repository",
+      { name = "retain-last", LAST = 60 },
+  ]
     [profiles.select-all-and-retain-last-60.backup]
     source = "/"
 ```
@@ -417,9 +411,11 @@ version = 2
 
 ## Common Flags
 
-Profiles in resticprofile configure commandline options (flags) for restic commands. While a profile has several predefined common properties (`repository`, `password-file`, ...), any arbitrary common flags can be set directly inside the profile and will be inherited by all command sections of the profile.
+Profiles in resticprofile configure commandline options (flags) for restic commands. While a profile has several predefined common properties (`repository`, `password-file`, ...), any arbitrary common flags can be set directly inside the profile and will be inherited by all command sections of the profile. 
 
-For example, an arbitrary flag like `insecure-tls` that is not part of the profile config [reference]({{< ref "/configuration/reference" >}}) but valid for every restic command can be set at profile level and will be converted to a restic flag.
+Resticprofile applies a filter (see `global.restic-arguments-filter`) to decide which flags are supported in which restic commands and automatically removes unsupported flags when building commandline options.
+
+For example, a flag like `insecure-tls` can be set at profile level and will be used whenever restic is started with this profile. Most supported flags can be set in this way at profile level, see [reference]({{< ref "/configuration/reference" >}}) for details.
 
 {{< tabs groupId="config-with-common-flags-in-profile" >}}
 {{% tab name="toml" %}}
