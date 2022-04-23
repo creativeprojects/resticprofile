@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ansible on resticprofile</title>
+    <link>https://creativeprojects.github.io/resticprofile/installation/ansible/</link>
+    <description>Recent content in Ansible on resticprofile</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <lastBuildDate>Sat, 23 Apr 2022 23:47:41 +0100</lastBuildDate><atom:link href="https://creativeprojects.github.io/resticprofile/installation/ansible/index.xml" rel="self" type="application/rss+xml" />
+  </channel>
+</rss>

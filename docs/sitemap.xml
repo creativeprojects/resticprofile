@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/</loc>
+    <lastmod>2022-04-23T23:58:56+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/linux/</loc>
+    <lastmod>2022-04-23T23:24:34+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/macosx/</loc>
+    <lastmod>2022-04-23T23:22:41+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/windows/</loc>
+    <lastmod>2022-04-23T23:24:38+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/ansible/</loc>
+    <lastmod>2022-04-23T23:47:41+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/source/</loc>
+    <lastmod>2022-04-23T23:50:43+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/upgrade/</loc>
+    <lastmod>2022-04-23T23:57:06+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/docker/</loc>
+    <lastmod>2022-04-23T23:58:56+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/installation/shell/</loc>
+    <lastmod>2022-04-23T23:55:10+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/categories/</loc>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/tags/</loc>
+  </url>
+</urlset>

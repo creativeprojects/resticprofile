@@ -1,0 +1,15 @@
+baseURL = 'https://creativeprojects.github.io/resticprofile/'
+canonifyURLs = true
+languageCode = 'en-gb'
+title = 'resticprofile'
+theme = "hugo-theme-relearn"
+publishdir = "../docs/"
+
+# For search functionality
+[outputs]
+home = [ "HTML", "RSS", "JSON"]
+
+[params]
+  # Change default color scheme with a variant one.
+  themeVariant = [ "relearn-light", "relearn-dark" ]
+  collapsibleMenu = true

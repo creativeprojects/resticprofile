@@ -1,0 +1,244 @@
+/* here in this showcase we use our own modified chroma syntax highlightning style;
+   if you want to use a predefined style instead:
+   - remove `markup.highlight.noClasses` from your config.toml
+   - set `markup.highlight.style` to a predefined style name in your config.toml
+   - remove the following `@import` of the self-defined chroma stylesheet */
+@import "chroma-neon.css";
+
+:root {
+    --MAIN-TEXT-color: #e0e0e0; /* Color of text by default */
+    --MAIN-TITLES-TEXT-color: #f300b2; /* Color of titles h2-h3-h4-h5-h6 */
+
+    /* optional overwrites for specific headers */
+    --MAIN-TITLES-H3-color: #00f3d3; /* Color of h3 headlines */
+    --MAIN-TITLES-H4-color: #ffff00; /* Color of h4 headlines */
+
+    --MAIN-LINK-color: #1c90f3; /* Color of links */
+    --MAIN-LINK-HOVER-color: #4cabff; /* Color of hovered links */
+    --MAIN-ANCHOR-color: #4cabff; /* color of anchors on titles */
+    --MAIN-BG-color: #202020; /* color for code background */
+
+    /* adjusted to neon chroma style */
+    --CODE-BLOCK-color: #f8f8f2; /* fallback color for block code text */
+    --CODE-BLOCK-BG-color: #000000; /* fallback color for block code background */
+    --CODE-BLOCK-BORDER-color: #000000; /* color of block code border */
+
+    --CODE-INLINE-color: #82e550; /* color for inline code text */
+    --CODE-INLINE-BG-color: #282a36; /* color for inline code background */
+    --CODE-INLINE-BORDER-color: #464646; /* color of inline code border */
+
+    --MERMAID-theme: dark; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
+    --SWAGGER-theme: dark; /* name of the default Swagger theme for this variant, can be overridden in config.toml */
+
+    --TAG-BG-color: #04d1b5; /* Background color of menu header */
+
+    --MENU-HOME-LINK-color: #323232; /* Color of the home button text */
+    --MENU-HOME-LINK-HOVER-color: #5e5e5e; /* Color of the hovered home button text */
+
+    --MENU-HEADER-BG-color: rgba( 0, 0, 0, 0 ); /* Background color of menu header */
+    --MENU-HEADER-BORDER-color: rgba( 0, 0, 0, 0 ); /*Color of menu header border */
+
+    --MENU-SEARCH-color: #e0e0e0; /* Color of search field text */
+    --MENU-SEARCH-BG-color: #323232; /* Search field background color (by default borders + icons) */
+    --MENU-SEARCH-BORDER-color: #e0e0e0; /* Override search field border color */
+
+    --MENU-SECTIONS-ACTIVE-BG-color: rgba( 0, 0, 0, .166 ); /* Background color of the active section and its children */
+    --MENU-SECTIONS-BG-color: linear-gradient( 165deg, #f300b2d3 0%, #1c90f3b3 65%, #00e3d3b3 100% ); /* Background color of side bar */
+    --MENU-SECTIONS-LINK-color: #ffffff; /* Color of links in menu */
+    --MENU-SECTIONS-LINK-HOVER-color: #d0d0d0;  /* Color of links in menu, when hovered */
+    --MENU-SECTION-ACTIVE-CATEGORY-color: #56ffe8; /* Color of active category text */
+    --MENU-SECTION-ACTIVE-CATEGORY-BG-color: #202020; /* Color of background for the active category (only) */
+
+    --MENU-VISITED-color: #33a1ff; /* Color of 'page visited' icons in menu */
+    --MENU-SECTION-HR-color: #bababa; /* Color of <hr> separator in menu */
+
+    /* base styling for boxes */
+    --BOX-CAPTION-color: rgba( 240, 240, 240, 1 ); /* color of the title text */
+    --BOX-BG-color: rgba( 20, 20, 20, 1 ); /* color of the content background */
+    --BOX-TEXT-color: initial; /* automatic color of the content text */
+
+    /* optional base colors for colored boxes as in attachments and notice shortcode */
+    --BOX-BLUE-color: rgba( 48, 117, 229, 1 );
+    --BOX-GREEN-color: rgba( 42, 178, 24, 1 );
+    --BOX-GREY-color: rgba( 128, 128, 128, 1 );
+    --BOX-ORANGE-color: rgba( 237, 153, 9, 1 );
+    --BOX-RED-color: rgba( 224, 62, 62, 1 );
+
+    --BOX-BLUE-TEXT-color: var(--BOX-BLUE-color);
+    --BOX-GREEN-TEXT-color: var(--BOX-GREEN-color);
+    --BOX-GREY-TEXT-color: var(--BOX-GREY-color);
+    --BOX-ORANGE-TEXT-color: var(--BOX-ORANGE-color);
+    --BOX-RED-TEXT-color: var(--BOX-RED-color);
+}
+
+body a#logo,
+body #logo svg,
+body #logo svg * {
+    color: var(--INTERNAL-MENU-SEARCH-color);
+    fill: var(--INTERNAL-MENU-SEARCH-color) !important;
+}
+
+body a#logo{
+    color: var(--INTERNAL-MENU-SEARCH-color);
+    text-shadow:
+        0 0  1px var(--INTERNAL-MENU-SEARCH-color),
+        0 0  2px var(--INTERNAL-MENU-SEARCH-color),
+        0 0  4px var(--INTERNAL-MENU-SEARCH-color),
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color),
+        0 0  8px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
+}
+
+body h1 {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  4px #fff,
+        0 0  8px #fff,
+        0 0  3px var(--INTERNAL-MAIN-TITLES-H1-color),
+        0 0  6px var(--INTERNAL-MAIN-TITLES-H1-color),
+        0 0  8px var(--INTERNAL-MAIN-TITLES-H1-color);
+}
+
+body h2 {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MAIN-TITLES-H2-color),
+        0 0  8px var(--INTERNAL-MAIN-TITLES-H2-color),
+        0 0 10px var(--INTERNAL-MAIN-TITLES-H2-color);
+}
+
+body h3 {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MAIN-TITLES-H3-color),
+        0 0  8px var(--INTERNAL-MAIN-TITLES-H3-color),
+        0 0 10px var(--INTERNAL-MAIN-TITLES-H3-color);
+}
+
+body h4 {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MAIN-TITLES-H4-color),
+        0 0  8px var(--INTERNAL-MAIN-TITLES-H4-color),
+        0 0 10px var(--INTERNAL-MAIN-TITLES-H4-color);
+}
+
+body h5 {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MAIN-TITLES-H5-color),
+        0 0  8px var(--INTERNAL-MAIN-TITLES-H5-color),
+        0 0 10px var(--INTERNAL-MAIN-TITLES-H5-color);
+}
+
+body h6 {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MAIN-TITLES-H6-color),
+        0 0  8px var(--INTERNAL-MAIN-TITLES-H6-color),
+        0 0 10px var(--INTERNAL-MAIN-TITLES-H5-color);
+}
+
+body #sidebar ul.topics li.active > label,
+body #sidebar ul.topics li.active > a {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color),
+        0 0  8px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
+}
+
+body #sidebar select:hover,
+body #sidebar label:hover,
+body #sidebar a:hover {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color),
+        0 0  8px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
+}
+
+body h1 a,
+body h2 a,
+body h3 a,
+body h4 a,
+body h5 a,
+body h6 a,
+body .anchor {
+    text-shadow: none;
+}
+
+body div.box {
+    box-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  4px #808080,
+        0 0  4px var(--VARIABLE-BOX-color),
+        0 0  8px var(--VARIABLE-BOX-color);
+}
+
+body div.box > .box-label {
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  4px #808080,
+        0 0  4px var(--VARIABLE-BOX-CAPTION-color),
+        0 0  8px var(--VARIABLE-BOX-CAPTION-color);
+}
+
+body div.box.transparent {
+    box-shadow: none;
+}
+
+@media print {
+    #body h1,
+    #body h2,
+    #body h3,
+    #body h4,
+    #body h5,
+    #body h6 {
+        text-shadow: none;
+    }
+    #body div.box,
+    #body div.box > .box-label {
+        box-shadow: none;
+        text-shadow: none;
+    }
+}
+
+/* if we are in print chapter preview our @media statement from
+above will not apply, so we have to repeat it here */
+.print #body h1,
+.print #body h2,
+.print #body h3,
+.print #body h4,
+.print #body h5,
+.print #body h6 {
+    text-shadow: none;
+}
+.print #body div.box,
+.print #body div.box > .box-label {
+    box-shadow: none;
+    text-shadow: none;
+}
