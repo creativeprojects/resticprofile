@@ -25,7 +25,7 @@ func TestBools(t *testing.T) {
 			isTrueOrUndefined:  true,
 		},
 		{
-			source:             boolPointer(true),
+			source:             True(),
 			isTrue:             true,
 			isStrictlyFalse:    false,
 			isFalseOrUndefined: false,
@@ -33,7 +33,7 @@ func TestBools(t *testing.T) {
 			isTrueOrUndefined:  true,
 		},
 		{
-			source:             boolPointer(false),
+			source:             False(),
 			isTrue:             false,
 			isStrictlyFalse:    true,
 			isFalseOrUndefined: true,
@@ -51,11 +51,6 @@ func TestBools(t *testing.T) {
 			assert.Equal(t, fixture.isTrueOrUndefined, IsTrueOrUndefined(fixture.source))
 		})
 	}
-}
-
-func boolPointer(value bool) *bool {
-	output := &value
-	return output
 }
 
 func toString(value *bool) string {

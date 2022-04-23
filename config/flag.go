@@ -9,6 +9,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/util"
 )
 
 var (
@@ -19,23 +20,15 @@ func init() {
 	emptyStringArray = make([]string, 0)
 }
 
-func convertStructToArgs(orig interface{}, args *shell.Args) *shell.Args {
-	typeOf := reflect.TypeOf(orig)
-	valueOf := reflect.ValueOf(orig)
-
-	if typeOf.Kind() == reflect.Ptr {
-		// Deference the pointer
-		typeOf = typeOf.Elem()
-		valueOf = valueOf.Elem()
+func addArgsFromStruct(args *shell.Args, section any) {
+	valueOf, isNil := util.UnpackValue(reflect.ValueOf(section))
+	if isNil {
+		return
+	} else if valueOf.Kind() != reflect.Struct {
+		panic(fmt.Errorf("unsupported type %s, expected %s", valueOf.Kind(), reflect.Struct))
 	}
 
-	if args == nil {
-		args = shell.NewArgs()
-	}
-	// NumField() will panic if typeOf is not a struct
-	if typeOf.Kind() != reflect.Struct {
-		panic(fmt.Errorf("unsupported type %s, expected %s", typeOf.Kind(), reflect.Struct))
-	}
+	typeOf := valueOf.Type()
 	for i := 0; i < typeOf.NumField(); i++ {
 		field := typeOf.Field(i)
 		if argument, ok := field.Tag.Lookup("argument"); ok {
@@ -53,24 +46,36 @@ func convertStructToArgs(orig interface{}, args *shell.Args) *shell.Args {
 			}
 		}
 	}
-	return args
 }
 
-func addOtherArgs(args *shell.Args, otherArgs map[string]interface{}) *shell.Args {
-	if len(otherArgs) == 0 {
-		return args
+func argAliasesFromStruct(section any) (aliases map[string]string) {
+	aliases = make(map[string]string)
+	if t := util.ElementType(reflect.TypeOf(section)); t.Kind() == reflect.Struct {
+		for i := 0; i < t.NumField(); i++ {
+			field := t.Field(i)
+			if argument, ok := field.Tag.Lookup("argument"); ok {
+				if alias, ok := field.Tag.Lookup("mapstructure"); ok && alias != argument {
+					aliases[alias] = argument
+				}
+			}
+		}
 	}
+	return aliases
+}
 
+func addArgsFromMap(args *shell.Args, argAliases map[string]string, argsMap map[string]any) {
 	// Add other args
-	for name, value := range otherArgs {
+	for name, value := range argsMap {
 		if name == constants.SectionConfigurationMixinUse {
 			continue
 		}
 		if convert, ok := stringifyValueOf(value); ok {
+			if targetName, found := argAliases[name]; found {
+				name = targetName
+			}
 			args.AddFlags(name, convert, shell.ArgConfigEscape)
 		}
 	}
-	return args
 }
 
 // stringifyValueOf returns a string representation of the value, and if it has any value at all
@@ -105,16 +110,21 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 	return stringify(value, true)
 }
 
-// stringify returns a string representation of the value, and if it has any value at all
-func stringify(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
-	// Check if the value can convert itself to String() (e.g. time.Duration)
-	stringer := fmt.Stringer(nil)
+// Returns the stringer of the given value or nil if the value doesn't implement fmt.Stringer
+func getStringer(value reflect.Value) (stringer fmt.Stringer) {
 	if value.Kind() != reflect.Invalid && value.CanInterface() {
 		vi := value.Interface()
 		if s, ok := vi.(fmt.Stringer); ok {
 			stringer = s
 		}
 	}
+	return
+}
+
+// stringify returns a string representation of the value, and if it has any value at all
+func stringify(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
+	// Check if the value can convert itself to String() (e.g. time.Duration)
+	stringer := getStringer(value)
 
 	var stringVal string
 

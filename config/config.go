@@ -15,8 +15,10 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/maps"
 )
 
 // Config wraps up a viper configuration object
@@ -32,7 +34,8 @@ type Config struct {
 	sourceTemplates *template.Template
 	version         Version
 	issues          struct {
-		changedPaths map[string][]string // 'path' items that had been changed to absolute paths
+		changedPaths  map[string][]string // 'path' items that had been changed to absolute paths
+		failedSection map[string]error    // profile sections that failed to get parsed or resolved
 	}
 }
 
@@ -158,7 +161,7 @@ func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 
 	var source *template.Template
 	if c.sourceTemplates == nil || replace {
-		source = template.New(c.templateName(name))
+		source = templates.New(c.templateName(name))
 		c.sourceTemplates = source
 	} else {
 		source = c.sourceTemplates.New(c.templateName(name))
@@ -325,8 +328,32 @@ func (c *Config) DisplayConfigurationIssues() {
 		clog.Info(strings.Join(msg, fmt.Sprintln()))
 	}
 
+	if len(c.issues.failedSection) > 0 {
+		names := maps.Keys(c.issues.failedSection)
+		sort.Strings(names)
+		for _, name := range names {
+			clog.Errorf("Failed parsing profile section %q: %s", name, c.issues.failedSection[name].Error())
+		}
+	}
+
 	// Reset issues
 	c.issues.changedPaths = nil
+	c.issues.failedSection = nil
+}
+
+func (c *Config) reportChangedPath(resolvedPath, path, origin string) {
+	if c.issues.changedPaths == nil {
+		c.issues.changedPaths = make(map[string][]string)
+	}
+	key := fmt.Sprintf(`%s "%s"`, origin, path)
+	c.issues.changedPaths[key] = append(c.issues.changedPaths[key], resolvedPath)
+}
+
+func (c *Config) reportFailedSection(name string, err error) {
+	if c.issues.failedSection == nil {
+		c.issues.failedSection = make(map[string]error)
+	}
+	c.issues.failedSection[name] = err
 }
 
 func (c *Config) flatKey(key ...string) (fk string) {
@@ -652,17 +679,33 @@ func (c *Config) getSchedule(key string) (Schedule, error) {
 	return schedule, nil
 }
 
+// unmarshalConfig returns the decoder config options depending on the configuration version and format
+func (c *Config) unmarshalConfig() viper.DecoderConfigOption {
+	if c.GetVersion() == Version01 {
+		return c.unmarshalConfigV1()
+	} else {
+		return configOption
+	}
+}
+
 // unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options
 func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
-	if c.GetVersion() <= Version01 {
-		return c.unmarshalKeyV1(key, rawVal)
-	}
-
-	if c.format == FormatHCL {
+	if c.GetVersion() >= Version02 && c.format == FormatHCL {
 		return fmt.Errorf("HCL format is not supported in version %d, please use version 1 or another file format", c.GetVersion())
 	}
 
-	return c.viper.UnmarshalKey(key, rawVal, configOption)
+	return c.viper.UnmarshalKey(key, rawVal, c.unmarshalConfig())
+}
+
+// newUnmarshaller returns a configured unmarshaler for output
+func (c *Config) newUnmarshaller(output any) (*mapstructure.Decoder, error) {
+	conf := &mapstructure.DecoderConfig{
+		Result:           output,
+		WeaklyTypedInput: true,
+	}
+	c.unmarshalConfig()(conf)
+
+	return mapstructure.NewDecoder(conf)
 }
 
 // traceConfig sends a log of level trace to show the resulting configuration after resolving the template

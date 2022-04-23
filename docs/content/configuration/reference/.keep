@@ -1,0 +1,6 @@
+## --------------------------------------------------------
+# To generate reference and jsonschema, use:
+#
+#   make generate-jsonschema generate-config-reference
+#
+# ---------------------------------------------------------

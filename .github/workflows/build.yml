@@ -33,13 +33,10 @@ jobs:
           check-latest: true
           cache: true
 
-      - name: Generate mocks
-        run: make mocks
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build
         run: make build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test
         run: "go test -v -race -short -coverprofile='coverage.out' ./..."

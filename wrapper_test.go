@@ -20,7 +20,11 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/monitor/status"
+	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/bools"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,16 +42,69 @@ func init() {
 	} else {
 		mockBinary = "./mock"
 	}
-
-	// Add params that need to be passed to the mock binary
-	commonResticArgsList = append(commonResticArgsList, "--exit")
 }
 
-func TestCommonResticArgs(t *testing.T) {
+func TestValidResticArgumentsList(t *testing.T) {
 	wrapper := &resticWrapper{}
-	for _, arg := range commonResticArgsList {
+
+	for _, command := range restic.CommandNames() {
+		t.Run(command, func(t *testing.T) {
+			resticVersion := wrapper.getResticVersion()
+			cmd, _ := restic.GetCommandForVersion(command, resticVersion, true)
+			require.NotNil(t, cmd)
+			defaultOptions := restic.GetDefaultOptionsForVersion(resticVersion, true)
+			require.NotEmpty(t, defaultOptions)
+
+			arguments := wrapper.validResticArgumentsList(command)
+
+			for _, options := range [][]restic.Option{cmd.GetOptions(), defaultOptions} {
+				for _, option := range options {
+					if option.AvailableForOS() {
+						if option.Name != "" {
+							assert.Contains(t, arguments, fmt.Sprintf("--%s", option.Name))
+						}
+						if option.Alias != "" {
+							assert.Contains(t, arguments, fmt.Sprintf("-%s", option.Alias))
+						}
+					} else {
+						if option.Name != "" {
+							assert.NotContains(t, arguments, fmt.Sprintf("--%s", option.Name))
+						}
+						if option.Alias != "" {
+							assert.NotContains(t, arguments, fmt.Sprintf("-%s", option.Alias))
+						}
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestVersionedResticArgumentsList(t *testing.T) {
+	wrapper := &resticWrapper{global: new(config.Global)}
+
+	wrapper.global.ResticVersion = "0.14"
+	arguments := wrapper.validResticArgumentsList("init")
+	assert.Contains(t, arguments, "--from-repo")
+	assert.Contains(t, arguments, "--repo2") // filter keeps legacy (removed) flags
+
+	wrapper.global.ResticVersion = "0.13"
+	arguments = wrapper.validResticArgumentsList("init")
+	assert.Contains(t, arguments, "--repo2")
+	assert.NotContains(t, arguments, "--from-repo") // exists not yet in restic 0.13
+}
+
+func TestValidArgumentsFilter(t *testing.T) {
+	wrapper := &resticWrapper{}
+	validArgs := collect.All(wrapper.validResticArgumentsList(constants.CommandBackup), func(arg string) bool {
+		return arg != "-x" && arg != "--xxx"
+	})
+	require.NotEmpty(t, validArgs)
+	filter := wrapper.validArgumentsFilter(validArgs)
+
+	for _, arg := range validArgs {
 		var args []string
-		list := []string{"-x", "-x=1", "-x 2 x=y", "--xxx", "--xxx=v", "--xxx k=v", arg, arg + "=1", arg + " ka=va"}
+		list := []string{"-x", "-x=1", "-x 2 extra x=y", "--xxx", "--xxx=v", "--xxx k=v", arg, arg + "=1", arg + " ka=va", arg + " ka=va extra2"}
 
 		for i := 0; i < 20; i++ {
 			rand.Shuffle(len(list), func(i, j int) { list[i], list[j] = list[j], list[i] })
@@ -56,12 +113,20 @@ func TestCommonResticArgs(t *testing.T) {
 				args = append(args, strings.Split(item, " ")...)
 			}
 
-			args = wrapper.commonResticArgs(args)
+			filtered := filter(args, true)
 
-			assert.Len(t, args, 4)
-			assert.Subset(t, args, []string{arg, arg + "=1", "ka=va"})
-			for _, item := range []string{"-x", "--xxx", "x=y", "k=v", "2"} {
-				assert.NotContains(t, args, item)
+			assert.Len(t, filtered, 9)
+			assert.Subset(t, []string{arg, arg + "=1", "ka=va", "x=y", "extra", "extra2"}, filtered)
+			for _, item := range []string{"-x", "--xxx"} {
+				assert.NotContains(t, filtered, item)
+			}
+
+			filtered = filter(args, false)
+
+			assert.Len(t, filtered, 6)
+			assert.Subset(t, []string{arg, arg + "=1", "ka=va"}, filtered)
+			for _, item := range []string{"-x", "--xxx", "x=y", "k=v", "---xxx=v", "extra", "extra2"} {
+				assert.NotContains(t, filtered, item)
 			}
 		}
 	}
@@ -314,6 +379,7 @@ func TestInitializeWithError(t *testing.T) {
 
 func TestInitializeCopyNoError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
+	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: bools.False()}
 	wrapper := newResticWrapper(nil, mockBinary, false, profile, "", nil, nil)
 	err := wrapper.runInitializeCopy()
 	require.NoError(t, err)
@@ -321,6 +387,7 @@ func TestInitializeCopyNoError(t *testing.T) {
 
 func TestInitializeCopyWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
+	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: bools.False()}
 	wrapper := newResticWrapper(nil, mockBinary, false, profile, "", []string{"--exit", "10"}, nil)
 	err := wrapper.runInitializeCopy()
 	require.Error(t, err)
@@ -556,32 +623,15 @@ func TestRunShellCommands(t *testing.T) {
 	profile.Forget = &config.SectionWithScheduleAndMonitoring{}
 	profile.Init = &config.InitSection{}
 	profile.Prune = &config.SectionWithScheduleAndMonitoring{}
-
-	profile.Dump = &config.GenericSection{}
-	profile.Find = &config.GenericSection{}
-	profile.Ls = &config.GenericSection{}
-	profile.Mount = &config.GenericSection{}
-	profile.Restore = &config.GenericSection{}
-	profile.Snapshots = &config.GenericSection{}
-	profile.Stats = &config.GenericSection{}
-	profile.Tag = &config.GenericSection{}
-
-	sections := map[string]*config.RunShellCommandsSection{
-		"backup":    profile.Backup.GetRunShellCommands(),
-		"copy":      profile.Copy.GetRunShellCommands(),
-		"dump":      profile.Dump.GetRunShellCommands(),
-		"find":      profile.Find.GetRunShellCommands(),
-		"ls":        profile.Ls.GetRunShellCommands(),
-		"mount":     profile.Mount.GetRunShellCommands(),
-		"restore":   profile.Restore.GetRunShellCommands(),
-		"snapshots": profile.Snapshots.GetRunShellCommands(),
-		"stats":     profile.Stats.GetRunShellCommands(),
-		"tag":       profile.Tag.GetRunShellCommands(),
-		//"check":  profile.Check.GetRunShellCommands(),
-		//"forget": profile.Forget.GetRunShellCommands(),
-		//"init": profile.Init.GetRunShellCommands(),
-		//"prune":  profile.Prune.GetRunShellCommands(),
+	for name, _ := range profile.OtherSections {
+		profile.OtherSections[name] = new(config.GenericSection)
 	}
+
+	sections := make(map[string]*config.RunShellCommandsSection)
+	for name, s := range config.GetDeclaredSectionsWith[config.RunShellCommands](profile) {
+		sections[name] = s.GetRunShellCommands()
+	}
+	require.Greater(t, len(sections), 10)
 
 	for command, section := range sections {
 		t.Run(fmt.Sprintf("run-before '%s'", command), func(t *testing.T) {
@@ -938,43 +988,50 @@ func popUntilPrefix(prefix string, log *clog.MemoryHandler) (line string) {
 }
 
 func TestRunInitCopyCommand(t *testing.T) {
+	makeProfile := func(copyChunkerParams bool, resticVersion string) (p *config.Profile) {
+		p = &config.Profile{
+			Name:         "profile",
+			Repository:   config.NewConfidentialValue("repo_origin"),
+			PasswordFile: "password_origin",
+			Copy: &config.CopySection{
+				InitializeCopyChunkerParams: util.CopyRef(copyChunkerParams),
+				Repository:                  config.NewConfidentialValue("repo_copy"),
+				PasswordFile:                "password_copy",
+			},
+		}
+		require.NoError(t, p.SetResticVersion(resticVersion))
+		return p
+	}
+
 	testCases := []struct {
 		profile      *config.Profile
 		expectedInit string
 		expectedCopy string
 	}{
 		{
-			profile: &config.Profile{
-				Name:         "profile",
-				Repository:   config.NewConfidentialValue("repo_origin"),
-				PasswordFile: "password_origin",
-				Copy: &config.CopySection{
-					InitializeCopyChunkerParams: true,
-					Repository:                  config.NewConfidentialValue("repo_copy"),
-					PasswordFile:                "password_copy",
-				},
-			},
-			expectedInit: "dry-run: test init --copy-chunker-params --password-file password_copy --password-file2 password_origin --repo repo_copy --repo2 repo_origin",
-			expectedCopy: "dry-run: test copy --password-file password_origin --password-file2 password_copy --repo repo_origin --repo2 repo_copy",
+			profile:      makeProfile(true, "0.13"),
+			expectedInit: "dry-run: test init --copy-chunker-params --password-file=password_copy --password-file2=password_origin --repo=repo_copy --repo2=repo_origin",
+			expectedCopy: "dry-run: test copy --password-file=password_origin --password-file2=password_copy --repo=repo_origin --repo2=repo_copy",
 		},
 		{
-			profile: &config.Profile{
-				Name:         "profile",
-				Repository:   config.NewConfidentialValue("repo_origin"),
-				PasswordFile: "password_origin",
-				Copy: &config.CopySection{
-					InitializeCopyChunkerParams: false,
-					Repository:                  config.NewConfidentialValue("repo_copy"),
-					PasswordFile:                "password_copy",
-				},
-			},
-			expectedInit: "dry-run: test init --password-file password_copy --repo repo_copy",
-			expectedCopy: "dry-run: test copy --password-file password_origin --password-file2 password_copy --repo repo_origin --repo2 repo_copy",
+			profile:      makeProfile(false, "0.13"),
+			expectedInit: "dry-run: test init --password-file=password_copy --repo=repo_copy",
+			expectedCopy: "dry-run: test copy --password-file=password_origin --password-file2=password_copy --repo=repo_origin --repo2=repo_copy",
+		},
+		{
+			profile:      makeProfile(true, "0.14"),
+			expectedInit: "dry-run: test init --copy-chunker-params --from-password-file=password_origin --from-repo=repo_origin --password-file=password_copy --repo=repo_copy",
+			expectedCopy: "dry-run: test copy --from-password-file=password_origin --from-repo=repo_origin --password-file=password_copy --repo=repo_copy",
+		},
+		{
+			profile:      makeProfile(false, "0.14"),
+			expectedInit: "dry-run: test init --password-file=password_copy --repo=repo_copy",
+			expectedCopy: "dry-run: test copy --from-password-file=password_origin --from-repo=repo_origin --password-file=password_copy --repo=repo_copy",
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run("", func(t *testing.T) {
+	for i, testCase := range testCases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			// We use the logger to run our test. It kind of sucks but does the job without having to tweak
 			// the code to send the command line parameters somewhere
 			defaultLogger := clog.GetDefaultLogger()

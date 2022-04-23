@@ -1,0 +1,5 @@
+{{ if .Get 1 | eq "nohtml" -}}
+{{ .Get 0 | absURL }}
+{{- else -}}
+<a href="{{ .Get 0 | absURL }}">{{ .Get 0 | absURL }}</a>
+{{- end }}

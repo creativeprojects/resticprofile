@@ -3,9 +3,8 @@ package shell
 import (
 	"fmt"
 	"sort"
-	"strings"
 
-	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/collect"
 )
 
 type Args struct {
@@ -46,41 +45,6 @@ func (a *Args) Walk(callback func(name string, arg *Arg) *Arg) {
 		processArgs(name, args)
 	}
 	processArgs("", a.more)
-}
-
-// PromoteSecondaryToPrimary removes a "2" at the end of each flag
-func (a *Args) PromoteSecondaryToPrimary(swap bool) {
-	override := make(map[string][]Arg, len(a.args))
-	for name, args := range a.args {
-		if strings.HasSuffix(name, "2") {
-			name = strings.TrimSuffix(name, "2")
-			if isSwappable(name) {
-				override[name] = args
-			}
-		}
-	}
-	keep := make(map[string][]Arg, len(a.args))
-	if swap {
-		// take all the non "2" arguments as we need to swap them
-		for name, args := range a.args {
-			if isSwappable(name) {
-				keep[name] = args
-			}
-		}
-	}
-	// delete all the swappable arguments
-	for _, name := range constants.SwappableParameters {
-		delete(a.args, name)
-		delete(a.args, name+"2")
-	}
-	// sets the secondary arguments to primary
-	for name, args := range override {
-		a.args[name] = args
-	}
-	// sets the original arguments to a "2" version (if any)
-	for name, args := range keep {
-		a.args[name+"2"] = args
-	}
 }
 
 // SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
@@ -141,6 +105,34 @@ func (a *Args) Get(name string) ([]Arg, bool) {
 	return arg, ok
 }
 
+func (a *Args) Remove(name string) ([]Arg, bool) {
+	arg, ok := a.Get(name)
+	delete(a.args, name)
+	return arg, ok
+}
+
+func (a *Args) RemoveArg(name string) (removed []Arg) {
+	nameMatch := func(t Arg) bool { return t.raw == name }
+	removed = collect.All(a.more, nameMatch)
+	a.more = collect.All(a.more, collect.Not(nameMatch))
+	return
+}
+
+func (a *Args) Rename(oldName, newName string) bool {
+	args, ok := a.Remove(oldName)
+	if ok {
+		for _, arg := range args {
+			a.AddFlag(newName, arg.Value(), arg.Type())
+		}
+	}
+	args = a.RemoveArg(oldName)
+	ok = ok || len(args) > 0
+	for _, arg := range args {
+		a.AddArg(newName, arg.Type())
+	}
+	return ok
+}
+
 // GetAll return a clean list of arguments to send on the command line
 func (a *Args) GetAll() []string {
 	args := make([]string, 0, len(a.args)+len(a.more)+10)
@@ -168,9 +160,10 @@ func (a *Args) GetAll() []string {
 			continue
 		}
 		for _, value := range values {
-			args = append(args, fmt.Sprintf("--%s", key))
 			if value.HasValue() {
-				args = append(args, value.String())
+				args = append(args, fmt.Sprintf("--%s=%s", key, value.String())) // must use "=" as some values (e.g. verbose) need this to work correctly
+			} else {
+				args = append(args, fmt.Sprintf("--%s", key))
 			}
 		}
 	}
@@ -180,13 +173,4 @@ func (a *Args) GetAll() []string {
 		args = append(args, arg.String())
 	}
 	return args
-}
-
-func isSwappable(name string) bool {
-	for _, param := range constants.SwappableParameters {
-		if name == param {
-			return true
-		}
-	}
-	return false
 }

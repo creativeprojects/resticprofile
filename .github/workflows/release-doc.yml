@@ -24,6 +24,11 @@ jobs:
         run: go run ./config/checkdoc -r docs/content
         shell: bash
         
+      - name: Build JSON schema & config reference
+        run: make generate-jsonschema generate-config-reference
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:

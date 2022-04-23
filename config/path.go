@@ -15,10 +15,6 @@ type pathFix func(string) string
 
 // fixPath applies all the path fixing callbacks one by one
 func fixPath(value string, callbacks ...pathFix) string {
-	if len(callbacks) == 0 {
-		// nothing to do
-		return value
-	}
 	for _, callback := range callbacks {
 		value = callback(value)
 	}
@@ -26,12 +22,14 @@ func fixPath(value string, callbacks ...pathFix) string {
 }
 
 // fixPaths runs fixPath over a slice of paths
-func fixPaths(sources []string, callbacks ...pathFix) []string {
-	fixed := make([]string, len(sources))
-	for index, source := range sources {
-		fixed[index] = fixPath(source, callbacks...)
+func fixPaths(sources []string, callbacks ...pathFix) (fixed []string) {
+	if len(sources) > 0 {
+		fixed = make([]string, len(sources))
+		for index, source := range sources {
+			fixed[index] = fixPath(source, callbacks...)
+		}
 	}
-	return fixed
+	return
 }
 
 func expandEnv(value string) string {
@@ -103,18 +101,20 @@ func absolutePath(value string) string {
 }
 
 // resolveGlob evaluates glob expressions in a slice of paths and returns a resolved slice
-func resolveGlob(sources []string) []string {
-	resolved := make([]string, 0, len(sources))
-	for _, source := range sources {
-		if strings.ContainsAny(source, "?*[") {
-			if matches, err := filepath.Glob(source); err == nil {
-				resolved = append(resolved, matches...)
+func resolveGlob(sources []string) (resolved []string) {
+	if len(sources) > 0 {
+		resolved = make([]string, 0, len(sources))
+		for _, source := range sources {
+			if strings.ContainsAny(source, "?*[") {
+				if matches, err := filepath.Glob(source); err == nil {
+					resolved = append(resolved, matches...)
+				} else {
+					clog.Warningf("cannot evaluate glob expression '%s' : %v", source, err)
+				}
 			} else {
-				clog.Warningf("cannot evaluate glob expression '%s' : %v", source, err)
+				resolved = append(resolved, source)
 			}
-		} else {
-			resolved = append(resolved, source)
 		}
 	}
-	return resolved
+	return
 }

@@ -19,17 +19,19 @@
 /resticprofile_darwin
 /resticprofile_linux
 /resticprofile_pi
-/resticprofile.exe
-/lock/locktest
-/mock
-/mock.exe
-/echo
-/echo.exe
+*.exe
 
 # test output
 /coverage.out
-# mocks
-/mocks
+
+# mocks & mock binaries
+mocks
+/mock
+/echo
+/lock/locktest
+
+# test-env
+.node-env
 
 # log files
 /*.log
@@ -38,5 +40,7 @@ status.json
 *.prom
 
 # documentation
+/docs/content/configuration/reference/index.md
+/docs/static/jsonschema
 /public
 .hugo_build.lock

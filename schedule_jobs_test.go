@@ -5,8 +5,8 @@ import (
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/mocks"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/creativeprojects/resticprofile/schedule/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
