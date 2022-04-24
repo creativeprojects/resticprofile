@@ -1,0 +1,26 @@
+<style>
+    a#logo {
+      color: #282828;
+      color: var(--MENU-SECTIONS-BG-color);
+      font-family: 'Work Sans', 'Helvetica', 'Tahoma', 'Geneva', 'Arial', sans-serif;
+      font-size: 30px;
+      font-weight: 300;
+      margin-top: -13px;
+      max-width: 60%;
+      text-transform: uppercase;
+      width: 226px;
+      white-space: nowrap;
+    }
+    a#logo:hover {
+      color: #282828;
+      color: var(--MENU-SECTIONS-BG-color);
+    }
+    @media only all and (max-width: 59.938em) {
+      a#logo {
+        font-size: 25px;
+        margin-top: -3px;
+      }
+    }
+  </style>
+  <a id="logo" href="{{ .Site.Params.landingPageURL | default "/" | relLangURL }}">
+    Resticprofile</a>
