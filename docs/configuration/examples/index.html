@@ -8,16 +8,16 @@
     <meta name="description" content="">
     <title>Examples :: resticprofile</title>
     <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/configuration/examples/index.xml" title="resticprofile" />
-    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1650803606" rel="stylesheet" id="variant-style">
-    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1650803606" rel="stylesheet" media="print">
-    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1650803606"></script>
+    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1650825654" rel="stylesheet" id="variant-style">
+    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1650825654" rel="stylesheet" media="print">
+    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1650825654"></script>
     <script>
       // hack to let hugo tell us how to get to the root when using relativeURLs, it needs to be called *url= for it to do its magic:
       // https://github.com/gohugoio/hugo/blob/145b3fcce35fbac25c7033c91c1b7ae6d1179da8/transform/urlreplacers/absurlreplacer.go#L72
@@ -33,7 +33,7 @@
       var baseUriFull='https:\/\/creativeprojects.github.io\/resticprofile/';
       variants.init( [ 'relearn-light', 'relearn-dark' ] );
     </script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650803606"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650825654"></script>
   </head>
   <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/examples/">
     <div id="body" class="default-animation">
@@ -63,10 +63,8 @@
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#simple-toml-configuration">Simple TOML configuration</a></li>
-    <li><a href="#simple-yaml-configuration">Simple YAML configuration</a></li>
-    <li><a href="#more-complex-configuration-in-toml">More complex configuration in TOML</a></li>
-    <li><a href="#toml-configuration-example-for-windows">TOML configuration example for Windows</a></li>
+    <li><a href="#configuration-with-inheritance">Configuration with inheritance</a></li>
+    <li><a href="#configuration-example-for-windows">Configuration example for Windows</a></li>
     <li><a href="#use-stdin-in-configuration">Use stdin in configuration</a></li>
     <li><a href="#special-case-for-the-copy-command-section">Special case for the <code>copy</code> command section</a></li>
   </ul>
@@ -83,23 +81,48 @@
 
 <h1>Examples</h1>
 <p>Here&rsquo;s a simple configuration file using a Microsoft Azure backend:</p>
-<h2 id="simple-toml-configuration">Simple TOML configuration</h2>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;azure:restic:/&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">option</span> = <span style="color:#e6db74">&#34;azure.connections=3&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;azure:restic:/&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">option</span> = <span style="color:#e6db74">&#34;azure.connections=3&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">env</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">AZURE_ACCOUNT_NAME</span> = <span style="color:#e6db74">&#34;my_storage_account&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">AZURE_ACCOUNT_KEY</span> = <span style="color:#e6db74">&#34;my_super_secret_key&#34;</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">env</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">AZURE_ACCOUNT_NAME</span> = <span style="color:#e6db74">&#34;my_storage_account&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">AZURE_ACCOUNT_KEY</span> = <span style="color:#e6db74">&#34;my_super_secret_key&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">backup</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">exclude-file</span> = <span style="color:#e6db74">&#34;excludes&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">exclude-caches</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">one-file-system</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;root&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/&#34;</span>, <span style="color:#e6db74">&#34;/var&#34;</span> ]
-</span></span></code></pre></div><h2 id="simple-yaml-configuration">Simple YAML configuration</h2>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">backup</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exclude-file</span> = <span style="color:#e6db74">&#34;excludes&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exclude-caches</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">one-file-system</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;root&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/&#34;</span>, <span style="color:#e6db74">&#34;/var&#34;</span> ]
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">default</span>:
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#e6db74">&#34;azure:restic:/&#34;</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">password-file</span>: <span style="color:#e6db74">&#34;key&#34;</span>
@@ -114,186 +137,491 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">exclude-caches</span>: <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">one-file-system</span>: <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">tag</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#e6db74">&#34;root&#34;</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#34;root&#34;</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">source</span>:
-</span></span><span style="display:flex;"><span>    - <span style="color:#e6db74">&#34;/&#34;</span>
-</span></span><span style="display:flex;"><span>    - <span style="color:#e6db74">&#34;/var&#34;</span>
-</span></span></code></pre></div><h2 id="more-complex-configuration-in-toml">More complex configuration in TOML</h2>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#34;/&#34;</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#34;/var&#34;</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">default</span> {
+</span></span><span style="display:flex;"><span>    repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;azure:restic:/&#34;</span>
+</span></span><span style="display:flex;"><span>    password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>    options <span style="color:#f92672">=</span> &#34;azure.connections<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span><span style="color:#960050;background-color:#1e0010">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">env</span> {
+</span></span><span style="display:flex;"><span>      AZURE_ACCOUNT_NAME <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;my_storage_account&#34;</span>
+</span></span><span style="display:flex;"><span>      AZURE_ACCOUNT_KEY <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;my_super_secret_key&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    backup <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        exclude-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;excludes&#34;</span>
+</span></span><span style="display:flex;"><span>        exclude-caches <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        one-file-system <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;root&#34;</span> ]
+</span></span><span style="display:flex;"><span>        source <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;/&#34;, &#34;/var&#34;</span> ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<h2 id="configuration-with-inheritance">Configuration with inheritance</h2>
 <p>Here&rsquo;s a more complex configuration file showing profile inheritance and two backup profiles using the same repository:</p>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">global</span>]
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># ionice is available on Linux only</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ionice</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ionice-class</span> = <span style="color:#ae81ff">2</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ionice-level</span> = <span style="color:#ae81ff">6</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># priority is using priority class on windows, and &#34;nice&#34; on unixes - it&#39;s acting on CPU usage only</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">priority</span> = <span style="color:#e6db74">&#34;low&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># run &#39;snapshots&#39; when no command is specified when invoking resticprofile</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">default-command</span> = <span style="color:#e6db74">&#34;snapshots&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># initialize a repository if none exist at location</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># resticprofile won&#39;t start a profile if there&#39;s less than 100MB of RAM available</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">min-memory</span> = <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># ionice is available on Linux only</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ionice</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ionice-class</span> = <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ionice-level</span> = <span style="color:#ae81ff">6</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># priority is using priority class on windows, and &#34;nice&#34; on unixes - it&#39;s acting on CPU usage only</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">priority</span> = <span style="color:#e6db74">&#34;low&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># run &#39;snapshots&#39; when no command is specified when invoking resticprofile</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">default-command</span> = <span style="color:#e6db74">&#34;snapshots&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># initialize a repository if none exist at location</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># resticprofile won&#39;t start a profile if there&#39;s less than 100MB of RAM available</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">min-memory</span> = <span style="color:#ae81ff">100</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># a group is a profile that will call all profiles one by one</span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">groups</span>]
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># when starting a backup on profile &#34;full-backup&#34;, it will run the &#34;root&#34; and &#34;src&#34; backup profiles</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">full-backup</span> = [ <span style="color:#e6db74">&#34;root&#34;</span>, <span style="color:#e6db74">&#34;src&#34;</span> ]
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># when starting a backup on profile &#34;full-backup&#34;, it will run the &#34;root&#34; and &#34;src&#34; backup profiles</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">full-backup</span> = [ <span style="color:#e6db74">&#34;root&#34;</span>, <span style="color:#e6db74">&#34;src&#34;</span> ]
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Default profile when not specified (-n or --name)</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Please note there&#39;s no default inheritance from the &#39;default&#39; profile (you can use the &#39;inherit&#39; flag if needed)</span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># you can use a relative path, it will be relative to the configuration file</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;/backup&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># will run these scripts before and after each command (including &#39;backup&#39;)</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-before</span> = <span style="color:#e6db74">&#34;mount /backup&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;umount /backup&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># if a restic command fails, the run-after won&#39;t be running</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># add this parameter to run the script in case of a failure</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-after-fail</span> = <span style="color:#e6db74">&#34;umount /backup&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># you can use a relative path, it will be relative to the configuration file</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;/backup&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># will run these scripts before and after each command (including &#39;backup&#39;)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">run-before</span> = <span style="color:#e6db74">&#34;mount /backup&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;umount /backup&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># if a restic command fails, the run-after won&#39;t be running</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># add this parameter to run the script in case of a failure</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">run-after-fail</span> = <span style="color:#e6db74">&#34;umount /backup&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">env</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">TMPDIR</span>= <span style="color:#e6db74">&#34;/tmp&#34;</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">env</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TMPDIR</span>= <span style="color:#e6db74">&#34;/tmp&#34;</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">no-cache</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">no-cache</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">no-cache</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># New profile named &#39;root&#39;</span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">root</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># this will add a LOCAL lockfile so you cannot run the same profile more than once at a time</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># (it&#39;s totally independent of the restic locks on the repository)</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lock</span> = <span style="color:#e6db74">&#34;/tmp/resticprofile-root.lock&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">force-inactive-lock</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># this will add a LOCAL lockfile so you cannot run the same profile more than once at a time</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># (it&#39;s totally independent of the restic locks on the repository)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">lock</span> = <span style="color:#e6db74">&#34;/tmp/resticprofile-root.lock&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">force-inactive-lock</span> = <span style="color:#66d9ef">false</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># &#39;backup&#39; command of profile &#39;root&#39;</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">backup</span>]
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># files with no path are relative to the configuration file</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">exclude-file</span> = [ <span style="color:#e6db74">&#34;root-excludes&#34;</span>, <span style="color:#e6db74">&#34;excludes&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">exclude-caches</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">one-file-system</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;test&#34;</span>, <span style="color:#e6db74">&#34;dev&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># if scheduled, will run every day at midnight</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule</span> = <span style="color:#e6db74">&#34;daily&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule-permission</span> = <span style="color:#e6db74">&#34;system&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule-lock-wait</span> = <span style="color:#e6db74">&#34;2h&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># run this after a backup to share a repository between a user and root (via sudo)</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;chown -R $SUDO_USER $HOME/.cache/restic /backup&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># ignore restic warnings (otherwise the backup is considered failed when restic couldn&#39;t read some files)</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">no-error-on-warning</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># &#39;backup&#39; command of profile &#39;root&#39;</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">backup</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># files with no path are relative to the configuration file</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exclude-file</span> = [ <span style="color:#e6db74">&#34;root-excludes&#34;</span>, <span style="color:#e6db74">&#34;excludes&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exclude-caches</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">one-file-system</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;test&#34;</span>, <span style="color:#e6db74">&#34;dev&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># if scheduled, will run every day at midnight</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule</span> = <span style="color:#e6db74">&#34;daily&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule-permission</span> = <span style="color:#e6db74">&#34;system&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule-lock-wait</span> = <span style="color:#e6db74">&#34;2h&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># run this after a backup to share a repository between a user and root (via sudo)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;chown -R $SUDO_USER $HOME/.cache/restic /backup&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># ignore restic warnings (otherwise the backup is considered failed when restic couldn&#39;t read some files)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">no-error-on-warning</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># retention policy for profile root</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">retention</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">before-backup</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">after-backup</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-last</span> = <span style="color:#ae81ff">3</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-hourly</span> = <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-daily</span> = <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-weekly</span> = <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-monthly</span> = <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-yearly</span> = <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-within</span> = <span style="color:#e6db74">&#34;3h&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-tag</span> = [ <span style="color:#e6db74">&#34;forever&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">compact</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">prune</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># path can be a boolean (&#39;true&#39; meaning to copy source paths from &#39;backup&#39;) </span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># or a path or list of paths to use instead. Default is `true` if not specified.</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#path = []</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># tag can be a boolean (&#39;true&#39; meaning to copy tag set from &#39;backup&#39;) </span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># or a custom set of tags. Default is &#39;false&#39;, meaning that tags are NOT used.</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">tag</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># host can be a boolean (&#39;true&#39; meaning current hostname) or a string to specify a different hostname</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">host</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># retention policy for profile root</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">retention</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">before-backup</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">after-backup</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-last</span> = <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-hourly</span> = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-daily</span> = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-weekly</span> = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-monthly</span> = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-yearly</span> = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-within</span> = <span style="color:#e6db74">&#34;3h&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-tag</span> = [ <span style="color:#e6db74">&#34;forever&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">compact</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">prune</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># path can be a boolean (&#39;true&#39; meaning to copy source paths from &#39;backup&#39;) </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># or a path or list of paths to use instead. Default is `true` if not specified.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#path = []</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># tag can be a boolean (&#39;true&#39; meaning to copy tag set from &#39;backup&#39;) </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># or a custom set of tags. Default is &#39;false&#39;, meaning that tags are NOT used.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tag</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># host can be a boolean (&#39;true&#39; meaning current hostname) or a string to specify a different hostname</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">host</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># New profile named &#39;src&#39;</span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">src</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># &#39;backup&#39; command of profile &#39;src&#39;</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">backup</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">exclude</span> = [ <span style="color:#e6db74">&#39;/**/.git&#39;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">exclude-caches</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">one-file-system</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;test&#34;</span>, <span style="color:#e6db74">&#34;dev&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;./src&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">check-before</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># will only run these scripts before and after a backup</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-before</span> = [ <span style="color:#e6db74">&#34;echo Starting!&#34;</span>, <span style="color:#e6db74">&#34;ls -al ./src&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;sync&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># if scheduled, will run every 30 minutes</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule</span> = <span style="color:#e6db74">&#34;*:0,30&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule-permission</span> = <span style="color:#e6db74">&#34;user&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule-lock-wait</span> = <span style="color:#e6db74">&#34;10m&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># &#39;backup&#39; command of profile &#39;src&#39;</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">backup</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exclude</span> = [ <span style="color:#e6db74">&#39;/**/.git&#39;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exclude-caches</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">one-file-system</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;test&#34;</span>, <span style="color:#e6db74">&#34;dev&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;./src&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">check-before</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># will only run these scripts before and after a backup</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">run-before</span> = [ <span style="color:#e6db74">&#34;echo Starting!&#34;</span>, <span style="color:#e6db74">&#34;ls -al ./src&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;sync&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># if scheduled, will run every 30 minutes</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule</span> = <span style="color:#e6db74">&#34;*:0,30&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule-permission</span> = <span style="color:#e6db74">&#34;user&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule-lock-wait</span> = <span style="color:#e6db74">&#34;10m&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># retention policy for profile src</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">retention</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">before-backup</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">after-backup</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">keep-within</span> = <span style="color:#e6db74">&#34;30d&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">compact</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">prune</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># retention policy for profile src</span>
+</span></span><span style="display:flex;"><span>    [<span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">retention</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">before-backup</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">after-backup</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">keep-within</span> = <span style="color:#e6db74">&#34;30d&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">compact</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">prune</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># check command of profile src</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">check</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read-data</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># if scheduled, will check the repository the first day of each month at 3am</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">schedule</span> = <span style="color:#e6db74">&#34;*-*-01 03:00&#34;</span>
-</span></span></code></pre></div><h2 id="toml-configuration-example-for-windows">TOML configuration example for Windows</h2>
-<p>And another simple example for Windows:</p>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># check command of profile src</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">check</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">read-data</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># if scheduled, will check the repository the first day of each month at 3am</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">schedule</span> = <span style="color:#e6db74">&#34;*-*-01 03:00&#34;</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">global</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default-command</span>: <span style="color:#ae81ff">snapshots</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">priority</span>: <span style="color:#ae81ff">low</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">groups</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">full-backup</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">root</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">src</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">default</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tmp</span>: <span style="color:#ae81ff">/tmp</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">password-file</span>: <span style="color:#ae81ff">key</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">/backup</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">documents</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>: <span style="color:#ae81ff">~/Documents</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">~/backup</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">snapshots</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">documents</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">root</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">exclude-caches</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">exclude-file</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">root-excludes</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">excludes</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">one-file-system</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">/</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">test</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">dev</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">inherit</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">retention</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">after-backup</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">before-backup</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">compact</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">host</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-daily</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-hourly</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-last</span>: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-monthly</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">forever</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-weekly</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-within</span>: <span style="color:#ae81ff">3h</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-yearly</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">test</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">dev</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">self</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>: <span style="color:#ae81ff">./</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">../backup</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">snapshots</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">self</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">src</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">lock</span>: <span style="color:#e6db74">&#34;/tmp/resticprofile-profile-src.lock&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">force-inactive-lock</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">check-before</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">exclude</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">/**/.git</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">exclude-caches</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">one-file-system</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run-after</span>: <span style="color:#ae81ff">echo All Done!</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run-before</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">echo Starting!</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">ls -al ~/go</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">~/go</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">test</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">dev</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">inherit</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">retention</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">after-backup</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">before-backup</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">compact</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-within</span>: <span style="color:#ae81ff">30d</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">snapshots</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">test</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">dev</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">global</span> {
+</span></span><span style="display:flex;"><span>    priority <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;low&#34;</span>
+</span></span><span style="display:flex;"><span>    ionice <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    ionice-class <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>    ionice-level <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    # don&#39;t start if the memory available is &lt; 1000MB
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    min-memory <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">groups</span> {
+</span></span><span style="display:flex;"><span>    all <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;src&#34;, &#34;self&#34;</span>]
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">default</span> {
+</span></span><span style="display:flex;"><span>    repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/tmp/backup&#34;</span>
+</span></span><span style="display:flex;"><span>    password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>    run-before <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;echo Profile started!&#34;</span>
+</span></span><span style="display:flex;"><span>    run-after <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;echo Profile finished!&#34;</span>
+</span></span><span style="display:flex;"><span>    run-after-fail <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;echo An error occurred!&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">src</span> {
+</span></span><span style="display:flex;"><span>    inherit <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>    initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    lock <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/tmp/backup/resticprofile-profile-src.lock&#34;</span>
+</span></span><span style="display:flex;"><span>    force-inactive-lock <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    snapshots <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;test&#34;, &#34;dev&#34;</span> ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    backup <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        run-before <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;echo Starting!&#34;, &#34;ls -al ~/go/src&#34;</span> ]
+</span></span><span style="display:flex;"><span>        run-after <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;echo All Done!&#34;</span>
+</span></span><span style="display:flex;"><span>        exclude <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;/**/.git&#34;</span> ]
+</span></span><span style="display:flex;"><span>        exclude-caches <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;test&#34;, &#34;dev&#34;</span> ]
+</span></span><span style="display:flex;"><span>        source <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;~/go/src&#34;</span> ]
+</span></span><span style="display:flex;"><span>        check-before <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    retention <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        before-backup <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        after-backup <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        keep-last <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>        compact <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        prune <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    check <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        check-unused <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        with-cache <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">self</span> {
+</span></span><span style="display:flex;"><span>    inherit <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>    initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    snapshots <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;self&#34;</span> ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    backup <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./&#34;</span>
+</span></span><span style="display:flex;"><span>        tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;self&#34;</span> ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<h2 id="configuration-example-for-windows">Configuration example for Windows</h2>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">global</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">restic-binary</span> = <span style="color:#e6db74">&#34;c:\\ProgramData\\chocolatey\\bin\\restic.exe&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">restic-binary</span> = <span style="color:#e6db74">&#34;c:\\ProgramData\\chocolatey\\bin\\restic.exe&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Default profile when not specified (-n or --name)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Default profile when not specified on the command line</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Please note there&#39;s no default inheritance from the &#39;default&#39; profile (you can use the &#39;inherit&#39; flag if needed)</span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:r:/&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:r:/&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># New profile named &#39;test&#39;</span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">test</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">inherit</span> = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># &#39;backup&#39; command of profile &#39;test&#39;</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">test</span>.<span style="color:#a6e22e">backup</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;windows&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;c:\\&#34;</span> ]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">check-after</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-before</span> = <span style="color:#e6db74">&#34;dir /l&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;echo All Done!&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># ignore restic warnings (otherwise the backup is considered failed when restic couldn&#39;t read some files)</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">no-error-on-warning</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># &#39;backup&#39; command of profile &#39;test&#39;</span>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">test</span>.<span style="color:#a6e22e">backup</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#34;windows&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;c:\\&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">check-after</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">run-before</span> = <span style="color:#e6db74">&#34;dir /l&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;echo All Done!&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># ignore restic warnings (otherwise the backup is considered failed when restic couldn&#39;t read some files)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">no-error-on-warning</span> = <span style="color:#66d9ef">true</span>
 </span></span></code></pre></div><h2 id="use-stdin-in-configuration">Use stdin in configuration</h2>
 <p>Simple example sending a file via stdin</p>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">stdin</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:/backup/restic&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:/backup/restic&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">stdin</span>.<span style="color:#a6e22e">backup</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">stdin</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">stdin-filename</span> = <span style="color:#e6db74">&#34;stdin-test&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#39;stdin&#39;</span> ]
-</span></span></code></pre></div><h2 id="special-case-for-the-copy-command-section">Special case for the <code>copy</code> command section</h2>
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">stdin</span>.<span style="color:#a6e22e">backup</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">stdin</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">stdin-filename</span> = <span style="color:#e6db74">&#34;stdin-test&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tag</span> = [ <span style="color:#e6db74">&#39;stdin&#39;</span> ]
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span><span style="color:#f92672">stdin</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#e6db74">&#34;local:/backup/restic&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">password-file</span>: <span style="color:#ae81ff">key</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">stdin</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">stdin-filename</span>: <span style="color:#ae81ff">stdin-test</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">stdin</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#75715e"># sending stream through stdin
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>stdin <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;local:/backup/restic&#34;</span>
+</span></span><span style="display:flex;"><span>    password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    backup <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        stdin <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        stdin-filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;stdin-test&#34;</span>
+</span></span><span style="display:flex;"><span>        tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;stdin&#34;</span> ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<h2 id="special-case-for-the-copy-command-section">Special case for the <code>copy</code> command section</h2>
 <p>The copy command needs two repository (and quite likely 2 different set of keys). You can configure a <code>copy</code> section like this:</p>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;/backup/original&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;/backup/original&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;key&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    [<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">copy</span>]
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">copy</span>]
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;/backup/copy&#34;</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;other_key&#34;</span>
-</span></span></code></pre></div><p>You will note that the secondary repository doesn&rsquo;t need to have a <code>2</code> behind its flags (<code>repository2</code>, <code>password-file2</code>, etc.). It&rsquo;s because the flags are well separated in the configuration.</p>
-<p>Here&rsquo;s the same configuration in YAML format:</p>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">default</span>:
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">false</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">repository</span>: <span style="color:#e6db74">&#34;/backup/original&#34;</span>
@@ -303,6 +631,27 @@
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">repository</span>: <span style="color:#e6db74">&#34;/backup/copy&#34;</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">password-file</span>: <span style="color:#ae81ff">other_key</span>
 </span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">default</span> {
+</span></span><span style="display:flex;"><span>    initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/backup/original&#34;</span>
+</span></span><span style="display:flex;"><span>    password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    copy <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/backup/copy&#34;</span>
+</span></span><span style="display:flex;"><span>        password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;other_key&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<p>You will note that the secondary repository doesn&rsquo;t need to have a <code>2</code> behind its flags (<code>repository2</code>, <code>password-file2</code>, etc.). It&rsquo;s because the flags are well separated in the configuration.</p>
+
             <footer class="footline">
             </footer>
           </article>
@@ -312,6 +661,32 @@
     <aside id="sidebar" class="default-animation">
       <div id="header-wrapper" class="default-animation">
         <div id="header" class="default-animation">
+<style>
+    a#logo {
+      color: #282828;
+      color: var(--MENU-SECTIONS-BG-color);
+      font-family: 'Work Sans', 'Helvetica', 'Tahoma', 'Geneva', 'Arial', sans-serif;
+      font-size: 30px;
+      font-weight: 300;
+      margin-top: -13px;
+      max-width: 60%;
+      text-transform: uppercase;
+      width: 226px;
+      white-space: nowrap;
+    }
+    a#logo:hover {
+      color: #282828;
+      color: var(--MENU-SECTIONS-BG-color);
+    }
+    @media only all and (max-width: 59.938em) {
+      a#logo {
+        font-size: 25px;
+        margin-top: -3px;
+      }
+    }
+  </style>
+  <a id="logo" href="https://creativeprojects.github.io/resticprofile/">
+    Resticprofile</a>
 
         </div>
         <div class="searchbox default-animation">
@@ -319,9 +694,9 @@
           <input data-search-input id="search-by" type="search" placeholder="Search...">
           <span data-search-clear=""><i class="fas fa-times"></i></span>
         </div>
-        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1650803606"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1650803606"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1650803606"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1650825654"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1650825654"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1650825654"></script>
       </div>
       <div id="homelinks" class="default-animation">
         <ul>
@@ -377,14 +752,35 @@
             <li class="footerVisitedLinks"><a class="padding" href="#" data-clear-history-toggle=""><i class="fas fa-history fa-fw"></i> Clear History</a></li>
           </ul>
         </div>
-        <div id="footer" class="footerFooter showFooter">
-	    <p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p>
+        <div id="footer" class="footerFooter showFooter"><style>
+    #footer {
+      font-size: 13px;
+      height: 100px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 2rem 1rem;
+      text-align: center;
+      min-width: 230px;
+      max-width: 300px;
+    }
+    #footer p {
+      margin: 0;
+    }
+  </style>
+
+
+<a class="github-button" href="https://github.com/creativeprojects/resticprofile" data-size="large" data-show-count="true" aria-label="Star creativeprojects/resticprofile on GitHub">Star</a>
+
+<p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
         </div>
       </div>
     </aside>
-    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1650803606"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1650803606"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1650803606"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1650803606"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1650825654"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1650825654"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1650825654"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1650825654"></script>
   </body>
 </html>

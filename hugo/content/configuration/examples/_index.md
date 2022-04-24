@@ -313,17 +313,6 @@ src:
         tag:
         - test
         - dev
-        
-stdin:
-    backup:
-        stdin: true
-        stdin-filename: stdin-test
-        tag:
-        - stdin
-    inherit: default
-    snapshots:
-        tag:
-        - stdin
 
 ```
 
@@ -401,22 +390,6 @@ self {
     }
 }
 
-# sending stream through stdin
-
-stdin = {
-    inherit = "default"
-
-    snapshots = {
-        tag = [ "stdin" ]
-    }
-
-    backup = {
-        stdin = true
-        stdin-filename = "stdin-test"
-        tag = [ "stdin" ]
-    }
-}
-
 ```
 
 {{% /tab %}}
@@ -456,38 +429,80 @@ stdin = {
 
 Simple example sending a file via stdin
 
+{{< tabs groupId="config-with-hcl" >}}
+{{% tab name="toml" %}}
+
 ```toml
 
 [stdin]
-repository = "local:/backup/restic"
-password-file = "key"
+  repository = "local:/backup/restic"
+  password-file = "key"
 
-[stdin.backup]
-stdin = true
-stdin-filename = "stdin-test"
-tag = [ 'stdin' ]
+  [stdin.backup]
+    stdin = true
+    stdin-filename = "stdin-test"
+    tag = [ 'stdin' ]
 
 ```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+        
+stdin:
+  repository: "local:/backup/restic"
+  password-file: key
+  backup:
+    stdin: true
+    stdin-filename: stdin-test
+    tag:
+      - stdin
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+# sending stream through stdin
+stdin = {
+    repository = "local:/backup/restic"
+    password-file = "key"
+
+    backup = {
+        stdin = true
+        stdin-filename = "stdin-test"
+        tag = [ "stdin" ]
+    }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 ## Special case for the `copy` command section
 
 The copy command needs two repository (and quite likely 2 different set of keys). You can configure a `copy` section like this:
 
+
+{{< tabs groupId="config-with-hcl" >}}
+{{% tab name="toml" %}}
+
 ```toml
 [default]
-initialize = false
-repository = "/backup/original"
-password-file = "key"
+  initialize = false
+  repository = "/backup/original"
+  password-file = "key"
 
-    [default.copy]
+  [default.copy]
     initialize = true
     repository = "/backup/copy"
     password-file = "other_key"
 ```
 
-You will note that the secondary repository doesn't need to have a `2` behind its flags (`repository2`, `password-file2`, etc.). It's because the flags are well separated in the configuration.
-
-Here's the same configuration in YAML format:
+{{% /tab %}}
+{{% tab name="yaml" %}}
 
 ```yaml
 default:
@@ -499,3 +514,27 @@ default:
         repository: "/backup/copy"
         password-file: other_key
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+
+```hcl
+
+default {
+    initialize = false
+    repository = "/backup/original"
+    password-file = "key"
+
+    copy = {
+        initialize = true
+        repository = "/backup/copy"
+        password-file = "other_key"
+    }
+}
+
+{{% /tab %}}
+{{% /tabs %}}
+
+You will note that the secondary repository doesn't need to have a `2` behind its flags (`repository2`, `password-file2`, etc.). It's because the flags are well separated in the configuration.
+

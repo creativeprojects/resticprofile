@@ -8,16 +8,16 @@
     <meta name="description" content="">
     <title>Upgrade :: resticprofile</title>
     <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/installation/upgrade/index.xml" title="resticprofile" />
-    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1650803606" rel="stylesheet" id="variant-style">
-    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1650803606" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1650803606" rel="stylesheet" media="print">
-    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1650803606"></script>
+    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1650825654" rel="stylesheet" id="variant-style">
+    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1650825654" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1650825654" rel="stylesheet" media="print">
+    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1650825654"></script>
     <script>
       // hack to let hugo tell us how to get to the root when using relativeURLs, it needs to be called *url= for it to do its magic:
       // https://github.com/gohugoio/hugo/blob/145b3fcce35fbac25c7033c91c1b7ae6d1179da8/transform/urlreplacers/absurlreplacer.go#L72
@@ -33,7 +33,7 @@
       var baseUriFull='https:\/\/creativeprojects.github.io\/resticprofile/';
       variants.init( [ 'relearn-light', 'relearn-dark' ] );
     </script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650803606"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650825654"></script>
   </head>
   <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/upgrade/">
     <div id="body" class="default-animation">
@@ -84,6 +84,32 @@
     <aside id="sidebar" class="default-animation">
       <div id="header-wrapper" class="default-animation">
         <div id="header" class="default-animation">
+<style>
+    a#logo {
+      color: #282828;
+      color: var(--MENU-SECTIONS-BG-color);
+      font-family: 'Work Sans', 'Helvetica', 'Tahoma', 'Geneva', 'Arial', sans-serif;
+      font-size: 30px;
+      font-weight: 300;
+      margin-top: -13px;
+      max-width: 60%;
+      text-transform: uppercase;
+      width: 226px;
+      white-space: nowrap;
+    }
+    a#logo:hover {
+      color: #282828;
+      color: var(--MENU-SECTIONS-BG-color);
+    }
+    @media only all and (max-width: 59.938em) {
+      a#logo {
+        font-size: 25px;
+        margin-top: -3px;
+      }
+    }
+  </style>
+  <a id="logo" href="https://creativeprojects.github.io/resticprofile/">
+    Resticprofile</a>
 
         </div>
         <div class="searchbox default-animation">
@@ -91,9 +117,9 @@
           <input data-search-input id="search-by" type="search" placeholder="Search...">
           <span data-search-clear=""><i class="fas fa-times"></i></span>
         </div>
-        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1650803606"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1650803606"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1650803606"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1650825654"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1650825654"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1650825654"></script>
       </div>
       <div id="homelinks" class="default-animation">
         <ul>
@@ -149,14 +175,35 @@
             <li class="footerVisitedLinks"><a class="padding" href="#" data-clear-history-toggle=""><i class="fas fa-history fa-fw"></i> Clear History</a></li>
           </ul>
         </div>
-        <div id="footer" class="footerFooter showFooter">
-	    <p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p>
+        <div id="footer" class="footerFooter showFooter"><style>
+    #footer {
+      font-size: 13px;
+      height: 100px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 2rem 1rem;
+      text-align: center;
+      min-width: 230px;
+      max-width: 300px;
+    }
+    #footer p {
+      margin: 0;
+    }
+  </style>
+
+
+<a class="github-button" href="https://github.com/creativeprojects/resticprofile" data-size="large" data-show-count="true" aria-label="Star creativeprojects/resticprofile on GitHub">Star</a>
+
+<p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
         </div>
       </div>
     </aside>
-    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1650803606"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1650803606"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1650803606"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1650803606"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1650825654"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1650825654"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1650825654"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1650825654"></script>
   </body>
 </html>
