@@ -5,8 +5,6 @@ title = "Installation"
 weight = 5
 +++
 
-### Introduction
+## Installation
 
-# Some Chapter title
-
-Lorem Ipsum.
+{{% children  %}}
