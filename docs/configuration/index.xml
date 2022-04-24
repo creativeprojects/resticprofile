@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Configuration on resticprofile</title>
+    <link>https://creativeprojects.github.io/resticprofile/configuration/</link>
+    <description>Recent content in Configuration on resticprofile</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <lastBuildDate>Sun, 24 Apr 2022 09:44:47 +0100</lastBuildDate><atom:link href="https://creativeprojects.github.io/resticprofile/configuration/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Examples</title>
+      <link>https://creativeprojects.github.io/resticprofile/configuration/examples/</link>
+      <pubDate>Sun, 24 Apr 2022 09:44:47 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/configuration/examples/</guid>
+      <description>Here&amp;rsquo;s a simple configuration file using a Microsoft Azure backend:
+Simple TOML configuration [default] repository = &amp;#34;azure:restic:/&amp;#34; password-file = &amp;#34;key&amp;#34; option = &amp;#34;azure.connections=3&amp;#34;  [default.env] AZURE_ACCOUNT_NAME = &amp;#34;my_storage_account&amp;#34; AZURE_ACCOUNT_KEY = &amp;#34;my_super_secret_key&amp;#34;  [default.backup] exclude-file = &amp;#34;excludes&amp;#34; exclude-caches = true one-file-system = true tag = [ &amp;#34;root&amp;#34; ] source = [ &amp;#34;/&amp;#34;, &amp;#34;/var&amp;#34; ] Simple YAML configuration default:  repository: &amp;#34;azure:restic:/&amp;#34;  password-file: &amp;#34;key&amp;#34;  option: &amp;#34;azure.connections=3&amp;#34;   env:  AZURE_ACCOUNT_NAME: &amp;#34;my_storage_account&amp;#34;  AZURE_ACCOUNT_KEY: &amp;#34;my_super_secret_key&amp;#34;   backup:  exclude-file: &amp;#34;excludes&amp;#34;  exclude-caches: true  one-file-system: true  tag:  - &amp;#34;root&amp;#34;  source:  - &amp;#34;/&amp;#34;  - &amp;#34;/var&amp;#34; More complex configuration in TOML Here&amp;rsquo;s a more complex configuration file showing profile inheritance and two backup profiles using the same repository:</description>
+    </item>
+    <item>
+      <title>Path</title>
+      <link>https://creativeprojects.github.io/resticprofile/configuration/path/</link>
+      <pubDate>Sun, 24 Apr 2022 09:44:41 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/configuration/path/</guid>
+      <description>The default name for the configuration file is profiles, without an extension. You can change the name and its path with the --config or -c option on the command line. You can set a specific extension -c profiles.conf to load a TOML format file. If you set a filename with no extension instead, resticprofile will load the first file it finds with any of these extensions:
+ .conf (toml format) .</description>
+    </item>
+  </channel>
+</rss>

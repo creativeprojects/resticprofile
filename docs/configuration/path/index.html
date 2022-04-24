@@ -6,8 +6,8 @@
     <meta name="generator" content="Hugo 0.97.3" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Source :: resticprofile</title>
-    <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/installation/source/index.xml" title="resticprofile" />
+    <title>Path :: resticprofile</title>
+    <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/configuration/path/index.xml" title="resticprofile" />
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650803606" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650803606" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650803606" rel="stylesheet">
@@ -35,17 +35,17 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650803606"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/source/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/path/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/upgrade/" title="Upgrade"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <span class="nav nav-next"><i class="fa fa-chevron-right fa-fw"></i></span>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" title="Ansible"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/configuration/examples/" title="Examples"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
@@ -55,15 +55,17 @@
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
               <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/source/" aria-disabled="true"><span itemprop="name">Source</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/configuration/"><span itemprop="name">Configuration</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/configuration/path/" aria-disabled="true"><span itemprop="name">Path</span></a></li>
             </ol>
           </div>
           <div class="default-animation progress">
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#installation-from-source">Installation from source</a></li>
+    <li><a href="#macos-x">macOS X</a></li>
+    <li><a href="#other-unixes-linux-and-bsd">Other unixes (Linux and BSD)</a></li>
+    <li><a href="#windows">Windows</a></li>
   </ul>
 </nav>
             </div>
@@ -76,22 +78,63 @@
           </div>
           <article>
 
-<h1>Source</h1>
-<h2 id="installation-from-source">Installation from source</h2>
-<p>You can download the source code and compile it, it&rsquo;s actually very easy! all you need to have on your machine is:</p>
+<h1>Path</h1>
+<p>The default name for the configuration file is <code>profiles</code>, without an extension.
+You can change the name and its path with the <code>--config</code> or <code>-c</code> option on the command line.
+You can set a specific extension <code>-c profiles.conf</code> to load a TOML format file.
+If you set a filename with no extension instead, resticprofile will load the first file it finds with any of these extensions:</p>
 <ul>
-<li><code>git</code> (with <code>git-bash</code> on Windows)</li>
-<li><a href="https://golang.org/dl/">go compiler</a></li>
-<li><code>GNU Make</code> which is installed by default on many unix boxes. On debian based distributions (Ubuntu included) the package is called <code>build-essential</code>.</li>
+<li>.conf (toml format)</li>
+<li>.yaml</li>
+<li>.toml</li>
+<li>.json</li>
+<li>.hcl</li>
 </ul>
-<p>To compile from sources:</p>
-<pre tabindex="0"><code>$ git clone https://github.com/creativeprojects/resticprofile.git
-$ cd resticprofile
-$ make build
-</code></pre><p>Your compiled binary (<code>resticprofile</code> or <code>resticprofile.exe</code>) is available in the current folder.</p>
-<p>To install the binary in your user path:</p>
-<pre tabindex="0"><code>$ make install
-</code></pre>
+<h2 id="macos-x">macOS X</h2>
+<p>resticprofile will search for your configuration file in these folders:</p>
+<ul>
+<li><em>current directory</em></li>
+<li>~/Library/Preferences/resticprofile/</li>
+<li>/Library/Preferences/resticprofile/</li>
+<li>/usr/local/etc/</li>
+<li>/usr/local/etc/restic/</li>
+<li>/usr/local/etc/resticprofile/</li>
+<li>/etc/</li>
+<li>/etc/restic/</li>
+<li>/etc/resticprofile/</li>
+<li>/opt/local/etc/</li>
+<li>/opt/local/etc/restic/</li>
+<li>/opt/local/etc/resticprofile/</li>
+<li>~/ ($HOME directory)</li>
+</ul>
+<h2 id="other-unixes-linux-and-bsd">Other unixes (Linux and BSD)</h2>
+<p>resticprofile will search for your configuration file in these folders:</p>
+<ul>
+<li><em>current directory</em></li>
+<li>~/.config/resticprofile/</li>
+<li>/etc/xdg/resticprofile/</li>
+<li>/usr/local/etc/</li>
+<li>/usr/local/etc/restic/</li>
+<li>/usr/local/etc/resticprofile/</li>
+<li>/etc/</li>
+<li>/etc/restic/</li>
+<li>/etc/resticprofile/</li>
+<li>/opt/local/etc/</li>
+<li>/opt/local/etc/restic/</li>
+<li>/opt/local/etc/resticprofile/</li>
+<li>~/ ($HOME directory)</li>
+</ul>
+<h2 id="windows">Windows</h2>
+<p>resticprofile will search for your configuration file in these folders:</p>
+<ul>
+<li><em>current directory</em></li>
+<li>%USERPROFILE%\AppData\Local\</li>
+<li>c:\ProgramData\</li>
+<li>c:\restic\</li>
+<li>c:\resticprofile\</li>
+<li>%USERPROFILE%\</li>
+</ul>
+
             <footer class="footline">
             </footer>
           </article>
@@ -121,18 +164,18 @@ $ make build
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
           <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
-          <li data-nav-id="/installation/source/" title="Source" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
+          <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
           <li data-nav-id="/installation/shell/" title="Shell Completion" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/shell/">Shell Completion</a></li></ul></li>
-          <li data-nav-id="/configuration/" title="Configuration" class="dd-item"><input type="checkbox" id="section-632bb56b075027697eb90eb7e3d29a12" class="toggle"/><label for="section-632bb56b075027697eb90eb7e3d29a12" ></label><a href="https://creativeprojects.github.io/resticprofile/configuration/"><b>2. </b>Configuration</a><ul>
+          <li data-nav-id="/configuration/" title="Configuration" class="dd-item parent"><input type="checkbox" id="section-632bb56b075027697eb90eb7e3d29a12" class="toggle" checked/><label for="section-632bb56b075027697eb90eb7e3d29a12" ></label><a href="https://creativeprojects.github.io/resticprofile/configuration/"><b>2. </b>Configuration</a><ul>
           <li data-nav-id="/configuration/examples/" title="Examples" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/examples/">Examples</a></li>
-          <li data-nav-id="/configuration/path/" title="Path" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/path/">Path</a></li></ul></li>
+          <li data-nav-id="/configuration/path/" title="Path" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/configuration/path/">Path</a></li></ul></li>
         </ul>
         <div class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div>
         <hr class="default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"/>
