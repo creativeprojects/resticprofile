@@ -6,7 +6,7 @@
     <description>Recent content in Configuration on resticprofile</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Sun, 24 Apr 2022 09:44:47 +0100</lastBuildDate><atom:link href="https://creativeprojects.github.io/resticprofile/configuration/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 25 Apr 2022 21:14:16 +0100</lastBuildDate><atom:link href="https://creativeprojects.github.io/resticprofile/configuration/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Examples</title>
       <link>https://creativeprojects.github.io/resticprofile/configuration/examples/</link>
@@ -22,6 +22,14 @@ toml yaml hcl  [default]  repository = &amp;#34;azure:restic:/&amp;#34;  passwor
       <guid>https://creativeprojects.github.io/resticprofile/configuration/path/</guid>
       <description>The default name for the configuration file is profiles, without an extension. You can change the name and its path with the --config or -c option on the command line. You can set a specific extension -c profiles.conf to load a TOML format file. If you set a filename with no extension instead, resticprofile will load the first file it finds with any of these extensions:
  .conf (toml format) .</description>
+    </item>
+    <item>
+      <title>Include</title>
+      <link>https://creativeprojects.github.io/resticprofile/configuration/include/</link>
+      <pubDate>Mon, 25 Apr 2022 21:14:16 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/configuration/include/</guid>
+      <description>The configuration may be split into multiple files by adding includes = &amp;quot;glob-pattern&amp;quot; to the main configuration file. E.g. the following profiles.conf loads configurations from conf.d and profiles.d:
+toml yaml hcl  # Includes includes = [&amp;#34;conf.d/*.conf&amp;#34;, &amp;#34;profiles.d/*.yaml&amp;#34;, &amp;#34;profiles.d/*.toml&amp;#34;]  # Defaults [global] initialize = true    includes:  - &amp;#34;conf.d/*.conf&amp;#34;  - &amp;#34;profiles.d/*.yaml&amp;#34;  - &amp;#34;profiles.d/*.toml&amp;#34;  global:  initialize: true    includes = [&amp;#34;conf.d/*.conf&amp;#34;, &amp;#34;profiles.</description>
     </item>
   </channel>
 </rss>

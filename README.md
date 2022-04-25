@@ -136,24 +136,6 @@ For the rest of the documentation, I'll be showing examples using different form
 <!--te-->
 
 
-# Includes
-
-The configuration may be split into multiple files by adding `includes = "glob-pattern"` to the main configuration file. 
-E.g. the following `profiles.conf` loads configurations from `conf.d` and `profiles.d`:
-```toml
-# Includes
-includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
-
-# Defaults
-[global]
-initialize = true
-```
-
-Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
-The HCL format is special in that it cannot be mixed with other formats.
-
-Included files cannot include nested files and do not change the current configuration path.
-
 # Path resolution in configuration
 
 All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.

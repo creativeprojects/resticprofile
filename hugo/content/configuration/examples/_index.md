@@ -466,6 +466,15 @@ stdin:
     stdin-filename: stdin-test
     tag:
       - stdin
+
+mysql:
+  inherit: stdin
+  backup:
+    stdin-command: "mysqldump --all-databases --order-by-primary"
+    stdin-filename: "dump.sql"
+    tag:
+      - mysql
+
 ```
 
 {{% /tab %}}
@@ -482,6 +491,16 @@ stdin = {
         stdin-filename = "stdin-test"
         tag = [ "stdin" ]
     }
+}
+
+mysql = {
+  inherit = "stdin"
+
+  backup = {
+    stdin-command = [ "mysqldump --all-databases --order-by-primary" ]
+    stdin-filename = "dump.sql"
+    tag = [ "mysql" ]
+  }
 }
 ```
 

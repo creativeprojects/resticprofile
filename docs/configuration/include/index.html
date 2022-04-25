@@ -6,8 +6,8 @@
     <meta name="generator" content="Hugo 0.97.3" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Ansible :: resticprofile</title>
-    <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/installation/ansible/index.xml" title="resticprofile" />
+    <title>Include :: resticprofile</title>
+    <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/configuration/include/index.xml" title="resticprofile" />
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650918039" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650918039" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650918039" rel="stylesheet">
@@ -35,38 +35,28 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650918039"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/ansible/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/include/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/source/" title="Source"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <span class="nav nav-next"><i class="fa fa-chevron-right fa-fw"></i></span>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/windows/" title="Windows"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/configuration/path/" title="Path"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
               <a href="#" id="sidebar-toggle" title='Menu'><i class="fas fa-bars fa-fw"></i></a>
             </span>
-            <span id="toc-menu" title='Table of Contents'><i class="fas fa-list-alt fa-fw"></i></span>
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
               <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" aria-disabled="true"><span itemprop="name">Ansible</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/configuration/"><span itemprop="name">Configuration</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/configuration/include/" aria-disabled="true"><span itemprop="name">Include</span></a></li>
             </ol>
-          </div>
-          <div class="default-animation progress">
-            <div class="wrapper">
-<nav id="TableOfContents">
-  <ul>
-    <li><a href="#installation-using-ansible">Installation using Ansible</a></li>
-  </ul>
-</nav>
-            </div>
           </div>
         </div>
       </nav>
@@ -76,9 +66,67 @@
           </div>
           <article>
 
-<h1>Ansible</h1>
-<h2 id="installation-using-ansible">Installation using Ansible</h2>
-<p>Installation using Ansible is not streamlined, but here&rsquo;s the playbook I&rsquo;m using <a href="https://github.com/creativeprojects/resticprofile/tree/master/contrib/ansible">on my servers</a></p>
+<h1>Include</h1>
+<p>The configuration may be split into multiple files by adding <code>includes = &quot;glob-pattern&quot;</code> to the main configuration file.
+E.g. the following <code>profiles.conf</code> loads configurations from <code>conf.d</code> and <code>profiles.d</code>:</p>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span><span style="color:#75715e"># Includes</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">includes</span> = [<span style="color:#e6db74">&#34;conf.d/*.conf&#34;</span>, <span style="color:#e6db74">&#34;profiles.d/*.yaml&#34;</span>, <span style="color:#e6db74">&#34;profiles.d/*.toml&#34;</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Defaults</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">global</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">initialize</span> = <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span><span style="color:#f92672">includes</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#e6db74">&#34;conf.d/*.conf&#34;</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#e6db74">&#34;profiles.d/*.yaml&#34;</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#e6db74">&#34;profiles.d/*.toml&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">global</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>includes <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;conf.d/*.conf&#34;, &#34;profiles.d/*.yaml&#34;, &#34;profiles.d/*.toml&#34;</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>global <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<p>Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
+The HCL format is special in that it cannot be mixed with other formats.</p>
+<p>Included files cannot include nested files and do not change the current configuration path.</p>
 
             <footer class="footline">
             </footer>
@@ -135,19 +183,19 @@
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
-          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
+          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
           <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
           <li data-nav-id="/installation/shell/" title="Shell Completion" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/shell/">Shell Completion</a></li></ul></li>
-          <li data-nav-id="/configuration/" title="Configuration" class="dd-item"><input type="checkbox" id="section-632bb56b075027697eb90eb7e3d29a12" class="toggle"/><label for="section-632bb56b075027697eb90eb7e3d29a12" ></label><a href="https://creativeprojects.github.io/resticprofile/configuration/"><b>2. </b>Configuration</a><ul>
+          <li data-nav-id="/configuration/" title="Configuration" class="dd-item parent"><input type="checkbox" id="section-632bb56b075027697eb90eb7e3d29a12" class="toggle" checked/><label for="section-632bb56b075027697eb90eb7e3d29a12" ></label><a href="https://creativeprojects.github.io/resticprofile/configuration/"><b>2. </b>Configuration</a><ul>
           <li data-nav-id="/configuration/examples/" title="Examples" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/examples/">Examples</a></li>
           <li data-nav-id="/configuration/path/" title="Path" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/path/">Path</a></li>
-          <li data-nav-id="/configuration/include/" title="Include" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/include/">Include</a></li></ul></li>
+          <li data-nav-id="/configuration/include/" title="Include" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/configuration/include/">Include</a></li></ul></li>
         </ul>
         <div class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div>
         <hr class="default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"/>

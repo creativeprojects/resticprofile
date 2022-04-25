@@ -10,7 +10,7 @@
   </url>
   <url>
     <loc>https://creativeprojects.github.io/resticprofile/configuration/</loc>
-    <lastmod>2022-04-24T09:44:47+01:00</lastmod>
+    <lastmod>2022-04-25T21:14:16+01:00</lastmod>
   </url>
   <url>
     <loc>https://creativeprojects.github.io/resticprofile/configuration/path/</loc>
@@ -27,6 +27,10 @@
   <url>
     <loc>https://creativeprojects.github.io/resticprofile/installation/windows/</loc>
     <lastmod>2022-04-23T23:24:38+01:00</lastmod>
+  </url>
+  <url>
+    <loc>https://creativeprojects.github.io/resticprofile/configuration/include/</loc>
+    <lastmod>2022-04-25T21:14:16+01:00</lastmod>
   </url>
   <url>
     <loc>https://creativeprojects.github.io/resticprofile/installation/ansible/</loc>
