@@ -89,7 +89,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 			`.`,
 		}, args)
 	} else {
-		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/sh"), command)
+		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/(ba)?sh"), command)
 		assert.Equal(t, []string{
 			"-c",
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
@@ -116,7 +116,7 @@ func TestShellCommand(t *testing.T) {
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	} else {
-		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/sh"), command)
+		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/(ba)?sh"), command)
 		assert.Equal(t, []string{
 			"-c",
 			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
@@ -184,7 +184,7 @@ func TestInterruptShellCommand(t *testing.T) {
 	start := time.Now()
 	_, _, err := cmd.Run()
 	// GitHub Actions *sometimes* sends a different message: "signal: interrupt"
-	if err != nil && err.Error() != "exit status 1" && err.Error() != "signal: interrupt" {
+	if err != nil && err.Error() != "exit status 128" && err.Error() != "signal: interrupt" {
 		t.Fatal(err)
 	}
 

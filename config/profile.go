@@ -68,6 +68,7 @@ type BackupSection struct {
 	RunAfter         []string               `mapstructure:"run-after"`
 	RunFinally       []string               `mapstructure:"run-finally"`
 	UseStdin         bool                   `mapstructure:"stdin" argument:"stdin"`
+	StdinCommand     []string               `mapstructure:"stdin-command"`
 	Source           []string               `mapstructure:"source"`
 	Exclude          []string               `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
 	Iexclude         []string               `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
@@ -132,10 +133,14 @@ func NewProfile(c *Config, name string) *Profile {
 	}
 }
 
-// resolveConfiguration resolves dependencies between profile config flags
-func (p *Profile) resolveConfiguration() {
-	// Copy tag and path parameters from Backup where requested
+// ResolveConfiguration resolves dependencies between profile config flags
+func (p *Profile) ResolveConfiguration() {
 	if p.Backup != nil {
+		// Ensure UseStdin is set when Backup.StdinCommand is defined
+		if len(p.Backup.StdinCommand) > 0 {
+			p.Backup.UseStdin = true
+		}
+
 		// Special cases of retention
 		if p.Retention != nil {
 			if p.Retention.OtherFlags == nil {
@@ -147,7 +152,7 @@ func (p *Profile) resolveConfiguration() {
 			}
 
 			// Copy "tag" from "backup" if it hasn't been redefined (only for Version >= 2 to be backward compatible)
-			if p.config.version >= Version02 {
+			if p.config != nil && p.config.version >= Version02 {
 				if _, found := p.Retention.OtherFlags[constants.ParameterTag]; !found {
 					p.Retention.OtherFlags[constants.ParameterTag] = true
 				}
@@ -257,7 +262,7 @@ func (p *Profile) SetPath(sourcePaths ...string) {
 		for _, path := range paths {
 			if len(path) > 0 {
 				for _, rp := range revolver(path) {
-					if rp != path {
+					if rp != path && p.config != nil {
 						if p.config.issues.changedPaths == nil {
 							p.config.issues.changedPaths = make(map[string][]string)
 						}

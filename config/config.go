@@ -459,7 +459,7 @@ func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	}
 
 	// Resolve config dependencies
-	profile.resolveConfiguration()
+	profile.ResolveConfiguration()
 
 	// All files in the configuration are relative to the configuration file,
 	// NOT the folder where resticprofile is started
