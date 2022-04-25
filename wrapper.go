@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -31,6 +32,7 @@ type resticWrapper struct {
 	moreArgs     []string
 	sigChan      chan os.Signal
 	setPID       func(pid int)
+	stdin        io.ReadCloser
 	progress     []progress.Receiver
 
 	// States
@@ -57,6 +59,7 @@ func newResticWrapper(
 		command:       command,
 		moreArgs:      moreArgs,
 		sigChan:       c,
+		stdin:         os.Stdin,
 		progress:      make([]progress.Receiver, 0),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
@@ -280,10 +283,6 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArg
 	rCommand.stdout = term.GetOutput()
 	rCommand.stderr = term.GetErrorOutput()
 
-	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.UseStdin {
-		clog.Debug("redirecting stdin to the backup")
-		rCommand.useStdin = true
-	}
 	return rCommand
 }
 
@@ -357,11 +356,20 @@ func (r *resticWrapper) runRetention() error {
 func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
 	args := r.profile.GetCommandFlags(command)
+
+	streamSource := io.NopCloser(strings.NewReader(""))
+	defer func() { streamSource.Close() }()
+
 	for {
+		if err := streamSource.Close(); err != nil {
+			return fmt.Errorf("%s on profile '%s'. Failed closing stream source: %w", r.command, r.profile.Name, err)
+		}
+
 		rCommand := r.prepareCommand(command, args, r.moreArgs...)
 
-		if command == constants.CommandBackup && len(r.progress) > 0 {
-			if r.profile.Backup != nil {
+		if command == constants.CommandBackup && r.profile.Backup != nil {
+			// Add output scanners
+			if len(r.progress) > 0 {
 				if r.profile.Backup.ExtendedStatus {
 					rCommand.scanOutput = shell.ScanBackupJson
 				} else if !term.OsStdoutIsTerminal() {
@@ -369,6 +377,16 @@ func (r *resticWrapper) runCommand(command string) error {
 					// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
 					rCommand.scanOutput = shell.ScanBackupPlain
 				}
+			}
+
+			// Redirect a stream source to stdin of restic if configured
+			if source, err := r.prepareStreamSource(); err == nil {
+				if source != nil {
+					streamSource = source
+					rCommand.stdin = streamSource
+				}
+			} else {
+				return newCommandError(rCommand, "", fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
 			}
 		}
 

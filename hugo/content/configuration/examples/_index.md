@@ -442,6 +442,14 @@ Simple example sending a file via stdin
     stdin = true
     stdin-filename = "stdin-test"
     tag = [ 'stdin' ]
+  
+[mysql]
+  inherit = "stdin"
+
+  [mysql.backup]
+    stdin-command = [ 'mysqldump --all-databases --order-by-primary' ]
+    stdin-filename = "dump.sql"
+    tag = [ 'mysql' ]
 
 ```
 

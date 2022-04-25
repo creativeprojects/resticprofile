@@ -15,7 +15,7 @@ type shellCommandDefinition struct {
 	args       []string
 	publicArgs []string
 	env        []string
-	useStdin   bool
+	stdin      io.ReadCloser
 	stdout     io.Writer
 	stderr     io.Writer
 	dryRun     bool
@@ -34,7 +34,7 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 		args:       args,
 		publicArgs: args,
 		env:        env,
-		useStdin:   false,
+		stdin:      nil,
 		stdout:     os.Stdout,
 		stderr:     os.Stderr,
 		dryRun:     dryRun,
@@ -57,8 +57,8 @@ func runShellCommand(command shellCommandDefinition) (progress.Summary, string, 
 	shellCmd.Stdout = command.stdout
 	shellCmd.Stderr = command.stderr
 
-	if command.useStdin {
-		shellCmd.Stdin = os.Stdin
+	if command.stdin != nil {
+		shellCmd.Stdin = command.stdin
 	}
 
 	// set PID callback
