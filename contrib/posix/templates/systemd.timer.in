@@ -1,0 +1,17 @@
+{{/*
+# Template for generating systemd timers
+# Used to schedule commands when "scheduler=systemd" (default)
+*/}}
+
+[Unit]
+Description={{ .TimerDescription }}
+
+[Timer]
+{{ range .OnCalendar -}}
+OnCalendar={{ . }}
+{{ end -}}
+Unit={{ .SystemdProfile }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

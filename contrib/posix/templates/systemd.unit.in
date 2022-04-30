@@ -1,0 +1,22 @@
+{{/*
+# Template for generating systemd units
+# Used to schedule commands when "scheduler=systemd" (default)
+*/}}
+
+[Unit]
+Description={{ .JobDescription }}
+
+# Send mail when resticprofile fails (requires "unit-status-mail")
+#OnFailure=unit-status-mail@%n.service
+
+[Service]
+Type=notify
+WorkingDirectory={{ .WorkingDirectory }}
+ExecStart={{ .CommandLine }}
+{{ if .Nice -}}
+Nice={{ .Nice }}
+{{ end -}}
+Environment="RESTICPROFILE_ON_SCHEDULE=1"
+{{ range .Environment -}}
+Environment="{{ . }}"
+{{ end -}}

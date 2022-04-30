@@ -124,3 +124,52 @@ brews:
       system "#{bin}/resticprofile", "backup", "testfile"
       system "#{bin}/resticprofile", "restore", "latest", "-t", "#{testpath}/restore"
       assert compare_file "testfile", "#{testpath}/restore/testfile"
+
+nfpms:
+  -
+    builds:
+      - resticprofile_targz
+    formats:
+      - apk
+      - deb
+      - rpm
+    vendor: "creativeprojects"
+    homepage: "https://github.com/creativeprojects"
+    maintainer: "fred@creativeprojects.tech"
+    description: "Configuration profiles for restic backup"
+    license: "GPL-3.0-only"
+    file_name_template: "{{.ProjectName}}_{{.Version}}-{{.Arch}}"
+    replacements:
+      amd64: 64bit
+      386: 32bit
+      arm: ARM
+      arm64: ARM64
+      linux: Linux
+    dependencies:
+      - restic
+    bindir: "/usr/local/bin"
+    scripts:
+      postinstall: "contrib/posix/post-install.sh"
+    contents:
+      - { type: config, src: contrib/posix/profiles.conf, dst: /etc/resticprofile/profiles.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/backup.conf, dst: /etc/resticprofile/conf.d/backup.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/check.conf, dst: /etc/resticprofile/conf.d/check.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/hooks.conf, dst: /etc/resticprofile/conf.d/hooks.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/metrics.conf, dst: /etc/resticprofile/conf.d/metrics.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/prune.conf, dst: /etc/resticprofile/conf.d/prune.conf.dist }
+      - { type: config, src: contrib/posix/conf.d/z_overrides.conf, dst: /etc/resticprofile/conf.d/z_overrides.conf.dist }
+      - { type: config, src: contrib/posix/profiles.d/fs-snapshot.yaml.sample, dst: /etc/resticprofile/profiles.d/fs-snapshot.yaml.sample }
+      - { type: config, src: contrib/posix/profiles.d/minimal.conf.sample, dst: /etc/resticprofile/profiles.d/minimal.conf.sample }
+      - { type: config, src: contrib/posix/profiles.d/minimal.yaml.sample, dst: /etc/resticprofile/profiles.d/minimal.yaml.sample }
+      - { type: config, src: contrib/posix/profiles.d/system.conf, dst: /etc/resticprofile/profiles.d/system.conf.dist }
+      - { type: config, src: contrib/posix/repository.d/default.conf, dst: /etc/resticprofile/repository.d/default.conf.dist }
+      - { type: config, src: contrib/posix/repository.d/other.conf.sample, dst: /etc/resticprofile/repository.d/other.conf.sample }
+      - { type: config, src: contrib/posix/templates/default-host.conf, dst: /etc/resticprofile/templates/default-host.conf.dist }
+      - { type: config, src: contrib/posix/templates/default-tags.conf, dst: /etc/resticprofile/templates/default-tags.conf.dist }
+      - { type: config, src: contrib/posix/templates/systemd.timer.in, dst: /etc/resticprofile/templates/systemd.timer.in.dist }
+      - { type: config, src: contrib/posix/templates/systemd.unit.in, dst: /etc/resticprofile/templates/systemd.unit.in.dist }
+      - src: contrib/posix/resticprofile-send-error.rc
+        dst: /etc/resticprofile/resticprofile-send-error.rc.dist
+      - src: contrib/notification-scripts/resticprofile-send-error.sh
+        dst: /usr/local/bin/resticprofile-send-error
+        file_info: { mode: 0755, owner: root, group: root }

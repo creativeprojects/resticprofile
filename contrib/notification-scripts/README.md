@@ -1,4 +1,4 @@
-# Send an email on error (systemd schedule)
+# Email with failure details - "resticprofile-send-error.sh" 
 
 In `profiles.yaml` you set:
 
@@ -6,50 +6,26 @@ In `profiles.yaml` you set:
 default: 
   ...
   run-after-fail: 
-    - 'resticprofile-send-error.sh name@domain.tl'
+    - 'resticprofile-send-error.sh -s name@domain.tl'
 ```
 
-With `/usr/local/bin/resticprofile-send-error.sh` being:
+Usage:
 
-```sh
-#!/usr/bin/env bash
-[[ -z "${PROFILE_NAME}" ]] || sendmail -t <<ERRMAIL
-To: $1
-From: "resticprofile $(hostname -f)" <$USER@$(hostname -f)>
-Subject: restic failed: ${PROFILE_COMMAND} "${PROFILE_NAME}"
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset=UTF-8
-
-${ERROR}
-
----- 
-COMMANDLINE:
-
-${ERROR_COMMANDLINE}
-
-----
-STDERR:
-
-${ERROR_STDERR}
-
-----
-DETAILS:
-
-$(systemctl status --full "resticprofile-${PROFILE_COMMAND}@profile-${PROFILE_NAME}")
-
-----
-CONFIG:
-
-$(resticprofile --name "${PROFILE_NAME}" show)
-
-ERRMAIL
-exit 0
+```
+resticprofile-send-error.sh [options] user1@domain user2@domain ...
+Options:
+   -s         Only send mail when operating on schedule (RESTICPROFILE_ON_SCHEDULE=1)
+   -o name,.. Only send mail when PROFILE_NAME is in the list of specified names
+   -c command Set the profile command (instead of PROFILE_COMMAND)
+   -n name    Set the profile name (instead of PROFILE_NAME)
+   -p         Print mail to stdout instead of sending it
+   -f         Send mail even when no profile name is specified
 ```
 
 ## Quick installation
 
 ```sh
-curl -ssL https://github.com/creativeprojects/resticprofile/raw/master/contrib/systemd/resticprofile-send-error.sh \
+curl -ssL https://github.com/creativeprojects/resticprofile/raw/master/contrib/notification-scripts/resticprofile-send-error.sh \
      > /usr/local/bin/resticprofile-send-error.sh \
   && chmod +x /usr/local/bin/resticprofile-send-error.sh
 ```
@@ -64,7 +40,7 @@ In this example, the failure is caused by a custom pre-script complaining about 
 Date: Fri, 23 Apr 2021 23:25:03 +0200
 To: admins@domain.tl
 From: "resticprofile hyper1.domain.tl" <root@hyper1.domain.tl>
-Subject: restic failed: backup "vms"
+Subject: restic failed: "backup" in "vms"
 
 run-before backup on profile 'vms': exit status 1
 
