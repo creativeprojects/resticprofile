@@ -136,9 +136,6 @@ For the rest of the documentation, I'll be showing examples using different form
 <!--te-->
 
 
-# Path resolution in configuration
-
-All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.
 
 # Run commands before, after success or after failure
 

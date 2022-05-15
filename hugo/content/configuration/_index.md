@@ -28,7 +28,10 @@ Let's say you normally use this command:
 restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
 ```
 
-For resticprofile to generate this command automatically for you, here's the configuration file (in *TOML* format):
+For resticprofile to generate this command automatically for you, here's the configuration file:
+
+{{< tabs groupId="config-with-hcl" >}}
+{{% tab name="toml" %}}
 
 ```toml
 [default]
@@ -40,7 +43,8 @@ verbose = true
 source = [ "/home" ]
 ```
 
-or the YAML version if you prefer so:
+{{% /tab %}}
+{{% tab name="yaml" %}}
 
 ```yaml
 ---
@@ -54,6 +58,25 @@ default:
     - "/home"
 ```
 
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+
+default {
+    repository = "local:/backup"
+    password-file = "password.txt"
+
+    backup = {
+        verbose = true
+        source = [ "/home" ]
+    }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 You may have noticed the `source` flag is accepting an array of values (inside brackets in TOML, list of values in YAML)
 
@@ -62,3 +85,7 @@ Now, assuming this configuration file is named `profiles.conf` in the current fo
 ```
 resticprofile backup
 ```
+
+## Path resolution in configuration
+
+All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.

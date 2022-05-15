@@ -3,21 +3,21 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <meta name="generator" content="Hugo 0.97.3" />
+    <meta name="generator" content="Hugo 0.98.0" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
     <title>Configuration :: resticprofile</title>
     <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/configuration/index.xml" title="resticprofile" />
-    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1650918039" rel="stylesheet" id="variant-style">
-    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1650918039" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1650918039" rel="stylesheet" media="print">
-    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1650918039"></script>
+    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1652623715" rel="stylesheet" id="variant-style">
+    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1652623715" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1652623715" rel="stylesheet" media="print">
+    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1652623715"></script>
     <script>
       // hack to let hugo tell us how to get to the root when using relativeURLs, it needs to be called *url= for it to do its magic:
       // https://github.com/gohugoio/hugo/blob/145b3fcce35fbac25c7033c91c1b7ae6d1179da8/transform/urlreplacers/absurlreplacer.go#L72
@@ -33,7 +33,7 @@
       var baseUriFull='https:\/\/creativeprojects.github.io\/resticprofile/';
       variants.init( [ 'relearn-light', 'relearn-dark' ] );
     </script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1650918039"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652623715"></script>
   </head>
   <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/">
     <div id="body" class="default-animation">
@@ -78,7 +78,31 @@
 </code></pre><p>There&rsquo;s <strong>one exception</strong>: the flag <code>--repo</code> is named <code>repository</code> in the configuration</p>
 <p>Let&rsquo;s say you normally use this command:</p>
 <pre tabindex="0"><code>restic --repo &#34;local:/backup&#34; --password-file &#34;password.txt&#34; --verbose backup /home
-</code></pre><p>For resticprofile to generate this command automatically for you, here&rsquo;s the configuration file (in <em>TOML</em> format):</p>
+</code></pre><p>For resticprofile to generate this command automatically for you, here&rsquo;s the configuration file:</p>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:/backup&#34;</span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;password.txt&#34;</span>
@@ -86,7 +110,9 @@
 </span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">backup</span>]
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">verbose</span> = <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/home&#34;</span> ]
-</span></span></code></pre></div><p>or the YAML version if you prefer so:</p>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
 </span></span><span style="display:flex;"><span><span style="color:#f92672">default</span>:
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#e6db74">&#34;local:/backup&#34;</span>
@@ -96,10 +122,30 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">verbose</span>: <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">source</span>:
 </span></span><span style="display:flex;"><span>    - <span style="color:#e6db74">&#34;/home&#34;</span>
-</span></span></code></pre></div><p>You may have noticed the <code>source</code> flag is accepting an array of values (inside brackets in TOML, list of values in YAML)</p>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">default</span> {
+</span></span><span style="display:flex;"><span>    repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;local:/backup&#34;</span>
+</span></span><span style="display:flex;"><span>    password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;password.txt&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    backup <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        verbose <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        source <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;/home&#34;</span> ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<p>You may have noticed the <code>source</code> flag is accepting an array of values (inside brackets in TOML, list of values in YAML)</p>
 <p>Now, assuming this configuration file is named <code>profiles.conf</code> in the current folder, you can simply run</p>
 <pre tabindex="0"><code>resticprofile backup
-</code></pre>
+</code></pre><h2 id="path-resolution-in-configuration">Path resolution in configuration</h2>
+<p>All files path in the configuration are resolved from the configuration path. The big <strong>exception</strong> being <code>source</code> in <code>backup</code> section where it&rsquo;s resolved from the current path where you started resticprofile.</p>
+
             <footer class="footline">
             </footer>
           </article>
@@ -142,9 +188,9 @@
           <input data-search-input id="search-by" type="search" placeholder="Search...">
           <span data-search-clear=""><i class="fas fa-times"></i></span>
         </div>
-        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1650918039"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1650918039"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1650918039"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1652623715"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1652623715"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1652623715"></script>
       </div>
       <div id="homelinks" class="default-animation">
         <ul>
@@ -227,9 +273,9 @@
         </div>
       </div>
     </aside>
-    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1650918039"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1650918039"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1650918039"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1650918039"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1652623715"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1652623715"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1652623715"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1652623715"></script>
   </body>
 </html>
