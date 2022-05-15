@@ -46,6 +46,11 @@ The configuration file accepts various formats:
 For the rest of the documentation, I'll be showing examples using different formats, but mostly TOML and YAML.
 
 # Table of Contents
+
+This README is getting too big now, so I'm in the process of moving most of its content into a proper documentation.
+
+**This is work in progress** but you can still [check the documentation out here](https://creativeprojects.github.io/resticprofile/).
+
 <!--ts-->
 * [resticprofile](#resticprofile)
 * [Table of Contents](#table-of-contents)
