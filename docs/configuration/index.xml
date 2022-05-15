@@ -12,7 +12,7 @@
       <link>https://creativeprojects.github.io/resticprofile/configuration/examples/</link>
       <pubDate>Sun, 24 Apr 2022 09:44:47 +0100</pubDate>
       <guid>https://creativeprojects.github.io/resticprofile/configuration/examples/</guid>
-      <description>Here&amp;rsquo;s a simple configuration file using a Microsoft Azure backend:
+      <description>Simple configuration using Azure storage Here&amp;rsquo;s a simple configuration file using a Microsoft Azure backend:
 toml yaml hcl  [default]  repository = &amp;#34;azure:restic:/&amp;#34;  password-file = &amp;#34;key&amp;#34;  option = &amp;#34;azure.connections=3&amp;#34;   [default.env]  AZURE_ACCOUNT_NAME = &amp;#34;my_storage_account&amp;#34;  AZURE_ACCOUNT_KEY = &amp;#34;my_super_secret_key&amp;#34;   [default.backup]  exclude-file = &amp;#34;excludes&amp;#34;  exclude-caches = true  one-file-system = true  tag = [ &amp;#34;root&amp;#34; ]  source = [ &amp;#34;/&amp;#34;, &amp;#34;/var&amp;#34; ]   default:  repository: &amp;#34;azure:restic:/&amp;#34;  password-file: &amp;#34;key&amp;#34;  option: &amp;#34;azure.</description>
     </item>
     <item>

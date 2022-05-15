@@ -8,16 +8,16 @@
     <meta name="description" content="">
     <title>Examples :: resticprofile</title>
     <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/configuration/examples/index.xml" title="resticprofile" />
-    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1652623715" rel="stylesheet" id="variant-style">
-    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1652623715" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1652623715" rel="stylesheet" media="print">
-    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1652623715"></script>
+    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1652632761" rel="stylesheet" id="variant-style">
+    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1652632761" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1652632761" rel="stylesheet" media="print">
+    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1652632761"></script>
     <script>
       // hack to let hugo tell us how to get to the root when using relativeURLs, it needs to be called *url= for it to do its magic:
       // https://github.com/gohugoio/hugo/blob/145b3fcce35fbac25c7033c91c1b7ae6d1179da8/transform/urlreplacers/absurlreplacer.go#L72
@@ -33,7 +33,7 @@
       var baseUriFull='https:\/\/creativeprojects.github.io\/resticprofile/';
       variants.init( [ 'relearn-light', 'relearn-dark' ] );
     </script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652623715"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652632761"></script>
   </head>
   <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/examples/">
     <div id="body" class="default-animation">
@@ -63,6 +63,7 @@
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#simple-configuration-using-azure-storage">Simple configuration using Azure storage</a></li>
     <li><a href="#configuration-with-inheritance">Configuration with inheritance</a></li>
     <li><a href="#configuration-example-for-windows">Configuration example for Windows</a></li>
     <li><a href="#use-stdin-in-configuration">Use stdin in configuration</a></li>
@@ -80,6 +81,7 @@
           <article>
 
 <h1>Examples</h1>
+<h2 id="simple-configuration-using-azure-storage">Simple configuration using Azure storage</h2>
 <p>Here&rsquo;s a simple configuration file using a Microsoft Azure backend:</p>
 
 <div class="tab-panel">
@@ -494,6 +496,30 @@
 </div>
 
 <h2 id="configuration-example-for-windows">Configuration example for Windows</h2>
+
+<div class="tab-panel">
+  <div class="tab-nav">
+    <button
+      data-tab-item="toml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn active"
+      onclick="switchTab('config-with-hcl','toml')"
+      ><span>toml</span></button>
+    <button
+      data-tab-item="yaml"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','yaml')"
+      ><span>yaml</span></button>
+    <button
+      data-tab-item="hcl"
+      data-tab-group="config-with-hcl"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-hcl','hcl')"
+      ><span>hcl</span></button>
+  </div>
+  <div class="tab-content">
+    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">global</span>]
 </span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">restic-binary</span> = <span style="color:#e6db74">&#34;c:\\ProgramData\\chocolatey\\bin\\restic.exe&#34;</span>
 </span></span><span style="display:flex;"><span>
@@ -518,7 +544,63 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">run-after</span> = <span style="color:#e6db74">&#34;echo All Done!&#34;</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># ignore restic warnings (otherwise the backup is considered failed when restic couldn&#39;t read some files)</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">no-error-on-warning</span> = <span style="color:#66d9ef">true</span>
-</span></span></code></pre></div><h2 id="use-stdin-in-configuration">Use stdin in configuration</h2>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">global</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">restic-binary</span>: <span style="color:#ae81ff">c:\ProgramData\chocolatey\bin\restic.exe</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">default</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">local:r:/</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">password-file</span>: <span style="color:#ae81ff">key</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">test</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">inherit</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">initialize</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">tag</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">windows</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">c:\</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">check-after</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">run-before</span>: <span style="color:#ae81ff">dir /l</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">run-after</span>: <span style="color:#ae81ff">echo All Done!</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">no-error-on-warning</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>global <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  restic-binary <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;c:\\ProgramData\\chocolatey\\bin\\restic.exe&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>default <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;local:r:/&#34;</span>
+</span></span><span style="display:flex;"><span>  password-file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;key&#34;</span>
+</span></span><span style="display:flex;"><span>  initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>test <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  inherit <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>  initialize <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  backup <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    tag <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;windows&#34;</span> ]
+</span></span><span style="display:flex;"><span>    source <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;c:\\&#34;</span> ]
+</span></span><span style="display:flex;"><span>    check-after <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    run-before <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;dir /l&#34;</span>
+</span></span><span style="display:flex;"><span>    run-after <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;echo All Done!&#34;</span>
+</span></span><span style="display:flex;"><span>    no-error-on-warning <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+  </div>
+</div>
+
+<h2 id="use-stdin-in-configuration">Use stdin in configuration</h2>
 <p>Simple example sending a file via stdin</p>
 
 <div class="tab-panel">
@@ -720,9 +802,9 @@
           <input data-search-input id="search-by" type="search" placeholder="Search...">
           <span data-search-clear=""><i class="fas fa-times"></i></span>
         </div>
-        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1652623715"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1652623715"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1652623715"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1652632761"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1652632761"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1652632761"></script>
       </div>
       <div id="homelinks" class="default-animation">
         <ul>
@@ -805,9 +887,9 @@
         </div>
       </div>
     </aside>
-    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1652623715"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1652623715"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1652623715"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1652623715"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1652632761"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1652632761"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1652632761"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1652632761"></script>
   </body>
 </html>

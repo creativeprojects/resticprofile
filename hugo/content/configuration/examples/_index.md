@@ -4,6 +4,7 @@ date: 2022-04-24T09:44:47+01:00
 weight: 5
 ---
 
+## Simple configuration using Azure storage
 
 Here's a simple configuration file using a Microsoft Azure backend:
 
@@ -398,6 +399,9 @@ self {
 ## Configuration example for Windows
 
 
+{{< tabs groupId="config-with-hcl" >}}
+{{% tab name="toml" %}}
+
 ```toml
 [global]
   restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
@@ -424,6 +428,67 @@ self {
     # ignore restic warnings (otherwise the backup is considered failed when restic couldn't read some files)
     no-error-on-warning = true
 ```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+global:
+  restic-binary: c:\ProgramData\chocolatey\bin\restic.exe
+
+default:
+  repository: local:r:/
+  password-file: key
+  initialize: false
+
+test:
+  inherit: default
+  initialize: true
+  
+  backup:
+    tag:
+      - windows
+    source:
+      - c:\
+    check-after: true
+    run-before: dir /l
+    run-after: echo All Done!
+    no-error-on-warning: true
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+
+global = {
+  restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
+}
+
+default = {
+  repository = "local:r:/"
+  password-file = "key"
+  initialize = false
+}
+
+test = {
+  inherit = "default"
+  initialize = true
+
+  backup = {
+    tag = [ "windows" ]
+    source = [ "c:\\" ]
+    check-after = true
+    run-before = "dir /l"
+    run-after = "echo All Done!"
+    no-error-on-warning = true
+  }
+}
+
+```
+
+{{% /tab %}}
+{{% /tabs %}}
 
 ## Use stdin in configuration
 
@@ -559,6 +624,7 @@ default {
         password-file = "other_key"
     }
 }
+```
 
 {{% /tab %}}
 {{% /tabs %}}
