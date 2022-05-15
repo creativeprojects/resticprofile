@@ -444,7 +444,7 @@ default:
 test:
   inherit: default
   initialize: true
-  
+
   backup:
     tag:
       - windows
@@ -461,17 +461,17 @@ test:
 
 ```hcl
 
-global = {
+global {
   restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
 }
 
-default = {
+default {
   repository = "local:r:/"
   password-file = "key"
   initialize = false
 }
 
-test = {
+test {
   inherit = "default"
   initialize = true
 
@@ -547,7 +547,7 @@ mysql:
 
 ```hcl
 # sending stream through stdin
-stdin = {
+stdin {
     repository = "local:/backup/restic"
     password-file = "key"
 
@@ -558,7 +558,7 @@ stdin = {
     }
 }
 
-mysql = {
+mysql {
   inherit = "stdin"
 
   backup = {

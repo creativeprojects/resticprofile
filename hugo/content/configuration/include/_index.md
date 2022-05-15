@@ -42,7 +42,7 @@ global:
 
 includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 
-global = {
+global {
   initialize = true
 }
 ```

@@ -40,3 +40,6 @@ jobs:
     - name: Code coverage
       uses: codecov/codecov-action@v2
 
+    - name: Check configuration
+      run: go run ./config/checkdoc -r hugo/content
+      shell: bash

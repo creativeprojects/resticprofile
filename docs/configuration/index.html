@@ -8,16 +8,16 @@
     <meta name="description" content="">
     <title>Configuration :: resticprofile</title>
     <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/configuration/index.xml" title="resticprofile" />
-    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1652632761" rel="stylesheet" id="variant-style">
-    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1652632761" rel="stylesheet">
-    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1652632761" rel="stylesheet" media="print">
-    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1652632761"></script>
+    <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1652648413" rel="stylesheet" id="variant-style">
+    <link href="https://creativeprojects.github.io/resticprofile/css/variant.css?1652648413" rel="stylesheet">
+    <link href="https://creativeprojects.github.io/resticprofile/css/print.css?1652648413" rel="stylesheet" media="print">
+    <script src="https://creativeprojects.github.io/resticprofile/js/variant.js?1652648413"></script>
     <script>
       // hack to let hugo tell us how to get to the root when using relativeURLs, it needs to be called *url= for it to do its magic:
       // https://github.com/gohugoio/hugo/blob/145b3fcce35fbac25c7033c91c1b7ae6d1179da8/transform/urlreplacers/absurlreplacer.go#L72
@@ -33,7 +33,7 @@
       var baseUriFull='https:\/\/creativeprojects.github.io\/resticprofile/';
       variants.init( [ 'relearn-light', 'relearn-dark' ] );
     </script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652632761"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652648413"></script>
   </head>
   <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/">
     <div id="body" class="default-animation">
@@ -84,35 +84,43 @@
   <div class="tab-nav">
     <button
       data-tab-item="toml"
-      data-tab-group="config-with-hcl"
+      data-tab-group="config-with-json"
       class="tab-nav-button btn active"
-      onclick="switchTab('config-with-hcl','toml')"
+      onclick="switchTab('config-with-json','toml')"
       ><span>toml</span></button>
     <button
       data-tab-item="yaml"
-      data-tab-group="config-with-hcl"
+      data-tab-group="config-with-json"
       class="tab-nav-button btn "
-      onclick="switchTab('config-with-hcl','yaml')"
+      onclick="switchTab('config-with-json','yaml')"
       ><span>yaml</span></button>
     <button
       data-tab-item="hcl"
-      data-tab-group="config-with-hcl"
+      data-tab-group="config-with-json"
       class="tab-nav-button btn "
-      onclick="switchTab('config-with-hcl','hcl')"
+      onclick="switchTab('config-with-json','hcl')"
       ><span>hcl</span></button>
+    <button
+      data-tab-item="json"
+      data-tab-group="config-with-json"
+      class="tab-nav-button btn "
+      onclick="switchTab('config-with-json','json')"
+      ><span>json</span></button>
   </div>
   <div class="tab-content">
-    <div data-tab-item="toml" data-tab-group="config-with-hcl" class="tab-item active">
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:/backup&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;password.txt&#34;</span>
+    <div data-tab-item="toml" data-tab-group="config-with-json" class="tab-item active">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span><span style="color:#75715e"># indentation is not needed but it makes it easier to read ;)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>]
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">repository</span> = <span style="color:#e6db74">&#34;local:/backup&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">password-file</span> = <span style="color:#e6db74">&#34;password.txt&#34;</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">backup</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">verbose</span> = <span style="color:#66d9ef">true</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/home&#34;</span> ]
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">backup</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">verbose</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source</span> = [ <span style="color:#e6db74">&#34;/home&#34;</span> ]
 </span></span></code></pre></div>
     </div>
-    <div data-tab-item="yaml" data-tab-group="config-with-hcl" class="tab-item ">
+    <div data-tab-item="yaml" data-tab-group="config-with-json" class="tab-item ">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
 </span></span><span style="display:flex;"><span><span style="color:#f92672">default</span>:
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#e6db74">&#34;local:/backup&#34;</span>
@@ -124,7 +132,7 @@
 </span></span><span style="display:flex;"><span>    - <span style="color:#e6db74">&#34;/home&#34;</span>
 </span></span></code></pre></div>
     </div>
-    <div data-tab-item="hcl" data-tab-group="config-with-hcl" class="tab-item ">
+    <div data-tab-item="hcl" data-tab-group="config-with-json" class="tab-item ">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">default</span> {
 </span></span><span style="display:flex;"><span>    repository <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;local:/backup&#34;</span>
@@ -134,6 +142,21 @@
 </span></span><span style="display:flex;"><span>        verbose <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
 </span></span><span style="display:flex;"><span>        source <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;/home&#34;</span> ]
 </span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+    <div data-tab-item="json" data-tab-group="config-with-json" class="tab-item ">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;default&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;repository&#34;</span>: <span style="color:#e6db74">&#34;local:/backup&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;password-file&#34;</span>: <span style="color:#e6db74">&#34;password.txt&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;backup&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;verbose&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;source&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;/home&#34;</span>
+</span></span><span style="display:flex;"><span>      ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div>
     </div>
@@ -188,9 +211,9 @@
           <input data-search-input id="search-by" type="search" placeholder="Search...">
           <span data-search-clear=""><i class="fas fa-times"></i></span>
         </div>
-        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1652632761"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1652632761"></script>
-        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1652632761"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1652648413"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1652648413"></script>
+        <script src="https://creativeprojects.github.io/resticprofile/js/search.js?1652648413"></script>
       </div>
       <div id="homelinks" class="default-animation">
         <ul>
@@ -273,9 +296,9 @@
         </div>
       </div>
     </aside>
-    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1652632761"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1652632761"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1652632761"></script>
-    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1652632761"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1652648413"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1652648413"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1652648413"></script>
+    <script src="https://creativeprojects.github.io/resticprofile/js/theme.js?1652648413"></script>
   </body>
 </html>

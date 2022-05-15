@@ -30,17 +30,19 @@ restic --repo "local:/backup" --password-file "password.txt" --verbose backup /h
 
 For resticprofile to generate this command automatically for you, here's the configuration file:
 
-{{< tabs groupId="config-with-hcl" >}}
+{{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
 ```toml
+# indentation is not needed but it makes it easier to read ;)
+#
 [default]
-repository = "local:/backup"
-password-file = "password.txt"
+  repository = "local:/backup"
+  password-file = "password.txt"
 
-[default.backup]
-verbose = true
-source = [ "/home" ]
+  [default.backup]
+    verbose = true
+    source = [ "/home" ]
 ```
 
 {{% /tab %}}
@@ -71,6 +73,24 @@ default {
         verbose = true
         source = [ "/home" ]
     }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "default": {
+    "repository": "local:/backup",
+    "password-file": "password.txt",
+    "backup": {
+      "verbose": true,
+      "source": [
+        "/home"
+      ]
+    }
+  }
 }
 ```
 
