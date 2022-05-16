@@ -38,13 +38,6 @@ $ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/mast
 Manual installation (Windows)  Download the package corresponding to your system and CPU from the release page Once downloaded you need to open the archive and copy the binary file resticprofile (or resticprofile.</description>
     </item>
     <item>
-      <title>Ansible</title>
-      <link>https://creativeprojects.github.io/resticprofile/installation/ansible/</link>
-      <pubDate>Sat, 23 Apr 2022 23:47:41 +0100</pubDate>
-      <guid>https://creativeprojects.github.io/resticprofile/installation/ansible/</guid>
-      <description>Installation using Ansible Installation using Ansible is not streamlined, but here&amp;rsquo;s the playbook I&amp;rsquo;m using on my servers</description>
-    </item>
-    <item>
       <title>Source</title>
       <link>https://creativeprojects.github.io/resticprofile/installation/source/</link>
       <pubDate>Sat, 23 Apr 2022 23:50:43 +0100</pubDate>
@@ -77,8 +70,18 @@ But be aware that you will need to mount your backup source (and destination if 
       <guid>https://creativeprojects.github.io/resticprofile/installation/shell/</guid>
       <description>Shell command line completions are provided for bash and zsh.
 To load the command completions in shell, use:
-# bash eval &amp;#34;$(resticprofile completion-script --bash)&amp;#34;  # zsh eval &amp;#34;$(resticprofile completion-script --zsh)&amp;#34; To install them permanently:
-$ resticprofile completion-script --bash &amp;gt; /etc/bash_completion.d/resticprofile $ chmod +x /etc/bash_completion.d/resticprofile </description>
+# bash eval &amp;#34;$(resticprofile generate --bash-completion)&amp;#34;  # zsh eval &amp;#34;$(resticprofile generate --zsh-completion)&amp;#34; To install them permanently:
+$ resticprofile generate --bash-completion &amp;gt; /etc/bash_completion.d/resticprofile $ chmod +x /etc/bash_completion.d/resticprofile </description>
+    </item>
+    <item>
+      <title>Ansible</title>
+      <link>https://creativeprojects.github.io/resticprofile/installation/ansible/</link>
+      <pubDate>Sat, 23 Apr 2022 23:47:41 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/installation/ansible/</guid>
+      <description>Installation using Ansible Installation using Ansible is not streamlined, but here&amp;rsquo;s the playbook I&amp;rsquo;m using on my servers:
+ Playbooks resticprofile.yml (5 KB)   This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.
+The playbook is installing (or upgrading):
+ latest restic binary to /usr/local/bin latest resticprofile binary to /usr/local/bin the resticprofile configuration file from a template file found in /resticprofile/{{ inventory_hostname }}/profiles.</description>
     </item>
   </channel>
 </rss>

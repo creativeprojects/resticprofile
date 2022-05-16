@@ -6,7 +6,7 @@
     <meta name="generator" content="Hugo 0.98.0" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Ansible :: resticprofile</title>
+    <title>Prometheus :: resticprofile</title>
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652734609" rel="stylesheet">
@@ -34,17 +34,17 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652734609"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/ansible/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/status/prometheus/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/source/" title="Source"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/contributions/" title="Contributions"><i class="fas fa-chevron-right fa-fw"></i></a>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/windows/" title="Windows"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/status/" title="Status"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
@@ -54,19 +54,15 @@
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
               <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" aria-disabled="true"><span itemprop="name">Ansible</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/status/"><span itemprop="name">Status</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/status/prometheus/" aria-disabled="true"><span itemprop="name">Prometheus</span></a></li>
             </ol>
           </div>
           <div class="default-animation progress">
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#installation-using-ansible">Installation using Ansible</a>
-      <ul>
-        <li><a href="#requirement">Requirement</a></li>
-      </ul>
-    </li>
+    <li><a href="#user-defined-labels">User defined labels</a></li>
   </ul>
 </nav>
             </div>
@@ -79,34 +75,71 @@
           </div>
           <article>
 
-<h1>Ansible</h1>
-<h2 id="installation-using-ansible">Installation using Ansible</h2>
-<p>Installation using Ansible is not streamlined, but here&rsquo;s the playbook I&rsquo;m using on my servers:</p>
-
-<div class="box attachments transparent">
-  <div class="box-label"><i class="fas fa-paperclip fa-fw"></i> Playbooks</div>
-  <ul class="box-content attachments-files">
-    <li><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/files/resticprofile.yml">resticprofile.yml</a> (5 KB)</li>
-  </ul>
-</div>
-
-<p>This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.</p>
-<p>The playbook is installing (or upgrading):</p>
-<ul>
-<li>latest restic binary to <code>/usr/local/bin</code></li>
-<li>latest resticprofile binary to <code>/usr/local/bin</code></li>
-<li>the resticprofile configuration file from a template file found in <code>/resticprofile/{{ inventory_hostname }}/profiles.conf</code> to <code>/root/resticprofile/profiles.conf</code></li>
-<li>other files (like files needed for <code>--exclude-file</code>, <code>--files-from</code> or anything else you need) from <code>/resticprofile/{{ inventory_hostname }}/copy/*</code> to <code>/root/resticprofile/</code></li>
-</ul>
-<h3 id="requirement">Requirement</h3>
-<p>Each target machine must have one variable <code>arch</code> containing the resticprofile OS &amp; Arch. You can see a list on a download page.</p>
-<p>Typically, a binary will be distributed using this convention:</p>
-<p><code>resticprofile-[VERSION]_[OS]_[ARCH].tar.gz</code></p>
-<p>Your host variables file should declare a <code>arch</code> variable containing the <code>[OS]_[ARCH]</code> part of the file name:</p>
-<pre tabindex="0"><code>arch: linux_amd64
-</code></pre><p>or for a Raspberry pi 3+:</p>
-<pre tabindex="0"><code>arch: linux_armv7
-</code></pre><p>Note: <em>I might find a way to detect this automatically at some point</em></p>
+<h1>Prometheus</h1>
+<p>resticprofile can generate a prometheus file, or send the report to a push gateway. For now, only a <code>backup</code> command will generate a report.
+Here&rsquo;s a configuration example with both options to generate a file and send to a push gateway:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">root</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">inherit</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">prometheus-save-to-file</span>: <span style="color:#e6db74">&#34;root.prom&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">prometheus-push</span>: <span style="color:#e6db74">&#34;http://localhost:9091/&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">extended-status</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">no-error-on-warning</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#ae81ff">/</span>
+</span></span></code></pre></div><p>Please note you need to set <code>extended-status</code> to <code>true</code> if you want all the available metrics. See <a href="#extended-status">Extended status</a> for more information.</p>
+<p>Here&rsquo;s an example of the generated prometheus file:</p>
+<pre tabindex="0"><code># HELP resticprofile_backup_added_bytes Total number of bytes added to the repository.
+# TYPE resticprofile_backup_added_bytes gauge
+resticprofile_backup_added_bytes{profile=&#34;root&#34;} 35746
+# HELP resticprofile_backup_dir_changed Number of directories with changes.
+# TYPE resticprofile_backup_dir_changed gauge
+resticprofile_backup_dir_changed{profile=&#34;root&#34;} 9
+# HELP resticprofile_backup_dir_new Number of new directories added to the backup.
+# TYPE resticprofile_backup_dir_new gauge
+resticprofile_backup_dir_new{profile=&#34;root&#34;} 0
+# HELP resticprofile_backup_dir_unmodified Number of directories unmodified since last backup.
+# TYPE resticprofile_backup_dir_unmodified gauge
+resticprofile_backup_dir_unmodified{profile=&#34;root&#34;} 314
+# HELP resticprofile_backup_duration_seconds The backup duration (in seconds).
+# TYPE resticprofile_backup_duration_seconds gauge
+resticprofile_backup_duration_seconds{profile=&#34;root&#34;} 0.946567354
+# HELP resticprofile_backup_files_changed Number of files with changes.
+# TYPE resticprofile_backup_files_changed gauge
+resticprofile_backup_files_changed{profile=&#34;root&#34;} 3
+# HELP resticprofile_backup_files_new Number of new files added to the backup.
+# TYPE resticprofile_backup_files_new gauge
+resticprofile_backup_files_new{profile=&#34;root&#34;} 0
+# HELP resticprofile_backup_files_processed Total number of files scanned by the backup for changes.
+# TYPE resticprofile_backup_files_processed gauge
+resticprofile_backup_files_processed{profile=&#34;root&#34;} 3925
+# HELP resticprofile_backup_files_unmodified Number of files unmodified since last backup.
+# TYPE resticprofile_backup_files_unmodified gauge
+resticprofile_backup_files_unmodified{profile=&#34;root&#34;} 3922
+# HELP resticprofile_backup_processed_bytes Total number of bytes scanned for changes.
+# TYPE resticprofile_backup_processed_bytes gauge
+resticprofile_backup_processed_bytes{profile=&#34;root&#34;} 3.8524672e+07
+# HELP resticprofile_backup_status Backup status: 0=fail, 1=warning, 2=success.
+# TYPE resticprofile_backup_status gauge
+resticprofile_backup_status{profile=&#34;root&#34;} 1
+# HELP resticprofile_build_info resticprofile build information.
+# TYPE resticprofile_build_info gauge
+resticprofile_build_info{goversion=&#34;go1.16.6&#34;,version=&#34;0.15.0-dev&#34;} 1
+</code></pre><h2 id="user-defined-labels">User defined labels</h2>
+<p>You can add your own prometheus labels. Please note they will be applied to <strong>all</strong> the metrics.
+Here&rsquo;s an example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">root</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">inherit</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">prometheus-save-to-file</span>: <span style="color:#e6db74">&#34;root.prom&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">prometheus-push</span>: <span style="color:#e6db74">&#34;http://localhost:9091/&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">prometheus-labels</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">host</span>: {{ <span style="color:#ae81ff">.Hostname }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">extended-status</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">no-error-on-warning</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#ae81ff">/</span>
+</span></span></code></pre></div><p>which will add the <code>host</code> label to all your metrics.</p>
 
             <footer class="footline">
             </footer>
@@ -163,11 +196,11 @@
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
-          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
+          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
           <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
@@ -189,8 +222,8 @@
           <li data-nav-id="/schedules/" title="Schedules" class="dd-item"><input type="checkbox" id="section-87baf7cbc6382c50c9c5ba4cd8fe677c" class="toggle"/><label for="section-87baf7cbc6382c50c9c5ba4cd8fe677c" ></label><a href="https://creativeprojects.github.io/resticprofile/schedules/"><b>4. </b>Schedules</a><ul>
           <li data-nav-id="/schedules/systemd/" title="Systemd" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/schedules/systemd/">Systemd</a></li>
           <li data-nav-id="/schedules/launchd/" title="Launchd" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/schedules/launchd/">Launchd</a></li></ul></li>
-          <li data-nav-id="/status/" title="Status" class="dd-item"><input type="checkbox" id="section-b59a464d04a72be2d6c2f9673b1d306d" class="toggle"/><label for="section-b59a464d04a72be2d6c2f9673b1d306d" ></label><a href="https://creativeprojects.github.io/resticprofile/status/"><b>5. </b>Status</a><ul>
-          <li data-nav-id="/status/prometheus/" title="Prometheus" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/status/prometheus/">Prometheus</a></li></ul></li>
+          <li data-nav-id="/status/" title="Status" class="dd-item parent"><input type="checkbox" id="section-b59a464d04a72be2d6c2f9673b1d306d" class="toggle" checked/><label for="section-b59a464d04a72be2d6c2f9673b1d306d" ></label><a href="https://creativeprojects.github.io/resticprofile/status/"><b>5. </b>Status</a><ul>
+          <li data-nav-id="/status/prometheus/" title="Prometheus" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/status/prometheus/">Prometheus</a></li></ul></li>
           <li data-nav-id="/contributions/" title="Contributions" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/contributions/"><b>6. </b>Contributions</a></li>
         </ul>
         <div class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div>

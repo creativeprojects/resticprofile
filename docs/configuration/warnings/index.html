@@ -6,7 +6,7 @@
     <meta name="generator" content="Hugo 0.98.0" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Ansible :: resticprofile</title>
+    <title>Warnings :: resticprofile</title>
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652734609" rel="stylesheet">
@@ -34,17 +34,17 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652734609"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/ansible/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/configuration/warnings/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/source/" title="Source"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/configuration/reference/" title="Reference"><i class="fas fa-chevron-right fa-fw"></i></a>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/windows/" title="Windows"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/configuration/templates/" title="Configuration templates"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
@@ -54,17 +54,17 @@
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
               <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" aria-disabled="true"><span itemprop="name">Ansible</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/configuration/"><span itemprop="name">Configuration</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/configuration/warnings/" aria-disabled="true"><span itemprop="name">Warnings</span></a></li>
             </ol>
           </div>
           <div class="default-animation progress">
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#installation-using-ansible">Installation using Ansible</a>
+    <li><a href="#warnings-from-restic">Warnings from restic</a>
       <ul>
-        <li><a href="#requirement">Requirement</a></li>
+        <li><a href="#let-me-introduce-no-error-on-warning">Let me introduce no-error-on-warning</a></li>
       </ul>
     </li>
   </ul>
@@ -79,35 +79,17 @@
           </div>
           <article>
 
-<h1>Ansible</h1>
-<h2 id="installation-using-ansible">Installation using Ansible</h2>
-<p>Installation using Ansible is not streamlined, but here&rsquo;s the playbook I&rsquo;m using on my servers:</p>
-
-<div class="box attachments transparent">
-  <div class="box-label"><i class="fas fa-paperclip fa-fw"></i> Playbooks</div>
-  <ul class="box-content attachments-files">
-    <li><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/files/resticprofile.yml">resticprofile.yml</a> (5 KB)</li>
-  </ul>
-</div>
-
-<p>This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.</p>
-<p>The playbook is installing (or upgrading):</p>
-<ul>
-<li>latest restic binary to <code>/usr/local/bin</code></li>
-<li>latest resticprofile binary to <code>/usr/local/bin</code></li>
-<li>the resticprofile configuration file from a template file found in <code>/resticprofile/{{ inventory_hostname }}/profiles.conf</code> to <code>/root/resticprofile/profiles.conf</code></li>
-<li>other files (like files needed for <code>--exclude-file</code>, <code>--files-from</code> or anything else you need) from <code>/resticprofile/{{ inventory_hostname }}/copy/*</code> to <code>/root/resticprofile/</code></li>
-</ul>
-<h3 id="requirement">Requirement</h3>
-<p>Each target machine must have one variable <code>arch</code> containing the resticprofile OS &amp; Arch. You can see a list on a download page.</p>
-<p>Typically, a binary will be distributed using this convention:</p>
-<p><code>resticprofile-[VERSION]_[OS]_[ARCH].tar.gz</code></p>
-<p>Your host variables file should declare a <code>arch</code> variable containing the <code>[OS]_[ARCH]</code> part of the file name:</p>
-<pre tabindex="0"><code>arch: linux_amd64
-</code></pre><p>or for a Raspberry pi 3+:</p>
-<pre tabindex="0"><code>arch: linux_armv7
-</code></pre><p>Note: <em>I might find a way to detect this automatically at some point</em></p>
-
+<h1>Warnings</h1>
+<h2 id="warnings-from-restic">Warnings from restic</h2>
+<p>Until version 0.13.0, resticprofile was always considering a restic warning as an error. This will remain the <strong>default</strong>.
+But the version 0.13.0 introduced a parameter to avoid this behaviour and consider that the backup was successful instead.</p>
+<p>A restic warning occurs when it cannot read some files, but a snapshot was successfully created.</p>
+<h3 id="let-me-introduce-no-error-on-warning">Let me introduce no-error-on-warning</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">profile</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">inherit</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">no-error-on-warning</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div>
             <footer class="footline">
             </footer>
           </article>
@@ -163,23 +145,23 @@
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
-          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
+          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
           <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
           <li data-nav-id="/installation/shell/" title="Shell Completion" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/shell/">Shell Completion</a></li></ul></li>
-          <li data-nav-id="/configuration/" title="Configuration" class="dd-item"><input type="checkbox" id="section-632bb56b075027697eb90eb7e3d29a12" class="toggle"/><label for="section-632bb56b075027697eb90eb7e3d29a12" ></label><a href="https://creativeprojects.github.io/resticprofile/configuration/"><b>2. </b>Configuration</a><ul>
+          <li data-nav-id="/configuration/" title="Configuration" class="dd-item parent"><input type="checkbox" id="section-632bb56b075027697eb90eb7e3d29a12" class="toggle" checked/><label for="section-632bb56b075027697eb90eb7e3d29a12" ></label><a href="https://creativeprojects.github.io/resticprofile/configuration/"><b>2. </b>Configuration</a><ul>
           <li data-nav-id="/configuration/examples/" title="Examples" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/examples/">Examples</a></li>
           <li data-nav-id="/configuration/path/" title="Path" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/path/">Path</a></li>
           <li data-nav-id="/configuration/include/" title="Include" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/include/">Include</a></li>
           <li data-nav-id="/configuration/hooks/" title="Hooks" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/hooks/">Hooks</a></li>
           <li data-nav-id="/configuration/variables/" title="Variables" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/variables/">Variables</a></li>
           <li data-nav-id="/configuration/templates/" title="Configuration templates" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/templates/">Configuration templates</a></li>
-          <li data-nav-id="/configuration/warnings/" title="Warnings" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/warnings/">Warnings</a></li>
+          <li data-nav-id="/configuration/warnings/" title="Warnings" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/configuration/warnings/">Warnings</a></li>
           <li data-nav-id="/configuration/reference/" title="Reference" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/reference/">Reference</a></li></ul></li>
           <li data-nav-id="/usage/" title="Usage" class="dd-item"><input type="checkbox" id="section-03639a5661feed360d88d7c5ddbc54ac" class="toggle"/><label for="section-03639a5661feed360d88d7c5ddbc54ac" ></label><a href="https://creativeprojects.github.io/resticprofile/usage/"><b>3. </b>Usage</a><ul>
           <li data-nav-id="/usage/version/" title="Version" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/version/">Version</a></li>

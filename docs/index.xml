@@ -6,7 +6,7 @@
     <description>Recent content on resticprofile</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Mon, 25 Apr 2022 21:14:16 +0100</lastBuildDate><atom:link href="https://creativeprojects.github.io/resticprofile/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 16 May 2022 20:26:09 +0100</lastBuildDate><atom:link href="https://creativeprojects.github.io/resticprofile/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Installation</title>
       <link>https://creativeprojects.github.io/resticprofile/installation/</link>
@@ -17,10 +17,44 @@
     <item>
       <title>Configuration</title>
       <link>https://creativeprojects.github.io/resticprofile/configuration/</link>
-      <pubDate>Mon, 25 Apr 2022 21:14:16 +0100</pubDate>
+      <pubDate>Mon, 16 May 2022 20:24:23 +0100</pubDate>
       <guid>https://creativeprojects.github.io/resticprofile/configuration/</guid>
-      <description>Configuration format  A configuration is a set of profiles. Each profile is in its own [section]. Inside each profile, you can specify different flags for each command. A command definition is [section.command].  All the restic flags can be defined in a section. For most of them you just need to remove the two dashes in front.
+      <description>Configuration file  A configuration is a set of profiles. Each profile is in its own [section]. Inside each profile, you can specify different flags for each command. A command definition is [section.command].  All the restic flags can be defined in a section. For most of them you just need to remove the two dashes in front.
 To set the flag --password-file password.txt you need to add a line like</description>
+    </item>
+    <item>
+      <title>Usage</title>
+      <link>https://creativeprojects.github.io/resticprofile/usage/</link>
+      <pubDate>Mon, 16 May 2022 20:26:09 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/usage/</guid>
+      <description>Using resticprofile Here are a few examples how to run resticprofile (using the main example configuration file)
+See all snapshots of your [default] profile:
+$ resticprofile See all available profiles in your configuration file (and the restic commands where some flags are defined):
+$ resticprofile profiles Profiles available: stdin: (backup) default: (env) root: (retention, backup) src: (retention, backup) linux: (retention, backup, snapshots, env) no-cache: (n/a) Groups available: full-backup: root, src Backup root &amp;amp; src profiles (using full-backup group shown earlier)</description>
+    </item>
+    <item>
+      <title>Schedules</title>
+      <link>https://creativeprojects.github.io/resticprofile/schedules/</link>
+      <pubDate>Mon, 16 May 2022 20:13:32 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/schedules/</guid>
+      <description>Scheduled backups resticprofile is capable of managing scheduled backups for you using:
+ launchd on macOS X Task Scheduler on Windows systemd where available (Linux and other BSDs) crond on supported platforms (Linux and other BSDs)  On unixes (except macOS) resticprofile is using systemd by default. crond can be used instead if configured in global scheduler parameter:
+--- global:  scheduler: crond Each profile can be scheduled independently (groups are not available for scheduling yet).</description>
+    </item>
+    <item>
+      <title>Status</title>
+      <link>https://creativeprojects.github.io/resticprofile/status/</link>
+      <pubDate>Mon, 16 May 2022 20:19:00 +0100</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/status/</guid>
+      <description>Status file for easy monitoring If you need to escalate the result of your backup to a monitoring system, you can definitely use the run-after and run-after-fail scripting.
+But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. For example I have a Zabbix agent checking this file once a day, and so you can hook up any monitoring system that can interpret a JSON file.</description>
+    </item>
+    <item>
+      <title>Contributions</title>
+      <link>https://creativeprojects.github.io/resticprofile/contributions/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://creativeprojects.github.io/resticprofile/contributions/</guid>
+      <description>Contributions Please share your resticprofile recipes, fancy configuration files, or tips and tricks. I have created a contributions section for that matter.</description>
     </item>
   </channel>
 </rss>

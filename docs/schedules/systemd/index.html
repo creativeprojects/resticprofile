@@ -6,7 +6,7 @@
     <meta name="generator" content="Hugo 0.98.0" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Ansible :: resticprofile</title>
+    <title>Systemd :: resticprofile</title>
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652734609" rel="stylesheet">
@@ -34,17 +34,17 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652734609"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/ansible/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/schedules/systemd/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/source/" title="Source"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/schedules/launchd/" title="Launchd"><i class="fas fa-chevron-right fa-fw"></i></a>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/windows/" title="Windows"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/schedules/" title="Schedules"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
@@ -54,17 +54,21 @@
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
               <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" aria-disabled="true"><span itemprop="name">Ansible</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/schedules/"><span itemprop="name">Schedules</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/schedules/systemd/" aria-disabled="true"><span itemprop="name">Systemd</span></a></li>
             </ol>
           </div>
           <div class="default-animation progress">
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#installation-using-ansible">Installation using Ansible</a>
+    <li><a href="#systemd-calendars">systemd calendars</a></li>
+    <li><a href="#first-time-schedule">First time schedule</a></li>
+    <li><a href="#how-to-change-the-default-systemd-unit-and-timer-file-using-a-template">How to change the default systemd unit and timer file using a template</a>
       <ul>
-        <li><a href="#requirement">Requirement</a></li>
+        <li><a href="#default-unit-file">Default unit file</a></li>
+        <li><a href="#default-timer-file">Default timer file</a></li>
+        <li><a href="#template-variables">Template variables</a></li>
       </ul>
     </li>
   </ul>
@@ -79,34 +83,79 @@
           </div>
           <article>
 
-<h1>Ansible</h1>
-<h2 id="installation-using-ansible">Installation using Ansible</h2>
-<p>Installation using Ansible is not streamlined, but here&rsquo;s the playbook I&rsquo;m using on my servers:</p>
-
-<div class="box attachments transparent">
-  <div class="box-label"><i class="fas fa-paperclip fa-fw"></i> Playbooks</div>
-  <ul class="box-content attachments-files">
-    <li><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/files/resticprofile.yml">resticprofile.yml</a> (5 KB)</li>
-  </ul>
-</div>
-
-<p>This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.</p>
-<p>The playbook is installing (or upgrading):</p>
+<h1>Systemd</h1>
+<p>systemd is a common service manager in use by many Linux distributions.
+resticprofile has the ability to create systemd timer and service files.
+systemd can be used in place of cron to schedule backups.</p>
+<p>User systemd units are created under the user&rsquo;s systemd profile (~/.config/systemd/user).</p>
+<p>System units are created in /etc/systemd/system</p>
+<h2 id="systemd-calendars">systemd calendars</h2>
+<p>resticprofile uses systemd
+<a href="https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events">OnCalendar</a>
+format to schedule events.</p>
+<p>Testing systemd calendars can be done with the systemd-analyze application.
+systemd-analyze will display when the next trigger will happen:</p>
+<pre tabindex="0"><code>$ systemd-analyze calendar &#39;daily&#39;
+  Original form: daily
+Normalized form: *-*-* 00:00:00
+    Next elapse: Sat 2020-04-18 00:00:00 CDT
+       (in UTC): Sat 2020-04-18 05:00:00 UTC
+       From now: 10h left
+</code></pre><h2 id="first-time-schedule">First time schedule</h2>
+<p>When you schedule a profile with the <code>schedule</code> command, under the hood resticprofile will</p>
 <ul>
-<li>latest restic binary to <code>/usr/local/bin</code></li>
-<li>latest resticprofile binary to <code>/usr/local/bin</code></li>
-<li>the resticprofile configuration file from a template file found in <code>/resticprofile/{{ inventory_hostname }}/profiles.conf</code> to <code>/root/resticprofile/profiles.conf</code></li>
-<li>other files (like files needed for <code>--exclude-file</code>, <code>--files-from</code> or anything else you need) from <code>/resticprofile/{{ inventory_hostname }}/copy/*</code> to <code>/root/resticprofile/</code></li>
+<li>create the unit file (of type <code>notify</code>)</li>
+<li>create the timer file</li>
+<li>run <code>systemctl daemon-reload</code> (only if <code>schedule-permission</code> is set to <code>system</code>)</li>
+<li>run <code>systemctl enable</code></li>
+<li>run <code>systemctl start</code></li>
 </ul>
-<h3 id="requirement">Requirement</h3>
-<p>Each target machine must have one variable <code>arch</code> containing the resticprofile OS &amp; Arch. You can see a list on a download page.</p>
-<p>Typically, a binary will be distributed using this convention:</p>
-<p><code>resticprofile-[VERSION]_[OS]_[ARCH].tar.gz</code></p>
-<p>Your host variables file should declare a <code>arch</code> variable containing the <code>[OS]_[ARCH]</code> part of the file name:</p>
-<pre tabindex="0"><code>arch: linux_amd64
-</code></pre><p>or for a Raspberry pi 3+:</p>
-<pre tabindex="0"><code>arch: linux_armv7
-</code></pre><p>Note: <em>I might find a way to detect this automatically at some point</em></p>
+<h2 id="how-to-change-the-default-systemd-unit-and-timer-file-using-a-template">How to change the default systemd unit and timer file using a template</h2>
+<p>By default, an opinionated systemd unit and timer are automatically generated by resticprofile.</p>
+<p>Since version 0.16.0, you now can describe your own templates if you need to add things in it (typically like sending an email on failure).</p>
+<p>The format used is a <a href="https://pkg.go.dev/text/template">go template</a> and you need specify your own unit and/or timer file in the global section of the configuration (it will apply to all your profiles):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">global</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">systemd-unit-template</span>: <span style="color:#ae81ff">service.tmpl</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">systemd-timer-template</span>: <span style="color:#ae81ff">timer.tmpl</span>
+</span></span></code></pre></div><p>Here are the defaults if you don&rsquo;t specify your own (which I recommend to use as a starting point for your own templates)</p>
+<h3 id="default-unit-file">Default unit file</h3>
+<pre tabindex="0"><code>[Unit]
+Description={{ .JobDescription }}
+
+[Service]
+Type=notify
+WorkingDirectory={{ .WorkingDirectory }}
+ExecStart={{ .CommandLine }}
+{{ if .Nice }}Nice={{ .Nice }}{{ end }}
+{{ range .Environment -}}
+Environment=&#34;{{ . }}&#34;
+{{ end -}}
+</code></pre><h3 id="default-timer-file">Default timer file</h3>
+<pre tabindex="0"><code>[Unit]
+Description={{ .TimerDescription }}
+
+[Timer]
+{{ range .OnCalendar -}}
+OnCalendar={{ . }}
+{{ end -}}
+Unit={{ .SystemdProfile }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+</code></pre><h3 id="template-variables">Template variables</h3>
+<p>These are available for both the unit and timer templates:</p>
+<ul>
+<li>JobDescription   <em>string</em></li>
+<li>TimerDescription <em>string</em></li>
+<li>WorkingDirectory <em>string</em></li>
+<li>CommandLine      <em>string</em></li>
+<li>OnCalendar       <em>array of strings</em></li>
+<li>SystemdProfile   <em>string</em></li>
+<li>Nice             <em>integer</em></li>
+<li>Environment      <em>array of strings</em></li>
+</ul>
 
             <footer class="footline">
             </footer>
@@ -163,11 +212,11 @@
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
-          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
+          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
           <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
@@ -186,8 +235,8 @@
           <li data-nav-id="/usage/keyfile/" title="Keyfile" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/keyfile/">Keyfile</a></li>
           <li data-nav-id="/usage/memory/" title="Memory" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/memory/">Memory</a></li>
           <li data-nav-id="/usage/locks/" title="Locks" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/locks/">Locks</a></li></ul></li>
-          <li data-nav-id="/schedules/" title="Schedules" class="dd-item"><input type="checkbox" id="section-87baf7cbc6382c50c9c5ba4cd8fe677c" class="toggle"/><label for="section-87baf7cbc6382c50c9c5ba4cd8fe677c" ></label><a href="https://creativeprojects.github.io/resticprofile/schedules/"><b>4. </b>Schedules</a><ul>
-          <li data-nav-id="/schedules/systemd/" title="Systemd" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/schedules/systemd/">Systemd</a></li>
+          <li data-nav-id="/schedules/" title="Schedules" class="dd-item parent"><input type="checkbox" id="section-87baf7cbc6382c50c9c5ba4cd8fe677c" class="toggle" checked/><label for="section-87baf7cbc6382c50c9c5ba4cd8fe677c" ></label><a href="https://creativeprojects.github.io/resticprofile/schedules/"><b>4. </b>Schedules</a><ul>
+          <li data-nav-id="/schedules/systemd/" title="Systemd" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/schedules/systemd/">Systemd</a></li>
           <li data-nav-id="/schedules/launchd/" title="Launchd" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/schedules/launchd/">Launchd</a></li></ul></li>
           <li data-nav-id="/status/" title="Status" class="dd-item"><input type="checkbox" id="section-b59a464d04a72be2d6c2f9673b1d306d" class="toggle"/><label for="section-b59a464d04a72be2d6c2f9673b1d306d" ></label><a href="https://creativeprojects.github.io/resticprofile/status/"><b>5. </b>Status</a><ul>
           <li data-nav-id="/status/prometheus/" title="Prometheus" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/status/prometheus/">Prometheus</a></li></ul></li>

@@ -6,7 +6,7 @@
     <meta name="generator" content="Hugo 0.98.0" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Ansible :: resticprofile</title>
+    <title>Locks :: resticprofile</title>
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652734609" rel="stylesheet">
@@ -34,17 +34,17 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652734609"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/ansible/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/usage/locks/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/source/" title="Source"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/schedules/" title="Schedules"><i class="fas fa-chevron-right fa-fw"></i></a>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/windows/" title="Windows"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/usage/memory/" title="Memory"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
@@ -54,19 +54,17 @@
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
               <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" aria-disabled="true"><span itemprop="name">Ansible</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/usage/"><span itemprop="name">Usage</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/usage/locks/" aria-disabled="true"><span itemprop="name">Locks</span></a></li>
             </ol>
           </div>
           <div class="default-animation progress">
             <div class="wrapper">
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#installation-using-ansible">Installation using Ansible</a>
-      <ul>
-        <li><a href="#requirement">Requirement</a></li>
-      </ul>
-    </li>
+    <li><a href="#stale-locks">Stale locks</a></li>
+    <li><a href="#lock-wait">Lock wait</a></li>
+    <li><a href="#restic-lock-management">restic lock management</a></li>
   </ul>
 </nav>
             </div>
@@ -79,34 +77,58 @@
           </div>
           <article>
 
-<h1>Ansible</h1>
-<h2 id="installation-using-ansible">Installation using Ansible</h2>
-<p>Installation using Ansible is not streamlined, but here&rsquo;s the playbook I&rsquo;m using on my servers:</p>
-
-<div class="box attachments transparent">
-  <div class="box-label"><i class="fas fa-paperclip fa-fw"></i> Playbooks</div>
-  <ul class="box-content attachments-files">
-    <li><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/files/resticprofile.yml">resticprofile.yml</a> (5 KB)</li>
-  </ul>
-</div>
-
-<p>This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.</p>
-<p>The playbook is installing (or upgrading):</p>
+<h1>Locks</h1>
+<p>restic is already using a lock to avoid running some operations at the same time.</p>
+<p>Since resticprofile can run several commands in a profile, it could be better to run the whole batch in a lock so nobody can interfere in the meantime.</p>
+<p>For this to happen you can specify a lock file in each profile:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">src</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">lock</span>: <span style="color:#e6db74">&#34;/tmp/resticprofile-profile-src.lock&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">backup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">check-before</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">exclude</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">/**/.git</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">~/go</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">retention</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">after-backup</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">before-backup</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">compact</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">keep-within</span>: <span style="color:#ae81ff">30d</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><p>For this profile, a lock will be set using the file <code>/tmp/resticprofile-profile-src.lock</code> for the duration of the profile: <em>check</em>, <em>backup</em> and <em>retention</em> (via the forget command)</p>
+<p><strong>Please note restic locks and resticprofile locks are completely independent</strong></p>
+<h2 id="stale-locks">Stale locks</h2>
+<p>In some cases, resticprofile as well as restic may leave a lock behind if the process died (or the machine rebooted).</p>
+<p>For that matter, if you add the flag <code>force-inactive-lock</code> to your profile, resticprofile will detect and remove stale locks:</p>
 <ul>
-<li>latest restic binary to <code>/usr/local/bin</code></li>
-<li>latest resticprofile binary to <code>/usr/local/bin</code></li>
-<li>the resticprofile configuration file from a template file found in <code>/resticprofile/{{ inventory_hostname }}/profiles.conf</code> to <code>/root/resticprofile/profiles.conf</code></li>
-<li>other files (like files needed for <code>--exclude-file</code>, <code>--files-from</code> or anything else you need) from <code>/resticprofile/{{ inventory_hostname }}/copy/*</code> to <code>/root/resticprofile/</code></li>
+<li><strong>resticprofile locks</strong>: Check for the presence of a process with the PID indicated in the lockfile. If it can&rsquo;t find any, it will try to delete the lock and continue the operation (locking again, running profile and so on&hellip;)</li>
+<li><strong>restic locks</strong>: Evaluate if a restic command failed on acquiring a lock. If the lock is older than <code>restic-stale-lock-age</code>, invoke <code>restic unlock</code> and retry the command that failed (can be disabled by setting <code>restic-stale-lock-age</code> to 0, default is 2h).</li>
 </ul>
-<h3 id="requirement">Requirement</h3>
-<p>Each target machine must have one variable <code>arch</code> containing the resticprofile OS &amp; Arch. You can see a list on a download page.</p>
-<p>Typically, a binary will be distributed using this convention:</p>
-<p><code>resticprofile-[VERSION]_[OS]_[ARCH].tar.gz</code></p>
-<p>Your host variables file should declare a <code>arch</code> variable containing the <code>[OS]_[ARCH]</code> part of the file name:</p>
-<pre tabindex="0"><code>arch: linux_amd64
-</code></pre><p>or for a Raspberry pi 3+:</p>
-<pre tabindex="0"><code>arch: linux_armv7
-</code></pre><p>Note: <em>I might find a way to detect this automatically at some point</em></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">global</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">restic-stale-lock-age</span>: <span style="color:#ae81ff">2h</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">src</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">lock</span>: <span style="color:#e6db74">&#34;/tmp/resticprofile-profile-src.lock&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">force-inactive-lock</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><h2 id="lock-wait">Lock wait</h2>
+<p>By default, restic and resticprofile fail when a lock cannot be acquired as another process is currently holding it.</p>
+<p>Depending on the use case (e.g. scheduled backups), it may be more appropriate to wait on another process to finish instead of failing immediately.</p>
+<p>For that matter, if you add the commandline flag <code>--lock-wait</code> or configure schedules with <code>schedule-lock-wait</code>, resticprofile will wait on other backup processes:</p>
+<ul>
+<li><strong>resticprofile locks</strong>: Retry acquiring the lockfile until it either succeeds (when the other resticprofile process released the lock) or fail as the lock-wait duration has passed without success.</li>
+<li><strong>restic locks</strong>: Evaluate if a restic command failed on acquiring a lock. If the lock is not considered stale, retry the restic command every <code>restic-lock-retry-after</code> (default 1 minute) until it acquired the lock, or fail as the lock-wait duration has passed.</li>
+</ul>
+<p>Note: The lock wait duration is cumulative. If various locks in one profile-run require lock wait, the total wait time may not exceed the duration that was specified.</p>
+<h2 id="restic-lock-management">restic lock management</h2>
+<p>resticprofile can retry restic commands that fail on acquiring a lock and can also ask restic to unlock stale locks. The behaviour is controlled by 2 settings inside the <code>global</code> section:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">global</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Retry a restic command that failed on acquiring a lock every minute </span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># (at least), for up to the time specified in &#34;--lock-wait duration&#34;. </span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">restic-lock-retry-after</span>: <span style="color:#ae81ff">1m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Ask restic to unlock a stale lock when its age is more than 2 hours</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># and the option &#34;force-inactive-lock&#34; is enabled in the profile.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">restic-stale-lock-age</span>: <span style="color:#ae81ff">2h</span>
+</span></span></code></pre></div><p>If restic lock management is not desired, it can be disabled by setting both values to 0.</p>
 
             <footer class="footline">
             </footer>
@@ -163,11 +185,11 @@
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
-          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
+          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
           <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
@@ -181,11 +203,11 @@
           <li data-nav-id="/configuration/templates/" title="Configuration templates" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/templates/">Configuration templates</a></li>
           <li data-nav-id="/configuration/warnings/" title="Warnings" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/warnings/">Warnings</a></li>
           <li data-nav-id="/configuration/reference/" title="Reference" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/reference/">Reference</a></li></ul></li>
-          <li data-nav-id="/usage/" title="Usage" class="dd-item"><input type="checkbox" id="section-03639a5661feed360d88d7c5ddbc54ac" class="toggle"/><label for="section-03639a5661feed360d88d7c5ddbc54ac" ></label><a href="https://creativeprojects.github.io/resticprofile/usage/"><b>3. </b>Usage</a><ul>
+          <li data-nav-id="/usage/" title="Usage" class="dd-item parent"><input type="checkbox" id="section-03639a5661feed360d88d7c5ddbc54ac" class="toggle" checked/><label for="section-03639a5661feed360d88d7c5ddbc54ac" ></label><a href="https://creativeprojects.github.io/resticprofile/usage/"><b>3. </b>Usage</a><ul>
           <li data-nav-id="/usage/version/" title="Version" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/version/">Version</a></li>
           <li data-nav-id="/usage/keyfile/" title="Keyfile" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/keyfile/">Keyfile</a></li>
           <li data-nav-id="/usage/memory/" title="Memory" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/memory/">Memory</a></li>
-          <li data-nav-id="/usage/locks/" title="Locks" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/locks/">Locks</a></li></ul></li>
+          <li data-nav-id="/usage/locks/" title="Locks" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/usage/locks/">Locks</a></li></ul></li>
           <li data-nav-id="/schedules/" title="Schedules" class="dd-item"><input type="checkbox" id="section-87baf7cbc6382c50c9c5ba4cd8fe677c" class="toggle"/><label for="section-87baf7cbc6382c50c9c5ba4cd8fe677c" ></label><a href="https://creativeprojects.github.io/resticprofile/schedules/"><b>4. </b>Schedules</a><ul>
           <li data-nav-id="/schedules/systemd/" title="Systemd" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/schedules/systemd/">Systemd</a></li>
           <li data-nav-id="/schedules/launchd/" title="Launchd" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/schedules/launchd/">Launchd</a></li></ul></li>

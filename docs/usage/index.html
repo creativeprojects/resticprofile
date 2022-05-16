@@ -6,7 +6,8 @@
     <meta name="generator" content="Hugo 0.98.0" />
     <meta name="generator" content="Relearn 3.4.1&#43;tip">
     <meta name="description" content="">
-    <title>Ansible :: resticprofile</title>
+    <title>Usage :: resticprofile</title>
+    <link rel="alternate" type="application/rss&#43;xml" href="https://creativeprojects.github.io/resticprofile/usage/index.xml" title="resticprofile" />
     <link href="https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652734609" rel="stylesheet">
     <link href="https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652734609" rel="stylesheet">
@@ -34,79 +35,121 @@
     </script>
     <script src="https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652734609"></script>
   </head>
-  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/installation/ansible/">
+  <body class="mobile-support" data-url="https://creativeprojects.github.io/resticprofile/usage/">
     <div id="body" class="default-animation">
       <div id="sidebar-overlay"></div>
       <div id="toc-overlay"></div>
       <nav id="topbar" class="highlightable">
         <div>
           <div class="navigation">
-             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/installation/source/" title="Source"><i class="fas fa-chevron-right fa-fw"></i></a>
+             <a class="nav nav-next" href="https://creativeprojects.github.io/resticprofile/usage/version/" title="Version"><i class="fas fa-chevron-right fa-fw"></i></a>
           </div>
           <div class="navigation">
-             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/installation/windows/" title="Windows"><i class="fas fa-chevron-left fa-fw"></i></a>
+             <a class="nav nav-prev" href="https://creativeprojects.github.io/resticprofile/configuration/reference/" title="Reference"><i class="fas fa-chevron-left fa-fw"></i></a>
           </div>
           <div id="breadcrumbs">
             <span id="sidebar-toggle-span">
               <a href="#" id="sidebar-toggle" title='Menu'><i class="fas fa-bars fa-fw"></i></a>
             </span>
-            <span id="toc-menu" title='Table of Contents'><i class="fas fa-list-alt fa-fw"></i></span>
             <ol class="links" itemscope itemtype="http://schema.org/BreadcrumbList">
               <meta itemprop="itemListOrder" content="Descending" />
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="3" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/"><span itemprop="name">Installation</span></a> > </li>
-              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/installation/ansible/" aria-disabled="true"><span itemprop="name">Ansible</span></a></li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="2" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/"><span itemprop="name">resticprofile</span></a> > </li>
+              <li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><meta itemprop="position" content="1" /><a itemprop="item" href="https://creativeprojects.github.io/resticprofile/usage/" aria-disabled="true"><span itemprop="name">Usage</span></a></li>
             </ol>
-          </div>
-          <div class="default-animation progress">
-            <div class="wrapper">
-<nav id="TableOfContents">
-  <ul>
-    <li><a href="#installation-using-ansible">Installation using Ansible</a>
-      <ul>
-        <li><a href="#requirement">Requirement</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-            </div>
           </div>
         </div>
       </nav>
-      <main id="body-inner" class="highlightable">
+      <main id="body-inner" class="highlightable chapter">
         <div class="flex-block-wrapper">
           <div id="head-tags">
           </div>
-          <article>
+          <article class="chapter">
 
-<h1>Ansible</h1>
-<h2 id="installation-using-ansible">Installation using Ansible</h2>
-<p>Installation using Ansible is not streamlined, but here&rsquo;s the playbook I&rsquo;m using on my servers:</p>
+<h1 id="using-resticprofile">Using resticprofile</h1>
+<p>Here are a few examples how to run resticprofile (using the main example configuration file)</p>
+<p>See all snapshots of your <code>[default]</code> profile:</p>
+<pre tabindex="0"><code>$ resticprofile
+</code></pre><p>See all available profiles in your configuration file (and the restic commands where some flags are defined):</p>
+<pre tabindex="0"><code>$ resticprofile profiles
 
-<div class="box attachments transparent">
-  <div class="box-label"><i class="fas fa-paperclip fa-fw"></i> Playbooks</div>
-  <ul class="box-content attachments-files">
-    <li><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/files/resticprofile.yml">resticprofile.yml</a> (5 KB)</li>
-  </ul>
-</div>
+Profiles available:
+  stdin:     (backup)
+  default:   (env)
+  root:      (retention, backup)
+  src:       (retention, backup)
+  linux:     (retention, backup, snapshots, env)
+  no-cache:  (n/a)
 
-<p>This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.</p>
-<p>The playbook is installing (or upgrading):</p>
+Groups available:
+  full-backup:  root, src
+</code></pre><p>Backup root &amp; src profiles (using <em>full-backup</em> group shown earlier)</p>
+<pre tabindex="0"><code>$ resticprofile --name &#34;full-backup&#34; backup
+</code></pre><p>or</p>
+<pre tabindex="0"><code>$ resticprofile full-backup.backup
+</code></pre><p>Assuming the <em>stdin</em> profile from the configuration file shown before, the command to send a mysqldump to the backup is as simple as:</p>
+<pre tabindex="0"><code>$ mysqldump --all-databases --order-by-primary | resticprofile --name stdin backup
+</code></pre><p>or</p>
+<pre tabindex="0"><code>$ mysqldump --all-databases --order-by-primary | resticprofile stdin.backup
+</code></pre><p>or when resticprofile runs &ldquo;mysqldump&rdquo; (can be scheduled):</p>
+<pre tabindex="0"><code>$ resticprofile mysql.backup
+</code></pre><p>Mount the default profile (<em>default</em>) in /mnt/restic:</p>
+<pre tabindex="0"><code>$ resticprofile mount /mnt/restic
+</code></pre><p>Display quick help</p>
+<pre tabindex="0"><code>$ resticprofile --help
+
+Usage of resticprofile:
+	resticprofile [resticprofile flags] [profile name.][restic command] [restic flags]
+	resticprofile [resticprofile flags] [profile name.][resticprofile command] [command specific flags]
+
+resticprofile flags:
+  -c, --config string        configuration file (default &#34;profiles&#34;)
+      --dry-run              display the restic commands instead of running them
+  -f, --format string        file format of the configuration (default is to use the file extension)
+  -h, --help                 display this help
+      --lock-wait duration   wait up to duration to acquire a lock (syntax &#34;1h5m30s&#34;)
+  -l, --log string           logs into a file instead of the console
+  -n, --name string          profile name (default &#34;default&#34;)
+      --no-ansi              disable ansi control characters (disable console colouring)
+      --no-lock              skip profile lock file
+      --no-prio              don&#39;t set any priority on load: used when started from a service that has already set the priority
+  -q, --quiet                display only warnings and errors
+      --theme string         console colouring theme (dark, light, none) (default &#34;light&#34;)
+      --trace                display even more debugging information
+  -v, --verbose              display some debugging information
+  -w, --wait                 wait at the end until the user presses the enter key
+
+resticprofile own commands:
+   version       display version (run in verbose mode for detailed information)
+   self-update   update to latest resticprofile (use -q/--quiet flag to update without confirmation)
+   profiles      display profile names from the configuration file
+   show          show all the details of the current profile
+   random-key    generate a cryptographically secure random key to use as a restic keyfile
+   schedule      schedule jobs from a profile (use --all flag to schedule all jobs of all profiles)
+   unschedule    remove scheduled jobs of a profile (use --all flag to unschedule all profiles)
+   status        display the status of scheduled jobs (use --all flag for all profiles)
+</code></pre><p>A command is either a restic command or a resticprofile own command.</p>
+<h2 id="command-line-reference">Command line reference</h2>
+<p>There are not many options on the command line, most of the options are in the configuration file.</p>
 <ul>
-<li>latest restic binary to <code>/usr/local/bin</code></li>
-<li>latest resticprofile binary to <code>/usr/local/bin</code></li>
-<li>the resticprofile configuration file from a template file found in <code>/resticprofile/{{ inventory_hostname }}/profiles.conf</code> to <code>/root/resticprofile/profiles.conf</code></li>
-<li>other files (like files needed for <code>--exclude-file</code>, <code>--files-from</code> or anything else you need) from <code>/resticprofile/{{ inventory_hostname }}/copy/*</code> to <code>/root/resticprofile/</code></li>
+<li><strong>[-h]</strong>: Display quick help</li>
+<li><strong>[-c | &ndash;config] configuration_file</strong>: Specify a configuration file other than the default</li>
+<li><strong>[-f | &ndash;format] configuration_format</strong>: Specify the configuration file format: <code>toml</code>, <code>yaml</code>, <code>json</code> or <code>hcl</code></li>
+<li><strong>[-n | &ndash;name] profile_name</strong>: Profile section to use from the configuration file.
+You can also use <code>[profile_name].[command]</code> syntax instead, this will only work if <code>-n</code> is not set.
+Using <code>-n [profile_name] [command]</code> or <code>[profile_name].[command]</code> both select profile and command and are technically equivalent.</li>
+<li><strong>[&ndash;dry-run]</strong>: Doesn&rsquo;t run the restic command but display the command line instead</li>
+<li><strong>[-q | &ndash;quiet]</strong>: Force resticprofile and restic to be quiet (override any configuration from the profile)</li>
+<li><strong>[-v | &ndash;verbose]</strong>: Force resticprofile and restic to be verbose (override any configuration from the profile)</li>
+<li><strong>[&ndash;no-ansi]</strong>: Disable console colouring (to save output into a log file)</li>
+<li><strong>[&ndash;no-lock]</strong>: Disable resticprofile locks, neither create nor fail on a lock. restic locks are unaffected by this option.</li>
+<li><strong>[&ndash;theme]</strong>: Can be <code>light</code>, <code>dark</code> or <code>none</code>. The colours will adjust to a
+light or dark terminal (none to disable colouring)</li>
+<li><strong>[&ndash;lock-wait] duration</strong>: Retry to acquire resticprofile and restic locks for up to the specified amount of time before failing on a lock failure.</li>
+<li><strong>[-l | &ndash;log] log_file</strong>: To write the logs in file instead of displaying on the console</li>
+<li><strong>[-w | &ndash;wait]</strong>: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.</li>
+<li><strong>[resticprofile OR restic command]</strong>: Like snapshots, backup, check, prune, forget, mount, etc.</li>
+<li><strong>[additional flags]</strong>: Any additional flags to pass to the restic command line</li>
 </ul>
-<h3 id="requirement">Requirement</h3>
-<p>Each target machine must have one variable <code>arch</code> containing the resticprofile OS &amp; Arch. You can see a list on a download page.</p>
-<p>Typically, a binary will be distributed using this convention:</p>
-<p><code>resticprofile-[VERSION]_[OS]_[ARCH].tar.gz</code></p>
-<p>Your host variables file should declare a <code>arch</code> variable containing the <code>[OS]_[ARCH]</code> part of the file name:</p>
-<pre tabindex="0"><code>arch: linux_amd64
-</code></pre><p>or for a Raspberry pi 3+:</p>
-<pre tabindex="0"><code>arch: linux_armv7
-</code></pre><p>Note: <em>I might find a way to detect this automatically at some point</em></p>
 
             <footer class="footline">
             </footer>
@@ -163,11 +206,11 @@
       </div>
       <div id="content-wrapper" class="highlightable">
         <ul class="topics collapsible-menu">
-          <li data-nav-id="/installation/" title="Installation" class="dd-item parent"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle" checked/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
+          <li data-nav-id="/installation/" title="Installation" class="dd-item"><input type="checkbox" id="section-07cca5796d23f5bae96340e1eaa52bc5" class="toggle"/><label for="section-07cca5796d23f5bae96340e1eaa52bc5" ></label><a href="https://creativeprojects.github.io/resticprofile/installation/"><b>1. </b>Installation</a><ul>
           <li data-nav-id="/installation/linux/" title="Linux" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/linux/">Linux</a></li>
           <li data-nav-id="/installation/macosx/" title="mac OS X" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/macosx/">mac OS X</a></li>
           <li data-nav-id="/installation/windows/" title="Windows" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/windows/">Windows</a></li>
-          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item active"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
+          <li data-nav-id="/installation/ansible/" title="Ansible" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/ansible/">Ansible</a></li>
           <li data-nav-id="/installation/source/" title="Source" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/source/">Source</a></li>
           <li data-nav-id="/installation/upgrade/" title="Upgrade" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/upgrade/">Upgrade</a></li>
           <li data-nav-id="/installation/docker/" title="Docker" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/installation/docker/">Docker</a></li>
@@ -181,7 +224,7 @@
           <li data-nav-id="/configuration/templates/" title="Configuration templates" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/templates/">Configuration templates</a></li>
           <li data-nav-id="/configuration/warnings/" title="Warnings" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/warnings/">Warnings</a></li>
           <li data-nav-id="/configuration/reference/" title="Reference" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/configuration/reference/">Reference</a></li></ul></li>
-          <li data-nav-id="/usage/" title="Usage" class="dd-item"><input type="checkbox" id="section-03639a5661feed360d88d7c5ddbc54ac" class="toggle"/><label for="section-03639a5661feed360d88d7c5ddbc54ac" ></label><a href="https://creativeprojects.github.io/resticprofile/usage/"><b>3. </b>Usage</a><ul>
+          <li data-nav-id="/usage/" title="Usage" class="dd-item active parent"><input type="checkbox" id="section-03639a5661feed360d88d7c5ddbc54ac" class="toggle" checked/><label for="section-03639a5661feed360d88d7c5ddbc54ac" ></label><a href="https://creativeprojects.github.io/resticprofile/usage/"><b>3. </b>Usage</a><ul>
           <li data-nav-id="/usage/version/" title="Version" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/version/">Version</a></li>
           <li data-nav-id="/usage/keyfile/" title="Keyfile" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/keyfile/">Keyfile</a></li>
           <li data-nav-id="/usage/memory/" title="Memory" class="dd-item"><a href="https://creativeprojects.github.io/resticprofile/usage/memory/">Memory</a></li>
