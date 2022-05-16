@@ -11,15 +11,15 @@ To load the command completions in shell, use:
 
 ```shell
 # bash
-eval "$(resticprofile completion-script --bash)"
+eval "$(resticprofile generate --bash-completion)"
 
 # zsh
-eval "$(resticprofile completion-script --zsh)"
+eval "$(resticprofile generate --zsh-completion)"
 ```
 
 To install them permanently:
 
 ```
-$ resticprofile completion-script --bash > /etc/bash_completion.d/resticprofile
+$ resticprofile generate --bash-completion > /etc/bash_completion.d/resticprofile
 $ chmod +x /etc/bash_completion.d/resticprofile
 ```

@@ -27,6 +27,7 @@ With resticprofile:
 * **[new for v0.15.0]** Export a **prometheus** file after a backup, or send the report to a push gateway automatically
 * **[new for v0.16.0]** Full support for the copy command (with scheduling)
 * **[new for v0.16.0]** Describe your own systemd units and timers with go templates
+* **[new for v0.17.0]** Run shell commands in the background when non fatal errors are detected from restic
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -34,4 +35,3 @@ The configuration file accepts various formats:
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
 * [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
 
-For the rest of the documentation, I'll be showing examples using different formats, but mostly TOML and YAML.

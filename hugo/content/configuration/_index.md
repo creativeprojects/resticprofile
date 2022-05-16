@@ -109,3 +109,9 @@ resticprofile backup
 ## Path resolution in configuration
 
 All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.
+
+Using the basic configuration from earlier, and taking into account that the configuration file is saved in the directory `/opt/resticprofile`, the password key file `password.txt` is expected to be found at `/opt/resticprofile/password.txt` no matter your current directory.
+
+## More information
+
+{{% children  %}}
