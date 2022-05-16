@@ -263,17 +263,38 @@ func TestCompleteCall(t *testing.T) {
 	}
 }
 
-func TestCompletionScriptCall(t *testing.T) {
+func TestGenerateCommand(t *testing.T) {
 	flags := commandLineFlags{}
 	buffer := &strings.Builder{}
 
-	buffer.Reset()
-	assert.Nil(t, completionScriptCommand(buffer, nil, flags, nil))
-	assert.Equal(t, strings.TrimSpace(bashCompletionScript), strings.TrimSpace(buffer.String()))
-	assert.Contains(t, bashCompletionScript, "#!/usr/bin/env bash")
+	t.Run("--bash-completion", func(t *testing.T) {
+		buffer.Reset()
+		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--bash-completion"}))
+		assert.Equal(t, strings.TrimSpace(bashCompletionScript), strings.TrimSpace(buffer.String()))
+		assert.Contains(t, bashCompletionScript, "#!/usr/bin/env bash")
+	})
 
-	buffer.Reset()
-	assert.Nil(t, completionScriptCommand(buffer, nil, flags, []string{"--zsh"}))
-	assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
-	assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
+	t.Run("--zsh-completion", func(t *testing.T) {
+		buffer.Reset()
+		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--zsh-completion"}))
+		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
+		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
+	})
+
+	t.Run("--random-key", func(t *testing.T) {
+		buffer.Reset()
+		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--random-key", "512"}))
+		assert.Equal(t, 684, len(strings.TrimSpace(buffer.String())))
+	})
+
+	t.Run("invalid-option", func(t *testing.T) {
+		buffer.Reset()
+		opts := []string{"", "invalid", "--unknown"}
+		for _, option := range opts {
+			buffer.Reset()
+			err := generateCommand(buffer, nil, flags, []string{option})
+			assert.EqualError(t, err, fmt.Sprintf("nothing to generate for: %s", option))
+			assert.Equal(t, 0, buffer.Len())
+		}
+	})
 }

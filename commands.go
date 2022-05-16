@@ -74,6 +74,7 @@ func getOwnCommands() []ownCommand {
 			description:       "generate a cryptographically secure random key to use as a restic keyfile",
 			action:            randomKey,
 			needConfiguration: false,
+			hide:              true,
 		},
 		{
 			name:              "schedule",
@@ -103,15 +104,15 @@ func getOwnCommands() []ownCommand {
 			flags:             map[string]string{"--all": "display the status of all scheduled jobs of all profiles"},
 		},
 		{
-			name:              "completion-script",
-			description:       "generate a shell completion script (use --bash or --zsh to choose format)",
-			action:            completionScriptCommand,
+			name:              "generate",
+			description:       "generate resources (--random-key [size], --bash-completion & --zsh-completion)",
+			action:            generateCommand,
 			needConfiguration: false,
 			hide:              false,
-			hideInCompletion:  true,
 			flags: map[string]string{
-				"--zsh":  "create zsh completion script",
-				"--bash": "create bash completion script",
+				"--random-key":      "generate a cryptographically secure random key to use as a restic keyfile",
+				"--bash-completion": "generate a shell completion script for bash",
+				"--zsh-completion":  "generate a shell completion script for zsh",
 			},
 		},
 		// hidden commands
@@ -311,13 +312,18 @@ var bashCompletionScript string
 //go:embed contrib/completion/zsh-completion.sh
 var zshCompletionScript string
 
-func completionScriptCommand(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) error {
-	if containsString(args, "--zsh") {
-		fmt.Fprintln(output, zshCompletionScript)
+func generateCommand(output io.Writer, config *config.Config, flags commandLineFlags, args []string) (err error) {
+	if containsString(args, "--bash-completion") {
+		_, err = fmt.Fprintln(output, bashCompletionScript)
+	} else if containsString(args, "--random-key") {
+		flags.resticArgs = args
+		err = randomKey(output, config, flags, args)
+	} else if containsString(args, "--zsh-completion") {
+		_, err = fmt.Fprintln(output, zshCompletionScript)
 	} else {
-		fmt.Fprintln(output, bashCompletionScript)
+		err = fmt.Errorf("nothing to generate for: %s", strings.Join(args, ", "))
 	}
-	return nil
+	return
 }
 
 func sortedProfileKeys(data map[string]*config.Profile) []string {

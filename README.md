@@ -260,16 +260,16 @@ To load completions in shell or profile, use:
 
 ```shell
 # bash
-eval "$(resticprofile completion-script --bash)"
+eval "$(resticprofile generate --bash-completion)"
 
 # zsh
-eval "$(resticprofile completion-script --zsh)"
+eval "$(resticprofile generate --zsh-completion)"
 ```
 
 To install them permanently:
 
 ```
-$ resticprofile completion-script --bash > /etc/bash_completion.d/resticprofile
+$ resticprofile generate --bash-completion > /etc/bash_completion.d/resticprofile
 $ chmod +x /etc/bash_completion.d/resticprofile
 ```
 
@@ -965,10 +965,10 @@ resticprofile own commands:
    self-update   update to latest resticprofile (use -q/--quiet flag to update without confirmation)
    profiles      display profile names from the configuration file
    show          show all the details of the current profile
-   random-key    generate a cryptographically secure random key to use as a restic keyfile
    schedule      schedule jobs from a profile (use --all flag to schedule all jobs of all profiles)
    unschedule    remove scheduled jobs of a profile (use --all flag to unschedule all profiles)
    status        display the status of scheduled jobs (use --all flag for all profiles)
+   generate      generate resources (--random-key [size], --bash-completion & --zsh-completion)
 
 
 ```
@@ -1022,7 +1022,7 @@ On Linux and FreeBSD, the generator uses getrandom(2) if available, /dev/urandom
 [Reference from the Go documentation](https://golang.org/pkg/crypto/rand/#pkg-variables)
 
 ```
-$ resticprofile random-key
+$ resticprofile generate --random-key
 ```
 
 generates a 1024 bytes random key (converted into 1368 base64 characters) and displays it on the console
@@ -1030,7 +1030,7 @@ generates a 1024 bytes random key (converted into 1368 base64 characters) and di
 To generate a different size of key, you can specify the bytes length on the command line:
 
 ```
-$ resticprofile random-key 2048
+$ resticprofile generate --random-key 2048
 ```
 
 # Scheduled backups
