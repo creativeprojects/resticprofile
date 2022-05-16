@@ -102,6 +102,21 @@ func showField(fieldType reflect.StructField, fieldValue reflect.Value, stack []
 			showMap(append(stack, key), display, fieldValue)
 			return nil
 
+		case reflect.Array | reflect.Slice:
+			length := fieldValue.Len()
+			if length > 0 && fieldValue.Index(0).Kind() == reflect.Struct {
+				listStack := append(stack, key)
+				for i := 0; i < length; i++ {
+					if i > 0 {
+						display.addKeyOnlyEntry(listStack, "-")
+					}
+					if err := showSubStruct(fieldValue.Index(i).Interface(), listStack, display); err != nil {
+						return err
+					}
+				}
+			} else {
+				showKeyValue(stack, display, key, fieldValue)
+			}
 		default:
 			showKeyValue(stack, display, key, fieldValue)
 		}

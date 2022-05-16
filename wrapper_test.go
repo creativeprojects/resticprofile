@@ -568,6 +568,45 @@ func TestRunAfterBackupFailed(t *testing.T) {
 	assert.Contains(t, err.Error(), "exit status 2")
 }
 
+func TestRunStreamErrorHandler(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+
+	errorCommand := `echo "detected error in $PROFILE_COMMAND"`
+	if runtime.GOOS == "windows" {
+		errorCommand = `echo "detected error in %PROFILE_COMMAND%"`
+	}
+
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Backup = &config.BackupSection{}
+	profile.StreamError = []config.StreamErrorSection{{Pattern: ".+error-line.+", Run: errorCommand}}
+	wrapper := newResticWrapper(mockBinary, false, profile, "backup", []string{"--stderr", "--error-line--"}, nil)
+
+	err := wrapper.runProfile()
+	require.NoError(t, err)
+	assert.Contains(t, buffer.String(), "detected error in backup")
+}
+
+func TestRunStreamErrorHandlerDoesNotBreakCommand(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Backup = &config.BackupSection{}
+	profile.StreamError = []config.StreamErrorSection{{Pattern: ".+error-line.+", Run: "exit 1"}}
+	wrapper := newResticWrapper(mockBinary, false, profile, "backup", []string{"--stderr", "--error-line--"}, nil)
+
+	err := wrapper.runProfile()
+	require.NoError(t, err)
+}
+
+func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Backup = &config.BackupSection{}
+	profile.StreamError = []config.StreamErrorSection{{Pattern: "(", Run: "echo pass"}}
+	wrapper := newResticWrapper(mockBinary, false, profile, "backup", []string{}, nil)
+
+	err := wrapper.runProfile()
+	assert.EqualError(t, err, "backup on profile 'name': stream error callback: echo pass failed to register (: error parsing regexp: missing closing ): `(`")
+}
+
 type mockOutputAnalysis struct {
 	progress.OutputAnalysis
 	lockWho      string

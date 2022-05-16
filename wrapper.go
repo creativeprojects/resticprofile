@@ -275,6 +275,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArg
 	publicArguments := append([]string{command}, config.GetNonConfidentialArgs(r.profile, args).GetAll()...)
 
 	env := append(os.Environ(), r.getEnvironment()...)
+	env = append(env, r.getProfileEnvironment()...)
 
 	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(publicArguments, " "))
 	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan, r.setPID)
@@ -282,6 +283,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArg
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()
 	rCommand.stderr = term.GetErrorOutput()
+	rCommand.streamError = r.profile.StreamError
 
 	return rCommand
 }
@@ -641,7 +643,7 @@ func (r *resticWrapper) canRetryAfterError(command string, summary progress.Summ
 	sleep := time.Duration(0)
 	output := summary.OutputAnalysis
 
-	if output.ContainsRemoteLockFailure() {
+	if output != nil && output.ContainsRemoteLockFailure() {
 		clog.Debugf("repository lock failed when running '%s'", command)
 		retry, sleep = r.canRetryAfterRemoteLockFailure(output)
 	}
