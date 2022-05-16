@@ -2,6 +2,7 @@ package shell
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -12,10 +13,26 @@ import (
 	"github.com/creativeprojects/resticprofile/progress"
 )
 
+type analyserCallback struct {
+	requiredCount,
+	invoked,
+	lastInvocation,
+	maxInvocations int
+	stopOnError bool
+	fn          func(line string) error
+}
+
+type analyserPattern struct {
+	name       string
+	expression *regexp.Regexp
+}
+
 type OutputAnalyser struct {
-	lock    sync.Locker
-	counts  map[string]int
-	matches map[string][]string
+	lock      sync.Locker
+	patterns  []analyserPattern
+	callbacks map[string]*analyserCallback
+	counts    map[string]int
+	matches   map[string][]string
 }
 
 var outputAnalyserPatterns = map[string]*regexp.Regexp{
@@ -25,11 +42,86 @@ var outputAnalyserPatterns = map[string]*regexp.Regexp{
 }
 
 func NewOutputAnalyser() *OutputAnalyser {
-	return &OutputAnalyser{
-		counts:  map[string]int{},
-		matches: map[string][]string{},
-		lock:    &sync.Mutex{},
+	patterns := make([]analyserPattern, 0, len(outputAnalyserPatterns))
+	for name, regex := range outputAnalyserPatterns {
+		patterns = append(patterns, analyserPattern{name: name, expression: regex})
 	}
+
+	return (&OutputAnalyser{
+		lock:      &sync.Mutex{},
+		patterns:  patterns,
+		callbacks: map[string]*analyserCallback{},
+	}).Reset()
+}
+
+func (a *OutputAnalyser) Reset() *OutputAnalyser {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	a.counts = map[string]int{}
+	a.matches = map[string][]string{}
+	return a
+}
+
+// SetCallback registers a custom callback that is invoked when pattern (regex) matches a line.
+func (a *OutputAnalyser) SetCallback(name, pattern string, minCount, maxCalls int, stopOnError bool, callback func(line string) error) error {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return err
+	}
+
+	name = fmt.Sprintf("#%s", strings.TrimSpace(strings.Split(name, ",")[0]))
+
+	// Removing existing pattern
+	for i := len(a.patterns) - 1; i >= 0; i-- {
+		if a.patterns[i].name == name {
+			a.patterns = append(a.patterns[0:i], a.patterns[i+1:]...)
+		}
+	}
+
+	if callback == nil {
+		delete(a.callbacks, name)
+	} else {
+		a.patterns = append(a.patterns, analyserPattern{
+			name:       name,
+			expression: regex,
+		})
+		a.callbacks[name] = &analyserCallback{
+			requiredCount:  minCount,
+			maxInvocations: maxCalls,
+			stopOnError:    stopOnError,
+			fn:             callback,
+		}
+	}
+	return nil
+}
+
+func (a OutputAnalyser) invokeCallback(name, line string) (err error) {
+	count, hasCount := a.counts[name]
+	cb, hasCallback := a.callbacks[name]
+
+	if hasCount && hasCallback {
+		minCount := cb.requiredCount + cb.lastInvocation
+		if count >= minCount && (cb.invoked < cb.maxInvocations || cb.maxInvocations <= 0) {
+			cb.lastInvocation = count
+			cb.invoked++
+			err = cb.fn(line)
+		}
+
+		if err != nil {
+			if cb.stopOnError {
+				clog.Errorf("stream-error action '%s' failed: %s", name, err.Error())
+			} else {
+				clog.Warningf("stream-error action '%s' failed: %s", name, err.Error())
+				err = nil
+			}
+		}
+	}
+
+	return
 }
 
 func (a OutputAnalyser) ContainsRemoteLockFailure() bool {
@@ -50,7 +142,7 @@ func (a OutputAnalyser) GetRemoteLockedSince() (time.Duration, bool) {
 		if lockAge, err := time.ParseDuration(m[1]); err == nil {
 			return lockAge.Truncate(time.Millisecond), true
 		} else {
-			clog.Warningf("Failed parsing restic lock age. Cause %s", err.Error())
+			clog.Warningf("failed parsing restic lock age. Cause %s", err.Error())
 		}
 	}
 
@@ -68,36 +160,44 @@ func (a OutputAnalyser) GetRemoteLockedBy() (string, bool) {
 	return "", false
 }
 
-func (a OutputAnalyser) AnalyseStringLines(output string) progress.OutputAnalysis {
+func (a OutputAnalyser) AnalyseStringLines(output string) error {
 	return a.AnalyseLines(strings.NewReader(output))
 }
 
-func (a OutputAnalyser) AnalyseLines(output io.Reader) progress.OutputAnalysis {
+func (a OutputAnalyser) AnalyseLines(output io.Reader) (err error) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
 	scanner := bufio.NewScanner(output)
 	for scanner.Scan() {
-		a.analyseLine(scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		clog.Warningf("Failed analyzing all output lines. Cause %s", err.Error())
-	}
-
-	return a
-}
-
-func (a OutputAnalyser) analyseLine(line string) {
-	for name, pattern := range outputAnalyserPatterns {
-		match := pattern.FindStringSubmatch(line)
-		if match != nil {
-			a.matches[name] = match
-
-			baseName := strings.Split(name, ",")[0]
-			a.counts[baseName]++
+		if err == nil {
+			if err = a.analyseLine(scanner.Text()); err != nil {
+				clog.Warningf("output analysis stopped after error")
+			}
 		}
 	}
+
+	if err == nil {
+		err = scanner.Err()
+	}
+	return
+}
+
+func (a OutputAnalyser) analyseLine(line string) (err error) {
+	for _, pattern := range a.patterns {
+		match := pattern.expression.FindStringSubmatch(line)
+		if match != nil {
+			a.matches[pattern.name] = match
+
+			baseName := strings.Split(pattern.name, ",")[0]
+			a.counts[baseName]++
+
+			if err == nil {
+				err = a.invokeCallback(baseName, line)
+			}
+		}
+	}
+	return
 }
 
 // Ensure OutputAnalyser implements OutputAnalysis

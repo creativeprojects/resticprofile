@@ -358,7 +358,7 @@ func TestResticCanCatchInterruptSignal(t *testing.T) {
 
 func TestCanAnalyseLockFailure(t *testing.T) {
 	file, err := ioutil.TempFile(".", "test-restic-lock-failure")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	file.Write([]byte(ResticLockFailureOutput))
 	file.Close()
 	fileName := file.Name()
@@ -371,4 +371,21 @@ func TestCanAnalyseLockFailure(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, summary.OutputAnalysis)
 	assert.True(t, summary.OutputAnalysis.ContainsRemoteLockFailure())
+}
+
+func TestCanAnalyseWithCustomPattern(t *testing.T) {
+	reportedLine := ""
+	expectedLine := "--content-to-match--"
+	cmd := NewCommand(mockBinary, []string{"test", "--stderr", expectedLine})
+	cmd.Stderr = &bytes.Buffer{}
+
+	err := cmd.OnErrorCallback("cb-test", ".*content-to-match.*", 0, 0, func(line string) error {
+		reportedLine = line
+		return nil
+	})
+	assert.Nil(t, err)
+
+	_, _, err = cmd.Run()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedLine, reportedLine)
 }

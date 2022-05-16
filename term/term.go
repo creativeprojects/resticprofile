@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -78,9 +79,20 @@ func OsStdoutIsTerminal() bool {
 	return terminal.IsTerminal(fd)
 }
 
+type LockedWriter struct {
+	writer io.Writer
+	mutex  sync.Mutex
+}
+
+func (w *LockedWriter) Write(p []byte) (n int, err error) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	return w.writer.Write(p)
+}
+
 // SetOutput changes the default output for the Print* functions
 func SetOutput(w io.Writer) {
-	terminalOutput = w
+	terminalOutput = &LockedWriter{writer: w}
 }
 
 // GetOutput returns the default output of the Print* functions
@@ -90,7 +102,7 @@ func GetOutput() io.Writer {
 
 // SetErrorOutput changes the error output for the Print* functions
 func SetErrorOutput(w io.Writer) {
-	errorOutput = w
+	errorOutput = &LockedWriter{writer: w}
 }
 
 // GetErrorOutput returns the error output of the Print* functions

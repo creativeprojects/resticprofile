@@ -182,6 +182,14 @@ home:
     backup:
         source: "${HOME}/Projects"
 
+    stream-error:
+        -
+            pattern: "find-one"
+            run: "echo Found One!"
+        -
+            pattern: "find-two"
+            run: "echo Found Two!"
+
 stdin:
     backup:
         stdin: true
