@@ -6,7 +6,7 @@ weight = 15
 +++
 
 
-## Using resticprofile
+# Using resticprofile
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
 

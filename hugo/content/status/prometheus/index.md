@@ -5,7 +5,6 @@ weight: 5
 ---
 
 
-# Prometheus
 
 resticprofile can generate a prometheus file, or send the report to a push gateway. For now, only a `backup` command will generate a report.
 Here's a configuration example with both options to generate a file and send to a push gateway:

@@ -5,7 +5,6 @@ weight: 5
 ---
 
 
-# Using resticprofile and systemd
 
 systemd is a common service manager in use by many Linux distributions.
 resticprofile has the ability to create systemd timer and service files.

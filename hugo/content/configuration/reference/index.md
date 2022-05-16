@@ -5,7 +5,7 @@ weight: 50
 ---
 
 
-# Configuration file reference
+## Configuration file reference
 
 `[global]`
 

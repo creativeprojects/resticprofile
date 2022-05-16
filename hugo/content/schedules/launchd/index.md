@@ -5,7 +5,7 @@ weight: 10
 ---
 
 
-# Using resticprofile and launchd on macOS
+
 
 `launchd` is the service manager on macOS. resticprofile can schedule a profile via a _user agent_ or a _daemon_ in launchd.
 

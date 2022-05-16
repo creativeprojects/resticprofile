@@ -5,7 +5,7 @@ weight: 15
 ---
 
 
-# Minimum memory required
+## Minimum memory required
 
 restic can be memory hungry. I'm running a few servers with no swap (I know: it is _bad_) and I managed to kill some of them during a backup.
 For that matter I've introduced a parameter in the `global` section called `min-memory`. The **default value is 100MB**. You can disable it by using a value of `0`.

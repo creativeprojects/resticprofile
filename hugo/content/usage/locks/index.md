@@ -5,7 +5,6 @@ weight: 20
 ---
 
 
-# Locks
 
 restic is already using a lock to avoid running some operations at the same time.
 

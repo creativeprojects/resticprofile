@@ -6,7 +6,7 @@ weight = 10
 +++
 
 
-# Configuration format
+# Configuration file
 
 * A configuration is a set of _profiles_.
 * Each profile is in its own `[section]`.
