@@ -124,3 +124,6 @@ brews:
       system "#{bin}/resticprofile", "backup", "testfile"
       system "#{bin}/resticprofile", "restore", "latest", "-t", "#{testpath}/restore"
       assert compare_file "testfile", "#{testpath}/restore/testfile"
+
+release:
+  draft: true

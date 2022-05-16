@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/pflag"
@@ -46,7 +46,8 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		flagset.PrintDefaults()
 		fmt.Println("\nresticprofile own commands:")
 		displayOwnCommands(os.Stdout)
-		fmt.Println("\nMore information: https://github.com/creativeprojects/resticprofile#using-resticprofile")
+		fmt.Println("\nDocumentation available at https://creativeprojects.github.io/resticprofile/")
+		fmt.Println("")
 	}
 
 	flags := commandLineFlags{}
@@ -100,7 +101,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	// parse first postitional argument as <profile>.<command> if the profile was not set via name
 	nameFlag := flagset.Lookup("name")
-	if (nameFlag == nil || !nameFlag.Changed) && strings.Contains(flags.resticArgs[0] , ".") {
+	if (nameFlag == nil || !nameFlag.Changed) && strings.Contains(flags.resticArgs[0], ".") {
 		// split first argument at `.`
 		profileAndCommand := strings.Split(flags.resticArgs[0], ".")
 		// last element will be used as restic command
