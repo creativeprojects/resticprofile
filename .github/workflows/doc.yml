@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - docs  # Set a branch to deploy
-  pull_request:
 
 jobs:
   deploy:
