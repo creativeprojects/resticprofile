@@ -1,4 +1,4 @@
-name: github pages
+name: documentation
 
 on:
   push:
