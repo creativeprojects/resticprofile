@@ -1,0 +1,272 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="height=device-height,width=device-width,initial-scale=1,minimum-scale=1"><meta name=generator content="Hugo 0.99.0"><meta name=generator content="Relearn 3.4.1+tip"><meta name=description content><title>Schedules :: resticprofile</title><link rel=alternate type=application/rss+xml href=https://creativeprojects.github.io/resticprofile/schedules/index.xml title=resticprofile><link href=https://creativeprojects.github.io/resticprofile/css/nucleus.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/theme.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1652822111 rel=stylesheet id=variant-style><link href=https://creativeprojects.github.io/resticprofile/css/variant.css?1652822111 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/print.css?1652822111 rel=stylesheet media=print><script src=https://creativeprojects.github.io/resticprofile/js/variant.js?1652822111></script>
+<script>var index_url="https://creativeprojects.github.io/resticprofile/index.json",baseUriFull,root_url="https://creativeprojects.github.io/resticprofile/",baseUri=root_url.replace(/\/$/,'');window.T_Copy_to_clipboard="Copy to clipboard",window.T_Copied_to_clipboard="Copied to clipboard!",window.T_Copy_link_to_clipboard="Copy link to clipboard",window.T_Link_copied_to_clipboard="Copied link to clipboard!",baseUriFull="https://creativeprojects.github.io/resticprofile/",variants.init(["relearn-light","relearn-dark"])</script><script src=https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1652822111></script></head><body class=mobile-support data-url=https://creativeprojects.github.io/resticprofile/schedules/><div id=body class=default-animation><div id=sidebar-overlay></div><div id=toc-overlay></div><nav id=topbar class=highlightable><div><div class=navigation><a class="nav nav-next" href=https://creativeprojects.github.io/resticprofile/schedules/systemd/ title=Systemd><i class="fas fa-chevron-right fa-fw"></i></a></div><div class=navigation><a class="nav nav-prev" href=https://creativeprojects.github.io/resticprofile/usage/locks/ title=Locks><i class="fas fa-chevron-left fa-fw"></i></a></div><div id=breadcrumbs><span id=sidebar-toggle-span><a href=# id=sidebar-toggle title=Menu><i class="fas fa-bars fa-fw"></i></a></span><ol class=links itemscope itemtype=http://schema.org/BreadcrumbList><meta itemprop=itemListOrder content="Descending"><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><meta itemprop=position content="2"><a itemprop=item href=https://creativeprojects.github.io/resticprofile/><span itemprop=name>resticprofile</span></a> ></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><meta itemprop=position content="1"><a itemprop=item href=https://creativeprojects.github.io/resticprofile/schedules/ aria-disabled=true><span itemprop=name>Schedules</span></a></li></ol></div></div></nav><main id=body-inner class="highlightable chapter"><div class=flex-block-wrapper><div id=head-tags></div><article class=chapter><h1 id=scheduled-backups>Scheduled backups</h1><p>resticprofile is capable of managing scheduled backups for you using:</p><ul><li><strong>launchd</strong> on macOS X</li><li><strong>Task Scheduler</strong> on Windows</li><li><strong>systemd</strong> where available (Linux and other BSDs)</li><li><strong>crond</strong> on supported platforms (Linux and other BSDs)</li></ul><p>On unixes (except macOS) resticprofile is using <strong>systemd</strong> by default. <strong>crond</strong> can be used instead if configured in <code>global</code> <code>scheduler</code> parameter:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span><span style=color:#f92672>global</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>scheduler</span>: <span style=color:#ae81ff>crond</span>
+</span></span></code></pre></div><p>Each profile can be scheduled independently (groups are not available for scheduling yet).</p><p>These 5 profile sections are accepting a schedule configuration:</p><ul><li>backup</li><li>check</li><li>forget (version 0.11.0)</li><li>prune (version 0.11.0)</li><li>copy (version 0.16.0)</li></ul><p>which mean you can schedule <code>backup</code>, <code>forget</code>, <code>prune</code>, <code>check</code> and <code>copy</code> independently (I recommend to use a local <code>lock</code> in this case).</p><h2 id=retention-schedule-is-deprecated>retention schedule is deprecated</h2><p><strong>Important</strong>:
+starting from version 0.11.0 the schedule of the <code>retention</code> section is <strong>deprecated</strong>: Use the <code>forget</code> section instead.</p><h2 id=schedule-configuration>Schedule configuration</h2><p>The schedule configuration consists of a few parameters which can be added on each profile:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span>[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>]
+</span></span><span style=display:flex><span><span style=color:#a6e22e>schedule</span> = <span style=color:#e6db74>&#34;*:00,30&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>schedule-permission</span> = <span style=color:#e6db74>&#34;system&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>schedule-priority</span> = <span style=color:#e6db74>&#34;background&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>schedule-log</span> = <span style=color:#e6db74>&#34;profile-backup.log&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>schedule-lock-mode</span> = <span style=color:#e6db74>&#34;default&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>schedule-lock-wait</span> = <span style=color:#e6db74>&#34;15m30s&#34;</span>
+</span></span></code></pre></div><h3 id=schedule-permission>schedule-permission</h3><p><code>schedule-permission</code> accepts two parameters: <code>user</code> or <code>system</code>:</p><ul><li><p><code>user</code>: your backup will be running using your current user permissions on files. This is fine if you&rsquo;re only saving your documents (or any other file inside your profile). Please note on <strong>systemd</strong> that the schedule <strong>will only run when your user is logged in</strong>.</p></li><li><p><code>system</code>: if you need to access some system or protected files. You will need to run resticprofile with <code>sudo</code> on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed).</p></li><li><p><em>empty</em>: resticprofile will try its best guess based on how you started it (with sudo or as a normal user) and fallback to <code>user</code></p></li></ul><h3 id=schedule-lock-mode>schedule-lock-mode</h3><p>Starting from version 0.14.0, <code>schedule-lock-mode</code> accepts 3 values:</p><ul><li><code>default</code>: Wait on acquiring a lock for the time duration set in <code>schedule-lock-wait</code>, before failing a schedule.
+Behaves like <code>fail</code> when <code>schedule-lock-wait</code> is &ldquo;0&rdquo; or not specified.</li><li><code>fail</code>: Any lock failure causes a schedule to abort immediately.</li><li><code>ignore</code>: Skip resticprofile locks. restic locks are not skipped and can abort the schedule.</li></ul><h3 id=schedule-lock-wait>schedule-lock-wait</h3><p>Sets the amount of time to wait for a resticprofile and restic lock to become available. Is only used when <code>schedule-lock-mode</code> is unset or <code>default</code>.</p><h3 id=schedule-log>schedule-log</h3><p>Allow to redirect all output from resticprofile and restic to a file</p><h3 id=schedule-priority-systemd-and-launchd-only>schedule-priority (systemd and launchd only)</h3><p>Starting from version 0.11.0, <code>schedule-priority</code> accepts two values:</p><ul><li><code>background</code>: the process shouldn&rsquo;t be noticeable when working on the machine at the same time (this is the default)</li><li><code>standard</code>: the process should get the same priority as any other process on the machine (but it won&rsquo;t run faster if you&rsquo;re not using the machine at the same time)</li></ul><p><code>schedule-priority</code> is not available for windows task scheduler, nor crond</p><h3 id=schedule>schedule</h3><p>The <code>schedule</code> parameter accepts many forms of input from the <a href=https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events>systemd calendar event</a> type. This is by far the easiest to use: <strong>It is the same format used to schedule on macOS and Windows</strong>.</p><p>The most general form is:</p><pre tabindex=0><code>weekdays year-month-day hour:minute:second
+</code></pre><ul><li>use <code>*</code> to mean any</li><li>use <code>,</code> to separate multiple entries</li><li>use <code>..</code> for a range</li></ul><p><strong>limitations</strong>:</p><ul><li>the divider (<code>/</code>), the <code>~</code> and timezones are not (yet?) supported on macOS and Windows.</li><li>the <code>year</code> and <code>second</code> fields have no effect on macOS. They do have limited availability on Windows (they don&rsquo;t make much sense anyway).</li></ul><p>Here are a few examples (taken from the systemd documentation):</p><pre tabindex=0><code>On the left is the user input, on the right is the full format understood by the system
+
+  Sat,Thu,Mon..Wed,Sat..Sun → Mon..Thu,Sat,Sun *-*-* 00:00:00
+      Mon,Sun 12-*-* 2,1:23 → Mon,Sun 2012-*-* 01,02:23:00
+                    Wed *-1 → Wed *-*-01 00:00:00
+           Wed..Wed,Wed *-1 → Wed *-*-01 00:00:00
+                 Wed, 17:48 → Wed *-*-* 17:48:00
+Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
+                *-*-7 0:0:0 → *-*-07 00:00:00
+                      10-15 → *-10-15 00:00:00
+        monday *-12-* 17:00 → Mon *-12-* 17:00:00
+     Mon,Fri *-*-3,1,2 *:30 → Mon,Fri *-*-01,02,03 *:30:00
+       12,14,13,12:20,10,30 → *-*-* 12,13,14:10,20,30:00
+            12..14:10,20,30 → *-*-* 12..14:10,20,30:00
+                03-05 08:05 → *-03-05 08:05:00
+                      05:40 → *-*-* 05:40:00
+        Sat,Sun 12-05 08:05 → Sat,Sun *-12-05 08:05:00
+              Sat,Sun 08:05 → Sat,Sun *-*-* 08:05:00
+           2003-03-05 05:40 → 2003-03-05 05:40:00
+             2003-02..04-05 → 2003-02..04-05 00:00:00
+                 2003-03-05 → 2003-03-05 00:00:00
+                      03-05 → *-03-05 00:00:00
+                     hourly → *-*-* *:00:00
+                      daily → *-*-* 00:00:00
+                    monthly → *-*-01 00:00:00
+                     weekly → Mon *-*-* 00:00:00
+                     yearly → *-01-01 00:00:00
+                   annually → *-01-01 00:00:00
+</code></pre><p>The <code>schedule</code> can be a string or an array of string (to allow for multiple schedules)</p><p>Here&rsquo;s an example of a YAML configuration:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>default</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>repository</span>: <span style=color:#e6db74>&#34;d:\\backup&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>password-file</span>: <span style=color:#ae81ff>key</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>self</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>inherit</span>: <span style=color:#ae81ff>default</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>retention</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>after-backup</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>keep-within</span>: <span style=color:#ae81ff>14d</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>backup</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>source</span>: <span style=color:#e6db74>&#34;.&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule</span>:
+</span></span><span style=display:flex><span>        - <span style=color:#e6db74>&#34;Mon..Fri *:00,15,30,45&#34;</span> <span style=color:#75715e># every 15 minutes on weekdays</span>
+</span></span><span style=display:flex><span>        - <span style=color:#e6db74>&#34;Sat,Sun 0,12:00&#34;</span>        <span style=color:#75715e># twice a day on week-ends</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-lock-wait</span>: <span style=color:#ae81ff>10m</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>prune</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule</span>: <span style=color:#e6db74>&#34;sun 3:30&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-lock-wait</span>: <span style=color:#ae81ff>1h</span>
+</span></span></code></pre></div><h2 id=scheduling-commands>Scheduling commands</h2><p>resticprofile accepts these internal commands:</p><ul><li>schedule</li><li>unschedule</li><li>status</li></ul><p>All internal commands either operate on the profile selected by <code>--name</code>, on the profiles selected by a group, or on all profiles when the flag <code>--all</code> is passed.</p><p>Examples:</p><pre tabindex=0><code>resticprofile --name profile schedule 
+resticprofile --name group schedule 
+resticprofile schedule --all 
+</code></pre><p>Please note, schedules are always independent of each other no matter whether they have been created with <code>--all</code>, by group or from a single profile.</p><h3 id=schedule-command>schedule command</h3><p>Install all the schedules defined on the selected profile or profiles.</p><p>Please note on systemd, we need to <code>start</code> the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you <strong>dont&rsquo; want</strong> to start (and enable) it now, pass the <code>--no-start</code> flag to the command line.</p><p>Also if you use the <code>--all</code> flag to schedule all your profiles at once, make sure you use only the <code>user</code> mode or <code>system</code> mode. A combination of both would not schedule the tasks properly:</p><ul><li>if the user is not privileged, only the <code>user</code> tasks will be scheduled</li><li>if the user <strong>is</strong> privileged, <strong>all schedule will end-up as a <code>system</code> schedule</strong></li></ul><h3 id=unschedule-command>unschedule command</h3><p>Remove all the schedules defined on the selected profile or profiles.</p><h3 id=status-command>status command</h3><p>Print the status on all the installed schedules of the selected profile or profiles.</p><p>The display of the <code>status</code> command will be OS dependant. Please see the examples below on which output you can expect from it.</p><h3 id=examples-of-scheduling-commands-under-windows>Examples of scheduling commands under Windows</h3><p>If you create a task with <code>user</code> permission under Windows, you will need to enter your password to validate the task. It&rsquo;s a requirement of the task scheduler. I&rsquo;m inviting you to review the code to make sure I&rsquo;m not emailing your password to myself. Seriously you shouldn&rsquo;t trust anyone.</p><p>Example of the <code>schedule</code> command under Windows (with git bash):</p><pre tabindex=0><code>$ resticprofile -c examples/windows.yaml -n self schedule
+
+Analyzing backup schedule 1/2
+=================================
+  Original form: Mon..Fri *:00,15,30,45
+Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
+    Next elapse: Wed Jul 22 21:30:00 BST 2020
+       (in UTC): Wed Jul 22 20:30:00 UTC 2020
+       From now: 1m52s left
+
+Analyzing backup schedule 2/2
+=================================
+  Original form: Sat,Sun 0,12:00
+Normalized form: Sat,Sun *-*-* 00,12:00:00
+    Next elapse: Sat Jul 25 00:00:00 BST 2020
+       (in UTC): Fri Jul 24 23:00:00 UTC 2020
+       From now: 50h31m52s left
+
+Creating task for user Creative Projects
+Task Scheduler requires your Windows password to validate the task: 
+
+2020/07/22 21:28:15 scheduled job self/backup created
+
+Analyzing retention schedule 1/1
+=================================
+  Original form: sun 3:30
+Normalized form: Sun *-*-* 03:30:00
+    Next elapse: Sun Jul 26 03:30:00 BST 2020
+       (in UTC): Sun Jul 26 02:30:00 UTC 2020
+       From now: 78h1m44s left
+
+2020/07/22 21:28:22 scheduled job self/retention created
+</code></pre><p>To see the status of the triggers, you can use the <code>status</code> command:</p><pre tabindex=0><code>$ resticprofile -c examples/windows.yaml -n self status
+
+Analyzing backup schedule 1/2
+=================================
+  Original form: Mon..Fri *:00,15,30,45
+Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
+    Next elapse: Wed Jul 22 21:30:00 BST 2020
+       (in UTC): Wed Jul 22 20:30:00 UTC 2020
+       From now: 14s left
+
+Analyzing backup schedule 2/2
+=================================
+  Original form: Sat,Sun 0,12:*
+Normalized form: Sat,Sun *-*-* 00,12:*:00
+    Next elapse: Sat Jul 25 00:00:00 BST 2020
+       (in UTC): Fri Jul 24 23:00:00 UTC 2020
+       From now: 50h29m46s left
+
+           Task: \resticprofile backup\self backup
+           User: Creative Projects
+    Working Dir: D:\Source\resticprofile
+           Exec: D:\Source\resticprofile\resticprofile.exe --no-ansi --config examples/windows.yaml --name self backup
+        Enabled: true
+          State: ready
+    Missed runs: 0
+  Last Run Time: 2020-07-22 21:30:00 +0000 UTC
+    Last Result: 0
+  Next Run Time: 2020-07-22 21:45:00 +0000 UTC
+
+Analyzing retention schedule 1/1
+=================================
+  Original form: sun 3:30
+Normalized form: Sun *-*-* 03:30:00
+    Next elapse: Sun Jul 26 03:30:00 BST 2020
+       (in UTC): Sun Jul 26 02:30:00 UTC 2020
+       From now: 77h59m46s left
+
+           Task: \resticprofile backup\self retention
+           User: Creative Projects
+    Working Dir: D:\Source\resticprofile
+           Exec: D:\Source\resticprofile\resticprofile.exe --no-ansi --config examples/windows.yaml --name self forget
+        Enabled: true
+          State: ready
+    Missed runs: 0
+  Last Run Time: 1999-11-30 00:00:00 +0000 UTC
+    Last Result: 267011
+  Next Run Time: 2020-07-26 03:30:00 +0000 UTC
+</code></pre><p>To remove the schedule, use the <code>unschedule</code> command:</p><pre tabindex=0><code>$ resticprofile -c examples/windows.yaml -n self unschedule
+2020/07/22 21:34:51 scheduled job self/backup removed
+2020/07/22 21:34:51 scheduled job self/retention removed
+</code></pre><h3 id=examples-of-scheduling-commands-under-linux>Examples of scheduling commands under Linux</h3><p>With this example of configuration for Linux:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>default</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>password-file</span>: <span style=color:#ae81ff>key</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>repository</span>: <span style=color:#ae81ff>/tmp/backup</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>test1</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>inherit</span>: <span style=color:#ae81ff>default</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>backup</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>source</span>: <span style=color:#ae81ff>./</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule</span>: <span style=color:#e6db74>&#34;*:00,15,30,45&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-lock-wait</span>: <span style=color:#ae81ff>15m</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>check</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule</span>: <span style=color:#e6db74>&#34;*-*-1&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-lock-wait</span>: <span style=color:#ae81ff>15m</span>
+</span></span></code></pre></div><pre tabindex=0><code>$ resticprofile -c examples/linux.yaml -n test1 schedule
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:00,15,30,45
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Thu 2020-07-23 17:15:00 BST
+       (in UTC): Thu 2020-07-23 16:15:00 UTC
+       From now: 6min left
+
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.service
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer
+Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer.
+2020/07/23 17:08:51 scheduled job test1/backup created
+
+Analyzing check schedule 1/1
+=================================
+  Original form: *-*-1
+Normalized form: *-*-01 00:00:00
+    Next elapse: Sat 2020-08-01 00:00:00 BST
+       (in UTC): Fri 2020-07-31 23:00:00 UTC
+       From now: 1 weeks 1 days left
+
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.service
+2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer
+Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer.
+2020/07/23 17:08:51 scheduled job test1/check created
+</code></pre><p>The <code>status</code> command shows a combination of <code>journalctl</code> displaying errors (only) in the last month and <code>systemctl status</code>:</p><pre tabindex=0><code>$ resticprofile -c examples/linux.yaml -n test1 status
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:00,15,30,45
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Tue 2020-07-28 15:15:00 BST
+       (in UTC): Tue 2020-07-28 14:15:00 UTC
+       From now: 4min 44s left
+
+Recent log (&gt;= warning in the last month)
+==========================================
+-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
+Jul 27 20:48:01 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
+Jul 27 21:00:55 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
+Jul 27 21:15:34 Desktop76 systemd[2986]: Failed to start resticprofile backup for profile test1 in examples/linux.yaml.
+
+Systemd timer status
+=====================
+● resticprofile-backup@profile-test1.timer - backup timer for profile test1 in examples/linux.yaml
+   Loaded: loaded (/home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer; enabled; vendor preset: enabled)
+   Active: active (waiting) since Tue 2020-07-28 15:10:06 BST; 8s ago
+  Trigger: Tue 2020-07-28 15:15:00 BST; 4min 44s left
+
+Jul 28 15:10:06 Desktop76 systemd[2951]: Started backup timer for profile test1 in examples/linux.yaml.
+
+
+Analyzing check schedule 1/1
+=================================
+  Original form: *-*-1
+Normalized form: *-*-01 00:00:00
+    Next elapse: Sat 2020-08-01 00:00:00 BST
+       (in UTC): Fri 2020-07-31 23:00:00 UTC
+       From now: 3 days left
+
+Recent log (&gt;= warning in the last month)
+==========================================
+-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
+Jul 27 19:39:59 Desktop76 systemd[2986]: Failed to start resticprofile check for profile test1 in examples/linux.yaml.
+
+Systemd timer status
+=====================
+● resticprofile-check@profile-test1.timer - check timer for profile test1 in examples/linux.yaml
+   Loaded: loaded (/home/user/.config/systemd/user/resticprofile-check@profile-test1.timer; enabled; vendor preset: enabled)
+   Active: active (waiting) since Tue 2020-07-28 15:10:07 BST; 7s ago
+  Trigger: Sat 2020-08-01 00:00:00 BST; 3 days left
+
+Jul 28 15:10:07 Desktop76 systemd[2951]: Started check timer for profile test1 in examples/linux.yaml.
+</code></pre><p>And <code>unschedule</code>:</p><pre tabindex=0><code>$ resticprofile -c examples/linux.yaml -n test1 unschedule
+Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer.
+2020/07/23 17:13:42 scheduled job test1/backup removed
+Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer.
+2020/07/23 17:13:42 scheduled job test1/check removed
+</code></pre><h3 id=examples-of-scheduling-commands-under-macos>Examples of scheduling commands under macOS</h3><p>macOS has a very tight protection system when running scheduled tasks (also called agents).</p><p>Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task, which consists on a few popup windows (you can disable this behavior by adding the flag <code>--no-start</code> after the schedule command).</p><p>Here&rsquo;s an example of scheduling a backup to Azure (which needs network access):</p><pre tabindex=0><code>% resticprofile -v -c examples/private/azure.yaml -n self schedule
+
+Analyzing backup schedule 1/1
+=================================
+  Original form: *:0,15,30,45:00
+Normalized form: *-*-* *:00,15,30,45:00
+    Next elapse: Tue Jul 28 23:00:00 BST 2020
+       (in UTC): Tue Jul 28 22:00:00 UTC 2020
+       From now: 2m34s left
+
+
+By default, a macOS agent access is restricted. If you leave it to start in the background it&#39;s likely to fail.
+You have to start it manually the first time to accept the requests for access:
+
+% launchctl start local.resticprofile.self.backup
+
+Do you want to start it now? (Y/n):
+2020/07/28 22:57:26 scheduled job self/backup created
+</code></pre><p>Right after you started the profile, you should get some popup asking you to grant access to various files/folders/network.</p><p>If you backup your files to an external repository on a network, you should get this popup window:</p><p><img src=https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png alt="&amp;ldquo;resticprofile&amp;rdquo; would like to access files on a network volume"></p><p><strong>Note:</strong>
+If you prefer not being asked, you can add the <code>--no-start</code> flag like so:</p><pre tabindex=0><code>% resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
+</code></pre><h2 id=changing-schedule-permission-from-user-to-system-or-system-to-user>Changing schedule-permission from user to system, or system to user</h2><p>If you need to change the permission of a schedule, <strong>please be sure to <code>unschedule</code> the profile before</strong>.</p><p>This order is important:</p><ul><li><code>unschedule</code> the job first. resticprofile does <strong>not</strong> keep track of how your profile <strong>was</strong> installed, so you have to remove the schedule first</li><li>now you can change your permission (<code>user</code> to <code>system</code>, or <code>system</code> to <code>user</code>)</li><li><code>schedule</code> your updated profile</li></ul><footer class=footline></footer></article></div></main></div><aside id=sidebar class=default-animation><div id=header-wrapper class=default-animation><div id=header class=default-animation><style>a#logo{color:#282828;color:var(--MENU-SECTIONS-BG-color);font-family:work sans,helvetica,tahoma,geneva,arial,sans-serif;font-size:30px;font-weight:300;margin-top:-13px;max-width:60%;text-transform:uppercase;width:226px;white-space:nowrap}a#logo:hover{color:#282828;color:var(--MENU-SECTIONS-BG-color)}@media only all and (max-width:59.938em){a#logo{font-size:25px;margin-top:-3px}}</style><a id=logo href=https://creativeprojects.github.io/resticprofile/>Resticprofile</a></div><div class="searchbox default-animation"><label for=search-by><i class="fas fa-search"></i></label>
+<input data-search-input id=search-by type=search placeholder=Search...>
+<span data-search-clear><i class="fas fa-times"></i></span></div><script src=https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1652822111></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1652822111></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/search.js?1652822111></script></div><div id=homelinks class=default-animation><ul><li><a class=padding href=https://creativeprojects.github.io/resticprofile/><i class="fas fa-home"></i> Home</a></li></ul></div><div id=content-wrapper class=highlightable><ul class="topics collapsible-menu"><li data-nav-id=/installation/ title=Installation class=dd-item><input type=checkbox id=section-07cca5796d23f5bae96340e1eaa52bc5 class=toggle><label for=section-07cca5796d23f5bae96340e1eaa52bc5></label><a href=https://creativeprojects.github.io/resticprofile/installation/><b>1. </b>Installation</a><ul><li data-nav-id=/installation/linux/ title=Linux class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/linux/>Linux</a></li><li data-nav-id=/installation/macosx/ title="mac OS X" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/macosx/>mac OS X</a></li><li data-nav-id=/installation/windows/ title=Windows class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/windows/>Windows</a></li><li data-nav-id=/installation/ansible/ title=Ansible class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/ansible/>Ansible</a></li><li data-nav-id=/installation/source/ title=Source class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/source/>Source</a></li><li data-nav-id=/installation/upgrade/ title=Upgrade class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/upgrade/>Upgrade</a></li><li data-nav-id=/installation/docker/ title=Docker class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/docker/>Docker</a></li><li data-nav-id=/installation/shell/ title="Shell Completion" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/shell/>Shell Completion</a></li></ul></li><li data-nav-id=/configuration/ title=Configuration class=dd-item><input type=checkbox id=section-632bb56b075027697eb90eb7e3d29a12 class=toggle><label for=section-632bb56b075027697eb90eb7e3d29a12></label><a href=https://creativeprojects.github.io/resticprofile/configuration/><b>2. </b>Configuration</a><ul><li data-nav-id=/configuration/examples/ title=Examples class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/examples/>Examples</a></li><li data-nav-id=/configuration/path/ title=Path class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/path/>Path</a></li><li data-nav-id=/configuration/include/ title=Include class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/include/>Include</a></li><li data-nav-id=/configuration/hooks/ title=Hooks class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/hooks/>Hooks</a></li><li data-nav-id=/configuration/variables/ title=Variables class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/variables/>Variables</a></li><li data-nav-id=/configuration/templates/ title="Configuration templates" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/templates/>Configuration templates</a></li><li data-nav-id=/configuration/warnings/ title=Warnings class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/warnings/>Warnings</a></li><li data-nav-id=/configuration/reference/ title=Reference class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/reference/>Reference</a></li></ul></li><li data-nav-id=/usage/ title=Usage class=dd-item><input type=checkbox id=section-03639a5661feed360d88d7c5ddbc54ac class=toggle><label for=section-03639a5661feed360d88d7c5ddbc54ac></label><a href=https://creativeprojects.github.io/resticprofile/usage/><b>3. </b>Usage</a><ul><li data-nav-id=/usage/version/ title=Version class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/version/>Version</a></li><li data-nav-id=/usage/keyfile/ title=Keyfile class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/keyfile/>Keyfile</a></li><li data-nav-id=/usage/memory/ title=Memory class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/memory/>Memory</a></li><li data-nav-id=/usage/locks/ title=Locks class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/locks/>Locks</a></li></ul></li><li data-nav-id=/schedules/ title=Schedules class="dd-item active parent"><input type=checkbox id=section-87baf7cbc6382c50c9c5ba4cd8fe677c class=toggle checked><label for=section-87baf7cbc6382c50c9c5ba4cd8fe677c></label><a href=https://creativeprojects.github.io/resticprofile/schedules/><b>4. </b>Schedules</a><ul><li data-nav-id=/schedules/systemd/ title=Systemd class=dd-item><a href=https://creativeprojects.github.io/resticprofile/schedules/systemd/>Systemd</a></li><li data-nav-id=/schedules/launchd/ title=Launchd class=dd-item><a href=https://creativeprojects.github.io/resticprofile/schedules/launchd/>Launchd</a></li></ul></li><li data-nav-id=/status/ title=Status class=dd-item><input type=checkbox id=section-b59a464d04a72be2d6c2f9673b1d306d class=toggle><label for=section-b59a464d04a72be2d6c2f9673b1d306d></label><a href=https://creativeprojects.github.io/resticprofile/status/><b>5. </b>Status</a><ul><li data-nav-id=/status/prometheus/ title=Prometheus class=dd-item><a href=https://creativeprojects.github.io/resticprofile/status/prometheus/>Prometheus</a></li></ul></li><li data-nav-id=/contributions/ title=Contributions class=dd-item><a href=https://creativeprojects.github.io/resticprofile/contributions/><b>6. </b>Contributions</a></li></ul><div class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div><hr class="default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"><div id=prefooter class="footerLangSwitch footerVariantSwitch footerVisitedLinks showVariantSwitch"><ul><li id=select-language-container class=footerLangSwitch><a class="padding select-container"><i class="fas fa-language fa-fw"></i>
+<span>&nbsp;</span><div class=select-style><select id=select-language onchange="location=baseUri+this.value"></select></div><div class=select-clear></div></a></li><li id=select-variant-container class="footerVariantSwitch showVariantSwitch"><a class="padding select-container"><i class="fas fa-paint-brush fa-fw"></i>
+<span>&nbsp;</span><div class=select-style><select id=select-variant onchange=variants.changeVariant(this.value)><option id=relearn-light value=relearn-light selected>Relearn Light</option><option id=relearn-dark value=relearn-dark>Relearn Dark</option></select></div><div class=select-clear></div></a><script>variants.markSelectedVariant()</script></li><li class=footerVisitedLinks><a class=padding href=# data-clear-history-toggle><i class="fas fa-history fa-fw"></i> Clear History</a></li></ul></div><div id=footer class="footerFooter showFooter"><style>#footer{font-size:13px;height:100px;margin-left:auto;margin-right:auto;padding:2rem 1rem;text-align:center;min-width:230px;max-width:300px}#footer p{margin:0}</style><a class=github-button href=https://github.com/creativeprojects/resticprofile data-size=large data-show-count=true aria-label="Star creativeprojects/resticprofile on GitHub">Star</a><p>Built with <a href=https://github.com/McShelby/hugo-theme-relearn><i class="fas fa-heart"></i></a> by <a href=https://gohugo.io/>Hugo</a></p><script async defer src=https://buttons.github.io/buttons.js></script></div></div></aside><script src=https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1652822111></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1652822111></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1652822111></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/theme.js?1652822111></script></body></html>
