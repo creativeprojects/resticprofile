@@ -3,7 +3,7 @@ canonifyURLs = true
 languageCode = 'en-gb'
 title = 'resticprofile'
 theme = "hugo-theme-relearn"
-publishdir = "../docs/"
+publishdir = "../public/"
 
 # For search functionality
 [outputs]
