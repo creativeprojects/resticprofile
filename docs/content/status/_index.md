@@ -14,10 +14,45 @@ But sometimes we just need something simple that a monitoring system can regular
 
 In your profile, you simply need to add a new parameter, which is the location of your status file
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
 ```toml
 [profile]
 status-file = "backup-status.json"
 ```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+profile:
+  status-file: backup-status.json
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"profile" {
+  "status-file" = "backup-status.json"
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "profile": {
+    "status-file": "backup-status.json"
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 Here's an example of a generated file, where you can see that the last `check` failed, whereas the last `backup` succeeded:
 

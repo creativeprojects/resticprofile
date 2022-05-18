@@ -67,6 +67,7 @@ func findConfiguration(path string) bool {
 	defer file.Close()
 
 	noError := true
+	ignoreError := false
 	configType := ""
 	configLines := false
 	configBuffer := &bytes.Buffer{}
@@ -84,12 +85,15 @@ func findConfiguration(path string) bool {
 					cfg, err := config.Load(configBuffer, configType)
 					if err != nil {
 						clog.Error(err)
-						noError = false
+						if !ignoreError {
+							noError = false
+						}
 					}
 					if cfg == nil {
 						clog.Errorf("empty %s configuration", configType)
 						noError = false
 					}
+					ignoreError = false
 					return
 				}
 				configType = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), configTag))
@@ -102,7 +106,10 @@ func findConfiguration(path string) bool {
 			}
 			if configLines {
 				configBuffer.WriteString(line)
-				configBuffer.Write([]byte("\n"))
+				configBuffer.WriteString("\n")
+			}
+			if line == "<!-- checkdoc-ignore -->" {
+				ignoreError = true
 			}
 		}(scanner.Text())
 	}
