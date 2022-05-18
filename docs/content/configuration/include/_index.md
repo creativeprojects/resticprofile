@@ -7,7 +7,7 @@ weight: 15
 The configuration may be split into multiple files by adding `includes = "glob-pattern"` to the main configuration file. 
 E.g. the following `profiles.conf` loads configurations from `conf.d` and `profiles.d`:
 
-{{< tabs groupId="config-with-hcl" >}}
+{{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
 ```toml
@@ -16,7 +16,7 @@ includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 
 # Defaults
 [global]
-initialize = true
+  initialize = true
 ```
 
 
@@ -44,6 +44,22 @@ includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 
 global {
   initialize = true
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "includes": [
+    "conf.d/*.conf",
+    "profiles.d/*.yaml",
+    "profiles.d/*.toml"
+  ],
+  "global": {
+    "initialize": true
+  }
 }
 ```
 

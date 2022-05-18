@@ -9,20 +9,19 @@ weight = 10
 # Configuration file
 
 * A configuration is a set of _profiles_.
-* Each profile is in its own `[section]`.
+* Each profile is in its own `[section]` (in TOML).
 * Inside each profile, you can specify different flags for each command.
-* A command definition is `[section.command]`.
+* A command definition is `[section.command]` (in TOML).
 
 All the restic flags can be defined in a section. For most of them you just need to remove the two dashes in front.
 
-To set the flag `--password-file password.txt` you need to add a line like
-```
-password-file = "password.txt"
-```
+To set the flag `--password-file`, the name of the parameter is simply `password-file`.
 
 There's **one exception**: the flag `--repo` is named `repository` in the configuration
 
-Let's say you normally use this command:
+## Example 
+
+So let's say you normally use this simple command:
 
 ```
 restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
@@ -100,10 +99,21 @@ default {
 
 You may have noticed the `source` flag is accepting an array of values (inside brackets in TOML, list of values in YAML)
 
-Now, assuming this configuration file is named `profiles.conf` in the current folder, you can simply run
+Now, assuming this configuration file is named `profiles.conf` in the current folder (it's the default config file name), you can simply run
 
 ```
-resticprofile backup
+$ resticprofile backup
+```
+
+and resticprofile will do its magic and generate the command line for you.
+
+If you have any doubt on what it's running, you can try a `--dry-run`:
+
+```
+$ resticprofile --dry-run backup
+2022/05/18 17:14:07 profile 'default': starting 'backup'
+2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file key --repo local:/backup --verbose /home
+2022/05/18 17:14:07 profile 'default': finished 'backup'
 ```
 
 ## Path resolution in configuration

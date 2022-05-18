@@ -10,7 +10,7 @@ Templates are a great way to compose configuration profiles.
 
 Please keep in mind that `yaml` files are sensitive to the number of spaces. Also if you declare a block already declared, it overrides the previous declaration (instead of merging them).
 
-For that matter, configuration template is probably more useful if you use the `toml` or `hcl` configuration format.
+For that matter, configuration templates are probably more useful if you use the `toml` or `hcl` configuration format.
 
 Here's a simple example
 
@@ -30,9 +30,12 @@ Note the **dot** after the name: it's used to pass the variables to the template
 
 Here's a working example:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
 ```toml
 #
-# This is an example of TOML configuration using nested templates
+# This is an example of configuration using nested templates
 #
 
 # nested template declarations
@@ -125,6 +128,283 @@ inherit = "azure"
     schedule = "03:18"
 
 ```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+
+```yaml
+#
+# This is an example of configuration using nested templates
+#
+
+# nested template declarations
+# this template declaration won't appear here in the configuration file
+# it will only appear when called by {{ template "backup_root" . }}
+
+{{ define "backup_root" }}
+    exclude:
+      - '{{ .Profile.Name }}-backup.log'
+    exclude-file:
+      - '{{ .ConfigDir }}/root-excludes'
+      - '{{ .ConfigDir }}/excludes'
+    exclude-caches: true
+    tag:
+      - root
+    source:
+      - /
+{{ end }}
+
+global:
+  priority: low
+  ionice: true
+  ionice-class: 2
+  ionice-level: 6
+
+base:
+  status-file: '{{ .Env.HOME }}/status.json'
+  snapshots:
+    host: true
+  retention:
+    host: true
+    after-backup: true
+    keep-within: 30d
+
+nas:
+  inherit: base
+  repository: >-
+    rest:http://{{ .Env.BACKUP_REST_USER }}:{{ .Env.BACKUP_REST_PASSWORD
+    }}@nas:8000/root
+  password-file: nas-key
+
+nas-root:
+  inherit: nas
+  backup:
+    # get the content of "backup_root" defined at the top
+    {{ template "backup_root" . }}
+    schedule: '01:47'
+    schedule-permission: system
+    schedule-log: '{{ .Profile.Name }}-backup.log'
+
+azure:
+  inherit: base
+  repository: 'azure:restic:/'
+  password-file: azure-key
+  lock: /tmp/resticprofile-azure.lock
+  backup:
+    schedule-permission: system
+    schedule-log: '{{ .Profile.Name }}-backup.log'
+
+azure-root:
+  inherit: azure
+  backup:
+    # get the content of "backup_root" defined at the top
+    {{ template "backup_root" . }}
+    schedule: '03:58'
+
+azure-mysql:
+  inherit: azure
+  backup:
+    tag:
+      - mysql
+    run-before:
+      - rm -f /tmp/mysqldumpall.sql
+      - >-
+        mysqldump -u{{ .Env.MYSQL_BACKUP_USER }} -p{{ .Env.MYSQL_BACKUP_PASSWORD
+        }} --all-databases > /tmp/mysqldumpall.sql
+    source: /tmp/mysqldumpall.sql
+    run-after:
+      - rm -f /tmp/mysqldumpall.sql
+    schedule: '03:18'
+```
+
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+#
+# This is an example of configuration using nested templates
+#
+
+# nested template declarations
+# this template declaration won't appear here in the configuration file
+# it will only appear when called by {{ template "backup_root" . }}
+
+{{ define "backup_root" }}
+  "exclude" = ["{{ .Profile.Name }}-backup.log"]
+  "exclude-file" = ["{{ .ConfigDir }}/root-excludes", "{{ .ConfigDir }}/excludes"]
+  "exclude-caches" = true
+  "tag" = ["root"]
+  "source" = ["/"]
+{{end}}
+
+"global" = {
+  "priority" = "low"
+  "ionice" = true
+  "ionice-class" = 2
+  "ionice-level" = 6
+}
+
+"base" = {
+  "status-file" = "{{ .Env.HOME }}/status.json"
+
+  "snapshots" = {
+    "host" = true
+  }
+
+  "retention" = {
+    "host" = true
+    "after-backup" = true
+    "keep-within" = "30d"
+  }
+}
+
+"nas" = {
+  "inherit" = "base"
+  "repository" = "rest:http://{{ .Env.BACKUP_REST_USER }}:{{ .Env.BACKUP_REST_PASSWORD }}@nas:8000/root"
+  "password-file" = "nas-key"
+}
+
+"nas-root" = {
+  "inherit" = "nas"
+
+  "backup" = {
+    # get the content of "backup_root" defined at the top
+    {{ template "backup_root" . }}
+    "schedule" = "01:47"
+    "schedule-permission" = "system"
+    "schedule-log" = "{{ .Profile.Name }}-backup.log"
+  }
+}
+
+"azure" = {
+  "inherit" = "base"
+  "repository" = "azure:restic:/"
+  "password-file" = "azure-key"
+  "lock" = "/tmp/resticprofile-azure.lock"
+
+  "backup" = {
+    "schedule-permission" = "system"
+    "schedule-log" = "{{ .Profile.Name }}-backup.log"
+  }
+}
+
+"azure-root" = {
+  "inherit" = "azure"
+
+  "backup" = {
+    # get the content of "backup_root" defined at the top
+    {{ template "backup_root" . }}
+    "schedule" = "03:58"
+  }
+}
+
+"azure-mysql" = {
+  "inherit" = "azure"
+
+  "backup" = {
+    "tag" = ["mysql"]
+    "run-before" = ["rm -f /tmp/mysqldumpall.sql", "mysqldump -u{{ .Env.MYSQL_BACKUP_USER }} -p{{ .Env.MYSQL_BACKUP_PASSWORD }} --all-databases > /tmp/mysqldumpall.sql"]
+    "source" = "/tmp/mysqldumpall.sql"
+    "run-after" = ["rm -f /tmp/mysqldumpall.sql"]
+    "schedule" = "03:18"
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{{ define "backup_root" }}
+    "exclude": [
+      "{{ .Profile.Name }}-backup.log"
+    ],
+    "exclude-file": [
+      "{{ .ConfigDir }}/root-excludes",
+      "{{ .ConfigDir }}/excludes"
+    ],
+    "exclude-caches": true,
+    "tag": [
+      "root"
+    ],
+    "source": [
+      "/"
+    ],
+{{ end }}
+{
+  "global": {
+    "priority": "low",
+    "ionice": true,
+    "ionice-class": 2,
+    "ionice-level": 6
+  },
+  "base": {
+    "status-file": "{{ .Env.HOME }}/status.json",
+    "snapshots": {
+      "host": true
+    },
+    "retention": {
+      "host": true,
+      "after-backup": true,
+      "keep-within": "30d"
+    }
+  },
+  "nas": {
+    "inherit": "base",
+    "repository": "rest:http://{{ .Env.BACKUP_REST_USER }}:{{ .Env.BACKUP_REST_PASSWORD }}@nas:8000/root",
+    "password-file": "nas-key"
+  },
+  "nas-root": {
+    "inherit": "nas",
+    "backup": {
+      {{ template "backup_root" . }}
+      "schedule": "01:47",
+      "schedule-permission": "system",
+      "schedule-log": "{{ .Profile.Name }}-backup.log"
+    }
+  },
+  "azure": {
+    "inherit": "base",
+    "repository": "azure:restic:/",
+    "password-file": "azure-key",
+    "lock": "/tmp/resticprofile-azure.lock",
+    "backup": {
+      "schedule-permission": "system",
+      "schedule-log": "{{ .Profile.Name }}-backup.log"
+    }
+  },
+  "azure-root": {
+    "inherit": "azure",
+    "backup": {
+      {{ template "backup_root" . }}
+      "schedule": "03:58"
+    }
+  },
+  "azure-mysql": {
+    "inherit": "azure",
+    "backup": {
+      "tag": [
+        "mysql"
+      ],
+      "run-before": [
+        "rm -f /tmp/mysqldumpall.sql",
+        "mysqldump -u{{ .Env.MYSQL_BACKUP_USER }} -p{{ .Env.MYSQL_BACKUP_PASSWORD }} --all-databases > /tmp/mysqldumpall.sql"
+      ],
+      "source": "/tmp/mysqldumpall.sql",
+      "run-after": [
+        "rm -f /tmp/mysqldumpall.sql"
+      ],
+      "schedule": "03:18"
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 # Debugging your template and variable expansion
 
