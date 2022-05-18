@@ -5,7 +5,7 @@ on:
     branches:
       - docs  # Set a branch to deploy
     paths:
-      - "/docs/**"
+      - "docs/**"
   
 jobs:
   deploy:
