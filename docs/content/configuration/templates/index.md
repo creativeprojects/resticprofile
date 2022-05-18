@@ -53,79 +53,79 @@ Here's a working example:
 {{ end }}
 
 [global]
-priority = "low"
-ionice = true
-ionice-class = 2
-ionice-level = 6
+  priority = "low"
+  ionice = true
+  ionice-class = 2
+  ionice-level = 6
 
 [base]
-status-file = "{{ .Env.HOME }}/status.json"
+  status-file = "{{ .Env.HOME }}/status.json"
 
     [base.snapshots]
-    host = true
+      host = true
 
     [base.retention]
-    host = true
-    after-backup = true
-    keep-within = "30d"
+      host = true
+      after-backup = true
+      keep-within = "30d"
 
 #########################################################
 
 [nas]
-inherit = "base"
-repository = "rest:http://{{ .Env.BACKUP_REST_USER }}:{{ .Env.BACKUP_REST_PASSWORD }}@nas:8000/root"
-password-file = "nas-key"
+  inherit = "base"
+  repository = "rest:http://{{ .Env.BACKUP_REST_USER }}:{{ .Env.BACKUP_REST_PASSWORD }}@nas:8000/root"
+  password-file = "nas-key"
 
 # root
 
 [nas-root]
-inherit = "nas"
+  inherit = "nas"
 
     [nas-root.backup]
-    # get the content of "backup_root" defined at the top
-    {{ template "backup_root" . }}
-    schedule = "01:47"
-    schedule-permission = "system"
-    schedule-log = "{{ .Profile.Name }}-backup.log"
+      # get the content of "backup_root" defined at the top
+      {{ template "backup_root" . }}
+      schedule = "01:47"
+      schedule-permission = "system"
+      schedule-log = "{{ .Profile.Name }}-backup.log"
 
 #########################################################
 
 [azure]
-inherit = "base"
-repository = "azure:restic:/"
-password-file = "azure-key"
-lock = "/tmp/resticprofile-azure.lock"
+  inherit = "base"
+  repository = "azure:restic:/"
+  password-file = "azure-key"
+  lock = "/tmp/resticprofile-azure.lock"
 
     [azure.backup]
-    schedule-permission = "system"
-    schedule-log = "{{ .Profile.Name }}-backup.log"
+      schedule-permission = "system"
+      schedule-log = "{{ .Profile.Name }}-backup.log"
 
 # root
 
 [azure-root]
-inherit = "azure"
+  inherit = "azure"
 
     [azure-root.backup]
-    # get the content of "backup_root" defined at the top
-    {{ template "backup_root" . }}
-    schedule = "03:58"
+      # get the content of "backup_root" defined at the top
+      {{ template "backup_root" . }}
+      schedule = "03:58"
 
 # mysql
 
 [azure-mysql]
-inherit = "azure"
+  inherit = "azure"
 
     [azure-mysql.backup]
-    tag = [ "mysql" ]
-    run-before = [
-        "rm -f /tmp/mysqldumpall.sql",
-        "mysqldump -u{{ .Env.MYSQL_BACKUP_USER }} -p{{ .Env.MYSQL_BACKUP_PASSWORD }} --all-databases > /tmp/mysqldumpall.sql"
-    ]
-    source = "/tmp/mysqldumpall.sql"
-    run-after = [
-        "rm -f /tmp/mysqldumpall.sql"
-    ]
-    schedule = "03:18"
+      tag = [ "mysql" ]
+      run-before = [
+          "rm -f /tmp/mysqldumpall.sql",
+          "mysqldump -u{{ .Env.MYSQL_BACKUP_USER }} -p{{ .Env.MYSQL_BACKUP_PASSWORD }} --all-databases > /tmp/mysqldumpall.sql"
+      ]
+      source = "/tmp/mysqldumpall.sql"
+      run-after = [
+          "rm -f /tmp/mysqldumpall.sql"
+      ]
+      schedule = "03:18"
 
 ```
 
@@ -406,17 +406,18 @@ azure-mysql:
 {{% /tabs %}}
 
 
-# Debugging your template and variable expansion
+## Debugging your template and variable expansion
 
-If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the `--trace` flag.
+If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the `--trace` flag. We will see it in action in a moment.
 
-# Limitations of using templates
+## Limitations of using templates
 
 There's something to be aware of when dealing with templates: at the time the template is compiled, it has no knowledge of what the end configuration should look like: it has no knowledge of profiles for example. Here is a **non-working** example of what I mean:
 
+<!-- checkdoc-ignore -->
 ```toml
 {{ define "retention" }}
-    [{{ .Profile.Name }}.retention]
+  [{{ .Profile.Name }}.retention]
     after-backup = true
     before-backup = false
     compact = false
@@ -425,28 +426,28 @@ There's something to be aware of when dealing with templates: at the time the te
 {{ end }}
 
 [src]
-password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
-repository = "/backup/{{ .Now.Weekday }}"
-lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
-initialize = true
+  password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+  repository = "/backup/{{ .Now.Weekday }}"
+  lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+  initialize = true
 
     [src.backup]
-    source = "{{ .Env.HOME }}/go/src"
-    check-before = true
-    exclude = ["/**/.git"]
-    exclude-caches = true
-    tag = ["{{ .Profile.Name }}", "dev"]
+      source = "{{ .Env.HOME }}/go/src"
+      check-before = true
+      exclude = ["/**/.git"]
+      exclude-caches = true
+      tag = ["{{ .Profile.Name }}", "dev"]
 
     {{ template "retention" . }}
 
     [src.snapshots]
-    tag = ["{{ .Profile.Name }}", "dev"]
+      tag = ["{{ .Profile.Name }}", "dev"]
 
 [other]
-password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
-repository = "/backup/{{ .Now.Weekday }}"
-lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
-initialize = true
+  password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+  repository = "/backup/{{ .Now.Weekday }}"
+  lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+  initialize = true
 
     {{ template "retention" . }}
 
@@ -529,37 +530,37 @@ exit status 1
 {{ end }}
 
 [src]
-password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
-repository = "/backup/{{ .Now.Weekday }}"
-lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
-initialize = true
+  password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+  repository = "/backup/{{ .Now.Weekday }}"
+  lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+  initialize = true
 
     [src.backup]
-    source = "{{ .Env.HOME }}/go/src"
-    check-before = true
-    exclude = ["/**/.git"]
-    exclude-caches = true
-    tag = ["{{ .Profile.Name }}", "dev"]
+      source = "{{ .Env.HOME }}/go/src"
+      check-before = true
+      exclude = ["/**/.git"]
+      exclude-caches = true
+      tag = ["{{ .Profile.Name }}", "dev"]
 
     [src.retention]
-    {{ template "retention" . }}
+      {{ template "retention" . }}
 
     [src.snapshots]
-    tag = ["{{ .Profile.Name }}", "dev"]
+      tag = ["{{ .Profile.Name }}", "dev"]
 
 [other]
-password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
-repository = "/backup/{{ .Now.Weekday }}"
-lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
-initialize = true
+  password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
+  repository = "/backup/{{ .Now.Weekday }}"
+  lock = "$HOME/resticprofile-profile-{{ .Profile.Name }}.lock"
+  initialize = true
 
     [other.retention]
-    {{ template "retention" . }}
+      {{ template "retention" . }}
 ```
 
 And now you no longer end up with duplicated sections.
 
-# Documentation on template, variable expansion and other configuration scripting
+## Documentation on template, variable expansion and other configuration scripting
 
 There are a lot more you can do with configuration templates. If you're brave enough, [you can read the full documentation of the Go templates](https://golang.org/pkg/text/template/).
 

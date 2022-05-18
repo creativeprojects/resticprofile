@@ -101,7 +101,8 @@ func findConfiguration(path string) bool {
 				return
 			}
 			if configLines {
-				configBuffer.WriteString(line + "\n")
+				configBuffer.WriteString(line)
+				configBuffer.Write([]byte("\n"))
 			}
 		}(scanner.Text())
 	}

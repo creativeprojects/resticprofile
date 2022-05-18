@@ -13,9 +13,55 @@ A restic warning occurs when it cannot read some files, but a snapshot was succe
 
 ### Let me introduce no-error-on-warning
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[profile]
+  inherit = "default"
+
+  [profile.backup]
+    no-error-on-warning = true
+
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+
 ```yaml
 profile:
     inherit: default
     backup:
         no-error-on-warning: true
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"profile" = {
+  "inherit" = "default"
+
+  "backup" = {
+    "no-error-on-warning" = true
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "profile": {
+    "inherit": "default",
+    "backup": {
+      "no-error-on-warning": true
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}

@@ -3,8 +3,13 @@ name: Build
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
 
@@ -39,7 +44,3 @@ jobs:
 
     - name: Code coverage
       uses: codecov/codecov-action@v2
-
-    - name: Check configuration
-      run: go run ./config/checkdoc -r hugo/content
-      shell: bash
