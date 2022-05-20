@@ -19,6 +19,10 @@ func NewProgress(profile *config.Profile, metrics *Metrics) *Progress {
 	}
 }
 
+func (p *Progress) Start(command string) {
+	// nothing to do here
+}
+
 func (p *Progress) Status(status progress.Status) {
 	// we don't report any progress here yet
 }

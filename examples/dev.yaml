@@ -92,7 +92,10 @@ self:
     initialize: true
     inherit: default
     # status-file: /Volumes/RAMDisk/status.json
+    healthchecks-url: http://localhost/
+
     backup:
+        healthchecks-uuid: "testum"
         extended-status: false
         check-before: false
         no-error-on-warning: true

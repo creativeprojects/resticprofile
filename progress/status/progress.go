@@ -28,6 +28,10 @@ func (p *Progress) getGenerator() *Status {
 	return p.generator.Load()
 }
 
+func (p *Progress) Start(command string) {
+	// nothing to do here
+}
+
 func (p *Progress) Status(status progress.Status) {
 	// we don't report any progress here
 }

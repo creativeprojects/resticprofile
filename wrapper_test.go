@@ -17,7 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/progress"
-	"github.com/creativeprojects/resticprofile/status"
+	"github.com/creativeprojects/resticprofile/progress/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

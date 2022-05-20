@@ -15,9 +15,10 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/priority"
-	"github.com/creativeprojects/resticprofile/prom"
+	"github.com/creativeprojects/resticprofile/progress/hc"
+	"github.com/creativeprojects/resticprofile/progress/prom"
+	"github.com/creativeprojects/resticprofile/progress/status"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/spf13/pflag"
@@ -369,6 +370,9 @@ func runProfile(
 	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
 		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version, profile.PrometheusLabels)))
+	}
+	if profile.HealthChecksURL != "" {
+		wrapper.addProgress(hc.NewProgress(profile))
 	}
 
 	err = wrapper.runProfile()
