@@ -33,3 +33,7 @@
 
 status.json
 *.prom
+
+# documentation
+/public
+.hugo_build.lock

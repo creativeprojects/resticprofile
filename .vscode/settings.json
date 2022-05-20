@@ -13,5 +13,8 @@
     "go-template.languages": [
         "yaml"
     ],
-    "go.lintTool": "golangci-lint"
+    "go.lintTool": "golangci-lint",
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file:///Users/gouarfig/go/src/github.com/creativeprojects/resticprofile/.github/workflows/build.yml"
+    }
 }
