@@ -9,17 +9,75 @@ weight: 5
 resticprofile can generate a prometheus file, or send the report to a push gateway. For now, only a `backup` command will generate a report.
 Here's a configuration example with both options to generate a file and send to a push gateway:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[root]
+  inherit = "default"
+  prometheus-save-to-file = "root.prom"
+  prometheus-push = "http://localhost:9091/"
+
+  [root.backup]
+    extended-status = true
+    no-error-on-warning = true
+    source = [ "/" ]
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 root:
-    inherit: default
-    prometheus-save-to-file: "root.prom"
-    prometheus-push: "http://localhost:9091/"
-    backup:
-        extended-status: true
-        no-error-on-warning: true
-        source:
-          - /
+  inherit: default
+  prometheus-save-to-file: "root.prom"
+  prometheus-push: "http://localhost:9091/"
+  backup:
+    extended-status: true
+    no-error-on-warning: true
+    source:
+      - /
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"root" = {
+  "inherit" = "default"
+  "prometheus-save-to-file" = "root.prom"
+  "prometheus-push" = "http://localhost:9091/"
+
+  "backup" = {
+    "extended-status" = true
+    "no-error-on-warning" = true
+    "source" = ["/"]
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "root": {
+    "inherit": "default",
+    "prometheus-save-to-file": "root.prom",
+    "prometheus-push": "http://localhost:9091/",
+    "backup": {
+      "extended-status": true,
+      "no-error-on-warning": true,
+      "source": [
+        "/"
+      ]
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
 
 Please note you need to set `extended-status` to `true` if you want all the available metrics. See [Extended status](#extended-status) for more information.
 
@@ -61,7 +119,7 @@ resticprofile_backup_processed_bytes{profile="root"} 3.8524672e+07
 resticprofile_backup_status{profile="root"} 1
 # HELP resticprofile_build_info resticprofile build information.
 # TYPE resticprofile_build_info gauge
-resticprofile_build_info{goversion="go1.16.6",version="0.15.0-dev"} 1
+resticprofile_build_info{goversion="go1.16.6",version="0.16.0"} 1
 
 ```
 
@@ -70,19 +128,90 @@ resticprofile_build_info{goversion="go1.16.6",version="0.15.0-dev"} 1
 You can add your own prometheus labels. Please note they will be applied to **all** the metrics.
 Here's an example:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[root]
+  inherit = "default"
+  prometheus-save-to-file = "root.prom"
+  prometheus-push = "http://localhost:9091/"
+
+  [[root.prometheus-labels]]
+    host = "{{ .Hostname }}"
+
+  [root.backup]
+    extended-status = true
+    no-error-on-warning = true
+    source = [ "/" ]
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 root:
-    inherit: default
-    prometheus-save-to-file: "root.prom"
-    prometheus-push: "http://localhost:9091/"
-    prometheus-labels:
-      - host: {{ .Hostname }}
-    backup:
-        extended-status: true
-        no-error-on-warning: true
-        source:
-          - /
+  inherit: default
+  prometheus-save-to-file: "root.prom"
+  prometheus-push: "http://localhost:9091/"
+  prometheus-labels:
+    - host: {{ .Hostname }}
+  backup:
+    extended-status: true
+    no-error-on-warning: true
+    source:
+      - /
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"root" = {
+  "inherit" = "default"
+  "prometheus-save-to-file" = "root.prom"
+  "prometheus-push" = "http://localhost:9091/"
+
+  "prometheus-labels" = {
+    "host" = "{{ .Hostname }}"
+  }
+
+  "backup" = {
+    "extended-status" = true
+    "no-error-on-warning" = true
+    "source" = ["/"]
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "root": {
+    "inherit": "default",
+    "prometheus-save-to-file": "root.prom",
+    "prometheus-push": "http://localhost:9091/",
+    "prometheus-labels": [
+      {
+        "host": "{{ .Hostname }}"
+      }
+    ],
+    "backup": {
+      "extended-status": true,
+      "no-error-on-warning": true,
+      "source": [
+        "/"
+      ]
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 which will add the `host` label to all your metrics.
 

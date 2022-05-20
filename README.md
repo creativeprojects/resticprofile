@@ -45,14 +45,12 @@ The configuration file accepts various formats:
 * [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
 
 
-# Documentation
-
-The documentation has moved to its own space: [check it out here](https://creativeprojects.github.io/resticprofile/).
-
 
 <!--ts-->
 
 <!--te-->
 
 
+# Using resticprofile
 
+Documentation has been moved to [creativeprojects.github.io](https://creativeprojects.github.io/resticprofile/)

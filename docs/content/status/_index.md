@@ -19,7 +19,7 @@ In your profile, you simply need to add a new parameter, which is the location o
 
 ```toml
 [profile]
-status-file = "backup-status.json"
+  status-file = "backup-status.json"
 ```
 
 {{% /tab %}}
@@ -88,9 +88,10 @@ Here's an example of a generated file, where you can see that the last `check` f
 }
 ```
 
-## Extended status
+## ⚠️ Extended status
 
-Note: In the backup section above you can see some fields like `files_new`, `files_total`, etc. This information is only available when resticprofile's output is either *not* sent to the terminal (e.g. redirected) or when you add the flag `extended-status` to your backup configuration.
+In the backup section above you can see some fields like `files_new`, `files_total`, etc. This information is only available when resticprofile's output is either *not* sent to the terminal (e.g. redirected) or when you add the flag `extended-status` to your backup configuration.
+
 This is a technical limitation to ensure restic displays terminal output correctly. 
 
 `extended-status` or stdout redirection is **not needed** for these fields:
@@ -102,14 +103,69 @@ This is a technical limitation to ensure restic displays terminal output correct
 
 `extended-status` is **not set by default because it hides any output from restic**
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[profile]
+  inherit = "default"
+  status-file = "/home/backup/status.json"
+
+  [profile.backup]
+    extended-status = true
+    source = "/go"
+    exclude = [ "/**/.git/" ]
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 profile:
-    inherit: default
-    status-file: /home/backup/status.json
-    backup:
-        extended-status: true
-        source: /go
-        exclude:
-          - "/**/.git/"
+  inherit: default
+  status-file: /home/backup/status.json
+  backup:
+    extended-status: true
+    source: /go
+    exclude:
+      - "/**/.git/"
 
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"profile" = {
+  "inherit" = "default"
+  "status-file" = "/home/backup/status.json"
+
+  "backup" = {
+    "extended-status" = true
+    "source" = "/go"
+    "exclude" = ["/**/.git/"]
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "profile": {
+    "inherit": "default",
+    "status-file": "/home/backup/status.json",
+    "backup": {
+      "extended-status": true,
+      "source": "/go",
+      "exclude": [
+        "/**/.git/"
+      ]
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}

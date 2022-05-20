@@ -12,22 +12,99 @@ Since resticprofile can run several commands in a profile, it could be better to
 
 For this to happen you can specify a lock file in each profile:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[src]
+  lock = "/tmp/resticprofile-profile-src.lock"
+
+  [src.backup]
+    check-before = true
+    exclude = [ "/**/.git" ]
+    source = [ "~/go" ]
+
+  [src.retention]
+    after-backup = true
+    before-backup = false
+    compact = false
+    keep-within = "30d"
+    prune = true
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 src:
-    lock: "/tmp/resticprofile-profile-src.lock"
-    backup:
-        check-before: true
-        exclude:
-        - /**/.git
-        source:
-        - ~/go
-    retention:
-        after-backup: true
-        before-backup: false
-        compact: false
-        keep-within: 30d
-        prune: true
+  lock: "/tmp/resticprofile-profile-src.lock"
+  backup:
+    check-before: true
+    exclude:
+    - /**/.git
+    source:
+    - ~/go
+  retention:
+    after-backup: true
+    before-backup: false
+    compact: false
+    keep-within: 30d
+    prune: true
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"src" = {
+  "lock" = "/tmp/resticprofile-profile-src.lock"
+
+  "backup" = {
+    "check-before" = true
+    "exclude" = ["/**/.git"]
+    "source" = ["~/go"]
+  }
+
+  "retention" = {
+    "after-backup" = true
+    "before-backup" = false
+    "compact" = false
+    "keep-within" = "30d"
+    "prune" = true
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "src": {
+    "lock": "/tmp/resticprofile-profile-src.lock",
+    "backup": {
+      "check-before": true,
+      "exclude": [
+        "/**/.git"
+      ],
+      "source": [
+        "~/go"
+      ]
+    },
+    "retention": {
+      "after-backup": true,
+      "before-backup": false,
+      "compact": false,
+      "keep-within": "30d",
+      "prune": true
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 For this profile, a lock will be set using the file `/tmp/resticprofile-profile-src.lock` for the duration of the profile: *check*, *backup* and *retention* (via the forget command)
 
@@ -41,14 +118,61 @@ For that matter, if you add the flag `force-inactive-lock` to your profile, rest
 * **resticprofile locks**: Check for the presence of a process with the PID indicated in the lockfile. If it can't find any, it will try to delete the lock and continue the operation (locking again, running profile and so on...)
 * **restic locks**: Evaluate if a restic command failed on acquiring a lock. If the lock is older than `restic-stale-lock-age`, invoke `restic unlock` and retry the command that failed (can be disabled by setting `restic-stale-lock-age` to 0, default is 2h).
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[global]
+  restic-stale-lock-age = "2h"
+
+[src]
+  lock = "/tmp/resticprofile-profile-src.lock"
+  force-inactive-lock = true
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 global:
   restic-stale-lock-age: 2h
 
 src:
-    lock: "/tmp/resticprofile-profile-src.lock"
-    force-inactive-lock: true
+  lock: "/tmp/resticprofile-profile-src.lock"
+  force-inactive-lock: true
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"global" = {
+  "restic-stale-lock-age" = "2h"
+}
+
+"src" = {
+  "lock" = "/tmp/resticprofile-profile-src.lock"
+  "force-inactive-lock" = true
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "global": {
+    "restic-stale-lock-age": "2h"
+  },
+  "src": {
+    "lock": "/tmp/resticprofile-profile-src.lock",
+    "force-inactive-lock": true
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
 
 ## Lock wait
 
@@ -66,6 +190,22 @@ Note: The lock wait duration is cumulative. If various locks in one profile-run 
 
 resticprofile can retry restic commands that fail on acquiring a lock and can also ask restic to unlock stale locks. The behaviour is controlled by 2 settings inside the `global` section:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[global]
+  # Retry a restic command that failed on acquiring a lock every minute 
+  # (at least), for up to the time specified in "--lock-wait duration". 
+  restic-lock-retry-after = "1m"
+  # Ask restic to unlock a stale lock when its age is more than 2 hours
+  # and the option "force-inactive-lock" is enabled in the profile.
+  restic-stale-lock-age = "2h"
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 global:
   # Retry a restic command that failed on acquiring a lock every minute 
@@ -76,4 +216,34 @@ global:
   restic-stale-lock-age: 2h
 ```
 
-If restic lock management is not desired, it can be disabled by setting both values to 0.
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"global" = {
+  # Retry a restic command that failed on acquiring a lock every minute 
+  # (at least), for up to the time specified in "--lock-wait duration". 
+  "restic-lock-retry-after" = "1m"
+  # Ask restic to unlock a stale lock when its age is more than 2 hours
+  # and the option "force-inactive-lock" is enabled in the profile.
+  "restic-stale-lock-age" = "2h"
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "global": {
+    "restic-lock-retry-after": "1m",
+    "restic-stale-lock-age": "2h"
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
+
+If restic lock management is not desired, it can be disabled by setting both values to **0**.

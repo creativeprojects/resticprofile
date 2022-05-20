@@ -3,7 +3,7 @@ name: documentation
 on:
   push:
     branches:
-      - docs  # Set a branch to deploy
+      - master  # Set a branch to deploy
     paths:
       - "docs/**"
   

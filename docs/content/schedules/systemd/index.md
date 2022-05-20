@@ -49,17 +49,55 @@ Since version 0.16.0, you now can describe your own templates if you need to add
 
 The format used is a [go template](https://pkg.go.dev/text/template) and you need to specify your own unit and/or timer file in the global section of the configuration (it will apply to all your profiles):
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[global]
+  systemd-unit-template = "service.tmpl"
+  systemd-timer-template = "timer.tmpl"
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 ---
 global:
-    systemd-unit-template: service.tmpl
-    systemd-timer-template: timer.tmpl
+  systemd-unit-template: service.tmpl
+  systemd-timer-template: timer.tmpl
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"global" = {
+  "systemd-unit-template" = "service.tmpl"
+  "systemd-timer-template" = "timer.tmpl"
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "global": {
+    "systemd-unit-template": "service.tmpl",
+    "systemd-timer-template": "timer.tmpl"
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 Here are the defaults if you don't specify your own (which I recommend to use as a starting point for your own templates)
 
 ### Default unit file
 
-```
+```ini
 [Unit]
 Description={{ .JobDescription }}
 
@@ -75,7 +113,7 @@ Environment="{{ . }}"
 
 ### Default timer file
 
-```
+```ini
 [Unit]
 Description={{ .TimerDescription }}
 

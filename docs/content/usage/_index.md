@@ -21,16 +21,13 @@ See all available profiles in your configuration file (and the restic commands w
 ```
 $ resticprofile profiles
 
-Profiles available:
-  stdin:     (backup)
-  default:   (env)
-  root:      (retention, backup)
-  src:       (retention, backup)
-  linux:     (retention, backup, snapshots, env)
-  no-cache:  (n/a)
+Profiles available (name, sections, description):
+  root:           (backup, copy, forget, retention)
+  self:           (backup, check, copy, forget, retention)
+  src:            (backup, copy, retention, snapshots)
 
-Groups available:
-  full-backup:  root, src
+Groups available (name, profiles, description):
+  full-backup:  [root, src]
 
 ```
 
@@ -39,7 +36,8 @@ Backup root & src profiles (using _full-backup_ group shown earlier)
 ```
 $ resticprofile --name "full-backup" backup
 ```
-or
+or using the syntax introduced in v0.17.0:
+
 ```
 $ resticprofile full-backup.backup
 ```
@@ -49,13 +47,10 @@ Assuming the _stdin_ profile from the configuration file shown before, the comma
 ```
 $ mysqldump --all-databases --order-by-primary | resticprofile --name stdin backup
 ```
-or
+or using the syntax introduced in v0.17.0:
+
 ```
 $ mysqldump --all-databases --order-by-primary | resticprofile stdin.backup
-```
-or when resticprofile runs "mysqldump" (can be scheduled):
-```
-$ resticprofile mysql.backup
 ```
 
 Mount the default profile (_default_) in /mnt/restic:
@@ -95,10 +90,10 @@ resticprofile own commands:
    self-update   update to latest resticprofile (use -q/--quiet flag to update without confirmation)
    profiles      display profile names from the configuration file
    show          show all the details of the current profile
-   random-key    generate a cryptographically secure random key to use as a restic keyfile
    schedule      schedule jobs from a profile (use --all flag to schedule all jobs of all profiles)
    unschedule    remove scheduled jobs of a profile (use --all flag to unschedule all profiles)
    status        display the status of scheduled jobs (use --all flag for all profiles)
+   generate      generate resources (--random-key [size], --bash-completion & --zsh-completion)
 
 
 ```

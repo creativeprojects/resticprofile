@@ -16,15 +16,50 @@ resticprofile is capable of managing scheduled backups for you using:
 
 On unixes (except macOS) resticprofile is using **systemd** by default. **crond** can be used instead if configured in `global` `scheduler` parameter:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[global]
+  scheduler = "crond"
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 ---
 global:
     scheduler: crond
 ```
 
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"global" = {
+  "scheduler" = "crond"
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "global": {
+    "scheduler": "crond"
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
 
 
-Each profile can be scheduled independently (groups are not available for scheduling yet).
+
+
+Each profile can be scheduled independently (groups are not available for scheduling yet - it will be available in version '2' of the configuration file).
 
 These 5 profile sections are accepting a schedule configuration:
 - backup
@@ -44,15 +79,67 @@ starting from version 0.11.0 the schedule of the `retention` section is **deprec
 
 The schedule configuration consists of a few parameters which can be added on each profile:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
 ```toml
 [profile.backup]
-schedule = "*:00,30"
-schedule-permission = "system"
-schedule-priority = "background"
-schedule-log = "profile-backup.log"
-schedule-lock-mode = "default"
-schedule-lock-wait = "15m30s"
+  schedule = "*:00,30"
+  schedule-permission = "system"
+  schedule-priority = "background"
+  schedule-log = "profile-backup.log"
+  schedule-lock-mode = "default"
+  schedule-lock-wait = "15m30s"
 ```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+profile:
+  backup:
+    schedule: '*:00,30'
+    schedule-permission: system
+    schedule-priority: background
+    schedule-log: profile-backup.log
+    schedule-lock-mode: default
+    schedule-lock-wait: 15m30s
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"profile" "backup" {
+  "schedule" = "*:00,30"
+  "schedule-permission" = "system"
+  "schedule-priority" = "background"
+  "schedule-log" = "profile-backup.log"
+  "schedule-lock-mode" = "default"
+  "schedule-lock-wait" = "15m30s"
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "profile": {
+    "backup": {
+      "schedule": "*:00,30",
+      "schedule-permission": "system",
+      "schedule-priority": "background",
+      "schedule-log": "profile-backup.log",
+      "schedule-lock-mode": "default",
+      "schedule-lock-wait": "15m30s"
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
 
 
 
@@ -142,30 +229,129 @@ Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
 
 The `schedule` can be a string or an array of string (to allow for multiple schedules)
 
-Here's an example of a YAML configuration:
+Here's an example of a scheduling configuration:
+
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[default]
+  repository = "d:\\backup"
+  password-file = "key"
+
+[self]
+  inherit = "default"
+
+  [self.retention]
+    after-backup = true
+    keep-within = "14d"
+
+  [self.backup]
+    source = "."
+    schedule = [ "Mon..Fri *:00,15,30,45", "Sat,Sun 0,12:00" ]
+    schedule-permission = "user"
+    schedule-lock-wait = "10m"
+
+  [self.prune]
+    schedule = "sun 3:30"
+    schedule-permission = "user"
+    schedule-lock-wait = "1h"
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
 
 ```yaml
 default:
-    repository: "d:\\backup"
-    password-file: key
+  repository: "d:\\backup"
+  password-file: key
 
 self:
-    inherit: default
-    retention:
-      after-backup: true
-      keep-within: 14d
-    backup:
-        source: "."
-        schedule:
-        - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
-        - "Sat,Sun 0,12:00"        # twice a day on week-ends
-        schedule-permission: user
-        schedule-lock-wait: 10m
-    prune:
-        schedule: "sun 3:30"
-        schedule-permission: user
-        schedule-lock-wait: 1h
+  inherit: default
+  retention:
+    after-backup: true
+    keep-within: 14d
+  backup:
+    source: "."
+    schedule:
+    - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
+    - "Sat,Sun 0,12:00"        # twice a day on week-ends
+    schedule-permission: user
+    schedule-lock-wait: 10m
+  prune:
+    schedule: "sun 3:30"
+    schedule-permission: user
+    schedule-lock-wait: 1h
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"default" = {
+  "repository" = "d:\\backup"
+  "password-file" = "key"
+}
+
+"self" = {
+  "inherit" = "default"
+
+  "retention" = {
+    "after-backup" = true
+    "keep-within" = "14d"
+  }
+
+  "backup" = {
+    "source" = "."
+    "schedule" = ["Mon..Fri *:00,15,30,45", "Sat,Sun 0,12:00"]
+    "schedule-permission" = "user"
+    "schedule-lock-wait" = "10m"
+  }
+
+  "prune" = {
+    "schedule" = "sun 3:30"
+    "schedule-permission" = "user"
+    "schedule-lock-wait" = "1h"
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "default": {
+    "repository": "d:\\backup",
+    "password-file": "key"
+  },
+  "self": {
+    "inherit": "default",
+    "retention": {
+      "after-backup": true,
+      "keep-within": "14d"
+    },
+    "backup": {
+      "source": ".",
+      "schedule": [
+        "Mon..Fri *:00,15,30,45",
+        "Sat,Sun 0,12:00"
+      ],
+      "schedule-permission": "user",
+      "schedule-lock-wait": "10m"
+    },
+    "prune": {
+      "schedule": "sun 3:30",
+      "schedule-permission": "user",
+      "schedule-lock-wait": "1h"
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 ## Scheduling commands
 
@@ -311,24 +497,107 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 
 With this example of configuration for Linux:
 
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[default]
+  password-file = "key"
+  repository = "/tmp/backup"
+
+[test1]
+  inherit = "default"
+
+  [test1.backup]
+    source = "./"
+    schedule = "*:00,15,30,45"
+    schedule-permission = "user"
+    schedule-lock-wait = "15m"
+
+  [test1.check]
+    schedule = "*-*-1"
+    schedule-permission = "user"
+    schedule-lock-wait = "15m"
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
 ```yaml
 default:
-    password-file: key
-    repository: /tmp/backup
+  password-file: key
+  repository: /tmp/backup
 
 test1:
-    inherit: default
-    backup:
-        source: ./
-        schedule: "*:00,15,30,45"
-        schedule-permission: user
-        schedule-lock-wait: 15m
-    check:
-        schedule: "*-*-1"
-        schedule-permission: user
-        schedule-lock-wait: 15m
+  inherit: default
+  backup:
+    source: ./
+    schedule: "*:00,15,30,45"
+    schedule-permission: user
+    schedule-lock-wait: 15m
+  check:
+    schedule: "*-*-1"
+    schedule-permission: user
+    schedule-lock-wait: 15m
 
 ```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"default" = {
+  "password-file" = "key"
+  "repository" = "/tmp/backup"
+}
+
+"test1" = {
+  "inherit" = "default"
+
+  "backup" = {
+    "source" = "./"
+    "schedule" = "*:00,15,30,45"
+    "schedule-permission" = "user"
+    "schedule-lock-wait" = "15m"
+  }
+
+  "check" = {
+    "schedule" = "*-*-1"
+    "schedule-permission" = "user"
+    "schedule-lock-wait" = "15m"
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "default": {
+    "password-file": "key",
+    "repository": "/tmp/backup"
+  },
+  "test1": {
+    "inherit": "default",
+    "backup": {
+      "source": "./",
+      "schedule": "*:00,15,30,45",
+      "schedule-permission": "user",
+      "schedule-lock-wait": "15m"
+    },
+    "check": {
+      "schedule": "*-*-1",
+      "schedule-permission": "user",
+      "schedule-lock-wait": "15m"
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
 
 ```
 $ resticprofile -c examples/linux.yaml -n test1 schedule
@@ -473,6 +742,6 @@ If you need to change the permission of a schedule, **please be sure to `unsched
 
 This order is important:
 
-- `unschedule` the job first. resticprofile does **not** keep track of how your profile **was** installed, so you have to remove the schedule first
+- `unschedule` the job first. resticprofile does **not keep track of how your profile was installed**, so you have to remove the schedule first
 - now you can change your permission (`user` to `system`, or `system` to `user`)
 - `schedule` your updated profile
