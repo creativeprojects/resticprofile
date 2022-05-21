@@ -93,6 +93,15 @@ func (r *resticWrapper) addProgress(p progress.Receiver) {
 	r.progress = append(r.progress, p)
 }
 
+func (r *resticWrapper) start(command string) {
+	if r.dryRun {
+		return
+	}
+	for _, p := range r.progress {
+		p.Start(command)
+	}
+}
+
 func (r *resticWrapper) summary(command string, summary progress.Summary, stderr string, result error) {
 	if r.dryRun {
 		return
@@ -321,6 +330,7 @@ func (r *resticWrapper) runInitializeCopy() error {
 
 func (r *resticWrapper) runCheck() error {
 	clog.Infof("profile '%s': checking repository consistency", r.profile.Name)
+	r.start(constants.CommandCheck)
 	args := r.profile.GetCommandFlags(constants.CommandCheck)
 	for {
 		rCommand := r.prepareCommand(constants.CommandCheck, args, r.commonResticArgs(r.moreArgs)...)
@@ -339,6 +349,7 @@ func (r *resticWrapper) runCheck() error {
 
 func (r *resticWrapper) runRetention() error {
 	clog.Infof("profile '%s': cleaning up repository using retention information", r.profile.Name)
+	r.start(constants.SectionConfigurationRetention)
 	args := r.profile.GetRetentionFlags()
 	for {
 		rCommand := r.prepareCommand(constants.CommandForget, args, r.commonResticArgs(r.moreArgs)...)
@@ -357,6 +368,7 @@ func (r *resticWrapper) runRetention() error {
 
 func (r *resticWrapper) runCommand(command string) error {
 	clog.Infof("profile '%s': starting '%s'", r.profile.Name, command)
+	r.start(command)
 	args := r.profile.GetCommandFlags(command)
 
 	streamSource := io.NopCloser(strings.NewReader(""))
@@ -409,6 +421,7 @@ func (r *resticWrapper) runCommand(command string) error {
 
 func (r *resticWrapper) runUnlock() error {
 	clog.Infof("profile '%s': unlock stale locks", r.profile.Name)
+	r.start(constants.CommandUnlock)
 	args := r.profile.GetCommandFlags(constants.CommandUnlock)
 	rCommand := r.prepareCommand(constants.CommandUnlock, args, r.commonResticArgs(r.moreArgs)...)
 	summary, stderr, err := runShellCommand(rCommand)

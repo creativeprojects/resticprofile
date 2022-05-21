@@ -43,6 +43,7 @@ type Profile struct {
 	PrometheusPush       string                       `mapstructure:"prometheus-push"`
 	PrometheusLabels     map[string]string            `mapstructure:"prometheus-labels"`
 	HealthChecksURL      string                       `mapstructure:"healthchecks-url"`
+	HealthChecksTimeout  time.Duration                `mapstructure:"healthchecks-timeout"`
 	OtherFlags           map[string]interface{}       `mapstructure:",remain"`
 	Environment          map[string]ConfidentialValue `mapstructure:"env"`
 	Backup               *BackupSection               `mapstructure:"backup"`
