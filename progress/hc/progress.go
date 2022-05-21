@@ -12,6 +12,10 @@ import (
 	"github.com/creativeprojects/resticprofile/progress"
 )
 
+var (
+	UserAgent = "resticprofile/1.0"
+)
+
 type Progress struct {
 	profile *config.Profile
 	client  *http.Client
@@ -48,11 +52,7 @@ func (p *Progress) Status(status progress.Status) {
 }
 
 func (p *Progress) Summary(command string, summary progress.Summary, stderr string, result error) {
-	path := ""
-	if result != nil {
-		path = "fail"
-	}
-	url := p.getURL(command, path)
+	url := p.getURL(command, p.getPath(command, result))
 	if url == "" {
 		return
 	}
@@ -80,7 +80,12 @@ func (p *Progress) Summary(command string, summary progress.Summary, stderr stri
 }
 
 func (p *Progress) newSimpleRequest(url string) (*http.Request, error) {
-	return http.NewRequest(http.MethodHead, url, http.NoBody)
+	req, err := http.NewRequest(http.MethodHead, url, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", UserAgent)
+	return req, nil
 }
 
 func (p *Progress) newRequestWithBody(url, body string) (*http.Request, error) {
@@ -89,11 +94,12 @@ func (p *Progress) newRequestWithBody(url, body string) (*http.Request, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "text/html; charset=UTF-8")
+	req.Header.Set("User-Agent", UserAgent)
 	return req, nil
 }
 
 func (p *Progress) sendRequest(req *http.Request) {
-	clog.Debugf("healthchecks.io: send signal to %s", req.URL.String())
+	clog.Debugf("healthchecks.io: sending signal to %s", req.URL.String())
 	resp, err := p.client.Do(req)
 	if err != nil {
 		clog.Errorf("error contacting healthchecks.io service: %s", err)
@@ -125,6 +131,21 @@ func (p *Progress) getUUID(command string) string {
 	return ""
 }
 
+func (p *Progress) getPath(command string, result error) string {
+	switch {
+	case progress.IsSuccess(result):
+		return ""
+
+	case progress.IsWarning(result):
+		// do we consider a warning a success?
+		if command == constants.CommandBackup && p.profile.Backup != nil && p.profile.Backup.NoErrorOnWarning {
+			return ""
+		}
+	}
+	return "fail"
+}
+
+// join 3 parts into https://host/uuid/cmd
 func join(host, uuid, cmd string) string {
 	host = strings.TrimSuffix(host, "/")
 	uuid = strings.TrimPrefix(uuid, "/")

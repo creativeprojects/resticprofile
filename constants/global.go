@@ -38,3 +38,9 @@ const (
 	ScheduleLockModeOptionFail   = "fail"
 	ScheduleLockModeOptionIgnore = "ignore"
 )
+
+const (
+	ExitCodeSuccess = 0
+	ExitCodeError   = 1
+	ExitCodeWarning = 3
+)
