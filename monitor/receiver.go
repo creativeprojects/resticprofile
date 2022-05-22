@@ -1,4 +1,4 @@
-package progress
+package monitor
 
 type Receiver interface {
 	// Start of a command

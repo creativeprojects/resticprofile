@@ -1,4 +1,4 @@
-package progress
+package monitor
 
 type Status struct {
 	PercentDone  float64

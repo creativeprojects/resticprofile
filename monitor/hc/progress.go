@@ -9,7 +9,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 var (
@@ -47,11 +47,11 @@ func (p *Progress) Start(command string) {
 	p.sendRequest(req)
 }
 
-func (p *Progress) Status(status progress.Status) {
+func (p *Progress) Status(status monitor.Status) {
 	// we don't report any progress
 }
 
-func (p *Progress) Summary(command string, summary progress.Summary, stderr string, result error) {
+func (p *Progress) Summary(command string, summary monitor.Summary, stderr string, result error) {
 	url := p.getURL(command, p.getPath(command, result))
 	if url == "" {
 		return
@@ -133,10 +133,10 @@ func (p *Progress) getUUID(command string) string {
 
 func (p *Progress) getPath(command string, result error) string {
 	switch {
-	case progress.IsSuccess(result):
+	case monitor.IsSuccess(result):
 		return ""
 
-	case progress.IsWarning(result):
+	case monitor.IsWarning(result):
 		// do we consider a warning a success?
 		if command == constants.CommandBackup && p.profile.Backup != nil && p.profile.Backup.NoErrorOnWarning {
 			return ""
@@ -158,4 +158,4 @@ func join(host, uuid, cmd string) string {
 }
 
 // Verify interface
-var _ progress.Receiver = &Progress{}
+var _ monitor.Receiver = &Progress{}

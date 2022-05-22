@@ -4,7 +4,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 type Progress struct {
@@ -23,23 +23,23 @@ func (p *Progress) Start(command string) {
 	// nothing to do here
 }
 
-func (p *Progress) Status(status progress.Status) {
+func (p *Progress) Status(status monitor.Status) {
 	// we don't report any progress here yet
 }
 
-func (p *Progress) Summary(command string, summary progress.Summary, stderr string, result error) {
+func (p *Progress) Summary(command string, summary monitor.Summary, stderr string, result error) {
 	if p.profile.PrometheusPush == "" && p.profile.PrometheusSaveToFile == "" {
 		return
 	}
 	var status Status
 	switch {
-	case progress.IsSuccess(result):
+	case monitor.IsSuccess(result):
 		status = StatusSuccess
 
-	case progress.IsWarning(result):
+	case monitor.IsWarning(result):
 		status = StatusWarning
 
-	case progress.IsError(result):
+	case monitor.IsError(result):
 		status = StatusFailed
 	}
 	if command != constants.CommandBackup {
@@ -64,4 +64,4 @@ func (p *Progress) Summary(command string, summary progress.Summary, stderr stri
 }
 
 // Verify interface
-var _ progress.Receiver = &Progress{}
+var _ monitor.Receiver = &Progress{}

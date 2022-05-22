@@ -8,7 +8,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/shell"
 )
 
@@ -47,7 +47,7 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 }
 
 // runShellCommand instantiates a shell.Command and sends the information to run the shell command
-func runShellCommand(command shellCommandDefinition) (summary progress.Summary, stderr string, err error) {
+func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, stderr string, err error) {
 	if command.dryRun {
 		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
 		return

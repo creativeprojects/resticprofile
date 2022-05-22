@@ -10,7 +10,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -151,7 +151,7 @@ func TestCommandProgressSummary(t *testing.T) {
 			if !test.success {
 				err = errors.New("error during test")
 			}
-			healthchecks.Summary(test.command, progress.Summary{}, test.stderr, err)
+			healthchecks.Summary(test.command, monitor.Summary{}, test.stderr, err)
 			assert.Equal(t, test.expectedCalls, calls)
 		})
 	}

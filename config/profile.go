@@ -37,6 +37,10 @@ type Profile struct {
 	RunAfter             []string                     `mapstructure:"run-after"`
 	RunAfterFail         []string                     `mapstructure:"run-after-fail"`
 	RunFinally           []string                     `mapstructure:"run-finally"`
+	SendBefore           []SendMonitorSection         `mapstructure:"send-before"`
+	SendAfter            []SendMonitorSection         `mapstructure:"send-after"`
+	SendAfterFail        []SendMonitorSection         `mapstructure:"send-after-fail"`
+	SendFinally          []SendMonitorSection         `mapstructure:"send-finally"`
 	StreamError          []StreamErrorSection         `mapstructure:"stream-error"`
 	StatusFile           string                       `mapstructure:"status-file"`
 	PrometheusSaveToFile string                       `mapstructure:"prometheus-save-to-file"`
@@ -70,6 +74,9 @@ type BackupSection struct {
 	RunBefore           []string               `mapstructure:"run-before"`
 	RunAfter            []string               `mapstructure:"run-after"`
 	RunFinally          []string               `mapstructure:"run-finally"`
+	SendBefore          []SendMonitorSection   `mapstructure:"send-before"`
+	SendAfter           []SendMonitorSection   `mapstructure:"send-after"`
+	SendFinally         []SendMonitorSection   `mapstructure:"send-finally"`
 	UseStdin            bool                   `mapstructure:"stdin" argument:"stdin"`
 	StdinCommand        []string               `mapstructure:"stdin-command"`
 	Source              []string               `mapstructure:"source"`
@@ -134,6 +141,20 @@ type StreamErrorSection struct {
 	MinMatches int    `mapstructure:"min-matches"`
 	MaxRuns    int    `mapstructure:"max-runs"`
 	Run        string `mapstructure:"run"`
+}
+
+// SendMonitorSection is used to send monitoring information to third party software
+type SendMonitorSection struct {
+	Method  string              `mapstructure:"method"`
+	URL     string              `mapstructure:"url"`
+	Headers []SendMonitorHeader `mapstructure:"headers"`
+	Body    string              `mapstructure:"body"`
+}
+
+// SendMonitorHeader is used to send HTTP headers
+type SendMonitorHeader struct {
+	Name  string `mapstructure:"name"`
+	Value string `mapstructure:"value"`
 }
 
 // NewProfile instantiates a new blank profile

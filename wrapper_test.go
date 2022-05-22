@@ -16,8 +16,8 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/progress"
-	"github.com/creativeprojects/resticprofile/progress/status"
+	"github.com/creativeprojects/resticprofile/monitor"
+	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -608,7 +608,7 @@ func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
 }
 
 type mockOutputAnalysis struct {
-	progress.OutputAnalysis
+	monitor.OutputAnalysis
 	lockWho      string
 	lockDuration time.Duration
 }

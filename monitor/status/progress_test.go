@@ -6,7 +6,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func TestProgressNoStatusFile(t *testing.T) {
 		Backup: &config.BackupSection{},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, progress.Summary{}, "", nil)
+	p.Summary(constants.CommandBackup, monitor.Summary{}, "", nil)
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
@@ -42,7 +42,7 @@ func TestProgressSuccess(t *testing.T) {
 		Backup:     &config.BackupSection{},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, progress.Summary{}, "", nil)
+	p.Summary(constants.CommandBackup, monitor.Summary{}, "", nil)
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
@@ -68,7 +68,7 @@ func TestProgressError(t *testing.T) {
 		Backup:     &config.BackupSection{},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, progress.Summary{}, stderr, errors.New(message))
+	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, errors.New(message))
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
@@ -95,7 +95,7 @@ func TestProgressWarningAsSuccess(t *testing.T) {
 		},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, progress.Summary{}, stderr, &progress.InternalWarning{})
+	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, &monitor.InternalWarning{})
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestProgressWarningAsError(t *testing.T) {
 		},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, progress.Summary{}, stderr, &progress.InternalWarning{})
+	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, &monitor.InternalWarning{})
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)

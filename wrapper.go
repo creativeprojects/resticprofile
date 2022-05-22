@@ -16,7 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
 )
@@ -33,7 +33,7 @@ type resticWrapper struct {
 	sigChan      chan os.Signal
 	setPID       func(pid int)
 	stdin        io.ReadCloser
-	progress     []progress.Receiver
+	progress     []monitor.Receiver
 
 	// States
 	startTime     time.Time
@@ -60,7 +60,7 @@ func newResticWrapper(
 		moreArgs:      moreArgs,
 		sigChan:       c,
 		stdin:         os.Stdin,
-		progress:      make([]progress.Receiver, 0),
+		progress:      make([]monitor.Receiver, 0),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
@@ -89,7 +89,7 @@ func (r *resticWrapper) maxWaitOnLock(duration time.Duration) {
 }
 
 // addProgress instance to report back
-func (r *resticWrapper) addProgress(p progress.Receiver) {
+func (r *resticWrapper) addProgress(p monitor.Receiver) {
 	r.progress = append(r.progress, p)
 }
 
@@ -102,7 +102,7 @@ func (r *resticWrapper) start(command string) {
 	}
 }
 
-func (r *resticWrapper) summary(command string, summary progress.Summary, stderr string, result error) {
+func (r *resticWrapper) summary(command string, summary monitor.Summary, stderr string, result error) {
 	if r.dryRun {
 		return
 	}
@@ -387,7 +387,7 @@ func (r *resticWrapper) runCommand(command string) error {
 				if r.profile.Backup.ExtendedStatus {
 					rCommand.scanOutput = shell.ScanBackupJson
 				} else if !term.OsStdoutIsTerminal() {
-					// restic detects its output is not a terminal and no longer displays the progress.
+					// restic detects its output is not a terminal and no longer displays the monitor.
 					// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
 					rCommand.scanOutput = shell.ScanBackupPlain
 				}
@@ -630,7 +630,7 @@ func (r *resticWrapper) getFailEnvironment(err error) (env []string) {
 }
 
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
-func (r *resticWrapper) canSucceedAfterError(command string, summary progress.Summary, err error) bool {
+func (r *resticWrapper) canSucceedAfterError(command string, summary monitor.Summary, err error) bool {
 	if err == nil {
 		return true
 	}
@@ -647,7 +647,7 @@ func (r *resticWrapper) canSucceedAfterError(command string, summary progress.Su
 }
 
 // canRetryAfterError returns true if an error reported by running restic in runCommand, runRetention or runCheck can be retried
-func (r *resticWrapper) canRetryAfterError(command string, summary progress.Summary, err error) bool {
+func (r *resticWrapper) canRetryAfterError(command string, summary monitor.Summary, err error) bool {
 	if err == nil {
 		panic("invalid usage. err is nil.")
 	}
@@ -668,7 +668,7 @@ func (r *resticWrapper) canRetryAfterError(command string, summary progress.Summ
 	return retry
 }
 
-func (r *resticWrapper) canRetryAfterRemoteLockFailure(output progress.OutputAnalysis) (bool, time.Duration) {
+func (r *resticWrapper) canRetryAfterRemoteLockFailure(output monitor.OutputAnalysis) (bool, time.Duration) {
 	if !output.ContainsRemoteLockFailure() {
 		return false, 0
 	}

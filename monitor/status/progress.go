@@ -4,7 +4,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 type Progress struct {
@@ -32,31 +32,31 @@ func (p *Progress) Start(command string) {
 	// nothing to do here
 }
 
-func (p *Progress) Status(status progress.Status) {
+func (p *Progress) Status(status monitor.Status) {
 	// we don't report any progress here
 }
 
-func (p *Progress) Summary(command string, summary progress.Summary, stderr string, result error) {
+func (p *Progress) Summary(command string, summary monitor.Summary, stderr string, result error) {
 	if p.profile.StatusFile == "" {
 		return
 	}
 	switch {
-	case progress.IsSuccess(result):
+	case monitor.IsSuccess(result):
 		p.success(command, summary, stderr)
 
-	case progress.IsWarning(result):
+	case monitor.IsWarning(result):
 		if command == constants.CommandBackup && p.profile.Backup.NoErrorOnWarning {
 			p.success(command, summary, stderr)
 		} else {
 			p.error(command, summary, stderr, result)
 		}
 
-	case progress.IsError(result):
+	case monitor.IsError(result):
 		p.error(command, summary, stderr, result)
 	}
 }
 
-func (p *Progress) success(command string, summary progress.Summary, stderr string) {
+func (p *Progress) success(command string, summary monitor.Summary, stderr string) {
 	var err error
 	switch command {
 	case constants.CommandBackup:
@@ -78,7 +78,7 @@ func (p *Progress) success(command string, summary progress.Summary, stderr stri
 	}
 }
 
-func (p *Progress) error(command string, summary progress.Summary, stderr string, fail error) {
+func (p *Progress) error(command string, summary monitor.Summary, stderr string, fail error) {
 	var err error
 	switch command {
 	case constants.CommandBackup:
@@ -101,4 +101,4 @@ func (p *Progress) error(command string, summary progress.Summary, stderr string
 }
 
 // Verify interface
-var _ progress.Receiver = &Progress{}
+var _ monitor.Receiver = &Progress{}
