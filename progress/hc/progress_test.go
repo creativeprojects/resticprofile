@@ -71,21 +71,34 @@ func TestProgressStartTimeout(t *testing.T) {
 }
 
 func TestCommandProgressSummary(t *testing.T) {
-	fixtures := []struct {
+	type testStruct struct {
 		command       string
 		uuid          string
 		stderr        string
 		success       bool
 		expectedCalls int
-	}{
-		{constants.CommandBackup, "test-uuid", "", true, 1},
-		{constants.CommandBackup, "test-uuid", "some warnings in stderr", true, 1},
-		{constants.CommandBackup, "test-uuid", "", false, 1},
-		{constants.CommandBackup, "test-uuid", "some warnings in stderr", false, 1},
-		{constants.CommandBackup, "", "", true, 0},
-		{constants.CommandBackup, "", "", false, 0},
+	}
+	fixtures := []testStruct{
 		{"other", "test-uuid", "", true, 0},
 		{"other", "test-uuid", "", false, 0},
+	}
+
+	commands := []string{
+		constants.CommandBackup,
+		// constants.CommandCheck,
+		// constants.CommandCopy,
+		// constants.CommandForget,
+		// constants.CommandPrune,
+	}
+	for _, command := range commands {
+		fixtures = append(fixtures, []testStruct{
+			{command, "test-uuid", "", true, 1},
+			{command, "test-uuid", "some warnings in stderr", true, 1},
+			{command, "test-uuid", "", false, 1},
+			{command, "test-uuid", "some warnings in stderr", false, 1},
+			{command, "", "", true, 0},
+			{command, "", "", false, 0},
+		}...)
 	}
 
 	for _, test := range fixtures {

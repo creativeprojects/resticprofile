@@ -48,10 +48,10 @@ type Profile struct {
 	Environment          map[string]ConfidentialValue `mapstructure:"env"`
 	Backup               *BackupSection               `mapstructure:"backup"`
 	Retention            *RetentionSection            `mapstructure:"retention"`
-	Check                *OtherSectionWithSchedule    `mapstructure:"check"`
-	Prune                *OtherSectionWithSchedule    `mapstructure:"prune"`
+	Check                *SectionWithSchedule         `mapstructure:"check"`
+	Prune                *SectionWithSchedule         `mapstructure:"prune"`
 	Snapshots            map[string]interface{}       `mapstructure:"snapshots"`
-	Forget               *OtherSectionWithSchedule    `mapstructure:"forget"`
+	Forget               *SectionWithSchedule         `mapstructure:"forget"`
 	Mount                map[string]interface{}       `mapstructure:"mount"`
 	Copy                 *CopySection                 `mapstructure:"copy"`
 	Dump                 map[string]interface{}       `mapstructure:"dump"`
@@ -64,23 +64,23 @@ type Profile struct {
 
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
-	ScheduleSection  `mapstructure:",squash"`
-	CheckBefore      bool                   `mapstructure:"check-before"`
-	CheckAfter       bool                   `mapstructure:"check-after"`
-	RunBefore        []string               `mapstructure:"run-before"`
-	RunAfter         []string               `mapstructure:"run-after"`
-	RunFinally       []string               `mapstructure:"run-finally"`
-	UseStdin         bool                   `mapstructure:"stdin" argument:"stdin"`
-	StdinCommand     []string               `mapstructure:"stdin-command"`
-	Source           []string               `mapstructure:"source"`
-	Exclude          []string               `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
-	Iexclude         []string               `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
-	ExcludeFile      []string               `mapstructure:"exclude-file" argument:"exclude-file"`
-	FilesFrom        []string               `mapstructure:"files-from" argument:"files-from"`
-	ExtendedStatus   bool                   `mapstructure:"extended-status" argument:"json"`
-	NoErrorOnWarning bool                   `mapstructure:"no-error-on-warning"`
-	HealthChecksUUID string                 `mapstructure:"healthchecks-uuid"`
-	OtherFlags       map[string]interface{} `mapstructure:",remain"`
+	ScheduleBaseSection `mapstructure:",squash"`
+	CheckBefore         bool                   `mapstructure:"check-before"`
+	CheckAfter          bool                   `mapstructure:"check-after"`
+	RunBefore           []string               `mapstructure:"run-before"`
+	RunAfter            []string               `mapstructure:"run-after"`
+	RunFinally          []string               `mapstructure:"run-finally"`
+	UseStdin            bool                   `mapstructure:"stdin" argument:"stdin"`
+	StdinCommand        []string               `mapstructure:"stdin-command"`
+	Source              []string               `mapstructure:"source"`
+	Exclude             []string               `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
+	Iexclude            []string               `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
+	ExcludeFile         []string               `mapstructure:"exclude-file" argument:"exclude-file"`
+	FilesFrom           []string               `mapstructure:"files-from" argument:"files-from"`
+	ExtendedStatus      bool                   `mapstructure:"extended-status" argument:"json"`
+	NoErrorOnWarning    bool                   `mapstructure:"no-error-on-warning"`
+	HealthChecksUUID    string                 `mapstructure:"healthchecks-uuid"`
+	OtherFlags          map[string]interface{} `mapstructure:",remain"`
 }
 
 func (s *BackupSection) IsEmpty() bool { return s == nil }
@@ -88,25 +88,25 @@ func (s *BackupSection) IsEmpty() bool { return s == nil }
 // RetentionSection contains the specific configuration to
 // the 'forget' command when running as part of a backup
 type RetentionSection struct {
-	ScheduleSection `mapstructure:",squash"`
-	BeforeBackup    bool                   `mapstructure:"before-backup"`
-	AfterBackup     bool                   `mapstructure:"after-backup"`
-	OtherFlags      map[string]interface{} `mapstructure:",remain"`
+	ScheduleBaseSection `mapstructure:",squash"`
+	BeforeBackup        bool                   `mapstructure:"before-backup"`
+	AfterBackup         bool                   `mapstructure:"after-backup"`
+	OtherFlags          map[string]interface{} `mapstructure:",remain"`
 }
 
 func (s *RetentionSection) IsEmpty() bool { return s == nil }
 
-// OtherSectionWithSchedule is a section containing schedule only specific parameters
+// SectionWithSchedule is a section containing schedule only specific parameters
 // (the other parameters being for restic)
-type OtherSectionWithSchedule struct {
-	ScheduleSection `mapstructure:",squash"`
-	OtherFlags      map[string]interface{} `mapstructure:",remain"`
+type SectionWithSchedule struct {
+	ScheduleBaseSection `mapstructure:",squash"`
+	OtherFlags          map[string]interface{} `mapstructure:",remain"`
 }
 
-func (s *OtherSectionWithSchedule) IsEmpty() bool { return s == nil }
+func (s *SectionWithSchedule) IsEmpty() bool { return s == nil }
 
-// ScheduleSection contains the parameters for scheduling a command (backup, check, forget, etc.)
-type ScheduleSection struct {
+// ScheduleBaseSection contains the parameters for scheduling a command (backup, check, forget, etc.)
+type ScheduleBaseSection struct {
 	Schedule           []string      `mapstructure:"schedule" show:"noshow"`
 	SchedulePermission string        `mapstructure:"schedule-permission" show:"noshow"`
 	ScheduleLog        string        `mapstructure:"schedule-log" show:"noshow"`
@@ -117,14 +117,14 @@ type ScheduleSection struct {
 
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
-	Initialize      bool              `mapstructure:"initialize"`
-	Repository      ConfidentialValue `mapstructure:"repository" argument:"repo2"`
-	RepositoryFile  string            `mapstructure:"repository-file" argument:"repository-file2"`
-	PasswordFile    string            `mapstructure:"password-file" argument:"password-file2"`
-	PasswordCommand string            `mapstructure:"password-command" argument:"password-command2"`
-	KeyHint         string            `mapstructure:"key-hint" argument:"key-hint2"`
-	ScheduleSection `mapstructure:",squash"`
-	OtherFlags      map[string]interface{} `mapstructure:",remain"`
+	Initialize          bool              `mapstructure:"initialize"`
+	Repository          ConfidentialValue `mapstructure:"repository" argument:"repo2"`
+	RepositoryFile      string            `mapstructure:"repository-file" argument:"repository-file2"`
+	PasswordFile        string            `mapstructure:"password-file" argument:"password-file2"`
+	PasswordCommand     string            `mapstructure:"password-command" argument:"password-command2"`
+	KeyHint             string            `mapstructure:"key-hint" argument:"key-hint2"`
+	ScheduleBaseSection `mapstructure:",squash"`
+	OtherFlags          map[string]interface{} `mapstructure:",remain"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
@@ -332,7 +332,7 @@ func (p *Profile) getSectionOtherFlags(section interface{}) map[string]interface
 			return v.OtherFlags
 		case *CopySection:
 			return v.OtherFlags
-		case *OtherSectionWithSchedule:
+		case *SectionWithSchedule:
 			return v.OtherFlags
 		case *RetentionSection:
 			return v.OtherFlags
@@ -497,27 +497,27 @@ func (p *Profile) allSchedulableSections() map[string]interface{} {
 	return sections
 }
 
-func getScheduleSection(section interface{}) (schedule *ScheduleSection, schedulable bool) {
+func getScheduleSection(section interface{}) (schedule *ScheduleBaseSection, schedulable bool) {
 	switch v := section.(type) {
 	case *BackupSection:
 		schedulable = true
 		if v != nil {
-			schedule = &v.ScheduleSection
+			schedule = &v.ScheduleBaseSection
 		}
 	case *CopySection:
 		schedulable = true
 		if v != nil {
-			schedule = &v.ScheduleSection
+			schedule = &v.ScheduleBaseSection
 		}
 	case *RetentionSection:
 		schedulable = true
 		if v != nil {
-			schedule = &v.ScheduleSection
+			schedule = &v.ScheduleBaseSection
 		}
-	case *OtherSectionWithSchedule:
+	case *SectionWithSchedule:
 		schedulable = true
 		if v != nil {
-			schedule = &v.ScheduleSection
+			schedule = &v.ScheduleBaseSection
 		}
 	}
 	return
