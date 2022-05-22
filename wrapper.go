@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
 	"github.com/creativeprojects/resticprofile/monitor"
+	"github.com/creativeprojects/resticprofile/monitor/hook"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
 )
@@ -34,6 +36,7 @@ type resticWrapper struct {
 	setPID       func(pid int)
 	stdin        io.ReadCloser
 	progress     []monitor.Receiver
+	sender       *hook.Sender
 
 	// States
 	startTime     time.Time
@@ -61,6 +64,7 @@ func newResticWrapper(
 		sigChan:       c,
 		stdin:         os.Stdin,
 		progress:      make([]monitor.Receiver, 0),
+		sender:        hook.NewSender("resticprofile/"+version, 0),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
@@ -125,11 +129,13 @@ func (r *resticWrapper) runProfile() error {
 			func() error {
 				var err error
 
-				// pre-profile commands
-				err = r.runProfilePreCommand()
+				// run-before commands
+				err = r.runBeforeProfileCommands()
 				if err != nil {
 					return err
 				}
+
+				r.sendBeforeProfile()
 
 				// breaking change from 0.7.0 and 0.7.1:
 				// run the initialization after the pre-profile commands
@@ -144,10 +150,10 @@ func (r *resticWrapper) runProfile() error {
 					// it's ok if the initialization returned an error
 				}
 
-				// pre-commands (for backup)
+				// run-before (for backup)
 				if r.command == constants.CommandBackup {
 					// Shell commands
-					err = r.runPreCommand(r.command)
+					err = r.runBeforeCommands(r.command)
 					if err != nil {
 						return err
 					}
@@ -190,26 +196,29 @@ func (r *resticWrapper) runProfile() error {
 						}
 					}
 					// Shell commands
-					err = r.runPostCommand(r.command)
+					err = r.runAfterCommands(r.command)
 					if err != nil {
 						return err
 					}
 				}
 
 				// post-profile commands
-				err = r.runProfilePostCommand()
+				err = r.runAfterProfileCommands()
 				if err != nil {
 					return err
 				}
+
+				r.sendAfterProfile()
 
 				return nil
 			},
 			// on failure
 			func(err error) {
-				_ = r.runProfilePostFailCommand(err)
+				_ = r.runAfterFailProfileCommands(err)
+				r.sendAfterFailProfile(err)
 			},
 			func(err error) {
-				r.runFinalCommand(r.command, err)
+				r.runFinalCommands(r.command, err)
 			},
 		)
 	})
@@ -433,12 +442,12 @@ func (r *resticWrapper) runUnlock() error {
 	return nil
 }
 
-func (r *resticWrapper) runPreCommand(command string) error {
-	// Pre/Post commands are only supported for backup
+// runBeforeCommands runs the backup specific "run-before" commands
+func (r *resticWrapper) runBeforeCommands(command string) error {
 	if command != constants.CommandBackup {
 		return nil
 	}
-	if r.profile.Backup == nil || r.profile.Backup.RunBefore == nil || len(r.profile.Backup.RunBefore) == 0 {
+	if r.profile.Backup == nil || len(r.profile.Backup.RunBefore) == 0 {
 		return nil
 	}
 	env := append(os.Environ(), r.getEnvironment()...)
@@ -458,12 +467,12 @@ func (r *resticWrapper) runPreCommand(command string) error {
 	return nil
 }
 
-func (r *resticWrapper) runPostCommand(command string) error {
-	// Pre/Post commands are only supported for backup
+// runAfterCommands runs the "run-after" commands
+func (r *resticWrapper) runAfterCommands(command string) error {
 	if command != constants.CommandBackup {
 		return nil
 	}
-	if r.profile.Backup == nil || r.profile.Backup.RunAfter == nil || len(r.profile.Backup.RunAfter) == 0 {
+	if r.profile.Backup == nil || len(r.profile.Backup.RunAfter) == 0 {
 		return nil
 	}
 	env := append(os.Environ(), r.getEnvironment()...)
@@ -483,8 +492,9 @@ func (r *resticWrapper) runPostCommand(command string) error {
 	return nil
 }
 
-func (r *resticWrapper) runProfilePreCommand() error {
-	if r.profile.RunBefore == nil || len(r.profile.RunBefore) == 0 {
+// runBeforeProfileCommands runs the "run-before" profile commands
+func (r *resticWrapper) runBeforeProfileCommands() error {
+	if len(r.profile.RunBefore) == 0 {
 		return nil
 	}
 	env := append(os.Environ(), r.getEnvironment()...)
@@ -504,8 +514,9 @@ func (r *resticWrapper) runProfilePreCommand() error {
 	return nil
 }
 
-func (r *resticWrapper) runProfilePostCommand() error {
-	if r.profile.RunAfter == nil || len(r.profile.RunAfter) == 0 {
+// runAfterProfileCommands runs the "run-after" profile commands
+func (r *resticWrapper) runAfterProfileCommands() error {
+	if len(r.profile.RunAfter) == 0 {
 		return nil
 	}
 	env := append(os.Environ(), r.getEnvironment()...)
@@ -525,8 +536,9 @@ func (r *resticWrapper) runProfilePostCommand() error {
 	return nil
 }
 
-func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
-	if r.profile.RunAfterFail == nil || len(r.profile.RunAfterFail) == 0 {
+// runAfterFailProfileCommands runs the "run-after-fail" profile commands
+func (r *resticWrapper) runAfterFailProfileCommands(fail error) error {
+	if len(r.profile.RunAfterFail) == 0 {
 		return nil
 	}
 	env := append(os.Environ(), r.getEnvironment()...)
@@ -547,7 +559,8 @@ func (r *resticWrapper) runProfilePostFailCommand(fail error) error {
 	return nil
 }
 
-func (r *resticWrapper) runFinalCommand(command string, fail error) {
+// runFinalCommands runs all the "run-finally" commands
+func (r *resticWrapper) runFinalCommands(command string, fail error) {
 	var commands []string
 
 	if command == constants.CommandBackup && r.profile.Backup != nil && r.profile.Backup.RunFinally != nil {
@@ -578,6 +591,39 @@ func (r *resticWrapper) runFinalCommand(command string, fail error) {
 	}
 }
 
+func (r *resticWrapper) sendBeforeProfile() {
+	if len(r.profile.SendBefore) == 0 {
+		return
+	}
+
+	for i, send := range r.profile.SendBefore {
+		clog.Debugf("starting 'send-before' profile command %d/%d", i+1, len(r.profile.SendBefore))
+		r.sender.Send(send, r.getContext())
+	}
+}
+
+func (r *resticWrapper) sendAfterProfile() {
+	if len(r.profile.SendAfter) == 0 {
+		return
+	}
+
+	for i, send := range r.profile.SendAfter {
+		clog.Debugf("starting 'send-after' profile command %d/%d", i+1, len(r.profile.SendAfter))
+		r.sender.Send(send, r.getContext())
+	}
+}
+
+func (r *resticWrapper) sendAfterFailProfile(err error) {
+	if len(r.profile.SendAfterFail) == 0 {
+		return
+	}
+
+	for i, send := range r.profile.SendAfterFail {
+		clog.Debugf("starting 'send-after-fail' profile command %d/%d", i+1, len(r.profile.SendAfterFail))
+		r.sender.Send(send, r.getContextWithError(err))
+	}
+}
+
 // getEnvironment returns the environment variables defined in the profile configuration
 func (r *resticWrapper) getEnvironment() []string {
 	if r.profile.Environment == nil || len(r.profile.Environment) == 0 {
@@ -599,18 +645,18 @@ func (r *resticWrapper) getEnvironment() []string {
 // (name and command for now)
 func (r *resticWrapper) getProfileEnvironment() []string {
 	return []string{
-		fmt.Sprintf("PROFILE_NAME=%s", r.profile.Name),
-		fmt.Sprintf("PROFILE_COMMAND=%s", r.command),
+		fmt.Sprintf("%s=%s", constants.EnvProfileName, r.profile.Name),
+		fmt.Sprintf("%s=%s", constants.EnvProfileCommand, r.command),
 	}
 }
 
-// getFailEnvironment returns additional environment variables describing the fail reason
+// getFailEnvironment returns additional environment variables describing the failure
 func (r *resticWrapper) getFailEnvironment(err error) (env []string) {
 	if err == nil {
 		return
 	}
 
-	env = []string{fmt.Sprintf("ERROR=%s", err.Error())}
+	env = []string{fmt.Sprintf("%s=%s", constants.EnvError, err.Error())}
 
 	if fail, ok := err.(*commandError); ok {
 		exitCode := -1
@@ -619,14 +665,47 @@ func (r *resticWrapper) getFailEnvironment(err error) (env []string) {
 		}
 
 		env = append(env,
-			fmt.Sprintf("ERROR_COMMANDLINE=%s", fail.Commandline()),
-			fmt.Sprintf("ERROR_EXIT_CODE=%d", exitCode),
-			fmt.Sprintf("ERROR_STDERR=%s", fail.Stderr()),
+			fmt.Sprintf("%s=%s", constants.EnvErrorCommandLine, fail.Commandline()),
+			fmt.Sprintf("%s=%d", constants.EnvErrorExitCode, exitCode),
+			fmt.Sprintf("%s=%s", constants.EnvErrorStderr, fail.Stderr()),
 			// Deprecated: STDERR can originate from (pre/post)-command which doesn't need to be restic
 			fmt.Sprintf("RESTIC_STDERR=%s", fail.Stderr()),
 		)
 	}
 	return
+}
+
+func (r *resticWrapper) getContext() hook.Context {
+	return hook.Context{
+		ProfileName:    r.profile.Name,
+		ProfileCommand: r.command,
+	}
+}
+
+func (r *resticWrapper) getContextWithError(err error) hook.Context {
+	ctx := r.getContext()
+	ctx.Error = r.getErrorContext(err)
+	return ctx
+}
+
+func (r *resticWrapper) getErrorContext(err error) hook.ErrorContext {
+	ctx := hook.ErrorContext{}
+	if err == nil {
+		return ctx
+	}
+	ctx.Message = err.Error()
+
+	if fail, ok := err.(*commandError); ok {
+		exitCode := -1
+		if code, err := fail.ExitCode(); err == nil {
+			exitCode = code
+		}
+
+		ctx.CommandLine = fail.Commandline()
+		ctx.ExitCode = strconv.Itoa(exitCode)
+		ctx.Stderr = fail.Stderr()
+	}
+	return ctx
 }
 
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
