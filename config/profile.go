@@ -145,10 +145,11 @@ type StreamErrorSection struct {
 
 // SendMonitorSection is used to send monitoring information to third party software
 type SendMonitorSection struct {
-	Method  string              `mapstructure:"method"`
-	URL     string              `mapstructure:"url"`
-	Headers []SendMonitorHeader `mapstructure:"headers"`
-	Body    string              `mapstructure:"body"`
+	Method       string              `mapstructure:"method"`
+	URL          string              `mapstructure:"url"`
+	Headers      []SendMonitorHeader `mapstructure:"headers"`
+	Body         string              `mapstructure:"body"`
+	BodyTemplate string              `mapstructure:"body-template"`
 }
 
 // SendMonitorHeader is used to send HTTP headers
