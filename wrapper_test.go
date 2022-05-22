@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -774,4 +775,116 @@ func TestLocksAndLockWait(t *testing.T) {
 	// W2: Succeeds to wait when lockWait is large enough
 	w2.maxWaitOnLock(2 * time.Second)
 	assert.NoError(t, w2.runProfile())
+}
+
+func TestGetContext(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "TestProfile")
+	wrapper := newResticWrapper("", false, profile, "TestCommand", nil, nil)
+	require.NotNil(t, wrapper)
+	ctx := wrapper.getContext()
+	assert.Equal(t, "TestProfile", ctx.ProfileName)
+	assert.Equal(t, "TestCommand", ctx.ProfileCommand)
+	assert.Equal(t, "", ctx.Error.Message)
+	assert.Equal(t, "", ctx.Error.ExitCode)
+	assert.Equal(t, "", ctx.Error.CommandLine)
+	assert.Equal(t, "", ctx.Error.Stderr)
+}
+
+func TestGetContextWithError(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "TestProfile")
+	wrapper := newResticWrapper("", false, profile, "TestCommand", nil, nil)
+	require.NotNil(t, wrapper)
+	ctx := wrapper.getContextWithError(nil)
+	assert.Equal(t, "TestProfile", ctx.ProfileName)
+	assert.Equal(t, "TestCommand", ctx.ProfileCommand)
+	assert.Equal(t, "", ctx.Error.Message)
+	assert.Equal(t, "", ctx.Error.ExitCode)
+	assert.Equal(t, "", ctx.Error.CommandLine)
+	assert.Equal(t, "", ctx.Error.Stderr)
+}
+
+func TestGetErrorContext(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "")
+	wrapper := newResticWrapper("", false, profile, "", nil, nil)
+	require.NotNil(t, wrapper)
+	ctx := wrapper.getErrorContext(nil)
+	assert.Equal(t, "", ctx.Message)
+	assert.Equal(t, "", ctx.ExitCode)
+	assert.Equal(t, "", ctx.CommandLine)
+	assert.Equal(t, "", ctx.Stderr)
+}
+
+func TestGetErrorContextWithStandardError(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "")
+	wrapper := newResticWrapper("", false, profile, "", nil, nil)
+	require.NotNil(t, wrapper)
+	ctx := wrapper.getErrorContext(errors.New("test error message 1"))
+	assert.Equal(t, "test error message 1", ctx.Message)
+	assert.Equal(t, "", ctx.ExitCode)
+	assert.Equal(t, "", ctx.CommandLine)
+	assert.Equal(t, "", ctx.Stderr)
+}
+
+func TestGetErrorContextWithCommandError(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "")
+	wrapper := newResticWrapper("", false, profile, "", nil, nil)
+	require.NotNil(t, wrapper)
+
+	def := shellCommandDefinition{
+		command:    "command",
+		args:       []string{"arg1"},
+		publicArgs: []string{"publicArg1"},
+	}
+	ctx := wrapper.getErrorContext(newCommandError(def, "stderr", errors.New("test error message 2")))
+	assert.Equal(t, "test error message 2", ctx.Message)
+	assert.Equal(t, "-1", ctx.ExitCode)
+	assert.Equal(t, "\"command\" \"publicArg1\"", ctx.CommandLine)
+	assert.Equal(t, "stderr", ctx.Stderr)
+}
+
+func TestGetProfileEnvironment(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "TestProfile")
+	wrapper := newResticWrapper("", false, profile, "TestCommand", nil, nil)
+	require.NotNil(t, wrapper)
+
+	env := wrapper.getProfileEnvironment()
+	assert.ElementsMatch(t, []string{"PROFILE_NAME=TestProfile", "PROFILE_COMMAND=TestCommand"}, env)
+}
+
+func TestGetFailEnvironmentNoError(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "")
+	wrapper := newResticWrapper("", false, profile, "", nil, nil)
+	require.NotNil(t, wrapper)
+
+	env := wrapper.getFailEnvironment(nil)
+	assert.Empty(t, env)
+}
+
+func TestGetFailEnvironmentWithStandardError(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "")
+	wrapper := newResticWrapper("", false, profile, "", nil, nil)
+	require.NotNil(t, wrapper)
+
+	env := wrapper.getFailEnvironment(errors.New("test error message 3"))
+	assert.ElementsMatch(t, []string{"ERROR=test error message 3"}, env)
+}
+
+func TestGetFailEnvironmentWithCommandError(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "")
+	wrapper := newResticWrapper("", false, profile, "", nil, nil)
+	require.NotNil(t, wrapper)
+
+	def := shellCommandDefinition{
+		command:    "command",
+		args:       []string{"arg1"},
+		publicArgs: []string{"publicArg1"},
+	}
+	env := wrapper.getFailEnvironment(newCommandError(def, "stderr", errors.New("test error message 4")))
+	assert.ElementsMatch(t, []string{
+		"ERROR=test error message 4",
+		"ERROR_COMMANDLINE=\"command\" \"publicArg1\"",
+		"ERROR_EXIT_CODE=-1",
+		"ERROR_STDERR=stderr",
+		"RESTIC_STDERR=stderr",
+	}, env)
 }
