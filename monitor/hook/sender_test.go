@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -87,4 +88,23 @@ func TestSendHook(t *testing.T) {
 			assert.Equal(t, testCase.calls, calls)
 		})
 	}
+}
+
+func TestSenderTimeout(t *testing.T) {
+	var startedCalls, finishedCalls uint32
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddUint32(&startedCalls, 1)
+		time.Sleep(10 * time.Second)
+		atomic.AddUint32(&finishedCalls, 1)
+	})
+	server := httptest.NewServer(handler)
+
+	sender := NewSender("resticprofile_test", 300*time.Millisecond)
+	err := sender.Send(config.SendMonitorSection{
+		URL: server.URL,
+	}, Context{})
+	assert.Error(t, err)
+
+	assert.Equal(t, uint32(1), atomic.LoadUint32(&startedCalls))
+	assert.Equal(t, uint32(0), atomic.LoadUint32(&finishedCalls))
 }

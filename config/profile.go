@@ -46,8 +46,6 @@ type Profile struct {
 	PrometheusSaveToFile string                       `mapstructure:"prometheus-save-to-file"`
 	PrometheusPush       string                       `mapstructure:"prometheus-push"`
 	PrometheusLabels     map[string]string            `mapstructure:"prometheus-labels"`
-	HealthChecksURL      string                       `mapstructure:"healthchecks-url"`
-	HealthChecksTimeout  time.Duration                `mapstructure:"healthchecks-timeout"`
 	OtherFlags           map[string]interface{}       `mapstructure:",remain"`
 	Environment          map[string]ConfidentialValue `mapstructure:"env"`
 	Backup               *BackupSection               `mapstructure:"backup"`
@@ -86,7 +84,6 @@ type BackupSection struct {
 	FilesFrom           []string               `mapstructure:"files-from" argument:"files-from"`
 	ExtendedStatus      bool                   `mapstructure:"extended-status" argument:"json"`
 	NoErrorOnWarning    bool                   `mapstructure:"no-error-on-warning"`
-	HealthChecksUUID    string                 `mapstructure:"healthchecks-uuid"`
 	OtherFlags          map[string]interface{} `mapstructure:",remain"`
 }
 
