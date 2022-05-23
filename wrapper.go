@@ -157,6 +157,9 @@ func (r *resticWrapper) runProfile() error {
 					if err != nil {
 						return err
 					}
+
+					r.sendBefore(r.command)
+
 					// Check
 					if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
 						err = r.runCheck()
@@ -188,6 +191,9 @@ func (r *resticWrapper) runProfile() error {
 							return err
 						}
 					}
+
+					r.sendAfter(r.command)
+
 					// Check
 					if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
 						err = r.runCheck()
@@ -219,6 +225,7 @@ func (r *resticWrapper) runProfile() error {
 			},
 			func(err error) {
 				r.runFinalCommands(r.command, err)
+				r.sendFinally(r.command, err)
 			},
 		)
 	})
@@ -597,7 +604,7 @@ func (r *resticWrapper) sendBeforeProfile() {
 	}
 
 	for i, send := range r.profile.SendBefore {
-		clog.Debugf("starting 'send-before' profile command %d/%d", i+1, len(r.profile.SendBefore))
+		clog.Debugf("starting 'send-before' from profile %d/%d", i+1, len(r.profile.SendBefore))
 		r.sender.Send(send, r.getContext())
 	}
 }
@@ -608,7 +615,7 @@ func (r *resticWrapper) sendAfterProfile() {
 	}
 
 	for i, send := range r.profile.SendAfter {
-		clog.Debugf("starting 'send-after' profile command %d/%d", i+1, len(r.profile.SendAfter))
+		clog.Debugf("starting 'send-after' from profile %d/%d", i+1, len(r.profile.SendAfter))
 		r.sender.Send(send, r.getContext())
 	}
 }
@@ -619,9 +626,63 @@ func (r *resticWrapper) sendAfterFailProfile(err error) {
 	}
 
 	for i, send := range r.profile.SendAfterFail {
-		clog.Debugf("starting 'send-after-fail' profile command %d/%d", i+1, len(r.profile.SendAfterFail))
+		clog.Debugf("starting 'send-after-fail' from profile %d/%d", i+1, len(r.profile.SendAfterFail))
 		r.sender.Send(send, r.getContextWithError(err))
 	}
+}
+
+// sendBefore the backup command
+func (r *resticWrapper) sendBefore(command string) error {
+	if command != constants.CommandBackup {
+		return nil
+	}
+	if r.profile.Backup == nil || len(r.profile.Backup.SendBefore) == 0 {
+		return nil
+	}
+
+	for i, send := range r.profile.Backup.SendBefore {
+		clog.Debugf("starting 'send-before' from backup %d/%d", i+1, len(r.profile.Backup.SendBefore))
+		r.sender.Send(send, r.getContext())
+	}
+	return nil
+}
+
+// sendAfter the backup command
+func (r *resticWrapper) sendAfter(command string) error {
+	if command != constants.CommandBackup {
+		return nil
+	}
+	if r.profile.Backup == nil || len(r.profile.Backup.SendAfter) == 0 {
+		return nil
+	}
+
+	for i, send := range r.profile.Backup.SendAfter {
+		clog.Debugf("starting 'send-after' from backup %d/%d", i+1, len(r.profile.Backup.SendAfter))
+		r.sender.Send(send, r.getContext())
+	}
+	return nil
+}
+
+// sendFinally sends all final hooks (backup then profile)
+func (r *resticWrapper) sendFinally(command string, err error) error {
+	// run-finally from backup
+	if command == constants.CommandBackup && r.profile.Backup != nil && len(r.profile.Backup.RunFinally) > 0 {
+		for i, send := range r.profile.Backup.SendFinally {
+			clog.Debugf("starting 'send-finally' from backup %d/%d", i+1, len(r.profile.Backup.SendFinally))
+			r.sender.Send(send, r.getContextWithError(err))
+		}
+	}
+
+	// run-finally from profile
+	if len(r.profile.RunFinally) == 0 {
+		return nil
+	}
+	for i, send := range r.profile.SendFinally {
+		clog.Debugf("starting 'send-finally' from backup %d/%d", i+1, len(r.profile.SendFinally))
+		r.sender.Send(send, r.getContextWithError(err))
+	}
+
+	return nil
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration
@@ -644,33 +705,29 @@ func (r *resticWrapper) getEnvironment() []string {
 // getProfileEnvironment returns some environment variables about the current profile
 // (name and command for now)
 func (r *resticWrapper) getProfileEnvironment() []string {
+	ctx := r.getContext()
 	return []string{
-		fmt.Sprintf("%s=%s", constants.EnvProfileName, r.profile.Name),
-		fmt.Sprintf("%s=%s", constants.EnvProfileCommand, r.command),
+		fmt.Sprintf("%s=%s", constants.EnvProfileName, ctx.ProfileName),
+		fmt.Sprintf("%s=%s", constants.EnvProfileCommand, ctx.ProfileCommand),
 	}
 }
 
 // getFailEnvironment returns additional environment variables describing the failure
 func (r *resticWrapper) getFailEnvironment(err error) (env []string) {
-	if err == nil {
-		return
+	ctx := r.getErrorContext(err)
+	if ctx.Message != "" {
+		env = append(env, fmt.Sprintf("%s=%s", constants.EnvError, ctx.Message))
 	}
-
-	env = []string{fmt.Sprintf("%s=%s", constants.EnvError, err.Error())}
-
-	if fail, ok := err.(*commandError); ok {
-		exitCode := -1
-		if code, err := fail.ExitCode(); err == nil {
-			exitCode = code
-		}
-
-		env = append(env,
-			fmt.Sprintf("%s=%s", constants.EnvErrorCommandLine, fail.Commandline()),
-			fmt.Sprintf("%s=%d", constants.EnvErrorExitCode, exitCode),
-			fmt.Sprintf("%s=%s", constants.EnvErrorStderr, fail.Stderr()),
-			// Deprecated: STDERR can originate from (pre/post)-command which doesn't need to be restic
-			fmt.Sprintf("RESTIC_STDERR=%s", fail.Stderr()),
-		)
+	if ctx.CommandLine != "" {
+		env = append(env, fmt.Sprintf("%s=%s", constants.EnvErrorCommandLine, ctx.CommandLine))
+	}
+	if ctx.ExitCode != "" {
+		env = append(env, fmt.Sprintf("%s=%s", constants.EnvErrorExitCode, ctx.ExitCode))
+	}
+	if ctx.Stderr != "" {
+		env = append(env, fmt.Sprintf("%s=%s", constants.EnvErrorStderr, ctx.Stderr))
+		// Deprecated: STDERR can originate from (pre/post)-command which doesn't need to be restic
+		env = append(env, fmt.Sprintf("RESTIC_STDERR=%s", ctx.Stderr))
 	}
 	return
 }
