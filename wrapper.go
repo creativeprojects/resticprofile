@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -37,6 +38,7 @@ type resticWrapper struct {
 	stdin        io.ReadCloser
 	progress     []monitor.Receiver
 	sender       *hook.Sender
+	logBuffer    *bytes.Buffer // keep a log of restic output
 
 	// States
 	startTime     time.Time
@@ -68,12 +70,17 @@ func newResticWrapper(
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
+		logBuffer:     &bytes.Buffer{},
 	}
 }
 
 // setGlobal sets the global section from config
 func (r *resticWrapper) setGlobal(global *config.Global) {
 	r.global = global
+}
+
+func (r *resticWrapper) setLogBuffer(logBuffer *bytes.Buffer) {
+	r.logBuffer = logBuffer
 }
 
 // ignoreLock configures resticWrapper to ignore the lock defined in profile
