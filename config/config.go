@@ -261,6 +261,11 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 		}
 	}
 
+	// Process inline templates (config block templates)
+	if err == nil && c.GetVersion() >= Version02 {
+		err = applyInlineTemplates(c.viper, extractInlineTemplates(c.viper))
+	}
+
 	return err
 }
 

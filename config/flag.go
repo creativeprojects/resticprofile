@@ -93,7 +93,7 @@ func stringifyConfidentialValue(value reflect.Value) ([]string, bool) {
 func stringifyValue(value reflect.Value) ([]string, bool) {
 	// Check if the value can convert itself to String() (e.g. time.Duration)
 	stringer := fmt.Stringer(nil)
-	if value.CanInterface() {
+	if value.Kind() != reflect.Invalid && value.CanInterface() {
 		vi := value.Interface()
 		if s, ok := vi.(fmt.Stringer); ok {
 			stringer = s
