@@ -3,6 +3,7 @@
 package shell
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,10 +31,13 @@ func (c *Command) composeShellArguments(shell string) []string {
 		// Powershell requires ".\" prefix for executables in CWD (same as unix shells)
 		if filepath.Base(c.Command) == c.Command {
 			if s, err := os.Stat(c.Command); err == nil && !s.IsDir() {
-				c.Command = `.\` + c.Command
+				c.Command = fmt.Sprintf(`.\%s`, c.Command)
 			}
 		}
 		command = []string{"-Command", c.Command}
+	} else if sh == windowsShell {
+		// Enable delayed variable expansion (!variable! syntax)
+		command = append([]string{"/V:ON"}, command...)
 	}
 
 	return append(

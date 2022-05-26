@@ -200,10 +200,6 @@ func (c *Command) getShellCommand() (shell string, arguments []string, err error
 // removeQuotes removes single and double quotes when the whole string is quoted.
 // this is only useful for windows where the arguments are sent one by one.
 func removeQuotes(args []string) []string {
-	if args == nil {
-		return nil
-	}
-
 	singleQuote := `'`
 	doubleQuote := `"`
 
