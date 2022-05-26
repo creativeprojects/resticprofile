@@ -67,11 +67,11 @@ func (d *Display) Flush() {
 			continue
 		}
 		if len(entry.values) > 0 {
-			fmt.Fprintf(tabWriter, "%s%s:\t%#v\n", prefix, entry.key, entry.values[0])
+			fmt.Fprintf(tabWriter, "%s%s:\t%s\n", prefix, entry.key, cleanupControlCharacters(entry.values[0]))
 		}
 		if len(entry.values) > 1 {
 			for i := 1; i < len(entry.values); i++ {
-				fmt.Fprintf(tabWriter, "%s\t%#v\n", prefix, entry.values[i])
+				fmt.Fprintf(tabWriter, "%s\t%s\n", prefix, cleanupControlCharacters(entry.values[i]))
 			}
 		}
 	}
@@ -84,4 +84,11 @@ type Entry struct {
 	key     string
 	keyOnly bool
 	values  []string
+}
+
+func cleanupControlCharacters(value string) string {
+	value = strings.ReplaceAll(value, "\t", "\\t")
+	value = strings.ReplaceAll(value, "\r", "\\r")
+	value = strings.ReplaceAll(value, "\n", "\\n")
+	return value
 }
