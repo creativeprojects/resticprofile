@@ -1,9 +1,10 @@
-//+build !windows
+//go:build !windows
 
 package shell
 
 import (
 	"os"
+	"strings"
 	"syscall"
 )
 
@@ -27,5 +28,20 @@ func (c *Command) propagateGroupSignal(process *os.Process) {
 		return
 	case <-c.done:
 		return
+	}
+}
+
+func (c *Command) getShellSearchList() []string {
+	// prefer bash if available as it has better signal propagation (sh may fail to forward signals)
+	return []string{unixBashShell, unixShell}
+}
+
+func (c *Command) composeShellArguments(_ string) []string {
+	// Flatten all arguments into one string, sh expects one big string
+	flatCommand := append([]string{c.Command}, c.Arguments...)
+
+	return []string{
+		"-c",
+		strings.Join(flatCommand, " "),
 	}
 }

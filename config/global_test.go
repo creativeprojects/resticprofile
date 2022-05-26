@@ -49,6 +49,7 @@ nice = 1
 priority = "low"
 default-command = "version"
 initialize = true
+shell = "bash"
 restic-binary = "/tmp/restic"
 restic-lock-retry-after = "2m30s"
 restic-stale-lock-age = "4h"
@@ -65,6 +66,7 @@ restic-stale-lock-age = "4h"
 	assert.Equal(t, "low", global.Priority)
 	assert.Equal(t, "version", global.DefaultCommand)
 	assert.True(t, global.Initialize)
+	assert.Equal(t, []string{"bash"}, global.ShellBinary)
 	assert.Equal(t, "/tmp/restic", global.ResticBinary)
 	assert.Equal(t, 150*time.Second, global.ResticLockRetryAfter)
 	assert.Equal(t, 4*time.Hour, global.ResticStaleLockAge)

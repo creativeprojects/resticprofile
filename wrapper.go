@@ -275,6 +275,13 @@ func (r *resticWrapper) commonResticArgs(args []string) (commonArgs []string) {
 	return
 }
 
+func (r *resticWrapper) getShell() (shell []string) {
+	if r.global != nil {
+		shell = r.global.ShellBinary
+	}
+	return
+}
+
 func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArgs ...string) shellCommandDefinition {
 	// Create local instance to allow modification
 	args = args.Clone()
@@ -298,7 +305,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, moreArg
 	env = append(env, r.getProfileEnvironment()...)
 
 	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(publicArguments, " "))
-	rCommand := newShellCommand(r.resticBinary, arguments, env, r.dryRun, r.sigChan, r.setPID)
+	rCommand := newShellCommand(r.resticBinary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()
@@ -465,7 +472,7 @@ func (r *resticWrapper) runBeforeCommands(command string) error {
 
 	for i, preCommand := range r.profile.Backup.RunBefore {
 		clog.Debugf("starting pre-backup command %d/%d", i+1, len(r.profile.Backup.RunBefore))
-		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
+		rCommand := newShellCommand(preCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -490,7 +497,7 @@ func (r *resticWrapper) runAfterCommands(command string) error {
 
 	for i, postCommand := range r.profile.Backup.RunAfter {
 		clog.Debugf("starting post-backup command %d/%d", i+1, len(r.profile.Backup.RunAfter))
-		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
+		rCommand := newShellCommand(postCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -512,7 +519,7 @@ func (r *resticWrapper) runBeforeProfileCommands() error {
 
 	for i, preCommand := range r.profile.RunBefore {
 		clog.Debugf("starting 'run-before' profile command %d/%d", i+1, len(r.profile.RunBefore))
-		rCommand := newShellCommand(preCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
+		rCommand := newShellCommand(preCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -534,7 +541,7 @@ func (r *resticWrapper) runAfterProfileCommands() error {
 
 	for i, postCommand := range r.profile.RunAfter {
 		clog.Debugf("starting 'run-after' profile command %d/%d", i+1, len(r.profile.RunAfter))
-		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
+		rCommand := newShellCommand(postCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -557,7 +564,7 @@ func (r *resticWrapper) runAfterFailProfileCommands(fail error) error {
 
 	for i, postCommand := range r.profile.RunAfterFail {
 		clog.Debugf("starting 'run-after-fail' profile command %d/%d", i+1, len(r.profile.RunAfterFail))
-		rCommand := newShellCommand(postCommand, nil, env, r.dryRun, r.sigChan, r.setPID)
+		rCommand := newShellCommand(postCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
@@ -588,7 +595,7 @@ func (r *resticWrapper) runFinalCommands(command string, fail error) {
 		// Using defer stack for "finally" to ensure every command is run even on panic
 		defer func(index int, cmd string) {
 			clog.Debugf("starting final command %d/%d", index+1, len(commands))
-			rCommand := newShellCommand(cmd, nil, env, r.dryRun, r.sigChan, r.setPID)
+			rCommand := newShellCommand(cmd, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 			// stdout are stderr are coming from the default terminal (in case they're redirected)
 			rCommand.stdout = term.GetOutput()
 			rCommand.stderr = term.GetErrorOutput()

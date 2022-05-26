@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 	"time"
 
@@ -15,8 +14,11 @@ import (
 )
 
 const (
-	windowsDefaultShell = "cmd.exe"
-	windowsPowershell   = "powershell.exe"
+	unixShell          = "sh"
+	unixBashShell      = "bash"
+	windowsShell       = "cmd.exe"
+	windowsPowershell  = "powershell.exe"
+	windowsPowershell6 = "pwsh.exe"
 )
 
 // SetPID is a callback to send the PID of the current child process
@@ -28,19 +30,19 @@ type ScanOutput func(r io.Reader, summary *monitor.Summary, w io.Writer) error
 
 // Command holds the configuration to run a shell command
 type Command struct {
-	Command       string
-	Arguments     []string
-	Environ       []string
-	Dir           string
-	Stdin         io.Reader
-	Stdout        io.Writer
-	Stderr        io.Writer
-	SetPID        SetPID
-	ScanStdout    ScanOutput
-	UsePowershell bool
-	sigChan       chan os.Signal
-	done          chan interface{}
-	analyser      *OutputAnalyser
+	Command    string
+	Arguments  []string
+	Environ    []string
+	Shell      []string
+	Dir        string
+	Stdin      io.Reader
+	Stdout     io.Writer
+	Stderr     io.Writer
+	SetPID     SetPID
+	ScanStdout ScanOutput
+	sigChan    chan os.Signal
+	done       chan interface{}
+	analyser   *OutputAnalyser
 }
 
 // NewCommand instantiate a default Command without receiving OS signals (SIGTERM, etc.)
@@ -169,33 +171,30 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 }
 
 // getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
-func (c *Command) getShellCommand() (string, []string, error) {
-
-	if runtime.GOOS == "windows" {
-		search := windowsDefaultShell
-		if c.UsePowershell {
-			search = windowsPowershell
+func (c *Command) getShellCommand() (shell string, arguments []string, err error) {
+	var searchList []string
+	for _, sh := range c.Shell {
+		if sh = strings.TrimSpace(sh); sh != "" {
+			searchList = append(searchList, sh)
 		}
-		shell, err := exec.LookPath(search)
-		if err != nil {
-			return "", nil, fmt.Errorf("cannot find shell executable (%s) in path", search)
-		}
-		// cmd.exe accepts that all arguments are sent one by one
-		args := append([]string{"/C", c.Command}, removeQuotes(c.Arguments)...)
-		return shell, args, nil
+	}
+	if len(searchList) == 0 {
+		searchList = c.getShellSearchList()
 	}
 
-	// prefer bash if available as it has better signal propagation (sh may fail to forward signals)
-	shell, err := exec.LookPath("bash")
-	if err != nil {
-		shell, err = exec.LookPath("sh")
+	for _, search := range searchList {
+		if shell, err = exec.LookPath(search); err == nil {
+			break
+		}
 	}
+
 	if err != nil {
-		return "", nil, fmt.Errorf("cannot find shell executable (sh) in path")
+		err = fmt.Errorf("cannot find shell (%s): %s", strings.Join(searchList, ", "), err.Error())
+		return
 	}
-	// Flatten all arguments into one string, sh expects one big string
-	flatCommand := append([]string{c.Command}, c.Arguments...)
-	return shell, []string{"-c", strings.Join(flatCommand, " ")}, nil
+
+	arguments = c.composeShellArguments(shell)
+	return
 }
 
 // removeQuotes removes single and double quotes when the whole string is quoted.

@@ -73,7 +73,7 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 
 		for i, sourceCommand := range r.profile.Backup.StdinCommand {
 			clog.Debugf("starting 'stdin-command' command %d/%d: %s", i+1, len(r.profile.Backup.StdinCommand), sourceCommand)
-			rCommand := newShellCommand(sourceCommand, nil, env, r.dryRun, commandSignals, nil)
+			rCommand := newShellCommand(sourceCommand, nil, env, r.getShell(), r.dryRun, commandSignals, nil)
 			rCommand.stdout = bufferedWriter
 			rCommand.stderr = term.GetErrorOutput()
 

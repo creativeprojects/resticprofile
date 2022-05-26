@@ -124,6 +124,14 @@ func TestShellCommand(t *testing.T) {
 	}
 }
 
+func TestSelectCustomShell(t *testing.T) {
+	cmd := NewCommand("sleep", []string{"1"})
+	cmd.Shell = []string{mockBinary}
+	shell, _, err := cmd.getShellCommand()
+	assert.Nil(t, err)
+	assert.Equal(t, mockBinary, shell)
+}
+
 func TestRunShellEcho(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	cmd := NewCommand("echo", []string{"TestRunShellEcho"})
@@ -238,7 +246,9 @@ func TestSummaryDurationCommand(t *testing.T) {
 	buffer := &bytes.Buffer{}
 
 	cmd := NewCommand("sleep", []string{"1"})
-	cmd.UsePowershell = true
+	if runtime.GOOS == "windows" {
+		cmd.Shell = []string{windowsPowershell}
+	}
 	cmd.Stdout = buffer
 
 	start := time.Now()
@@ -259,7 +269,9 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 
 	sigChan := make(chan os.Signal, 1)
 	cmd := NewSignalledCommand("sleep", []string{"1"}, sigChan)
-	cmd.UsePowershell = true
+	if runtime.GOOS == "windows" {
+		cmd.Shell = []string{windowsPowershell}
+	}
 	cmd.Stdout = buffer
 
 	start := time.Now()
