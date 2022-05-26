@@ -56,6 +56,12 @@ var (
 		confidentialValueDecoder(),
 	))
 
+	configOptionV2 = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
+		mapstructure.StringToTimeDurationHookFunc(),
+		confidentialValueDecoder(),
+		forceSliceReplacementHookFunc(),
+	))
+
 	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
 		confidentialValueDecoder(),
@@ -585,8 +591,26 @@ func (c *Config) getSchedule(key string) (Schedule, error) {
 func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
 	if c.format == "hcl" {
 		return c.viper.UnmarshalKey(key, rawVal, configOptionHCL)
+	} else if c.GetVersion() == Version02 {
+		return c.viper.UnmarshalKey(key, rawVal, configOptionV2)
 	}
 	return c.viper.UnmarshalKey(key, rawVal, configOption)
+}
+
+// forceSliceReplacementHookFunc clears the target slice before assigning a new value
+func forceSliceReplacementHookFunc() mapstructure.DecodeHookFuncValue {
+	return func(from reflect.Value, to reflect.Value) (interface{}, error) {
+		if kind := from.Type().Kind(); (kind == reflect.Slice || kind == reflect.Array || kind == reflect.String) && from.Len() > 0 {
+			if kind = to.Type().Kind(); (kind == reflect.Slice || kind == reflect.Array) && to.Len() > 0 {
+				if kind == reflect.Slice {
+					to.SetLen(0)
+				} else {
+					to.Set(to.Slice(0, 0))
+				}
+			}
+		}
+		return from.Interface(), nil
+	}
 }
 
 // sliceOfMapsToMapHookFunc merges a slice of maps to a map

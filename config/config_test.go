@@ -444,3 +444,41 @@ profile:
 
 	assert.Equal(t, []string{"daily"}, schedules[0].Schedules())
 }
+
+func TestRegressionInheritanceListMerging(t *testing.T) {
+	load := func(content string) *Config {
+		buffer := bytes.NewBufferString(content)
+		cfg, err := Load(buffer, FormatYAML)
+		require.NoError(t, err)
+		require.NotNil(t, cfg)
+		return cfg
+	}
+
+	t.Run("Version1", func(t *testing.T) {
+		config := load(`---
+base:
+  run-before: ["base-first", "base-second", "base-third"]
+profile:
+  inherit: base
+  run-before: [null, "profile-before"]
+`)
+		profile, err := config.GetProfile("profile")
+		require.NoError(t, err)
+		assert.Equal(t, []string{"base-first", "profile-before", "base-third"}, profile.RunBefore)
+	})
+
+	t.Run("Version2", func(t *testing.T) {
+		config := load(`---
+version: 2
+profiles:
+  base:
+    run-before: ["base-first", "base-second", "base-third"]
+  profile:
+    inherit: base
+    run-before: [null, "profile-before"]
+`)
+		profile, err := config.GetProfile("profile")
+		require.NoError(t, err)
+		assert.Equal(t, []string{"", "profile-before"}, profile.RunBefore)
+	})
+}
