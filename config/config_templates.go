@@ -16,22 +16,22 @@ type inlineTemplate struct {
 	source map[string]interface{}
 }
 
-func (t *inlineTemplate) getMap(params map[string]string) map[string]interface{} {
-	return t.translate(t.source, params)
+func (t *inlineTemplate) toMap(variables map[string]string) map[string]interface{} {
+	return t.translate(t.source, variables)
 }
 
-func (t inlineTemplate) expandParameters(value string, params map[string]string) string {
+func (t *inlineTemplate) expandVariables(value string, variables map[string]string) string {
 	return os.Expand(value, func(name string) string {
-		if replacement, ok := params[name]; ok {
+		if replacement, ok := variables[name]; ok {
 			return replacement
 		} else {
-			// retain unknown params (could be env vars to be resolved later)
+			// retain unknown variables (could be env vars to be resolved later)
 			return fmt.Sprintf("${%s}", name)
 		}
 	})
 }
 
-func (t inlineTemplate) translate(template map[string]interface{}, params map[string]string) map[string]interface{} {
+func (t *inlineTemplate) translate(template map[string]interface{}, params map[string]string) map[string]interface{} {
 	target := map[string]interface{}{}
 
 	for name, rawValue := range template {
@@ -39,13 +39,13 @@ func (t inlineTemplate) translate(template map[string]interface{}, params map[st
 		case map[string]interface{}:
 			target[name] = t.translate(value, params)
 		case string:
-			target[name] = t.expandParameters(value, params)
+			target[name] = t.expandVariables(value, params)
 		case []interface{}:
 			resolved := make([]interface{}, len(value))
 			for i := 0; i < len(value); i++ {
 				switch value[i].(type) {
 				case string:
-					resolved[i] = t.expandParameters(value[i].(string), params)
+					resolved[i] = t.expandVariables(value[i].(string), params)
 				default:
 					resolved[i] = value[i]
 				}
@@ -59,8 +59,8 @@ func (t inlineTemplate) translate(template map[string]interface{}, params map[st
 	return target
 }
 
-// extractInlineTemplates returns any defined inline template definitions (templates: ...)
-func extractInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
+// parseInlineTemplates returns any defined inline template definitions (templates: ...)
+func parseInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 	templates := map[string]*inlineTemplate{}
 	definitions := config.GetStringMap(constants.SectionConfigurationTemplates)
 	for name, def := range definitions {
@@ -74,12 +74,12 @@ func extractInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 }
 
 type inlineTemplateCall struct {
-	Name   string            `mapstructure:"name"`
-	Params map[string]string `mapstructure:"vars"`
+	Name      string            `mapstructure:"name"`
+	Variables map[string]string `mapstructure:"vars"`
 }
 
-// extractTemplateCalls finds all template calls in the value of "somekey.templates"
-func extractTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err error) {
+// parseTemplateCalls finds all template calls in the value of a config key with ".templates" suffix
+func parseTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err error) {
 	if !reflect.ValueOf(rawValue).IsNil() {
 		switch value := rawValue.(type) {
 		case string:
@@ -106,7 +106,7 @@ func extractTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, er
 	return
 }
 
-// applyInlineTemplates looks for keys suffixed with ".templates" and apply matching templates
+// applyInlineTemplates looks for keys suffixed with ".templates" and applies matching templates
 func applyInlineTemplates(config *viper.Viper, templates map[string]*inlineTemplate) (err error) {
 	templatesSuffix := fmt.Sprintf(".%s", constants.SectionConfigurationTemplates)
 
@@ -116,19 +116,21 @@ func applyInlineTemplates(config *viper.Viper, templates map[string]*inlineTempl
 		}
 
 		var calls []*inlineTemplateCall
-		if calls, err = extractTemplateCalls(config.Get(key)); err == nil {
+		if calls, err = parseTemplateCalls(config.Get(key)); err == nil {
 			config.Set(key, nil)
-			targetConfig := config.Sub(strings.TrimSuffix(key, templatesSuffix))
+			configKey := strings.TrimSuffix(key, templatesSuffix)
 
-			for _, call := range calls {
-				if template, found := templates[call.Name]; found {
-					err = targetConfig.MergeConfigMap(template.getMap(call.Params))
-				} else {
-					err = fmt.Errorf("undefined template \"%s\"", call.Name)
-				}
+			if targetConfig := config.Sub(configKey); targetConfig != nil {
+				for _, call := range calls {
+					if template, found := templates[call.Name]; found {
+						err = targetConfig.MergeConfigMap(template.toMap(call.Variables))
+					} else {
+						err = fmt.Errorf("undefined template \"%s\"", call.Name)
+					}
 
-				if err != nil {
-					break
+					if err != nil {
+						break
+					}
 				}
 			}
 		}
