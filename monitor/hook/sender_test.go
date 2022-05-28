@@ -16,27 +16,27 @@ import (
 func TestSendHook(t *testing.T) {
 
 	testCases := []struct {
-		cfg   config.SendMonitorSection
+		cfg   config.SendMonitoringSection
 		calls int
 	}{
-		{config.SendMonitorSection{
+		{config.SendMonitoringSection{
 			Method: http.MethodHead,
 		}, 1},
-		{config.SendMonitorSection{
+		{config.SendMonitoringSection{
 			Method: http.MethodGet,
 		}, 1},
-		{config.SendMonitorSection{
+		{config.SendMonitoringSection{
 			Method: http.MethodPost,
 		}, 1},
-		{config.SendMonitorSection{
+		{config.SendMonitoringSection{
 			Method: http.MethodPost,
 			Body:   "test body\n",
 		}, 1},
-		{config.SendMonitorSection{
+		{config.SendMonitoringSection{
 			Method: http.MethodPost,
 			Body:   "$PROFILE_NAME\n$PROFILE_COMMAND",
 		}, 1},
-		{config.SendMonitorSection{
+		{config.SendMonitoringSection{
 			Method: http.MethodPost,
 			Body:   "$ERROR\n$ERROR_COMMANDLINE\n$ERROR_EXIT_CODE\n$ERROR_STDERR\n",
 		}, 1},
@@ -102,7 +102,7 @@ func TestSenderTimeout(t *testing.T) {
 	defer server.Close()
 
 	sender := NewSender("resticprofile_test", 300*time.Millisecond)
-	err := sender.Send(config.SendMonitorSection{
+	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
 	assert.Error(t, err)
@@ -120,14 +120,14 @@ func TestInsecureRequests(t *testing.T) {
 
 	sender := NewSender("resticprofile_test", 300*time.Millisecond)
 	// 1: request will fail TLS
-	err := sender.Send(config.SendMonitorSection{
+	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
 	assert.Error(t, err)
 	assert.Equal(t, 0, calls)
 
 	// 2: request allowing bad certificate
-	err = sender.Send(config.SendMonitorSection{
+	err = sender.Send(config.SendMonitoringSection{
 		URL:     server.URL,
 		SkipTLS: true,
 	}, Context{})
@@ -142,7 +142,7 @@ func TestFailedRequest(t *testing.T) {
 	defer server.Close()
 
 	sender := NewSender("resticprofile_test", 300*time.Millisecond)
-	err := sender.Send(config.SendMonitorSection{
+	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
 	assert.Error(t, err)

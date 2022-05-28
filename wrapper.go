@@ -134,8 +134,6 @@ func (r *resticWrapper) runProfile() error {
 					return err
 				}
 
-				r.sendBeforeProfile()
-
 				// breaking change from 0.7.0 and 0.7.1:
 				// run the initialization after the pre-profile commands
 				if (r.global.Initialize || r.profile.Initialize) && r.command != constants.CommandInit {
@@ -149,6 +147,8 @@ func (r *resticWrapper) runProfile() error {
 					// it's ok if the initialization returned an error
 				}
 
+				r.sendBefore(r.command)
+
 				// run-before (for backup)
 				if r.command == constants.CommandBackup {
 					// Shell commands
@@ -156,8 +156,6 @@ func (r *resticWrapper) runProfile() error {
 					if err != nil {
 						return err
 					}
-
-					r.sendBefore(r.command)
 
 					// Check
 					if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
@@ -191,8 +189,6 @@ func (r *resticWrapper) runProfile() error {
 						}
 					}
 
-					r.sendAfter(r.command)
-
 					// Check
 					if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
 						err = r.runCheck()
@@ -207,20 +203,20 @@ func (r *resticWrapper) runProfile() error {
 					}
 				}
 
+				r.sendAfter(r.command)
+
 				// post-profile commands
 				err = r.runAfterProfileCommands()
 				if err != nil {
 					return err
 				}
 
-				r.sendAfterProfile()
-
 				return nil
 			},
 			// on failure
 			func(err error) {
+				r.sendAfterFail(r.command, err)
 				_ = r.runAfterFailProfileCommands(err)
-				r.sendAfterFailProfile(err)
 			},
 			func(err error) {
 				r.runFinalCommands(r.command, err)
@@ -597,13 +593,15 @@ func (r *resticWrapper) runFinalCommands(command string, fail error) {
 	}
 }
 
-func (r *resticWrapper) sendBeforeProfile() {
-	if len(r.profile.SendBefore) == 0 {
+// sendBefore a command
+func (r *resticWrapper) sendBefore(command string) {
+	monitoringSections := r.profile.GetMonitoringSections(command)
+	if monitoringSections == nil {
 		return
 	}
 
-	for i, send := range r.profile.SendBefore {
-		clog.Debugf("starting 'send-before' from profile %d/%d", i+1, len(r.profile.SendBefore))
+	for i, send := range monitoringSections.SendBefore {
+		clog.Debugf("starting 'send-before' from %s %d/%d", command, i+1, len(monitoringSections.SendBefore))
 		err := r.sender.Send(send, r.getContext())
 		if err != nil {
 			clog.Warningf("sender returned error: %s", err)
@@ -611,13 +609,15 @@ func (r *resticWrapper) sendBeforeProfile() {
 	}
 }
 
-func (r *resticWrapper) sendAfterProfile() {
-	if len(r.profile.SendAfter) == 0 {
+// sendAfter a command
+func (r *resticWrapper) sendAfter(command string) {
+	monitoringSections := r.profile.GetMonitoringSections(command)
+	if monitoringSections == nil {
 		return
 	}
 
-	for i, send := range r.profile.SendAfter {
-		clog.Debugf("starting 'send-after' from profile %d/%d", i+1, len(r.profile.SendAfter))
+	for i, send := range monitoringSections.SendAfter {
+		clog.Debugf("starting 'send-after' from %s %d/%d", command, i+1, len(monitoringSections.SendAfter))
 		err := r.sender.Send(send, r.getContext())
 		if err != nil {
 			clog.Warningf("sender returned error: %s", err)
@@ -625,13 +625,15 @@ func (r *resticWrapper) sendAfterProfile() {
 	}
 }
 
-func (r *resticWrapper) sendAfterFailProfile(err error) {
-	if len(r.profile.SendAfterFail) == 0 {
+// sendAfterFail a command
+func (r *resticWrapper) sendAfterFail(command string, err error) {
+	monitoringSections := r.profile.GetMonitoringSections(command)
+	if monitoringSections == nil {
 		return
 	}
 
-	for i, send := range r.profile.SendAfterFail {
-		clog.Debugf("starting 'send-after-fail' from profile %d/%d", i+1, len(r.profile.SendAfterFail))
+	for i, send := range monitoringSections.SendAfterFail {
+		clog.Debugf("starting 'send-after-fail' from %s %d/%d", command, i+1, len(monitoringSections.SendAfterFail))
 		err := r.sender.Send(send, r.getContextWithError(err))
 		if err != nil {
 			clog.Warningf("sender returned error: %s", err)
@@ -639,70 +641,20 @@ func (r *resticWrapper) sendAfterFailProfile(err error) {
 	}
 }
 
-// sendBefore the backup command
-func (r *resticWrapper) sendBefore(command string) error {
-	if command != constants.CommandBackup {
-		return nil
-	}
-	if r.profile.Backup == nil || len(r.profile.Backup.SendBefore) == 0 {
-		return nil
+// sendFinally sends all final hooks
+func (r *resticWrapper) sendFinally(command string, err error) {
+	monitoringSections := r.profile.GetMonitoringSections(command)
+	if monitoringSections == nil {
+		return
 	}
 
-	for i, send := range r.profile.Backup.SendBefore {
-		clog.Debugf("starting 'send-before' from backup %d/%d", i+1, len(r.profile.Backup.SendBefore))
-		err := r.sender.Send(send, r.getContext())
-		if err != nil {
-			clog.Warningf("sender returned error: %s", err)
-		}
-	}
-	return nil
-}
-
-// sendAfter the backup command
-func (r *resticWrapper) sendAfter(command string) error {
-	if command != constants.CommandBackup {
-		return nil
-	}
-	if r.profile.Backup == nil || len(r.profile.Backup.SendAfter) == 0 {
-		return nil
-	}
-
-	for i, send := range r.profile.Backup.SendAfter {
-		clog.Debugf("starting 'send-after' from backup %d/%d", i+1, len(r.profile.Backup.SendAfter))
-		err := r.sender.Send(send, r.getContext())
-		if err != nil {
-			clog.Warningf("sender returned error: %s", err)
-		}
-	}
-	return nil
-}
-
-// sendFinally sends all final hooks (backup then profile)
-func (r *resticWrapper) sendFinally(command string, err error) error {
-	// run-finally from backup
-	if command == constants.CommandBackup && r.profile.Backup != nil && len(r.profile.Backup.RunFinally) > 0 {
-		for i, send := range r.profile.Backup.SendFinally {
-			clog.Debugf("starting 'send-finally' from backup %d/%d", i+1, len(r.profile.Backup.SendFinally))
-			err := r.sender.Send(send, r.getContextWithError(err))
-			if err != nil {
-				clog.Warningf("sender returned error: %s", err)
-			}
-		}
-	}
-
-	// run-finally from profile
-	if len(r.profile.RunFinally) == 0 {
-		return nil
-	}
-	for i, send := range r.profile.SendFinally {
-		clog.Debugf("starting 'send-finally' from backup %d/%d", i+1, len(r.profile.SendFinally))
+	for i, send := range monitoringSections.SendFinally {
+		clog.Debugf("starting 'send-finally' from %s %d/%d", command, i+1, len(monitoringSections.SendFinally))
 		err := r.sender.Send(send, r.getContextWithError(err))
 		if err != nil {
 			clog.Warningf("sender returned error: %s", err)
 		}
 	}
-
-	return nil
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration

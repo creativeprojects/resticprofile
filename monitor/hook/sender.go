@@ -46,7 +46,7 @@ func NewSender(userAgent string, timeout time.Duration) *Sender {
 	}
 }
 
-func (s *Sender) Send(cfg config.SendMonitorSection, ctx Context) error {
+func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 	if cfg.URL == "" {
 		return errors.New("URL field is empty")
 	}

@@ -20,71 +20,65 @@ type Profile struct {
 	config               *Config
 	legacyArg            bool
 	Name                 string
-	Description          string                       `mapstructure:"description"`
-	Quiet                bool                         `mapstructure:"quiet" argument:"quiet"`
-	Verbose              bool                         `mapstructure:"verbose" argument:"verbose"`
-	Repository           ConfidentialValue            `mapstructure:"repository" argument:"repo"`
-	RepositoryFile       string                       `mapstructure:"repository-file" argument:"repository-file"`
-	PasswordFile         string                       `mapstructure:"password-file" argument:"password-file"`
-	CacheDir             string                       `mapstructure:"cache-dir" argument:"cache-dir"`
-	CACert               string                       `mapstructure:"cacert" argument:"cacert"`
-	TLSClientCert        string                       `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
-	Initialize           bool                         `mapstructure:"initialize"`
-	Inherit              string                       `mapstructure:"inherit" show:"noshow"`
-	Lock                 string                       `mapstructure:"lock"`
-	ForceLock            bool                         `mapstructure:"force-inactive-lock"`
-	RunBefore            []string                     `mapstructure:"run-before"`
-	RunAfter             []string                     `mapstructure:"run-after"`
-	RunAfterFail         []string                     `mapstructure:"run-after-fail"`
-	RunFinally           []string                     `mapstructure:"run-finally"`
-	SendBefore           []SendMonitorSection         `mapstructure:"send-before"`
-	SendAfter            []SendMonitorSection         `mapstructure:"send-after"`
-	SendAfterFail        []SendMonitorSection         `mapstructure:"send-after-fail"`
-	SendFinally          []SendMonitorSection         `mapstructure:"send-finally"`
-	StreamError          []StreamErrorSection         `mapstructure:"stream-error"`
-	StatusFile           string                       `mapstructure:"status-file"`
-	PrometheusSaveToFile string                       `mapstructure:"prometheus-save-to-file"`
-	PrometheusPush       string                       `mapstructure:"prometheus-push"`
-	PrometheusLabels     map[string]string            `mapstructure:"prometheus-labels"`
-	OtherFlags           map[string]interface{}       `mapstructure:",remain"`
-	Environment          map[string]ConfidentialValue `mapstructure:"env"`
-	Backup               *BackupSection               `mapstructure:"backup"`
-	Retention            *RetentionSection            `mapstructure:"retention"`
-	Check                *SectionWithSchedule         `mapstructure:"check"`
-	Prune                *SectionWithSchedule         `mapstructure:"prune"`
-	Snapshots            map[string]interface{}       `mapstructure:"snapshots"`
-	Forget               *SectionWithSchedule         `mapstructure:"forget"`
-	Mount                map[string]interface{}       `mapstructure:"mount"`
-	Copy                 *CopySection                 `mapstructure:"copy"`
-	Dump                 map[string]interface{}       `mapstructure:"dump"`
-	Find                 map[string]interface{}       `mapstructure:"find"`
-	Ls                   map[string]interface{}       `mapstructure:"ls"`
-	Restore              map[string]interface{}       `mapstructure:"restore"`
-	Stats                map[string]interface{}       `mapstructure:"stats"`
-	Tag                  map[string]interface{}       `mapstructure:"tag"`
+	Description          string                            `mapstructure:"description"`
+	Quiet                bool                              `mapstructure:"quiet" argument:"quiet"`
+	Verbose              bool                              `mapstructure:"verbose" argument:"verbose"`
+	Repository           ConfidentialValue                 `mapstructure:"repository" argument:"repo"`
+	RepositoryFile       string                            `mapstructure:"repository-file" argument:"repository-file"`
+	PasswordFile         string                            `mapstructure:"password-file" argument:"password-file"`
+	CacheDir             string                            `mapstructure:"cache-dir" argument:"cache-dir"`
+	CACert               string                            `mapstructure:"cacert" argument:"cacert"`
+	TLSClientCert        string                            `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
+	Initialize           bool                              `mapstructure:"initialize"`
+	Inherit              string                            `mapstructure:"inherit" show:"noshow"`
+	Lock                 string                            `mapstructure:"lock"`
+	ForceLock            bool                              `mapstructure:"force-inactive-lock"`
+	RunBefore            []string                          `mapstructure:"run-before"`
+	RunAfter             []string                          `mapstructure:"run-after"`
+	RunAfterFail         []string                          `mapstructure:"run-after-fail"`
+	RunFinally           []string                          `mapstructure:"run-finally"`
+	StreamError          []StreamErrorSection              `mapstructure:"stream-error"`
+	StatusFile           string                            `mapstructure:"status-file"`
+	PrometheusSaveToFile string                            `mapstructure:"prometheus-save-to-file"`
+	PrometheusPush       string                            `mapstructure:"prometheus-push"`
+	PrometheusLabels     map[string]string                 `mapstructure:"prometheus-labels"`
+	OtherFlags           map[string]interface{}            `mapstructure:",remain"`
+	Environment          map[string]ConfidentialValue      `mapstructure:"env"`
+	Backup               *BackupSection                    `mapstructure:"backup"`
+	Retention            *RetentionSection                 `mapstructure:"retention"`
+	Check                *SectionWithScheduleAndMonitoring `mapstructure:"check"`
+	Prune                *SectionWithScheduleAndMonitoring `mapstructure:"prune"`
+	Snapshots            map[string]interface{}            `mapstructure:"snapshots"`
+	Forget               *SectionWithScheduleAndMonitoring `mapstructure:"forget"`
+	Mount                map[string]interface{}            `mapstructure:"mount"`
+	Copy                 *CopySection                      `mapstructure:"copy"`
+	Dump                 map[string]interface{}            `mapstructure:"dump"`
+	Find                 map[string]interface{}            `mapstructure:"find"`
+	Ls                   map[string]interface{}            `mapstructure:"ls"`
+	Restore              map[string]interface{}            `mapstructure:"restore"`
+	Stats                map[string]interface{}            `mapstructure:"stats"`
+	Tag                  map[string]interface{}            `mapstructure:"tag"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
-	ScheduleBaseSection `mapstructure:",squash"`
-	CheckBefore         bool                   `mapstructure:"check-before"`
-	CheckAfter          bool                   `mapstructure:"check-after"`
-	RunBefore           []string               `mapstructure:"run-before"`
-	RunAfter            []string               `mapstructure:"run-after"`
-	RunFinally          []string               `mapstructure:"run-finally"`
-	SendBefore          []SendMonitorSection   `mapstructure:"send-before"`
-	SendAfter           []SendMonitorSection   `mapstructure:"send-after"`
-	SendFinally         []SendMonitorSection   `mapstructure:"send-finally"`
-	UseStdin            bool                   `mapstructure:"stdin" argument:"stdin"`
-	StdinCommand        []string               `mapstructure:"stdin-command"`
-	Source              []string               `mapstructure:"source"`
-	Exclude             []string               `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
-	Iexclude            []string               `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
-	ExcludeFile         []string               `mapstructure:"exclude-file" argument:"exclude-file"`
-	FilesFrom           []string               `mapstructure:"files-from" argument:"files-from"`
-	ExtendedStatus      bool                   `mapstructure:"extended-status" argument:"json"`
-	NoErrorOnWarning    bool                   `mapstructure:"no-error-on-warning"`
-	OtherFlags          map[string]interface{} `mapstructure:",remain"`
+	ScheduleBaseSection    `mapstructure:",squash"`
+	CheckBefore            bool     `mapstructure:"check-before"`
+	CheckAfter             bool     `mapstructure:"check-after"`
+	RunBefore              []string `mapstructure:"run-before"`
+	RunAfter               []string `mapstructure:"run-after"`
+	RunFinally             []string `mapstructure:"run-finally"`
+	UseStdin               bool     `mapstructure:"stdin" argument:"stdin"`
+	StdinCommand           []string `mapstructure:"stdin-command"`
+	Source                 []string `mapstructure:"source"`
+	Exclude                []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
+	Iexclude               []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
+	ExcludeFile            []string `mapstructure:"exclude-file" argument:"exclude-file"`
+	FilesFrom              []string `mapstructure:"files-from" argument:"files-from"`
+	ExtendedStatus         bool     `mapstructure:"extended-status" argument:"json"`
+	NoErrorOnWarning       bool     `mapstructure:"no-error-on-warning"`
+	SendMonitoringSections `mapstructure:",squash"`
+	OtherFlags             map[string]interface{} `mapstructure:",remain"`
 }
 
 func (s *BackupSection) IsEmpty() bool { return s == nil }
@@ -100,14 +94,15 @@ type RetentionSection struct {
 
 func (s *RetentionSection) IsEmpty() bool { return s == nil }
 
-// SectionWithSchedule is a section containing schedule only specific parameters
-// (the other parameters being for restic)
-type SectionWithSchedule struct {
-	ScheduleBaseSection `mapstructure:",squash"`
-	OtherFlags          map[string]interface{} `mapstructure:",remain"`
+// SectionWithScheduleAndMonitoring is a section containing schedule and monitoring only specific parameters
+// (all the other parameters being for restic)
+type SectionWithScheduleAndMonitoring struct {
+	ScheduleBaseSection    `mapstructure:",squash"`
+	SendMonitoringSections `mapstructure:",squash"`
+	OtherFlags             map[string]interface{} `mapstructure:",remain"`
 }
 
-func (s *SectionWithSchedule) IsEmpty() bool { return s == nil }
+func (s *SectionWithScheduleAndMonitoring) IsEmpty() bool { return s == nil }
 
 // ScheduleBaseSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleBaseSection struct {
@@ -121,14 +116,15 @@ type ScheduleBaseSection struct {
 
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
-	Initialize          bool              `mapstructure:"initialize"`
-	Repository          ConfidentialValue `mapstructure:"repository" argument:"repo2"`
-	RepositoryFile      string            `mapstructure:"repository-file" argument:"repository-file2"`
-	PasswordFile        string            `mapstructure:"password-file" argument:"password-file2"`
-	PasswordCommand     string            `mapstructure:"password-command" argument:"password-command2"`
-	KeyHint             string            `mapstructure:"key-hint" argument:"key-hint2"`
-	ScheduleBaseSection `mapstructure:",squash"`
-	OtherFlags          map[string]interface{} `mapstructure:",remain"`
+	Initialize             bool              `mapstructure:"initialize"`
+	Repository             ConfidentialValue `mapstructure:"repository" argument:"repo2"`
+	RepositoryFile         string            `mapstructure:"repository-file" argument:"repository-file2"`
+	PasswordFile           string            `mapstructure:"password-file" argument:"password-file2"`
+	PasswordCommand        string            `mapstructure:"password-command" argument:"password-command2"`
+	KeyHint                string            `mapstructure:"key-hint" argument:"key-hint2"`
+	ScheduleBaseSection    `mapstructure:",squash"`
+	SendMonitoringSections `mapstructure:",squash"`
+	OtherFlags             map[string]interface{} `mapstructure:",remain"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
@@ -140,18 +136,26 @@ type StreamErrorSection struct {
 	Run        string `mapstructure:"run"`
 }
 
-// SendMonitorSection is used to send monitoring information to third party software
-type SendMonitorSection struct {
-	Method       string              `mapstructure:"method"`
-	URL          string              `mapstructure:"url"`
-	Headers      []SendMonitorHeader `mapstructure:"headers"`
-	Body         string              `mapstructure:"body"`
-	BodyTemplate string              `mapstructure:"body-template"`
-	SkipTLS      bool                `mapstructure:"skip-tls-verification"`
+// SendMonitoringSections is a group of target to send monitoring information
+type SendMonitoringSections struct {
+	SendBefore    []SendMonitoringSection `mapstructure:"send-before"`
+	SendAfter     []SendMonitoringSection `mapstructure:"send-after"`
+	SendAfterFail []SendMonitoringSection `mapstructure:"send-after-fail"`
+	SendFinally   []SendMonitoringSection `mapstructure:"send-finally"`
 }
 
-// SendMonitorHeader is used to send HTTP headers
-type SendMonitorHeader struct {
+// SendMonitoringSection is used to send monitoring information to third party software
+type SendMonitoringSection struct {
+	Method       string                 `mapstructure:"method"`
+	URL          string                 `mapstructure:"url"`
+	Headers      []SendMonitoringHeader `mapstructure:"headers"`
+	Body         string                 `mapstructure:"body"`
+	BodyTemplate string                 `mapstructure:"body-template"`
+	SkipTLS      bool                   `mapstructure:"skip-tls-verification"`
+}
+
+// SendMonitoringHeader is used to send HTTP headers
+type SendMonitoringHeader struct {
 	Name  string `mapstructure:"name"`
 	Value string `mapstructure:"value"`
 }
@@ -352,7 +356,7 @@ func (p *Profile) getSectionOtherFlags(section interface{}) map[string]interface
 			return v.OtherFlags
 		case *CopySection:
 			return v.OtherFlags
-		case *SectionWithSchedule:
+		case *SectionWithScheduleAndMonitoring:
 			return v.OtherFlags
 		case *RetentionSection:
 			return v.OtherFlags
@@ -507,6 +511,15 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 	return configs
 }
 
+func (p *Profile) GetMonitoringSections(command string) *SendMonitoringSections {
+	commandSection, ok := p.allSections()[command]
+	if !ok {
+		// command has no defined flag
+		return nil
+	}
+	return getMonitoringSections(commandSection)
+}
+
 func (p *Profile) allSchedulableSections() map[string]interface{} {
 	sections := p.allSections()
 	for name, section := range sections {
@@ -534,13 +547,33 @@ func getScheduleSection(section interface{}) (schedule *ScheduleBaseSection, sch
 		if v != nil {
 			schedule = &v.ScheduleBaseSection
 		}
-	case *SectionWithSchedule:
+	case *SectionWithScheduleAndMonitoring:
 		schedulable = true
 		if v != nil {
 			schedule = &v.ScheduleBaseSection
 		}
 	}
 	return
+}
+
+func getMonitoringSections(section interface{}) *SendMonitoringSections {
+	switch v := section.(type) {
+	case *BackupSection:
+		if v != nil {
+			return &v.SendMonitoringSections
+		}
+
+	case *CopySection:
+		if v != nil {
+			return &v.SendMonitoringSections
+		}
+
+	case *SectionWithScheduleAndMonitoring:
+		if v != nil {
+			return &v.SendMonitoringSections
+		}
+	}
+	return nil
 }
 
 func replaceTrueValue(source map[string]interface{}, key string, replace ...string) {

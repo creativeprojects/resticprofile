@@ -1,5 +1,5 @@
 ---
-title: "Hooks"
+title: "Command Hooks"
 date: 2022-05-16T19:46:52+01:00
 weight: 20
 ---
