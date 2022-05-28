@@ -147,6 +147,7 @@ type SendMonitorSection struct {
 	Headers      []SendMonitorHeader `mapstructure:"headers"`
 	Body         string              `mapstructure:"body"`
 	BodyTemplate string              `mapstructure:"body-template"`
+	SkipTLS      bool                `mapstructure:"skip-tls-verification"`
 }
 
 // SendMonitorHeader is used to send HTTP headers

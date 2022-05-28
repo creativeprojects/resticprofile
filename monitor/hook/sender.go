@@ -2,7 +2,9 @@ package hook
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -14,23 +16,33 @@ import (
 )
 
 type Sender struct {
-	client    *http.Client
-	userAgent string
+	client         *http.Client
+	insecureClient *http.Client
+	userAgent      string
 }
 
 func NewSender(userAgent string, timeout time.Duration) *Sender {
 	if userAgent == "" {
 		userAgent = "resticprofile/1.0"
 	}
-	if timeout <= 0 {
-		timeout = 10 * time.Second
-	}
+
+	// normal client
 	client := &http.Client{
 		Timeout: timeout,
 	}
+
+	// another client for insecure requests
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	insecureClient := &http.Client{
+		Transport: transport,
+		Timeout:   timeout,
+	}
+
 	return &Sender{
-		client:    client,
-		userAgent: userAgent,
+		client:         client,
+		insecureClient: insecureClient,
+		userAgent:      userAgent,
 	}
 }
 
@@ -58,12 +70,22 @@ func (s *Sender) Send(cfg config.SendMonitorSection, ctx Context) error {
 	}
 	s.setUserAgent(req)
 
+	client := s.client
+	if cfg.SkipTLS {
+		client = s.insecureClient
+	}
+
 	clog.Debugf("calling %q", req.URL.String())
-	resp, err := s.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	return resp.Body.Close()
+	_ = resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("HTTP %s", resp.Status)
+	}
+	return nil
 }
 
 func (s *Sender) setUserAgent(req *http.Request) {

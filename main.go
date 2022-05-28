@@ -347,6 +347,7 @@ func runProfile(
 	defer signal.Stop(sigChan)
 
 	wrapper := newResticWrapper(
+		global,
 		resticBinary,
 		flags.dryRun,
 		profile,
@@ -354,8 +355,6 @@ func runProfile(
 		resticArguments,
 		sigChan,
 	)
-
-	wrapper.setGlobal(global)
 
 	if flags.noLock {
 		wrapper.ignoreLock()

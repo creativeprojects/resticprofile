@@ -23,6 +23,7 @@ type Global struct {
 	LegacyArguments      bool          `mapstructure:"legacy-arguments"` // broken arguments mode (before v0.15.0)
 	SystemdUnitTemplate  string        `mapstructure:"systemd-unit-template"`
 	SystemdTimerTemplate string        `mapstructure:"systemd-timer-template"`
+	SenderTimeout        time.Duration `mapstructure:"send-timeout"`
 }
 
 // NewGlobal instantiates a new Global with default values
@@ -34,6 +35,7 @@ func NewGlobal() *Global {
 		ResticLockRetryAfter: constants.DefaultResticLockRetryAfter,
 		ResticStaleLockAge:   constants.DefaultResticStaleLockAge,
 		MinMemory:            constants.DefaultMinMemory,
+		SenderTimeout:        constants.DefaultSenderTimeout,
 	}
 }
 

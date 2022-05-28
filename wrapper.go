@@ -45,6 +45,7 @@ type resticWrapper struct {
 }
 
 func newResticWrapper(
+	global *config.Global,
 	resticBinary string,
 	dryRun bool,
 	profile *config.Profile,
@@ -52,28 +53,26 @@ func newResticWrapper(
 	moreArgs []string,
 	c chan os.Signal,
 ) *resticWrapper {
+	if global == nil {
+		global = config.NewGlobal()
+	}
 	return &resticWrapper{
 		resticBinary:  resticBinary,
 		dryRun:        dryRun,
 		noLock:        false,
 		lockWait:      nil,
 		profile:       profile,
-		global:        config.NewGlobal(),
+		global:        global,
 		command:       command,
 		moreArgs:      moreArgs,
 		sigChan:       c,
 		stdin:         os.Stdin,
 		progress:      make([]monitor.Receiver, 0),
-		sender:        hook.NewSender("resticprofile/"+version, 0),
+		sender:        hook.NewSender("resticprofile/"+version, global.SenderTimeout),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
 	}
-}
-
-// setGlobal sets the global section from config
-func (r *resticWrapper) setGlobal(global *config.Global) {
-	r.global = global
 }
 
 // ignoreLock configures resticWrapper to ignore the lock defined in profile
@@ -605,7 +604,10 @@ func (r *resticWrapper) sendBeforeProfile() {
 
 	for i, send := range r.profile.SendBefore {
 		clog.Debugf("starting 'send-before' from profile %d/%d", i+1, len(r.profile.SendBefore))
-		r.sender.Send(send, r.getContext())
+		err := r.sender.Send(send, r.getContext())
+		if err != nil {
+			clog.Warningf("sender returned error: %s", err)
+		}
 	}
 }
 
@@ -616,7 +618,10 @@ func (r *resticWrapper) sendAfterProfile() {
 
 	for i, send := range r.profile.SendAfter {
 		clog.Debugf("starting 'send-after' from profile %d/%d", i+1, len(r.profile.SendAfter))
-		r.sender.Send(send, r.getContext())
+		err := r.sender.Send(send, r.getContext())
+		if err != nil {
+			clog.Warningf("sender returned error: %s", err)
+		}
 	}
 }
 
@@ -627,7 +632,10 @@ func (r *resticWrapper) sendAfterFailProfile(err error) {
 
 	for i, send := range r.profile.SendAfterFail {
 		clog.Debugf("starting 'send-after-fail' from profile %d/%d", i+1, len(r.profile.SendAfterFail))
-		r.sender.Send(send, r.getContextWithError(err))
+		err := r.sender.Send(send, r.getContextWithError(err))
+		if err != nil {
+			clog.Warningf("sender returned error: %s", err)
+		}
 	}
 }
 
@@ -642,7 +650,10 @@ func (r *resticWrapper) sendBefore(command string) error {
 
 	for i, send := range r.profile.Backup.SendBefore {
 		clog.Debugf("starting 'send-before' from backup %d/%d", i+1, len(r.profile.Backup.SendBefore))
-		r.sender.Send(send, r.getContext())
+		err := r.sender.Send(send, r.getContext())
+		if err != nil {
+			clog.Warningf("sender returned error: %s", err)
+		}
 	}
 	return nil
 }
@@ -658,7 +669,10 @@ func (r *resticWrapper) sendAfter(command string) error {
 
 	for i, send := range r.profile.Backup.SendAfter {
 		clog.Debugf("starting 'send-after' from backup %d/%d", i+1, len(r.profile.Backup.SendAfter))
-		r.sender.Send(send, r.getContext())
+		err := r.sender.Send(send, r.getContext())
+		if err != nil {
+			clog.Warningf("sender returned error: %s", err)
+		}
 	}
 	return nil
 }
@@ -669,7 +683,10 @@ func (r *resticWrapper) sendFinally(command string, err error) error {
 	if command == constants.CommandBackup && r.profile.Backup != nil && len(r.profile.Backup.RunFinally) > 0 {
 		for i, send := range r.profile.Backup.SendFinally {
 			clog.Debugf("starting 'send-finally' from backup %d/%d", i+1, len(r.profile.Backup.SendFinally))
-			r.sender.Send(send, r.getContextWithError(err))
+			err := r.sender.Send(send, r.getContextWithError(err))
+			if err != nil {
+				clog.Warningf("sender returned error: %s", err)
+			}
 		}
 	}
 
@@ -679,7 +696,10 @@ func (r *resticWrapper) sendFinally(command string, err error) error {
 	}
 	for i, send := range r.profile.SendFinally {
 		clog.Debugf("starting 'send-finally' from backup %d/%d", i+1, len(r.profile.SendFinally))
-		r.sender.Send(send, r.getContextWithError(err))
+		err := r.sender.Send(send, r.getContextWithError(err))
+		if err != nil {
+			clog.Warningf("sender returned error: %s", err)
+		}
 	}
 
 	return nil
