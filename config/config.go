@@ -591,7 +591,7 @@ func (c *Config) getSchedule(key string) (Schedule, error) {
 func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
 	if c.format == "hcl" {
 		return c.viper.UnmarshalKey(key, rawVal, configOptionHCL)
-	} else if c.GetVersion() == Version02 {
+	} else if c.GetVersion() >= Version02 {
 		return c.viper.UnmarshalKey(key, rawVal, configOptionV2)
 	}
 	return c.viper.UnmarshalKey(key, rawVal, configOption)
