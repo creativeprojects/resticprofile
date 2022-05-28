@@ -21,6 +21,8 @@ templates:
     backup:
       source: ["source-two"]
   t3:
+    default-vars:
+      named-source: "default-source"
     source: ["${named-source}", "${another-source}"]
 `
 	load := func(t *testing.T, content string) *Config {
@@ -50,6 +52,9 @@ profiles:
 	t.Run("vars", func(t *testing.T) {
 		config := load(t, `
 profiles:
+  profile-simple:
+    backup:
+      templates: t3
   profile:
     backup:
       templates:
@@ -57,7 +62,11 @@ profiles:
           vars:
             named-source: my-source
 `)
-		p, err := config.getProfile("profile")
+		p, err := config.getProfile("profile-simple")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"default-source", "${another-source}"}, p.Backup.Source)
+
+		p, err = config.getProfile("profile")
 		assert.NoError(t, err)
 		assert.Equal(t, []string{"my-source", "${another-source}"}, p.Backup.Source)
 	})

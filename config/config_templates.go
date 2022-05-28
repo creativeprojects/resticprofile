@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -13,16 +12,19 @@ import (
 )
 
 type inlineTemplate struct {
-	source map[string]interface{}
+	DefaultVariables map[string]string      `mapstructure:"default-vars"`
+	Source           map[string]interface{} `mapstructure:",remain"`
 }
 
 func (t *inlineTemplate) toMap(variables map[string]string) map[string]interface{} {
-	return t.translate(t.source, variables)
+	return t.translate(t.Source, variables)
 }
 
 func (t *inlineTemplate) expandVariables(value string, variables map[string]string) string {
 	return os.Expand(value, func(name string) string {
 		if replacement, ok := variables[name]; ok {
+			return replacement
+		} else if replacement, ok = t.DefaultVariables[name]; ok {
 			return replacement
 		} else {
 			// retain unknown variables (could be env vars to be resolved later)
@@ -31,21 +33,21 @@ func (t *inlineTemplate) expandVariables(value string, variables map[string]stri
 	})
 }
 
-func (t *inlineTemplate) translate(template map[string]interface{}, params map[string]string) map[string]interface{} {
+func (t *inlineTemplate) translate(template map[string]interface{}, variables map[string]string) map[string]interface{} {
 	target := map[string]interface{}{}
 
 	for name, rawValue := range template {
 		switch value := rawValue.(type) {
 		case map[string]interface{}:
-			target[name] = t.translate(value, params)
+			target[name] = t.translate(value, variables)
 		case string:
-			target[name] = t.expandVariables(value, params)
+			target[name] = t.expandVariables(value, variables)
 		case []interface{}:
 			resolved := make([]interface{}, len(value))
 			for i := 0; i < len(value); i++ {
 				switch value[i].(type) {
 				case string:
-					resolved[i] = t.expandVariables(value[i].(string), params)
+					resolved[i] = t.expandVariables(value[i].(string), variables)
 				default:
 					resolved[i] = value[i]
 				}
@@ -65,7 +67,12 @@ func parseInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 	definitions := config.GetStringMap(constants.SectionConfigurationTemplates)
 	for name, def := range definitions {
 		if template, ok := def.(map[string]interface{}); ok {
-			templates[name] = &inlineTemplate{source: template}
+			it := new(inlineTemplate)
+			if err := mapstructure.Decode(template, it); err == nil {
+				templates[name] = it
+			} else {
+				clog.Warningf("failed parsing \"templates.%s\": %s", name, err.Error())
+			}
 		} else {
 			clog.Warningf("invalid template definition \"templates.%s\" is not an object", name)
 		}
@@ -80,7 +87,7 @@ type inlineTemplateCall struct {
 
 // parseTemplateCalls finds all template calls in the value of a config key with ".templates" suffix
 func parseTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err error) {
-	if !reflect.ValueOf(rawValue).IsNil() {
+	if rawValue != nil {
 		switch value := rawValue.(type) {
 		case string:
 			calls = append(calls, &inlineTemplateCall{Name: value})
@@ -106,7 +113,7 @@ func parseTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err 
 	return
 }
 
-// applyInlineTemplates looks for keys suffixed with ".templates" and applies matching templates
+// applyInlineTemplates looks for keys with suffix ".templates" and applies matching templates
 func applyInlineTemplates(config *viper.Viper, templates map[string]*inlineTemplate) (err error) {
 	templatesSuffix := fmt.Sprintf(".%s", constants.SectionConfigurationTemplates)
 
