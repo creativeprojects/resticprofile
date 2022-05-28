@@ -37,29 +37,62 @@ The configuration is the same for each of these 4 types of hooks:
 | body-template | No | None | Template file to generate the body (in go template format) |
 
 
-resticprofile has 2 places where you can run commands around restic:
-
-- commands that will run before and after every restic command (snapshots, backup, check, forget, prune, mount, etc.). These are placed at the root of each profile.
-- commands that will only run before and after a backup: these are placed in the backup section of your profiles.
-
-Here's an example of all the external commands that you can run during the execution of a profile:
-
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
 ```toml
-[documents]
-  inherit = "default"
-  run-before = "echo == run-before profile $PROFILE_NAME command $PROFILE_COMMAND"
-  run-after = "echo == run-after profile $PROFILE_NAME command $PROFILE_COMMAND"
-  run-after-fail = "echo == Error in profile $PROFILE_NAME command $PROFILE_COMMAND: $ERROR"
-  run-finally = "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND"
+[profile]
+inherit = "default"
 
-  [documents.backup]
-    run-before = "echo === run-before backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-after = "echo === run-after backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-finally = "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND"
-    source = "~/Documents"
+  [profile.backup]
+  source = "/source"
+  exclude = [ "/**/.git/" ]
+  schedule = [ "*:00,30" ]
+  schedule-permission = "user"
+
+    # you can have more than one target
+
+    [[profile.backup.send-before]]
+    method = "HEAD"
+    url = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start"
+
+    [[profile.backup.send-before]]
+    method = "HEAD"
+    url = "https://httpstat.us/400"
+
+    # you can have more than one target
+
+    [[profile.backup.send-after]]
+    method = "HEAD"
+    url = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650"
+
+    [[profile.backup.send-after]]
+    method = "HEAD"
+    url = "https://httpstat.us/500"
+
+    [profile.backup.send-after-fail]
+    method = "POST"
+    url = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail"
+    body = "${ERROR}\n\n${ERROR_STDERR}"
+
+      [[profile.backup.send-after-fail.headers]]
+      name = "Content-Type"
+      value = "text/plain; charset=UTF-8"
+
+  [profile.check]
+  schedule = [ "*:15" ]
+
+    [profile.check.send-before]
+    method = "HEAD"
+    url = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start"
+
+    [profile.check.send-after]
+    method = "HEAD"
+    url = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc"
+
+  [profile.retention]
+  after-backup = true
+
 
 ```
 
@@ -67,37 +100,115 @@ Here's an example of all the external commands that you can run during the execu
 {{% tab name="yaml" %}}
 
 ```yaml
-documents:
-  inherit: default
-  run-before: "echo == run-before profile $PROFILE_NAME command $PROFILE_COMMAND"
-  run-after: "echo == run-after profile $PROFILE_NAME command $PROFILE_COMMAND"
-  run-after-fail: "echo == Error in profile $PROFILE_NAME command $PROFILE_COMMAND: $ERROR"
-  run-finally: "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND"
+profile:
+    inherit: default
 
-  backup:
-    run-before: "echo === run-before backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-after: "echo === run-after backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-finally: "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND"
-    source: ~/Documents
+    backup:
+        source: "/source"
+        exclude:
+          - "/**/.git/"
+        schedule:
+          - "*:00,30"
+        schedule-permission: user
+
+        # you can have more than one target
+        send-before:
+          - method: HEAD
+            url: https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start
+          - method: HEAD
+            url: https://httpstat.us/400
+
+        # you can have more than one target
+        send-after:
+          - method: HEAD
+            url: https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650
+          - method: HEAD
+            url: https://httpstat.us/500
+
+        send-after-fail:
+            method: POST
+            url: https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail
+            body: "${ERROR}\n\n${ERROR_STDERR}"
+            headers:
+              - name: Content-Type
+                value: "text/plain; charset=UTF-8"
+    check:
+        schedule:
+          - "*:15"
+
+        send-before:
+          method: HEAD
+          url: https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start
+
+        send-after:
+          method: HEAD
+          url: https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc
+    retention:
+        after-backup: true
+
 ```
 
 {{% /tab %}}
 {{% tab name="hcl" %}}
 
 ```hcl
-documents {
-    inherit = "default"
-    run-before = "echo == run-before profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-after = "echo == run-after profile $PROFILE_NAME command $PROFILE_COMMAND"
-    run-after-fail = "echo == Error in profile $PROFILE_NAME command $PROFILE_COMMAND: $ERROR"
-    run-finally = "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND"
+"profile" {
+  "inherit" = "default"
 
-    backup = {
-        run-before = "echo === run-before backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-        run-after = "echo === run-after backup profile $PROFILE_NAME command $PROFILE_COMMAND"
-        run-finally = "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND"
-        source = "~/Documents"
+  "backup" = {
+    "source" = "/source"
+    "exclude" = ["/**/.git/"]
+    "schedule" = ["*:00,30"]
+    "schedule-permission" = "user"
+
+    "send-before" = {
+      "method" = "HEAD"
+      "url" = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start"
     }
+
+    "send-before" = {
+      "method" = "HEAD"
+      "url" = "https://httpstat.us/400"
+    }
+
+    "send-after" = {
+      "method" = "HEAD"
+      "url" = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650"
+    }
+
+    "send-after" = {
+      "method" = "HEAD"
+      "url" = "https://httpstat.us/500"
+    }
+
+    "send-after-fail" = {
+      "method" = "POST"
+      "url" = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail"
+      "body" = "${ERROR}\n\n${ERROR_STDERR}"
+      "headers" = {
+        "name" = "Content-Type"
+        "value" = "text/plain; charset=UTF-8"
+      }
+    }
+  }
+
+  "check" = {
+    "schedule" = ["*:15"]
+
+    "send-before" = {
+      "method" = "HEAD"
+      "url" = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start"
+    }
+
+    "send-after" = {
+      "method" = "HEAD"
+      "url" = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc"
+    }
+  }
+
+  "retention" = {
+    "after-backup" = true
+  }
 }
 ```
 
@@ -106,17 +217,64 @@ documents {
 
 ```json
 {
-  "documents": {
+  "profile": {
     "inherit": "default",
-    "run-before": "echo == run-before profile $PROFILE_NAME command $PROFILE_COMMAND",
-    "run-after": "echo == run-after profile $PROFILE_NAME command $PROFILE_COMMAND",
-    "run-after-fail": "echo == Error in profile $PROFILE_NAME command $PROFILE_COMMAND: $ERROR",
-    "run-finally": "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND",
     "backup": {
-      "run-before": "echo === run-before backup profile $PROFILE_NAME command $PROFILE_COMMAND",
-      "run-after": "echo === run-after backup profile $PROFILE_NAME command $PROFILE_COMMAND",
-      "run-finally": "echo == run-finally $PROFILE_NAME command $PROFILE_COMMAND",
-      "source": "~/Documents"
+      "source": "/source",
+      "exclude": [
+        "/**/.git/"
+      ],
+      "schedule": [
+        "*:00,30"
+      ],
+      "schedule-permission": "user",
+      "send-before": [
+        {
+          "method": "HEAD",
+          "url": "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start"
+        },
+        {
+          "method": "HEAD",
+          "url": "https://httpstat.us/400"
+        }
+      ],
+      "send-after": [
+        {
+          "method": "HEAD",
+          "url": "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650"
+        },
+        {
+          "method": "HEAD",
+          "url": "https://httpstat.us/500"
+        }
+      ],
+      "send-after-fail": {
+        "method": "POST",
+        "url": "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail",
+        "body": "${ERROR}\n\n${ERROR_STDERR}",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "text/plain; charset=UTF-8"
+          }
+        ]
+      }
+    },
+    "check": {
+      "schedule": [
+        "*:15"
+      ],
+      "send-before": {
+        "method": "HEAD",
+        "url": "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start"
+      },
+      "send-after": {
+        "method": "HEAD",
+        "url": "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc"
+      }
+    },
+    "retention": {
+      "after-backup": true
     }
   }
 }
@@ -125,52 +283,32 @@ documents {
 {{% /tab %}}
 {{% /tabs %}}
 
-`run-before`, `run-after`, `run-after-fail` and `run-finally` can be a string, or an array of strings if you need to run more than one command
 
-A few environment variables will be set before running these commands:
+A few environment variables will be available:
 - `PROFILE_NAME`
 - `PROFILE_COMMAND`: backup, check, forget, etc.
 
-Additionally, for the `run-after-fail` commands, these environment variables will also be available:
+Additionally, for the `send-after-fail` hooks, these environment variables will also be available:
 - `ERROR` containing the latest error message
 - `ERROR_COMMANDLINE` containing the command line that failed
 - `ERROR_EXIT_CODE` containing the exit code of the command line that failed
 - `ERROR_STDERR` containing any message that the failed command sent to the standard error (stderr)
 
-The commands of `run-finally` get the environment of `run-after-fail` when `run-before`, `run-after` or `restic` failed. 
-Failures in `run-finally` are logged but do not influence environment or return code.
+The commands of `send-finally` get the environment of `send-after-fail` when `run-before`, `run-after` or `restic` failed. 
 
-### order of `run-*` during a backup
+Failures in any `send-*` are logged but do not influence environment or return code.
 
-The commands will be running in this order **during a backup**:
-- `run-before` from the profile - if error, go to `run-after-fail`
-- `run-before` from the backup section - if error, go to `run-after-fail`
-- run the restic backup (with check and retention if configured) - if error, go to `run-after-fail`
-- `run-after` from the backup section - if error, go to `run-after-fail`
-- `run-after` from the profile - if error, go to `run-after-fail`
-- If error: `run-after-fail` from the profile - if error, go to `run-finally`
-- `run-finally` from the backup section - if error, log and continue with next
-- `run-finally` from the profile - if error, log and continue with next
+### order of `send-*`
 
-Maybe it's easier to understand with a flow diagram:
-
+Here's the flow of HTTP hooks:
 
 ```mermaid
 graph TD
-    PRB('run-before' from profile) -->|Success| BRB('run-before' from backup section)
-    PRB -->|Error| FAIL('run-after-fail')
-    BRB -->|Error| FAIL('run-after-fail')
-    BRB -->|Success| RUN(run restic backup with check and/or retention if configured)
-    RUN -->|Success| BRA
-    RUN -->|Error| FAIL('run-after-fail')
-    BRA('run-after' from backup section)
-    BRA -->|Success| PRA
-    BRA -->|Error| FAIL('run-after-fail')
-    PRA('run-after' from profile)
-    PRA -->|Success| BRF
-    PRA -->|Error| FAIL('run-after-fail')
-    BRF('run-finally' from backup section)
-    BRF --> PRF
-    PRF('run-finally' from profile)
-    FAIL --> BRF
+  SB('send-before') --> RUN
+  RUN(run restic command, or group of commands)
+  RUN -->|Success| SA
+  RUN -->|Error| SAF
+  SA('send-after') --> SF
+  SAF('send-after-fail') --> SF
+  SF('send-finally')
 ```
