@@ -138,6 +138,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NotNil(t, profile)
 
 					wrapper := newResticWrapper(
+						nil,
 						echoBinary,
 						false,
 						profile,
@@ -178,6 +179,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					profile.SetLegacyArg(true)
 
 					wrapper := newResticWrapper(
+						nil,
 						echoBinary,
 						false,
 						profile,
