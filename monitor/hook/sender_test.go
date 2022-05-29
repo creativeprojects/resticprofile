@@ -2,8 +2,11 @@ package hook
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -11,6 +14,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSendHook(t *testing.T) {
@@ -146,5 +150,37 @@ func TestFailedRequest(t *testing.T) {
 		URL: server.URL,
 	}, Context{})
 	assert.Error(t, err)
-	t.Log(err)
+}
+
+func TestParseTemplate(t *testing.T) {
+	ctx := Context{
+		ProfileName: "test_profile",
+	}
+
+	template := `{{ .ProfileName }}-{{ .Error.ExitCode }}`
+	filename := filepath.Join(t.TempDir(), "body.json")
+	err := os.WriteFile(filename, []byte(template), 0o600)
+	require.NoError(t, err)
+
+	result, err := loadBodyTemplate(filename, ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, "test_profile-", result)
+
+	// test posting this body from template
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buffer := &bytes.Buffer{}
+		_, err = io.Copy(buffer, r.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, result, buffer.String())
+		r.Body.Close()
+	}))
+	defer server.Close()
+
+	sender := NewSender("resticprofile_test", 300*time.Millisecond)
+	err = sender.Send(config.SendMonitoringSection{
+		URL:          server.URL,
+		Method:       http.MethodPost,
+		BodyTemplate: filename,
+	}, ctx)
+	assert.NoError(t, err)
 }
