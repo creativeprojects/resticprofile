@@ -338,6 +338,7 @@ The type **ErrorContext** is available after an error occurred (otherwise all fi
 
 Here's an example of a body file:
 
+<!-- checkdoc-ignore -->
 ```json
 {
   "profileName": "{{ .ProfileName }}",
@@ -363,12 +364,11 @@ And here's an example of a configuration using a body template:
     [profile.backup.send-finally]
     method = "POST"
     url = "https://my/monitoring.example.com/"
-    body-template = body-template.json
+    body-template = "body-template.json"
 
       [[profile.backup.send-finally.headers]]
       name = "Content-Type"
       value = "application/json"
-
 
 ```
 
