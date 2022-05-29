@@ -8,33 +8,23 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 )
 
+// inlineTemplate describes a parsed inline template definition (templates: ...)
 type inlineTemplate struct {
 	DefaultVariables map[string]string      `mapstructure:"default-vars"`
 	Source           map[string]interface{} `mapstructure:",remain"`
 }
 
-func (t *inlineTemplate) toMap(variables map[string]string) map[string]interface{} {
+// Resolve applies variables and returns a resolved copy of Source
+func (t *inlineTemplate) Resolve(variables map[string]string) map[string]interface{} {
 	return t.translate(t.Source, variables)
 }
 
-func (t *inlineTemplate) expandVariables(value string, variables map[string]string) string {
-	return os.Expand(value, func(name string) string {
-		if replacement, ok := variables[name]; ok {
-			return replacement
-		} else if replacement, ok = t.DefaultVariables[name]; ok {
-			return replacement
-		} else {
-			// retain unknown variables (could be env vars to be resolved later)
-			return fmt.Sprintf("${%s}", name)
-		}
-	})
-}
-
 func (t *inlineTemplate) translate(template map[string]interface{}, variables map[string]string) map[string]interface{} {
-	target := map[string]interface{}{}
+	target := make(map[string]interface{})
 
 	for name, rawValue := range template {
 		switch value := rawValue.(type) {
@@ -61,7 +51,20 @@ func (t *inlineTemplate) translate(template map[string]interface{}, variables ma
 	return target
 }
 
-// parseInlineTemplates returns any defined inline template definitions (templates: ...)
+func (t *inlineTemplate) expandVariables(value string, variables map[string]string) string {
+	return os.Expand(value, func(name string) string {
+		if replacement, ok := variables[name]; ok {
+			return replacement
+		} else if replacement, ok = t.DefaultVariables[name]; ok {
+			return replacement
+		} else {
+			// retain unknown variables (could be env vars to be resolved later)
+			return fmt.Sprintf("${%s}", name)
+		}
+	})
+}
+
+// parseInlineTemplates returns all valid inline template definitions (templates: ...) from config
 func parseInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 	templates := map[string]*inlineTemplate{}
 	definitions := config.GetStringMap(constants.SectionConfigurationTemplates)
@@ -80,12 +83,13 @@ func parseInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 	return templates
 }
 
+// inlineTemplateCall describes a parsed inline template call (profiles.name.templates: ...)
 type inlineTemplateCall struct {
 	Name      string            `mapstructure:"name"`
 	Variables map[string]string `mapstructure:"vars"`
 }
 
-// parseTemplateCalls finds all template calls in the value of a config key with ".templates" suffix
+// parseTemplateCalls parses a template-calls config value (the value of a key with ".templates" suffix)
 func parseTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err error) {
 	if rawValue != nil {
 		switch value := rawValue.(type) {
@@ -113,7 +117,7 @@ func parseTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err 
 	return
 }
 
-// applyInlineTemplates looks for keys with suffix ".templates" and applies matching templates
+// applyInlineTemplates searches for template-calls with suffix ".templates" and applies templates to config
 func applyInlineTemplates(config *viper.Viper, templates map[string]*inlineTemplate) (err error) {
 	templatesSuffix := fmt.Sprintf(".%s", constants.SectionConfigurationTemplates)
 
@@ -130,7 +134,9 @@ func applyInlineTemplates(config *viper.Viper, templates map[string]*inlineTempl
 			if targetConfig := config.Sub(configKey); targetConfig != nil {
 				for _, call := range calls {
 					if template, found := templates[call.Name]; found {
-						err = targetConfig.MergeConfigMap(template.toMap(call.Variables))
+						templateMap := template.Resolve(call.Variables)
+						revolveAppendToListKeys(targetConfig, templateMap)
+						err = targetConfig.MergeConfigMap(templateMap)
 					} else {
 						err = fmt.Errorf("undefined template \"%s\"", call.Name)
 					}
@@ -148,4 +154,52 @@ func applyInlineTemplates(config *viper.Viper, templates map[string]*inlineTempl
 		}
 	}
 	return
+}
+
+const (
+	KEY_SUFFIX_APPEND_FIRST = "+0"
+	KEY_SUFFIX_APPEND_LAST  = "++"
+)
+
+// revolveAppendToListKeys resolves "key++" and "key+0" in template using config as source
+func revolveAppendToListKeys(config *viper.Viper, template map[string]interface{}) {
+	for name, value := range template {
+		first := strings.HasSuffix(name, KEY_SUFFIX_APPEND_FIRST)
+		last := strings.HasSuffix(name, KEY_SUFFIX_APPEND_LAST)
+
+		if !first && !last {
+			if child, ok := value.(map[string]interface{}); ok {
+				var cc *viper.Viper
+				if config != nil {
+					cc = config.Sub(name)
+				}
+				revolveAppendToListKeys(cc, child)
+			}
+			continue
+		} else {
+			delete(template, name)
+		}
+
+		targetName := name
+		targetName = strings.TrimSuffix(targetName, KEY_SUFFIX_APPEND_FIRST)
+		targetName = strings.TrimSuffix(targetName, KEY_SUFFIX_APPEND_LAST)
+
+		var source, appendable []interface{}
+		if config != nil {
+			sourceValue := config.Get(targetName)
+			if source = cast.ToSlice(sourceValue); source == nil && sourceValue != nil {
+				source = []interface{}{sourceValue}
+			}
+		}
+
+		if appendable = cast.ToSlice(value); appendable == nil && value != nil {
+			appendable = []interface{}{value}
+		}
+
+		if first {
+			template[targetName] = append(appendable, source...)
+		} else if last {
+			template[targetName] = append(source, appendable...)
+		}
+	}
 }
