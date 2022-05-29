@@ -14,16 +14,16 @@ import (
 
 // inlineTemplate describes a parsed inline template definition (templates: ...)
 type inlineTemplate struct {
-	DefaultVariables map[string]string      `mapstructure:"default-vars"`
+	DefaultVariables map[string]interface{} `mapstructure:"default-vars"`
 	Source           map[string]interface{} `mapstructure:",remain"`
 }
 
 // Resolve applies variables and returns a resolved copy of Source
-func (t *inlineTemplate) Resolve(variables map[string]string) map[string]interface{} {
+func (t *inlineTemplate) Resolve(variables map[string]interface{}) map[string]interface{} {
 	return t.translate(t.Source, variables)
 }
 
-func (t *inlineTemplate) translate(template map[string]interface{}, variables map[string]string) map[string]interface{} {
+func (t *inlineTemplate) translate(template, variables map[string]interface{}) map[string]interface{} {
 	target := make(map[string]interface{})
 
 	for name, rawValue := range template {
@@ -35,11 +35,13 @@ func (t *inlineTemplate) translate(template map[string]interface{}, variables ma
 		case []interface{}:
 			resolved := make([]interface{}, len(value))
 			for i := 0; i < len(value); i++ {
-				switch value[i].(type) {
+				switch item := value[i].(type) {
 				case string:
-					resolved[i] = t.expandVariables(value[i].(string), variables)
+					resolved[i] = t.expandVariables(item, variables)
+				case map[string]interface{}:
+					resolved[i] = t.translate(item, variables)
 				default:
-					resolved[i] = value[i]
+					resolved[i] = item
 				}
 			}
 			target[name] = resolved
@@ -51,17 +53,36 @@ func (t *inlineTemplate) translate(template map[string]interface{}, variables ma
 	return target
 }
 
-func (t *inlineTemplate) expandVariables(value string, variables map[string]string) string {
+func (t *inlineTemplate) expandVariables(value string, variables map[string]interface{}) string {
 	return os.Expand(value, func(name string) string {
-		if replacement, ok := variables[name]; ok {
-			return replacement
-		} else if replacement, ok = t.DefaultVariables[name]; ok {
-			return replacement
-		} else {
-			// retain unknown variables (could be env vars to be resolved later)
-			return fmt.Sprintf("${%s}", name)
+		lookup := strings.ToUpper(name)
+
+		replacement := variables[lookup]
+		if replacement == nil {
+			replacement = t.DefaultVariables[lookup]
 		}
+
+		if replacement != nil {
+			if v, err := cast.ToStringE(replacement); err == nil {
+				return v
+			} else {
+				clog.Warningf("unresolved template variable \"%s\": %s", name, err.Error())
+			}
+		}
+
+		// retain unknown variables (could be env vars to be resolved later)
+		return fmt.Sprintf("${%s}", name)
 	})
+}
+
+func keysToUpper(items map[string]interface{}) map[string]interface{} {
+	for key, value := range items {
+		if lk := strings.ToUpper(key); lk != key {
+			delete(items, key)
+			items[lk] = value
+		}
+	}
+	return items
 }
 
 // parseInlineTemplates returns all valid inline template definitions (templates: ...) from config
@@ -72,6 +93,7 @@ func parseInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 		if template, ok := def.(map[string]interface{}); ok {
 			it := new(inlineTemplate)
 			if err := mapstructure.Decode(template, it); err == nil {
+				keysToUpper(it.DefaultVariables)
 				templates[name] = it
 			} else {
 				clog.Warningf("failed parsing \"templates.%s\": %s", name, err.Error())
@@ -85,8 +107,8 @@ func parseInlineTemplates(config *viper.Viper) map[string]*inlineTemplate {
 
 // inlineTemplateCall describes a parsed inline template call (profiles.name.templates: ...)
 type inlineTemplateCall struct {
-	Name      string            `mapstructure:"name"`
-	Variables map[string]string `mapstructure:"vars"`
+	Name      string                 `mapstructure:"name"`
+	Variables map[string]interface{} `mapstructure:"vars"`
 }
 
 // parseTemplateCalls parses a template-calls config value (the value of a key with ".templates" suffix)
@@ -104,7 +126,11 @@ func parseTemplateCalls(rawValue interface{}) (calls []*inlineTemplateCall, err 
 				case string:
 					call.Name = item
 				default:
-					if err = mapstructure.Decode(item, call); err != nil {
+					if err = mapstructure.Decode(item, call); err == nil {
+						keysToUpper(call.Variables)
+					} else {
+						v, _ := stringifyValueOf(item)
+						err = fmt.Errorf("cannot parse template call %s: %s", v, err.Error())
 						return
 					}
 				}
