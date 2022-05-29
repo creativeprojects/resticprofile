@@ -239,11 +239,26 @@ func (p *Profile) SetRootPath(rootPath string) {
 		if p.Backup.Iexclude != nil && len(p.Backup.Iexclude) > 0 {
 			p.Backup.Iexclude = fixPaths(p.Backup.Iexclude, expandEnv)
 		}
+
+		setRootPathOnMonitoringSections(&p.Backup.SendMonitoringSections, rootPath)
 	}
 
 	if p.Copy != nil {
 		p.Copy.PasswordFile = fixPath(p.Copy.PasswordFile, expandEnv, absolutePrefix(rootPath))
 		p.Copy.RepositoryFile = fixPath(p.Copy.RepositoryFile, expandEnv, absolutePrefix(rootPath))
+		setRootPathOnMonitoringSections(&p.Copy.SendMonitoringSections, rootPath)
+	}
+
+	if p.Check != nil {
+		setRootPathOnMonitoringSections(&p.Check.SendMonitoringSections, rootPath)
+	}
+
+	if p.Forget != nil {
+		setRootPathOnMonitoringSections(&p.Forget.SendMonitoringSections, rootPath)
+	}
+
+	if p.Prune != nil {
+		setRootPathOnMonitoringSections(&p.Prune.SendMonitoringSections, rootPath)
 	}
 
 	// Handle dynamic flags dealing with paths that are relative to root path
@@ -264,6 +279,32 @@ func (p *Profile) SetRootPath(rootPath string) {
 				}
 				section[flag] = paths
 			}
+		}
+	}
+}
+
+func setRootPathOnMonitoringSections(sections *SendMonitoringSections, rootPath string) {
+	if sections == nil {
+		return
+	}
+	if sections.SendBefore != nil {
+		for index, value := range sections.SendBefore {
+			sections.SendBefore[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, absolutePrefix(rootPath))
+		}
+	}
+	if sections.SendAfter != nil {
+		for index, value := range sections.SendAfter {
+			sections.SendAfter[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, absolutePrefix(rootPath))
+		}
+	}
+	if sections.SendAfterFail != nil {
+		for index, value := range sections.SendAfterFail {
+			sections.SendAfterFail[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, absolutePrefix(rootPath))
+		}
+	}
+	if sections.SendFinally != nil {
+		for index, value := range sections.SendFinally {
+			sections.SendFinally[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, absolutePrefix(rootPath))
 		}
 	}
 }

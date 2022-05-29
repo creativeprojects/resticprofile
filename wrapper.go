@@ -604,7 +604,7 @@ func (r *resticWrapper) sendBefore(command string) {
 		clog.Debugf("starting 'send-before' from %s %d/%d", command, i+1, len(monitoringSections.SendBefore))
 		err := r.sender.Send(send, r.getContext())
 		if err != nil {
-			clog.Warningf("sender returned error: %s", err)
+			clog.Warningf("'send-before' returned an error: %s", err)
 		}
 	}
 }
@@ -620,7 +620,7 @@ func (r *resticWrapper) sendAfter(command string) {
 		clog.Debugf("starting 'send-after' from %s %d/%d", command, i+1, len(monitoringSections.SendAfter))
 		err := r.sender.Send(send, r.getContext())
 		if err != nil {
-			clog.Warningf("sender returned error: %s", err)
+			clog.Warningf("'send-after' returned an error: %s", err)
 		}
 	}
 }
@@ -636,7 +636,7 @@ func (r *resticWrapper) sendAfterFail(command string, err error) {
 		clog.Debugf("starting 'send-after-fail' from %s %d/%d", command, i+1, len(monitoringSections.SendAfterFail))
 		err := r.sender.Send(send, r.getContextWithError(err))
 		if err != nil {
-			clog.Warningf("sender returned error: %s", err)
+			clog.Warningf("'send-after-fail' returned an error: %s", err)
 		}
 	}
 }
@@ -652,7 +652,7 @@ func (r *resticWrapper) sendFinally(command string, err error) {
 		clog.Debugf("starting 'send-finally' from %s %d/%d", command, i+1, len(monitoringSections.SendFinally))
 		err := r.sender.Send(send, r.getContextWithError(err))
 		if err != nil {
-			clog.Warningf("sender returned error: %s", err)
+			clog.Warningf("'send-finally' returned an error: %s", err)
 		}
 	}
 }

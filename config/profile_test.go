@@ -959,3 +959,37 @@ profile:
 		})
 	}
 }
+
+func TestSetRootPathOnMonitoringSections(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.SkipNow()
+	}
+
+	sections := SendMonitoringSections{
+		SendBefore: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+		},
+		SendAfter: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+			{BodyTemplate: "file"},
+		},
+		SendAfterFail: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+			{BodyTemplate: "file"},
+		},
+		SendFinally: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+		},
+	}
+
+	setRootPathOnMonitoringSections(&sections, "root")
+	assert.Equal(t, "root/file", sections.SendBefore[0].BodyTemplate)
+
+	assert.Equal(t, "root/file", sections.SendAfter[0].BodyTemplate)
+	assert.Equal(t, "root/file", sections.SendAfter[1].BodyTemplate)
+
+	assert.Equal(t, "root/file", sections.SendAfterFail[0].BodyTemplate)
+	assert.Equal(t, "root/file", sections.SendAfterFail[1].BodyTemplate)
+
+	assert.Equal(t, "root/file", sections.SendFinally[0].BodyTemplate)
+}

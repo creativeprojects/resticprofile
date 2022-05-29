@@ -1,6 +1,7 @@
 ---
 title: "HTTP Hooks"
 date: 2022-05-16T19:46:52+01:00
+tags: ["v0.18.0"]
 weight: 22
 ---
 
@@ -16,7 +17,9 @@ The sections that allow sending HTTP hooks are:
 - forget
 - prune
 
-You might notice that's also the same sections that can be scheduled
+{{% notice tip %}}
+You might notice that's the same sections that can also be scheduled
+{{% /notice %}}
 
 Each of these commands can send 4 different types of hooks:
 
@@ -30,12 +33,14 @@ The configuration is the same for each of these 4 types of hooks:
 | Name | Required | Default | Notes |
 |:-----|:---------|:--------|:------|
 | url | Yes | None | URL of your Webhook |
-| method | No | GET | this is the HTTP method (GET, POST, HEAD, etc.) |
-| skip-tls-verification | No | False | Use only if you're using your own server with a self-signed certificate: **This is not recommended** |
+| method | No | GET | This is the HTTP method (GET, POST, HEAD, etc.) |
+| skip-tls-verification | No | False | **This is not recommended**: Use only if you're using your own server with a self-signed certificate |
 | headers | No | User-Agent set to resticprofile | This is a subsection with a list of `name` and `value` |
-| body | No | Empty | Used to send data tp the Webhook (POST, PUT, PATCH) |
+| body | No | Empty | Used to send data to the Webhook (POST, PUT, PATCH) |
 | body-template | No | None | Template file to generate the body (in go template format) |
 
+
+### Example sending monitoring information to healthchecks.io:
 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
@@ -143,6 +148,7 @@ profile:
         send-after:
           method: HEAD
           url: https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc
+          
     retention:
         after-backup: true
 
@@ -284,17 +290,17 @@ profile:
 {{% /tabs %}}
 
 
-A few environment variables will be available:
+A few environment variables will be available to construct the url and the body:
 - `PROFILE_NAME`
 - `PROFILE_COMMAND`: backup, check, forget, etc.
 
-Additionally, for the `send-after-fail` hooks, these environment variables will also be available:
+Additionally, for the `send-after-fail` hooks, these environment variables will be available:
 - `ERROR` containing the latest error message
 - `ERROR_COMMANDLINE` containing the command line that failed
 - `ERROR_EXIT_CODE` containing the exit code of the command line that failed
 - `ERROR_STDERR` containing any message that the failed command sent to the standard error (stderr)
 
-The commands of `send-finally` get the environment of `send-after-fail` when `run-before`, `run-after` or `restic` failed. 
+The `send-finally` hooks are also getting the environment of `send-after-fail` when any previous operation has failed (except any `send` operation).
 
 Failures in any `send-*` are logged but do not influence environment or return code.
 
@@ -312,3 +318,125 @@ graph TD
   SAF('send-after-fail') --> SF
   SF('send-finally')
 ```
+
+### body-template
+
+You can use a standard go template to build the webhook body. It has to be defined in a separate file (otherwise it would clash with the configuration as a go template itself).
+
+The object passed as an argument to the template is:
+
+- `ProfileName`    **string**
+- `ProfileCommand` **string**
+- `Error`          **ErrorContext**
+- `Stdout`         **string**
+
+The type **ErrorContext** is available after an error occurred (otherwise all fields are blank):
+- `Message`     **string**
+- `CommandLine` **string**
+- `ExitCode`    **string**
+- `Stderr`      **string**
+
+Here's an example of a body file:
+
+```json
+{
+  "profileName": "{{ .ProfileName }}",
+  "profileCommand": "{{ .ProfileCommand }}",
+  "exitCode": "{{ .Error.ExitCode }}"
+}
+```
+
+The field `exitCode` will be blank if no error occured.
+
+And here's an example of a configuration using a body template:
+
+
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[profile]
+
+  [profile.backup]
+  source = "/source"
+
+    [profile.backup.send-finally]
+    method = "POST"
+    url = "https://my/monitoring.example.com/"
+    body-template = body-template.json
+
+      [[profile.backup.send-finally.headers]]
+      name = "Content-Type"
+      value = "application/json"
+
+
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+profile:
+
+    backup:
+        source: "/source"
+
+        send-finally:
+            method: POST
+            url: https://my/monitoring.example.com/
+            body-template: body-template.json
+            headers:
+              - name: Content-Type
+                value: "application/json"
+
+
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+"profile" {
+
+  "backup" = {
+    "source" = "/source"
+
+    "send-finally" = {
+      "method" = "POST"
+      "url" = "https://my/monitoring.example.com/"
+      "body-template" = "body-template.json"
+      "headers" = {
+        "name" = "Content-Type"
+        "value" = "application/json"
+      }
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "profile": {
+    "backup": {
+      "source": "/source",
+      "send-finally": {
+        "method": "POST",
+        "url": "https://my/monitoring.example.com/",
+        "body-template": "body-template.json",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}

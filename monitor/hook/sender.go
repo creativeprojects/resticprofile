@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"text/template"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -50,15 +51,23 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 	if cfg.URL == "" {
 		return errors.New("URL field is empty")
 	}
+	url := resolve(cfg.URL, ctx)
 	method := cfg.Method
 	if method == "" {
 		method = http.MethodGet
 	}
 	var body io.Reader = http.NoBody
-	if cfg.Body != "" {
-		body = bytes.NewBufferString(resolveBody(cfg.Body, ctx))
+	if cfg.BodyTemplate != "" {
+		bodyTemplate, err := loadBodyTemplate(cfg.BodyTemplate, ctx)
+		if err != nil {
+			return err
+		}
+		body = bytes.NewBufferString(bodyTemplate)
 	}
-	req, err := http.NewRequest(method, cfg.URL, body)
+	if cfg.Body != "" {
+		body = bytes.NewBufferString(resolve(cfg.Body, ctx))
+	}
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
 	}
@@ -95,7 +104,7 @@ func (s *Sender) setUserAgent(req *http.Request) {
 	}
 }
 
-func resolveBody(body string, ctx Context) string {
+func resolve(body string, ctx Context) string {
 	body = os.Expand(body, func(s string) string {
 		switch s {
 		case constants.EnvProfileName:
@@ -121,4 +130,17 @@ func resolveBody(body string, ctx Context) string {
 		}
 	})
 	return body
+}
+
+func loadBodyTemplate(filename string, ctx Context) (string, error) {
+	tmpl, err := template.ParseFiles(filename)
+	if err != nil {
+		return "", err
+	}
+	buffer := &bytes.Buffer{}
+	err = tmpl.Execute(buffer, ctx)
+	if err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
 }
