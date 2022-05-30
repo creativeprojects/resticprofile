@@ -2,6 +2,7 @@ package hook
 
 import (
 	"bytes"
+	"encoding/pem"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,13 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSendHook(t *testing.T) {
-
 	testCases := []struct {
 		cfg   config.SendMonitoringSection
 		calls int
@@ -86,7 +87,7 @@ func TestSendHook(t *testing.T) {
 				Stdout: "test_stdout",
 			}
 
-			sender := NewSender("resticprofile_test", 10*time.Second)
+			sender := NewSender(nil, "resticprofile_test", 10*time.Second)
 			err := sender.Send(testCase.cfg, ctx)
 			assert.NoError(t, err)
 
@@ -105,7 +106,7 @@ func TestSenderTimeout(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	sender := NewSender("resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
@@ -122,7 +123,7 @@ func TestInsecureRequests(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender("resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
@@ -139,17 +140,74 @@ func TestInsecureRequests(t *testing.T) {
 	assert.Equal(t, 1, calls)
 }
 
+func TestRequestWithCA(t *testing.T) {
+	defaultLogger := clog.GetDefaultLogger()
+	clog.SetDefaultLogger(clog.NewLogger(clog.NewTestHandler(t)))
+	defer clog.SetDefaultLogger(defaultLogger)
+
+	calls := 0
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+	}))
+	defer server.Close()
+
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
+	// 1: request will fail TLS
+	err := sender.Send(config.SendMonitoringSection{
+		URL: server.URL,
+	}, Context{})
+	assert.Error(t, err)
+	assert.Equal(t, 0, calls)
+
+	// this is a bit hacky, but we need to save the certificate used by httptest
+	assert.Equal(t, 1, len(server.TLS.Certificates))
+	assert.Equal(t, 1, len(server.TLS.Certificates[0].Certificate))
+
+	filename := filepath.Join(t.TempDir(), "ca.pem")
+	cert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: server.TLS.Certificates[0].Certificate[0]})
+	err = os.WriteFile(filename, cert, 0o600)
+	assert.NoError(t, err)
+
+	// 2: request using the right CA certificate
+	sender = NewSender([]string{filename}, "resticprofile_test", 300*time.Millisecond)
+	err = sender.Send(config.SendMonitoringSection{
+		URL: server.URL,
+	}, Context{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, calls)
+}
+
 func TestFailedRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}))
 	defer server.Close()
 
-	sender := NewSender("resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
 	assert.Error(t, err)
+}
+
+func TestUserAgent(t *testing.T) {
+	calls := 0
+	testAgent := "test user agent/0.0"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, testAgent, r.Header.Get("User-Agent"))
+		calls++
+	}))
+	defer server.Close()
+
+	sender := NewSender(nil, "", 300*time.Millisecond)
+	err := sender.Send(config.SendMonitoringSection{
+		URL: server.URL,
+		Headers: []config.SendMonitoringHeader{
+			{Name: "User-Agent", Value: testAgent},
+		},
+	}, Context{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, calls)
 }
 
 func TestParseTemplate(t *testing.T) {
@@ -176,7 +234,7 @@ func TestParseTemplate(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender("resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
 	err = sender.Send(config.SendMonitoringSection{
 		URL:          server.URL,
 		Method:       http.MethodPost,

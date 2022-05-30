@@ -3,6 +3,7 @@ package hook
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -22,7 +23,7 @@ type Sender struct {
 	userAgent      string
 }
 
-func NewSender(userAgent string, timeout time.Duration) *Sender {
+func NewSender(certificates []string, userAgent string, timeout time.Duration) *Sender {
 	if userAgent == "" {
 		userAgent = "resticprofile/1.0"
 	}
@@ -30,6 +31,14 @@ func NewSender(userAgent string, timeout time.Duration) *Sender {
 	// normal client
 	client := &http.Client{
 		Timeout: timeout,
+	}
+
+	if len(certificates) > 0 {
+		transport := http.DefaultTransport.(*http.Transport).Clone()
+		transport.TLSClientConfig = &tls.Config{
+			RootCAs: getRootCAs(certificates),
+		}
+		client.Transport = transport
 	}
 
 	// another client for insecure requests
@@ -102,6 +111,22 @@ func (s *Sender) setUserAgent(req *http.Request) {
 	if req.Header.Get(userAgentKey) == "" {
 		req.Header.Add(userAgentKey, s.userAgent)
 	}
+}
+
+func getRootCAs(certificates []string) *x509.CertPool {
+	caCertPool := x509.NewCertPool()
+
+	for _, filename := range certificates {
+		caCert, err := os.ReadFile(filename)
+		if err != nil {
+			clog.Warningf("cannot load CA certificate: %s", err)
+			continue
+		}
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			clog.Warningf("invalid certificate: %q", filename)
+		}
+	}
+	return caCertPool
 }
 
 func resolve(body string, ctx Context) string {

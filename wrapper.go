@@ -68,7 +68,7 @@ func newResticWrapper(
 		sigChan:       c,
 		stdin:         os.Stdin,
 		progress:      make([]monitor.Receiver, 0),
-		sender:        hook.NewSender("resticprofile/"+version, global.SenderTimeout),
+		sender:        hook.NewSender(global.CACertificates, "resticprofile/"+version, global.SenderTimeout),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,

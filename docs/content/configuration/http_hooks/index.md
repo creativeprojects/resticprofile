@@ -441,6 +441,12 @@ profile:
 {{% /tab %}}
 {{% /tabs %}}
 
+### CA certificates
+
+If your monitoring system is using self-signed certificates, you can import them in resticprofile (and you don't need to rely on the `skip-tls-verification` flag)
+
+The parameter is in the `global` section and is called `ca-certificates`: it contains a list of certificate files (PEM).
+
 ### timeout
 
 The default timeout for all HTTP requests is 30 seconds.
