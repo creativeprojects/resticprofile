@@ -440,3 +440,14 @@ profile:
 
 {{% /tab %}}
 {{% /tabs %}}
+
+### timeout
+
+The default timeout for all HTTP requests is 30 seconds.
+
+You can change the default timeout in the `global` section with a parameter called `send-timeout`.
+
+The format is like:
+- 30s
+- 2m
+- 1m20s
