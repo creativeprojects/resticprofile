@@ -103,6 +103,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 	if resp.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("HTTP %s", resp.Status)
 	}
+	clog.Debugf("%q returned status %s", req.URL.String(), resp.Status)
 	return nil
 }
 
@@ -114,7 +115,10 @@ func (s *Sender) setUserAgent(req *http.Request) {
 }
 
 func getRootCAs(certificates []string) *x509.CertPool {
-	caCertPool := x509.NewCertPool()
+	caCertPool, err := x509.SystemCertPool()
+	if err != nil {
+		caCertPool = x509.NewCertPool()
+	}
 
 	for _, filename := range certificates {
 		caCert, err := os.ReadFile(filename)
