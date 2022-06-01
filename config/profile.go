@@ -44,6 +44,7 @@ type Profile struct {
 	PrometheusLabels     map[string]string                 `mapstructure:"prometheus-labels"`
 	OtherFlags           map[string]interface{}            `mapstructure:",remain"`
 	Environment          map[string]ConfidentialValue      `mapstructure:"env"`
+	Init                 *InitSection                      `mapstructure:"init"`
 	Backup               *BackupSection                    `mapstructure:"backup"`
 	Retention            *RetentionSection                 `mapstructure:"retention"`
 	Check                *SectionWithScheduleAndMonitoring `mapstructure:"check"`
@@ -58,6 +59,15 @@ type Profile struct {
 	Restore              map[string]interface{}            `mapstructure:"restore"`
 	Stats                map[string]interface{}            `mapstructure:"stats"`
 	Tag                  map[string]interface{}            `mapstructure:"tag"`
+}
+
+// InitSection contains the specific configuration to the 'init' command
+type InitSection struct {
+	FromRepository      ConfidentialValue      `mapstructure:"from-repository" argument:"repo2"`
+	FromRepositoryFile  string                 `mapstructure:"from-repository-file" argument:"repository-file2"`
+	FromPasswordFile    string                 `mapstructure:"from-password-file" argument:"password-file2"`
+	FromPasswordCommand string                 `mapstructure:"from-password-command" argument:"password-command2"`
+	OtherFlags          map[string]interface{} `mapstructure:",remain"`
 }
 
 // BackupSection contains the specific configuration to the 'backup' command
@@ -261,6 +271,11 @@ func (p *Profile) SetRootPath(rootPath string) {
 		setRootPathOnMonitoringSections(&p.Prune.SendMonitoringSections, rootPath)
 	}
 
+	if p.Init != nil {
+		p.Init.FromRepositoryFile = fixPath(p.Init.FromRepositoryFile, expandEnv, absolutePrefix(rootPath))
+		p.Init.FromPasswordFile = fixPath(p.Init.FromPasswordFile, expandEnv, absolutePrefix(rootPath))
+	}
+
 	// Handle dynamic flags dealing with paths that are relative to root path
 	filepathFlags := []string{
 		"cacert",
@@ -401,6 +416,8 @@ func (p *Profile) getSectionOtherFlags(section interface{}) map[string]interface
 			return v.OtherFlags
 		case *RetentionSection:
 			return v.OtherFlags
+		case *InitSection:
+			return v.OtherFlags
 		case map[string]interface{}:
 			return v
 		}
@@ -433,6 +450,11 @@ func (p *Profile) GetCommandFlags(command string) *shell.Args {
 	case constants.CommandCopy:
 		if p.Copy != nil {
 			flags = convertStructToArgs(*p.Copy, flags)
+		}
+
+	case constants.CommandInit:
+		if p.Init != nil {
+			flags = convertStructToArgs(*p.Init, flags)
 		}
 	}
 
@@ -504,6 +526,7 @@ func (p *Profile) allSections() map[string]interface{} {
 		constants.CommandSnapshots:              p.Snapshots,
 		constants.CommandStats:                  p.Stats,
 		constants.CommandTag:                    p.Tag,
+		constants.CommandInit:                   p.Init,
 		constants.SectionConfigurationRetention: p.Retention,
 	}
 }
