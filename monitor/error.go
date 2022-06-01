@@ -1,8 +1,10 @@
-package progress
+package monitor
 
 import (
 	"errors"
 	"os/exec"
+
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 func IsSuccess(err error) bool {
@@ -15,7 +17,7 @@ func IsWarning(err error) bool {
 	}
 	exitErr := &exec.ExitError{}
 	if errors.As(err, &exitErr) {
-		return exitErr.ExitCode() == 3
+		return exitErr.ExitCode() == constants.ExitCodeWarning
 	}
 	// so far, internal warning is only used in unit tests
 	warn := &InternalWarning{}

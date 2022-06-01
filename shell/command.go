@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 const (
@@ -24,7 +24,7 @@ type SetPID func(pid int)
 
 // ScanOutput is a callback to scan the default output of the command
 // The implementation is expected to send everything read from the reader back to the writer
-type ScanOutput func(r io.Reader, summary *progress.Summary, w io.Writer) error
+type ScanOutput func(r io.Reader, summary *monitor.Summary, w io.Writer) error
 
 // Command holds the configuration to run a shell command
 type Command struct {
@@ -71,11 +71,11 @@ func (c *Command) OnErrorCallback(name, pattern string, minCount, maxCalls int, 
 }
 
 // Run the command
-func (c *Command) Run() (progress.Summary, string, error) {
+func (c *Command) Run() (monitor.Summary, string, error) {
 	var err error
 	var stdout, stderr io.ReadCloser
 
-	summary := progress.Summary{OutputAnalysis: c.analyser.Reset()}
+	summary := monitor.Summary{OutputAnalysis: c.analyser.Reset()}
 
 	command, args, err := c.getShellCommand()
 	if err != nil {

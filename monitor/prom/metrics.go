@@ -3,7 +3,7 @@ package prom
 import (
 	"runtime"
 
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 )
@@ -56,7 +56,7 @@ func NewMetrics(group, version string, configLabels map[string]string) *Metrics 
 	return p
 }
 
-func (p *Metrics) BackupResults(profile string, status Status, summary progress.Summary) {
+func (p *Metrics) BackupResults(profile string, status Status, summary monitor.Summary) {
 	labels := prometheus.Labels{profileLabel: profile}
 	if p.group != "" {
 		labels[groupLabel] = p.group

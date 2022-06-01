@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,7 +42,7 @@ snapshot 07ab30a5 saved
 	}()
 
 	// Read the stream and send back to output buffer
-	summary := &progress.Summary{}
+	summary := &monitor.Summary{}
 	output := &strings.Builder{}
 	err = ScanBackupPlain(reader, summary, output)
 	require.NoError(t, err)

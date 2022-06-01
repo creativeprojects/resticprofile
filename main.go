@@ -14,10 +14,10 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/monitor/prom"
+	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/priority"
-	"github.com/creativeprojects/resticprofile/prom"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/creativeprojects/resticprofile/status"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/spf13/pflag"
@@ -347,6 +347,7 @@ func runProfile(
 	defer signal.Stop(sigChan)
 
 	wrapper := newResticWrapper(
+		global,
 		resticBinary,
 		flags.dryRun,
 		profile,
@@ -354,8 +355,6 @@ func runProfile(
 		resticArguments,
 		sigChan,
 	)
-
-	wrapper.setGlobal(global)
 
 	if flags.noLock {
 		wrapper.ignoreLock()

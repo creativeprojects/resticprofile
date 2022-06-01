@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 // Profile status
@@ -42,7 +42,7 @@ type BackupStatus struct {
 }
 
 // BackupSuccess indicates the last backup was successful
-func (p *Profile) BackupSuccess(summary progress.Summary, stderr string) *Profile {
+func (p *Profile) BackupSuccess(summary monitor.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
 		CommandStatus: CommandStatus{
 			Success:  true,
@@ -64,7 +64,7 @@ func (p *Profile) BackupSuccess(summary progress.Summary, stderr string) *Profil
 }
 
 // BackupError sets the error of the last backup
-func (p *Profile) BackupError(err error, summary progress.Summary, stderr string) *Profile {
+func (p *Profile) BackupError(err error, summary monitor.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
 		CommandStatus: CommandStatus{
 			Success:  false,
@@ -87,25 +87,25 @@ func (p *Profile) BackupError(err error, summary progress.Summary, stderr string
 }
 
 // RetentionSuccess indicates the last retention was successful
-func (p *Profile) RetentionSuccess(summary progress.Summary, stderr string) *Profile {
+func (p *Profile) RetentionSuccess(summary monitor.Summary, stderr string) *Profile {
 	p.Retention = newSuccess(summary.Duration, stderr)
 	return p
 }
 
 // RetentionError sets the error of the last retention
-func (p *Profile) RetentionError(err error, summary progress.Summary, stderr string) *Profile {
+func (p *Profile) RetentionError(err error, summary monitor.Summary, stderr string) *Profile {
 	p.Retention = newError(err, summary.Duration, stderr)
 	return p
 }
 
 // CheckSuccess indicates the last check was successful
-func (p *Profile) CheckSuccess(summary progress.Summary, stderr string) *Profile {
+func (p *Profile) CheckSuccess(summary monitor.Summary, stderr string) *Profile {
 	p.Check = newSuccess(summary.Duration, stderr)
 	return p
 }
 
 // CheckError sets the error of the last check
-func (p *Profile) CheckError(err error, summary progress.Summary, stderr string) *Profile {
+func (p *Profile) CheckError(err error, summary monitor.Summary, stderr string) *Profile {
 	p.Check = newError(err, summary.Duration, stderr)
 	return p
 }

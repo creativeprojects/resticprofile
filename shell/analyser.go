@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 type analyserCallback struct {
@@ -201,4 +201,4 @@ func (a OutputAnalyser) analyseLine(line string) (err error) {
 }
 
 // Ensure OutputAnalyser implements OutputAnalysis
-var _ = progress.OutputAnalysis(NewOutputAnalyser())
+var _ = monitor.OutputAnalysis(NewOutputAnalyser())

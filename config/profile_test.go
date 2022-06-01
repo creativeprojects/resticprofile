@@ -384,14 +384,14 @@ func TestPathAndTagInRetention(t *testing.T) {
 		}
 
 		config := `
-			version = ` + fmt.Sprintf("%d", version) + `
+            version = ` + fmt.Sprintf("%d", version) + `
 
-			[` + p + `profile.backup]
-			tag = ["one", "two"]
-			source = ["` + sourcePattern + `"]
+            [` + p + `profile.backup]
+            tag = ["one", "two"]
+            source = ["` + sourcePattern + `"]
 
-			[` + p + `profile.retention]
-			` + retention
+            [` + p + `profile.retention]
+            ` + retention
 
 		profile, err := getResolvedProfile("toml", config, "profile")
 		profile.SetRootPath(examples) // ensure relative paths are converted to absolute paths
@@ -505,12 +505,12 @@ profile:
 `},
 		{"hcl", `
 "profile" = {
-	backup = {
-		source = "/"
-	}
-	forget = {
-		keep-daily = 1
-	}
+    backup = {
+        source = "/"
+    }
+    forget = {
+        keep-daily = 1
+    }
 }
 `},
 	}
@@ -605,12 +605,12 @@ profile:
 `},
 		{"hcl", `
 "profile" = {
-	backup = {
-		source = "/"
-	}
-	forget = {
-		schedule = "weekly"
-	}
+    backup = {
+        source = "/"
+    }
+    forget = {
+        schedule = "weekly"
+    }
 }
 `},
 	}
@@ -660,12 +660,12 @@ profile:
 `},
 		{"hcl", `
 "profile" = {
-	backup = {
-		source = "/"
-	}
-	retention = {
-		schedule = "weekly"
-	}
+    backup = {
+        source = "/"
+    }
+    retention = {
+        schedule = "weekly"
+    }
 }
 `},
 	}
@@ -722,7 +722,7 @@ other-flag-tag = true
 		{"json", `
 {
   "profile": {
-	"other-flag": "1",
+    "other-flag": "1",
     "backup": {"other-flag-backup": "backup"},
     "retention": {"other-flag-retention": true},
     "snapshots": {"other-flag-snapshots": true},
@@ -773,49 +773,49 @@ profile:
 `},
 		{"hcl", `
 "profile" = {
-	other-flag = 1
-	backup = {
-		other-flag-backup = "backup"
-	}
-	retention = {
-		other-flag-retention = true
-	}
-	snapshots = {
-		other-flag-snapshots = true
-	}
-	check = {
-		other-flag-check = true
-	}
-	forget = {
-		other-flag-forget = true
-	}
-	prune = {
-		other-flag-prune = true
-	}
-	mount = {
-		other-flag-mount = true
-	}
-	copy = {
-		other-flag-copy = true
-	}
-	dump = {
-		other-flag-dump = true
-	}
-	find = {
-		other-flag-find = true
-	}
-	ls = {
-		other-flag-ls = true
-	}
-	restore = {
-		other-flag-restore = true
-	}
-	stats = {
-		other-flag-stats = true
-	}
-	tag = {
-		other-flag-tag = true
-	}
+    other-flag = 1
+    backup = {
+        other-flag-backup = "backup"
+    }
+    retention = {
+        other-flag-retention = true
+    }
+    snapshots = {
+        other-flag-snapshots = true
+    }
+    check = {
+        other-flag-check = true
+    }
+    forget = {
+        other-flag-forget = true
+    }
+    prune = {
+        other-flag-prune = true
+    }
+    mount = {
+        other-flag-mount = true
+    }
+    copy = {
+        other-flag-copy = true
+    }
+    dump = {
+        other-flag-dump = true
+    }
+    find = {
+        other-flag-find = true
+    }
+    ls = {
+        other-flag-ls = true
+    }
+    restore = {
+        other-flag-restore = true
+    }
+    stats = {
+        other-flag-stats = true
+    }
+    tag = {
+        other-flag-tag = true
+    }
 }
 `},
 	}
@@ -881,4 +881,115 @@ profile:
 			}
 		})
 	}
+}
+
+func TestCanLoadMonitoringSections(t *testing.T) {
+	configs := []struct {
+		format   string
+		template string
+	}{
+		{
+			"toml",
+			`version = 1
+[profile]
+[profile.%[1]s]
+[profile.%[1]s.send-before]
+url = "test url before"
+method = "HEAD"
+[[profile.%[1]s.send-after]]
+url = "test url after 1"
+method = "POST"
+[[profile.%[1]s.send-after]]
+url = "test url after 2"
+method = "POST"
+`,
+		},
+		{
+			"yaml",
+			`version: 1
+profile:
+  %s:
+    send-before:
+      method: HEAD
+      url: "test url before"
+    send-after:
+      - method: POST
+        url: "test url after 1"
+      - method: POST
+        url: "test url after 2"
+`,
+		},
+	}
+
+	testCommands := []struct {
+		command     string
+		isMonitored bool
+	}{
+		{"backup", true},
+		{"check", true},
+		{"copy", true},
+		{"prune", true},
+		{"forget", true},
+		{"init", false},
+	}
+
+	for _, config := range configs {
+		t.Run(config.format, func(t *testing.T) {
+			for _, testCase := range testCommands {
+				t.Run(testCase.command, func(t *testing.T) {
+					testConfig := fmt.Sprintf(config.template, testCase.command)
+					profile, err := getProfile(config.format, testConfig, "profile", "")
+					require.NoError(t, err)
+					require.NotNil(t, profile)
+
+					monitoringSections := profile.GetMonitoringSections(testCase.command)
+					if testCase.isMonitored {
+						require.NotNil(t, monitoringSections)
+
+						assert.Equal(t, 1, len(monitoringSections.SendBefore))
+						assert.Equal(t, "test url before", monitoringSections.SendBefore[0].URL)
+						assert.Equal(t, "HEAD", monitoringSections.SendBefore[0].Method)
+
+						assert.Equal(t, 2, len(monitoringSections.SendAfter))
+					} else {
+						assert.Nil(t, monitoringSections)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestSetRootPathOnMonitoringSections(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.SkipNow()
+	}
+
+	sections := SendMonitoringSections{
+		SendBefore: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+		},
+		SendAfter: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+			{BodyTemplate: "file"},
+		},
+		SendAfterFail: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+			{BodyTemplate: "file"},
+		},
+		SendFinally: []SendMonitoringSection{
+			{BodyTemplate: "file"},
+		},
+	}
+
+	setRootPathOnMonitoringSections(&sections, "root")
+	assert.Equal(t, "root/file", sections.SendBefore[0].BodyTemplate)
+
+	assert.Equal(t, "root/file", sections.SendAfter[0].BodyTemplate)
+	assert.Equal(t, "root/file", sections.SendAfter[1].BodyTemplate)
+
+	assert.Equal(t, "root/file", sections.SendAfterFail[0].BodyTemplate)
+	assert.Equal(t, "root/file", sections.SendAfterFail[1].BodyTemplate)
+
+	assert.Equal(t, "root/file", sections.SendFinally[0].BodyTemplate)
 }

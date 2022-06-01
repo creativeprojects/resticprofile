@@ -23,6 +23,8 @@ type Global struct {
 	LegacyArguments      bool          `mapstructure:"legacy-arguments"` // broken arguments mode (before v0.15.0)
 	SystemdUnitTemplate  string        `mapstructure:"systemd-unit-template"`
 	SystemdTimerTemplate string        `mapstructure:"systemd-timer-template"`
+	SenderTimeout        time.Duration `mapstructure:"send-timeout"`
+	CACertificates       []string      `mapstructure:"ca-certificates"`
 }
 
 // NewGlobal instantiates a new Global with default values
@@ -34,10 +36,18 @@ func NewGlobal() *Global {
 		ResticLockRetryAfter: constants.DefaultResticLockRetryAfter,
 		ResticStaleLockAge:   constants.DefaultResticStaleLockAge,
 		MinMemory:            constants.DefaultMinMemory,
+		SenderTimeout:        constants.DefaultSenderTimeout,
 	}
 }
 
 func (p *Global) SetRootPath(rootPath string) {
 	p.SystemdUnitTemplate = fixPath(p.SystemdUnitTemplate, expandEnv, absolutePrefix(rootPath))
 	p.SystemdTimerTemplate = fixPath(p.SystemdTimerTemplate, expandEnv, absolutePrefix(rootPath))
+
+	if len(p.CACertificates) == 0 {
+		return
+	}
+	for index, file := range p.CACertificates {
+		p.CACertificates[index] = fixPath(file, expandEnv, absolutePrefix(rootPath))
+	}
 }

@@ -7,7 +7,7 @@ import (
 	"io"
 	"runtime"
 
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 )
 
 type ResticJsonSummary struct {
@@ -28,7 +28,7 @@ type ResticJsonSummary struct {
 }
 
 // ScanBackupJson should populate the backup summary values from the output of the --json flag
-var ScanBackupJson ScanOutput = func(r io.Reader, summary *progress.Summary, w io.Writer) error {
+var ScanBackupJson ScanOutput = func(r io.Reader, summary *monitor.Summary, w io.Writer) error {
 	bogusPrefix := []byte("\r\x1b[2K")
 	jsonPrefix := []byte(`{"message_type":"`)
 	summaryPrefix := []byte(`{"message_type":"summary",`)

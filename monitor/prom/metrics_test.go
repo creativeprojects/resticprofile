@@ -4,13 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/progress"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSaveSingleBackup(t *testing.T) {
 	p := NewMetrics("", "", nil)
-	p.BackupResults("test", StatusSuccess, progress.Summary{
+	p.BackupResults("test", StatusSuccess, monitor.Summary{
 		Duration:   time.Duration(11 * time.Second),
 		BytesAdded: 100,
 		BytesTotal: 1000,
@@ -21,7 +21,7 @@ func TestSaveSingleBackup(t *testing.T) {
 
 func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
 	p := NewMetrics("", "", map[string]string{"test_label": "test_value"})
-	p.BackupResults("test", StatusSuccess, progress.Summary{
+	p.BackupResults("test", StatusSuccess, monitor.Summary{
 		Duration:   time.Duration(11 * time.Second),
 		BytesAdded: 100,
 		BytesTotal: 1000,
@@ -32,12 +32,12 @@ func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
 
 func TestSaveBackupsInGroup(t *testing.T) {
 	p := NewMetrics("full-backup", "", nil)
-	p.BackupResults("test1", StatusSuccess, progress.Summary{
+	p.BackupResults("test1", StatusSuccess, monitor.Summary{
 		Duration:   time.Duration(11 * time.Second),
 		BytesAdded: 1001,
 		BytesTotal: 10001,
 	})
-	p.BackupResults("test2", StatusSuccess, progress.Summary{
+	p.BackupResults("test2", StatusSuccess, monitor.Summary{
 		Duration:   time.Duration(12 * time.Second),
 		BytesAdded: 1002,
 		BytesTotal: 10002,
