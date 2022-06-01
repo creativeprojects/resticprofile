@@ -11,6 +11,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 // mixin describes a parsed mixin definition (mixins: ...)
@@ -92,6 +93,11 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 	definitions := config.GetStringMap(constants.SectionConfigurationMixins)
 	for name, def := range definitions {
 		if definition, ok := def.(map[string]interface{}); ok {
+			{
+				buf := &strings.Builder{}
+				yaml.NewEncoder(buf).Encode(definition)
+				clog.Tracef("mixin declaration \"%s\": \n%s", name, buf.String())
+			}
 			mi := new(mixin)
 			if err := mapstructure.Decode(definition, mi); err == nil {
 				keysToUpper(mi.DefaultVariables)

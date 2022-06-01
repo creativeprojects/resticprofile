@@ -139,6 +139,10 @@ func LoadFile(configFile, format string) (*Config, error) {
 		err = c.loadTemplates()
 	}
 
+	if err == nil {
+		err = c.applyMixins()
+	}
+
 	return c, err
 }
 
@@ -147,6 +151,9 @@ func LoadFile(configFile, format string) (*Config, error) {
 func Load(input io.Reader, format string) (*Config, error) {
 	c := newConfig(format)
 	err := c.addTemplate(input, c.configFile, true)
+	if err == nil {
+		err = c.applyMixins()
+	}
 	if err != nil {
 		return c, err
 	}
@@ -227,6 +234,14 @@ func (c *Config) load(input io.Reader, format string, replace bool) error {
 	return nil
 }
 
+func (c *Config) applyMixins() error {
+	if c.GetVersion() >= Version02 {
+		templates := parseMixins(c.viper)
+		return applyMixins(c.viper, c.keyDelim, templates)
+	}
+	return nil
+}
+
 func (c *Config) loadTemplates() error {
 	return c.reloadTemplates(newTemplateData(c.configFile, "default", ""))
 }
@@ -260,12 +275,6 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 				break
 			}
 		}
-	}
-
-	// Process mixins
-	if err == nil && c.GetVersion() >= Version02 {
-		templates := parseMixins(c.viper)
-		err = applyMixins(c.viper, c.keyDelim, templates)
 	}
 
 	return err
@@ -472,6 +481,9 @@ func (c *Config) loadGroups() error {
 func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	if c.sourceTemplates != nil {
 		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
+		if err == nil {
+			err = c.applyMixins()
+		}
 		if err != nil {
 			return nil, err
 		}
