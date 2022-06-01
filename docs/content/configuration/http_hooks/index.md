@@ -457,3 +457,56 @@ The format is like:
 - 30s
 - 2m
 - 1m20s
+
+### global configuration example
+
+
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[global]
+  send-timeout = "10s"
+  ca-certificates = [ "ca-chain.cert.pem" ]
+```
+
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+        
+global:
+  send-timeout: 10s
+  ca-certificates:
+    - ca-chain.cert.pem
+
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+
+global {
+  send-timeout = "10s"
+  ca-certificates = "ca-chain.cert.pem"
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "global": {
+    "send-timeout": "10s",
+    "ca-certificates": [
+      "ca-chain.cert.pem"
+    ]
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
