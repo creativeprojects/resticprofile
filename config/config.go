@@ -73,10 +73,11 @@ var (
 
 // newConfig instantiate a new Config object
 func newConfig(format string) *Config {
+	keyDelimiter := "."
 	return &Config{
-		keyDelim: ".",
+		keyDelim: keyDelimiter,
 		format:   format,
-		viper:    viper.New(),
+		viper:    viper.NewWithOptions(viper.KeyDelimiter(keyDelimiter)),
 	}
 }
 
@@ -261,10 +262,10 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 		}
 	}
 
-	// Process inline templates (config block templates)
+	// Process mixins
 	if err == nil && c.GetVersion() >= Version02 {
-		templates := parseInlineTemplates(c.viper)
-		err = applyInlineTemplates(c.viper, templates)
+		templates := parseMixins(c.viper)
+		err = applyMixins(c.viper, c.keyDelim, templates)
 	}
 
 	return err
@@ -290,13 +291,27 @@ func (c *Config) DisplayConfigurationIssues() {
 	c.issues.changedPaths = nil
 }
 
-// IsSet checks if the key contains a value. Keys and subkeys can be separated by a "."
-func (c *Config) IsSet(key string) bool {
-	if strings.Contains(key, ".") && c.format == FormatHCL {
+func (c *Config) flatKey(key ...string) (fk string) {
+	if len(key) > 0 {
+		fk = key[0]
+		if len(key) > 1 {
+			fk = strings.Join(key, c.keyDelim)
+		}
+	}
+	return
+}
+
+// IsSet checks if the key contains a value.
+// Key and subkey can be queried with IsSet(key, subkey) or by separating them with configKeyDelimiter.
+func (c *Config) IsSet(key ...string) bool {
+	flatKey := c.flatKey(key...)
+
+	if strings.Contains(flatKey, c.keyDelim) && c.format == FormatHCL {
 		clog.Error("HCL format is not supported in version 2, please use version 1 or another file format")
 		return false
 	}
-	return c.viper.IsSet(key)
+
+	return c.viper.IsSet(flatKey)
 }
 
 // GetConfigFile returns the config file used
@@ -305,8 +320,8 @@ func (c *Config) GetConfigFile() string {
 }
 
 // Get the value from the key
-func (c *Config) Get(key string) interface{} {
-	return c.viper.Get(key)
+func (c *Config) Get(key ...string) interface{} {
+	return c.viper.Get(c.flatKey(key...))
 }
 
 // HasProfile returns true if the profile exists in the configuration
@@ -530,7 +545,7 @@ func (c *Config) getProfilePath(key string) string {
 	if c.GetVersion() == Version01 {
 		return key
 	}
-	return constants.SectionConfigurationProfiles + "." + key
+	return c.flatKey(constants.SectionConfigurationProfiles, key)
 }
 
 // GetSchedules loads all schedules from the configuration.
@@ -586,7 +601,7 @@ func (c *Config) GetScheduleSections() (map[string]Schedule, error) {
 
 func (c *Config) getSchedule(key string) (Schedule, error) {
 	schedule := Schedule{}
-	err := c.unmarshalKey(constants.SectionConfigurationSchedules+"."+key, &schedule)
+	err := c.unmarshalKey(c.flatKey(constants.SectionConfigurationSchedules, key), &schedule)
 	if err != nil {
 		return schedule, err
 	}

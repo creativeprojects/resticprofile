@@ -9,7 +9,8 @@ const (
 	SectionConfigurationIncludes    = "includes"
 	SectionConfigurationProfiles    = "profiles"
 	SectionConfigurationSchedules   = "schedules"
-	SectionConfigurationTemplates   = "templates"
+	SectionConfigurationMixins      = "mixins"
+	SectionConfigurationMixinUse    = "use"
 
 	SectionDefinitionCommon = "common"
 	SectionDefinitionForget = "forget"

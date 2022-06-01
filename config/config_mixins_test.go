@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func inlineTemplateTestTools() (
+func mixinsTestTools() (
 	makeMap func(kv ...interface{}) (mapped map[string]interface{}),
 	makeList func(v ...interface{}) []interface{},
 ) {
@@ -29,10 +29,10 @@ func inlineTemplateTestTools() (
 	return
 }
 
-func TestInlineTemplate(t *testing.T) {
-	mm, list := inlineTemplateTestTools()
+func TestMixin(t *testing.T) {
+	mm, list := mixinsTestTools()
 
-	tpl := inlineTemplate{
+	tpl := mixin{
 		DefaultVariables: keysToUpper(mm("MyVar", "MyDefault")),
 		Source: mm(
 			"string", "string-val",
@@ -123,99 +123,117 @@ func TestRevolveAppendToListKeys(t *testing.T) {
 		return v
 	}
 
-	mm, list := inlineTemplateTestTools()
+	mm, list := mixinsTestTools()
 
 	tests := []struct {
-		name                       string
-		config, template, expected map[string]interface{}
+		name                    string
+		config, mixin, expected map[string]interface{}
 	}{
 		{
 			name:     "append-string-to-string",
 			config:   mm("key", "base"),
-			template: mm("key++", "new"),
+			mixin:    mm("key__APPEND", "new"),
 			expected: mm("key", list("base", "new")),
 		},
 		{
 			name:     "append-string-to-list",
 			config:   mm("key", list("base")),
-			template: mm("key++", "new"),
+			mixin:    mm("key__APPEND", "new"),
 			expected: mm("key", list("base", "new")),
 		},
 		{
 			name:     "append-list-to-list",
 			config:   mm("key", list("base")),
-			template: mm("key++", list("new")),
+			mixin:    mm("key__APPEND", list("new")),
 			expected: mm("key", list("base", "new")),
 		},
 		{
 			name:     "append-one-to-many",
 			config:   mm("key", list("base-1", "base-2")),
-			template: mm("key++", "new"),
+			mixin:    mm("key__APPEND", "new"),
 			expected: mm("key", list("base-1", "base-2", "new")),
 		},
 		{
 			name:     "append-many-to-one",
 			config:   mm("key", "base"),
-			template: mm("key++", list("new-1", "new-2")),
+			mixin:    mm("key__APPEND", list("new-1", "new-2")),
 			expected: mm("key", list("base", "new-1", "new-2")),
 		},
 		{
 			name:     "prepend-one-to-many",
 			config:   mm("key", list("base-1", "base-2")),
-			template: mm("key+0", "new"),
+			mixin:    mm("key__PREPEND", "new"),
 			expected: mm("key", list("new", "base-1", "base-2")),
 		},
 		{
 			name:     "prepend-many-to-one",
 			config:   mm("key", "base"),
-			template: mm("key+0", list("new-1", "new-2")),
+			mixin:    mm("key__PREPEND", list("new-1", "new-2")),
 			expected: mm("key", list("new-1", "new-2", "base")),
 		},
 		{
 			name:     "prepend-list-to-list",
 			config:   mm("key", list("base-1", "base-2")),
-			template: mm("key+0", list("new-1", "new-2")),
+			mixin:    mm("key__PREPEND", list("new-1", "new-2")),
 			expected: mm("key", list("new-1", "new-2", "base-1", "base-2")),
+		},
+		{
+			name:     "prepend-and-append",
+			config:   mm("key", "base"),
+			mixin:    mm("key__PREPEND", "new-head", "key__APPEND", "new-tail"),
+			expected: mm("key", list("new-head", "base", "new-tail")),
+		},
+		{
+			name:     "prepend-and-append-not-case-sensitive",
+			config:   mm("key", "base"),
+			mixin:    mm("key__PrePend", "new-head", "key__aPpEnd", "new-tail"),
+			expected: mm("key", list("new-head", "base", "new-tail")),
 		},
 		{
 			name:     "append-object-to-string",
 			config:   mm("key", "base"),
-			template: mm("key++", mm("newKey", "newValue")),
+			mixin:    mm("key__APPEND", mm("newKey", "newValue")),
 			expected: mm("key", list("base", mm("newKey", "newValue"))),
 		},
 		{
 			name:     "append-nested",
 			config:   mm("key", mm("childKey", "childBase")),
-			template: mm("key", mm("childKey++", "childNew")),
+			mixin:    mm("key", mm("childKey__APPEND", "childNew")),
 			expected: mm("key", mm("childKey", list("childBase", "childNew"))),
 		},
 		{
 			name:     "append-to-none",
 			config:   mm(),
-			template: mm("key", mm("childKey++", "childNew")),
+			mixin:    mm("key", mm("childKey__APPEND", "childNew")),
 			expected: mm("key", mm("childKey", list("childNew"))),
 		},
 		{
 			name:     "prepend-to-none",
 			config:   mm(),
-			template: mm("key", mm("childKey+0", "childNew")),
+			mixin:    mm("key", mm("childKey__PREPEND", "childNew")),
 			expected: mm("key", mm("childKey", list("childNew"))),
+		},
+		{
+			name:     "short-syntax",
+			config:   mm("key", "base"),
+			mixin:    mm("key...", "new-tail", "...key", "new-head"),
+			expected: mm("key", list("new-head", "base", "new-tail")),
 		},
 	}
 
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("#%d_%s", i, test.name), func(t *testing.T) {
 			v := load(t, test.config)
-			revolveAppendToListKeys(v, test.template)
-			assert.Equal(t, test.expected, test.template)
+			revolveAppendToListKeys(v, test.mixin)
+			assert.Equal(t, test.expected, test.mixin)
 		})
 	}
 }
 
-func TestApplyInlineTemplates(t *testing.T) {
+func TestApplyMixins(t *testing.T) {
 	base := `---
 version: 2
-templates:
+mixins:
   t1:
     status-file: status-one
     backup:
@@ -226,8 +244,8 @@ templates:
     status-file: status-two
     backup:
       source: ["source-two"]
-      run-before+0: ["mount /backup"]
-      run-after++: ["unmount /backup"]
+      run-before__PREPEND: ["mount /backup"]
+      run-after__APPEND: ["unmount /backup"]
   t3:
     default-vars:
       named-source: "default-source"
@@ -245,7 +263,7 @@ templates:
 		config := load(t, `
 profiles:
   profile:
-    templates:
+    use:
       - t1
       - t2
     backup:
@@ -259,12 +277,27 @@ profiles:
 		assert.Equal(t, []string{"touch /backup/lastrun", "unmount /backup"}, p.Backup.RunAfter)
 	})
 
+	t.Run("can-replace-string-with-list", func(t *testing.T) { // requires viper>=v1.11.0
+		config := load(t, `
+  new-before:
+    run-before: [new-before-head, new-before-tail]
+
+profiles:
+  profile:
+    backup:
+      use: new-before
+      run-before: "base"
+`)
+		p, err := config.getProfile("profile")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"new-before-head", "new-before-tail"}, p.Backup.RunBefore)
+	})
+
 	t.Run("list-append-does-not-inherit", func(t *testing.T) {
 		config := load(t, `
 profiles:
   default:
-    templates: 
-      - t2
+    use: t2
   profile:
     inherit: default
     backup:
@@ -276,15 +309,44 @@ profiles:
 		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
 	})
 
+	t.Run("short-syntax-append", func(t *testing.T) {
+		config := load(t, `
+  short-append:
+    ...run-before: "new-begin"
+    run-before...: new-end
+
+profiles:
+  profile:
+    backup:
+      use: short-append
+      run-before: ["base"]
+`)
+		p, err := config.getProfile("profile")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"new-begin", "base", "new-end"}, p.Backup.RunBefore)
+	})
+
+	t.Run("use-is-not-in-flags", func(t *testing.T) {
+		config := load(t, `
+profiles:
+  profile:
+    use: t1
+    a: b
+`)
+		p, err := config.getProfile("profile")
+		assert.NoError(t, err)
+		assert.Equal(t, map[string][]string{"a": {"b"}}, p.GetCommonFlags().ToMap())
+	})
+
 	t.Run("vars", func(t *testing.T) {
 		config := load(t, `
 profiles:
   profile-simple:
     backup:
-      templates: t3
+      use: t3
   profile:
     backup:
-      templates:
+      use:
         - name: t3
           vars:
             named-source: my-source
@@ -298,7 +360,7 @@ profiles:
 		assert.Equal(t, []string{"my-source", "${another-source}"}, p.Backup.Source)
 	})
 
-	t.Run("invalid-template-does-not-fail", func(t *testing.T) {
+	t.Run("invalid-mixin-does-not-fail", func(t *testing.T) {
 		config := load(t, `
   tvalid:
     default-vars:
@@ -316,48 +378,48 @@ profiles:
 
 profiles:
   profile:
-    templates: tvalid
+    use: tvalid
 `)
-		templates := parseInlineTemplates(config.viper)
-		assert.Contains(t, templates, "tvalid")
-		assert.NotContains(t, templates, "tinvalid-no-object1")
-		assert.NotContains(t, templates, "tinvalid-no-object2")
+		mixins := parseMixins(config.viper)
+		assert.Contains(t, mixins, "tvalid")
+		assert.NotContains(t, mixins, "tinvalid-no-object1")
+		assert.NotContains(t, mixins, "tinvalid-no-object2")
 
 		p, err := config.getProfile("profile")
 		assert.NoError(t, err)
 		assert.Equal(t, "abc 1 false ${list} ${obj}", p.StatusFile)
 	})
 
-	t.Run("unknown-call-fails", func(t *testing.T) {
+	t.Run("unknown-use-fails", func(t *testing.T) {
 		buffer := bytes.NewBufferString(base + `
 profiles:
   profile:
-    templates: 
+    use: 
       - t1
       - t2
       - tunknown
 `)
 		_, err := Load(buffer, FormatYAML)
-		assert.EqualError(t, err, "failed applying templates profiles.profile.templates: undefined template \"tunknown\"")
+		assert.EqualError(t, err, "failed applying profiles.profile.use: undefined mixin \"tunknown\"")
 	})
 
-	t.Run("invalid-call-fails", func(t *testing.T) {
-		defaultError := "template call must be string or list of strings or list of call objects"
-		invalidCalls := map[string]string{
-			"templates: false":   defaultError,
-			"templates: [1]":     "cannot parse template call [1]: '' expected a map, got 'int'",
-			"templates: [false]": "cannot parse template call []: '' expected a map, got 'bool'",
-			"templates: 1":       defaultError,
+	t.Run("invalid-use-fails", func(t *testing.T) {
+		defaultError := "mixin use must be string or list of strings or list of use objects"
+		invalidUses := map[string]string{
+			"false":   defaultError,
+			"[1]":     "cannot parse mixin use [1]: '' expected a map, got 'int'",
+			"[false]": "cannot parse mixin use []: '' expected a map, got 'bool'",
+			"1":       defaultError,
 		}
-		for call, errorMessage := range invalidCalls {
+		for use, errorMessage := range invalidUses {
 			buffer := bytes.NewBufferString(fmt.Sprintf(`
 %s
 profiles:
   profile:
-    %s 
-`, base, call))
+    use: %s 
+`, base, use))
 			_, err := Load(buffer, FormatYAML)
-			assert.EqualError(t, err, "failed applying templates profiles.profile.templates: "+errorMessage)
+			assert.EqualError(t, err, "failed applying profiles.profile.use: "+errorMessage)
 		}
 	})
 }

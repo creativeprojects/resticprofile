@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/shell"
 )
 
@@ -60,6 +61,9 @@ func addOtherArgs(args *shell.Args, otherArgs map[string]interface{}) *shell.Arg
 
 	// Add other args
 	for name, value := range otherArgs {
+		if name == constants.SectionConfigurationMixinUse {
+			continue
+		}
 		if convert, ok := stringifyValueOf(value); ok {
 			args.AddFlags(name, convert, shell.ArgConfigEscape)
 		}

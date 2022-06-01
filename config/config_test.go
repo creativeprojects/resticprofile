@@ -46,8 +46,8 @@ first:
 			require.NoError(t, err)
 
 			assert.True(t, c.IsSet("first"))
-			assert.True(t, c.IsSet("first.second"))
-			assert.True(t, c.IsSet("first.second.key"))
+			assert.True(t, c.IsSet("first", "second"))
+			assert.True(t, c.IsSet("first", "second", "key"))
 		})
 	}
 }
