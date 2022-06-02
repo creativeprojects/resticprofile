@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 type Args struct {
@@ -47,18 +49,37 @@ func (a *Args) Walk(callback func(name string, arg *Arg) *Arg) {
 }
 
 // PromoteSecondaryToPrimary removes a "2" at the end of each flag
-func (a *Args) PromoteSecondaryToPrimary() {
+func (a *Args) PromoteSecondaryToPrimary(swap bool) {
 	override := make(map[string][]Arg, len(a.args))
 	for name, args := range a.args {
 		if strings.HasSuffix(name, "2") {
 			name = strings.TrimSuffix(name, "2")
-			override[name] = args
+			if isSwappable(name) {
+				override[name] = args
+			}
 		}
 	}
-	// now override the original arguments, and delete any secondary one
+	keep := make(map[string][]Arg, len(a.args))
+	if swap {
+		// take all the non "2" arguments as we need to swap them
+		for name, args := range a.args {
+			if isSwappable(name) {
+				keep[name] = args
+			}
+		}
+	}
+	// delete all the swappable arguments
+	for _, name := range constants.SwappableParameters {
+		delete(a.args, name)
+		delete(a.args, name+"2")
+	}
+	// sets the secondary arguments to primary
 	for name, args := range override {
 		a.args[name] = args
-		delete(a.args, name+"2")
+	}
+	// sets the original arguments to a "2" version (if any)
+	for name, args := range keep {
+		a.args[name+"2"] = args
 	}
 }
 
@@ -159,4 +180,13 @@ func (a *Args) GetAll() []string {
 		args = append(args, arg.String())
 	}
 	return args
+}
+
+func isSwappable(name string) bool {
+	for _, param := range constants.SwappableParameters {
+		if name == param {
+			return true
+		}
+	}
+	return false
 }

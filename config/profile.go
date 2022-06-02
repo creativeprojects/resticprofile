@@ -126,15 +126,16 @@ type ScheduleBaseSection struct {
 
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
-	Initialize             bool              `mapstructure:"initialize"`
-	Repository             ConfidentialValue `mapstructure:"repository" argument:"repo2"`
-	RepositoryFile         string            `mapstructure:"repository-file" argument:"repository-file2"`
-	PasswordFile           string            `mapstructure:"password-file" argument:"password-file2"`
-	PasswordCommand        string            `mapstructure:"password-command" argument:"password-command2"`
-	KeyHint                string            `mapstructure:"key-hint" argument:"key-hint2"`
-	ScheduleBaseSection    `mapstructure:",squash"`
-	SendMonitoringSections `mapstructure:",squash"`
-	OtherFlags             map[string]interface{} `mapstructure:",remain"`
+	Initialize                  bool              `mapstructure:"initialize"`
+	InitializeCopyChunkerParams bool              `mapstructure:"initialize-copy-chunker-params"`
+	Repository                  ConfidentialValue `mapstructure:"repository" argument:"repo2"`
+	RepositoryFile              string            `mapstructure:"repository-file" argument:"repository-file2"`
+	PasswordFile                string            `mapstructure:"password-file" argument:"password-file2"`
+	PasswordCommand             string            `mapstructure:"password-command" argument:"password-command2"`
+	KeyHint                     string            `mapstructure:"key-hint" argument:"key-hint2"`
+	ScheduleBaseSection         `mapstructure:",squash"`
+	SendMonitoringSections      `mapstructure:",squash"`
+	OtherFlags                  map[string]interface{} `mapstructure:",remain"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }

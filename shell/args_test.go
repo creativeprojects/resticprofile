@@ -116,16 +116,44 @@ func TestConversionToArgs(t *testing.T) {
 func TestPromoteSecondaryToPrimary(t *testing.T) {
 	args := NewArgs()
 	args.AddFlag("initialize", "true", ArgConfigEscape)
-	args.AddFlag("repo", "first", ArgConfigEscape)
-	args.AddFlag("password-file", "key1", ArgConfigEscape)
-	args.AddFlag("repo2", "second", ArgConfigEscape)
-	args.AddFlag("password-file2", "key2", ArgConfigEscape)
+	args.AddFlag("repo", "first", ArgConfigEscape)          // replaced
+	args.AddFlag("password-file", "key1", ArgConfigEscape)  // replaced
+	args.AddFlag("key-hint", "key1", ArgConfigEscape)       // no replacement, but should be removed
+	args.AddFlag("repo2", "second", ArgConfigEscape)        // promoted to repo
+	args.AddFlag("password-file2", "key2", ArgConfigEscape) // promoted to password-file
+	args.AddFlag("other2", "keep", ArgConfigEscape)         // should stay
 
-	args.PromoteSecondaryToPrimary()
+	args.PromoteSecondaryToPrimary(false)
 	result := args.ToMap()
 	assert.Equal(t, map[string][]string{
 		"initialize":    {"true"},
 		"password-file": {"key2"},
 		"repo":          {"second"},
+		"other2":        {"keep"},
+	}, result)
+}
+
+func TestSwapSecondaryWithPrimary(t *testing.T) {
+	args := NewArgs()
+	args.AddFlag("initialize", "true", ArgConfigEscape)
+	args.AddFlag("repo", "first", ArgConfigEscape)                // promoted to repo2
+	args.AddFlag("password-file", "key1", ArgConfigEscape)        // promoted to password-file2
+	args.AddFlag("key-hint", "key1", ArgConfigEscape)             // promoted to key-hint2
+	args.AddFlag("repo2", "second", ArgConfigEscape)              // promoted to repo
+	args.AddFlag("password-file2", "key2", ArgConfigEscape)       // promoted to password-file
+	args.AddFlag("password-command2", "command", ArgConfigEscape) // promoted to password-command
+	args.AddFlag("other2", "keep", ArgConfigEscape)               // should stay the same
+
+	args.PromoteSecondaryToPrimary(true)
+	result := args.ToMap()
+	assert.Equal(t, map[string][]string{
+		"initialize":       {"true"},
+		"password-file":    {"key2"},
+		"repo":             {"second"},
+		"password-command": {"command"},
+		"password-file2":   {"key1"},
+		"repo2":            {"first"},
+		"key-hint2":        {"key1"},
+		"other2":           {"keep"},
 	}, result)
 }

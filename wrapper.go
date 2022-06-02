@@ -328,13 +328,14 @@ func (r *resticWrapper) runInitializeCopy() error {
 	args := r.profile.GetCommandFlags(constants.CommandCopy)
 	// the copy command adds a 2 behind each flag about the secondary repository
 	// in the case of init, we want to promote the secondary repository as primary
-	args.PromoteSecondaryToPrimary()
+	// but if we use the copy-chunker-params we actually need to swap primary with secondary
+	args.PromoteSecondaryToPrimary(r.profile.Copy != nil && r.profile.Copy.InitializeCopyChunkerParams)
 	rCommand := r.prepareCommand(constants.CommandInit, args, r.commonResticArgs(r.moreArgs)...)
 	// don't display any error
 	rCommand.stderr = nil
 	_, stderr, err := runShellCommand(rCommand)
 	if err != nil {
-		return newCommandError(rCommand, stderr, fmt.Errorf("repository initialization on profile '%s': %w", r.profile.Name, err))
+		return newCommandError(rCommand, stderr, fmt.Errorf("copy repository initialization on profile '%s': %w", r.profile.Name, err))
 	}
 	return nil
 }
