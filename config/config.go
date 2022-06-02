@@ -311,7 +311,7 @@ func (c *Config) flatKey(key ...string) (fk string) {
 }
 
 // IsSet checks if the key contains a value.
-// Key and subkey can be queried with IsSet(key, subkey) or by separating them with configKeyDelimiter.
+// Key and subkey can be queried with IsSet(key, subkey) or by separating them with keyDelim.
 func (c *Config) IsSet(key ...string) bool {
 	flatKey := c.flatKey(key...)
 

@@ -21,27 +21,27 @@ type mixin struct {
 }
 
 // Resolve applies variables and returns a resolved copy of Source
-func (t *mixin) Resolve(variables map[string]interface{}) map[string]interface{} {
-	return t.translate(t.Source, variables)
+func (m *mixin) Resolve(variables map[string]interface{}) map[string]interface{} {
+	return m.translate(m.Source, variables)
 }
 
-func (t *mixin) translate(source, variables map[string]interface{}) map[string]interface{} {
+func (m *mixin) translate(source, variables map[string]interface{}) map[string]interface{} {
 	target := make(map[string]interface{})
 
 	for name, rawValue := range source {
 		switch value := rawValue.(type) {
 		case map[string]interface{}:
-			target[name] = t.translate(value, variables)
+			target[name] = m.translate(value, variables)
 		case string:
-			target[name] = t.expandVariables(value, variables)
+			target[name] = m.expandVariables(value, variables)
 		case []interface{}:
 			resolved := make([]interface{}, len(value))
 			for i := 0; i < len(value); i++ {
 				switch item := value[i].(type) {
 				case string:
-					resolved[i] = t.expandVariables(item, variables)
+					resolved[i] = m.expandVariables(item, variables)
 				case map[string]interface{}:
-					resolved[i] = t.translate(item, variables)
+					resolved[i] = m.translate(item, variables)
 				default:
 					resolved[i] = item
 				}
@@ -55,13 +55,13 @@ func (t *mixin) translate(source, variables map[string]interface{}) map[string]i
 	return target
 }
 
-func (t *mixin) expandVariables(value string, variables map[string]interface{}) string {
+func (m *mixin) expandVariables(value string, variables map[string]interface{}) string {
 	return os.Expand(value, func(name string) string {
 		lookup := strings.ToUpper(name)
 
 		replacement := variables[lookup]
 		if replacement == nil {
-			replacement = t.DefaultVariables[lookup]
+			replacement = m.DefaultVariables[lookup]
 		}
 
 		if replacement != nil {
@@ -114,8 +114,27 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 
 // mixinUse the use of a mixin within the configuration (profiles.name.use: ...)
 type mixinUse struct {
-	Name      string                 `mapstructure:"name"`
-	Variables map[string]interface{} `mapstructure:"vars"`
+	Name              string                 `mapstructure:"name"`
+	Variables         map[string]interface{} `mapstructure:"vars"`
+	ImplicitVariables map[string]interface{} `mapstructure:",remain"`
+}
+
+func (u *mixinUse) normalizeVariables() {
+	keysToUpper(u.Variables)
+
+	if len(u.ImplicitVariables) > 0 {
+		keysToUpper(u.ImplicitVariables)
+		if u.Variables == nil {
+			u.Variables = u.ImplicitVariables
+		} else {
+			for k, v := range u.ImplicitVariables {
+				if _, exists := u.Variables[k]; !exists {
+					u.Variables[k] = v
+				}
+			}
+		}
+		u.ImplicitVariables = nil
+	}
 }
 
 // parseMixinUses parses a mixin use config value (the value of a key with ".use" suffix)
@@ -134,7 +153,7 @@ func parseMixinUses(rawValue interface{}) (uses []*mixinUse, err error) {
 					use.Name = item
 				default:
 					if err = mapstructure.Decode(item, use); err == nil {
-						keysToUpper(use.Variables)
+						use.normalizeVariables()
 					} else {
 						v, _ := stringifyValueOf(item)
 						err = fmt.Errorf("cannot parse mixin use %s: %s", v, err.Error())

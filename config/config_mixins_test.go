@@ -214,6 +214,12 @@ func TestRevolveAppendToListKeys(t *testing.T) {
 			expected: mm("key", mm("childKey", list("childNew"))),
 		},
 		{
+			name:     "prepend-and-append-to-self",
+			config:   mm(),
+			mixin:    mm("key__PREPEND", "first", "key", "middle", "key__APPEND", "last"),
+			expected: mm("key", list("first", "middle", "last")),
+		},
+		{
 			name:     "short-syntax",
 			config:   mm("key", "base"),
 			mixin:    mm("key...", "new-tail", "...key", "new-head"),
@@ -358,6 +364,32 @@ profiles:
 		p, err = config.getProfile("profile")
 		assert.NoError(t, err)
 		assert.Equal(t, []string{"my-source", "${another-source}"}, p.Backup.Source)
+	})
+
+	t.Run("implicit-vars", func(t *testing.T) {
+		config := load(t, `
+profiles:
+  profile:
+    backup:
+      use:
+        - name: t3
+          named-source: my-source
+  profile-both:
+    backup:
+      use:
+        - name: t3
+          vars:
+            named-source: my-source
+          named-source: my-implicit-source
+          another-source: my-other-implicit-source
+`)
+		p, err := config.getProfile("profile")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"my-source", "${another-source}"}, p.Backup.Source)
+
+		p, err = config.getProfile("profile-both")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"my-source", "my-other-implicit-source"}, p.Backup.Source)
 	})
 
 	t.Run("invalid-mixin-does-not-fail", func(t *testing.T) {
