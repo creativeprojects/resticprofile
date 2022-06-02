@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/monitor"
@@ -326,6 +327,20 @@ func TestInitializeWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper(nil, mockBinary, false, profile, "", []string{"--exit", "10"}, nil)
 	err := wrapper.runInitialize()
+	require.Error(t, err)
+}
+
+func TestInitializeCopyNoError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(nil, mockBinary, false, profile, "", nil, nil)
+	err := wrapper.runInitializeCopy()
+	require.NoError(t, err)
+}
+
+func TestInitializeCopyWithError(t *testing.T) {
+	profile := config.NewProfile(nil, "name")
+	wrapper := newResticWrapper(nil, mockBinary, false, profile, "", []string{"--exit", "10"}, nil)
+	err := wrapper.runInitializeCopy()
 	require.Error(t, err)
 }
 
@@ -887,4 +902,50 @@ func TestGetFailEnvironmentWithCommandError(t *testing.T) {
 		"ERROR_STDERR=stderr",
 		"RESTIC_STDERR=stderr",
 	}, env)
+}
+
+func TestRunInitializeCopyAlone(t *testing.T) {
+	defaultLogger := clog.GetDefaultLogger()
+	mem := clog.NewMemoryHandler()
+	clog.SetDefaultLogger(clog.NewLogger(mem))
+	defer clog.SetDefaultLogger(defaultLogger)
+
+	profile := config.NewProfile(&config.Config{}, "profile")
+	profile.Repository = config.NewConfidentialValue("repo_origin")
+	profile.PasswordFile = "password_origin"
+	profile.Copy = &config.CopySection{
+		Initialize:                  true,
+		InitializeCopyChunkerParams: false,
+		Repository:                  config.NewConfidentialValue("repo_copy"),
+		PasswordFile:                "password_copy",
+	}
+	wrapper := newResticWrapper(config.NewGlobal(), "test", true, profile, "copy", nil, nil)
+	err := wrapper.runInitializeCopy()
+	require.NoError(t, err)
+
+	assert.Equal(t, 3, len(mem.Logs()))
+	assert.Equal(t, "dry-run: test init --password-file password_copy --repo repo_copy", mem.Logs()[2])
+}
+
+func TestRunInitializeCopyInitWithTwoRepos(t *testing.T) {
+	defaultLogger := clog.GetDefaultLogger()
+	mem := clog.NewMemoryHandler()
+	clog.SetDefaultLogger(clog.NewLogger(mem))
+	defer clog.SetDefaultLogger(defaultLogger)
+
+	profile := config.NewProfile(&config.Config{}, "profile")
+	profile.Repository = config.NewConfidentialValue("repo_origin")
+	profile.PasswordFile = "password_origin"
+	profile.Copy = &config.CopySection{
+		Initialize:                  true,
+		InitializeCopyChunkerParams: true,
+		Repository:                  config.NewConfidentialValue("repo_copy"),
+		PasswordFile:                "password_copy",
+	}
+	wrapper := newResticWrapper(config.NewGlobal(), "test", true, profile, "copy", nil, nil)
+	err := wrapper.runInitializeCopy()
+	require.NoError(t, err)
+
+	assert.Equal(t, 3, len(mem.Logs()))
+	assert.Equal(t, "dry-run: test init --copy-chunker-params --password-file password_copy --password-file2 password_origin --repo repo_copy --repo2 repo_origin", mem.Logs()[2])
 }
