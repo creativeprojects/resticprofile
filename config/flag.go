@@ -3,7 +3,9 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/shell"
@@ -73,10 +75,15 @@ func addOtherArgs(args *shell.Args, otherArgs map[string]interface{}) *shell.Arg
 
 // stringifyValueOf returns a string representation of the value, and if it has any value at all
 func stringifyValueOf(value interface{}) ([]string, bool) {
+	return stringifyAnyValueOf(value, true)
+}
+
+// stringifyAnyValueOf returns a string representation of the value, and if it has any value at all
+func stringifyAnyValueOf(value interface{}, onlySimplyValues bool) ([]string, bool) {
 	if value == nil {
 		return emptyStringArray, false
 	}
-	return stringifyValue(reflect.ValueOf(value))
+	return stringifyAnyValue(reflect.ValueOf(value), onlySimplyValues)
 }
 
 // stringifyConfidentialValue returns a string representation of the value including confidential parts
@@ -95,6 +102,11 @@ func stringifyConfidentialValue(value reflect.Value) ([]string, bool) {
 
 // stringifyValue returns a string representation of the value, and if it has any value at all
 func stringifyValue(value reflect.Value) ([]string, bool) {
+	return stringifyAnyValue(value, true)
+}
+
+// stringifyAnyValue returns a string representation of the value, and if it has any value at all
+func stringifyAnyValue(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
 	// Check if the value can convert itself to String() (e.g. time.Duration)
 	stringer := fmt.Stringer(nil)
 	if value.Kind() != reflect.Invalid && value.CanInterface() {
@@ -149,20 +161,42 @@ func stringifyValue(value reflect.Value) ([]string, bool) {
 	case reflect.Slice, reflect.Array:
 		n := value.Len()
 		sliceVal := make([]string, n)
-		if n == 0 {
-			return sliceVal, false
-		}
 		for i := 0; i < n; i++ {
-			v, _ := stringifyValue(value.Index(i))
+			v, _ := stringifyAnyValue(value.Index(i), onlySimplyValues)
 			if len(v) > 1 {
-				panic(fmt.Errorf("array of array of values are not supported"))
+				if onlySimplyValues {
+					panic(fmt.Errorf("array of array of values are not supported"))
+				}
+				sliceVal[i] = "{" + strings.Join(v, ",") + "}"
+			} else {
+				sliceVal[i] = v[0]
 			}
-			sliceVal[i] = v[0]
 		}
-		return sliceVal, true
+		return sliceVal, n > 0
+
+	case reflect.Map:
+		if onlySimplyValues {
+			return []string{fmt.Sprintf("ERROR: unexpected type %s", reflect.Map)}, false
+		}
+		flatMap := make([]string, 0, value.Len())
+		for it := value.MapRange(); it.Next(); {
+			k, _ := stringifyAnyValue(it.Key(), false)
+			v, hasValue := stringifyAnyValue(it.Value(), false)
+			if len(v) > 1 {
+				v[0] = "{" + strings.Join(v, ",") + "}"
+			}
+			if len(v) == 0 && hasValue {
+				v = []string{"true"}
+			}
+			if len(k) == 1 && len(v) > 0 {
+				flatMap = append(flatMap, fmt.Sprintf("%s:%s", k[0], v[0]))
+			}
+		}
+		sort.Strings(flatMap)
+		return flatMap, len(flatMap) > 0
 
 	case reflect.Interface:
-		return stringifyValue(value.Elem())
+		return stringifyAnyValue(value.Elem(), onlySimplyValues)
 
 	default:
 		if stringer != nil {

@@ -113,7 +113,7 @@ This differs from how includes handle lists and may lead to unexpected results. 
 
 Starting with configuration file format **version 2**, mixins offer an easy way to share pieces of configurations between profiles without forcing a hierarchy of inheritance. Mixins can be used at every level within the profile configuration, support parametrisation (`vars`) and can prepend or append to list properties in addition to replacing them.
 
-Mixins are declared in section `mixins` as a named objects. The contents of these objects are merged into the profile configuration wherever a `use` property references (uses) the mixin. 
+Mixins are declared in section `mixins` as named objects. The contents of these objects are merged into the profile configuration wherever a `use` property references (uses) the mixin. 
 Configuration merging is following the same logic as used in [inheritance](#profile-inheritance) and [includes](../include/#configuration-merging). When `use` references multiple mixins, the mixins apply in the order they are referenced and can override each other (mixins referenced later override what earlier mixins defined).
 
 Configuration values inside a mixin may use variables following the syntax `${variable}` or `$variable`. Default values can be defined inside the mixin and `use` can set alternate values before merging the mixin.
@@ -346,7 +346,7 @@ version = 2
 
 Profiles in resticprofile configure commandline options (flags) for running restic commands. While a profile has several predefined common properties (`repository`, `password-file`, ...), any arbitrary common flags can be set directly inside the profile and will be inherited by all command sections of the profile.
 
-An arbitrary flag like `insecure-tls` that is not part of the profile config reference but valid for every restic command can be set at profile level and will be converted to a restic flag. See the following example:
+An arbitrary flag like `insecure-tls` that is not part of the profile config [reference](../reference/) but valid for every restic command can be set at profile level and will be converted to a restic flag. See the following example:
 
 {{< tabs groupId="config-with-common-flags-in-profile" >}}
 {{% tab name="yaml" %}}

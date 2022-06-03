@@ -86,6 +86,28 @@ func TestArrayOfArrayOfValueShouldPanic(t *testing.T) {
 	})
 }
 
+func TestArrayOfArrayOfValueWithAny(t *testing.T) {
+	value := [][]string{{"one", "two"}, {"three", "four"}}
+	argValue, hasValue := stringifyAnyValueOf(value, false)
+	assert.True(t, hasValue)
+	assert.Equal(t, []string{"{one,two}", "{three,four}"}, argValue)
+}
+
+func TestMap(t *testing.T) {
+	value := map[string]interface{}{
+		"k1": "b",
+		"k2": []string{"c", "d"},
+		"k3": map[string]interface{}{"x": 10, "y": false, "j": true},
+	}
+	argValue, hasValue := stringifyAnyValueOf(value, false)
+	assert.True(t, hasValue)
+	assert.Equal(t, []string{"k1:b", "k2:{c,d}", "k3:{j:true,x:10}"}, argValue)
+
+	argValue, hasValue = stringifyValueOf(value)
+	assert.False(t, hasValue)
+	assert.Equal(t, []string{"ERROR: unexpected type map"}, argValue)
+}
+
 func TestArrayOfStringValueFlag(t *testing.T) {
 	value := [2]string{"one", "two"}
 	argValue, hasValue := stringifyValueOf(value)
