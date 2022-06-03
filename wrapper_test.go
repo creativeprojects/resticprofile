@@ -904,94 +904,65 @@ func TestGetFailEnvironmentWithCommandError(t *testing.T) {
 	}, env)
 }
 
-func TestRunInitializeCopyAlone(t *testing.T) {
-	defaultLogger := clog.GetDefaultLogger()
-	mem := clog.NewMemoryHandler()
-	clog.SetDefaultLogger(clog.NewLogger(mem))
-	defer clog.SetDefaultLogger(defaultLogger)
-
-	profile := config.NewProfile(&config.Config{}, "profile")
-	profile.Repository = config.NewConfidentialValue("repo_origin")
-	profile.PasswordFile = "password_origin"
-	profile.Copy = &config.CopySection{
-		Initialize:                  true,
-		InitializeCopyChunkerParams: false,
-		Repository:                  config.NewConfidentialValue("repo_copy"),
-		PasswordFile:                "password_copy",
+func TestRunInitCopyCommand(t *testing.T) {
+	testCases := []struct {
+		profile      *config.Profile
+		expectedInit string
+		expectedCopy string
+	}{
+		{
+			profile: &config.Profile{
+				Name:         "profile",
+				Repository:   config.NewConfidentialValue("repo_origin"),
+				PasswordFile: "password_origin",
+				Copy: &config.CopySection{
+					InitializeCopyChunkerParams: true,
+					Repository:                  config.NewConfidentialValue("repo_copy"),
+					PasswordFile:                "password_copy",
+				},
+			},
+			expectedInit: "dry-run: test init --copy-chunker-params --password-file password_copy --password-file2 password_origin --repo repo_copy --repo2 repo_origin",
+			expectedCopy: "dry-run: test copy --password-file password_origin --password-file2 password_copy --repo repo_origin --repo2 repo_copy",
+		},
+		{
+			profile: &config.Profile{
+				Name:         "profile",
+				Repository:   config.NewConfidentialValue("repo_origin"),
+				PasswordFile: "password_origin",
+				Copy: &config.CopySection{
+					InitializeCopyChunkerParams: false,
+					Repository:                  config.NewConfidentialValue("repo_copy"),
+					PasswordFile:                "password_copy",
+				},
+			},
+			expectedInit: "dry-run: test init --password-file password_copy --repo repo_copy",
+			expectedCopy: "dry-run: test copy --password-file password_origin --password-file2 password_copy --repo repo_origin --repo2 repo_copy",
+		},
 	}
-	wrapper := newResticWrapper(config.NewGlobal(), "test", true, profile, "copy", nil, nil)
-	err := wrapper.runInitializeCopy()
-	require.NoError(t, err)
 
-	assert.Equal(t, 3, len(mem.Logs()))
-	assert.Equal(t, "dry-run: test init --password-file password_copy --repo repo_copy", mem.Logs()[2])
-}
+	for _, testCase := range testCases {
+		t.Run("", func(t *testing.T) {
+			// We use the logger to run our test. It kind of sucks but does the job without having to tweak
+			// the code to send the command line parameters somewhere
+			defaultLogger := clog.GetDefaultLogger()
+			mem := clog.NewMemoryHandler()
+			clog.SetDefaultLogger(clog.NewLogger(mem))
+			defer clog.SetDefaultLogger(defaultLogger)
 
-func TestRunInitializeCopyInitWithTwoRepos(t *testing.T) {
-	defaultLogger := clog.GetDefaultLogger()
-	mem := clog.NewMemoryHandler()
-	clog.SetDefaultLogger(clog.NewLogger(mem))
-	defer clog.SetDefaultLogger(defaultLogger)
+			wrapper := newResticWrapper(config.NewGlobal(), "test", true, testCase.profile, "copy", nil, nil)
+			// 1. run init command with copy profile
+			err := wrapper.runInitializeCopy()
+			require.NoError(t, err)
 
-	profile := config.NewProfile(&config.Config{}, "profile")
-	profile.Repository = config.NewConfidentialValue("repo_origin")
-	profile.PasswordFile = "password_origin"
-	profile.Copy = &config.CopySection{
-		Initialize:                  true,
-		InitializeCopyChunkerParams: true,
-		Repository:                  config.NewConfidentialValue("repo_copy"),
-		PasswordFile:                "password_copy",
+			assert.Equal(t, testCase.expectedInit, mem.Pop())
+
+			// 2. run copy command
+			err = wrapper.runCommand(constants.CommandCopy)
+			require.NoError(t, err)
+
+			// the latest message is saying the profile is finished
+			mem.Pop()
+			assert.Equal(t, testCase.expectedCopy, mem.Pop())
+		})
 	}
-	wrapper := newResticWrapper(config.NewGlobal(), "test", true, profile, "copy", nil, nil)
-	err := wrapper.runInitializeCopy()
-	require.NoError(t, err)
-
-	assert.Equal(t, 3, len(mem.Logs()))
-	assert.Equal(t, "dry-run: test init --copy-chunker-params --password-file password_copy --password-file2 password_origin --repo repo_copy --repo2 repo_origin", mem.Logs()[2])
-}
-
-func TestRunCopyCommandWithoutInitCopyChunkerParameter(t *testing.T) {
-	defaultLogger := clog.GetDefaultLogger()
-	mem := clog.NewMemoryHandler()
-	clog.SetDefaultLogger(clog.NewLogger(mem))
-	defer clog.SetDefaultLogger(defaultLogger)
-
-	profile := config.NewProfile(&config.Config{}, "profile")
-	profile.Repository = config.NewConfidentialValue("repo_origin")
-	profile.PasswordFile = "password_origin"
-	profile.Copy = &config.CopySection{
-		Initialize:                  true,
-		InitializeCopyChunkerParams: false,
-		Repository:                  config.NewConfidentialValue("repo_copy"),
-		PasswordFile:                "password_copy",
-	}
-	wrapper := newResticWrapper(config.NewGlobal(), "test", true, profile, "copy", nil, nil)
-	err := wrapper.runCommand(constants.CommandCopy)
-	require.NoError(t, err)
-
-	assert.Equal(t, 4, len(mem.Logs()))
-	assert.Equal(t, "dry-run: test copy --password-file password_origin --password-file2 password_copy --repo repo_origin --repo2 repo_copy", mem.Logs()[2])
-}
-
-func TestRunCopyCommandWithInitCopyChunkerParameter(t *testing.T) {
-	defaultLogger := clog.GetDefaultLogger()
-	mem := clog.NewMemoryHandler()
-	clog.SetDefaultLogger(clog.NewLogger(mem))
-	defer clog.SetDefaultLogger(defaultLogger)
-
-	profile := config.NewProfile(&config.Config{}, "profile")
-	profile.Repository = config.NewConfidentialValue("repo_origin")
-	profile.PasswordFile = "password_origin"
-	profile.Copy = &config.CopySection{
-		Initialize:                  true,
-		InitializeCopyChunkerParams: true,
-		Repository:                  config.NewConfidentialValue("repo_copy"),
-		PasswordFile:                "password_copy",
-	}
-	wrapper := newResticWrapper(config.NewGlobal(), "test", true, profile, "copy", nil, nil)
-	err := wrapper.runCommand(constants.CommandCopy)
-	require.NoError(t, err)
-
-	assert.Equal(t, 4, len(mem.Logs()))
-	assert.Equal(t, "dry-run: test copy --password-file password_origin --password-file2 password_copy --repo repo_origin --repo2 repo_copy", mem.Logs()[2])
 }
