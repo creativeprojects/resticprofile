@@ -315,6 +315,22 @@ profiles:
 		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
 	})
 
+	t.Run("list-append-replaces-inherited-list", func(t *testing.T) {
+		config := load(t, `
+profiles:
+  default:
+    backup:
+      run-before: ["echo profile-default"]
+  profile:
+    use: t2
+    inherit: default
+`)
+		p, err := config.getProfile("profile")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"mount /backup"}, p.Backup.RunBefore)
+		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
+	})
+
 	t.Run("short-syntax-append", func(t *testing.T) {
 		config := load(t, `
   short-append:

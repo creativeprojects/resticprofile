@@ -133,7 +133,7 @@ func showMap(stack []string, display *Display, valueOf reflect.Value) {
 
 func showKeyValue(stack []string, display *Display, key string, valueOf reflect.Value) {
 	// This is reusing the stringifyValue function used to build the restic flags
-	convert, ok := stringifyAnyValue(valueOf, false)
+	convert, ok := stringify(valueOf, false)
 	if ok {
 		if len(convert) == 0 {
 			// special case of a true flag that shows no value

@@ -83,7 +83,7 @@ func stringifyAnyValueOf(value interface{}, onlySimplyValues bool) ([]string, bo
 	if value == nil {
 		return emptyStringArray, false
 	}
-	return stringifyAnyValue(reflect.ValueOf(value), onlySimplyValues)
+	return stringify(reflect.ValueOf(value), onlySimplyValues)
 }
 
 // stringifyConfidentialValue returns a string representation of the value including confidential parts
@@ -102,11 +102,11 @@ func stringifyConfidentialValue(value reflect.Value) ([]string, bool) {
 
 // stringifyValue returns a string representation of the value, and if it has any value at all
 func stringifyValue(value reflect.Value) ([]string, bool) {
-	return stringifyAnyValue(value, true)
+	return stringify(value, true)
 }
 
-// stringifyAnyValue returns a string representation of the value, and if it has any value at all
-func stringifyAnyValue(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
+// stringify returns a string representation of the value, and if it has any value at all
+func stringify(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
 	// Check if the value can convert itself to String() (e.g. time.Duration)
 	stringer := fmt.Stringer(nil)
 	if value.Kind() != reflect.Invalid && value.CanInterface() {
@@ -162,7 +162,7 @@ func stringifyAnyValue(value reflect.Value, onlySimplyValues bool) ([]string, bo
 		n := value.Len()
 		sliceVal := make([]string, n)
 		for i := 0; i < n; i++ {
-			v, _ := stringifyAnyValue(value.Index(i), onlySimplyValues)
+			v, _ := stringify(value.Index(i), onlySimplyValues)
 			if len(v) > 1 {
 				if onlySimplyValues {
 					panic(fmt.Errorf("array of array of values are not supported"))
@@ -180,8 +180,8 @@ func stringifyAnyValue(value reflect.Value, onlySimplyValues bool) ([]string, bo
 		}
 		flatMap := make([]string, 0, value.Len())
 		for it := value.MapRange(); it.Next(); {
-			k, _ := stringifyAnyValue(it.Key(), false)
-			v, hasValue := stringifyAnyValue(it.Value(), false)
+			k, _ := stringify(it.Key(), false)
+			v, hasValue := stringify(it.Value(), false)
 			if len(v) > 1 {
 				v[0] = "{" + strings.Join(v, ",") + "}"
 			}
@@ -196,7 +196,7 @@ func stringifyAnyValue(value reflect.Value, onlySimplyValues bool) ([]string, bo
 		return flatMap, len(flatMap) > 0
 
 	case reflect.Interface:
-		return stringifyAnyValue(value.Elem(), onlySimplyValues)
+		return stringify(value.Elem(), onlySimplyValues)
 
 	default:
 		if stringer != nil {

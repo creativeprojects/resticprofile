@@ -87,46 +87,46 @@ func formatFromExtension(configFile string) string {
 
 // LoadFile loads configuration from file
 // Leave format blank for auto-detection from the file extension
-func LoadFile(configFile, format string) (*Config, error) {
+func LoadFile(configFile, format string) (config *Config, err error) {
 	if format == "" {
 		format = formatFromExtension(configFile)
 	}
 
-	c := newConfig(format)
-	c.configFile = configFile
+	config = newConfig(format)
+	config.configFile = configFile
 
 	readAndAdd := func(configFile string, replace bool) error {
 		clog.Debugf("loading: %s", configFile)
-		file, err := os.Open(configFile)
-		if err != nil {
-			return fmt.Errorf("cannot open configuration file for reading: %w", err)
+		file, fileErr := os.Open(configFile)
+		if fileErr != nil {
+			return fmt.Errorf("cannot open configuration file for reading: %w", fileErr)
 		}
 		defer file.Close()
 
-		return c.addTemplate(file, configFile, replace)
+		return config.addTemplate(file, configFile, replace)
 	}
 
 	// Load config file
-	err := readAndAdd(configFile, true)
+	err = readAndAdd(configFile, true)
 	if err != nil {
-		return c, err
+		return
 	}
 
 	// Load includes (if any).
 	var includes []string
-	if includes, err = filesearch.FindConfigurationIncludes(configFile, c.getIncludes()); err == nil {
+	if includes, err = filesearch.FindConfigurationIncludes(configFile, config.getIncludes()); err == nil {
 		for _, include := range includes {
 			format := formatFromExtension(include)
 
 			switch {
-			case format == FormatHCL && c.format != FormatHCL:
-				err = fmt.Errorf("hcl format (%s) cannot be used in includes from %s: %s", include, c.format, c.configFile)
-			case c.format == FormatHCL && format != FormatHCL:
-				err = fmt.Errorf("%s is in hcl format, includes must use the same format: cannot load %s", c.configFile, include)
+			case format == FormatHCL && config.format != FormatHCL:
+				err = fmt.Errorf("hcl format (%s) cannot be used in includes from %s: %s", include, config.format, config.configFile)
+			case config.format == FormatHCL && format != FormatHCL:
+				err = fmt.Errorf("%s is in hcl format, includes must use the same format: cannot load %s", config.configFile, include)
 			default:
 				err = readAndAdd(include, false)
 				if err == nil {
-					c.includeFiles = append(c.includeFiles, include)
+					config.includeFiles = append(config.includeFiles, include)
 				}
 			}
 
@@ -135,29 +135,26 @@ func LoadFile(configFile, format string) (*Config, error) {
 			}
 		}
 	}
-	if err == nil && c.includeFiles != nil {
-		err = c.loadTemplates()
+	if err == nil && config.includeFiles != nil {
+		err = config.loadTemplates()
 	}
 
 	if err == nil {
-		err = c.applyMixins()
+		err = config.applyMixins()
 	}
 
-	return c, err
+	return
 }
 
 // Load configuration from reader
 // This should only be used for unit tests
-func Load(input io.Reader, format string) (*Config, error) {
-	c := newConfig(format)
-	err := c.addTemplate(input, c.configFile, true)
+func Load(input io.Reader, format string) (config *Config, err error) {
+	config = newConfig(format)
+	err = config.addTemplate(input, config.configFile, true)
 	if err == nil {
-		err = c.applyMixins()
+		err = config.applyMixins()
 	}
-	if err != nil {
-		return c, err
-	}
-	return c, nil
+	return
 }
 
 // getIncludes returns a list of configuration files to include in the current configuration
@@ -478,23 +475,25 @@ func (c *Config) loadGroups() error {
 }
 
 // GetProfile in configuration. If the profile is not found, it returns errNotFound
-func (c *Config) GetProfile(profileKey string) (*Profile, error) {
+func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	if c.sourceTemplates != nil {
-		err := c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
+		err = c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
 		if err == nil {
 			err = c.applyMixins()
 		}
 		if err != nil {
-			return nil, err
+			return
 		}
 	}
-	profile, err := c.getProfile(profileKey)
+
+	profile, err = c.getProfile(profileKey)
 	if err != nil {
-		return nil, err
+		return
 	}
-	// profile shouldn't be nil with no error, but better safe than sorry
 	if profile == nil {
-		return nil, errors.New("unexpected nil profile")
+		// profile shouldn't be nil with no error, but better safe than sorry
+		err = errors.New("unexpected nil profile")
+		return
 	}
 
 	// Resolve config dependencies
@@ -506,7 +505,7 @@ func (c *Config) GetProfile(profileKey string) (*Profile, error) {
 	rootPath := filepath.Dir(c.GetConfigFile())
 	profile.SetRootPath(rootPath)
 
-	return profile, nil
+	return
 }
 
 // getProfile from configuration. If the profile is not found, it returns errNotFound
