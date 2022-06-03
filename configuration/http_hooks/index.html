@@ -1,0 +1,332 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="height=device-height,width=device-width,initial-scale=1,minimum-scale=1"><meta name=generator content="Hugo 0.100.1"><meta name=generator content="Relearn 3.4.1"><meta name=description content><title>HTTP Hooks :: resticprofile</title><link href=https://creativeprojects.github.io/resticprofile/css/nucleus.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/featherlight.min.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/theme.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1654274712 rel=stylesheet id=variant-style><link href=https://creativeprojects.github.io/resticprofile/css/variant.css?1654274712 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/print.css?1654274712 rel=stylesheet media=print><script src=https://creativeprojects.github.io/resticprofile/js/variant.js?1654274712></script>
+<script>var index_url="https://creativeprojects.github.io/resticprofile/index.json",baseUriFull,root_url="https://creativeprojects.github.io/resticprofile/",baseUri=root_url.replace(/\/$/,'');window.T_Copy_to_clipboard='Copy to clipboard',window.T_Copied_to_clipboard='Copied to clipboard!',window.T_Copy_link_to_clipboard='Copy link to clipboard',window.T_Link_copied_to_clipboard='Copied link to clipboard!',baseUriFull='https://creativeprojects.github.io/resticprofile/',variants.init(['relearn-light','relearn-dark'])</script><script src=https://creativeprojects.github.io/resticprofile/js/jquery.min.js?1654274712></script></head><body class=mobile-support data-url=https://creativeprojects.github.io/resticprofile/configuration/http_hooks/><div id=body class=default-animation><div id=sidebar-overlay></div><div id=toc-overlay></div><nav id=topbar class=highlightable><div><div class=navigation><a class="nav nav-next" href=https://creativeprojects.github.io/resticprofile/configuration/variables/ title=Variables><i class="fas fa-chevron-right fa-fw"></i></a></div><div class=navigation><a class="nav nav-prev" href=https://creativeprojects.github.io/resticprofile/configuration/run_hooks/ title="Command Hooks"><i class="fas fa-chevron-left fa-fw"></i></a></div><div id=breadcrumbs><span id=sidebar-toggle-span><a href=# id=sidebar-toggle title=Menu><i class="fas fa-bars fa-fw"></i></a></span>
+<span id=toc-menu title='Table of Contents'><i class="fas fa-list-alt fa-fw"></i></span><ol class=links itemscope itemtype=http://schema.org/BreadcrumbList><meta itemprop=itemListOrder content="Descending"><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><meta itemprop=position content="3"><a itemprop=item href=https://creativeprojects.github.io/resticprofile/><span itemprop=name>resticprofile</span></a> ></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><meta itemprop=position content="2"><a itemprop=item href=https://creativeprojects.github.io/resticprofile/configuration/><span itemprop=name>Configuration</span></a> ></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><meta itemprop=position content="1"><a itemprop=item href=https://creativeprojects.github.io/resticprofile/configuration/http_hooks/ aria-disabled=true><span itemprop=name>HTTP Hooks</span></a></li></ol></div><div class="default-animation progress"><div class=wrapper><nav id=TableOfContents><ul><li><a href=#send-http-messages-before-and-after-a-job>Send HTTP messages before and after a job</a><ul><li><a href=#example-sending-monitoring-information-to-healthchecksio>Example sending monitoring information to healthchecks.io:</a></li><li><a href=#order-of-send->order of <code>send-*</code></a></li><li><a href=#body-template>body-template</a></li><li><a href=#ca-certificates>CA certificates</a></li><li><a href=#timeout>timeout</a></li><li><a href=#global-configuration-example>global configuration example</a></li></ul></li></ul></nav></div></div></div></nav><main id=body-inner class=highlightable><div class=flex-block-wrapper><div id=head-tags><div class=tags><a class=tag-link href=https://creativeprojects.github.io/resticprofile/tags/v0.18.0>v0.18.0</a></div></div><article><h1>HTTP Hooks</h1><h2 id=send-http-messages-before-and-after-a-job>Send HTTP messages before and after a job</h2><p>As well as being able to run <a href=https://creativeprojects.github.io/resticprofile/configuration/run_hooks/>shell commands</a>, you can now send HTTP messages before, after (success or failure) running a restic command.</p><p>The sections that allow sending HTTP hooks are:</p><ul><li>backup</li><li>copy</li><li>check</li><li>forget</li><li>prune</li></ul><div class="box notices tip"><div class=box-label><i class="fas fa-lightbulb fa-fw"></i> Tip</div><div class=box-content><p>You might notice that&rsquo;s the same sections that can also be scheduled</p></div></div><p>Each of these commands can send 4 different types of hooks:</p><ul><li>send-before</li><li>send-after</li><li>send-after-fail</li><li>send-finally</li></ul><p>The configuration is the same for each of these 4 types of hooks:</p><table><thead><tr><th style=text-align:left>Name</th><th style=text-align:left>Required</th><th style=text-align:left>Default</th><th style=text-align:left>Notes</th></tr></thead><tbody><tr><td style=text-align:left>url</td><td style=text-align:left>Yes</td><td style=text-align:left>None</td><td style=text-align:left>URL of your Webhook</td></tr><tr><td style=text-align:left>method</td><td style=text-align:left>No</td><td style=text-align:left>GET</td><td style=text-align:left>This is the HTTP method (GET, POST, HEAD, etc.)</td></tr><tr><td style=text-align:left>skip-tls-verification</td><td style=text-align:left>No</td><td style=text-align:left>False</td><td style=text-align:left><strong>This is not recommended</strong>: Use only if you&rsquo;re using your own server with a self-signed certificate</td></tr><tr><td style=text-align:left>headers</td><td style=text-align:left>No</td><td style=text-align:left>User-Agent set to resticprofile</td><td style=text-align:left>This is a subsection with a list of <code>name</code> and <code>value</code></td></tr><tr><td style=text-align:left>body</td><td style=text-align:left>No</td><td style=text-align:left>Empty</td><td style=text-align:left>Used to send data to the Webhook (POST, PUT, PATCH)</td></tr><tr><td style=text-align:left>body-template</td><td style=text-align:left>No</td><td style=text-align:left>None</td><td style=text-align:left>Template file to generate the body (in go template format)</td></tr></tbody></table><h3 id=example-sending-monitoring-information-to-healthchecksio>Example sending monitoring information to healthchecks.io:</h3><div class=tab-panel><div class=tab-nav><button data-tab-item=toml data-tab-group=config-with-json class="tab-nav-button btn active" onclick="switchTab('config-with-json','toml')"><span>toml</span></button>
+<button data-tab-item=yaml data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','yaml')"><span>yaml</span></button>
+<button data-tab-item=hcl data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','hcl')"><span>hcl</span></button>
+<button data-tab-item=json data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','json')"><span>json</span></button></div><div class=tab-content><div data-tab-item=toml data-tab-group=config-with-json class="tab-item active"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span>[<span style=color:#a6e22e>profile</span>]
+</span></span><span style=display:flex><span><span style=color:#a6e22e>inherit</span> = <span style=color:#e6db74>&#34;default&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>source</span> = <span style=color:#e6db74>&#34;/source&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>exclude</span> = [ <span style=color:#e6db74>&#34;/**/.git/&#34;</span> ]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>schedule</span> = [ <span style=color:#e6db74>&#34;*:00,30&#34;</span> ]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>schedule-permission</span> = <span style=color:#e6db74>&#34;user&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># you can have more than one target</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-before</span>]]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-before</span>]]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://httpstat.us/400&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># you can have more than one target</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-after</span>]]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-after</span>]]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://httpstat.us/500&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-after-fail</span>]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;POST&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>body</span> = <span style=color:#e6db74>&#34;${ERROR}\n\n${ERROR_STDERR}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      [[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-after-fail</span>.<span style=color:#a6e22e>headers</span>]]
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>name</span> = <span style=color:#e6db74>&#34;Content-Type&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>value</span> = <span style=color:#e6db74>&#34;text/plain; charset=UTF-8&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>check</span>]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>schedule</span> = [ <span style=color:#e6db74>&#34;*:15&#34;</span> ]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>check</span>.<span style=color:#a6e22e>send-before</span>]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>check</span>.<span style=color:#a6e22e>send-after</span>]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>retention</span>]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>after-backup</span> = <span style=color:#66d9ef>true</span>
+</span></span></code></pre></div></div><div data-tab-item=yaml data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>profile</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>inherit</span>: <span style=color:#ae81ff>default</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>backup</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>source</span>: <span style=color:#e6db74>&#34;/source&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>exclude</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;/**/.git/&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;*:00,30&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># you can have more than one target</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>send-before</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#f92672>method</span>: <span style=color:#ae81ff>HEAD</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start</span>
+</span></span><span style=display:flex><span>          - <span style=color:#f92672>method</span>: <span style=color:#ae81ff>HEAD</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://httpstat.us/400</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># you can have more than one target</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>send-after</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#f92672>method</span>: <span style=color:#ae81ff>HEAD</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650</span>
+</span></span><span style=display:flex><span>          - <span style=color:#f92672>method</span>: <span style=color:#ae81ff>HEAD</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://httpstat.us/500</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>send-after-fail</span>:
+</span></span><span style=display:flex><span>            <span style=color:#f92672>method</span>: <span style=color:#ae81ff>POST</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>body</span>: <span style=color:#e6db74>&#34;${ERROR}\n\n${ERROR_STDERR}&#34;</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>headers</span>:
+</span></span><span style=display:flex><span>              - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Content-Type</span>
+</span></span><span style=display:flex><span>                <span style=color:#f92672>value</span>: <span style=color:#e6db74>&#34;text/plain; charset=UTF-8&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>check</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>schedule</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;*:15&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>send-before</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>method</span>: <span style=color:#ae81ff>HEAD</span>
+</span></span><span style=display:flex><span>          <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>send-after</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>method</span>: <span style=color:#ae81ff>HEAD</span>
+</span></span><span style=display:flex><span>          <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc</span>
+</span></span><span style=display:flex><span>          
+</span></span><span style=display:flex><span>    <span style=color:#f92672>retention</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>after-backup</span>: <span style=color:#66d9ef>true</span>
+</span></span></code></pre></div></div><div data-tab-item=hcl data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-hcl data-lang=hcl><span style=display:flex><span><span style=color:#e6db74>&#34;profile&#34;</span> {
+</span></span><span style=display:flex><span>  &#34;inherit&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;default&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  &#34;backup&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>    &#34;source&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;/source&#34;</span>
+</span></span><span style=display:flex><span>    &#34;exclude&#34; <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;/**/.git/&#34;</span>]
+</span></span><span style=display:flex><span>    &#34;schedule&#34; <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;*:00,30&#34;</span>]
+</span></span><span style=display:flex><span>    &#34;schedule-permission&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;user&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-before&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-before&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://httpstat.us/400&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-after&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-after&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://httpstat.us/500&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-after-fail&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;POST&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail&#34;</span>
+</span></span><span style=display:flex><span>      &#34;body&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;${ERROR}\n\n${ERROR_STDERR}&#34;</span>
+</span></span><span style=display:flex><span>      &#34;headers&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>        &#34;name&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;Content-Type&#34;</span>
+</span></span><span style=display:flex><span>        &#34;value&#34; <span style=color:#f92672>=</span> &#34;text/plain; charset<span style=color:#f92672>=</span><span style=color:#66d9ef>UTF</span><span style=color:#960050;background-color:#1e0010>-</span><span style=color:#ae81ff>8</span><span style=color:#960050;background-color:#1e0010>&#34;</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  &#34;check&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>    &#34;schedule&#34; <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;*:15&#34;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-before&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-after&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;HEAD&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  &#34;retention&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>    &#34;after-backup&#34; <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div><div data-tab-item=json data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;profile&#34;</span>: {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;inherit&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;backup&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;source&#34;</span>: <span style=color:#e6db74>&#34;/source&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;exclude&#34;</span>: [
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;/**/.git/&#34;</span>
+</span></span><span style=display:flex><span>      ],
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule&#34;</span>: [
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;*:00,30&#34;</span>
+</span></span><span style=display:flex><span>      ],
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule-permission&#34;</span>: <span style=color:#e6db74>&#34;user&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;send-before&#34;</span>: [
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;HEAD&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start&#34;</span>
+</span></span><span style=display:flex><span>        },
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;HEAD&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://httpstat.us/400&#34;</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      ],
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;send-after&#34;</span>: [
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;HEAD&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650&#34;</span>
+</span></span><span style=display:flex><span>        },
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;HEAD&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://httpstat.us/500&#34;</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      ],
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;send-after-fail&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;POST&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;body&#34;</span>: <span style=color:#e6db74>&#34;${ERROR}\n\n${ERROR_STDERR}&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;headers&#34;</span>: [
+</span></span><span style=display:flex><span>          {
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;name&#34;</span>: <span style=color:#e6db74>&#34;Content-Type&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;value&#34;</span>: <span style=color:#e6db74>&#34;text/plain; charset=UTF-8&#34;</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>        ]
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    },
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;check&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule&#34;</span>: [
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;*:15&#34;</span>
+</span></span><span style=display:flex><span>      ],
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;send-before&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;HEAD&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start&#34;</span>
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;send-after&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;HEAD&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc&#34;</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    },
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;retention&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;after-backup&#34;</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></div></div><p>A few environment variables will be available to construct the url and the body:</p><ul><li><code>PROFILE_NAME</code></li><li><code>PROFILE_COMMAND</code>: backup, check, forget, etc.</li></ul><p>Additionally, for the <code>send-after-fail</code> hooks, these environment variables will be available:</p><ul><li><code>ERROR</code> containing the latest error message</li><li><code>ERROR_COMMANDLINE</code> containing the command line that failed</li><li><code>ERROR_EXIT_CODE</code> containing the exit code of the command line that failed</li><li><code>ERROR_STDERR</code> containing any message that the failed command sent to the standard error (stderr)</li></ul><p>The <code>send-finally</code> hooks are also getting the environment of <code>send-after-fail</code> when any previous operation has failed (except any <code>send</code> operation).</p><p>Failures in any <code>send-*</code> are logged but do not influence environment or return code.</p><h3 id=order-of-send->order of <code>send-*</code></h3><p>Here&rsquo;s the flow of HTTP hooks:</p><div class=mermaid align=center>graph TD
+SB('send-before') --> RUN
+RUN(run restic command, or group of commands)
+RUN -->|Success| SA
+RUN -->|Error| SAF
+SA('send-after') --> SF
+SAF('send-after-fail') --> SF
+SF('send-finally')</div><h3 id=body-template>body-template</h3><p>You can use a standard go template to build the webhook body. It has to be defined in a separate file (otherwise it would clash with the configuration as a go template itself).</p><p>The object passed as an argument to the template is:</p><ul><li><code>ProfileName</code> <strong>string</strong></li><li><code>ProfileCommand</code> <strong>string</strong></li><li><code>Error</code> <strong>ErrorContext</strong></li><li><code>Stdout</code> <strong>string</strong></li></ul><p>The type <strong>ErrorContext</strong> is available after an error occurred (otherwise all fields are blank):</p><ul><li><code>Message</code> <strong>string</strong></li><li><code>CommandLine</code> <strong>string</strong></li><li><code>ExitCode</code> <strong>string</strong></li><li><code>Stderr</code> <strong>string</strong></li></ul><p>Here&rsquo;s an example of a body file:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;profileName&#34;</span>: <span style=color:#e6db74>&#34;{{ .ProfileName }}&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;profileCommand&#34;</span>: <span style=color:#e6db74>&#34;{{ .ProfileCommand }}&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;exitCode&#34;</span>: <span style=color:#e6db74>&#34;{{ .Error.ExitCode }}&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>The field <code>exitCode</code> will be blank if no error occured.</p><p>And here&rsquo;s an example of a configuration using a body template:</p><div class=tab-panel><div class=tab-nav><button data-tab-item=toml data-tab-group=config-with-json class="tab-nav-button btn active" onclick="switchTab('config-with-json','toml')"><span>toml</span></button>
+<button data-tab-item=yaml data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','yaml')"><span>yaml</span></button>
+<button data-tab-item=hcl data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','hcl')"><span>hcl</span></button>
+<button data-tab-item=json data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','json')"><span>json</span></button></div><div class=tab-content><div data-tab-item=toml data-tab-group=config-with-json class="tab-item active"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span>[<span style=color:#a6e22e>profile</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>source</span> = <span style=color:#e6db74>&#34;/source&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    [<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-finally</span>]
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>method</span> = <span style=color:#e6db74>&#34;POST&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span> = <span style=color:#e6db74>&#34;https://my/monitoring.example.com/&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>body-template</span> = <span style=color:#e6db74>&#34;body-template.json&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      [[<span style=color:#a6e22e>profile</span>.<span style=color:#a6e22e>backup</span>.<span style=color:#a6e22e>send-finally</span>.<span style=color:#a6e22e>headers</span>]]
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>name</span> = <span style=color:#e6db74>&#34;Content-Type&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>value</span> = <span style=color:#e6db74>&#34;application/json&#34;</span>
+</span></span></code></pre></div></div><div data-tab-item=yaml data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>profile</span>:
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>backup</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>source</span>: <span style=color:#e6db74>&#34;/source&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>send-finally</span>:
+</span></span><span style=display:flex><span>            <span style=color:#f92672>method</span>: <span style=color:#ae81ff>POST</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>url</span>: <span style=color:#ae81ff>https://my/monitoring.example.com/</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>body-template</span>: <span style=color:#ae81ff>body-template.json</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>headers</span>:
+</span></span><span style=display:flex><span>              - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Content-Type</span>
+</span></span><span style=display:flex><span>                <span style=color:#f92672>value</span>: <span style=color:#e6db74>&#34;application/json&#34;</span>
+</span></span></code></pre></div></div><div data-tab-item=hcl data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-hcl data-lang=hcl><span style=display:flex><span><span style=color:#e6db74>&#34;profile&#34;</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  &#34;backup&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>    &#34;source&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;/source&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    &#34;send-finally&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>      &#34;method&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;POST&#34;</span>
+</span></span><span style=display:flex><span>      &#34;url&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;https://my/monitoring.example.com/&#34;</span>
+</span></span><span style=display:flex><span>      &#34;body-template&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;body-template.json&#34;</span>
+</span></span><span style=display:flex><span>      &#34;headers&#34; <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>        &#34;name&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;Content-Type&#34;</span>
+</span></span><span style=display:flex><span>        &#34;value&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;application/json&#34;</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div><div data-tab-item=json data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;profile&#34;</span>: {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;backup&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;source&#34;</span>: <span style=color:#e6db74>&#34;/source&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;send-finally&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;POST&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;url&#34;</span>: <span style=color:#e6db74>&#34;https://my/monitoring.example.com/&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;body-template&#34;</span>: <span style=color:#e6db74>&#34;body-template.json&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;headers&#34;</span>: [
+</span></span><span style=display:flex><span>          {
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;name&#34;</span>: <span style=color:#e6db74>&#34;Content-Type&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;value&#34;</span>: <span style=color:#e6db74>&#34;application/json&#34;</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>        ]
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></div></div><h3 id=ca-certificates>CA certificates</h3><p>If your monitoring system is using self-signed certificates, you can import them in resticprofile (and you don&rsquo;t need to rely on the <code>skip-tls-verification</code> flag)</p><p>The parameter is in the <code>global</code> section and is called <code>ca-certificates</code>: it contains a list of certificate files (PEM).</p><h3 id=timeout>timeout</h3><p>The default timeout for all HTTP requests is 30 seconds.</p><p>You can change the default timeout in the <code>global</code> section with a parameter called <code>send-timeout</code>.</p><p>The format is like:</p><ul><li>30s</li><li>2m</li><li>1m20s</li></ul><h3 id=global-configuration-example>global configuration example</h3><div class=tab-panel><div class=tab-nav><button data-tab-item=toml data-tab-group=config-with-json class="tab-nav-button btn active" onclick="switchTab('config-with-json','toml')"><span>toml</span></button>
+<button data-tab-item=yaml data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','yaml')"><span>yaml</span></button>
+<button data-tab-item=hcl data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','hcl')"><span>hcl</span></button>
+<button data-tab-item=json data-tab-group=config-with-json class="tab-nav-button btn" onclick="switchTab('config-with-json','json')"><span>json</span></button></div><div class=tab-content><div data-tab-item=toml data-tab-group=config-with-json class="tab-item active"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span>[<span style=color:#a6e22e>global</span>]
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>send-timeout</span> = <span style=color:#e6db74>&#34;10s&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>ca-certificates</span> = [ <span style=color:#e6db74>&#34;ca-chain.cert.pem&#34;</span> ]
+</span></span></code></pre></div></div><div data-tab-item=yaml data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>        
+</span></span><span style=display:flex><span><span style=color:#f92672>global</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>send-timeout</span>: <span style=color:#ae81ff>10s</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>ca-certificates</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>ca-chain.cert.pem</span>
+</span></span></code></pre></div></div><div data-tab-item=hcl data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-hcl data-lang=hcl><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>global</span> {
+</span></span><span style=display:flex><span>  send-timeout <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;10s&#34;</span>
+</span></span><span style=display:flex><span>  ca-certificates <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;ca-chain.cert.pem&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div><div data-tab-item=json data-tab-group=config-with-json class=tab-item><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;global&#34;</span>: {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;send-timeout&#34;</span>: <span style=color:#e6db74>&#34;10s&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;ca-certificates&#34;</span>: [
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;ca-chain.cert.pem&#34;</span>
+</span></span><span style=display:flex><span>    ]
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></div></div><footer class=footline></footer></article></div></main></div><aside id=sidebar class=default-animation><div id=header-wrapper class=default-animation><div id=header class=default-animation><style>a#logo{color:#282828;color:var(--MENU-SECTIONS-BG-color);font-family:work sans,helvetica,tahoma,geneva,arial,sans-serif;font-size:30px;font-weight:300;margin-top:-13px;max-width:60%;text-transform:uppercase;width:226px;white-space:nowrap}a#logo:hover{color:#282828;color:var(--MENU-SECTIONS-BG-color)}@media only all and (max-width:59.938em){a#logo{font-size:25px;margin-top:-3px}}</style><a id=logo href=https://creativeprojects.github.io/resticprofile/>Resticprofile</a></div><div class="searchbox default-animation"><label for=search-by><i class="fas fa-search"></i></label>
+<input data-search-input id=search-by type=search placeholder=Search...>
+<span data-search-clear><i class="fas fa-times"></i></span></div><script src=https://creativeprojects.github.io/resticprofile/js/lunr.min.js?1654274712></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1654274712></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/search.js?1654274712></script></div><div id=homelinks class=default-animation><ul><li><a class=padding href=https://creativeprojects.github.io/resticprofile/><i class="fas fa-home"></i> Home</a></li></ul></div><div id=content-wrapper class=highlightable><ul class="topics collapsible-menu"><li data-nav-id=/installation/ title=Installation class=dd-item><input type=checkbox id=section-07cca5796d23f5bae96340e1eaa52bc5 class=toggle><label for=section-07cca5796d23f5bae96340e1eaa52bc5></label><a href=https://creativeprojects.github.io/resticprofile/installation/><b>1. </b>Installation</a><ul><li data-nav-id=/installation/linux/ title=Linux class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/linux/>Linux</a></li><li data-nav-id=/installation/macosx/ title="mac OS X" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/macosx/>mac OS X</a></li><li data-nav-id=/installation/windows/ title=Windows class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/windows/>Windows</a></li><li data-nav-id=/installation/ansible/ title=Ansible class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/ansible/>Ansible</a></li><li data-nav-id=/installation/source/ title=Source class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/source/>Source</a></li><li data-nav-id=/installation/upgrade/ title=Upgrade class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/upgrade/>Upgrade</a></li><li data-nav-id=/installation/docker/ title=Docker class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/docker/>Docker</a></li><li data-nav-id=/installation/shell/ title="Shell Completion" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/installation/shell/>Shell Completion</a></li></ul></li><li data-nav-id=/configuration/ title=Configuration class="dd-item parent"><input type=checkbox id=section-632bb56b075027697eb90eb7e3d29a12 class=toggle checked><label for=section-632bb56b075027697eb90eb7e3d29a12></label><a href=https://creativeprojects.github.io/resticprofile/configuration/><b>2. </b>Configuration</a><ul><li data-nav-id=/configuration/examples/ title=Examples class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/examples/>Examples</a></li><li data-nav-id=/configuration/path/ title=Path class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/path/>Path</a></li><li data-nav-id=/configuration/include/ title=Include class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/include/>Include</a></li><li data-nav-id=/configuration/copy/ title="Copy command" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/copy/>Copy command</a></li><li data-nav-id=/configuration/run_hooks/ title="Command Hooks" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/run_hooks/>Command Hooks</a></li><li data-nav-id=/configuration/http_hooks/ title="HTTP Hooks" class="dd-item active"><a href=https://creativeprojects.github.io/resticprofile/configuration/http_hooks/>HTTP Hooks</a></li><li data-nav-id=/configuration/variables/ title=Variables class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/variables/>Variables</a></li><li data-nav-id=/configuration/templates/ title="Configuration templates" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/templates/>Configuration templates</a></li><li data-nav-id=/configuration/warnings/ title=Warnings class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/warnings/>Warnings</a></li><li data-nav-id=/configuration/reference/ title=Reference class=dd-item><a href=https://creativeprojects.github.io/resticprofile/configuration/reference/>Reference</a></li></ul></li><li data-nav-id=/usage/ title=Usage class=dd-item><input type=checkbox id=section-03639a5661feed360d88d7c5ddbc54ac class=toggle><label for=section-03639a5661feed360d88d7c5ddbc54ac></label><a href=https://creativeprojects.github.io/resticprofile/usage/><b>3. </b>Usage</a><ul><li data-nav-id=/usage/version/ title=Version class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/version/>Version</a></li><li data-nav-id=/usage/keyfile/ title="Generate a Keyfile" class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/keyfile/>Generate a Keyfile</a></li><li data-nav-id=/usage/memory/ title=Memory class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/memory/>Memory</a></li><li data-nav-id=/usage/locks/ title=Locks class=dd-item><a href=https://creativeprojects.github.io/resticprofile/usage/locks/>Locks</a></li></ul></li><li data-nav-id=/schedules/ title=Schedules class=dd-item><input type=checkbox id=section-87baf7cbc6382c50c9c5ba4cd8fe677c class=toggle><label for=section-87baf7cbc6382c50c9c5ba4cd8fe677c></label><a href=https://creativeprojects.github.io/resticprofile/schedules/><b>4. </b>Schedules</a><ul><li data-nav-id=/schedules/systemd/ title=Systemd class=dd-item><a href=https://creativeprojects.github.io/resticprofile/schedules/systemd/>Systemd</a></li><li data-nav-id=/schedules/launchd/ title=Launchd class=dd-item><a href=https://creativeprojects.github.io/resticprofile/schedules/launchd/>Launchd</a></li></ul></li><li data-nav-id=/status/ title=Status class=dd-item><input type=checkbox id=section-b59a464d04a72be2d6c2f9673b1d306d class=toggle><label for=section-b59a464d04a72be2d6c2f9673b1d306d></label><a href=https://creativeprojects.github.io/resticprofile/status/><b>5. </b>Status</a><ul><li data-nav-id=/status/prometheus/ title=Prometheus class=dd-item><a href=https://creativeprojects.github.io/resticprofile/status/prometheus/>Prometheus</a></li></ul></li><li data-nav-id=/contributions/ title=Contributions class=dd-item><a href=https://creativeprojects.github.io/resticprofile/contributions/><b>6. </b>Contributions</a></li></ul><div class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div><hr class="default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"><div id=prefooter class="footerLangSwitch footerVariantSwitch footerVisitedLinks showVariantSwitch"><ul><li id=select-language-container class=footerLangSwitch><a class="padding select-container"><i class="fas fa-language fa-fw"></i>
+<span>&nbsp;</span><div class=select-style><select id=select-language onchange="location=baseUri+this.value"></select></div><div class=select-clear></div></a></li><li id=select-variant-container class="footerVariantSwitch showVariantSwitch"><a class="padding select-container"><i class="fas fa-paint-brush fa-fw"></i>
+<span>&nbsp;</span><div class=select-style><select id=select-variant onchange=variants.changeVariant(this.value)><option id=relearn-light value=relearn-light selected>Relearn Light</option><option id=relearn-dark value=relearn-dark>Relearn Dark</option></select></div><div class=select-clear></div></a><script>variants.markSelectedVariant()</script></li><li class=footerVisitedLinks><a class=padding href=# data-clear-history-toggle><i class="fas fa-history fa-fw"></i> Clear History</a></li></ul></div><div id=footer class="footerFooter showFooter"><style>#footer{font-size:13px;height:100px;margin-left:auto;margin-right:auto;padding:2rem 1rem;text-align:center;min-width:230px;max-width:300px}#footer p{margin:0}</style><a class=github-button href=https://github.com/creativeprojects/resticprofile data-size=large data-show-count=true aria-label="Star creativeprojects/resticprofile on GitHub">Star</a><p>Built with <a href=https://github.com/McShelby/hugo-theme-relearn><i class="fas fa-heart"></i></a> by <a href=https://gohugo.io/>Hugo</a></p><script async defer src=https://buttons.github.io/buttons.js></script></div></div></aside><script src=https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1654274712></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1654274712></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/featherlight.min.js?1654274712></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/jquery.svg.pan.zoom.js?1654274712></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/mermaid.min.js?1654274712></script>
+<script>function useMermaid(e){if(typeof mermaid!='undefined'&&typeof mermaid.mermaidAPI!='undefined'&&(mermaid.initialize(Object.assign({securityLevel:"antiscript",startOnLoad:!1},e)),e.theme)){var t=variants.findLoadedStylesheet('variant-style');t.setProperty('--CONFIG-MERMAID-theme',e.theme)}}useMermaid(JSON.parse("{}"))</script><script src=https://creativeprojects.github.io/resticprofile/js/theme.js?1654274712></script></body></html>
