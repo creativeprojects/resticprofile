@@ -32,11 +32,13 @@ With resticprofile:
 * You can use a template syntax in your configuration file
 * You can generate scheduled tasks using *crond*
 * Get backup statistics in your status file
-* **[new for v0.14.0]** Automatically clear up [stale locks](#locks)
-* **[new for v0.15.0]** Export a **prometheus** file after a backup, or send the report to a push gateway automatically
+* Automatically clear up stale locks
+* Export a **prometheus** file after a backup, or send the report to a push gateway automatically
 * **[new for v0.16.0]** Full support for the copy command (with scheduling)
 * **[new for v0.16.0]** Describe your own systemd units and timers with go templates
 * **[new for v0.17.0]** Run shell commands in the background when non fatal errors are detected from restic
+* **[new for v0.18.0]** Send messages to HTTP hooks before, after a successful or failed job (backup, forget, check, prune, copy)
+* **[new for v0.18.0]** Automatically initialize the secondary repository using `copy-chunker-params` flag
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
