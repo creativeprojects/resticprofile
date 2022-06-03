@@ -26,8 +26,20 @@ default:
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
     copy:
+        initialize: true
+        initialize-copy-chunker-params: true
         password-file: key
         repository: "/Volumes/RAMDisk/{{ .Profile.Name }}-copy"
+
+repo2:
+    description: Copy of default repo
+    initialize: true
+    password-file: key
+    repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
+    init:
+      copy-chunker-params: true
+      from-repository: "/Volumes/RAMDisk/default"
+      from-password-file: key
 
 space:
     description: Repository contains space

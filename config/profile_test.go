@@ -230,6 +230,9 @@ iexclude = "iexclude"
 password-file = "key"
 [profile.dump]
 password-file = "key"
+[profile.init]
+from-repository-file = "key"
+from-password-file = "key"
 `
 	profile, err := getProfile("toml", testConfig, "profile", "")
 	if err != nil {
@@ -249,6 +252,8 @@ password-file = "key"
 	assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
 	assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
 	assert.Equal(t, []string{"/wd/key"}, profile.Dump["password-file"])
+	assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
+	assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
 }
 
 func TestHostInProfile(t *testing.T) {
@@ -718,6 +723,8 @@ other-flag-restore = true
 other-flag-stats = true
 [profile.tag]
 other-flag-tag = true
+[profile.init]
+other-flag-init = true
 `},
 		{"json", `
 {
@@ -736,7 +743,8 @@ other-flag-tag = true
     "ls": {"other-flag-ls": true},
     "restore": {"other-flag-restore": true},
     "stats": {"other-flag-stats": true},
-    "tag": {"other-flag-tag": true}
+    "tag": {"other-flag-tag": true},
+    "init": {"other-flag-init": true}
   }
 }`},
 		{"yaml", `---
@@ -770,6 +778,8 @@ profile:
     other-flag-stats: true
   tag:
     other-flag-tag: true
+  init:
+    other-flag-init: true
 `},
 		{"hcl", `
 "profile" = {
@@ -816,6 +826,9 @@ profile:
     tag = {
         other-flag-tag = true
     }
+    init = {
+        other-flag-init = true
+    }
 }
 `},
 	}
@@ -842,6 +855,7 @@ profile:
 			require.NotNil(t, profile.Restore)
 			require.NotNil(t, profile.Stats)
 			require.NotNil(t, profile.Tag)
+			require.NotNil(t, profile.Init)
 
 			flags := profile.GetCommonFlags()
 			assert.Equal(t, 1, len(flags.ToMap()))
@@ -867,6 +881,7 @@ profile:
 				constants.CommandSnapshots,
 				constants.CommandStats,
 				constants.CommandTag,
+				constants.CommandInit,
 			}
 
 			for _, command := range commands {
