@@ -52,7 +52,6 @@ func newShellCommand(command string, args, env, shell []string, dryRun bool, sig
 func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, stderr string, err error) {
 	if command.dryRun {
 		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
-		return
 	}
 
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
@@ -60,6 +59,17 @@ func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, s
 	shellCmd.Shell = command.shell
 	shellCmd.Stdout = command.stdout
 	shellCmd.Stderr = command.stderr
+
+	if command.dryRun {
+		shellBinary, args, commandErr := shellCmd.GetShellCommand()
+		if commandErr != nil {
+			clog.Warningf("command error: %s", commandErr.Error())
+		} else {
+			// The following line may send confidential values to log (combination of --trace --dry-run).
+			clog.Tracef("dry-run shell: %s %s", shellBinary, strings.Join(args, " "))
+		}
+		return
+	}
 
 	if command.stdin != nil {
 		shellCmd.Stdin = command.stdin

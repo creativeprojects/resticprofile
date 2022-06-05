@@ -2,10 +2,13 @@ package shell
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -14,11 +17,11 @@ import (
 )
 
 const (
-	unixShell          = "sh"
-	unixBashShell      = "bash"
-	windowsShell       = "cmd.exe"
-	windowsPowershell  = "powershell.exe"
-	windowsPowershell6 = "pwsh.exe"
+	defaultShell = "sh"
+	bashShell    = "bash"
+	powershell   = "powershell"
+	powershell6  = "pwsh"
+	windowsShell = "cmd"
 )
 
 // SetPID is a callback to send the PID of the current child process
@@ -79,7 +82,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 
 	summary := monitor.Summary{OutputAnalysis: c.analyser.Reset()}
 
-	command, args, err := c.getShellCommand()
+	command, args, err := c.GetShellCommand()
 	if err != nil {
 		return summary, "", err
 	}
@@ -170,8 +173,8 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	return summary, errorText, err
 }
 
-// getShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
-func (c *Command) getShellCommand() (shell string, arguments []string, err error) {
+// GetShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
+func (c *Command) GetShellCommand() (shell string, arguments []string, err error) {
 	var searchList []string
 	for _, sh := range c.Shell {
 		if sh = strings.TrimSpace(sh); sh != "" {
@@ -189,11 +192,137 @@ func (c *Command) getShellCommand() (shell string, arguments []string, err error
 	}
 
 	if err != nil {
-		err = fmt.Errorf("cannot find shell (%s): %s", strings.Join(searchList, ", "), err.Error())
+		err = fmt.Errorf("cannot find shell: %s (tried %s)", err.Error(), strings.Join(searchList, ", "))
 		return
 	}
 
-	arguments = c.composeShellArguments(shell)
+	composer := getArgumentsComposer(shell)
+	arguments = composer(c)
+	return
+}
+
+type shellArgumentsComposer func(*Command) []string
+
+var shellArgumentsComposerRegistry map[string]shellArgumentsComposer
+
+func init() {
+	shellArgumentsComposerRegistry = map[string]shellArgumentsComposer{
+		defaultShell: composeShellArguments,
+		bashShell:    composeShellArguments,
+		powershell:   composePowershellArguments,
+		powershell6:  composePowershellArguments,
+		windowsShell: composeWindowsCmdArguments,
+	}
+}
+
+func getArgumentsComposer(shell string) (composer shellArgumentsComposer) {
+	shell = strings.ToLower(filepath.Base(shell))
+
+	if ext := filepath.Ext(shell); len(ext) > 0 {
+		shell = shell[:len(shell)-len(ext)]
+	}
+
+	composer = shellArgumentsComposerRegistry[shell]
+	if composer == nil {
+		composer = shellArgumentsComposerRegistry[defaultShell]
+	}
+	return
+}
+
+func composeShellArguments(c *Command) []string {
+	// Flatten all arguments into one string, sh and bash expects one big string
+	command := resolveCommand(c.Command)
+	flatCommand := strings.Join(append([]string{command}, c.Arguments...), " ")
+
+	return []string{
+		"-c",
+		flatCommand,
+	}
+}
+
+var powershellBuiltins = regexp.MustCompile("(?i)^(\\$|\\?|^|_|args|ConsoleFileName|Error|ErrorView|" +
+	"Event|EventArgs|EventSubscriber|ExecutionContext|false|foreach|HOME|Host|input|IsCoreCLR|" +
+	"IsLinux|IsMacOS|IsWindows|LastExitCode|Matches|MyInvocation|NestedPromptLevel|null|PID|PROFILE|" +
+	"PSBoundParameters|PSCmdlet|PSCommandPath|PSCulture|PSDebugContext|PSHOME|PSItem|" +
+	"PSNativeCommandArgumentPassing|PSScriptRoot|PSSenderInfo|PSStyle|PSUICulture|PSVersionTable|" +
+	"PWD|Sender|ShellId|StackTrace|switch|this|True)$")
+
+func composePowershellArguments(c *Command) []string {
+	// Rewrite unix style env variables ($var) to powershell env style ($Env:var) with fallback to local variable
+	mapper := func(name string) string {
+		if powershellBuiltins.MatchString(name) {
+			return fmt.Sprintf("${%s}", name)
+		} else {
+			return fmt.Sprintf("$($_=${Env:%[1]s}; if ($_) {$_} else {${%[1]s}})", name)
+		}
+	}
+	arguments := rewriteVariables(c.Arguments, mapper)
+	command := resolveCommand(rewriteVariables([]string{c.Command}, mapper)[0])
+
+	return append(
+		[]string{"-Command", command},
+		removeQuotes(arguments)...,
+	)
+}
+
+func composeWindowsCmdArguments(c *Command) []string {
+	// Rewrite unix style env variables ($var) to delayed cmd style (!var!)
+	mapper := func(name string) string { return fmt.Sprintf("!%s!", name) }
+	arguments := rewriteVariables(c.Arguments, mapper)
+	command := resolveCommand(rewriteVariables([]string{c.Command}, mapper)[0])
+
+	// Enable delayed variable expansion "/V:ON" to support !variable! syntax
+	return append(
+		[]string{"/V:ON", "/C", command},
+		removeQuotes(arguments)...,
+	)
+}
+
+// resolveCommand adds a "./" prefix to a command that only exists in the current working directory
+func resolveCommand(command string) string {
+	// Check if a command was specified that only exists in CWD (without "./" prefix)
+	// this happens for example if the restic binary is placed in CWD
+	if !strings.HasPrefix(command, ".") &&
+		!strings.Contains(command, " ") &&
+		filepath.Base(command) == command {
+		if cmd, err := exec.LookPath(command); errors.Is(err, exec.ErrNotFound) || cmd == command {
+			if s, err := os.Stat(command); err == nil && !s.IsDir() && s.Size() > 0 {
+				command = "." + string(os.PathSeparator) + command
+			}
+		}
+	}
+
+	return command
+}
+
+// unixVariablesMatcher matches all "$var" and "${var}" inside a string
+var unixVariablesMatcher = regexp.MustCompile("(?i)\\$(\\w+)([^\\w:.]|$)|\\$\\{(\\w+)}")
+
+// makeRegexVariablesFunc converts a variables expand func to a func for ReplaceAllStringFunc
+func makeRegexVariablesFunc(mapper func(string) string) func(string) string {
+	return func(fullMatch string) (mapped string) {
+		if matches := unixVariablesMatcher.FindStringSubmatch(fullMatch); len(matches) > 1 {
+			for _, name := range matches[1:] {
+				if len(name) > 0 {
+					if len(mapped) == 0 {
+						mapped = mapper(name)
+					} else {
+						mapped += name
+					}
+				}
+			}
+		}
+		return
+	}
+}
+
+// rewriteVariables iterates arguments and formats every unix style variable into a new result slice
+func rewriteVariables(arguments []string, mapper func(string) string) (result []string) {
+	regexMapper := makeRegexVariablesFunc(mapper)
+	for _, arg := range arguments {
+		arg = unixVariablesMatcher.ReplaceAllStringFunc(arg, regexMapper)
+		result = append(result, arg)
+	}
 	return
 }
 

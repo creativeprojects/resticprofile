@@ -703,7 +703,8 @@ func (r *resticWrapper) getProfileEnvironment() []string {
 func (r *resticWrapper) getFailEnvironment(err error) (env []string) {
 	ctx := r.getErrorContext(err)
 	if ctx.Message != "" {
-		env = append(env, fmt.Sprintf("%s=%s", constants.EnvError, ctx.Message))
+		env = append(env, fmt.Sprintf("%s=%s", constants.EnvError, ctx.Message)) // powershell already has $ERROR
+		env = append(env, fmt.Sprintf("%s=%s", constants.EnvErrorMessage, ctx.Message))
 	}
 	if ctx.CommandLine != "" {
 		env = append(env, fmt.Sprintf("%s=%s", constants.EnvErrorCommandLine, ctx.CommandLine))

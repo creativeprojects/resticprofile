@@ -71,7 +71,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 		Arguments: testArgs,
 	}
 
-	command, args, err := c.getShellCommand()
+	command, args, err := c.GetShellCommand()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func TestShellCommand(t *testing.T) {
 		Arguments: testArgs,
 	}
 
-	command, args, err := c.getShellCommand()
+	command, args, err := c.GetShellCommand()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,12 +124,136 @@ func TestShellCommand(t *testing.T) {
 	}
 }
 
+func TestShellArgumentsComposing(t *testing.T) {
+	tests := []struct {
+		command               string
+		shell, args, expected []string
+	}{
+		{
+			shell:    []string{defaultShell, bashShell},
+			command:  mockBinary,
+			args:     []string{"a", "\"-$PROFILE_NAME- -\"", "c"},
+			expected: []string{"-c", mockBinary + " a \"-$PROFILE_NAME- -\" c"},
+		},
+		{
+			shell:    []string{windowsShell},
+			command:  mockBinary,
+			args:     []string{"a", "\"-$PROFILE_NAME- -\"", "c", "!custom! %custom% %PATH%"},
+			expected: []string{"/V:ON", "/C", mockBinary, "a", "-!PROFILE_NAME!- -", "c", "!custom! %custom% %PATH%"},
+		},
+		{
+			shell:    []string{windowsShell},
+			command:  "echo \"$PROFILE_NAME\"",
+			args:     nil,
+			expected: []string{"/V:ON", "/C", "echo \"!PROFILE_NAME!\""},
+		},
+		{
+			shell:   []string{powershell, powershell6},
+			command: mockBinary,
+			args:    []string{"a", "\"-$PROFILE_NAME- -\"", "$True $Env:custom ${Env:c2} $$ $? $Error \"$home\""},
+			expected: []string{
+				"-Command", mockBinary, "a",
+				"-$($_=${Env:PROFILE_NAME}; if ($_) {$_} else {${PROFILE_NAME}})- -",
+				"${True} $Env:custom ${Env:c2} $$ $? ${Error} \"${home}\"",
+			},
+		},
+		{
+			shell:    []string{powershell, powershell6},
+			command:  "echo \"$PROFILE_NAME\"",
+			args:     nil,
+			expected: []string{"-Command", "echo \"$($_=${Env:PROFILE_NAME}; if ($_) {$_} else {${PROFILE_NAME}})\""},
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("#%d", i), func(t *testing.T) {
+			var shells []string
+			for _, shell := range test.shell {
+				shells = append(shells, shell)
+				shells = append(shells, shell+".exe")
+				shells = append(shells, strings.ToUpper(shell+".exe"))
+				shells = append(shells, "some/path/to/"+shell)
+			}
+			for _, shell := range shells {
+				t.Run(shell, func(t *testing.T) {
+					c := &Command{Shell: []string{shell}, Command: test.command, Arguments: test.args}
+					composedArgs := getArgumentsComposer(shell)(c)
+					assert.Equal(t, test.expected, composedArgs)
+				})
+			}
+		})
+	}
+}
+
+func TestVariablesRewrite(t *testing.T) {
+	mapper := func(name string) string { return fmt.Sprintf("!%s!", name) }
+
+	tests := []struct{ in, expected string }{
+		{in: "arg", expected: "arg"},
+		{in: "no vars", expected: "no vars"},
+		{in: "no vars: %no_unix%", expected: "no vars: %no_unix%"},
+		{in: "no vars: $-no- $(123) $$ $? ${a:-1} ${a:-1}", expected: "no vars: $-no- $(123) $$ $? ${a:-1} ${a:-1}"},
+		{in: "no vars: $Env:abc ${Env:abc}", expected: "no vars: $Env:abc ${Env:abc}"},
+		{in: "$a", expected: "!a!"},
+		{in: "${a}", expected: "!a!"},
+		{in: "${_a_}", expected: "!_a_!"},
+		{in: "$_a_", expected: "!_a_!"},
+		{in: "$a ${b}_$c_-$d", expected: "!a! !b!_!c_!-!d!"},
+		{in: "$d$x$y", expected: "!d!$x!y!"}, // known issue, won't fix
+		{in: "${d}${x}${y}", expected: "!d!!x!!y!"},
+	}
+
+	frame := []string{"", "-", "[", "]", "-token", " token", " token ", " _ "}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			for _, prefix := range frame {
+				for _, suffix := range frame {
+					input := prefix + test.in + suffix
+					expected := prefix + test.expected + suffix
+
+					actual := rewriteVariables([]string{input}, mapper)[0]
+					assert.Equal(t, expected, actual)
+				}
+			}
+		})
+	}
+}
+
+func TestRunLocalCommand(t *testing.T) {
+	cmd := NewCommand("command.go", nil)
+	expected := "." + string(os.PathSeparator) + "command.go"
+
+	for _, shell := range []string{defaultShell, bashShell, powershell, powershell6, windowsShell} {
+		args := getArgumentsComposer(shell)(cmd)
+		assert.Equal(t, expected, args[len(args)-1])
+	}
+}
+
+func TestShellSearchPath(t *testing.T) {
+	searchList := NewCommand("echo", []string{}).getShellSearchList()
+	assert.NotEmpty(t, searchList)
+	for _, shell := range searchList {
+		assert.NotNil(t, shellArgumentsComposerRegistry[shell])
+	}
+}
+
 func TestSelectCustomShell(t *testing.T) {
 	cmd := NewCommand("sleep", []string{"1"})
 	cmd.Shell = []string{mockBinary}
-	shell, _, err := cmd.getShellCommand()
+	shell, _, err := cmd.GetShellCommand()
 	assert.Nil(t, err)
 	assert.Equal(t, mockBinary, shell)
+
+	expected := "cannot find shell: exec: \"non-existing-shell\": executable file not found in $PATH (tried non-existing-shell)"
+	if runtime.GOOS == "windows" {
+		expected = strings.ReplaceAll(expected, "$PATH", "%PATH%")
+	}
+
+	cmd.Shell = []string{"non-existing-shell"}
+	shell, _, err = cmd.GetShellCommand()
+	assert.EqualError(t, err, expected)
+	assert.Empty(t, shell)
 }
 
 func TestRunShellEcho(t *testing.T) {
@@ -247,7 +371,7 @@ func TestSummaryDurationCommand(t *testing.T) {
 
 	cmd := NewCommand("sleep", []string{"1"})
 	if runtime.GOOS == "windows" {
-		cmd.Shell = []string{windowsPowershell}
+		cmd.Shell = []string{powershell}
 	}
 	cmd.Stdout = buffer
 
@@ -270,7 +394,7 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 	sigChan := make(chan os.Signal, 1)
 	cmd := NewSignalledCommand("sleep", []string{"1"}, sigChan)
 	if runtime.GOOS == "windows" {
-		cmd.Shell = []string{windowsPowershell}
+		cmd.Shell = []string{powershell}
 	}
 	cmd.Stdout = buffer
 

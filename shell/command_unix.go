@@ -4,7 +4,6 @@ package shell
 
 import (
 	"os"
-	"strings"
 	"syscall"
 )
 
@@ -31,17 +30,12 @@ func (c *Command) propagateGroupSignal(process *os.Process) {
 	}
 }
 
+// getShellSearchList returns a priority sorted list of default shells to pick when none was specified
 func (c *Command) getShellSearchList() []string {
-	// prefer bash if available as it has better signal propagation (sh may fail to forward signals)
-	return []string{unixBashShell, unixShell}
-}
-
-func (c *Command) composeShellArguments(_ string) []string {
-	// Flatten all arguments into one string, sh expects one big string
-	flatCommand := append([]string{c.Command}, c.Arguments...)
-
 	return []string{
-		"-c",
-		strings.Join(flatCommand, " "),
+		// prefer "bash" if available as it has better signal propagation (sh may fail to forward signals)
+		bashShell,
+		// fallback to "sh"
+		defaultShell,
 	}
 }

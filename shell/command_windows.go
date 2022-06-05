@@ -3,10 +3,7 @@
 package shell
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 // In Windows, all hierarchy will receive the signal (which is good because we cannot send it anyway)
@@ -20,28 +17,12 @@ func (c *Command) propagateSignal(*os.Process) {
 	}
 }
 
+// getShellSearchList returns a priority sorted list of default shells to pick when none was specified
 func (c *Command) getShellSearchList() []string {
-	return []string{windowsShell, windowsPowershell6, windowsPowershell}
-}
-
-func (c *Command) composeShellArguments(shell string) []string {
-	command := []string{"/C", c.Command}
-
-	if sh := strings.ToLower(filepath.Base(shell)); sh == windowsPowershell || sh == windowsPowershell6 {
-		// Powershell requires ".\" prefix for executables in CWD (same as unix shells)
-		if filepath.Base(c.Command) == c.Command {
-			if s, err := os.Stat(c.Command); err == nil && !s.IsDir() {
-				c.Command = fmt.Sprintf(`.\%s`, c.Command)
-			}
-		}
-		command = []string{"-Command", c.Command}
-	} else if sh == windowsShell {
-		// Enable delayed variable expansion (!variable! syntax)
-		command = append([]string{"/V:ON"}, command...)
+	return []string{
+		// prefer "cmd.exe" over "powershell.exe"
+		windowsShell,
+		// Should never come to here as "cmd.exe" probably always exists
+		powershell,
 	}
-
-	return append(
-		command,
-		removeQuotes(c.Arguments)...,
-	)
 }
