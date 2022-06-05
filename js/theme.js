@@ -323,24 +323,25 @@ function initMenuScrollbar(){
             // to scroll the body
             var n = document.querySelector('body').matches('.sidebar-flyout');
             if( n ){
-                psm.scrollbarY.focus();
+                psm && psm.scrollbarY.focus();
             }
             else{
-                psc.scrollbarY.focus();
+                psc && psc.scrollbarY.focus();
             }
         }
     });
     // scrollbars will install their own keyboard handlers
     // that need to be executed inbetween our own handlers
     var psm = new PerfectScrollbar('#content-wrapper');
-    var psc = new PerfectScrollbar(content);
+    // PSC removed for #242 #243 #244
+    // var psc = new PerfectScrollbar(content);
     document.addEventListener('keydown', function(){
         // if we facked initial scrolling, we want to
         // remove the focus to not leave visual markers on
         // the scrollbar
         if( autofocus ){
-            psc.scrollbarY.blur();
-            psm.scrollbarY.blur();
+            psc && psc.scrollbarY.blur();
+            psm && psm.scrollbarY.blur();
             autofocus = false;
         }
     });

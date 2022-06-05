@@ -10,7 +10,6 @@
     --MAIN-TITLES-TEXT-color: #5e5e5e; /* Color of titles h2-h3-h4-h5-h6 */
     --MAIN-LINK-color: #599a3e; /* Color of links */
     --MAIN-LINK-HOVER-color: #3f6d2c; /* Color of hovered links */
-    --MAIN-ANCHOR-color: #599a3e; /* color of anchors on titles */
     --MAIN-BG-color: #ffffff; /* color of text by default */
 
     /* adjusted to base16-snazzy chroma style */

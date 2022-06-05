@@ -8,9 +8,8 @@
 :root {
     --MAIN-TEXT-color: #323232; /* Color of text by default */
     --MAIN-TITLES-TEXT-color: #5e5e5e; /* Color of titles h2-h3-h4-h5-h6 */
-    --MAIN-LINK-color: #1C90F3; /* Color of links */
+    --MAIN-LINK-color: #1c90f3; /* Color of links */
     --MAIN-LINK-HOVER-color: #167ad0; /* Color of hovered links */
-    --MAIN-ANCHOR-color: #1C90F3; /* color of anchors on titles */
     --MAIN-BG-color: #ffffff; /* color of text by default */
 
     /* adjusted to base16-snazzy chroma style */
@@ -25,7 +24,7 @@
     --MENU-HOME-LINK-color: #323232; /* Color of the home button text */
     --MENU-HOME-LINK-HOVER-color: #5e5e5e; /* Color of the hovered home button text */
 
-    --MENU-HEADER-BG-color: #1C90F3; /* Background color of menu header */
+    --MENU-HEADER-BG-color: #1c90f3; /* Background color of menu header */
     --MENU-HEADER-BORDER-color: #33a1ff; /*Color of menu header border */
 
     --MENU-SEARCH-color: #ffffff; /* Color of search field text */
@@ -39,7 +38,7 @@
     --MENU-SECTION-ACTIVE-CATEGORY-color: #777; /* Color of active category text */
     --MENU-SECTION-ACTIVE-CATEGORY-BG-color: #fff; /* Color of background for the active category (only) */
 
-    --MENU-VISITED-color: #33a1ff; /* Color of 'page visited' icons in menu */
+    --MENU-VISITED-color: #1c90f3; /* Color of 'page visited' icons in menu */
     --MENU-SECTION-HR-color: #20272b; /* Color of <hr> separator in menu */
 
     /* base styling for boxes */
