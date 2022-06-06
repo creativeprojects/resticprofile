@@ -1,10 +1,12 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,14 +16,15 @@ type showStructData struct {
 }
 
 type testObject struct {
-	Id      int                 `mapstructure:"id"`
-	Name    string              `mapstructure:"name"`
-	Person  testPerson          `mapstructure:"person"`
-	Persons []testPerson        `mapstructure:"persons"`
-	Pointer *testPointer        `mapstructure:"pointer"`
-	Other   string              `mapstructure:"other" show:"noshow"`
-	Hidden  string              `mapstructure:""`
-	Map     map[string][]string `mapstructure:",remain"`
+	Id         int                    `mapstructure:"id"`
+	Name       string                 `mapstructure:"name"`
+	Person     testPerson             `mapstructure:"person"`
+	Persons    []testPerson           `mapstructure:"persons"`
+	Pointer    *testPointer           `mapstructure:"pointer"`
+	Other      string                 `mapstructure:"other" show:"noshow"`
+	Hidden     string                 `mapstructure:""`
+	AlsoHidden string                 `mapstructure:"use"`
+	Map        map[string]interface{} `mapstructure:",remain"`
 }
 
 type testPerson struct {
@@ -76,11 +79,39 @@ func TestShowStruct(t *testing.T) {
 			output: " id:  11\n\n person.properties:\n  list:  one\n      two\n      three\n",
 		},
 		{
-			input:  testObject{Id: 11, Name: "test", Map: map[string][]string{"left": {"over"}}},
+			input:  testObject{Id: 11, Name: "test", Map: map[string]interface{}{"left": []string{"over"}}},
 			output: " id: 11\n name:  test\n left:  over\n",
 		},
 		{
-			input:  testObject{Id: 11, Name: "test", Other: "should not appear", Hidden: "should not appear either"},
+			input: testObject{Map: map[string]interface{}{
+				// "use" is hidden
+				constants.SectionConfigurationMixinUse: []string{"u1", "u2", "u3"},
+				// List with map and list
+				"list": []interface{}{
+					"one",
+					map[string]interface{}{
+						"a":                                    "b",
+						"x":                                    []string{"y1", "y2"},
+						constants.SectionConfigurationMixinUse: "deep-use-is-shown",
+					},
+					"three",
+				},
+				// Map with map and list
+				"a-map": map[string]interface{}{
+					"mk1": []string{"my1", "my2"},
+					"mk2": map[string]interface{}{"ck1": "cv", "ck2": []string{"cky1", "cky2"}},
+				},
+			}},
+			output: " a-map:  mk1:{my1,my2}\n   mk2:{ck1:cv,ck2:{cky1,cky2}}\n list:   one\n   {a:b,use:deep-use-is-shown,x:{y1,y2}}\n   three\n",
+		},
+		{
+			input: testObject{
+				Id:         11,
+				Name:       "test",
+				Other:      "should not appear",
+				Hidden:     "should not appear either",
+				AlsoHidden: "should not appear either",
+			},
 			output: " id: 11\n name:  test\n",
 		},
 		{
@@ -105,8 +136,8 @@ func TestShowStruct(t *testing.T) {
 		},
 	}
 
-	for _, testItem := range testData {
-		t.Run("", func(t *testing.T) {
+	for i, testItem := range testData {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			b := &strings.Builder{}
 			err := ShowStruct(b, testItem.input, "top-level")
 			assert.NoError(t, err)

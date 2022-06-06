@@ -46,8 +46,8 @@ first:
 			require.NoError(t, err)
 
 			assert.True(t, c.IsSet("first"))
-			assert.True(t, c.IsSet("first.second"))
-			assert.True(t, c.IsSet("first.second.key"))
+			assert.True(t, c.IsSet("first", "second"))
+			assert.True(t, c.IsSet("first", "second", "key"))
 		})
 	}
 }
@@ -288,6 +288,28 @@ repository = "overridden-repo"`)
 		profile, err := config.GetProfile("default")
 		assert.NoError(t, err)
 		assert.Equal(t, NewConfidentialValue("overridden-repo"), profile.Repository)
+	})
+
+	t.Run("mixins", func(t *testing.T) {
+		defer cleanFiles()
+
+		configFile := createFile(t, "profiles.conf", `
+version = 2
+includes = "*`+testID+`.inc.toml"
+[profiles.default]
+use = "another-run-before"
+run-before = "default-before"`)
+
+		createFile(t, "mixin-"+testID+".inc.toml", `
+[mixins.another-run-before]
+"run-before..." = "another-run-before"`)
+
+		config := mustLoadConfig(t, configFile)
+		assert.True(t, config.HasProfile("default"))
+
+		profile, err := config.GetProfile("default")
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"default-before", "another-run-before"}, profile.RunBefore)
 	})
 
 	t.Run("hcl-includes-only-hcl", func(t *testing.T) {
