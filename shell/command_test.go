@@ -130,7 +130,7 @@ func TestShellArgumentsComposing(t *testing.T) {
 		shell, args, expected []string
 	}{
 		{
-			shell:    []string{defaultShell, bashShell},
+			shell:    []string{defaultShell, bashShell, "any-other-shell"},
 			command:  mockBinary,
 			args:     []string{"a", "\"-$PROFILE_NAME- -\"", "c"},
 			expected: []string{"-c", mockBinary + " a \"-$PROFILE_NAME- -\" c"},
@@ -153,7 +153,7 @@ func TestShellArgumentsComposing(t *testing.T) {
 			args:    []string{"a", "\"-$PROFILE_NAME- -\"", "$True $Env:custom ${Env:c2} $$ $? $Error \"$home\""},
 			expected: []string{
 				"-Command", mockBinary, "a",
-				"-$($_=${Env:PROFILE_NAME}; if ($_) {$_} else {${PROFILE_NAME}})- -",
+				"-${Env:PROFILE_NAME}- -",
 				"${True} $Env:custom ${Env:c2} $$ $? ${Error} \"${home}\"",
 			},
 		},
@@ -161,7 +161,7 @@ func TestShellArgumentsComposing(t *testing.T) {
 			shell:    []string{powershell, powershell6},
 			command:  "echo \"$PROFILE_NAME\"",
 			args:     nil,
-			expected: []string{"-Command", "echo \"$($_=${Env:PROFILE_NAME}; if ($_) {$_} else {${PROFILE_NAME}})\""},
+			expected: []string{"-Command", "echo \"${Env:PROFILE_NAME}\""},
 		},
 	}
 
@@ -194,6 +194,7 @@ func TestVariablesRewrite(t *testing.T) {
 		{in: "no vars: %no_unix%", expected: "no vars: %no_unix%"},
 		{in: "no vars: $-no- $(123) $$ $? ${a:-1} ${a:-1}", expected: "no vars: $-no- $(123) $$ $? ${a:-1} ${a:-1}"},
 		{in: "no vars: $Env:abc ${Env:abc}", expected: "no vars: $Env:abc ${Env:abc}"},
+		{in: "no vars: $obj.prop $arr[0] $arr[$index]", expected: "no vars: $obj.prop $arr[0] $arr[!index!]"},
 		{in: "$a", expected: "!a!"},
 		{in: "${a}", expected: "!a!"},
 		{in: "${_a_}", expected: "!_a_!"},
@@ -203,7 +204,7 @@ func TestVariablesRewrite(t *testing.T) {
 		{in: "${d}${x}${y}", expected: "!d!!x!!y!"},
 	}
 
-	frame := []string{"", "-", "[", "]", "-token", " token", " token ", " _ "}
+	frame := []string{"", "-", "]", "/", "\\", "/path/", "\\path\\", "-token", " token", " token ", " _ "}
 
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {

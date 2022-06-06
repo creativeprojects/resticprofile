@@ -253,7 +253,7 @@ func composePowershellArguments(c *Command) []string {
 		if powershellBuiltins.MatchString(name) {
 			return fmt.Sprintf("${%s}", name)
 		} else {
-			return fmt.Sprintf("$($_=${Env:%[1]s}; if ($_) {$_} else {${%[1]s}})", name)
+			return fmt.Sprintf("${Env:%s}", name)
 		}
 	}
 	arguments := rewriteVariables(c.Arguments, mapper)
@@ -295,8 +295,8 @@ func resolveCommand(command string) string {
 	return command
 }
 
-// unixVariablesMatcher matches all "$var" and "${var}" inside a string
-var unixVariablesMatcher = regexp.MustCompile("(?i)\\$(\\w+)([^\\w:.]|$)|\\$\\{(\\w+)}")
+// unixVariablesMatcher matches all "$var" and "${var}" inside a string (excluding "$var.prop", "$var[]" & "$var:prop")
+var unixVariablesMatcher = regexp.MustCompile(`(?i)\$(\w+)([^\w:.\[]|$)|\$\{(\w+)}`)
 
 // makeRegexVariablesFunc converts a variables expand func to a func for ReplaceAllStringFunc
 func makeRegexVariablesFunc(mapper func(string) string) func(string) string {
