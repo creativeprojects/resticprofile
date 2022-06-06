@@ -1159,9 +1159,10 @@ option {
 
 #TableOfContents {
     font-size: 13px !important;
-    max-height: 85%;
-    overflow: auto;
+    max-height: 90vh;
+    overflow: hidden;
     padding: 15px 5px !important;
+    position: relative; /* PS */
 }
 
 #TableOfContents > ul > li > a {
