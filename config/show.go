@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
+
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 // ShowStruct write out to w a human readable text representation of the orig parameter
@@ -48,12 +51,7 @@ func showSubStruct(orig interface{}, stack []string, display *Display) error {
 
 func showField(fieldType reflect.StructField, fieldValue reflect.Value, stack []string, display *Display) error {
 	if key, ok := fieldType.Tag.Lookup("mapstructure"); ok {
-		if show, ok := fieldType.Tag.Lookup("show"); ok {
-			if strings.Contains(show, "noshow") {
-				return nil
-			}
-		}
-		if key == "" {
+		if isNotShown(key, &fieldType) {
 			return nil
 		}
 
@@ -125,14 +123,21 @@ func showField(fieldType reflect.StructField, fieldValue reflect.Value, stack []
 }
 
 func showMap(stack []string, display *Display, valueOf reflect.Value) {
-	iter := valueOf.MapRange()
-	for iter.Next() {
-		showKeyValue(stack, display, iter.Key().String(), iter.Value())
+	// Sort keys for a deterministic order
+	keys := valueOf.MapKeys()
+	sort.Slice(keys, func(i, j int) bool { return keys[i].String() < keys[j].String() })
+
+	for _, key := range keys {
+		showKeyValue(stack, display, key.String(), valueOf.MapIndex(key))
 	}
 }
 
 func showKeyValue(stack []string, display *Display, key string, valueOf reflect.Value) {
-	// This is reusing the stringifyValue function used to build the restic flags
+	if isNotShown(key, nil) {
+		return
+	}
+
+	// This is reusing the stringify function used to build the restic flags
 	convert, ok := stringify(valueOf, false)
 	if ok {
 		if len(convert) == 0 {
@@ -141,4 +146,15 @@ func showKeyValue(stack []string, display *Display, key string, valueOf reflect.
 		}
 		display.addEntry(stack, key, convert)
 	}
+}
+
+func isNotShown(name string, fieldType *reflect.StructField) (noShow bool) {
+	if name == "" || name == constants.SectionConfigurationMixinUse {
+		noShow = true
+	} else if fieldType != nil {
+		if show, ok := fieldType.Tag.Lookup("show"); ok {
+			noShow = strings.Contains(show, "noshow")
+		}
+	}
+	return
 }
