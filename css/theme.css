@@ -378,6 +378,11 @@ th {
     }
 }
 
+#body-inner:focus-visible{
+    /* remove focus indicator for programatically set focus */
+    outline: none;
+}
+
 #body h1 + hr {
     margin-bottom: 2rem;
     margin-top: -1rem;
