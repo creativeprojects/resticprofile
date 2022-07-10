@@ -105,21 +105,89 @@ backup-homes:
 
 Configurations prior to **version 2**, treat lists as if they were configuration structure. Instead of replacing the parent with the derived list entirely, a derived list is **merged** into the parent list using **list-index** as key.
 
-This differs from how includes handle lists and may lead to unexpected results. In configuration file format **version 2** the behavior was changed to match that of [includes]({{< ref "/configuration/include/#configuration-merging" >}}). See [mixins](#mixins) for a deterministic way of pre/appending to list properties instead.
+This differs from how includes handle lists and may lead to unexpected results. In configuration file format **version 2** the behavior was changed to match that of [includes]({{< ref "/configuration/include/#configuration-merging" >}}) and extended with a deterministic way of pre- & appending to list properties.
 
 {{% /notice %}}
 
+## Inheritance of List Properties
+
+Starting with configuration format **version 2**, lists are no longer considered configuration structure and are replaced in derived profiles in the same way as inheritance behaves for any non-list properties. For example, when the parent and child profile define the same list property like `run-before` or `source`, the declaration of the child property replaces the declaration of the parent property entirely.
+
+For **version 2**, when the parent defined `source = ['/my-files1', '/my-files2']` and the child `source = ['/my-other-files']`, then only `/my-other-files` will really make it into the backup.
+
+In contrast to this, configurations in **version 1** partially merge lists on the list index. E.g. when the parent profile defines 2 items and the child only one, then the first entry in parent is replaced with the single child item and the second parent item is derived into the child profile.
+
+For **version 1**, when the parent defined `source = ['/my-files1', '/my-files2']` and the child `source = ['/my-other-files']`, then `/my-other-files` **and** `/my-files2` will make it into the backup.
+
+### Prepend & Append to List Properties
+
+{{% notice style="warning" title="Config format version 2" %}}
+**Feature preview**, may change without notice
+{{% /notice %}}
+
+Inheritance in configuration format **version 2** can prepend and append to parent list properties. This feature replaces list merging of version 1.
+
+Assuming the parent profile declares the list property `<list-property>`:
+* `<list-property>...` or `<list-property>__APPEND` appends to the list property
+* `...<list-property>` or `<list-property>__PREPEND` prepends to the list property
+
+{{< tabs groupId="config-with-inheritance-list-append" >}}
+{{% tab name="yaml" %}}
+
+```yaml
+version: 2
+
+profiles:
+  
+  default:
+    backup:
+      exclude:
+        - '.*'
+        - '~*'
+
+  derived-profile:
+    inherit: default
+    backup:
+      exclude...: '.git'
+      source: '/myrepo'
+```
+
+{{% /tab %}}
+{{% tab name="toml" %}}
+
+```toml
+version = 2
+
+[profiles.default.backup]
+exclude = ['.*', '~*']
+
+[profiles.derived-profile]
+inherit = 'default'
+
+[profiles.derived-profile.backup]
+exclude__APPEND = '.git'
+source = '/myrepo'
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
+In the examples above, the final value of `exclude` in `derived-profile` is `['.*', '~*', '.git']`.
 
 ## Mixins
 
-Starting with configuration file format **version 2**, mixins offer an easy way to share pieces of configuration between profiles without forcing a hierarchy of inheritance. Mixins can be used at every level within the profile configuration, support parametrisation (`vars`) and can prepend or append to list properties in addition to setting or replacing properties.
+{{% notice style="warning" title="Config format version 2" %}}
+**Feature preview**, may change without notice
+{{% /notice %}}
+
+Mixins offer an easy way to share pieces of configuration between profiles without forcing a hierarchy of inheritance. Mixins can be used at every level within the profile configuration, support parametrisation (`vars`) and similar to hierarchic inheritance, they can prepend or append to list properties in addition to setting or replacing properties.
 
 Mixins are declared in section `mixins` as named objects. The contents of these objects are merged into the profile configuration wherever a `use` property references (uses) the mixin. 
 Configuration merging is following the same logic as used in [inheritance](#profile-inheritance) and [includes]({{< ref "/configuration/include/#configuration-merging" >}}). When `use` references multiple mixins, the mixins apply in the order they are referenced and can override each other (mixins referenced later override what earlier mixins defined).
 
 Configuration values inside a mixin may be parametrized with variables following the syntax `${variable}` or `$variable`. Defaults for variables can be defined inside the mixin with `default-vars` and `use` can specify variables before merging the mixin. In difference to configuration [variables]({{< ref "/configuration/variables" >}}) that expand prior to parsing, mixin variables expand when the mixin is merged and for this reason the syntax differs.
 
-Unlike configuration [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}), mixins create parsed configuration structure not config markup. In difference to templates, mixins can be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{< ref "/configuration/include/#configuration-merging" >}}).
+Unlike configuration [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}), mixins create parsed configuration structure not config markup requires parsing. This allows mixins to be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{< ref "/configuration/include/#configuration-merging" >}}).
 
 {{< tabs groupId="config-with-mixins" >}}
 {{% tab name="yaml" %}}
@@ -227,7 +295,7 @@ Every use object within the `use` list has the following structure:
 
 Mixins are applied to the configuration after processing all [includes]({{< ref "/configuration/include/" >}}) but prior to [profile inheritance](#profile-inheritance) which means the `use` properties are not inherited but the result of applying `use` is inherited instead. What is defined by a mixin in a parent profile can still be overridden by a definition in a derived profile, but derived profiles can not change which mixins apply to their parent.
 
-Inherited list properties cannot be modified (append/prepend) and will be replaced as mixins merge prior to any inheritance.
+List properties that have been inherited from a parent can be modified (append/prepend) and replaced by a mixin.
 
 #### Mixin Example
 
