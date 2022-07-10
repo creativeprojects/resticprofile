@@ -504,3 +504,22 @@ profiles:
 		assert.Equal(t, []string{"", "profile-before"}, profile.RunBefore)
 	})
 }
+
+func TestRequireVersionAssertions(t *testing.T) {
+	t.Run("v1", func(t *testing.T) {
+		c := newConfig("toml")
+		assert.NotPanics(t, func() { c.requireVersion(Version01) })
+		assert.NotPanics(t, func() { c.requireMinVersion(Version01) })
+		assert.Panics(t, func() { c.requireVersion(Version02) })
+		assert.Panics(t, func() { c.requireMinVersion(Version02) })
+	})
+
+	t.Run("v2", func(t *testing.T) {
+		c := newConfig("toml")
+		c.viper.Set("version", 2)
+		assert.NotPanics(t, func() { c.requireVersion(Version02) })
+		assert.NotPanics(t, func() { c.requireMinVersion(Version01) })
+		assert.NotPanics(t, func() { c.requireMinVersion(Version02) })
+		assert.Panics(t, func() { c.requireVersion(Version01) })
+	})
+}

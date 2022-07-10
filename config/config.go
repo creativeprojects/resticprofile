@@ -35,37 +35,11 @@ type Config struct {
 	}
 }
 
-// This is where things are getting hairy:
-//
-// Most configuration file formats allow only one declaration per section
-// This is not the case for HCL where you can declare a bloc multiple times:
-//
-// "global" {
-//   key1 = "value"
-// }
-//
-// "global" {
-//   key2 = "value"
-// }
-//
-// For that matter, viper creates a slice of maps instead of a map for the other configuration file formats
-// This configOptionHCL deals with the slice to merge it into a single map
 var (
 	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
 		confidentialValueDecoder(),
-	))
-
-	configOptionV2 = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
-		mapstructure.StringToTimeDurationHookFunc(),
-		confidentialValueDecoder(),
 		forceSliceReplacementHookFunc(),
-	))
-
-	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
-		mapstructure.StringToTimeDurationHookFunc(),
-		confidentialValueDecoder(),
-		sliceOfMapsToMapHookFunc(),
 	))
 
 	rootPathMessage = sync.Once{}
@@ -336,28 +310,18 @@ func (c *Config) HasProfile(profileKey string) bool {
 }
 
 // GetProfileNames returns all profile names defined in the configuration
-func (c *Config) GetProfileNames() []string {
-	profiles := make([]string, 0)
-	viperScope := c.viper
-	if c.GetVersion() >= Version02 {
-		// move to the profiles subsection
-		viperScope = viperScope.Sub(constants.SectionConfigurationProfiles)
-		if viperScope == nil {
-			// there's no such subsection, so return the empty map
-			return profiles
+func (c *Config) GetProfileNames() (names []string) {
+	if c.GetVersion() == Version01 {
+		return c.getProfileNamesV1()
+	}
+
+	names = make([]string, 0)
+	if profiles := c.viper.Sub(constants.SectionConfigurationProfiles); profiles != nil {
+		for sectionKey := range profiles.AllSettings() {
+			names = append(names, sectionKey)
 		}
 	}
-	allSettings := viperScope.AllSettings()
-	for sectionKey := range allSettings {
-		if c.GetVersion() == Version01 &&
-			(sectionKey == constants.SectionConfigurationGlobal ||
-				sectionKey == constants.SectionConfigurationGroups ||
-				sectionKey == constants.SectionConfigurationIncludes) {
-			continue
-		}
-		profiles = append(profiles, sectionKey)
-	}
-	return profiles
+	return
 }
 
 // GetProfiles returns a map of all available profiles with their configuration
@@ -382,6 +346,18 @@ func (c *Config) GetVersion() Version {
 	}
 	c.version = ParseVersion(c.viper.GetString(constants.ParameterVersion))
 	return c.version
+}
+
+func (c *Config) requireVersion(version Version) {
+	if c.GetVersion() != version {
+		panic(fmt.Sprintf("invalid api usage: expected config version %d, found %d", version, c.GetVersion()))
+	}
+}
+
+func (c *Config) requireMinVersion(version Version) {
+	if c.GetVersion() < version {
+		panic(fmt.Sprintf("invalid api usage: expected min config version %d, found %d", version, c.GetVersion()))
+	}
 }
 
 // GetGlobalSection returns the global configuration
@@ -436,42 +412,27 @@ func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 // If the groups section does not exist, it returns an empty map
 func (c *Config) GetProfileGroups() map[string]Group {
 	if err := c.loadGroups(); err != nil {
-		return nil
+		clog.Errorf("failed loading groups: %s", err.Error())
 	}
 	return c.groups
 }
 
-func (c *Config) loadGroups() error {
-	if !c.IsSet(constants.SectionConfigurationGroups) {
-		c.groups = map[string]Group{}
-		return nil
+func (c *Config) loadGroups() (err error) {
+	if c.GetVersion() == Version01 {
+		return c.loadGroupsV1()
 	}
-	// load groups only once
+
 	if c.groups == nil {
-		if c.GetVersion() == Version01 {
-			c.groups = map[string]Group{}
-			groups := map[string][]string{}
-			err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
-			if err != nil {
-				return err
+		c.groups = map[string]Group{}
+
+		if c.IsSet(constants.SectionConfigurationGroups) {
+			groups := map[string]Group{}
+			if err = c.unmarshalKey(constants.SectionConfigurationGroups, &groups); err == nil {
+				c.groups = groups
 			}
-			// fits previous version into new structure
-			for groupName, group := range groups {
-				c.groups[groupName] = Group{
-					Profiles: group,
-				}
-			}
-			return nil
 		}
-		// Version 2 onwards
-		groups := map[string]Group{}
-		err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
-		if err != nil {
-			return err
-		}
-		c.groups = groups
 	}
-	return nil
+	return
 }
 
 // GetProfile in configuration. If the profile is not found, it returns errNotFound
@@ -490,11 +451,21 @@ func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	if err != nil {
 		return
 	}
+
 	if profile == nil {
 		// profile shouldn't be nil with no error, but better safe than sorry
 		err = errors.New("unexpected nil profile")
 		return
 	}
+
+	c.postProcessProfile(profile)
+	return
+}
+
+// postProcessProfile applies additional post processing steps before a profile can be used
+func (c *Config) postProcessProfile(profile *Profile) {
+	// Hide confidential values (keys, passwords) from the public representation
+	ProcessConfidentialValues(profile)
 
 	// Resolve config dependencies
 	profile.ResolveConfiguration()
@@ -504,14 +475,13 @@ func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(c.GetConfigFile())
 	profile.SetRootPath(rootPath)
-
-	return
 }
 
 // getProfile from configuration. If the profile is not found, it returns errNotFound
-func (c *Config) getProfile(profileKey string) (*Profile, error) {
-	var err error
-	var profile *Profile
+func (c *Config) getProfile(profileKey string) (profile *Profile, err error) {
+	if c.GetVersion() == Version01 {
+		return c.getProfileV1(profileKey)
+	}
 
 	if !c.IsSet(c.getProfilePath(profileKey)) {
 		// profile key not found
@@ -545,9 +515,6 @@ func (c *Config) getProfile(profileKey string) (*Profile, error) {
 		profile.Name = profileKey
 	}
 
-	// Hide confidential values (keys, passwords) from the public representation
-	ProcessConfidentialValues(profile)
-
 	return profile, nil
 }
 
@@ -568,46 +535,24 @@ func (c *Config) GetSchedules() ([]*ScheduleConfig, error) {
 	return nil, nil
 }
 
-// getSchedulesV1 loads schedules from profiles
-func (c *Config) getSchedulesV1() ([]*ScheduleConfig, error) {
-	profiles := c.GetProfileNames()
-	if len(profiles) == 0 {
-		return nil, nil
-	}
-	schedules := []*ScheduleConfig{}
-	for _, profileName := range profiles {
-		profile, err := c.GetProfile(profileName)
-		if err != nil {
-			return nil, fmt.Errorf("cannot load profile %q: %w", profileName, err)
-		}
-		profileSchedules := profile.Schedules()
-		schedules = append(schedules, profileSchedules...)
-	}
-	return schedules, nil
-}
-
 // GetScheduleSections returns a list of schedules
-func (c *Config) GetScheduleSections() (map[string]Schedule, error) {
-	schedules := map[string]Schedule{}
-	if c.GetVersion() < Version02 {
-		return nil, errors.New("expected configuration >= version 2")
-	}
-	// move to the schedules subsection
-	viperScope := c.viper.Sub(constants.SectionConfigurationSchedules)
-	if viperScope == nil {
-		// there's no such subsection, so return the empty map
-		return schedules, nil
+func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error) {
+	c.requireMinVersion(Version02)
+
+	schedules = map[string]Schedule{}
+
+	if section := c.viper.Sub(constants.SectionConfigurationSchedules); section != nil {
+		for sectionKey := range section.AllSettings() {
+			var schedule Schedule
+			schedule, err = c.getSchedule(sectionKey)
+			if err != nil {
+				break
+			}
+			schedules[sectionKey] = schedule
+		}
 	}
 
-	allSettings := viperScope.AllSettings()
-	for sectionKey := range allSettings {
-		schedule, err := c.getSchedule(sectionKey)
-		if err != nil {
-			return schedules, err
-		}
-		schedules[sectionKey] = schedule
-	}
-	return schedules, nil
+	return
 }
 
 func (c *Config) getSchedule(key string) (Schedule, error) {
@@ -621,11 +566,10 @@ func (c *Config) getSchedule(key string) (Schedule, error) {
 
 // unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options
 func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
-	if c.format == "hcl" {
-		return c.viper.UnmarshalKey(key, rawVal, configOptionHCL)
-	} else if c.GetVersion() >= Version02 {
-		return c.viper.UnmarshalKey(key, rawVal, configOptionV2)
+	if c.GetVersion() == Version01 || c.format == FormatHCL /* does V2 support HCL ? (added for unit-test) */ {
+		return c.unmarshalKeyV1(key, rawVal)
 	}
+
 	return c.viper.UnmarshalKey(key, rawVal, configOption)
 }
 
@@ -642,33 +586,6 @@ func forceSliceReplacementHookFunc() mapstructure.DecodeHookFuncValue {
 			}
 		}
 		return from.Interface(), nil
-	}
-}
-
-// sliceOfMapsToMapHookFunc merges a slice of maps to a map
-func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map && (to.Kind() == reflect.Struct || to.Kind() == reflect.Map) {
-			source, ok := data.([]map[string]interface{})
-			if !ok {
-				return data, nil
-			}
-			if len(source) == 0 {
-				return data, nil
-			}
-			if len(source) == 1 {
-				return source[0], nil
-			}
-			// flatten the slice into one map
-			convert := make(map[string]interface{})
-			for _, mapItem := range source {
-				for key, value := range mapItem {
-					convert[key] = value
-				}
-			}
-			return convert, nil
-		}
-		return data, nil
 	}
 }
 

@@ -16,6 +16,7 @@ func getProfile(configFormat, configString, profileKey, rootPath string) (*Profi
 	if err != nil {
 		return nil, err
 	}
+	ProcessConfidentialValues(profile)
 	if rootPath != "" {
 		profile.SetRootPath(rootPath)
 	}
