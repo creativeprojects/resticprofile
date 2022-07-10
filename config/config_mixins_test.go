@@ -315,7 +315,7 @@ profiles:
 		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
 	})
 
-	t.Run("list-append-replaces-inherited-list", func(t *testing.T) {
+	t.Run("list-append-adds-to-inherited-list", func(t *testing.T) {
 		config := load(t, `
 profiles:
   default:
@@ -327,7 +327,7 @@ profiles:
 `)
 		p, err := config.getProfile("profile")
 		assert.NoError(t, err)
-		assert.Equal(t, []string{"mount /backup"}, p.Backup.RunBefore)
+		assert.Equal(t, []string{"mount /backup", "echo profile-default"}, p.Backup.RunBefore)
 		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
 	})
 
@@ -439,7 +439,7 @@ profiles:
 	})
 
 	t.Run("unknown-use-fails", func(t *testing.T) {
-		buffer := bytes.NewBufferString(base + `
+		config := load(t, `
 profiles:
   profile:
     use: 
@@ -447,7 +447,7 @@ profiles:
       - t2
       - tunknown
 `)
-		_, err := Load(buffer, FormatYAML)
+		_, err := config.getProfile("profile")
 		assert.EqualError(t, err, "failed applying profiles.profile.use: undefined mixin \"tunknown\"")
 	})
 

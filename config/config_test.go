@@ -117,26 +117,6 @@ global:
     initialize: false
     priority: low
 `},
-		{FormatHCL, `
-version = 2
-"global" = {
-    default-command = "version"
-    initialize = false
-    priority = "low"
-}
-`},
-		{FormatHCL, `
-version = 2
-"global" = {
-    default-command = "version"
-    initialize = true
-}
-
-"global" = {
-    initialize = false
-    priority = "low"
-}
-`},
 	}
 
 	for _, testItem := range testData {
@@ -154,6 +134,20 @@ version = 2
 			assert.Equal(t, false, global.IONice)
 		})
 	}
+}
+
+func TestHCLFormatOnlyInVersion01(t *testing.T) {
+	testConfig := `
+version = 2
+"global" = {
+    default-command = "version"
+    initialize = false
+    priority = "low"
+}`
+	c, err := Load(bytes.NewBufferString(testConfig), FormatHCL)
+	require.NoError(t, err)
+	_, err = c.GetGlobalSection()
+	assert.EqualError(t, err, "HCL format is not supported in version 2, please use version 1 or another file format")
 }
 
 func TestStringWithCommaNotConvertedToSlice(t *testing.T) {
