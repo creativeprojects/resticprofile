@@ -172,6 +172,26 @@ quiet = false
 	})
 }
 
+func TestInheritanceAppendToList(t *testing.T) {
+	testConfig := `
+version = 2
+[profiles.grand-parent]
+run-before = "grand-parent"
+
+[profiles.parent]
+inherit = "grand-parent"
+"run-before..." = "parent"
+
+[profiles.profile]
+inherit = "parent"
+"...run-before" = "profile"
+`
+	profile, err := getProfile("toml", testConfig, "profile", "")
+	require.NoError(t, err)
+	assert.NotNil(t, profile)
+	assert.Equal(t, []string{"profile", "grand-parent", "parent"}, profile.RunBefore)
+}
+
 func TestProfileCommonFlags(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
 		assert := assert.New(t)

@@ -555,6 +555,7 @@ func (c *Config) applyProfileInheritanceAndMixins(profileName string) (err error
 				delete(parent, constants.SectionConfigurationInherit)
 				// Merge derived onto parent
 				derived := c.viper.GetStringMap(profilePath)
+				revolveAppendToListKeys(mergedProfile, derived)
 				err = mergedProfile.MergeConfigMap(derived)
 			}
 			if err != nil {
