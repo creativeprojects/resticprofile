@@ -259,9 +259,9 @@ func TestIncludes(t *testing.T) {
 		content := fmt.Sprintf(`includes=['*%[1]s.inc.toml','*%[1]s.inc.yaml','*%[1]s.inc.json']`, testID)
 
 		configFile := createFile(t, "profiles.conf", content)
-		createFile(t, "d-"+testID+".inc.toml", `[one]`)
-		createFile(t, "o-"+testID+".inc.yaml", `two: {}`)
-		createFile(t, "j-"+testID+".inc.json", `{"three":{}}`)
+		createFile(t, "d-"+testID+".inc.toml", "[one]\nk='v'")
+		createFile(t, "o-"+testID+".inc.yaml", `two: { k: v }`)
+		createFile(t, "j-"+testID+".inc.json", `{"three":{ "k": "v" }}`)
 
 		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.IsSet("includes"))
@@ -302,14 +302,20 @@ run-before = "default-before"`)
 
 		createFile(t, "mixin-"+testID+".inc.toml", `
 [mixins.another-run-before]
-"run-before..." = "another-run-before"`)
+"run-before..." = "another-run-before"
+[mixins.another-run-before2]
+"run-before..." = "another-run-before2"`)
+
+		createFile(t, "mixin-use-"+testID+".inc.toml", `
+[profiles.default]
+use = "another-run-before2"`)
 
 		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
 		assert.NoError(t, err)
-		assert.Equal(t, []string{"default-before", "another-run-before"}, profile.RunBefore)
+		assert.Equal(t, []string{"default-before", "another-run-before", "another-run-before2"}, profile.RunBefore)
 	})
 
 	t.Run("hcl-includes-only-hcl", func(t *testing.T) {
@@ -331,7 +337,7 @@ run-before = "default-before"`)
 		defer cleanFiles()
 
 		configFile := createFile(t, "profiles.toml", `includes = "*`+testID+`.inc.*"`)
-		createFile(t, "pass-"+testID+".inc.toml", `[one]`)
+		createFile(t, "pass-"+testID+".inc.toml", "[one]\nk='v'")
 
 		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("one"))

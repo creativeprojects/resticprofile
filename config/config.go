@@ -27,6 +27,7 @@ type Config struct {
 	configFile      string
 	includeFiles    []string
 	viper           *viper.Viper
+	mixinUses       []map[string][]*mixinUse
 	groups          map[string]Group
 	sourceTemplates *template.Template
 	version         Version
@@ -47,7 +48,7 @@ var (
 
 // newConfig instantiate a new Config object
 func newConfig(format string) *Config {
-	keyDelimiter := "."
+	keyDelimiter := "\\"
 	return &Config{
 		keyDelim: keyDelimiter,
 		format:   format,
@@ -114,7 +115,7 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 	}
 
 	if err == nil {
-		err = config.applyMixins()
+		err = config.applyMixins(nil)
 	}
 
 	return
@@ -126,7 +127,7 @@ func Load(input io.Reader, format string) (config *Config, err error) {
 	config = newConfig(format)
 	err = config.addTemplate(input, config.configFile, true)
 	if err == nil {
-		err = config.applyMixins()
+		err = config.applyMixins(nil)
 	}
 	return
 }
@@ -179,20 +180,34 @@ func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 }
 
 // load configuration from an io.Reader
-func (c *Config) load(input io.Reader, format string, replace bool) error {
-	// For compatibility with the previous versions, a .conf file is TOML format
-	if format == "conf" {
+func (c *Config) load(input io.Reader, format string, replace bool) (err error) {
+	if format == "conf" { // A .conf file is TOML format
 		format = "toml"
 	}
-	c.viper.SetConfigType(format)
 
 	previousVersion := c.version
 	c.version = VersionUnknown
-	var err error
+
+	var vp *viper.Viper
 	if replace {
-		err = c.viper.ReadConfig(input)
+		c.mixinUses = nil
+		vp = c.viper
 	} else {
-		err = c.viper.MergeConfig(input)
+		vp = newConfig(format).viper
+	}
+
+	vp.SetConfigType(format)
+	err = vp.ReadConfig(input)
+
+	if err == nil && vp != c.viper {
+		err = c.viper.MergeConfigMap(vp.AllSettings())
+	}
+
+	if err == nil && c.GetVersion() == Version02 {
+		var allUses map[string][]*mixinUse
+		if allUses, err = collectAllMixinUses(vp, c.keyDelim); err == nil && len(allUses) > 0 {
+			c.mixinUses = append(c.mixinUses, allUses)
+		}
 	}
 
 	if err != nil {
@@ -200,17 +215,25 @@ func (c *Config) load(input io.Reader, format string, replace bool) error {
 	}
 
 	if previousVersion != c.GetVersion() && previousVersion > VersionUnknown {
-		return errors.New("cannot include different versions of the configuration file, all files must use the same version")
+		err = errors.New("cannot include different versions of the configuration file, all files must use the same version")
 	}
-	return nil
+	return
 }
 
-func (c *Config) applyMixins() error {
+func (c *Config) applyMixins(allUsesToApply []map[string][]*mixinUse) (err error) {
 	if c.GetVersion() >= Version02 {
+		if allUsesToApply == nil {
+			allUsesToApply = c.mixinUses
+		}
+
 		templates := parseMixins(c.viper)
-		return applyMixins(c.viper, c.keyDelim, templates)
+		for _, uses := range allUsesToApply {
+			if err = applyMixins(c.viper, c.keyDelim, uses, templates); err != nil {
+				break
+			}
+		}
 	}
-	return nil
+	return
 }
 
 func (c *Config) loadTemplates() error {
@@ -440,7 +463,7 @@ func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	if c.sourceTemplates != nil {
 		err = c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
 		if err == nil {
-			err = c.applyMixins()
+			err = c.applyMixins(nil)
 		}
 		if err != nil {
 			return

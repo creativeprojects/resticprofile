@@ -169,17 +169,8 @@ func parseMixinUses(rawValue interface{}) (uses []*mixinUse, err error) {
 	return
 }
 
-func mergeConfigMap(config *viper.Viper, configKey, keyDelimiter string, content map[string]interface{}) error {
-	path := strings.Split(configKey, keyDelimiter)
-	for i := len(path) - 1; i >= 0; i-- {
-		container := make(map[string]interface{})
-		container[path[i]], content = content, container
-	}
-	return config.MergeConfigMap(content)
-}
-
-// applyMixins applies mixins to config where they are referenced with "use" keys
-func applyMixins(config *viper.Viper, keyDelimiter string, mixins map[string]*mixin) (err error) {
+// collectAllMixinUses collects all mixin uses (referenced by "use" keys) grouped by parent config key
+func collectAllMixinUses(config *viper.Viper, keyDelimiter string) (allUses map[string][]*mixinUse, err error) {
 	useSuffix := keyDelimiter + constants.SectionConfigurationMixinUse
 
 	for _, key := range config.AllKeys() {
@@ -191,24 +182,51 @@ func applyMixins(config *viper.Viper, keyDelimiter string, mixins map[string]*mi
 		if uses, err = parseMixinUses(config.Get(key)); err == nil {
 			configKey := strings.TrimSuffix(key, useSuffix)
 
-			for _, use := range uses {
-				if mi, found := mixins[use.Name]; found {
-					content := mi.Resolve(use.Variables)
-					revolveAppendToListKeys(config.Sub(configKey), content)
-					err = mergeConfigMap(config, configKey, keyDelimiter, content)
-				} else {
-					err = fmt.Errorf("undefined mixin \"%s\"", use.Name)
-				}
+			if allUses == nil {
+				allUses = make(map[string][]*mixinUse)
+			}
 
-				if err != nil {
-					break
-				}
+			allUses[configKey] = uses
+		}
+
+		if err != nil {
+			err = fmt.Errorf("failed collecting %s: %s", strings.ReplaceAll(key, keyDelimiter, "."), err.Error())
+			return
+		}
+	}
+	return
+}
+
+func mergeConfigMap(config *viper.Viper, configKey, keyDelimiter string, content map[string]interface{}) error {
+	path := strings.Split(configKey, keyDelimiter)
+	for i := len(path) - 1; i >= 0; i-- {
+		container := make(map[string]interface{})
+		container[path[i]], content = content, container
+	}
+	return config.MergeConfigMap(content)
+}
+
+// applyMixins applies mixins referenced in allUses to config
+func applyMixins(config *viper.Viper, keyDelimiter string, mixinUses map[string][]*mixinUse, mixins map[string]*mixin) (err error) {
+	for configKey, uses := range mixinUses {
+		for _, use := range uses {
+			if mi, found := mixins[use.Name]; found {
+				content := mi.Resolve(use.Variables)
+				revolveAppendToListKeys(config.Sub(configKey), content)
+				err = mergeConfigMap(config, configKey, keyDelimiter, content)
+			} else {
+				err = fmt.Errorf("undefined mixin \"%s\"", use.Name)
+			}
+
+			if err != nil {
+				break
 			}
 		}
 
 		if err != nil {
-			err = fmt.Errorf("failed applying %s: %s", strings.ReplaceAll(key, keyDelimiter, "."), err.Error())
-			return
+			useKey := strings.ReplaceAll(configKey, keyDelimiter, ".") + "." + constants.SectionConfigurationMixinUse
+			err = fmt.Errorf("failed applying %s: %s", useKey, err.Error())
+			break
 		}
 	}
 	return

@@ -467,7 +467,7 @@ profiles:
     use: %s 
 `, base, use))
 			_, err := Load(buffer, FormatYAML)
-			assert.EqualError(t, err, "failed applying profiles.profile.use: "+errorMessage)
+			assert.EqualError(t, err, "cannot parse yaml configuration: failed collecting profiles.profile.use: "+errorMessage)
 		}
 	})
 }
