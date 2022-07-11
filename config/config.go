@@ -240,7 +240,10 @@ func (c *Config) applyMatchingMixinsOnce(matcher func(useKey string) bool) error
 		}
 	}
 
-	return c.applyMixins(matchingUses)
+	if len(matchingUses) > 0 {
+		return c.applyMixins(matchingUses)
+	}
+	return nil
 }
 
 func (c *Config) applyMixins(allUsesToApply []map[string][]*mixinUse) (err error) {
@@ -544,18 +547,21 @@ func (c *Config) applyProfileInheritanceAndMixins(profileName string) (err error
 		}
 
 		if err == nil {
-			// process inheritance
+			// create merged profile for: parent > derived
 			mergedProfile := viper.NewWithOptions(viper.KeyDelimiter(c.keyDelim))
 
+			// init with parent (excluding some fields that must never be inherited)
 			parent := c.viper.GetStringMap(inheritPath)
+			delete(parent, constants.SectionConfigurationDescription)
+			delete(parent, constants.SectionConfigurationMixinUse)
+			delete(parent, constants.SectionConfigurationInherit)
+
 			if err = mergedProfile.MergeConfigMap(parent); err == nil {
-				// Don't inherit the following fields:
-				delete(parent, constants.SectionConfigurationDescription)
-				delete(parent, constants.SectionConfigurationMixinUse)
-				delete(parent, constants.SectionConfigurationInherit)
-				// Merge derived onto parent
+				// Merge derived onto parent (removing "inherit" instruction to ensure it is done only once)
 				derived := c.viper.GetStringMap(profilePath)
+				derived[constants.SectionConfigurationInherit] = ""
 				revolveAppendToListKeys(mergedProfile, derived)
+
 				err = mergedProfile.MergeConfigMap(derived)
 			}
 			if err != nil {

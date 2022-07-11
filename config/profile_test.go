@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
 	"runtime"
@@ -186,10 +187,16 @@ inherit = "grand-parent"
 inherit = "parent"
 "...run-before" = "profile"
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
+	config, err := Load(bytes.NewBufferString(testConfig), "toml")
 	require.NoError(t, err)
-	assert.NotNil(t, profile)
-	assert.Equal(t, []string{"profile", "grand-parent", "parent"}, profile.RunBefore)
+
+	// rerun on same config instance to ensure inheritance and list append returns consistent results
+	for i := 0; i < 10; i++ {
+		profile, err := config.getProfile("profile")
+		require.NoError(t, err)
+		assert.NotNil(t, profile)
+		assert.Equal(t, []string{"profile", "grand-parent", "parent"}, profile.RunBefore)
+	}
 }
 
 func TestProfileCommonFlags(t *testing.T) {
