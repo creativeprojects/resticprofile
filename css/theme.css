@@ -482,12 +482,12 @@ div.box > .box-content {
     padding-right: 1rem;
 }
 
-div.box > .box-content > :first-child {
+#body div.box > .box-content > :first-child {
     margin-top: 0;
     padding-top: 1rem;
 }
 
-div.box > .box-content > :last-child {
+#body div.box > .box-content > :last-child {
     margin-bottom: 1rem;
 }
 

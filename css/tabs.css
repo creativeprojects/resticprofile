@@ -21,7 +21,7 @@
 }
 #body .tab-nav-button:not(.active) {
     border-bottom-color: rgba( 134, 134, 134, .1 );
-    margin-top: 7px;
+    margin-top: 8px;
     padding-bottom: 2px !important;
     padding-top: 2px !important;
 }

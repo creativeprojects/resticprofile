@@ -13,14 +13,19 @@ var touchsupport = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) 
 
 var formelements = 'button, datalist, fieldset, input, label, legend, meter, optgroup, option, output, progress, select, textarea';
 
+// rapidoc: #280 disable broad document syntax highlightning
+window.Prism = window.Prism || {};
+Prism.manual = true;
+
 // PerfectScrollbar
 var psc;
 var psm;
 var pst;
 
 function switchTab(tabGroup, tabId) {
-    allTabItems = jQuery("[data-tab-group='"+tabGroup+"']");
-    targetTabItems = jQuery("[data-tab-group='"+tabGroup+"'][data-tab-item='"+tabId+"']");
+    var tabs = jQuery(".tab-panel").has("[data-tab-group='"+tabGroup+"'][data-tab-item='"+tabId+"']");
+    var allTabItems = tabs.find("[data-tab-group='"+tabGroup+"']");
+    var targetTabItems = tabs.find("[data-tab-group='"+tabGroup+"'][data-tab-item='"+tabId+"']");
 
     // if event is undefined then switchTab was called from restoreTabSelection
     // so it's not a button event and we don't need to safe the selction or
@@ -306,6 +311,10 @@ function initMenuScrollbar(){
         return;
     }
 
+    var elc = document.querySelector('#body-inner');
+    var elm = document.querySelector('#content-wrapper');
+    var elt = document.querySelector('#TableOfContents');
+
     var autofocus = false;
     document.addEventListener('keydown', function(event){
         // for initial keyboard scrolling support, no element
@@ -315,9 +324,9 @@ function initMenuScrollbar(){
         // it and give focus to the scrollbar - only
         // to just remove the focus right after scrolling
         // happend
-        var c = document.querySelector('#body-inner').matches(':hover');
-        var m = document.querySelector('#content-wrapper').matches(':hover');
-        var t = document.querySelector('#TableOfContents').matches(':hover');
+        var c = elc && elc.matches(':hover');
+        var m = elm && elm.matches(':hover');
+        var t = elt && elt.matches(':hover');
         var f = event.target.matches( formelements );
         if( !c && !m && !t && !f ){
             // only do this hack if none of our scrollbars
@@ -343,9 +352,9 @@ function initMenuScrollbar(){
     // scrollbars will install their own keyboard handlers
     // that need to be executed inbetween our own handlers
     // PSC removed for #242 #243 #244
-    // psc = new PerfectScrollbar('#body-inner');
-    psm = new PerfectScrollbar('#content-wrapper');
-    pst = document.querySelector('#TableOfContents') ? new PerfectScrollbar('#TableOfContents') : null;
+    // psc = elc && new PerfectScrollbar('#body-inner');
+    psm = elm && new PerfectScrollbar('#content-wrapper');
+    pst = elt && new PerfectScrollbar('#TableOfContents');
     document.addEventListener('keydown', function(){
         // if we facked initial scrolling, we want to
         // remove the focus to not leave visual markers on
