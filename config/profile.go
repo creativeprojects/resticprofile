@@ -119,6 +119,7 @@ type ScheduleBaseSection struct {
 	Schedule           []string      `mapstructure:"schedule" show:"noshow"`
 	SchedulePermission string        `mapstructure:"schedule-permission" show:"noshow"`
 	ScheduleLog        string        `mapstructure:"schedule-log" show:"noshow"`
+	ScheduleSyslog     string        `mapstructure:"schedule-syslog" show:"noshow"`
 	SchedulePriority   string        `mapstructure:"schedule-priority" show:"noshow"`
 	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode" show:"noshow"`
 	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait" show:"noshow"`
@@ -563,6 +564,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				permission:  s.SchedulePermission,
 				environment: env,
 				logfile:     s.ScheduleLog,
+				syslog:      s.ScheduleSyslog,
 				lockMode:    s.ScheduleLockMode,
 				lockWait:    s.ScheduleLockWait,
 				priority:    s.SchedulePriority,

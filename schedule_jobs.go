@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
@@ -38,8 +38,12 @@ func scheduleJobs(schedulerType schedule.SchedulerConfig, profileName string, co
 			scheduleConfig.Title(),
 		}
 
-		if runtime.GOOS != "darwin" && scheduleConfig.Logfile() != "" {
+		if !platform.IsDarwin() && scheduleConfig.Logfile() != "" {
 			args = append(args, "--log", scheduleConfig.Logfile())
+		}
+
+		if !platform.IsWindows() && scheduleConfig.Syslog() != "" {
+			args = append(args, "--syslog", scheduleConfig.Syslog())
 		}
 
 		if scheduleConfig.LockMode() == config.ScheduleLockModeDefault {

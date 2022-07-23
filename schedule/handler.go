@@ -7,6 +7,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 )
 
+// Handler interface for the scheduling software available on the system
 type Handler interface {
 	Init() error
 	Close()

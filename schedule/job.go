@@ -22,6 +22,7 @@ type JobConfig interface {
 	Environment() map[string]string
 	Priority() string
 	Logfile() string
+	Syslog() string
 	Configfile() string
 	GetFlag(string) (string, bool)
 }

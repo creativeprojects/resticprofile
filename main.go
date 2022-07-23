@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
@@ -104,6 +105,17 @@ func main() {
 			term.SetAllOutput(file)
 			// close the log file at the end
 			defer file.Close()
+		}
+
+	} else if flags.syslog != "" && !platform.IsWindows() {
+		writer, err := setupSyslogLogger(flags)
+		if err != nil {
+			// back to a console logger
+			setupConsoleLogger(flags)
+			clog.Errorf("cannot open syslog: %s", err)
+		} else {
+			// close the writer at the end
+			defer writer.Close()
 		}
 
 	} else {

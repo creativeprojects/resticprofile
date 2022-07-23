@@ -26,6 +26,8 @@ BUILD=build/
 BUILD_DATE=`date`
 BUILD_COMMIT=`git rev-parse HEAD`
 
+CURRENT_DIR = $(shell pwd)
+
 TMP_MOUNT_LINUX=/tmp/backup
 TMP_MOUNT_DARWIN=/Volumes/RAMDisk
 TMP_MOUNT=
@@ -136,3 +138,13 @@ toc:
 generate-install:
 	@echo "[*] $@"
 	godownloader .godownloader.yml -r creativeprojects/resticprofile -o install.sh
+
+syslog:
+	@echo "[*] $@"
+	docker run -d \
+		--name=rsyslogd \
+		--rm \
+		-p 5514:514/udp \
+		-p 5514:514/tcp \
+		-v $(CURRENT_DIR)/examples/rsyslogd.conf:/etc/rsyslog.d/listen.conf \
+		instantlinux/rsyslogd:latest

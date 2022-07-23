@@ -89,7 +89,7 @@ func TestCompleter(t *testing.T) {
 
 			t.Run("AllWithValues", func(t *testing.T) {
 				flagSet.VisitAll(func(flag *pflag.Flag) {
-					if flag.Hidden {
+					if flag.Hidden || flag.Name == "syslog" {
 						return
 					}
 

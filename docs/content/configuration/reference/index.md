@@ -85,6 +85,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`) 
 * **schedule-lock-wait**: duration 
 * **schedule-log**: string
+* **schedule-syslog**: string
 * **stdin-command**: string OR list of strings
 * **extended-status**: true / false
 * **no-error-on-warning**: true / false
@@ -120,6 +121,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
+* **schedule-syslog**: string
 
 Flags passed to the restic command line
 
@@ -159,6 +161,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
+* **schedule-syslog**: string
 
 Flags passed to the restic command line
 
@@ -187,6 +190,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
+* **schedule-syslog**: string
 
 Flags passed to the restic command line
 
@@ -204,6 +208,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
+* **schedule-syslog**: string
 
 `[profile.mount]`
 
@@ -228,6 +233,7 @@ Flags used by resticprofile only
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
+* **schedule-syslog**: string
 
 Flags passed to the restic command line
 
