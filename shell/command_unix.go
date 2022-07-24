@@ -1,4 +1,4 @@
-//+build !windows
+//go:build !windows
 
 package shell
 
@@ -27,5 +27,15 @@ func (c *Command) propagateGroupSignal(process *os.Process) {
 		return
 	case <-c.done:
 		return
+	}
+}
+
+// getShellSearchList returns a priority sorted list of default shells to pick when none was specified
+func (c *Command) getShellSearchList() []string {
+	return []string{
+		// prefer "bash" if available as it has better signal propagation (sh may fail to forward signals)
+		bashShell,
+		// fallback to "sh"
+		defaultShell,
 	}
 }

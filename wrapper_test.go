@@ -221,11 +221,8 @@ func TestEnvProfileName(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "TestEnvProfileName")
-	if runtime.GOOS == "windows" {
-		profile.RunBefore = []string{"echo profile name = %PROFILE_NAME%"}
-	} else {
-		profile.RunBefore = []string{"echo profile name = $PROFILE_NAME"}
-	}
+	profile.RunBefore = []string{"echo profile name = $PROFILE_NAME"}
+
 	wrapper := newResticWrapper(nil, "echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
@@ -236,11 +233,8 @@ func TestEnvProfileCommand(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
-	if runtime.GOOS == "windows" {
-		profile.RunBefore = []string{"echo profile command = %PROFILE_COMMAND%"}
-	} else {
-		profile.RunBefore = []string{"echo profile command = $PROFILE_COMMAND"}
-	}
+	profile.RunBefore = []string{"echo profile command = $PROFILE_COMMAND"}
+
 	wrapper := newResticWrapper(nil, "echo", false, profile, "test-command", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
@@ -251,11 +245,8 @@ func TestEnvError(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
-	if runtime.GOOS == "windows" {
-		profile.RunAfterFail = []string{"echo error: %ERROR%"}
-	} else {
-		profile.RunAfterFail = []string{"echo error: $ERROR"}
-	}
+	profile.RunAfterFail = []string{"echo error: $ERROR_MESSAGE"}
+
 	wrapper := newResticWrapper(nil, "exit", false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
@@ -266,11 +257,8 @@ func TestEnvErrorCommandLine(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
-	if runtime.GOOS == "windows" {
-		profile.RunAfterFail = []string{"echo cmd: %ERROR_COMMANDLINE%"}
-	} else {
-		profile.RunAfterFail = []string{"echo cmd: $ERROR_COMMANDLINE"}
-	}
+	profile.RunAfterFail = []string{"echo cmd: $ERROR_COMMANDLINE"}
+
 	wrapper := newResticWrapper(nil, "exit", false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
@@ -281,11 +269,8 @@ func TestEnvErrorExitCode(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
-	if runtime.GOOS == "windows" {
-		profile.RunAfterFail = []string{"echo exit-code: %ERROR_EXIT_CODE%"}
-	} else {
-		profile.RunAfterFail = []string{"echo exit-code: $ERROR_EXIT_CODE"}
-	}
+	profile.RunAfterFail = []string{"echo exit-code: $ERROR_EXIT_CODE"}
+
 	wrapper := newResticWrapper(nil, "exit", false, profile, "5", nil, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
@@ -296,15 +281,12 @@ func TestEnvStderr(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
-	if runtime.GOOS == "windows" {
-		profile.RunAfterFail = []string{"echo stderr: %ERROR_STDERR%"}
-	} else {
-		profile.RunAfterFail = []string{"echo stderr: $ERROR_STDERR"}
-	}
+	profile.RunAfterFail = []string{"echo stderr: $ERROR_STDERR"}
+
 	wrapper := newResticWrapper(nil, mockBinary, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "stderr: error_message\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+	assert.Equal(t, "stderr: error_message", strings.TrimSpace(strings.ReplaceAll(buffer.String(), "\r\n", "\n")))
 }
 
 func TestRunProfileWithSetPIDCallback(t *testing.T) {
@@ -589,9 +571,6 @@ func TestRunStreamErrorHandler(t *testing.T) {
 	term.SetOutput(buffer)
 
 	errorCommand := `echo "detected error in $PROFILE_COMMAND"`
-	if runtime.GOOS == "windows" {
-		errorCommand = `echo "detected error in %PROFILE_COMMAND%"`
-	}
 
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{}
@@ -881,7 +860,7 @@ func TestGetFailEnvironmentWithStandardError(t *testing.T) {
 	require.NotNil(t, wrapper)
 
 	env := wrapper.getFailEnvironment(errors.New("test error message 3"))
-	assert.ElementsMatch(t, []string{"ERROR=test error message 3"}, env)
+	assert.ElementsMatch(t, []string{"ERROR=test error message 3", "ERROR_MESSAGE=test error message 3"}, env)
 }
 
 func TestGetFailEnvironmentWithCommandError(t *testing.T) {
@@ -897,11 +876,19 @@ func TestGetFailEnvironmentWithCommandError(t *testing.T) {
 	env := wrapper.getFailEnvironment(newCommandError(def, "stderr", errors.New("test error message 4")))
 	assert.ElementsMatch(t, []string{
 		"ERROR=test error message 4",
+		"ERROR_MESSAGE=test error message 4",
 		"ERROR_COMMANDLINE=\"command\" \"publicArg1\"",
 		"ERROR_EXIT_CODE=-1",
 		"ERROR_STDERR=stderr",
 		"RESTIC_STDERR=stderr",
 	}, env)
+}
+
+func popUntilPrefix(prefix string, log *clog.MemoryHandler) (line string) {
+	for !strings.HasPrefix(line, prefix) && len(log.Logs()) > 0 {
+		line = log.Pop()
+	}
+	return
 }
 
 func TestRunInitCopyCommand(t *testing.T) {
@@ -954,15 +941,14 @@ func TestRunInitCopyCommand(t *testing.T) {
 			err := wrapper.runInitializeCopy()
 			require.NoError(t, err)
 
-			assert.Equal(t, testCase.expectedInit, mem.Pop())
+			assert.Equal(t, testCase.expectedInit, popUntilPrefix("dry-run:", mem))
 
 			// 2. run copy command
 			err = wrapper.runCommand(constants.CommandCopy)
 			require.NoError(t, err)
 
 			// the latest message is saying the profile is finished
-			mem.Pop()
-			assert.Equal(t, testCase.expectedCopy, mem.Pop())
+			assert.Equal(t, testCase.expectedCopy, popUntilPrefix("dry-run:", mem))
 		})
 	}
 }

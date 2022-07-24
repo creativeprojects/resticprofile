@@ -18,6 +18,7 @@ type Global struct {
 	ResticBinary         string        `mapstructure:"restic-binary"`
 	ResticLockRetryAfter time.Duration `mapstructure:"restic-lock-retry-after"`
 	ResticStaleLockAge   time.Duration `mapstructure:"restic-stale-lock-age"`
+	ShellBinary          []string      `mapstructure:"shell"`
 	MinMemory            uint64        `mapstructure:"min-memory"`
 	Scheduler            string        `mapstructure:"scheduler"`
 	LegacyArguments      bool          `mapstructure:"legacy-arguments"` // broken arguments mode (before v0.15.0)

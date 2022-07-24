@@ -17,6 +17,7 @@ type shellCommandDefinition struct {
 	args        []string
 	publicArgs  []string
 	env         []string
+	shell       []string
 	stdin       io.ReadCloser
 	stdout      io.Writer
 	stderr      io.Writer
@@ -28,7 +29,7 @@ type shellCommandDefinition struct {
 }
 
 // newShellCommand creates a new shell command definition
-func newShellCommand(command string, args, env []string, dryRun bool, sigChan chan os.Signal, setPID func(pid int)) shellCommandDefinition {
+func newShellCommand(command string, args, env, shell []string, dryRun bool, sigChan chan os.Signal, setPID func(pid int)) shellCommandDefinition {
 	if env == nil {
 		env = make([]string, 0)
 	}
@@ -37,6 +38,7 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 		args:       args,
 		publicArgs: args,
 		env:        env,
+		shell:      shell,
 		stdin:      nil,
 		stdout:     os.Stdout,
 		stderr:     os.Stderr,
@@ -50,13 +52,24 @@ func newShellCommand(command string, args, env []string, dryRun bool, sigChan ch
 func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, stderr string, err error) {
 	if command.dryRun {
 		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
-		return
 	}
 
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
 
+	shellCmd.Shell = command.shell
 	shellCmd.Stdout = command.stdout
 	shellCmd.Stderr = command.stderr
+
+	if command.dryRun {
+		shellBinary, args, commandErr := shellCmd.GetShellCommand()
+		if commandErr != nil {
+			clog.Warningf("command error: %s", commandErr.Error())
+		} else {
+			// The following line may send confidential values to log (combination of --trace --dry-run).
+			clog.Tracef("dry-run shell: %s %s", shellBinary, strings.Join(args, " "))
+		}
+		return
+	}
 
 	if command.stdin != nil {
 		shellCmd.Stdin = command.stdin
@@ -93,6 +106,7 @@ func setupStreamErrorHandlers(command *shellCommandDefinition, shellCmd *shell.C
 		callback := func(line string) error {
 			errorCmd := shell.NewSignalledCommand(commandLine, nil, command.sigChan)
 			errorCmd.Environ = shellCmd.Environ
+			errorCmd.Shell = command.shell
 			errorCmd.Stdout = command.stdout
 			errorCmd.Stderr = command.stderr
 
