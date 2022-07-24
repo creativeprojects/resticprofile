@@ -6,3 +6,6 @@ ignore:
   - logger.go
   - systemd.go
   - update.go
+  - main.go
+  - syslog.go
+  
