@@ -16,8 +16,7 @@ func (r *RemoveOnlyConfig) Command() string                { return "" }
 func (r *RemoveOnlyConfig) Arguments() []string            { return []string{} }
 func (r *RemoveOnlyConfig) Environment() map[string]string { return map[string]string{} }
 func (r *RemoveOnlyConfig) Priority() string               { return "" }
-func (r *RemoveOnlyConfig) Logfile() string                { return "" }
-func (r *RemoveOnlyConfig) Syslog() string                 { return "" }
+func (r *RemoveOnlyConfig) Log() string                    { return "" }
 func (r *RemoveOnlyConfig) Configfile() string             { return "" }
 func (r *RemoveOnlyConfig) GetFlag(string) (string, bool)  { return "", false }
 

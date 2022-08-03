@@ -3,13 +3,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"io"
-	"log"
 	"log/syslog"
-	"net/url"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 type Syslog struct {
@@ -23,6 +22,9 @@ func NewSyslogHandler(writer *syslog.Writer) *Syslog {
 }
 
 func (l *Syslog) LogEntry(entry clog.LogEntry) error {
+	if l.writer == nil {
+		return errors.New("invalid syslog writer")
+	}
 	message := entry.GetMessage()
 	switch entry.Level {
 	case clog.LevelDebug:
@@ -38,30 +40,19 @@ func (l *Syslog) LogEntry(entry clog.LogEntry) error {
 	}
 }
 
-var _ clog.Handler = &Syslog{}
+func (l *Syslog) Close() error {
+	err := l.writer.Close()
+	l.writer = nil
+	return err
+}
 
-func setupSyslogLogger(flags commandLineFlags) (io.Closer, error) {
-	scheme, hostPort, err := getDialAddr(flags.syslog)
-	if err != nil {
-		return nil, err
-	}
-	writer, err := syslog.Dial(scheme, hostPort, syslog.LOG_USER|syslog.LOG_NOTICE, "resticprofile")
+var _ LogCloser = &Syslog{}
+
+func getSyslogHandler(flags commandLineFlags, scheme, hostPort string) (*Syslog, error) {
+	writer, err := syslog.Dial(scheme, hostPort, syslog.LOG_USER|syslog.LOG_NOTICE, constants.ApplicationName)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open syslog logger: %w", err)
 	}
 	handler := NewSyslogHandler(writer)
-	// use the console handler as a backup
-	logger := newFilteredLogger(flags, clog.NewSafeHandler(handler, clog.NewConsoleHandler("", log.LstdFlags)))
-	clog.SetDefaultLogger(logger)
-	return writer, nil
-}
-
-func getDialAddr(source string) (string, string, error) {
-	URL, err := url.Parse(source)
-	if err != nil {
-		return "", "", err
-	}
-	scheme := URL.Scheme
-	hostPort := URL.Host
-	return scheme, hostPort, nil
+	return handler, nil
 }

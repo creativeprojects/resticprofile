@@ -32,8 +32,7 @@ type ScheduleConfig struct {
 	jobDescription   string
 	timerDescription string
 	priority         string
-	logfile          string
-	syslog           string
+	log              string
 	lockMode         string
 	lockWait         time.Duration
 	configfile       string
@@ -104,12 +103,8 @@ func (s *ScheduleConfig) Priority() string {
 	return s.priority
 }
 
-func (s *ScheduleConfig) Logfile() string {
-	return s.logfile
-}
-
-func (s *ScheduleConfig) Syslog() string {
-	return s.syslog
+func (s *ScheduleConfig) Log() string {
+	return s.log
 }
 
 func (s *ScheduleConfig) LockMode() ScheduleLockMode {
@@ -155,8 +150,7 @@ func (s *ScheduleConfig) Export() Schedule {
 		Profiles:   []string{s.profileName},
 		Command:    s.commandName,
 		Permission: s.permission,
-		Logfile:    s.logfile,
-		Syslog:     s.syslog,
+		Log:        s.log,
 		Priority:   s.priority,
 		LockMode:   s.lockMode,
 		LockWait:   s.lockWait,

@@ -14,6 +14,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/dial"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/spf13/afero"
 	"howett.net/plist"
@@ -147,7 +148,11 @@ Do you want to start it now?`
 
 func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, schedules []*calendar.Event) (string, error) {
 	name := getJobName(job.Title(), job.SubTitle())
-	logfile := job.Logfile()
+	logfile := job.Log()
+	// if logfile is a url, we can't use it as a target
+	if dial.IsURL(logfile) {
+		logfile = ""
+	}
 	if logfile == "" {
 		logfile = name + ".log"
 	}

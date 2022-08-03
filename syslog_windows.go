@@ -4,9 +4,8 @@ package main
 
 import (
 	"errors"
-	"io"
 )
 
-func setupSyslogLogger(flags commandLineFlags) (io.Closer, error) {
+func getSyslogHandler(flags commandLineFlags, scheme, hostPort string) (LogCloser, error) {
 	return nil, errors.New("syslog is not supported on Windows")
 }

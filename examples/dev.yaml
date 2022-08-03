@@ -146,7 +146,7 @@ syslog:
         schedule:
           - "*:*"
         schedule-permission: user
-        schedule-syslog: "tcp://localhost:5514"
+        schedule-log: "tcp://localhost:5514"
         {{ template "tags" . }}
 
 prom:

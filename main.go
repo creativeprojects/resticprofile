@@ -16,7 +16,6 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
-	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
@@ -77,7 +76,7 @@ func main() {
 		return
 	}
 
-	// setting up the logger - we can start sending messages right after
+	// setting up the logger - we can start logging right after
 	if flags.isChild {
 		// use a remote logger
 		client := remote.NewClient(flags.parentPort)
@@ -94,28 +93,15 @@ func main() {
 			}(flags.parentPort)
 		}
 
-	} else if flags.logFile != "" {
-		file, err := setupFileLogger(flags)
+	} else if flags.log != "" {
+		handle, err := setupTargetLogger(flags)
 		if err != nil {
 			// back to a console logger
 			setupConsoleLogger(flags)
-			clog.Errorf("cannot open logfile: %s", err)
+			clog.Errorf("cannot open log target: %s", err)
 		} else {
-			// also redirect all terminal output
-			term.SetAllOutput(file)
 			// close the log file at the end
-			defer file.Close()
-		}
-
-	} else if flags.syslog != "" && !platform.IsWindows() {
-		writer, err := setupSyslogLogger(flags)
-		if err != nil {
-			// back to a console logger
-			setupConsoleLogger(flags)
-			clog.Errorf("cannot open syslog: %s", err)
-		} else {
-			// close the writer at the end
-			defer writer.Close()
+			defer handle.Close()
 		}
 
 	} else {

@@ -21,7 +21,7 @@ func TestScheduleProperties(t *testing.T) {
 		environment:      map[string]string{"test": "dev"},
 		jobDescription:   "job",
 		timerDescription: "timer",
-		logfile:          "log.txt",
+		log:              "log.txt",
 		lockMode:         "undefined",
 		lockWait:         1 * time.Minute,
 	}
@@ -38,7 +38,7 @@ func TestScheduleProperties(t *testing.T) {
 	assert.ElementsMatch(t, []string{"1", "2"}, schedule.Arguments())
 	assert.Equal(t, "dev", schedule.Environment()["test"])
 	assert.Equal(t, "background", schedule.Priority()) // default value
-	assert.Equal(t, "log.txt", schedule.Logfile())
+	assert.Equal(t, "log.txt", schedule.Log())
 	assert.Equal(t, ScheduleLockModeDefault, schedule.LockMode())
 	assert.Equal(t, 60*time.Second, schedule.LockWait())
 }

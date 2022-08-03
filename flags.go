@@ -19,8 +19,7 @@ type commandLineFlags struct {
 	config      string
 	format      string
 	name        string
-	logFile     string
-	syslog      string
+	log         string // file path or log url
 	dryRun      bool
 	noLock      bool
 	lockWait    time.Duration
@@ -60,10 +59,8 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.StringVarP(&flags.config, "config", "c", constants.DefaultConfigurationFile, "configuration file")
 	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
-	flagset.StringVarP(&flags.logFile, "log", "l", "", "logs into a file instead of the console")
-	if !platform.IsWindows() {
-		flagset.StringVarP(&flags.syslog, "syslog", "s", "", "logs using syslog server instead of the console (syntax \"udp://localhost:514\")")
-	}
+	flagset.StringVarP(&flags.log, "log", "l", "", "logs to a target instead of the console")
+
 	flagset.BoolVar(&flags.dryRun, "dry-run", false, "display the restic commands instead of running them")
 
 	flagset.BoolVar(&flags.noLock, "no-lock", false, "skip profile lock file")

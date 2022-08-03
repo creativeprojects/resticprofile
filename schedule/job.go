@@ -21,8 +21,7 @@ type JobConfig interface {
 	Arguments() []string
 	Environment() map[string]string
 	Priority() string
-	Logfile() string
-	Syslog() string
+	Log() string
 	Configfile() string
 	GetFlag(string) (string, bool)
 }

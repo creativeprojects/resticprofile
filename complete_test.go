@@ -89,10 +89,6 @@ func TestCompleter(t *testing.T) {
 
 			t.Run("AllWithValues", func(t *testing.T) {
 				flagSet.VisitAll(func(flag *pflag.Flag) {
-					if flag.Hidden || flag.Name == "syslog" {
-						return
-					}
-
 					completions := completer.completeFlagSetValue(flag, "")
 					flagType := flag.Value.Type()
 					if flagType == "bool" || flagType == "duration" {

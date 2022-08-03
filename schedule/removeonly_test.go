@@ -22,7 +22,7 @@ func TestNewRemoveOnlyConfig(t *testing.T) {
 	assert.Empty(t, c.Arguments())
 	assert.Empty(t, c.Environment())
 	assert.Equal(t, "", c.Priority())
-	assert.Equal(t, "", c.Logfile())
+	assert.Equal(t, "", c.Log())
 	assert.Equal(t, "", c.Configfile())
 	{
 		flag, found := c.GetFlag("")
@@ -43,7 +43,7 @@ func TestDetectRemoveOnlyConfig(t *testing.T) {
 
 func TestRemoveOnlyJob(t *testing.T) {
 	profile := "non-existent"
-	scheduler := NewScheduler(&SchedulerDefaultOS{}, profile)
+	scheduler := NewScheduler(NewHandler(&SchedulerDefaultOS{}), profile)
 	defer scheduler.Close()
 
 	config := NewRemoveOnlyConfig(profile, "check")

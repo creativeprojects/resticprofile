@@ -8,11 +8,12 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/dial"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(schedulerType schedule.SchedulerConfig, profileName string, configs []*config.ScheduleConfig) error {
+func scheduleJobs(handler schedule.Handler, profileName string, configs []*config.ScheduleConfig) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -22,7 +23,7 @@ func scheduleJobs(schedulerType schedule.SchedulerConfig, profileName string, co
 		return err
 	}
 
-	scheduler := schedule.NewScheduler(schedulerType, profileName)
+	scheduler := schedule.NewScheduler(handler, profileName)
 	err = scheduler.Init()
 	if err != nil {
 		return err
@@ -38,12 +39,12 @@ func scheduleJobs(schedulerType schedule.SchedulerConfig, profileName string, co
 			scheduleConfig.Title(),
 		}
 
-		if !platform.IsDarwin() && scheduleConfig.Logfile() != "" {
-			args = append(args, "--log", scheduleConfig.Logfile())
-		}
-
-		if !platform.IsWindows() && scheduleConfig.Syslog() != "" {
-			args = append(args, "--syslog", scheduleConfig.Syslog())
+		if scheduleConfig.Log() != "" {
+			// On darwin, we only use --log for non url target
+			// On the other platforms, we send any target to --log
+			if !platform.IsDarwin() || !dial.IsURL(scheduleConfig.Log()) {
+				args = append(args, "--log", scheduleConfig.Log())
+			}
 		}
 
 		if scheduleConfig.LockMode() == config.ScheduleLockModeDefault {
@@ -83,8 +84,8 @@ func convertSchedules(configs []*config.ScheduleConfig) []schedule.JobConfig {
 	return sc
 }
 
-func removeJobs(schedulerType schedule.SchedulerConfig, profileName string, configs []schedule.JobConfig) error {
-	scheduler := schedule.NewScheduler(schedulerType, profileName)
+func removeJobs(handler schedule.Handler, profileName string, configs []schedule.JobConfig) error {
+	scheduler := schedule.NewScheduler(handler, profileName)
 	err := scheduler.Init()
 	if err != nil {
 		return err
@@ -120,8 +121,8 @@ func removeJobs(schedulerType schedule.SchedulerConfig, profileName string, conf
 	return nil
 }
 
-func statusJobs(schedulerType schedule.SchedulerConfig, profileName string, configs []schedule.JobConfig) error {
-	scheduler := schedule.NewScheduler(schedulerType, profileName)
+func statusJobs(handler schedule.Handler, profileName string, configs []schedule.JobConfig) error {
+	scheduler := schedule.NewScheduler(handler, profileName)
 	err := scheduler.Init()
 	if err != nil {
 		return err

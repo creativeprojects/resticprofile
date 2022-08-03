@@ -11,10 +11,10 @@ type Scheduler struct {
 }
 
 // NewScheduler creates a Scheduler object
-func NewScheduler(config SchedulerConfig, profileName string) *Scheduler {
+func NewScheduler(handler Handler, profileName string) *Scheduler {
 	return &Scheduler{
 		profileName: profileName,
-		handler:     NewHandler(config),
+		handler:     handler,
 	}
 }
 

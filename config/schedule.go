@@ -8,8 +8,7 @@ type Schedule struct {
 	Command    string        `mapstructure:"run"`
 	Schedule   []string      `mapstructure:"schedule"`
 	Permission string        `mapstructure:"permission"`
-	Logfile    string        `mapstructure:"logfile"`
-	Syslog     string        `mapstructure:"syslog"`
+	Log        string        `mapstructure:"log"`
 	Priority   string        `mapstructure:"priority"`
 	LockMode   string        `mapstructure:"lock-mode"`
 	LockWait   time.Duration `mapstructure:"lock-wait"`

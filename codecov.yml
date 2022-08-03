@@ -8,4 +8,5 @@ ignore:
   - update.go
   - main.go
   - syslog.go
+  - syslog_windows.go
   

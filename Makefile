@@ -50,6 +50,11 @@ download:
 	@echo "[*] $@"
 	@$(GOMOD) download
 
+mockery:
+	@echo "[*] $@"
+	go install github.com/vektra/mockery/v2@latest
+	mockery --name=Handler --recursive
+
 build: download
 	@echo "[*] $@"
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
@@ -76,11 +81,11 @@ build-windows: download
 
 build-all: build-mac build-linux build-pi build-windows
 
-test: download
+test: download mockery
 	@echo "[*] $@"
 	$(GOTEST) -v $(TESTS)
 
-test-ci: download
+test-ci: download mockery
 	@echo "[*] $@"
 	$(GOTEST) -v -short ./...
 	$(GOTEST) -v ./priority

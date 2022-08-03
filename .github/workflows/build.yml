@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go_version: ['1.17', '1.18']
+        go_version: ['1.18']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -34,6 +34,11 @@ jobs:
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
+
+    - name: Generate mocks
+      run: |
+        go install github.com/vektra/mockery/v2@latest
+        mockery --name=Handler --recursive
 
     - name: Build
       run: go build -v ./...
