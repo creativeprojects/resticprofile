@@ -40,9 +40,9 @@ func scheduleJobs(handler schedule.Handler, profileName string, configs []*confi
 		}
 
 		if scheduleConfig.Log != "" {
-			// On darwin, we only use --log for non url target
+			// On darwin, we only use --log for url target
 			// On the other platforms, we send any target to --log
-			if !platform.IsDarwin() || !dial.IsURL(scheduleConfig.Log) {
+			if !platform.IsDarwin() || dial.IsURL(scheduleConfig.Log) {
 				args = append(args, "--log", scheduleConfig.Log)
 			}
 		}

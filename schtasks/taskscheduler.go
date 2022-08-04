@@ -14,6 +14,7 @@ import (
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rickb777/date/period"
 )
@@ -47,19 +48,6 @@ const (
 	UserAccount Permission = iota
 	SystemAccount
 )
-
-// Config contains all the information needed to schedule a Job
-type Config interface {
-	Title() string
-	SubTitle() string
-	JobDescription() string
-	TimerDescription() string
-	Schedules() []string
-	Permission() string
-	WorkingDirectory() string
-	Command() string
-	Arguments() []string
-}
 
 var (
 	// no need to recreate the service every time
@@ -98,7 +86,7 @@ func Close() {
 }
 
 // Create or update a task (if the name already exists in the Task Scheduler)
-func Create(config Config, schedules []*calendar.Event, permission Permission) error {
+func Create(config *config.ScheduleConfig, schedules []*calendar.Event, permission Permission) error {
 	if !IsConnected() {
 		return ErrorNotConnected
 	}
@@ -110,8 +98,8 @@ func Create(config Config, schedules []*calendar.Event, permission Permission) e
 }
 
 // createUserTask creates a new user task. Will update an existing task instead of overwritting
-func createUserTask(config Config, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title(), config.SubTitle())
+func createUserTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title, config.SubTitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
 		return err
@@ -128,15 +116,15 @@ func createUserTask(config Config, schedules []*calendar.Event) error {
 	task := taskService.NewTaskDefinition()
 
 	task.AddExecAction(
-		config.Command(),
-		strings.Join(config.Arguments(), " "),
-		config.WorkingDirectory(),
+		config.Command,
+		strings.Join(config.Arguments, " "),
+		config.WorkingDirectory,
 		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
 	task.Principal.UserID = username
 	task.RegistrationInfo.Author = "resticprofile"
-	task.RegistrationInfo.Description = config.JobDescription()
+	task.RegistrationInfo.Description = config.JobDescription
 
 	createSchedules(&task, schedules)
 
@@ -157,8 +145,8 @@ func createUserTask(config Config, schedules []*calendar.Event) error {
 }
 
 // updateUserTask updates an existing task
-func updateUserTask(task *taskmaster.RegisteredTask, config Config, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title(), config.SubTitle())
+func updateUserTask(task *taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title, config.SubTitle)
 
 	username, password, err := userCredentials()
 	if err != nil {
@@ -168,9 +156,9 @@ func updateUserTask(task *taskmaster.RegisteredTask, config Config, schedules []
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
 	task.Definition.AddExecAction(
-		config.Command(),
-		strings.Join(config.Arguments(), " "),
-		config.WorkingDirectory(),
+		config.Command,
+		strings.Join(config.Arguments, " "),
+		config.WorkingDirectory,
 		"")
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
@@ -214,8 +202,8 @@ func userCredentials() (string, string, error) {
 }
 
 // createSystemTask creates a new system task. Will update an existing task instead of overwritting
-func createSystemTask(config Config, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title(), config.SubTitle())
+func createSystemTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title, config.SubTitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
 		return err
@@ -226,15 +214,15 @@ func createSystemTask(config Config, schedules []*calendar.Event) error {
 
 	task := taskService.NewTaskDefinition()
 	task.AddExecAction(
-		config.Command(),
-		strings.Join(config.Arguments(), " "),
-		config.WorkingDirectory(),
+		config.Command,
+		strings.Join(config.Arguments, " "),
+		config.WorkingDirectory,
 		"")
 	task.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
 	task.Principal.UserID = "SYSTEM"
 	task.RegistrationInfo.Author = "resticprofile"
-	task.RegistrationInfo.Description = config.JobDescription()
+	task.RegistrationInfo.Description = config.JobDescription
 
 	createSchedules(&task, schedules)
 
@@ -249,15 +237,15 @@ func createSystemTask(config Config, schedules []*calendar.Event) error {
 }
 
 // updateSystemTask updates an existing task
-func updateSystemTask(task *taskmaster.RegisteredTask, config Config, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title(), config.SubTitle())
+func updateSystemTask(task *taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title, config.SubTitle)
 
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
 	task.Definition.AddExecAction(
-		config.Command(),
-		strings.Join(config.Arguments(), " "),
-		config.WorkingDirectory(),
+		config.Command,
+		strings.Join(config.Arguments, " "),
+		config.WorkingDirectory,
 		"")
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST

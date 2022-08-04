@@ -60,7 +60,7 @@ eget:
 mockery: eget
 	@echo "[*] $@"
 	go install github.com/vektra/mockery/v2@latest
-	mockery --name=Handler --recursive
+	mockery --name=Handler --dir schedule --recursive
 
 build: download
 	@echo "[*] $@"
