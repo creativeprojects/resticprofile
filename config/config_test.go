@@ -464,7 +464,7 @@ profile:
 	require.NoError(t, err)
 	assert.Len(t, schedules, 1)
 
-	assert.Equal(t, []string{"daily"}, schedules[0].Schedules())
+	assert.Equal(t, []string{"daily"}, schedules[0].Schedules)
 }
 
 func TestRegressionInheritanceListMerging(t *testing.T) {

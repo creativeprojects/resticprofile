@@ -46,11 +46,18 @@ TOC_PATH=toc.md
 all: download test build
 .PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk passphrase rest-server nightly toc release-snapshot generate-install
 
+.PHONY: download
 download:
 	@echo "[*] $@"
 	@$(GOMOD) download
 
-mockery:
+.PHONY: eget
+eget:
+	@echo "[*] $@"
+	go install -v github.com/zyedidia/eget@latest
+
+.PHONY: mockery
+mockery: eget
 	@echo "[*] $@"
 	go install github.com/vektra/mockery/v2@latest
 	mockery --name=Handler --recursive

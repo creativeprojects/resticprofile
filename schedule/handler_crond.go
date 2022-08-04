@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/crond"
 )
 
@@ -52,16 +53,16 @@ func (h *HandlerCrond) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the crontab
-func (h *HandlerCrond) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
+func (h *HandlerCrond) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
 	entries := make([]crond.Entry, len(schedules))
 	for i, event := range schedules {
 		entries[i] = crond.NewEntry(
 			event,
-			job.Configfile(),
-			job.Title(),
-			job.SubTitle(),
-			job.Command()+" "+strings.Join(job.Arguments(), " "),
-			job.WorkingDirectory(),
+			job.ConfigFile,
+			job.Title,
+			job.SubTitle,
+			job.Command+" "+strings.Join(job.Arguments, " "),
+			job.WorkingDirectory,
 		)
 	}
 	crontab := crond.NewCrontab(entries)
@@ -72,15 +73,15 @@ func (h *HandlerCrond) CreateJob(job JobConfig, schedules []*calendar.Event, per
 	return nil
 }
 
-func (h *HandlerCrond) RemoveJob(job JobConfig, permission string) error {
+func (h *HandlerCrond) RemoveJob(job *config.ScheduleConfig, permission string) error {
 	entries := []crond.Entry{
 		crond.NewEntry(
 			calendar.NewEvent(),
-			job.Configfile(),
-			job.Title(),
-			job.SubTitle(),
-			job.Command()+" "+strings.Join(job.Arguments(), " "),
-			job.WorkingDirectory(),
+			job.ConfigFile,
+			job.Title,
+			job.SubTitle,
+			job.Command+" "+strings.Join(job.Arguments, " "),
+			job.WorkingDirectory,
 		),
 	}
 	crontab := crond.NewCrontab(entries)
@@ -95,7 +96,7 @@ func (h *HandlerCrond) RemoveJob(job JobConfig, permission string) error {
 }
 
 // DisplayJobStatus has nothing to display (crond doesn't provide running information)
-func (h *HandlerCrond) DisplayJobStatus(job JobConfig) error {
+func (h *HandlerCrond) DisplayJobStatus(job *config.ScheduleConfig) error {
 	return nil
 }
 

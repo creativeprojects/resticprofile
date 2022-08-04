@@ -24,7 +24,7 @@ func TestScheduleEmptyJob(t *testing.T) {
 	handler.On("Close")
 	handler.On("ParseSchedules", []string(nil)).Return(nil, nil)
 	handler.On("DisplaySchedules", "", []string(nil)).Return(nil)
-	handler.On("CreateJob", mock.AnythingOfType("*config.ScheduleConfig"), mock.AnythingOfType("[]*calendar.Event"), "user").Return(nil)
+	handler.On("CreateJob", mock.AnythingOfType("*config.ScheduleConfig"), mock.AnythingOfType("[]*calendar.Event"), mock.AnythingOfType("string")).Return(nil)
 
 	scheduleConfig := &config.ScheduleConfig{}
 	err := scheduleJobs(handler, "profile", []*config.ScheduleConfig{scheduleConfig})

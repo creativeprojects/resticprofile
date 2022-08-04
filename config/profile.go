@@ -557,16 +557,16 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			}
 
 			config := &ScheduleConfig{
-				profileName: p.Name,
-				commandName: name,
-				schedules:   s.Schedule,
-				permission:  s.SchedulePermission,
-				environment: env,
-				log:         s.ScheduleLog,
-				lockMode:    s.ScheduleLockMode,
-				lockWait:    s.ScheduleLockWait,
-				priority:    s.SchedulePriority,
-				configfile:  p.config.configFile,
+				Title:       p.Name,
+				SubTitle:    name,
+				Schedules:   s.Schedule,
+				Permission:  s.SchedulePermission,
+				Environment: env,
+				Log:         s.ScheduleLog,
+				LockMode:    s.ScheduleLockMode,
+				LockWait:    s.ScheduleLockWait,
+				Priority:    s.SchedulePriority,
+				ConfigFile:  p.config.configFile,
 			}
 
 			configs = append(configs, config)

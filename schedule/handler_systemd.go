@@ -11,6 +11,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/creativeprojects/resticprofile/term"
@@ -96,22 +97,22 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the systemd unit and activating it
-func (h *HandlerSystemd) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
+func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
 		unitType = systemd.SystemUnit
 	}
 	err := systemd.Generate(systemd.Config{
-		CommandLine:      job.Command() + " --no-prio " + strings.Join(job.Arguments(), " "),
-		WorkingDirectory: job.WorkingDirectory(),
-		Title:            job.Title(),
-		SubTitle:         job.SubTitle(),
-		JobDescription:   job.JobDescription(),
-		TimerDescription: job.TimerDescription(),
-		Schedules:        job.Schedules(),
+		CommandLine:      job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
+		WorkingDirectory: job.WorkingDirectory,
+		Title:            job.Title,
+		SubTitle:         job.SubTitle,
+		JobDescription:   job.JobDescription,
+		TimerDescription: job.TimerDescription,
+		Schedules:        job.Schedules,
 		UnitType:         unitType,
-		Priority:         job.Priority(),
+		Priority:         job.GetPriority(),
 		UnitFile:         h.config.UnitTemplate,
 		TimerFile:        h.config.TimerTemplate,
 	})
@@ -130,7 +131,7 @@ func (h *HandlerSystemd) CreateJob(job JobConfig, schedules []*calendar.Event, p
 		}
 	}
 
-	timerName := systemd.GetTimerFile(job.Title(), job.SubTitle())
+	timerName := systemd.GetTimerFile(job.Title, job.SubTitle)
 
 	// enable the job
 	err = runSystemctlCommand(timerName, systemctlEnable, unitType, false)
@@ -153,25 +154,23 @@ func (h *HandlerSystemd) CreateJob(job JobConfig, schedules []*calendar.Event, p
 }
 
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
-func (h *HandlerSystemd) RemoveJob(job JobConfig, permission string) error {
-	removeOnly := isRemoveOnlyConfig(job)
-
+func (h *HandlerSystemd) RemoveJob(job *config.ScheduleConfig, permission string) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
 		unitType = systemd.SystemUnit
 	}
 	var err error
-	timerFile := systemd.GetTimerFile(job.Title(), job.SubTitle())
+	timerFile := systemd.GetTimerFile(job.Title, job.SubTitle)
 
 	// stop the job
-	err = runSystemctlCommand(timerFile, systemctlStop, unitType, removeOnly)
+	err = runSystemctlCommand(timerFile, systemctlStop, unitType, job.RemoveOnly)
 	if err != nil {
 		return err
 	}
 
 	// disable the job
-	err = runSystemctlCommand(timerFile, systemctlDisable, unitType, removeOnly)
+	err = runSystemctlCommand(timerFile, systemctlDisable, unitType, job.RemoveOnly)
 	if err != nil {
 		return err
 	}
@@ -189,7 +188,7 @@ func (h *HandlerSystemd) RemoveJob(job JobConfig, permission string) error {
 		return nil
 	}
 
-	serviceFile := systemd.GetServiceFile(job.Title(), job.SubTitle())
+	serviceFile := systemd.GetServiceFile(job.Title, job.SubTitle)
 	err = os.Remove(path.Join(systemdPath, serviceFile))
 	if err != nil {
 		return nil
@@ -199,9 +198,9 @@ func (h *HandlerSystemd) RemoveJob(job JobConfig, permission string) error {
 }
 
 // DisplayJobStatus displays information of a systemd service/timer
-func (h *HandlerSystemd) DisplayJobStatus(job JobConfig) error {
-	timerName := systemd.GetTimerFile(job.Title(), job.SubTitle())
-	permission := getSchedulePermission(job.Permission())
+func (h *HandlerSystemd) DisplayJobStatus(job *config.ScheduleConfig) error {
+	timerName := systemd.GetTimerFile(job.Title, job.SubTitle)
+	permission := getSchedulePermission(job.Permission)
 	if permission == constants.SchedulePermissionSystem {
 		err := runJournalCtlCommand(timerName, systemd.SystemUnit)
 		if err != nil {
