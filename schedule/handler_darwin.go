@@ -105,7 +105,7 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 
 // CreateJob creates a plist file and registers it with launchd
 func (h *HandlerLaunchd) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
-	filename, err := h.createPlistFile(job, permission, schedules)
+	filename, err := h.createPlistFile(h.getLaunchdJob(job, schedules), permission)
 	if err != nil {
 		if filename != "" {
 			os.Remove(filename)
@@ -147,7 +147,7 @@ Do you want to start it now?`
 	return nil
 }
 
-func (h *HandlerLaunchd) createPlistFile(job *config.ScheduleConfig, permission string, schedules []*calendar.Event) (string, error) {
+func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*calendar.Event) *LaunchdJob {
 	name := getJobName(job.Title, job.SubTitle)
 	logfile := job.Log
 	// if logfile is a url, we can't use it as a target
@@ -184,8 +184,11 @@ func (h *HandlerLaunchd) createPlistFile(job *config.ScheduleConfig, permission 
 		ProcessType:           priorityValues[job.GetPriority()],
 		LowPriorityIO:         lowPriorityIO,
 	}
+	return launchdJob
+}
 
-	filename, err := getFilename(name, permission)
+func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission string) (string, error) {
+	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
 		return "", err
 	}
