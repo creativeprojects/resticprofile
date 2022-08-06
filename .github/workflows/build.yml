@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go_version: ['1.18']
+        go_version: ['1.18', '1.19']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -32,7 +32,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Generate mocks
-      run: make mockery
+      run: make mocks
 
     - name: Build
       run: make build

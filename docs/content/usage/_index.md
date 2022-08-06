@@ -74,13 +74,12 @@ resticprofile flags:
   -f, --format string        file format of the configuration (default is to use the file extension)
   -h, --help                 display this help
       --lock-wait duration   wait up to duration to acquire a lock (syntax "1h5m30s")
-  -l, --log string           logs into a file instead of the console
+  -l, --log string           logs to a target instead of the console
   -n, --name string          profile name (default "default")
       --no-ansi              disable ansi control characters (disable console colouring)
       --no-lock              skip profile lock file
       --no-prio              don't set any priority on load: used when started from a service that has already set the priority
   -q, --quiet                display only warnings and errors
-  -s, --syslog string        logs using syslog server instead of the console (syntax "udp://localhost:514")
       --theme string         console colouring theme (dark, light, none) (default "light")
       --trace                display even more debugging information
   -v, --verbose              display some debugging information
@@ -120,8 +119,7 @@ There are not many options on the command line, most of the options are in the c
 * **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
 light or dark terminal (none to disable colouring)
 * **[--lock-wait] duration**: Retry to acquire resticprofile and restic locks for up to the specified amount of time before failing on a lock failure. 
-* **[-l | --log] log_file**: To write the logs in file instead of displaying on the console
-* **[-s | --syslog] server_url**: To send the logs to a syslog server instead of displaying on the console. The format of the server url is `tcp://192.168.0.1:514` or `udp://localhost:514`
+* **[-l | --log] file path or url**: To write the logs to a file or a syslog server instead of displaying on the console. The format of the server url is `tcp://192.168.0.1:514` or `udp://localhost:514`
 * **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
 * **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line

@@ -9,7 +9,12 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOTOOL=$(GOCMD) tool
 GOMOD=$(GOCMD) mod
-GOPATH?=`$(GOCMD) env GOPATH`
+GOPATH=$(shell $(GOCMD) env GOPATH)
+GOBIN=$(shell $(GOCMD) env GOBIN)
+
+ifeq ($(GOBIN),)
+	GOBIN := $(GOPATH)/bin
+endif
 
 BINARY=resticprofile
 BINARY_DARWIN=$(BINARY)_darwin
@@ -44,23 +49,24 @@ TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
 all: download test build
-.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk passphrase rest-server nightly toc release-snapshot generate-install
+.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc release-snapshot generate-install
 
-.PHONY: download
-download:
-	@echo "[*] $@"
-	@$(GOMOD) download
-
-.PHONY: eget
-eget:
+$(GOBIN)/eget:
 	@echo "[*] $@"
 	go install -v github.com/zyedidia/eget@latest
 
-.PHONY: mockery
-mockery: eget
+$(GOBIN)/mockery: $(GOBIN)/eget
 	@echo "[*] $@"
-	go install github.com/vektra/mockery/v2@latest
+	eget vektra/mockery --to $(GOBIN)
+
+.PHONY: mocks
+mocks: $(GOBIN)/mockery
+	@echo "[*] $@"
 	mockery --name=Handler --dir schedule --recursive
+
+download:
+	@echo "[*] $@"
+	@$(GOMOD) download
 
 build: download
 	@echo "[*] $@"
@@ -88,11 +94,11 @@ build-windows: download
 
 build-all: build-mac build-linux build-pi build-windows
 
-test: download mockery
+test: download mocks
 	@echo "[*] $@"
 	$(GOTEST) -v $(TESTS)
 
-test-ci: download mockery
+test-ci: download mocks
 	@echo "[*] $@"
 	$(GOTEST) -v -short ./...
 	$(GOTEST) -v ./priority

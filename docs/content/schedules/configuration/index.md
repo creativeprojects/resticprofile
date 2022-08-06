@@ -105,14 +105,9 @@ Sets the amount of time to wait for a resticprofile and restic lock to become av
 
 ### schedule-log
 
-Allow to redirect all output from resticprofile and restic to a file
-
-### schedule-syslog
-
-Redirects all resticprofile log entries to the syslog server passed in argument. Argument is like:
-
-- `--syslog "udp://localhost:514"`
-- `--syslog "tcp://localhost:514"`
+`schedule-log` can be used in two ways:
+- Allow to redirect all output from resticprofile **and restic** to a file. The parameter should point to a file (`/path/to/file`)
+- Redirects all resticprofile log entries to the syslog server. In that case the parameter is a URL like: `udp://server:514` or `tcp://127.0.0.1:514`
 
 If there's no server answering on the port specified, resticprofile will send the logs to the default output instead.
 
