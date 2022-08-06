@@ -21,11 +21,7 @@ func TestScheduleNilJobs(t *testing.T) {
 }
 
 func TestArgumentsOnScheduleJobNoLog(t *testing.T) {
-	handler := mocks.NewHandler(t)
-	handler.On("Init").Return(nil)
-	handler.On("Close")
-	handler.On("ParseSchedules", []string(nil)).Return(nil, nil)
-	handler.On("DisplaySchedules", "backup", []string(nil)).Return(nil)
+	handler := getMockHandler(t)
 	handler.On("CreateJob",
 		mock.AnythingOfType("*config.ScheduleConfig"),
 		mock.AnythingOfType("[]*calendar.Event"),
@@ -44,11 +40,7 @@ func TestArgumentsOnScheduleJobNoLog(t *testing.T) {
 }
 
 func TestArgumentsOnScheduleJobLogFile(t *testing.T) {
-	handler := mocks.NewHandler(t)
-	handler.On("Init").Return(nil)
-	handler.On("Close")
-	handler.On("ParseSchedules", []string(nil)).Return(nil, nil)
-	handler.On("DisplaySchedules", "backup", []string(nil)).Return(nil)
+	handler := getMockHandler(t)
 	handler.On("CreateJob",
 		mock.AnythingOfType("*config.ScheduleConfig"),
 		mock.AnythingOfType("[]*calendar.Event"),
@@ -76,11 +68,7 @@ func TestArgumentsOnScheduleJobLogSyslog(t *testing.T) {
 	if !platform.SupportsSyslog() {
 		t.Skip("syslog is not supported")
 	}
-	handler := mocks.NewHandler(t)
-	handler.On("Init").Return(nil)
-	handler.On("Close")
-	handler.On("ParseSchedules", []string(nil)).Return(nil, nil)
-	handler.On("DisplaySchedules", "backup", []string(nil)).Return(nil)
+	handler := getMockHandler(t)
 	handler.On("CreateJob",
 		mock.AnythingOfType("*config.ScheduleConfig"),
 		mock.AnythingOfType("[]*calendar.Event"),
@@ -97,4 +85,14 @@ func TestArgumentsOnScheduleJobLogSyslog(t *testing.T) {
 	}
 	err := scheduleJobs(handler, "profile", []*config.ScheduleConfig{scheduleConfig})
 	assert.NoError(t, err)
+}
+
+func getMockHandler(t *testing.T) *mocks.Handler {
+	t.Helper()
+	handler := mocks.NewHandler(t)
+	handler.On("Init").Return(nil)
+	handler.On("Close")
+	handler.On("ParseSchedules", []string(nil)).Return(nil, nil)
+	handler.On("DisplaySchedules", "backup", []string(nil)).Return(nil)
+	return handler
 }
