@@ -7,7 +7,7 @@ on:
       - 'docs/**'
 
   pull_request:
-    branches: [ master ]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
 
@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go_version: ['1.17', '1.18']
+        go_version: ['1.18', '1.19']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -42,5 +42,34 @@ jobs:
       run: "go test -v -race -short -coverprofile='coverage.out' ./..."
       shell: bash
 
-    - name: Code coverage
+    - name: Code coverage with codecov
       uses: codecov/codecov-action@v2
+
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-coverage-report-${{ matrix.os }}
+        path: coverage.out
+
+  sonarCloudTrigger:
+    needs: build
+    name: SonarCloud Trigger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      - name: Download code coverage results
+        uses: actions/download-artifact@v3
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Analyze with SonarCloud
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
