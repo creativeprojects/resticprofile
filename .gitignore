@@ -27,6 +27,8 @@
 
 # test output
 /coverage.out
+# mocks
+/mocks
 
 # log files
 /*.log

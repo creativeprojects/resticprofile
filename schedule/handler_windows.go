@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
 )
@@ -53,7 +54,7 @@ func (h *HandlerWindows) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the task scheduler job.
-func (h *HandlerWindows) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
+func (h *HandlerWindows) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
 	// default permission will be system
 	perm := schtasks.SystemAccount
 	if permission == constants.SchedulePermissionUser {
@@ -67,8 +68,8 @@ func (h *HandlerWindows) CreateJob(job JobConfig, schedules []*calendar.Event, p
 }
 
 // RemoveJob is deleting the task scheduler job
-func (h *HandlerWindows) RemoveJob(job JobConfig, permission string) error {
-	err := schtasks.Delete(job.Title(), job.SubTitle())
+func (h *HandlerWindows) RemoveJob(job *config.ScheduleConfig, permission string) error {
+	err := schtasks.Delete(job.Title, job.SubTitle)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrorNotRegistered) {
 			return ErrorServiceNotFound
@@ -79,8 +80,8 @@ func (h *HandlerWindows) RemoveJob(job JobConfig, permission string) error {
 }
 
 // DisplayStatus display some information about the task scheduler job
-func (h *HandlerWindows) DisplayJobStatus(job JobConfig) error {
-	err := schtasks.Status(job.Title(), job.SubTitle())
+func (h *HandlerWindows) DisplayJobStatus(job *config.ScheduleConfig) error {
+	err := schtasks.Status(job.Title, job.SubTitle)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrorNotRegistered) {
 			return ErrorServiceNotFound

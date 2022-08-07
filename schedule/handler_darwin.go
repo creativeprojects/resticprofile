@@ -13,7 +13,9 @@ import (
 	"text/tabwriter"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/dial"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/spf13/afero"
 	"howett.net/plist"
@@ -102,8 +104,8 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob creates a plist file and registers it with launchd
-func (h *HandlerLaunchd) CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error {
-	filename, err := h.createPlistFile(job, permission, schedules)
+func (h *HandlerLaunchd) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+	filename, err := h.createPlistFile(h.getLaunchdJob(job, schedules), permission)
 	if err != nil {
 		if filename != "" {
 			os.Remove(filename)
@@ -122,7 +124,7 @@ func (h *HandlerLaunchd) CreateJob(job JobConfig, schedules []*calendar.Event, p
 
 	if _, noStart := job.GetFlag("no-start"); !noStart {
 		// ask the user if he wants to start the service now
-		name := getJobName(job.Title(), job.SubTitle())
+		name := getJobName(job.Title, job.SubTitle)
 		message := `
 By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
 You have to start it manually the first time to accept the requests for access:
@@ -145,9 +147,13 @@ Do you want to start it now?`
 	return nil
 }
 
-func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, schedules []*calendar.Event) (string, error) {
-	name := getJobName(job.Title(), job.SubTitle())
-	logfile := job.Logfile()
+func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*calendar.Event) *LaunchdJob {
+	name := getJobName(job.Title, job.SubTitle)
+	logfile := job.Log
+	// if logfile is a url, we can't use it as a target
+	if dial.IsURL(logfile) {
+		logfile = ""
+	}
 	if logfile == "" {
 		logfile = name + ".log"
 	}
@@ -160,26 +166,29 @@ func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, sched
 
 	lowPriorityIO := true
 	nice := constants.DefaultBackgroundNiceFlag
-	if job.Priority() == constants.SchedulePriorityStandard {
+	if job.GetPriority() == constants.SchedulePriorityStandard {
 		lowPriorityIO = false
 		nice = constants.DefaultStandardNiceFlag
 	}
 
 	launchdJob := &LaunchdJob{
 		Label:                 name,
-		Program:               job.Command(),
-		ProgramArguments:      append([]string{job.Command(), "--no-prio"}, job.Arguments()...),
+		Program:               job.Command,
+		ProgramArguments:      append([]string{job.Command, "--no-prio"}, job.Arguments...),
 		StandardOutPath:       logfile,
 		StandardErrorPath:     logfile,
-		WorkingDirectory:      job.WorkingDirectory(),
+		WorkingDirectory:      job.WorkingDirectory,
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
 		EnvironmentVariables:  env,
 		Nice:                  nice,
-		ProcessType:           priorityValues[job.Priority()],
+		ProcessType:           priorityValues[job.GetPriority()],
 		LowPriorityIO:         lowPriorityIO,
 	}
+	return launchdJob
+}
 
-	filename, err := getFilename(name, permission)
+func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission string) (string, error) {
+	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
 		return "", err
 	}
@@ -199,8 +208,8 @@ func (h *HandlerLaunchd) createPlistFile(job JobConfig, permission string, sched
 }
 
 // removeJob stops and unloads the agent from launchd, then removes the configuration file
-func (h *HandlerLaunchd) RemoveJob(job JobConfig, permission string) error {
-	name := getJobName(job.Title(), job.SubTitle())
+func (h *HandlerLaunchd) RemoveJob(job *config.ScheduleConfig, permission string) error {
+	name := getJobName(job.Title, job.SubTitle)
 	filename, err := getFilename(name, permission)
 	if err != nil {
 		return err
@@ -232,13 +241,13 @@ func (h *HandlerLaunchd) RemoveJob(job JobConfig, permission string) error {
 	return nil
 }
 
-func (h *HandlerLaunchd) DisplayJobStatus(job JobConfig) error {
-	permission := getSchedulePermission(job.Permission())
+func (h *HandlerLaunchd) DisplayJobStatus(job *config.ScheduleConfig) error {
+	permission := getSchedulePermission(job.Permission)
 	ok := checkPermission(permission)
 	if !ok {
 		return permissionError("view")
 	}
-	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.Title(), job.SubTitle()))
+	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.Title, job.SubTitle))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
 		return ErrorServiceNotFound

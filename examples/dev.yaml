@@ -132,6 +132,23 @@ self:
         schedule:
           - "*:45"
 
+syslog:
+    force-inactive-lock: true
+    initialize: true
+    inherit: default
+
+    backup:
+        verbose: true
+        no-error-on-warning: true
+        source: {{ .CurrentDir }}
+        exclude:
+          - "/**/.git/"
+        schedule:
+          - "*:*"
+        schedule-permission: user
+        schedule-log: "tcp://localhost:5514"
+        {{ template "tags" . }}
+
 prom:
     force-inactive-lock: true
     initialize: true

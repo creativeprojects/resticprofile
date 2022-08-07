@@ -566,9 +566,9 @@ initialize = true
 
 		config := profile.Schedules()
 		assert.Len(config, 1)
-		assert.Equal(config[0].commandName, command)
-		assert.Len(config[0].schedules, 1)
-		assert.Equal(config[0].schedules[0], "@hourly")
+		assert.Equal(config[0].SubTitle, command)
+		assert.Len(config[0].Schedules, 1)
+		assert.Equal(config[0].Schedules[0], "@hourly")
 
 		// Check that schedule is optional
 		profile, err = getProfile("toml", testConfig(command, false), "profile", "")

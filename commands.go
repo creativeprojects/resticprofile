@@ -492,7 +492,7 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 
 	// Step 2: Schedule all collected jobs
 	for _, j := range allJobs {
-		err := scheduleJobs(j.scheduler, j.profile, j.jobs)
+		err := scheduleJobs(schedule.NewHandler(j.scheduler), j.profile, j.jobs)
 		if err != nil {
 			return retryElevated(err, flags)
 		}
@@ -511,7 +511,7 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 			return err
 		}
 
-		err = removeJobs(scheduler, profileName, jobs)
+		err = removeJobs(schedule.NewHandler(scheduler), profileName, jobs)
 		if err != nil {
 			return retryElevated(err, flags)
 		}
@@ -559,7 +559,7 @@ func statusSchedule(w io.Writer, c *config.Config, flags commandLineFlags, args 
 func statusScheduleProfile(scheduler schedule.SchedulerConfig, profile *config.Profile, schedules []*config.ScheduleConfig, flags commandLineFlags) error {
 	displayProfileDeprecationNotices(profile)
 
-	err := statusJobs(scheduler, flags.name, convertSchedules(schedules))
+	err := statusJobs(schedule.NewHandler(scheduler), flags.name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
@@ -590,28 +590,26 @@ func requireScheduleJobs(schedules []*config.ScheduleConfig, flags commandLineFl
 	return nil
 }
 
-func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []schedule.JobConfig, error) {
+func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.ScheduleConfig, error) {
 	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	configs := convertSchedules(schedules)
-
 	// Add all undeclared schedules as remove-only configs
 	for _, command := range profile.SchedulableCommands() {
 		declared := false
 		for _, s := range schedules {
-			if declared = s.SubTitle() == command; declared {
+			if declared = s.SubTitle == command; declared {
 				break
 			}
 		}
 		if !declared {
-			configs = append(configs, schedule.NewRemoveOnlyConfig(profile.Name, command))
+			schedules = append(schedules, config.NewRemoveOnlyConfig(profile.Name, command))
 		}
 	}
 
-	return scheduler, profile, configs, nil
+	return scheduler, profile, schedules, nil
 }
 
 func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {

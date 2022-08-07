@@ -31,12 +31,11 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Get dependencies
-      run: |
-        go get -v -t -d ./...
+    - name: Generate mocks
+      run: make mocks
 
     - name: Build
-      run: go build -v ./...
+      run: make build
 
     - name: Test
       run: "go test -v -race -short -coverprofile='coverage.out' ./..."

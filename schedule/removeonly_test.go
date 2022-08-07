@@ -9,45 +9,43 @@ import (
 )
 
 func TestNewRemoveOnlyConfig(t *testing.T) {
-	c := NewRemoveOnlyConfig("profile", "command")
+	cfg := config.NewRemoveOnlyConfig("profile", "command")
 
-	assert.Equal(t, "profile", c.Title())
-	assert.Equal(t, "command", c.SubTitle())
-	assert.Equal(t, "", c.JobDescription())
-	assert.Equal(t, "", c.TimerDescription())
-	assert.Empty(t, c.Schedules())
-	assert.Equal(t, "", c.Permission())
-	assert.Equal(t, "", c.WorkingDirectory())
-	assert.Equal(t, "", c.Command())
-	assert.Empty(t, c.Arguments())
-	assert.Empty(t, c.Environment())
-	assert.Equal(t, "", c.Priority())
-	assert.Equal(t, "", c.Logfile())
-	assert.Equal(t, "", c.Configfile())
+	assert.Equal(t, "profile", cfg.Title)
+	assert.Equal(t, "command", cfg.SubTitle)
+	assert.Equal(t, "", cfg.JobDescription)
+	assert.Equal(t, "", cfg.TimerDescription)
+	assert.Empty(t, cfg.Schedules)
+	assert.Equal(t, "", cfg.Permission)
+	assert.Equal(t, "", cfg.WorkingDirectory)
+	assert.Equal(t, "", cfg.Command)
+	assert.Empty(t, cfg.Arguments)
+	assert.Empty(t, cfg.Environment)
+	assert.Equal(t, "", cfg.Priority)
+	assert.Equal(t, "", cfg.Log)
+	assert.Equal(t, "", cfg.ConfigFile)
 	{
-		flag, found := c.GetFlag("")
+		flag, found := cfg.GetFlag("")
 		assert.Equal(t, "", flag)
 		assert.False(t, found)
 	}
 }
 
 func TestDetectRemoveOnlyConfig(t *testing.T) {
-	assertRemoveOnly := func(expected bool, config JobConfig) {
-		assert.Equal(t, expected, isRemoveOnlyConfig(config))
+	assertRemoveOnly := func(expected bool, config *config.ScheduleConfig) {
+		assert.Equal(t, expected, config.RemoveOnly)
 	}
 
-	assertRemoveOnly(true, NewRemoveOnlyConfig("", ""))
-	assertRemoveOnly(false, nil)
+	assertRemoveOnly(true, config.NewRemoveOnlyConfig("", ""))
 	assertRemoveOnly(false, &config.ScheduleConfig{})
 }
 
 func TestRemoveOnlyJob(t *testing.T) {
 	profile := "non-existent"
-	scheduler := NewScheduler(&SchedulerDefaultOS{}, profile)
+	scheduler := NewScheduler(NewHandler(&SchedulerDefaultOS{}), profile)
 	defer scheduler.Close()
 
-	config := NewRemoveOnlyConfig(profile, "check")
-	job := scheduler.NewJob(config)
+	job := scheduler.NewJob(config.NewRemoveOnlyConfig(profile, "check"))
 
 	assert.Equal(t, ErrorJobCanBeRemovedOnly, job.Create())
 	assert.Equal(t, ErrorJobCanBeRemovedOnly, job.Status())

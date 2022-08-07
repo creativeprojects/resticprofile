@@ -1,5 +1,4 @@
 //go:build darwin
-// +build darwin
 
 package schedule
 
@@ -127,14 +126,42 @@ func TestHandlerInstanceLaunchd(t *testing.T) {
 	assert.NotNil(t, handler)
 }
 
+func TestLaunchdJobLog(t *testing.T) {
+	fixtures := []struct {
+		log      string
+		expected string
+	}{
+		{"", "local.resticprofile.profile.backup.log"},
+		{"udp://localhost:123", "local.resticprofile.profile.backup.log"},
+		{"tcp://127.0.0.1:123", "local.resticprofile.profile.backup.log"},
+		{"other file", "other file"},
+	}
+
+	for _, fixture := range fixtures {
+		t.Run(fixture.log, func(t *testing.T) {
+			handler := NewHandler(SchedulerLaunchd{})
+			cfg := &config.ScheduleConfig{
+				Title:    "profile",
+				SubTitle: "backup",
+				Log:      fixture.log,
+			}
+			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
+			assert.Equal(t, fixture.expected, launchdJob.StandardOutPath)
+		})
+	}
+}
+
 func TestCreateUserPlist(t *testing.T) {
 	handler := NewHandler(SchedulerLaunchd{})
 	handler.fs = afero.NewMemMapFs()
 
-	plist, err := handler.createPlistFile(&config.ScheduleConfig{}, "user", []*calendar.Event{calendar.NewEvent()})
+	launchdJob := &LaunchdJob{
+		Label: "TestCreateSystemPlist",
+	}
+	filename, err := handler.createPlistFile(launchdJob, "user")
 	require.NoError(t, err)
 
-	_, err = handler.fs.Stat(plist)
+	_, err = handler.fs.Stat(filename)
 	assert.NoError(t, err)
 }
 
@@ -142,9 +169,12 @@ func TestCreateSystemPlist(t *testing.T) {
 	handler := NewHandler(SchedulerLaunchd{})
 	handler.fs = afero.NewMemMapFs()
 
-	plist, err := handler.createPlistFile(&config.ScheduleConfig{}, "system", []*calendar.Event{calendar.NewEvent()})
+	launchdJob := &LaunchdJob{
+		Label: "TestCreateSystemPlist",
+	}
+	filename, err := handler.createPlistFile(launchdJob, "system")
 	require.NoError(t, err)
 
-	_, err = handler.fs.Stat(plist)
+	_, err = handler.fs.Stat(filename)
 	assert.NoError(t, err)
 }

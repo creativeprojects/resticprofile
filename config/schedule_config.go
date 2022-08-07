@@ -21,94 +21,52 @@ const (
 
 // ScheduleConfig contains all information to schedule a profile command
 type ScheduleConfig struct {
-	profileName      string
-	commandName      string
-	schedules        []string
-	permission       string
-	wd               string
-	command          string
-	arguments        []string
-	environment      map[string]string
-	jobDescription   string
-	timerDescription string
-	priority         string
-	logfile          string
-	lockMode         string
-	lockWait         time.Duration
-	configfile       string
-	flags            map[string]string
+	Title            string
+	SubTitle         string
+	Schedules        []string
+	Permission       string
+	WorkingDirectory string
+	Command          string
+	Arguments        []string
+	Environment      map[string]string
+	JobDescription   string
+	TimerDescription string
+	Priority         string
+	Log              string
+	LockMode         string
+	LockWait         time.Duration
+	ConfigFile       string
+	Flags            map[string]string
+	RemoveOnly       bool
+}
+
+// NewRemoveOnlyConfig creates a job config that may be used to call Job.Remove() on a scheduled job
+func NewRemoveOnlyConfig(profileName, commandName string) *ScheduleConfig {
+	return &ScheduleConfig{
+		Title:      profileName,
+		SubTitle:   commandName,
+		RemoveOnly: true,
+	}
 }
 
 func (s *ScheduleConfig) SetCommand(wd, command string, args []string) {
-	s.wd = wd
-	s.command = command
-	s.arguments = args
-}
-
-func (s *ScheduleConfig) SetJobDescription(description string) {
-	s.jobDescription = description
-}
-
-func (s *ScheduleConfig) SetTimerDescription(description string) {
-	s.timerDescription = description
-}
-
-func (s *ScheduleConfig) Title() string {
-	return s.profileName
-}
-
-func (s *ScheduleConfig) SubTitle() string {
-	return s.commandName
-}
-
-func (s *ScheduleConfig) JobDescription() string {
-	return s.jobDescription
-}
-
-func (s *ScheduleConfig) TimerDescription() string {
-	return s.timerDescription
-}
-
-func (s *ScheduleConfig) Schedules() []string {
-	return s.schedules
-}
-
-func (s *ScheduleConfig) Permission() string {
-	return s.permission
-}
-
-func (s *ScheduleConfig) Command() string {
-	return s.command
-}
-
-func (s *ScheduleConfig) WorkingDirectory() string {
-	return s.wd
-}
-
-func (s *ScheduleConfig) Arguments() []string {
-	return s.arguments
-}
-
-func (s *ScheduleConfig) Environment() map[string]string {
-	return s.environment
+	s.WorkingDirectory = wd
+	s.Command = command
+	s.Arguments = args
 }
 
 // Priority is either "background" or "standard"
-func (s *ScheduleConfig) Priority() string {
-	s.priority = strings.ToLower(s.priority)
+func (s *ScheduleConfig) GetPriority() string {
+	s.Priority = strings.ToLower(s.Priority)
 	// default value for priority is "background"
-	if s.priority != constants.SchedulePriorityBackground && s.priority != constants.SchedulePriorityStandard {
-		s.priority = constants.SchedulePriorityBackground
+	if s.Priority != constants.SchedulePriorityBackground && s.Priority != constants.SchedulePriorityStandard {
+		s.Priority = constants.SchedulePriorityBackground
 	}
-	return s.priority
+	return s.Priority
 }
 
-func (s *ScheduleConfig) Logfile() string {
-	return s.logfile
-}
-
-func (s *ScheduleConfig) LockMode() ScheduleLockMode {
-	switch s.lockMode {
+func (s *ScheduleConfig) GetLockMode() ScheduleLockMode {
+	switch s.LockMode {
 	case constants.ScheduleLockModeOptionFail:
 		return ScheduleLockModeFail
 	case constants.ScheduleLockModeOptionIgnore:
@@ -118,42 +76,38 @@ func (s *ScheduleConfig) LockMode() ScheduleLockMode {
 	}
 }
 
-func (s *ScheduleConfig) LockWait() time.Duration {
-	if s.lockWait <= 2*time.Second {
+func (s *ScheduleConfig) GetLockWait() time.Duration {
+	if s.LockWait <= 2*time.Second {
 		return 0
 	}
-	return s.lockWait
-}
-
-func (s *ScheduleConfig) Configfile() string {
-	return s.configfile
+	return s.LockWait
 }
 
 func (s *ScheduleConfig) GetFlag(name string) (string, bool) {
-	if len(s.flags) == 0 {
+	if len(s.Flags) == 0 {
 		return "", false
 	}
 	// we can't do a direct return, technically the map returns only one value
-	value, found := s.flags[name]
+	value, found := s.Flags[name]
 	return value, found
 }
 
 func (s *ScheduleConfig) SetFlag(name, value string) {
-	if s.flags == nil {
-		s.flags = make(map[string]string)
+	if s.Flags == nil {
+		s.Flags = make(map[string]string)
 	}
-	s.flags[name] = value
+	s.Flags[name] = value
 }
 
 func (s *ScheduleConfig) Export() Schedule {
 	return Schedule{
-		Profiles:   []string{s.profileName},
-		Command:    s.commandName,
-		Permission: s.permission,
-		Log:        s.logfile,
-		Priority:   s.priority,
-		LockMode:   s.lockMode,
-		LockWait:   s.lockWait,
-		Schedule:   s.schedules,
+		Profiles:   []string{s.Title},
+		Command:    s.SubTitle,
+		Permission: s.Permission,
+		Log:        s.Log,
+		Priority:   s.Priority,
+		LockMode:   s.LockMode,
+		LockWait:   s.LockWait,
+		Schedule:   s.Schedules,
 	}
 }

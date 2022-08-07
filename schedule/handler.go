@@ -5,8 +5,10 @@ import (
 	"os/exec"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 )
 
+// Handler interface for the scheduling software available on the system
 type Handler interface {
 	Init() error
 	Close()
@@ -14,9 +16,9 @@ type Handler interface {
 	DisplayParsedSchedules(command string, events []*calendar.Event)
 	DisplaySchedules(command string, schedules []string) error
 	DisplayStatus(profileName string) error
-	CreateJob(job JobConfig, schedules []*calendar.Event, permission string) error
-	RemoveJob(job JobConfig, permission string) error
-	DisplayJobStatus(job JobConfig) error
+	CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error
+	RemoveJob(job *config.ScheduleConfig, permission string) error
+	DisplayJobStatus(job *config.ScheduleConfig) error
 }
 
 func lookupBinary(name, binary string) error {

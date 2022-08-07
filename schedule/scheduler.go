@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/config"
 )
 
 // Scheduler
@@ -11,10 +12,10 @@ type Scheduler struct {
 }
 
 // NewScheduler creates a Scheduler object
-func NewScheduler(config SchedulerConfig, profileName string) *Scheduler {
+func NewScheduler(handler Handler, profileName string) *Scheduler {
 	return &Scheduler{
 		profileName: profileName,
-		handler:     NewHandler(config),
+		handler:     handler,
 	}
 }
 
@@ -29,7 +30,7 @@ func (s *Scheduler) Close() {
 }
 
 // NewJob instantiates a Job object (of SchedulerJob interface) to schedule jobs
-func (s *Scheduler) NewJob(config JobConfig) SchedulerJob {
+func (s *Scheduler) NewJob(config *config.ScheduleConfig) SchedulerJob {
 	return &Job{
 		config:  config,
 		handler: s.handler,

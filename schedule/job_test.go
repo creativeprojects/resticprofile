@@ -21,7 +21,7 @@ func TestCreateJobHappyPathSystemd(t *testing.T) {
 			counter |= 2
 			return nil
 		},
-		createJob: func(job JobConfig, schedules []*calendar.Event, permission string) error {
+		createJob: func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
 			counter |= 4
 			return nil
 		},
@@ -47,7 +47,7 @@ func TestCreateJobHappyPathOther(t *testing.T) {
 		displayParsedSchedules: func(command string, events []*calendar.Event) {
 			counter |= 2
 		},
-		createJob: func(job JobConfig, schedules []*calendar.Event, permission string) error {
+		createJob: func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
 			counter |= 4
 			return nil
 		},
@@ -116,7 +116,7 @@ func TestCreateJobSadPath3(t *testing.T) {
 			counter |= 2
 			return nil
 		},
-		createJob: func(job JobConfig, schedules []*calendar.Event, permission string) error {
+		createJob: func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
 			counter |= 4
 			return errors.New("test!")
 		},

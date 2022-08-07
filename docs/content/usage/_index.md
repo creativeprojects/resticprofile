@@ -74,7 +74,7 @@ resticprofile flags:
   -f, --format string        file format of the configuration (default is to use the file extension)
   -h, --help                 display this help
       --lock-wait duration   wait up to duration to acquire a lock (syntax "1h5m30s")
-  -l, --log string           logs into a file instead of the console
+  -l, --log string           logs to a target instead of the console
   -n, --name string          profile name (default "default")
       --no-ansi              disable ansi control characters (disable console colouring)
       --no-lock              skip profile lock file
@@ -119,7 +119,7 @@ There are not many options on the command line, most of the options are in the c
 * **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
 light or dark terminal (none to disable colouring)
 * **[--lock-wait] duration**: Retry to acquire resticprofile and restic locks for up to the specified amount of time before failing on a lock failure. 
-* **[-l | --log] log_file**: To write the logs in file instead of displaying on the console
+* **[-l | --log] file path or url**: To write the logs to a file or a syslog server instead of displaying on the console. The format of the server url is `tcp://192.168.0.1:514` or `udp://localhost:514`
 * **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
 * **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line

@@ -113,10 +113,10 @@ schedule = "daily"
 	declaredCount := 0
 
 	for _, jobConfig := range schedules {
-		scheduler := schedule.NewScheduler(schedule.SchedulerDefaultOS{}, jobConfig.Title())
+		scheduler := schedule.NewScheduler(schedule.NewHandler(schedule.SchedulerDefaultOS{}), jobConfig.Title)
 		defer func(s *schedule.Scheduler) { s.Close() }(scheduler) // Capture current ref to scheduler to be able to close it when function returns.
 
-		if jobConfig.SubTitle() == "check" {
+		if jobConfig.SubTitle == "check" {
 			assert.False(t, scheduler.NewJob(jobConfig).RemoveOnly())
 			declaredCount++
 		} else {
@@ -163,7 +163,7 @@ schedule = "daily"
 		assert.NotNil(t, profile)
 		assert.NotEmpty(t, schedules)
 		assert.Len(t, schedules, 1)
-		assert.Equal(t, "check", schedules[0].SubTitle())
+		assert.Equal(t, "check", schedules[0].SubTitle)
 	}
 }
 
