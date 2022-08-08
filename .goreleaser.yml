@@ -8,8 +8,12 @@ before:
     - go generate ./...
     - curl -LO https://github.com/restic/restic/releases/download/v{{ .Env.RESTIC_VERSION }}/restic_{{ .Env.RESTIC_VERSION }}_linux_amd64.bz2
     - bunzip2 restic_{{ .Env.RESTIC_VERSION }}_linux_amd64.bz2
-    - mv restic_{{ .Env.RESTIC_VERSION }}_linux_amd64 build/restic
-    - chmod +x build/restic
+    - mv restic_{{ .Env.RESTIC_VERSION }}_linux_amd64 build/restic-amd64
+    - chmod +x build/restic-amd64
+    - curl -LO https://github.com/restic/restic/releases/download/v{{ .Env.RESTIC_VERSION }}/restic_{{ .Env.RESTIC_VERSION }}_linux_arm64.bz2
+    - bunzip2 restic_{{ .Env.RESTIC_VERSION }}_linux_arm64.bz2
+    - mv restic_{{ .Env.RESTIC_VERSION }}_linux_arm64 build/restic-arm64
+    - chmod +x build/restic-arm64
 
 builds:
   - id: resticprofile_targz
@@ -73,17 +77,44 @@ changelog:
       - '^test:'
 
 dockers:
-  -
-    goos: linux
-    goarch: amd64
+  - image_templates:
+    - "creativeprojects/resticprofile:latest-amd64"
+    - "creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
     ids:
     - resticprofile_targz
-    image_templates:
-    - "creativeprojects/resticprofile:latest"
-    - "creativeprojects/resticprofile:{{ .RawVersion }}"
+    use: buildx
+    goos: linux
+    goarch: amd64
     dockerfile: build/Dockerfile
     extra_files:
-    - build/restic
+    - build/restic-amd64
+    build_flag_templates:
+    - "--platform=linux/amd64"
+    - "--build-arg=ARCH=amd64"
+  - image_templates:
+    - "creativeprojects/resticprofile:latest-arm64v8"
+    - "creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
+    ids:
+    - resticprofile_targz
+    use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: build/Dockerfile
+    extra_files:
+    - build/restic-arm64
+    build_flag_templates:
+    - "--platform=linux/arm64/v8"
+    - "--build-arg=ARCH=arm64"
+
+docker_manifests:
+  - name_template: creativeprojects/resticprofile:{{ .RawVersion }}
+    image_templates:
+    - creativeprojects/resticprofile:{{ .RawVersion }}-amd64
+    - creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
+  - name_template: creativeprojects/resticprofile:latest
+    image_templates:
+    - creativeprojects/resticprofile:latest-amd64
+    - creativeprojects/resticprofile:latest-arm64v8
 
 brews:
   - 

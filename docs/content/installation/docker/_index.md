@@ -39,3 +39,9 @@ $ docker run -it --rm -v $PWD:/resticprofile -h my-machine creativeprojects/rest
 [profile]
 host = "my-machine"
 ```
+
+### Platforms
+
+Starting from version `0.18.0`, the resticprofile docker image is available in these 2 platforms:
+- linux/amd64
+- linux/arm64/v8 (compatible with raspberry pi 64bits)
