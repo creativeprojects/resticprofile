@@ -2,6 +2,7 @@ package prom
 
 import (
 	"runtime"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/prometheus/client_golang/prometheus"
@@ -52,6 +53,7 @@ func NewMetrics(group, version string, configLabels map[string]string) *Metrics 
 		p.backup.bytesAdded,
 		p.backup.bytesTotal,
 		p.backup.status,
+		p.backup.time,
 	)
 	return p
 }
@@ -76,6 +78,7 @@ func (p *Metrics) BackupResults(profile string, status Status, summary monitor.S
 	p.backup.bytesAdded.With(labels).Set(float64(summary.BytesAdded))
 	p.backup.bytesTotal.With(labels).Set(float64(summary.BytesTotal))
 	p.backup.status.With(labels).Set(float64(status))
+	p.backup.time.With(labels).Set(float64(time.Now().Unix()))
 }
 
 func (p *Metrics) SaveTo(filename string) error {
