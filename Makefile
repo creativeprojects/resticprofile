@@ -49,11 +49,15 @@ TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
 all: download test build
-.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc release-snapshot generate-install
+.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc generate-install
 
 $(GOBIN)/eget:
 	@echo "[*] $@"
 	go install -v github.com/zyedidia/eget@latest
+
+$(GOBIN)/goreleaser: $(GOBIN)/eget
+	@echo "[*] $@"
+	eget goreleaser/goreleaser --to $(GOBIN)
 
 $(GOBIN)/mockery: $(GOBIN)/eget
 	@echo "[*] $@"
@@ -114,10 +118,6 @@ clean:
 	rm -rf $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_PI) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic* dist/*
 	restic cache --cleanup
 
-release-snapshot:
-	@echo "[*] $@"
-	goreleaser build --snapshot --config .goreleaser.yml --rm-dist
-
 ramdisk: ${TMP_MOUNT}
 
 # Fixed size ramdisk for mac OS X
@@ -140,9 +140,8 @@ rest-server:
 	docker pull ${REST_IMAGE}
 	docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
 
-nightly:
+nightly: $(GOBIN)/goreleaser
 	@echo "[*] $@"
-	$(GOINSTALL) github.com/goreleaser/goreleaser@latest
 	goreleaser --snapshot --skip-publish --rm-dist
 
 toc:

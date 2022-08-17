@@ -11,6 +11,7 @@
 .DS_Store
 /examples/private
 /build/restic*
+/build/rclone*
 /dist
 
 # binary

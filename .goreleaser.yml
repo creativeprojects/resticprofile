@@ -1,19 +1,13 @@
 project_name: resticprofile
-env:
-  - RESTIC_VERSION=0.13.1
 
 before:
   hooks:
     - go mod download
     - go generate ./...
-    - curl -LO https://github.com/restic/restic/releases/download/v{{ .Env.RESTIC_VERSION }}/restic_{{ .Env.RESTIC_VERSION }}_linux_amd64.bz2
-    - bunzip2 restic_{{ .Env.RESTIC_VERSION }}_linux_amd64.bz2
-    - mv restic_{{ .Env.RESTIC_VERSION }}_linux_amd64 build/restic-amd64
-    - chmod +x build/restic-amd64
-    - curl -LO https://github.com/restic/restic/releases/download/v{{ .Env.RESTIC_VERSION }}/restic_{{ .Env.RESTIC_VERSION }}_linux_arm64.bz2
-    - bunzip2 restic_{{ .Env.RESTIC_VERSION }}_linux_arm64.bz2
-    - mv restic_{{ .Env.RESTIC_VERSION }}_linux_arm64 build/restic-arm64
-    - chmod +x build/restic-arm64
+    - eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
+    - eget rclone/rclone --upgrade-only --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
+    - eget restic/restic --upgrade-only --system=linux/amd64 --to=build/restic-amd64
+    - eget restic/restic --upgrade-only --system=linux/arm64 --to=build/restic-arm64
 
 builds:
   - id: resticprofile_targz
@@ -88,6 +82,7 @@ dockers:
     dockerfile: build/Dockerfile
     extra_files:
     - build/restic-amd64
+    - build/rclone-amd64
     build_flag_templates:
     - "--platform=linux/amd64"
     - "--build-arg=ARCH=amd64"
@@ -102,6 +97,7 @@ dockers:
     dockerfile: build/Dockerfile
     extra_files:
     - build/restic-arm64
+    - build/rclone-arm64
     build_flag_templates:
     - "--platform=linux/arm64/v8"
     - "--build-arg=ARCH=arm64"
