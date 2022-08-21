@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -67,9 +68,15 @@ func TestFindConfigurationFile(t *testing.T) {
 	// Work from a temporary directory
 	err := os.Chdir(os.TempDir())
 	require.NoError(t, err)
+
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 	t.Log("Working directory:", cwd)
+
+	binary, err := os.Executable()
+	require.NoError(t, err)
+	binaryDir := filepath.Dir(binary)
+	t.Log("Binary directory:", binaryDir)
 
 	locations := []testLocation{
 		{
@@ -187,6 +194,17 @@ func TestFindConfigurationFile(t *testing.T) {
 			searchFile: "profiles",
 		},
 	}
+
+	// on windows, we allow config file next to the resticprofile executable
+	if platform.IsWindows() {
+		locations = append(locations, testLocation{
+			realPath:   binaryDir,
+			realFile:   "profiles.conf",
+			searchPath: "",
+			searchFile: "profiles",
+		})
+	}
+
 	for _, location := range locations {
 		var err error
 		// Install empty config file

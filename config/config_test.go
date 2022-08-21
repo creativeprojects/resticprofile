@@ -3,7 +3,10 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -521,5 +524,34 @@ func TestRequireVersionAssertions(t *testing.T) {
 		assert.NotPanics(t, func() { c.requireMinVersion(Version01) })
 		assert.NotPanics(t, func() { c.requireMinVersion(Version02) })
 		assert.Panics(t, func() { c.requireVersion(Version01) })
+	})
+}
+
+// This is a simple fuzzing test on configuration file to see if resticprofile can crash loading a funny file
+// I wanted to give it a try but it might just be useless
+func FuzzConfigTOML(f *testing.F) {
+	examples, err := os.ReadDir("../examples")
+	require.NoError(f, err)
+
+	// use files in example dir as seeds
+	for _, example := range examples {
+		if strings.HasSuffix(example.Name(), ".conf") || strings.HasSuffix(example.Name(), ".toml") {
+			func() {
+				file, err := os.Open(filepath.Join("../examples", example.Name()))
+				require.NoError(f, err)
+				defer file.Close()
+
+				buffer := &bytes.Buffer{}
+				_, err = io.Copy(buffer, file)
+				require.NoError(f, err)
+				f.Add(buffer.Bytes())
+			}()
+		}
+	}
+
+	f.Fuzz(func(t *testing.T, in []byte) {
+		reader := bytes.NewReader(in)
+		// we just want to detect a panic, so we don't check the returned values
+		_, _ = Load(reader, "toml")
 	})
 }

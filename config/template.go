@@ -15,6 +15,7 @@ type TemplateData struct {
 	CurrentDir string
 	ConfigDir  string
 	TempDir    string
+	BinaryDir  string
 	Hostname   string
 	Env        map[string]string
 }
@@ -36,6 +37,9 @@ func newTemplateData(configFile, profileName, scheduleName string) TemplateData 
 	if !filepath.IsAbs(configDir) {
 		configDir = filepath.Join(currentDir, configDir)
 	}
+	binary, _ := os.Executable()
+	binaryDir := filepath.Dir(binary)
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "localhost"
@@ -59,6 +63,7 @@ func newTemplateData(configFile, profileName, scheduleName string) TemplateData 
 		ConfigDir:  configDir,
 		CurrentDir: currentDir,
 		TempDir:    os.TempDir(),
+		BinaryDir:  binaryDir,
 		Hostname:   hostname,
 		Env:        env,
 	}

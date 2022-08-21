@@ -11,6 +11,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/platform"
 )
 
 var (
@@ -111,10 +112,16 @@ func findConfigurationFileWithExtension(configFile string) string {
 		}
 	}
 
-	// 3. To keep compatibility with the older version in python, try the pre-selected locations
+	// 3. To keep compatibility with older versions, try the pre-selected locations
 	paths := getDefaultConfigurationLocations()
 	if home, err := os.UserHomeDir(); err == nil {
 		paths = append(paths, home)
+	}
+	// also adds binary dir on windows
+	if platform.IsWindows() {
+		if binary, err := os.Executable(); err == nil {
+			paths = append(paths, filepath.Dir(binary))
+		}
 	}
 	for _, configPath := range paths {
 		filename := filepath.Join(configPath, configFile)
