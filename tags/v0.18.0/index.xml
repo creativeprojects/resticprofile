@@ -3,4 +3,5 @@ toml yaml hcl [default] initialize = false repository = &amp;#34;/backup/origina
 The sections that allow sending HTTP hooks are:
 backup copy check forget prune Tip You might notice that&amp;rsquo;s the same sections that can also be scheduled
 Each of these commands can send 4 different types of hooks:
-send-before send-after send-after-fail send-finally The configuration is the same for each of these 4 types of hooks:</description></item></channel></rss>
+send-before send-after send-after-fail send-finally The configuration is the same for each of these 4 types of hooks:</description></item><item><title>Docker</title><link>https://creativeprojects.github.io/resticprofile/installation/docker/</link><pubDate>Sat, 23 Apr 2022 23:58:56 +0100</pubDate><guid>https://creativeprojects.github.io/resticprofile/installation/docker/</guid><description>Using resticprofile from a docker image You can run resticprofile inside a docker container. It is probably the easiest way to install resticprofile (and restic at the same time) and keep it updated.
+But be aware that you will need to mount your backup source (and destination if it&amp;rsquo;s local) as a docker volume. Depending on your operating system, the backup might be slower. Volumes mounted on a mac OS host are well known for being quite slow.</description></item></channel></rss>
