@@ -33,12 +33,16 @@ type ScheduleTemplateData struct {
 // newTemplateData populates a TemplateData struct ready to use
 func newTemplateData(configFile, profileName, scheduleName string) TemplateData {
 	currentDir, _ := os.Getwd()
+	currentDir = filepath.ToSlash(currentDir)
+
 	configDir := filepath.Dir(configFile)
 	if !filepath.IsAbs(configDir) {
 		configDir = filepath.Join(currentDir, configDir)
 	}
+	configDir = filepath.ToSlash(configDir)
+
 	binary, _ := os.Executable()
-	binaryDir := filepath.Dir(binary)
+	binaryDir := filepath.ToSlash(filepath.Dir(binary))
 
 	hostname, err := os.Hostname()
 	if err != nil {
