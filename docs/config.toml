@@ -7,9 +7,26 @@ publishdir = "../public/"
 
 # For search functionality
 [outputs]
-home = [ "HTML", "RSS", "JSON"]
+  home = [ "HTML", "RSS", "JSON"]
 
 [params]
   # Change default color scheme with a variant one.
   themeVariant = [ "relearn-light", "relearn-dark" ]
   collapsibleMenu = true
+
+[[menu.shortcuts]]
+  name = "<i class='fas fa-tags'></i> Tags"
+  url = "/tags"
+  weight = 10
+
+[[menu.shortcuts]]
+  name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
+  identifier = "ds"
+  url = "https://github.com/creativeprojects/resticprofile/"
+  weight = 20
+
+[[menu.shortcuts]]
+  name = "<i class='fas fa-fw fa-bookmark'></i> Restic Documentation"
+  identifier = "resticdoc"
+  url = "https://restic.readthedocs.io/"
+  weight = 30

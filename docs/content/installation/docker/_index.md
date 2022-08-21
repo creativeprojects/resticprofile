@@ -1,5 +1,6 @@
 ---
 title: "Docker"
+tags: ["v0.18.0"]
 date: 2022-04-23T23:58:56+01:00
 weight: 30
 ---
@@ -28,16 +29,10 @@ $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticpro
 
 Each time a container is started, it gets assigned a new random name.
 
-You can force a hostname
-- in your container:
-```
-$ docker run -it --rm -v $PWD:/resticprofile -h my-machine creativeprojects/resticprofile -n profile backup
-```
-- in your configuration:
+You might want to force a hostname when starting your container via docker run (flags `-h` or `--hostname`):
 
-```toml
-[profile]
-host = "my-machine"
+```
+$ docker run -it --rm -v $PWD:/resticprofile -h my-hostname creativeprojects/resticprofile -n profile backup
 ```
 
 ### Platforms
@@ -45,3 +40,9 @@ host = "my-machine"
 Starting from version `0.18.0`, the resticprofile docker image is available in these 2 platforms:
 - linux/amd64
 - linux/arm64/v8 (compatible with raspberry pi 64bits)
+
+### rclone
+
+Starting from version `0.18.0`, the resticprofile docker image also includes [rclone][1].
+
+[1]: https://rclone.org/
