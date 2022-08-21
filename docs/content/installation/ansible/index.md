@@ -32,13 +32,13 @@ Your host variables file should declare a `arch` variable containing the `[OS]_[
 
 #### Examples:
 
-```
+```yaml
 arch: linux_amd64
 ```
 
 or for a Raspberry pi 3+:
 
-```
+```yaml
 arch: linux_armv7
 ```
 

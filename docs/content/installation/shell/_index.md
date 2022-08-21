@@ -19,7 +19,7 @@ eval "$(resticprofile generate --zsh-completion)"
 
 To install them permanently:
 
-```
+```shell
 $ resticprofile generate --bash-completion > /etc/bash_completion.d/resticprofile
 $ chmod +x /etc/bash_completion.d/resticprofile
 ```

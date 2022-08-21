@@ -12,10 +12,10 @@ resticprofile accepts these internal commands:
 All internal commands either operate on the profile selected by `--name`, on the profiles selected by a group, or on all profiles when the flag `--all` is passed.
 
 Examples:
-```
-resticprofile --name profile schedule 
-resticprofile --name group schedule 
-resticprofile schedule --all 
+```shell
+$ resticprofile --name profile schedule 
+$ resticprofile --name group schedule 
+$ resticprofile schedule --all 
 ```
 
 Please note, schedules are always independent of each other no matter whether they have been created with `--all`, by group or from a single profile.

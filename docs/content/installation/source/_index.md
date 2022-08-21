@@ -12,7 +12,7 @@ You can download the source code and compile it, it's actually very easy! all yo
 - `GNU Make` which is installed by default on many unix boxes. On debian based distributions (Ubuntu included) the package is called `build-essential`.
 
 To compile from sources:
-```
+```shell
 $ git clone https://github.com/creativeprojects/resticprofile.git
 $ cd resticprofile
 $ make build
@@ -22,6 +22,6 @@ Your compiled binary (`resticprofile` or `resticprofile.exe`) is available in th
 
 To install the binary in your user path:
 
-```
+```shell
 $ make install
 ```

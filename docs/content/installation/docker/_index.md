@@ -16,12 +16,12 @@ Depending on your operating system, the backup might be **slower**. Volumes moun
 
 By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
 
-```
+```shell
 $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile
 ```
 
 You can list your profiles:
-```
+```shell
 $ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
 ```
 
@@ -31,7 +31,7 @@ Each time a container is started, it gets assigned a new random name.
 
 You might want to force a hostname when starting your container via docker run (flags `-h` or `--hostname`):
 
-```
+```shell
 $ docker run -it --rm -v $PWD:/resticprofile -h my-hostname creativeprojects/resticprofile -n profile backup
 ```
 

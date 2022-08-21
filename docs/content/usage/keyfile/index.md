@@ -16,7 +16,7 @@ resticprofile has a handy tool to generate cryptographically secure random keys 
 
 [Reference from the Go documentation](https://golang.org/pkg/crypto/rand/#pkg-variables)
 
-```
+```shell
 $ resticprofile generate --random-key
 ```
 
@@ -24,6 +24,6 @@ generates a 1024 bytes random key (converted into 1368 base64 characters) and di
 
 To generate a different size of key, you can specify the bytes length on the command line:
 
-```
+```shell
 $ resticprofile generate --random-key 2048
 ```

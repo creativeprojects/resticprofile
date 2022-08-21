@@ -23,7 +23,7 @@ format to schedule events.
 Testing systemd calendars can be done with the systemd-analyze application.
 systemd-analyze will display when the next trigger will happen:
 
-```
+```shell
 $ systemd-analyze calendar 'daily'
   Original form: daily
 Normalized form: *-*-* 00:00:00

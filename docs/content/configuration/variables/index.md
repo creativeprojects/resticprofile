@@ -261,7 +261,7 @@ This is obviously not a real world example, but it shows many of the possibiliti
 
 To check the generated configuration, you can use the resticprofile `show` command:
 
-```
+```shell
 % resticprofile -c examples/template.yaml -n src show
 
 global:

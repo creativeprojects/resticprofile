@@ -456,7 +456,7 @@ There's something to be aware of when dealing with templates: at the time the te
 Here we define a template `retention` that we use twice.
 When you ask for a configuration of a profile, either `src` or `other` the template will change all occurrences of `{ .Profile.Name }` to the name of the profile, no matter where it is inside the file.
 
-```
+```shell
 % resticprofile -c examples/parse-error.toml -n src show
 2020/11/06 21:39:48 cannot load configuration file: cannot parse toml configuration: While parsing config: (35, 6): duplicated tables
 exit status 1
@@ -464,8 +464,8 @@ exit status 1
 
 Run the command again, this time asking a display of the compiled version of the configuration:
 
-```
-% go run . -c examples/parse-error.toml -n src --trace show
+```shell
+% resticprofile -c examples/parse-error.toml -n src --trace show
 2020/11/06 21:48:20 resticprofile 0.10.0-dev compiled with go1.15.3
 2020/11/06 21:48:20 Resulting configuration for profile 'default':
 ====================

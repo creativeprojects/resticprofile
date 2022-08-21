@@ -10,7 +10,7 @@ If you create a task with `user` permission under Windows, you will need to ente
 
 Example of the `schedule` command under Windows (with git bash):
 
-```
+```shell
 $ resticprofile -c examples/windows.yaml -n self schedule
 
 Analyzing backup schedule 1/2
@@ -47,7 +47,7 @@ Normalized form: Sun *-*-* 03:30:00
 
 To see the status of the triggers, you can use the `status` command:
 
-```
+```shell
 $ resticprofile -c examples/windows.yaml -n self status
 
 Analyzing backup schedule 1/2
@@ -100,7 +100,7 @@ Normalized form: Sun *-*-* 03:30:00
 
 To remove the schedule, use the `unschedule` command:
 
-```
+```shell
 $ resticprofile -c examples/windows.yaml -n self unschedule
 2020/07/22 21:34:51 scheduled job self/backup removed
 2020/07/22 21:34:51 scheduled job self/retention removed
@@ -213,7 +213,7 @@ test1:
 {{% /tabs %}}
 
 
-```
+```shell
 $ resticprofile -c examples/linux.yaml -n test1 schedule
 
 Analyzing backup schedule 1/1
@@ -245,7 +245,7 @@ Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofil
 
 The `status` command shows a combination of `journalctl` displaying errors (only) in the last month and `systemctl status`:
 
-```
+```shell
 $ resticprofile -c examples/linux.yaml -n test1 status
 
 Analyzing backup schedule 1/1
@@ -300,7 +300,7 @@ Jul 28 15:10:07 Desktop76 systemd[2951]: Started check timer for profile test1 i
 
 And `unschedule`:
 
-```
+```shell
 $ resticprofile -c examples/linux.yaml -n test1 unschedule
 Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer.
 2020/07/23 17:13:42 scheduled job test1/backup removed
@@ -316,7 +316,7 @@ Under macOS, resticprofile is asking if you want to start a profile right now so
 
 Here's an example of scheduling a backup to Azure (which needs network access):
 
-```
+```shell
 % resticprofile -v -c examples/private/azure.yaml -n self schedule
 
 Analyzing backup schedule 1/1
@@ -346,6 +346,6 @@ If you backup your files to an external repository on a network, you should get 
 **Note:**
 If you prefer not being asked, you can add the `--no-start` flag like so:
 
-```
+```shell
 % resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
 ```

@@ -23,8 +23,8 @@ There's **one exception**: the flag `--repo` is named `repository` in the config
 
 So let's say you normally use this simple command:
 
-```
-restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
+```shell
+$ restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
 ```
 
 For resticprofile to generate this command automatically for you, here's the configuration file:
@@ -101,7 +101,7 @@ You may have noticed the `source` flag is accepting an array of values (inside b
 
 Now, assuming this configuration file is named `profiles.conf` in the current folder (it's the default config file name), you can simply run
 
-```
+```shell
 $ resticprofile backup
 ```
 
@@ -109,7 +109,7 @@ and resticprofile will do its magic and generate the command line for you.
 
 If you have any doubt on what it's running, you can try a `--dry-run`:
 
-```
+```shell
 $ resticprofile --dry-run backup
 2022/05/18 17:14:07 profile 'default': starting 'backup'
 2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file key --repo local:/backup --verbose /home
