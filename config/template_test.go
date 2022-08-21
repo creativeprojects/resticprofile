@@ -251,12 +251,13 @@ tag = "{{ .CurrentDir }}"
 
 	currentDir, err := os.Getwd()
 	require.NoError(t, err)
+	currentDir = filepath.ToSlash(currentDir)
 
 	profile, err := getResolvedProfile("toml", testConfig, "profile1")
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, profile.Snapshots["tag"], currentDir)
+	assert.Equal(t, currentDir, profile.Snapshots["tag"])
 }
 
 func TestResolveBinaryDir(t *testing.T) {
@@ -268,13 +269,13 @@ tag = "{{ .BinaryDir }}"
 
 	binary, err := os.Executable()
 	require.NoError(t, err)
-	binaryDir := filepath.Dir(binary)
+	binaryDir := filepath.ToSlash(filepath.Dir(binary))
 
 	profile, err := getResolvedProfile("toml", testConfig, "profile1")
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, profile.Snapshots["tag"], binaryDir)
+	assert.Equal(t, binaryDir, profile.Snapshots["tag"])
 }
 
 func TestInheritanceWithTemplates(t *testing.T) {
