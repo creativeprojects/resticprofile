@@ -18,12 +18,17 @@ The syntax for using a pre-defined variable is:
 
 
 The list of pre-defined variables is:
-- **.Profile.Name** (string)
-- **.Now** ([time.Time](https://golang.org/pkg/time/) object)
-- **.CurrentDir** (string)
-- **.ConfigDir** (string)
-- **.Hostname** (string)
-- **.Env.{NAME}** (string)
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| **.Profile.Name** | string | Profile name |
+| **.Now** | [time.Time](https://golang.org/pkg/time/) object | Now object: see explanation bellow |
+| **.CurrentDir** | string | Current directory at the time resticprofile was started |
+| **.ConfigDir** | string | Directory where the configuration was loaded from |
+| **.TempDir** | string | OS temporary directory (might not exist) |
+| **.BinaryDir** | string | Directory where resticprofile was started from (added in `v0.18.0`) |
+| **.Hostname** | string | Host name |
+| **.Env.{NAME}** | string | Environment variable `${NAME}` |
 
 Environment variables are accessible using `.Env.` followed by the name of the environment variable.
 

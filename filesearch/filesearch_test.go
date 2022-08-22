@@ -3,7 +3,6 @@ package filesearch
 import (
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -13,43 +12,31 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// Quick test to see the error message on the travis build agents:
-//
-// Linux:
-// filesearch_test.go:13: could not locate `some_file` in any of the following paths: /home/travis/.config/some_service/some_path, /etc/xdg/some_service/some_path
-//
-// macOS:
-// filesearch_test.go:13: could not locate `some_file` in any of the following paths: /Users/travis/Library/Preferences/some_service/some_path, /Library/Preferences/some_service/some_path
-//
-// Windows:
-// filesearch_test.go:13: could not locate `some_file` in any of the following paths: C:\Users\travis\AppData\Local\some_service\some_path, C:\ProgramData\some_service\some_path
-func TestSearchConfigFile(t *testing.T) {
-	found, err := xdg.SearchConfigFile(filepath.Join("some_service", "some_path", "some_file"))
-	t.Log(err)
-	assert.Empty(t, found)
-	assert.Error(t, err)
-}
-
 // Quick test to see the default xdg config on the build agents
 //
 // Linux:
-// ConfigHome: /home/travis/.config
+// ConfigHome: /home/runner/.config
 // ConfigDirs: [/etc/xdg]
+// ApplicationDirs: [/home/runner/.local/share/applications /usr/local/share/applications /usr/share/applications]
 //
 // macOS:
-// ConfigHome: /Users/travis/Library/Preferences
-// ConfigDirs: [/Library/Preferences]
+// ConfigHome: /Users/runner/Library/Application Support
+// ConfigDirs: [/Users/runner/Library/Preferences /Library/Application Support /Library/Preferences]
+// ApplicationDirs: [/Applications]
 //
 // Windows:
-// ConfigHome: C:\Users\travis\AppData\Local
-// ConfigDirs: [C:\ProgramData]
+// ConfigHome: C:\Users\runneradmin\AppData\Local
+// ConfigDirs: [C:\ProgramData C:\Users\runneradmin\AppData\Roaming]
+// ApplicationDirs: [C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu\Programs C:\ProgramData\Microsoft\Windows\Start Menu\Programs]
 func TestDefaultConfigDirs(t *testing.T) {
 	t.Log("ConfigHome:", xdg.ConfigHome)
 	t.Log("ConfigDirs:", xdg.ConfigDirs)
+	t.Log("ApplicationDirs:", xdg.ApplicationDirs)
 }
 
 type testLocation struct {
@@ -60,16 +47,13 @@ type testLocation struct {
 	deletePathAfter bool
 }
 
-func TestFindConfigurationFile(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skip this test in short mode")
-	}
-	// Work from a temporary directory
-	err := os.Chdir(os.TempDir())
+func testLocations(t *testing.T) []testLocation {
+	t.Helper()
+
+	binary, err := os.Executable()
 	require.NoError(t, err)
-	cwd, err := os.Getwd()
-	require.NoError(t, err)
-	t.Log("Working directory:", cwd)
+	binaryDir := filepath.Dir(binary)
+	t.Log("Binary directory:", binaryDir)
 
 	locations := []testLocation{
 		{
@@ -187,6 +171,31 @@ func TestFindConfigurationFile(t *testing.T) {
 			searchFile: "profiles",
 		},
 	}
+
+	// on windows, we allow config file next to the resticprofile executable
+	if platform.IsWindows() {
+		locations = append(locations, testLocation{
+			realPath:   binaryDir,
+			realFile:   "profiles.conf",
+			searchPath: "",
+			searchFile: "profiles",
+		})
+	}
+
+	return locations
+}
+
+func TestFindConfigurationFile(t *testing.T) {
+	// Work from a temporary directory
+	err := os.Chdir(os.TempDir())
+	require.NoError(t, err)
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+	t.Log("Working directory:", cwd)
+
+	locations := testLocations(t)
+
 	for _, location := range locations {
 		var err error
 		// Install empty config file
@@ -223,7 +232,7 @@ func TestCannotFindConfigurationFile(t *testing.T) {
 func TestFindResticBinary(t *testing.T) {
 	binary, err := FindResticBinary("some_other_name")
 	if binary != "" {
-		assert.True(t, strings.HasSuffix(binary, getResticBinary()))
+		assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
 		assert.NoError(t, err)
 	} else {
 		assert.Error(t, err)
@@ -259,7 +268,7 @@ func TestShellExpand(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	user, err := user.Current()
+	usr, err := user.Current()
 	require.NoError(t, err)
 
 	testData := []struct {
@@ -269,7 +278,7 @@ func TestShellExpand(t *testing.T) {
 		{"/", "/"},
 		{"~", home},
 		{"$HOME", home},
-		{"~" + user.Username, user.HomeDir},
+		{"~" + usr.Username, usr.HomeDir},
 		{"1 2", "1 2"},
 	}
 
@@ -293,7 +302,7 @@ func TestFindConfigurationIncludes(t *testing.T) {
 	}
 
 	for _, file := range files {
-		require.NoError(t, ioutil.WriteFile(file, []byte{}, fs.ModePerm))
+		require.NoError(t, os.WriteFile(file, []byte{}, fs.ModePerm))
 		defer os.Remove(file) // defer stack is ok for cleanup
 	}
 

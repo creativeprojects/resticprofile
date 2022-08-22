@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -239,6 +240,42 @@ tag = "{{ .Hostname }}"
 	require.NotEmpty(t, profile)
 
 	assert.Contains(t, profile.Snapshots["tag"], hostname)
+}
+
+func TestResolveCurrentDir(t *testing.T) {
+	testConfig := `
+[profile1]
+[profile1.snapshots]
+tag = "{{ .CurrentDir }}"
+`
+
+	currentDir, err := os.Getwd()
+	require.NoError(t, err)
+	currentDir = filepath.ToSlash(currentDir)
+
+	profile, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile)
+
+	assert.Equal(t, currentDir, profile.Snapshots["tag"])
+}
+
+func TestResolveBinaryDir(t *testing.T) {
+	testConfig := `
+[profile1]
+[profile1.snapshots]
+tag = "{{ .BinaryDir }}"
+`
+
+	binary, err := os.Executable()
+	require.NoError(t, err)
+	binaryDir := filepath.ToSlash(filepath.Dir(binary))
+
+	profile, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile)
+
+	assert.Equal(t, binaryDir, profile.Snapshots["tag"])
 }
 
 func TestInheritanceWithTemplates(t *testing.T) {
