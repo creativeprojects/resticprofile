@@ -552,6 +552,8 @@ func FuzzConfigTOML(f *testing.F) {
 	f.Fuzz(func(t *testing.T, in []byte) {
 		reader := bytes.NewReader(in)
 		// we just want to detect a panic, so we don't check the returned values
-		_, _ = Load(reader, "toml")
+		if cfg, err := Load(reader, "toml"); cfg != nil && err == nil {
+			_ = cfg.GetProfiles()
+		}
 	})
 }

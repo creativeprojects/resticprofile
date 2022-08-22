@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Quick test to see the error message on the travis build agents:
+// Quick test to see the error message on the build agents:
 //
 // Linux:
 // filesearch_test.go:13: could not locate `some_file` in any of the following paths: /home/travis/.config/some_service/some_path, /etc/xdg/some_service/some_path
@@ -51,6 +51,7 @@ func TestSearchConfigFile(t *testing.T) {
 func TestDefaultConfigDirs(t *testing.T) {
 	t.Log("ConfigHome:", xdg.ConfigHome)
 	t.Log("ConfigDirs:", xdg.ConfigDirs)
+	t.Log("ApplicationDirs:", xdg.ApplicationDirs)
 }
 
 type testLocation struct {
