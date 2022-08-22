@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 	"sync"
@@ -27,6 +26,8 @@ type Config struct {
 	configFile      string
 	includeFiles    []string
 	viper           *viper.Viper
+	mixinUses       []map[string][]*mixinUse
+	mixins          map[string]*mixin
 	groups          map[string]Group
 	sourceTemplates *template.Template
 	version         Version
@@ -35,37 +36,10 @@ type Config struct {
 	}
 }
 
-// This is where things are getting hairy:
-//
-// Most configuration file formats allow only one declaration per section
-// This is not the case for HCL where you can declare a bloc multiple times:
-//
-// "global" {
-//   key1 = "value"
-// }
-//
-// "global" {
-//   key2 = "value"
-// }
-//
-// For that matter, viper creates a slice of maps instead of a map for the other configuration file formats
-// This configOptionHCL deals with the slice to merge it into a single map
 var (
 	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
 		confidentialValueDecoder(),
-	))
-
-	configOptionV2 = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
-		mapstructure.StringToTimeDurationHookFunc(),
-		confidentialValueDecoder(),
-		forceSliceReplacementHookFunc(),
-	))
-
-	configOptionHCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
-		mapstructure.StringToTimeDurationHookFunc(),
-		confidentialValueDecoder(),
-		sliceOfMapsToMapHookFunc(),
 	))
 
 	rootPathMessage = sync.Once{}
@@ -73,7 +47,7 @@ var (
 
 // newConfig instantiate a new Config object
 func newConfig(format string) *Config {
-	keyDelimiter := "."
+	keyDelimiter := "\\"
 	return &Config{
 		keyDelim: keyDelimiter,
 		format:   format,
@@ -139,10 +113,6 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 		err = config.loadTemplates()
 	}
 
-	if err == nil {
-		err = config.applyMixins()
-	}
-
 	return
 }
 
@@ -151,9 +121,6 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 func Load(input io.Reader, format string) (config *Config, err error) {
 	config = newConfig(format)
 	err = config.addTemplate(input, config.configFile, true)
-	if err == nil {
-		err = config.applyMixins()
-	}
 	return
 }
 
@@ -205,20 +172,34 @@ func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 }
 
 // load configuration from an io.Reader
-func (c *Config) load(input io.Reader, format string, replace bool) error {
-	// For compatibility with the previous versions, a .conf file is TOML format
-	if format == "conf" {
+func (c *Config) load(input io.Reader, format string, replace bool) (err error) {
+	if format == "conf" { // A .conf file is TOML format
 		format = "toml"
 	}
-	c.viper.SetConfigType(format)
 
 	previousVersion := c.version
 	c.version = VersionUnknown
-	var err error
+
+	var vp *viper.Viper
 	if replace {
-		err = c.viper.ReadConfig(input)
+		c.mixinUses = nil
+		vp = c.viper
 	} else {
-		err = c.viper.MergeConfig(input)
+		vp = newConfig(format).viper
+	}
+
+	vp.SetConfigType(format)
+	err = vp.ReadConfig(input)
+
+	if err == nil && vp != c.viper {
+		err = c.viper.MergeConfigMap(vp.AllSettings())
+	}
+
+	if err == nil && c.GetVersion() >= Version02 {
+		var allUses map[string][]*mixinUse
+		if allUses, err = collectAllMixinUses(vp, c.keyDelim); err == nil && len(allUses) > 0 {
+			c.mixinUses = append(c.mixinUses, allUses)
+		}
 	}
 
 	if err != nil {
@@ -226,17 +207,58 @@ func (c *Config) load(input io.Reader, format string, replace bool) error {
 	}
 
 	if previousVersion != c.GetVersion() && previousVersion > VersionUnknown {
-		return errors.New("cannot include different versions of the configuration file, all files must use the same version")
+		err = errors.New("cannot include different versions of the configuration file, all files must use the same version")
+	}
+	return
+}
+
+func (c *Config) applyNonProfileMixins() error {
+	return c.applyMatchingMixinsOnce(func(useKey string) bool {
+		return !strings.HasPrefix(useKey, constants.SectionConfigurationProfiles)
+	})
+}
+
+func (c *Config) applyMixinsToProfile(profileName string) error {
+	prefix := c.getProfilePath(profileName)
+	return c.applyMatchingMixinsOnce(func(useKey string) bool {
+		return strings.HasPrefix(useKey, prefix)
+	})
+}
+
+func (c *Config) applyMatchingMixinsOnce(matcher func(useKey string) bool) error {
+	var matchingUses []map[string][]*mixinUse
+
+	for _, allUses := range c.mixinUses {
+		usesToApply := make(map[string][]*mixinUse)
+		matchingUses = append(matchingUses, usesToApply)
+
+		for useKey, uses := range allUses {
+			if matcher(useKey) {
+				usesToApply[useKey] = uses
+				delete(allUses, useKey) // remove mixinUse to avoid double apply
+			}
+		}
+	}
+
+	if len(matchingUses) > 0 {
+		return c.applyMixins(matchingUses)
 	}
 	return nil
 }
 
-func (c *Config) applyMixins() error {
-	if c.GetVersion() >= Version02 {
-		templates := parseMixins(c.viper)
-		return applyMixins(c.viper, c.keyDelim, templates)
+func (c *Config) applyMixins(allUsesToApply []map[string][]*mixinUse) (err error) {
+	c.requireMinVersion(Version02)
+
+	if allUsesToApply == nil {
+		allUsesToApply = c.mixinUses
 	}
-	return nil
+
+	for _, uses := range allUsesToApply {
+		if err = applyMixins(c.viper, c.keyDelim, uses, c.mixins); err != nil {
+			break
+		}
+	}
+	return
 }
 
 func (c *Config) loadTemplates() error {
@@ -272,6 +294,12 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 				break
 			}
 		}
+	}
+
+	// Load mixins and apply outside of profiles
+	if err == nil && c.GetVersion() >= Version02 {
+		c.mixins = parseMixins(c.viper)
+		err = c.applyNonProfileMixins()
 	}
 
 	return err
@@ -336,28 +364,18 @@ func (c *Config) HasProfile(profileKey string) bool {
 }
 
 // GetProfileNames returns all profile names defined in the configuration
-func (c *Config) GetProfileNames() []string {
-	profiles := make([]string, 0)
-	viperScope := c.viper
-	if c.GetVersion() >= Version02 {
-		// move to the profiles subsection
-		viperScope = viperScope.Sub(constants.SectionConfigurationProfiles)
-		if viperScope == nil {
-			// there's no such subsection, so return the empty map
-			return profiles
+func (c *Config) GetProfileNames() (names []string) {
+	if c.GetVersion() <= Version01 {
+		return c.getProfileNamesV1()
+	}
+
+	names = make([]string, 0)
+	if profiles := c.viper.Sub(constants.SectionConfigurationProfiles); profiles != nil {
+		for sectionKey := range profiles.AllSettings() {
+			names = append(names, sectionKey)
 		}
 	}
-	allSettings := viperScope.AllSettings()
-	for sectionKey := range allSettings {
-		if c.GetVersion() == Version01 &&
-			(sectionKey == constants.SectionConfigurationGlobal ||
-				sectionKey == constants.SectionConfigurationGroups ||
-				sectionKey == constants.SectionConfigurationIncludes) {
-			continue
-		}
-		profiles = append(profiles, sectionKey)
-	}
-	return profiles
+	return
 }
 
 // GetProfiles returns a map of all available profiles with their configuration
@@ -382,6 +400,18 @@ func (c *Config) GetVersion() Version {
 	}
 	c.version = ParseVersion(c.viper.GetString(constants.ParameterVersion))
 	return c.version
+}
+
+func (c *Config) requireVersion(version Version) {
+	if c.GetVersion() != version {
+		panic(fmt.Sprintf("invalid api usage: expected config version %d, found %d", version, c.GetVersion()))
+	}
+}
+
+func (c *Config) requireMinVersion(version Version) {
+	if c.GetVersion() < version {
+		panic(fmt.Sprintf("invalid api usage: expected min config version %d, found %d", version, c.GetVersion()))
+	}
 }
 
 // GetGlobalSection returns the global configuration
@@ -436,51 +466,33 @@ func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 // If the groups section does not exist, it returns an empty map
 func (c *Config) GetProfileGroups() map[string]Group {
 	if err := c.loadGroups(); err != nil {
-		return nil
+		clog.Errorf("failed loading groups: %s", err.Error())
 	}
 	return c.groups
 }
 
-func (c *Config) loadGroups() error {
-	if !c.IsSet(constants.SectionConfigurationGroups) {
-		c.groups = map[string]Group{}
-		return nil
+func (c *Config) loadGroups() (err error) {
+	if c.GetVersion() <= Version01 {
+		return c.loadGroupsV1()
 	}
-	// load groups only once
+
 	if c.groups == nil {
-		if c.GetVersion() == Version01 {
-			c.groups = map[string]Group{}
-			groups := map[string][]string{}
-			err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
-			if err != nil {
-				return err
+		c.groups = map[string]Group{}
+
+		if c.IsSet(constants.SectionConfigurationGroups) {
+			groups := map[string]Group{}
+			if err = c.unmarshalKey(constants.SectionConfigurationGroups, &groups); err == nil {
+				c.groups = groups
 			}
-			// fits previous version into new structure
-			for groupName, group := range groups {
-				c.groups[groupName] = Group{
-					Profiles: group,
-				}
-			}
-			return nil
 		}
-		// Version 2 onwards
-		groups := map[string]Group{}
-		err := c.unmarshalKey(constants.SectionConfigurationGroups, &groups)
-		if err != nil {
-			return err
-		}
-		c.groups = groups
 	}
-	return nil
+	return
 }
 
 // GetProfile in configuration. If the profile is not found, it returns errNotFound
 func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	if c.sourceTemplates != nil {
 		err = c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
-		if err == nil {
-			err = c.applyMixins()
-		}
 		if err != nil {
 			return
 		}
@@ -490,11 +502,21 @@ func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	if err != nil {
 		return
 	}
+
 	if profile == nil {
 		// profile shouldn't be nil with no error, but better safe than sorry
 		err = errors.New("unexpected nil profile")
 		return
 	}
+
+	c.postProcessProfile(profile)
+	return
+}
+
+// postProcessProfile applies additional post processing steps before a profile can be used
+func (c *Config) postProcessProfile(profile *Profile) {
+	// Hide confidential values (keys, passwords) from the public representation
+	ProcessConfidentialValues(profile)
 
 	// Resolve config dependencies
 	profile.ResolveConfiguration()
@@ -504,56 +526,85 @@ func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(c.GetConfigFile())
 	profile.SetRootPath(rootPath)
+}
 
+func (c *Config) applyProfileInheritanceAndMixins(profileName string) (err error) {
+	c.requireMinVersion(Version02)
+
+	profilePath := c.getProfilePath(profileName)
+	if !c.IsSet(profilePath) {
+		err = ErrNotFound
+		return
+	}
+
+	if inherit := c.viper.GetString(c.flatKey(profilePath, constants.SectionConfigurationInherit)); len(inherit) > 0 {
+
+		inheritPath := c.getProfilePath(inherit)
+		if !c.IsSet(inheritPath) {
+			err = ErrNotFound
+		} else {
+			err = c.applyProfileInheritanceAndMixins(inherit) // recursive inheritance, the deepest first
+		}
+
+		if err == nil {
+			// create merged profile for: parent > derived
+			mergedProfile := viper.NewWithOptions(viper.KeyDelimiter(c.keyDelim))
+
+			// init with parent (excluding some fields that must never be inherited)
+			parent := c.viper.GetStringMap(inheritPath)
+			delete(parent, constants.SectionConfigurationDescription)
+			delete(parent, constants.SectionConfigurationMixinUse)
+			delete(parent, constants.SectionConfigurationInherit)
+
+			if err = mergedProfile.MergeConfigMap(parent); err == nil {
+				// Merge derived onto parent (removing "inherit" instruction to ensure it is done only once)
+				derived := c.viper.GetStringMap(profilePath)
+				derived[constants.SectionConfigurationInherit] = ""
+				revolveAppendToListKeys(mergedProfile, derived)
+
+				err = mergedProfile.MergeConfigMap(derived)
+			}
+			if err != nil {
+				return
+			}
+
+			// apply merged profile to config
+			err = mergeConfigMap(c.viper, profilePath, c.keyDelim, mergedProfile.AllSettings())
+		}
+
+		if errors.Is(err, ErrNotFound) {
+			err = fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileName, inherit)
+		}
+	}
+
+	// apply mixins
+	if err == nil {
+		err = c.applyMixinsToProfile(profileName)
+	}
 	return
 }
 
 // getProfile from configuration. If the profile is not found, it returns errNotFound
-func (c *Config) getProfile(profileKey string) (*Profile, error) {
-	var err error
-	var profile *Profile
+func (c *Config) getProfile(profileKey string) (profile *Profile, err error) {
+	if c.GetVersion() <= Version01 {
+		return c.getProfileV1(profileKey)
+	}
 
-	if !c.IsSet(c.getProfilePath(profileKey)) {
-		// profile key not found
-		return nil, ErrNotFound
+	if err = c.applyProfileInheritanceAndMixins(profileKey); err != nil {
+		return
 	}
 
 	profile = NewProfile(c, profileKey)
 	err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
 	if err != nil {
-		return nil, err
+		profile = nil
 	}
-
-	if profile.Inherit != "" {
-		inherit := profile.Inherit
-		// Load inherited profile
-		profile, err = c.getProfile(inherit)
-		if err != nil {
-			if errors.Is(err, ErrNotFound) {
-				return nil, fmt.Errorf("error in profile '%s': parent profile '%s' not found", profileKey, inherit)
-			}
-			return nil, err
-		}
-		// It doesn't make sense to inherit the Description field
-		profile.Description = ""
-		// Reload this profile onto the inherited one
-		err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
-		if err != nil {
-			return nil, err
-		}
-		// make sure it has the right name
-		profile.Name = profileKey
-	}
-
-	// Hide confidential values (keys, passwords) from the public representation
-	ProcessConfidentialValues(profile)
-
-	return profile, nil
+	return
 }
 
 // getProfilePath returns the key prefixed with "profiles" if the configuration file version is >= 2
 func (c *Config) getProfilePath(key string) string {
-	if c.GetVersion() == Version01 {
+	if c.GetVersion() <= Version01 {
 		return key
 	}
 	return c.flatKey(constants.SectionConfigurationProfiles, key)
@@ -562,52 +613,30 @@ func (c *Config) getProfilePath(key string) string {
 // GetSchedules loads all schedules from the configuration.
 // !!! Nothing is using this method yet !!!
 func (c *Config) GetSchedules() ([]*ScheduleConfig, error) {
-	if c.GetVersion() == Version01 {
+	if c.GetVersion() <= Version01 {
 		return c.getSchedulesV1()
 	}
 	return nil, nil
 }
 
-// getSchedulesV1 loads schedules from profiles
-func (c *Config) getSchedulesV1() ([]*ScheduleConfig, error) {
-	profiles := c.GetProfileNames()
-	if len(profiles) == 0 {
-		return nil, nil
-	}
-	schedules := []*ScheduleConfig{}
-	for _, profileName := range profiles {
-		profile, err := c.GetProfile(profileName)
-		if err != nil {
-			return nil, fmt.Errorf("cannot load profile %q: %w", profileName, err)
-		}
-		profileSchedules := profile.Schedules()
-		schedules = append(schedules, profileSchedules...)
-	}
-	return schedules, nil
-}
-
 // GetScheduleSections returns a list of schedules
-func (c *Config) GetScheduleSections() (map[string]Schedule, error) {
-	schedules := map[string]Schedule{}
-	if c.GetVersion() < Version02 {
-		return nil, errors.New("expected configuration >= version 2")
-	}
-	// move to the schedules subsection
-	viperScope := c.viper.Sub(constants.SectionConfigurationSchedules)
-	if viperScope == nil {
-		// there's no such subsection, so return the empty map
-		return schedules, nil
+func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error) {
+	c.requireMinVersion(Version02)
+
+	schedules = map[string]Schedule{}
+
+	if section := c.viper.Sub(constants.SectionConfigurationSchedules); section != nil {
+		for sectionKey := range section.AllSettings() {
+			var schedule Schedule
+			schedule, err = c.getSchedule(sectionKey)
+			if err != nil {
+				break
+			}
+			schedules[sectionKey] = schedule
+		}
 	}
 
-	allSettings := viperScope.AllSettings()
-	for sectionKey := range allSettings {
-		schedule, err := c.getSchedule(sectionKey)
-		if err != nil {
-			return schedules, err
-		}
-		schedules[sectionKey] = schedule
-	}
-	return schedules, nil
+	return
 }
 
 func (c *Config) getSchedule(key string) (Schedule, error) {
@@ -621,55 +650,15 @@ func (c *Config) getSchedule(key string) (Schedule, error) {
 
 // unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options
 func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
-	if c.format == "hcl" {
-		return c.viper.UnmarshalKey(key, rawVal, configOptionHCL)
-	} else if c.GetVersion() >= Version02 {
-		return c.viper.UnmarshalKey(key, rawVal, configOptionV2)
+	if c.GetVersion() <= Version01 {
+		return c.unmarshalKeyV1(key, rawVal)
 	}
+
+	if c.format == FormatHCL {
+		return fmt.Errorf("HCL format is not supported in version %d, please use version 1 or another file format", c.GetVersion())
+	}
+
 	return c.viper.UnmarshalKey(key, rawVal, configOption)
-}
-
-// forceSliceReplacementHookFunc clears the target slice before assigning a new value
-func forceSliceReplacementHookFunc() mapstructure.DecodeHookFuncValue {
-	return func(from reflect.Value, to reflect.Value) (interface{}, error) {
-		if kind := from.Type().Kind(); (kind == reflect.Slice || kind == reflect.Array || kind == reflect.String) && from.Len() > 0 {
-			if kind = to.Type().Kind(); (kind == reflect.Slice || kind == reflect.Array) && to.Len() > 0 {
-				if kind == reflect.Slice {
-					to.SetLen(0)
-				} else {
-					to.Set(to.Slice(0, 0))
-				}
-			}
-		}
-		return from.Interface(), nil
-	}
-}
-
-// sliceOfMapsToMapHookFunc merges a slice of maps to a map
-func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map && (to.Kind() == reflect.Struct || to.Kind() == reflect.Map) {
-			source, ok := data.([]map[string]interface{})
-			if !ok {
-				return data, nil
-			}
-			if len(source) == 0 {
-				return data, nil
-			}
-			if len(source) == 1 {
-				return source[0], nil
-			}
-			// flatten the slice into one map
-			convert := make(map[string]interface{})
-			for _, mapItem := range source {
-				for key, value := range mapItem {
-					convert[key] = value
-				}
-			}
-			return convert, nil
-		}
-		return data, nil
-	}
 }
 
 // traceConfig sends a log of level trace to show the resulting configuration after resolving the template

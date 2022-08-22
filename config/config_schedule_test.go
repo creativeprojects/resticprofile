@@ -51,3 +51,8 @@ schedules:
 		})
 	}
 }
+
+func TestGetScheduleSectionsOnV1(t *testing.T) {
+	c := newConfig("toml")
+	assert.Panics(t, func() { c.GetScheduleSections() })
+}

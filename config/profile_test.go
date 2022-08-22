@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
 	"runtime"
@@ -13,111 +14,135 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func runForVersions(t *testing.T, runner func(t *testing.T, version, prefix string)) {
+	t.Run("V1", func(t *testing.T) { runner(t, "version=1\n", "") })
+	t.Run("V2", func(t *testing.T) { runner(t, "version=2\n", "profiles.") })
+}
+
 func TestNoProfile(t *testing.T) {
-	testConfig := ""
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	assert.ErrorIs(t, err, ErrNotFound)
-	assert.Nil(t, profile)
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + ""
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		assert.ErrorIs(t, err, ErrNotFound)
+		assert.Nil(t, profile)
+	})
 }
 
 func TestProfileNotFound(t *testing.T) {
-	testConfig := "[profile]\n"
-	profile, err := getProfile("toml", testConfig, "other", "")
-	assert.ErrorIs(t, err, ErrNotFound)
-	assert.Nil(t, profile)
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + "[" + prefix + "profile]\n"
+		profile, err := getProfile("toml", testConfig, "other", "")
+		assert.ErrorIs(t, err, ErrNotFound)
+		assert.Nil(t, profile)
+	})
 }
 
 func TestEmptyProfile(t *testing.T) {
-	testConfig := "[profile]\n"
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, "profile", profile.Name)
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + "[" + prefix + "profile]\n"
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, "profile", profile.Name)
+	})
 }
 
 func TestNoInitializeValue(t *testing.T) {
-	testConfig := "[profile]\n"
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, false, profile.Initialize)
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + "[" + prefix + "profile]\n"
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, false, profile.Initialize)
+	})
 }
 
 func TestInitializeValueFalse(t *testing.T) {
-	testConfig := `[profile]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `[` + prefix + `profile]
 initialize = false
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, false, profile.Initialize)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, false, profile.Initialize)
+	})
 }
 
 func TestInitializeValueTrue(t *testing.T) {
-	testConfig := `[profile]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `[` + prefix + `profile]
 initialize = true
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, true, profile.Initialize)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, true, profile.Initialize)
+	})
 }
 
 func TestInheritedInitializeValueTrue(t *testing.T) {
-	testConfig := `[parent]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `[` + prefix + `parent]
 initialize = true
 
-[profile]
+[` + prefix + `profile]
 inherit = "parent"
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, true, profile.Initialize)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, true, profile.Initialize)
+	})
 }
 
 func TestOverriddenInitializeValueFalse(t *testing.T) {
-	testConfig := `[parent]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `[` + prefix + `parent]
 initialize = true
 
-[profile]
+[` + prefix + `profile]
 initialize = false
 inherit = "parent"
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, false, profile.Initialize)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, false, profile.Initialize)
+	})
 }
 
 func TestUnknownParent(t *testing.T) {
-	testConfig := `[profile]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `[` + prefix + `profile]
 inherit = "parent"
 `
-	_, err := getProfile("toml", testConfig, "profile", "")
-	assert.Error(t, err)
+		_, err := getProfile("toml", testConfig, "profile", "")
+		assert.Error(t, err)
+	})
 }
 
 func TestMultiInheritance(t *testing.T) {
-	testConfig := `
-[grand-parent]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `
+[` + prefix + `grand-parent]
 repository = "grand-parent"
 first-value = 1
 override-value = 1
 
-[parent]
+[` + prefix + `parent]
 inherit = "grand-parent"
 initialize = true
 repository = "parent"
@@ -125,53 +150,83 @@ second-value = 2
 override-value = 2
 quiet = true
 
-[profile]
+[` + prefix + `profile]
 inherit = "parent"
 third-value = 3
 verbose = true
 quiet = false
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
+		assert.Equal(t, "profile", profile.Name)
+		assert.Equal(t, "parent", profile.Repository.String())
+		assert.Equal(t, true, profile.Initialize)
+		assert.Equal(t, int64(1), profile.OtherFlags["first-value"])
+		assert.Equal(t, int64(2), profile.OtherFlags["second-value"])
+		assert.Equal(t, int64(3), profile.OtherFlags["third-value"])
+		assert.Equal(t, int64(2), profile.OtherFlags["override-value"])
+		assert.Equal(t, false, profile.Quiet)
+		assert.Equal(t, true, profile.Verbose)
+	})
+}
+
+func TestInheritanceAppendToList(t *testing.T) {
+	testConfig := `
+version = 2
+[profiles.grand-parent]
+run-before = "grand-parent"
+
+[profiles.parent]
+inherit = "grand-parent"
+"run-before..." = "parent"
+
+[profiles.profile]
+inherit = "parent"
+"...run-before" = "profile"
+`
+	config, err := Load(bytes.NewBufferString(testConfig), "toml")
+	require.NoError(t, err)
+
+	// rerun on same config instance to ensure inheritance and list append returns consistent results
+	for i := 0; i < 10; i++ {
+		profile, err := config.getProfile("profile")
+		require.NoError(t, err)
+		assert.NotNil(t, profile)
+		assert.Equal(t, []string{"profile", "grand-parent", "parent"}, profile.RunBefore)
 	}
-	assert.NotNil(t, profile)
-	assert.Equal(t, "profile", profile.Name)
-	assert.Equal(t, "parent", profile.Repository.String())
-	assert.Equal(t, true, profile.Initialize)
-	assert.Equal(t, int64(1), profile.OtherFlags["first-value"])
-	assert.Equal(t, int64(2), profile.OtherFlags["second-value"])
-	assert.Equal(t, int64(3), profile.OtherFlags["third-value"])
-	assert.Equal(t, int64(2), profile.OtherFlags["override-value"])
-	assert.Equal(t, false, profile.Quiet)
-	assert.Equal(t, true, profile.Verbose)
 }
 
 func TestProfileCommonFlags(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		assert := assert.New(t)
+		testConfig := version + `
+[` + prefix + `profile]
 quiet = true
 verbose = false
 repository = "test"
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(profile)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(profile)
 
-	flags := profile.GetCommonFlags().ToMap()
-	assert.NotNil(flags)
-	assert.Contains(flags, "quiet")
-	assert.NotContains(flags, "verbose")
-	assert.Contains(flags, "repo")
+		flags := profile.GetCommonFlags().ToMap()
+		assert.NotNil(flags)
+		assert.Contains(flags, "quiet")
+		assert.NotContains(flags, "verbose")
+		assert.Contains(flags, "repo")
+	})
 }
 
 func TestProfileOtherFlags(t *testing.T) {
-	assert := assert.New(t)
-	testConfig := `
-[profile]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		assert := assert.New(t)
+		testConfig := version + `
+[` + prefix + `profile]
 bool-true = true
 bool-false = false
 string = "test"
@@ -184,76 +239,79 @@ array0 = []
 array1 = [1]
 array2 = ["one", "two"]
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(profile)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(profile)
 
-	flags := profile.GetCommonFlags().ToMap()
-	assert.NotNil(flags)
-	assert.Contains(flags, "bool-true")
-	assert.NotContains(flags, "bool-false")
-	assert.Contains(flags, "string")
-	assert.NotContains(flags, "zero")
-	assert.NotContains(flags, "empty")
-	assert.Contains(flags, "float")
-	assert.Contains(flags, "int")
-	assert.NotContains(flags, "array0")
-	assert.Contains(flags, "array1")
-	assert.Contains(flags, "array2")
+		flags := profile.GetCommonFlags().ToMap()
+		assert.NotNil(flags)
+		assert.Contains(flags, "bool-true")
+		assert.NotContains(flags, "bool-false")
+		assert.Contains(flags, "string")
+		assert.NotContains(flags, "zero")
+		assert.NotContains(flags, "empty")
+		assert.Contains(flags, "float")
+		assert.Contains(flags, "int")
+		assert.NotContains(flags, "array0")
+		assert.Contains(flags, "array1")
+		assert.Contains(flags, "array2")
 
-	assert.Equal([]string{}, flags["bool-true"])
-	assert.Equal([]string{"test"}, flags["string"])
-	assert.Equal([]string{strconv.FormatFloat(4.2, 'f', -1, 64)}, flags["float"])
-	assert.Equal([]string{"42"}, flags["int"])
-	assert.Equal([]string{"1"}, flags["array1"])
-	assert.Equal([]string{"one", "two"}, flags["array2"])
+		assert.Equal([]string{}, flags["bool-true"])
+		assert.Equal([]string{"test"}, flags["string"])
+		assert.Equal([]string{strconv.FormatFloat(4.2, 'f', -1, 64)}, flags["float"])
+		assert.Equal([]string{"42"}, flags["int"])
+		assert.Equal([]string{"1"}, flags["array1"])
+		assert.Equal([]string{"one", "two"}, flags["array2"])
+	})
 }
 
 func TestSetRootInProfileUnix(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.SkipNow()
 	}
-	testConfig := `
-[profile]
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `
+[` + prefix + `profile]
 status-file = "status"
 password-file = "key"
 lock = "lock"
-[profile.backup]
+[` + prefix + `profile.backup]
 source = ["backup", "root"]
 exclude-file = "exclude"
 files-from = "include"
 exclude = "exclude"
 iexclude = "iexclude"
-[profile.copy]
+[` + prefix + `profile.copy]
 password-file = "key"
-[profile.dump]
+[` + prefix + `profile.dump]
 password-file = "key"
-[profile.init]
+[` + prefix + `profile.init]
 from-repository-file = "key"
 from-password-file = "key"
 `
-	profile, err := getProfile("toml", testConfig, "profile", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, profile)
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, profile)
 
-	profile.SetRootPath("/wd")
-	assert.Equal(t, "status", profile.StatusFile)
-	assert.Equal(t, "/wd/key", profile.PasswordFile)
-	assert.Equal(t, "/wd/lock", profile.Lock)
-	assert.Equal(t, "", profile.CacheDir)
-	assert.ElementsMatch(t, []string{"backup", "root"}, profile.GetBackupSource())
-	assert.ElementsMatch(t, []string{"/wd/exclude"}, profile.Backup.ExcludeFile)
-	assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
-	assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
-	assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
-	assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
-	assert.Equal(t, []string{"/wd/key"}, profile.Dump["password-file"])
-	assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
-	assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
+		profile.SetRootPath("/wd")
+		assert.Equal(t, "status", profile.StatusFile)
+		assert.Equal(t, "/wd/key", profile.PasswordFile)
+		assert.Equal(t, "/wd/lock", profile.Lock)
+		assert.Equal(t, "", profile.CacheDir)
+		assert.ElementsMatch(t, []string{"backup", "root"}, profile.GetBackupSource())
+		assert.ElementsMatch(t, []string{"/wd/exclude"}, profile.Backup.ExcludeFile)
+		assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
+		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
+		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
+		assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
+		assert.Equal(t, []string{"/wd/key"}, profile.Dump["password-file"])
+		assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
+		assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
+	})
 }
 
 func TestHostInProfile(t *testing.T) {

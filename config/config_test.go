@@ -117,26 +117,6 @@ global:
     initialize: false
     priority: low
 `},
-		{FormatHCL, `
-version = 2
-"global" = {
-    default-command = "version"
-    initialize = false
-    priority = "low"
-}
-`},
-		{FormatHCL, `
-version = 2
-"global" = {
-    default-command = "version"
-    initialize = true
-}
-
-"global" = {
-    initialize = false
-    priority = "low"
-}
-`},
 	}
 
 	for _, testItem := range testData {
@@ -154,6 +134,20 @@ version = 2
 			assert.Equal(t, false, global.IONice)
 		})
 	}
+}
+
+func TestHCLFormatOnlyInVersion01(t *testing.T) {
+	testConfig := `
+version = 2
+"global" = {
+    default-command = "version"
+    initialize = false
+    priority = "low"
+}`
+	c, err := Load(bytes.NewBufferString(testConfig), FormatHCL)
+	require.NoError(t, err)
+	_, err = c.GetGlobalSection()
+	assert.EqualError(t, err, "HCL format is not supported in version 2, please use version 1 or another file format")
 }
 
 func TestStringWithCommaNotConvertedToSlice(t *testing.T) {
@@ -259,9 +253,9 @@ func TestIncludes(t *testing.T) {
 		content := fmt.Sprintf(`includes=['*%[1]s.inc.toml','*%[1]s.inc.yaml','*%[1]s.inc.json']`, testID)
 
 		configFile := createFile(t, "profiles.conf", content)
-		createFile(t, "d-"+testID+".inc.toml", `[one]`)
-		createFile(t, "o-"+testID+".inc.yaml", `two: {}`)
-		createFile(t, "j-"+testID+".inc.json", `{"three":{}}`)
+		createFile(t, "d-"+testID+".inc.toml", "[one]\nk='v'")
+		createFile(t, "o-"+testID+".inc.yaml", `two: { k: v }`)
+		createFile(t, "j-"+testID+".inc.json", `{"three":{ "k": "v" }}`)
 
 		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.IsSet("includes"))
@@ -302,14 +296,20 @@ run-before = "default-before"`)
 
 		createFile(t, "mixin-"+testID+".inc.toml", `
 [mixins.another-run-before]
-"run-before..." = "another-run-before"`)
+"run-before..." = "another-run-before"
+[mixins.another-run-before2]
+"run-before..." = "another-run-before2"`)
+
+		createFile(t, "mixin-use-"+testID+".inc.toml", `
+[profiles.default]
+use = "another-run-before2"`)
 
 		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
 		assert.NoError(t, err)
-		assert.Equal(t, []string{"default-before", "another-run-before"}, profile.RunBefore)
+		assert.Equal(t, []string{"default-before", "another-run-before", "another-run-before2"}, profile.RunBefore)
 	})
 
 	t.Run("hcl-includes-only-hcl", func(t *testing.T) {
@@ -331,7 +331,7 @@ run-before = "default-before"`)
 		defer cleanFiles()
 
 		configFile := createFile(t, "profiles.toml", `includes = "*`+testID+`.inc.*"`)
-		createFile(t, "pass-"+testID+".inc.toml", `[one]`)
+		createFile(t, "pass-"+testID+".inc.toml", "[one]\nk='v'")
 
 		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("one"))
@@ -502,5 +502,24 @@ profiles:
 		profile, err := config.GetProfile("profile")
 		require.NoError(t, err)
 		assert.Equal(t, []string{"", "profile-before"}, profile.RunBefore)
+	})
+}
+
+func TestRequireVersionAssertions(t *testing.T) {
+	t.Run("v1", func(t *testing.T) {
+		c := newConfig("toml")
+		assert.NotPanics(t, func() { c.requireVersion(Version01) })
+		assert.NotPanics(t, func() { c.requireMinVersion(Version01) })
+		assert.Panics(t, func() { c.requireVersion(Version02) })
+		assert.Panics(t, func() { c.requireMinVersion(Version02) })
+	})
+
+	t.Run("v2", func(t *testing.T) {
+		c := newConfig("toml")
+		c.viper.Set("version", 2)
+		assert.NotPanics(t, func() { c.requireVersion(Version02) })
+		assert.NotPanics(t, func() { c.requireMinVersion(Version01) })
+		assert.NotPanics(t, func() { c.requireMinVersion(Version02) })
+		assert.Panics(t, func() { c.requireVersion(Version01) })
 	})
 }
