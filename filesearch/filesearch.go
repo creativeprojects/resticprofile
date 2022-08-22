@@ -1,11 +1,12 @@
 package filesearch
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 
@@ -86,43 +87,22 @@ func FindConfigurationFile(configFile string) (string, error) {
 	if found != "" {
 		return found, nil
 	}
-	// compile a list of search locations
-	locations := []string{filepath.Join(xdg.ConfigHome, XDGAppName)}
-	for _, configDir := range xdg.ConfigDirs {
-		locations = append(locations, filepath.Join(configDir, XDGAppName))
-	}
-	locations = append(locations, getDefaultConfigurationLocations()...)
-	if home, err := os.UserHomeDir(); err == nil {
-		locations = append(locations, home)
-	}
-	return "", fmt.Errorf("configuration file %s was not found in the current directory nor any of these locations: %s", displayFile, strings.Join(locations, ", "))
+
+	return "", fmt.Errorf(
+		"configuration file %s was not found in the current directory nor any of these locations: %s",
+		displayFile,
+		strings.Join(getSearchConfigurationLocations(), ", "))
 }
 
 func findConfigurationFileWithExtension(configFile string) string {
-	// 1. Simple case: current folder (or rooted path)
+	// simple case: try current folder (or rooted path)
 	if fileExists(configFile) {
 		return configFile
 	}
 
-	// 2. Next we try xdg as the "standard" for user configuration locations
-	xdgFilename, err := xdg.SearchConfigFile(filepath.Join(XDGAppName, configFile))
-	if err == nil {
-		if fileExists(xdgFilename) {
-			return xdgFilename
-		}
-	}
+	// try from a list of locations
+	paths := getSearchConfigurationLocations()
 
-	// 3. To keep compatibility with older versions, try the pre-selected locations
-	paths := getDefaultConfigurationLocations()
-	if home, err := os.UserHomeDir(); err == nil {
-		paths = append(paths, home)
-	}
-	// also adds binary dir on windows
-	if platform.IsWindows() {
-		if binary, err := os.Executable(); err == nil {
-			paths = append(paths, filepath.Dir(binary))
-		}
-	}
 	for _, configPath := range paths {
 		filename := filepath.Join(configPath, configFile)
 		if fileExists(filename) {
@@ -191,11 +171,9 @@ func FindResticBinary(configLocation string) (string, error) {
 		}
 		clog.Warningf("cannot find or read the restic binary specified in the configuration: %q", configLocation)
 	}
-	paths := getDefaultBinaryLocations()
-	binaryFile := getResticBinary()
-	if home, err := os.UserHomeDir(); err == nil {
-		paths = append(paths, filepath.Join(home, ".local/bin/"))
-	}
+	paths := getSearchBinaryLocations()
+	binaryFile := getResticBinaryName()
+
 	for _, configPath := range paths {
 		filename := filepath.Join(configPath, binaryFile)
 		if fileExists(filename) {
@@ -213,7 +191,7 @@ func FindResticBinary(configLocation string) (string, error) {
 // ShellExpand uses the shell to expand variables and ~ from a filename.
 // On Windows the function simply returns the filename unchanged
 func ShellExpand(filename string) (string, error) {
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		return filename, nil
 	}
 	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s", strings.ReplaceAll(filename, " ", `\ `)))
@@ -225,22 +203,47 @@ func ShellExpand(filename string) (string, error) {
 	return filename, nil
 }
 
-func getDefaultConfigurationLocations() []string {
-	if runtime.GOOS == "windows" {
-		return defaultConfigurationLocationsWindows
+func getSearchConfigurationLocations() []string {
+	locations := []string{filepath.Join(xdg.ConfigHome, XDGAppName)}
+	for _, configDir := range xdg.ConfigDirs {
+		locations = append(locations, filepath.Join(configDir, XDGAppName))
 	}
-	return defaultConfigurationLocationsUnix
+
+	if platform.IsWindows() {
+		locations = append(locations, defaultConfigurationLocationsWindows...)
+	} else {
+		locations = append(locations, defaultConfigurationLocationsUnix...)
+	}
+
+	if home, err := os.UserHomeDir(); err == nil {
+		locations = append(locations, home)
+	}
+
+	// also adds binary dir on windows
+	if platform.IsWindows() {
+		if binary, err := os.Executable(); err == nil {
+			locations = append(locations, filepath.Dir(binary))
+		}
+	}
+
+	return locations
 }
 
-func getDefaultBinaryLocations() []string {
-	if runtime.GOOS == "windows" {
-		return defaultBinaryLocationsWindows
+func getSearchBinaryLocations() []string {
+	var paths []string
+	if platform.IsWindows() {
+		paths = defaultBinaryLocationsWindows
+	} else {
+		paths = defaultBinaryLocationsUnix
 	}
-	return defaultBinaryLocationsUnix
+	if home, err := os.UserHomeDir(); err == nil {
+		paths = append(paths, filepath.Join(home, ".local/bin/"), filepath.Join(home, "bin/"))
+	}
+	return paths
 }
 
-func getResticBinary() string {
-	if runtime.GOOS == "windows" {
+func getResticBinaryName() string {
+	if platform.IsWindows() {
 		return resticBinaryWindows
 	}
 	return resticBinaryUnix
@@ -248,5 +251,5 @@ func getResticBinary() string {
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	return err == nil
+	return err == nil || errors.Is(err, fs.ErrExist)
 }
