@@ -79,7 +79,9 @@ root:
 {{% /tab %}}
 {{% /tabs %}}
 
-Please note you need to set `extended-status` to `true` if you want all the available metrics. See [Extended status](#extended-status) for more information.
+{{% notice style="note" %}}
+Please note you need to set `extended-status` to `true` if you want all the available metrics. See [Extended status]({{< ref "/status/#-extended-status" >}}) for more information.
+{{% /notice %}}
 
 Here's an example of the generated prometheus file:
 
