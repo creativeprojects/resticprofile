@@ -133,6 +133,19 @@ func (r *resticWrapper) getCommandAction(command string) func() error {
 	return func() error { return r.runCommand(command) }
 }
 
+func (r *resticWrapper) getCopyAction() func() error {
+	copyAction := r.getCommandAction(constants.CommandCopy)
+
+	return func() error {
+		// we might need to initialize the secondary repository (the copy target)
+		if r.global.Initialize || (r.profile.Copy != nil && r.profile.Copy.Initialize) {
+			_ = r.runInitializeCopy() // it's ok if the initialization returned an error
+		}
+
+		return copyAction()
+	}
+}
+
 func (r *resticWrapper) getBackupAction() func() error {
 	backupAction := r.getCommandAction(constants.CommandBackup)
 
@@ -186,20 +199,17 @@ func (r *resticWrapper) runProfile() error {
 					// it's ok for the initialize to error out when the repository exists
 				}
 
-				// in case of a copy command, we might need to initialize the secondary repository
-				if r.command == constants.CommandCopy && (r.global.Initialize || (r.profile.Copy != nil && r.profile.Copy.Initialize)) {
-					_ = r.runInitializeCopy()
-					// it's ok if the initialization returned an error
-				}
-
 				r.sendBefore(r.command)
 
 				// Main command
 				{
 					var runner func() error
-					if r.command == constants.CommandBackup {
+					switch r.command {
+					case constants.CommandCopy:
+						runner = r.getCopyAction()
+					case constants.CommandBackup:
 						runner = r.getBackupAction()
-					} else {
+					default:
 						runner = r.getCommandAction(r.command)
 					}
 
