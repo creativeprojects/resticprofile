@@ -308,7 +308,7 @@ from-password-file = "key"
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
 		assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
-		assert.Equal(t, []string{"/wd/key"}, profile.Dump["password-file"])
+		assert.Equal(t, []string{"/wd/key"}, profile.Dump.OtherFlags["password-file"])
 		assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
 		assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
 	})

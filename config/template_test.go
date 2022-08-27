@@ -218,7 +218,7 @@ tag = ["test", "{{ .Profile.Name }}"]
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Contains(t, profile.Snapshots["tag"], "profile1")
+	assert.Contains(t, profile.Snapshots.OtherFlags["tag"], "profile1")
 }
 
 func TestResolveHostname(t *testing.T) {
@@ -239,7 +239,7 @@ tag = "{{ .Hostname }}"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Contains(t, profile.Snapshots["tag"], hostname)
+	assert.Contains(t, profile.Snapshots.OtherFlags["tag"], hostname)
 }
 
 func TestResolveCurrentDir(t *testing.T) {
@@ -257,7 +257,7 @@ tag = "{{ .CurrentDir }}"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, currentDir, profile.Snapshots["tag"])
+	assert.Equal(t, currentDir, profile.Snapshots.OtherFlags["tag"])
 }
 
 func TestResolveBinaryDir(t *testing.T) {
@@ -275,7 +275,7 @@ tag = "{{ .BinaryDir }}"
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, binaryDir, profile.Snapshots["tag"])
+	assert.Equal(t, binaryDir, profile.Snapshots.OtherFlags["tag"])
 }
 
 func TestInheritanceWithTemplates(t *testing.T) {
