@@ -28,6 +28,10 @@ func init() {
 			description:       "second second",
 			action:            secondCommand,
 			needConfiguration: true,
+			flags: map[string]string{
+				"-f, --first":   "first flag",
+				"-s, --seccond": "second flag",
+			},
 		},
 		{
 			name:              "third",
@@ -53,8 +57,12 @@ func thirdCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string)
 
 func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
-	displayOwnCommands(buffer)
+	displayOwnCommands(buffer, false)
 	assert.Equal(t, "   first    first first\n   second   second second\n", buffer.String())
+
+	buffer.Reset()
+	displayOwnCommands(buffer, true, "second")
+	assert.Equal(t, "   second   second second\n            flags:\n            -f, --first     first flag\n            -s, --seccond   second flag\n            \n", buffer.String())
 }
 
 func TestIsOwnCommand(t *testing.T) {

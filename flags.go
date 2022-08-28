@@ -38,6 +38,8 @@ type commandLineFlags struct {
 func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset := pflag.NewFlagSet("resticprofile", pflag.ContinueOnError)
 
+	flags := commandLineFlags{}
+
 	flagset.Usage = func() {
 		fmt.Println("\nUsage of resticprofile:")
 		fmt.Println("\tresticprofile [resticprofile flags] [profile name.][restic command] [restic flags]")
@@ -45,12 +47,10 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		fmt.Println("\nresticprofile flags:")
 		flagset.PrintDefaults()
 		fmt.Println("\nresticprofile own commands:")
-		displayOwnCommands(os.Stdout)
+		displayOwnCommands(os.Stdout, flags.verbose)
 		fmt.Println("\nDocumentation available at https://creativeprojects.github.io/resticprofile/")
 		fmt.Println("")
 	}
-
-	flags := commandLineFlags{}
 
 	flagset.BoolVarP(&flags.help, "help", "h", false, "display this help")
 	flagset.BoolVarP(&flags.quiet, "quiet", "q", constants.DefaultQuietFlag, "display only warnings and errors")

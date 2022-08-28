@@ -147,14 +147,32 @@ func getOwnCommands() []ownCommand {
 	}
 }
 
-func displayOwnCommands(output io.Writer) {
+func displayOwnCommands(output io.Writer, showFlags bool, onlySelected ...string) {
 	commandsWriter := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
 	for _, command := range ownCommands {
 		if command.hide {
 			continue
 		}
+		if len(onlySelected) > 0 && !containsString(onlySelected, command.name) {
+			continue
+		}
+
 		_, _ = fmt.Fprintf(commandsWriter, "\t%s\t%s\n", command.name, command.description)
-		// TODO: find a nice way to display command flags
+
+		if showFlags {
+			var flags []string
+			for f, _ := range command.flags {
+				flags = append(flags, f)
+			}
+			if len(flags) > 0 {
+				sort.Strings(flags)
+				_, _ = fmt.Fprintln(commandsWriter, "\t\tflags:")
+				for _, f := range flags {
+					_, _ = fmt.Fprintf(commandsWriter, "\t\t%s\t%s\n", f, command.flags[f])
+				}
+				_, _ = fmt.Fprintln(commandsWriter, "\t\t")
+			}
+		}
 	}
 	_ = commandsWriter.Flush()
 }
@@ -171,7 +189,13 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 func runOwnCommand(configuration *config.Config, command string, flags commandLineFlags, args []string) error {
 	for _, commandDef := range ownCommands {
 		if commandDef.name == command {
-			return commandDef.action(os.Stdout, configuration, flags, args)
+			if containsString(args, "--help") || containsString(args, "-h") {
+				_, _ = fmt.Fprintln(os.Stdout, "resticprofile own command:")
+				displayOwnCommands(os.Stdout, true, command)
+				return nil
+			} else {
+				return commandDef.action(os.Stdout, configuration, flags, args)
+			}
 		}
 	}
 	return fmt.Errorf("command not found: %v", command)
