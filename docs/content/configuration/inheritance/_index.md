@@ -187,7 +187,7 @@ Configuration merging is following the same logic as used in [inheritance](#prof
 
 Configuration values inside a mixin may be parametrized with variables following the syntax `${variable}` or `$variable`. Defaults for variables can be defined inside the mixin with `default-vars` and `use` can specify variables before merging the mixin. In difference to configuration [variables]({{< ref "/configuration/variables" >}}) that expand prior to parsing, mixin variables expand when the mixin is merged and for this reason the syntax differs.
 
-Unlike configuration [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}), mixins create parsed configuration structure not config markup requires parsing. This allows mixins to be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{< ref "/configuration/include/#configuration-merging" >}}).
+Unlike configuration [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}), mixins create parsed configuration structure not config markup that requires parsing. This allows mixins to be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{< ref "/configuration/include/#configuration-merging" >}}).
 
 {{< tabs groupId="config-with-mixins" >}}
 {{% tab name="yaml" %}}

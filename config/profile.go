@@ -76,12 +76,11 @@ type Profile struct {
 
 // InitSection contains the specific configuration to the 'init' command
 type InitSection struct {
-	RunShellCommandsSection `mapstructure:",squash"`
-	OtherFlagsSection       `mapstructure:",squash"`
-	FromRepository          ConfidentialValue `mapstructure:"from-repository" argument:"repo2"`
-	FromRepositoryFile      string            `mapstructure:"from-repository-file" argument:"repository-file2"`
-	FromPasswordFile        string            `mapstructure:"from-password-file" argument:"password-file2"`
-	FromPasswordCommand     string            `mapstructure:"from-password-command" argument:"password-command2"`
+	OtherFlagsSection   `mapstructure:",squash"`
+	FromRepository      ConfidentialValue `mapstructure:"from-repository" argument:"repo2"`
+	FromRepositoryFile  string            `mapstructure:"from-repository-file" argument:"repository-file2"`
+	FromPasswordFile    string            `mapstructure:"from-password-file" argument:"password-file2"`
+	FromPasswordCommand string            `mapstructure:"from-password-command" argument:"password-command2"`
 }
 
 func (i *InitSection) IsEmpty() bool { return i == nil }
@@ -89,6 +88,7 @@ func (i *InitSection) IsEmpty() bool { return i == nil }
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
 	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
+	RunShellCommandsSection          `mapstructure:",squash"`
 	CheckBefore                      bool     `mapstructure:"check-before"`
 	CheckAfter                       bool     `mapstructure:"check-after"`
 	UseStdin                         bool     `mapstructure:"stdin" argument:"stdin"`
@@ -118,10 +118,9 @@ func (r *RetentionSection) IsEmpty() bool { return r == nil }
 // SectionWithScheduleAndMonitoring is a section containing schedule, shell command hooks and monitoring
 // (all the other parameters being for restic)
 type SectionWithScheduleAndMonitoring struct {
-	ScheduleBaseSection     `mapstructure:",squash"`
-	SendMonitoringSections  `mapstructure:",squash"`
-	RunShellCommandsSection `mapstructure:",squash"`
-	OtherFlagsSection       `mapstructure:",squash"`
+	ScheduleBaseSection    `mapstructure:",squash"`
+	SendMonitoringSections `mapstructure:",squash"`
+	OtherFlagsSection      `mapstructure:",squash"`
 }
 
 func (s *SectionWithScheduleAndMonitoring) IsEmpty() bool { return s == nil }
@@ -141,6 +140,7 @@ func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection { return s }
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
 	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
+	RunShellCommandsSection          `mapstructure:",squash"`
 	Initialize                       bool              `mapstructure:"initialize"`
 	InitializeCopyChunkerParams      bool              `mapstructure:"initialize-copy-chunker-params"`
 	Repository                       ConfidentialValue `mapstructure:"repository" argument:"repo2"`

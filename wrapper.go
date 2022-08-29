@@ -213,7 +213,11 @@ func (r *resticWrapper) runProfile() error {
 						runner = r.getCommandAction(r.command)
 					}
 
-					err = r.runnerWithBeforeAndAfter(shellCommands, r.command, runner)()
+					// Wrap command action in "run-before" & "run-after" from section
+					runner = r.runnerWithBeforeAndAfter(shellCommands, r.command, runner)
+
+					// Execute command sequence
+					err = runner()
 				}
 
 				if err == nil {
@@ -224,10 +228,13 @@ func (r *resticWrapper) runProfile() error {
 			// on failure
 			func(err error) {
 				r.sendAfterFail(r.command, err)
+				// "run-after-fail" in section (returns nil when no-error or not defined)
 				if r.runAfterFailCommands(shellCommands, err, r.command) == nil {
+					// "run-after-fail" in profile
 					_ = r.runAfterFailCommands(profileShellCommands, err, "")
 				}
 			},
+			// finally
 			func(err error) {
 				r.runFinalShellCommands(r.command, err)
 				r.sendFinally(r.command, err)

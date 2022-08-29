@@ -559,11 +559,11 @@ func TestRunShellCommands(t *testing.T) {
 
 	sections := map[string]*config.RunShellCommandsSection{
 		"backup": profile.Backup.GetRunShellCommands(),
-		"check":  profile.Check.GetRunShellCommands(),
-		"copy":   profile.Copy.GetRunShellCommands(),
-		"forget": profile.Forget.GetRunShellCommands(),
-		"init":   profile.Init.GetRunShellCommands(),
-		"prune":  profile.Prune.GetRunShellCommands(),
+		//"check":  profile.Check.GetRunShellCommands(),
+		"copy": profile.Copy.GetRunShellCommands(),
+		//"forget": profile.Forget.GetRunShellCommands(),
+		//"init": profile.Init.GetRunShellCommands(),
+		//"prune":  profile.Prune.GetRunShellCommands(),
 	}
 
 	for command, section := range sections {
