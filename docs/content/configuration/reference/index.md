@@ -7,31 +7,44 @@ weight: 50
 
 ## Configuration file reference
 
-`[global]`
+### Section `global`
 
-`global` is a fixed name
+`global` is a fixed section name, at the root of the configuration file
 
-None of these flags are passed on the restic command line
+{{% notice info %}}
+None of these flags are directly passed on to the restic command line
+{{% /notice %}}
 
-* **ionice**: true / false
-* **ionice-class**: integer
-* **ionice-level**: integer
-* **nice**: true / false OR integer
-* **priority**: string = `Idle`, `Background`, `Low`, `Normal`, `High`, `Highest`
-* **default-command**: string
-* **initialize**: true / false
-* **restic-binary**: string
-* **restic-lock-retry-after**: duration
-* **restic-stale-lock-age**: duration
-* **min-memory**: integer (MB) - see [memory]({{< ref "/usage/memory" >}})
-* **shell**: string (shell binary to run commands, default value is OS specific)
-* **scheduler**: string (`crond` is the only non-default value)
-* **systemd-unit-template**: string (file containing a go template to generate systemd unit file)
-* **systemd-timer-template**: string (file containing a go template to generate systemd timer file)
 
-`[profile]`
+| Name | Type | Notes |
+|:-----|:-----|:------|
+| **ionice** | true / false |
+| **ionice-class** | integer |
+| **ionice-level** | integer |
+| **nice** | true / false OR integer |
+| **priority** | string | values are `Idle`, `Background`, `Low`, `Normal`, `High`, `Highest` |
+| **default-command** | string | default is `snapshots` |
+| **initialize** | true / false | auto-initialize a repository |
+| **restic-binary** | string | full path of the restic program |
+| **restic-lock-retry-after** | duration [^duration] | default is 1 minute - see [locks]({{< ref "/usage/locks" >}}) |
+| **restic-stale-lock-age** | duration [^duration] | default is 2 hours - see [locks]({{< ref "/usage/locks" >}}) |
+| **min-memory** | integer (MB) | default is 100MB - see [memory]({{< ref "/usage/memory" >}}) |
+| **shell** | string | shell binary to run commands, default value is OS specific |
+| **scheduler** | string | `crond` is the only non-default value |
+| **systemd-unit-template** | string | file containing a go template to generate systemd unit file - see [systemd templates]({{< ref "/schedules/systemd" >}}) |
+| **systemd-timer-template** | string | file containing a go template to generate systemd timer file - see [systemd templates]({{< ref "/schedules/systemd" >}}) |
+| **send-timeout** | duration [^duration] | timeout when sending messages to a webhook - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
+| **ca-certificates** | string, or list of strings | certificates (file in PEM format) to authenticate HTTP servers - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
+| **prevent-sleep** | true / false | prevent the system from sleeping |
 
-`profile` is the name of your profile
+### Profile sections
+
+The name of this section is the name of your profile.
+
+{{% notice note %}}
+You cannot use the names `global` or `groups`.
+{{% /notice %}}
+
 
 Flags used by resticprofile only
 
@@ -289,3 +302,4 @@ Flags passed to the restic command line
 * **path**: true / false, string OR list of strings
 * **tag**: true / false, string OR list of strings
 
+[^duration]: A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". 
