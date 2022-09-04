@@ -1,6 +1,7 @@
 global:
     priority: low
     min-memory: 10
+    prevent-sleep: true
 
 groups:
     double:

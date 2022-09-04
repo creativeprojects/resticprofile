@@ -3,6 +3,7 @@ global:
     initialize: false
     priority: low
     systemd-unit-template: sample.service
+    prevent-sleep: true
 
 default:
     password-file: key
