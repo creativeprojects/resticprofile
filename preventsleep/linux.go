@@ -1,4 +1,4 @@
-//go:build !darwin && !windows
+//go:build linux
 
 package preventsleep
 

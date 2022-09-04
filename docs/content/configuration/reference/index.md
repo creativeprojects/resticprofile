@@ -16,26 +16,26 @@ None of these flags are directly passed on to the restic command line
 {{% /notice %}}
 
 
-| Name | Type | Notes |
-|:-----|:-----|:------|
-| **ionice** | true / false |
-| **ionice-class** | integer |
-| **ionice-level** | integer |
-| **nice** | true / false OR integer |
-| **priority** | string | values are `Idle`, `Background`, `Low`, `Normal`, `High`, `Highest` |
-| **default-command** | string | default is `snapshots` |
-| **initialize** | true / false | auto-initialize a repository |
-| **restic-binary** | string | full path of the restic program |
-| **restic-lock-retry-after** | duration [^duration] | default is 1 minute - see [locks]({{< ref "/usage/locks" >}}) |
-| **restic-stale-lock-age** | duration [^duration] | default is 2 hours - see [locks]({{< ref "/usage/locks" >}}) |
-| **min-memory** | integer (MB) | default is 100MB - see [memory]({{< ref "/usage/memory" >}}) |
-| **shell** | string | shell binary to run commands, default value is OS specific |
-| **scheduler** | string | `crond` is the only non-default value |
-| **systemd-unit-template** | string | file containing a go template to generate systemd unit file - see [systemd templates]({{< ref "/schedules/systemd" >}}) |
-| **systemd-timer-template** | string | file containing a go template to generate systemd timer file - see [systemd templates]({{< ref "/schedules/systemd" >}}) |
-| **send-timeout** | duration [^duration] | timeout when sending messages to a webhook - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
-| **ca-certificates** | string, or list of strings | certificates (file in PEM format) to authenticate HTTP servers - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
-| **prevent-sleep** | true / false | prevent the system from sleeping |
+| Name | Type | Default | Notes |
+|:-----|:-----|:--------|:------|
+| **ionice** | true / false | false |
+| **ionice-class** | integer | 0 |
+| **ionice-level** | integer | 0 |
+| **nice** | true / false OR integer | 0 |
+| **priority** | string | `Normal` | values are `Idle`, `Background`, `Low`, `Normal`, `High`, `Highest` |
+| **default-command** | string | `snapshots` |
+| **initialize** | true / false | false | auto-initialize a repository |
+| **restic-binary** | string | | full path of the restic program |
+| **restic-lock-retry-after** | duration [^duration] | 1 minute | see [locks]({{< ref "/usage/locks" >}}) |
+| **restic-stale-lock-age** | duration [^duration] | 2 hours | see [locks]({{< ref "/usage/locks" >}}) |
+| **min-memory** | integer (MB) | 100MB | see [memory]({{< ref "/usage/memory" >}}) |
+| **shell** | string | OS specific | shell binary to run commands |
+| **scheduler** | string | | `crond` is the only non-default value |
+| **systemd-unit-template** | string | | file containing a go template to generate systemd unit file - see [systemd templates]({{< ref "/schedules/systemd" >}}) |
+| **systemd-timer-template** | string | | file containing a go template to generate systemd timer file - see [systemd templates]({{< ref "/schedules/systemd" >}}) |
+| **send-timeout** | duration [^duration] | 30 seconds | timeout when sending messages to a webhook - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
+| **ca-certificates** | string, or list of strings | | certificates (file in PEM format) to authenticate HTTP servers - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
+| **prevent-sleep** | true / false | false | prevent the system from sleeping - see [Preventing system sleep]({{< ref "sleep" >}}) |
 
 ### Profile sections
 
