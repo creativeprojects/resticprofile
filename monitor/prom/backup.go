@@ -103,12 +103,12 @@ func newBackupMetrics(group string, configLabels map[string]string) BackupMetric
 			Name:      "status",
 			Help:      "Backup status: 0=fail, 1=warning, 2=success.",
 		}, labels),
-        time: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-            Namespace: namespace,
-            Subsystem: backup,
-            Name:      "time",
-            Help:      "Last backup run (unixtime).",
-        }, labels),
+		time: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: backup,
+			Name:      "time_seconds",
+			Help:      "Last backup run (unixtime).",
+		}, labels),
 	}
 	return backupMetrics
 }
