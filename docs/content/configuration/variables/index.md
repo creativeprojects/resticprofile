@@ -49,19 +49,7 @@ For example, for the variable `.Now` you can use:
 - `.Now.YearDay`
 
 
-## Hand-made variables
-
-But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
-
-```yaml
-# declare and assign a value to the variable
-{{ $name := "something" }}
-
-# put the content of the variable here
-tag: "{{ $name }}"
-```
-
-## Examples
+### Example
 
 You can use a combination of inheritance and variables in the resticprofile configuration file like so:
 
@@ -105,6 +93,11 @@ You can use a combination of inheritance and variables in the resticprofile conf
 
   [src.backup]
     source = [ "{{ .Env.HOME }}/go/src" ]
+  
+  [src.check]
+    # Weekday is an integer from 0 to 6
+    # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
+    read-data-subset = "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
 
 ```
 
@@ -152,9 +145,15 @@ generic:
 
 src:
     inherit: generic
+
     backup:
         source:
           - "{{ .Env.HOME }}/go/src"
+
+    check:
+        # Weekday is an integer from 0 to 6
+        # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
+        read-data-subset: "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
 
 ```
 
@@ -197,6 +196,12 @@ src:
 
   "backup" = {
     "source" = ["{{ .Env.HOME }}/go/src"]
+  }
+
+  "check" = {
+    # Weekday is an integer from 0 to 6
+    # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
+    "read-data-subset" = "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
   }
 }
 ```
@@ -254,6 +259,9 @@ src:
       "source": [
         "{{ .Env.HOME }}/go/src"
       ]
+    },
+    "check": {
+      "read-data-subset": "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
     }
   }
 }
@@ -274,9 +282,10 @@ global:
     restic-lock-retry-after:  1m0s
     restic-stale-lock-age:    2h0m0s
     min-memory:               100
+    send-timeout:             30s
 
 profile src:
-    repository:     /backup/Wednesday
+    repository:     /backup/Monday
     password-file:  /Users/CP/go/src/resticprofile/examples/src-key
     initialize:     true
     lock:           /Users/CP/resticprofile-profile-src.lock
@@ -286,21 +295,24 @@ profile src:
         run-before:      echo Hello CP
                          echo current dir: /Users/CP/go/src/resticprofile
                          echo config dir: /Users/CP/go/src/resticprofile/examples
-                         echo profile started at 18 May 22 18:32 BST
+                         echo profile started at 05 Sep 22 17:39 BST
         run-after:       echo All Done!
         source:          /Users/CP/go/src
         exclude:         /**/.git
+        exclude-caches:  true
         tag:             src
                          dev
-        exclude-caches:  true
 
     retention:
         after-backup:  true
+        keep-within:   30d
+        path:          /Users/CP/go/src
         prune:         true
         tag:           src
                        dev
-        keep-within:   30d
-        path:          /Users/CP/go/src
+
+    check:
+        read-data-subset:  2/7
 
     snapshots:
         tag:  src
@@ -309,7 +321,25 @@ profile src:
 
 As you can see, the `src` profile inherited from the `generic` profile. The tags `{{ .Profile.Name }}` got replaced by the name of the current profile `src`. Now you can reuse the same generic configuration in another profile.
 
-Here's another example of a configuration on Linux where I use a variable `$mountpoint` set to a USB drive mount point:
+You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
+
+## Hand-made variables
+
+But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
+
+```yaml
+# declare and assign a value to the variable
+{{ $name := "something" }}
+
+# put the content of the variable here
+tag: "{{ $name }}"
+```
+
+
+### Example
+
+
+Here's an example of a configuration on Linux where I use a variable `$mountpoint` set to a USB drive mount point:
 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}

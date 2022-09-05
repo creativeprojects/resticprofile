@@ -42,3 +42,5 @@ src:
     backup:
         source:
         - "{{ .Env.HOME }}/go/src"
+    check:
+        read-data-subset: "{{ len (printf "a%*s" .Now.Weekday "") }}/7"

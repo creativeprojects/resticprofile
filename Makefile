@@ -49,7 +49,7 @@ TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
 all: download test build
-.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc generate-install
+.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc generate-install syslog checkdoc
 
 $(GOBIN)/eget:
 	@echo "[*] $@"
@@ -165,3 +165,6 @@ syslog:
 		-p 5514:514/tcp \
 		-v $(CURRENT_DIR)/examples/rsyslogd.conf:/etc/rsyslog.d/listen.conf \
 		instantlinux/rsyslogd:latest
+
+checkdoc:
+	go run ./config/checkdoc -r docs/content
