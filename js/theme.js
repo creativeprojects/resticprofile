@@ -22,6 +22,19 @@ var psc;
 var psm;
 var pst;
 
+function scrollbarWidth(){
+    // https://davidwalsh.name/detect-scrollbar-width
+    // Create the measurement node
+    var scrollDiv = document.createElement("div");
+    scrollDiv.className = "scrollbar-measure";
+    document.body.appendChild(scrollDiv);
+    // Get the scrollbar width
+    var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+    // Delete the DIV
+    document.body.removeChild(scrollDiv);
+    return scrollbarWidth;
+}
+
 function switchTab(tabGroup, tabId) {
     var tabs = jQuery(".tab-panel").has("[data-tab-group='"+tabGroup+"'][data-tab-item='"+tabId+"']");
     var allTabItems = tabs.find("[data-tab-group='"+tabGroup+"']");
@@ -74,10 +87,10 @@ function restoreTabSelections() {
     }
 }
 
-function initMermaid( update ) {
+function initMermaid( update, attrs ) {
     // we are either in update or initialization mode;
     // during initialization, we want to edit the DOM;
-    // during update we only want to execute if something chanegd
+    // during update we only want to execute if something changed
     var decodeHTML = function( html ){
         var txt = document.createElement( 'textarea' );
         txt.innerHTML = html;
@@ -100,10 +113,9 @@ function initMermaid( update ) {
         return '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n' + graph.content;
     };
 
-    var init_func = function(){
-        state.is_initialized = true;
+    var init_func = function( attrs ){
         var is_initialized = false;
-        var theme = variants.getColorValue( 'MERMAID-theme' );
+        var theme = attrs.theme;
         document.querySelectorAll('.mermaid').forEach( function( element ){
             var parse = parseGraph( decodeHTML( element.innerHTML ) );
 
@@ -125,9 +137,9 @@ function initMermaid( update ) {
         return is_initialized;
     }
 
-    var update_func = function(){
+    var update_func = function( attrs ){
         var is_initialized = false;
-        var theme = variants.getColorValue( 'MERMAID-theme' );
+        var theme = attrs.theme;
         document.querySelectorAll( '.mermaid-container' ).forEach( function( e ){
             var element = e.querySelector( '.mermaid' );
             var code = e.querySelector( '.mermaid-code' );
@@ -161,28 +173,66 @@ function initMermaid( update ) {
         return;
     }
 
-    var is_initialized = ( update ? update_func() : init_func() );
+    if( !state.is_initialized ){
+        state.is_initialized = true;
+        window.addEventListener( 'beforeprint', function(){
+            initMermaid( true, {
+                'theme': variants.getColorValue( 'PRINT-MERMAID-theme' ),
+            });
+		}.bind( this ) );
+		window.addEventListener( 'afterprint', function(){
+            initMermaid( true );
+		}.bind( this ) );
+    }
+
+    attrs = attrs || {
+        'theme': variants.getColorValue( 'MERMAID-theme' ),
+    };
+    var is_initialized = ( update ? update_func( attrs ) : init_func( attrs ) );
     if( is_initialized ){
         mermaid.init();
         $(".mermaid svg").svgPanZoom({});
     }
 }
 
-function initSwagger( update ){
+function initSwagger( update, attrs ){
+    var state = this;
+    if( update && !state.is_initialized ){
+        return;
+    }
     if( typeof variants == 'undefined' ){
         return;
     }
-    var attrs = [
-        [ 'bg-color', variants.getColorValue( 'MAIN-BG-color' ) ],
-        [ 'mono-font', variants.getColorValue( 'CODE-font' ) ],
-        [ 'primary-color', variants.getColorValue( 'TAG-BG-color' ) ],
-        [ 'regular-font', variants.getColorValue( 'MAIN-font' ) ],
-        [ 'text-color', variants.getColorValue( 'MAIN-TEXT-color' ) ],
-        [ 'theme', variants.getColorValue( 'SWAGGER-theme' ) ],
-    ];
+
+    if( !state.is_initialized ){
+        state.is_initialized = true;
+        window.addEventListener( 'beforeprint', function(){
+            initSwagger( true, {
+                'bg-color': variants.getColorValue( 'PRINT-MAIN-BG-color' ),
+                'mono-font': variants.getColorValue( 'PRINT-CODE-font' ),
+                'primary-color': variants.getColorValue( 'PRINT-TAG-BG-color' ),
+                'regular-font': variants.getColorValue( 'PRINT-MAIN-font' ),
+                'text-color': variants.getColorValue( 'PRINT-MAIN-TEXT-color' ),
+                'theme': variants.getColorValue( 'PRINT-SWAGGER-theme' ),
+            });
+        }.bind( this ) );
+        window.addEventListener( 'afterprint', function(){
+            initSwagger( true );
+        }.bind( this ) );
+    }
+
+    attrs = attrs || {
+        'bg-color': variants.getColorValue( 'MAIN-BG-color' ),
+        'mono-font': variants.getColorValue( 'CODE-font' ),
+        'primary-color': variants.getColorValue( 'TAG-BG-color' ),
+        'regular-font': variants.getColorValue( 'MAIN-font' ),
+        'text-color': variants.getColorValue( 'MAIN-TEXT-color' ),
+        'theme': variants.getColorValue( 'SWAGGER-theme' ),
+    };
     document.querySelectorAll( 'rapi-doc' ).forEach( function( e ){
-        attrs.forEach( function( attr ){
-            e.setAttribute( attr[0], attr[1] );
+        Object.keys( attrs ).forEach( function( key ){
+            /* this doesn't work for FF 102, maybe related to custom elements? */
+            e.setAttribute( key, attrs[key] );
         });
     });
 }
@@ -229,10 +279,12 @@ function initCodeClipboard(){
     }
 
     $('code').each(function() {
-        var code = $(this),
-            text = code.text();
+        var code = $(this);
+        var text = code.text();
+        var parent = code.parent();
+        var inPre = parent.prop('tagName') == 'PRE';
 
-        if (text.length > 5) {
+        if (inPre || text.length > 5) {
             var clip = new ClipboardJS('.copy-to-clipboard-button', {
                 text: function(trigger) {
                     var text = $(trigger).prev('code').text();
@@ -259,8 +311,6 @@ function initCodeClipboard(){
                 });
             });
 
-            var parent = code.parent();
-            var inPre = parent.prop('tagName') == 'PRE';
             code.addClass('copy-to-clipboard-code');
             if( inPre ){
                 parent.addClass( 'copy-to-clipboard' );
@@ -278,6 +328,10 @@ function initCodeClipboard(){
 }
 
 function initArrowNav(){
+    if( isPrint ){
+        return;
+    }
+
     // button navigation
     jQuery(function() {
         jQuery('a.nav-prev').click(function(){
@@ -380,6 +434,20 @@ function initMenuScrollbar(){
             psm && psm.update();
         });
     });
+
+    // finally, we want to adjust the contents right padding if there is a scrollbar visible
+    var scrollbarSize = scrollbarWidth();
+    function adjustContentWidth(){
+        var left = parseFloat( getComputedStyle( elc ).getPropertyValue( 'padding-left' ) );
+        var right = left;
+        if( elc.scrollHeight > elc.clientHeight ){
+            // if we have a scrollbar reduce the right margin by the scrollbar width
+            right = Math.max( 0, left - scrollbarSize );
+        }
+        elc.style[ 'padding-right' ] = '' + right + 'px';
+    }
+    window.addEventListener('resize', adjustContentWidth );
+    adjustContentWidth();
 }
 
 function initLightbox(){
@@ -617,6 +685,36 @@ function initSwipeHandler(){
     document.querySelectorAll( '#sidebar *' ).forEach( function(e){ e.addEventListener("touchend", handleEndX); }, false);
 }
 
+function clearHistory() {
+    var visitedItem = baseUriFull + 'visited-url/'
+    for( var item in sessionStorage ){
+        if( item.substring( 0, visitedItem.length ) === visitedItem ){
+            sessionStorage.removeItem( item );
+            var url = item.substring( visitedItem.length );
+            // in case we have `relativeURLs=true` we have to strip the
+            // relative path to root
+            url = url.replace( /\.\.\//g, '/' ).replace( /^\/+\//, '/' );
+            jQuery('[data-nav-id="' + url + '"]').removeClass('visited');
+        }
+    }
+}
+
+function initHistory() {
+    var visitedItem = baseUriFull + 'visited-url/'
+    sessionStorage.setItem(visitedItem+jQuery('body').data('url'), 1);
+
+    // loop through the sessionStorage and see if something should be marked as visited
+    for( var item in sessionStorage ){
+        if( item.substring( 0, visitedItem.length ) === visitedItem && sessionStorage.getItem( item ) == 1 ){
+            var url = item.substring( visitedItem.length );
+            // in case we have `relativeURLs=true` we have to strip the
+            // relative path to root
+            url = url.replace( /\.\.\//g, '/' ).replace( /^\/+\//, '/' );
+            jQuery('[data-nav-id="' + url + '"]').addClass('visited');
+        }
+    }
+}
+
 function scrollToActiveMenu() {
     window.setTimeout(function(){
         var e = document.querySelector( '#sidebar ul.topics li.active a' );
@@ -642,8 +740,81 @@ function scrollToFragment() {
     }, 10);
 }
 
+function mark(){
+    var value = sessionStorage.getItem(baseUriFull+'search-value');
+    $(".highlightable").highlight(value, { element: 'mark' });
+    $("mark").parents(".expand").addClass("expand-marked");
+    $("mark").parents("li").each( function(){
+        var i = jQuery(this).children("input.toggle:not(.menu-marked)");
+        if( i.length ){
+            e = jQuery(i[0]);
+            e.attr("data-checked", (e.prop('checked')?"true":"false")).addClass("menu-marked");
+            i[0].checked = true;
+        }
+    });
+    psm && psm.update();
+}
+
+function unmark(){
+    sessionStorage.removeItem(baseUriFull+'search-value');
+    $("mark").parents("li").each( function(){
+        var i = jQuery(this).children("input.toggle.menu-marked");
+        if( i.length ){
+            e = jQuery(i[0]);
+            i[0].checked = (e.attr("data-checked")=="true");
+            e.attr("data-checked", null).removeClass("menu-marked");
+        }
+    });
+    $("mark").parents(".expand-marked").removeClass("expand-marked");
+    $(".highlightable").unhighlight({ element: 'mark' })
+    psm && psm.update();
+}
+
+function initSearch() {
+    jQuery('[data-search-input]').on('input', function() {
+        var input = jQuery(this);
+        var value = input.val();
+        unmark();
+        if (value.length) {
+            sessionStorage.setItem(baseUriFull+'search-value', value);
+            mark();
+        }
+    });
+    jQuery('[data-search-clear]').on('click', function() {
+        jQuery('[data-search-input]').val('').trigger('input');
+        unmark();
+    });
+    mark();
+
+    // custom sizzle case insensitive "contains" pseudo selector
+    $.expr[":"].contains = $.expr.createPseudo(function(arg) {
+        return function( elem ) {
+            return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+        };
+    });
+
+    // set initial search value on page load
+    if (sessionStorage.getItem(baseUriFull+'search-value')) {
+        var searchValue = sessionStorage.getItem(baseUriFull+'search-value')
+        $('[data-search-input]').val(searchValue);
+        $('[data-search-input]').trigger('input');
+        var searchedElem = $('#body-inner').find(':contains(' + searchValue + ')').get(0);
+        if (searchedElem) {
+            searchedElem.scrollIntoView(true);
+            var scrolledY = window.scrollY;
+            if(scrolledY){
+                window.scroll(0, scrolledY - 125);
+            }
+        }
+    }
+
+    // mark some additonal stuff as searchable
+    $('#topbar a:not(:has(img)):not(.btn)').addClass('highlight');
+    $('#body-inner a:not(:has(img)):not(.btn):not(a[rel="footnote"])').addClass('highlight');
+}
+
 // Get Parameters from some url
-var getUrlParameter = function getUrlParameter(sPageURL) {
+function getUrlParameter(sPageURL) {
     var url = sPageURL.split('?');
     var obj = {};
     if (url.length == 2) {
@@ -701,86 +872,8 @@ jQuery(function() {
     initCodeClipboard();
     restoreTabSelections();
     initSwipeHandler();
-
-    jQuery('[data-clear-history-toggle]').on('click', function() {
-        for( var item in sessionStorage ){
-          if( item.substring( 0, baseUriFull.length ) === baseUriFull ){
-            sessionStorage.removeItem( item );
-          }
-        }
-        location.reload();
-        return false;
-    });
-
-    var ajax;
-    jQuery('[data-search-input]').on('input', function() {
-        var input = jQuery(this),
-            value = input.val(),
-            items = jQuery('[data-nav-id]');
-        items.removeClass('search-match');
-        if (!value.length) {
-            $('ul.topics').removeClass('searched');
-            items.css('display', 'block');
-            sessionStorage.removeItem(baseUriFull+'search-value');
-            $("mark").parents(".expand-marked").removeClass("expand-marked");
-            $(".highlightable").unhighlight({ element: 'mark' })
-            return;
-        }
-
-        sessionStorage.setItem(baseUriFull+'search-value', value);
-        $("mark").parents(".expand-marked").removeClass("expand-marked");
-        $(".highlightable").unhighlight({ element: 'mark' }).highlight(value, { element: 'mark' });
-        $("mark").parents(".expand").addClass("expand-marked");
-
-        if (ajax && ajax.abort) ajax.abort();
-
-        jQuery('[data-search-clear]').on('click', function() {
-            jQuery('[data-search-input]').val('').trigger('input');
-            sessionStorage.removeItem(baseUriFull+'search-input');
-            $("mark").parents(".expand-marked").removeClass("expand-marked");
-            $(".highlightable").unhighlight({ element: 'mark' })
-        });
-    });
-
-    $.expr[":"].contains = $.expr.createPseudo(function(arg) {
-        return function( elem ) {
-            return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
-        };
-    });
-
-    if (sessionStorage.getItem(baseUriFull+'search-value')) {
-        var searchValue = sessionStorage.getItem(baseUriFull+'search-value')
-        $('[data-search-input]').val(searchValue);
-        $('[data-search-input]').trigger('input');
-        var searchedElem = $('#body-inner').find(':contains(' + searchValue + ')').get(0);
-        if (searchedElem) {
-            searchedElem.scrollIntoView(true);
-            var scrolledY = window.scrollY;
-            if(scrolledY){
-                window.scroll(0, scrolledY - 125);
-            }
-        }
-    }
-
-    $(".highlightable").highlight(sessionStorage.getItem(baseUriFull+'search-value'), { element: 'mark' });
-    $("mark").parents(".expand").addClass("expand-marked");
-
-    $('#topbar a:not(:has(img)):not(.btn)').addClass('highlight');
-    $('#body-inner a:not(:has(img)):not(.btn):not(a[rel="footnote"])').addClass('highlight');
-
-    var visitedItem = baseUriFull + 'visited-url/'
-    sessionStorage.setItem(visitedItem+jQuery('body').data('url'), 1);
-
-    // loop through the sessionStorage and see if something should be marked as visited
-    for( var item in sessionStorage ){
-        if( item.substring( 0, visitedItem.length ) === visitedItem && sessionStorage.getItem( item ) == 1 ){
-            var url = item.substring( visitedItem.length );
-            // in case we have `relativeURLs=true` we have to strip the
-            // relative path to root
-            url = url.replace( /\.\.\//g, '/' ).replace( /^\/+\//, '/' );
-            jQuery('[data-nav-id="' + url + '"]').addClass('visited');
-        }
-    }
+    initHistory();
+    initSearch();
 });
 
 jQuery.extend({
@@ -856,3 +949,30 @@ jQuery.fn.highlight = function(words, options) {
         jQuery.highlight(this, re, settings.element, settings.className);
     });
 };
+
+function useMermaid( config ){
+    if( !Object.assign ){
+        // We don't support Mermaid for IE11 anyways, so bail out early
+        return;
+    }
+    if (typeof mermaid != 'undefined' && typeof mermaid.mermaidAPI != 'undefined') {
+        mermaid.initialize( Object.assign( { "securityLevel": "antiscript", "startOnLoad": false     }, config ) );
+        if( config.theme && variants ){
+            var write_style = variants.findLoadedStylesheet( 'variant-style' );
+            write_style.setProperty( '--CONFIG-MERMAID-theme', config.theme );
+        }
+    }
+}
+if( window.themeUseMermaid ){
+    useMermaid( window.themeUseMermaid );
+}
+
+function useSwagger( config ){
+    if( config.theme && variants ){
+        var write_style = variants.findLoadedStylesheet( 'variant-style' );
+        write_style.setProperty( '--CONFIG-SWAGGER-theme', config.theme );
+    }
+}
+if( window.themeUseSwagger ){
+    useSwagger( window.themeUseSwagger );
+}

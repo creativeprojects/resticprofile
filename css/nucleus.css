@@ -180,7 +180,7 @@ body {
   font-size: 1rem;
   line-height: 1.5; }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, .article-subheading, h4, h5, h6 {
   margin: 0.85rem 0 1rem 0;
   text-rendering: optimizeLegibility; }
 
@@ -190,7 +190,7 @@ h1 {
 h2 {
   font-size: 2.55rem; }
 
-h3 {
+h3, .article-subheading {
   font-size: 2.15rem; }
 
 h4 {

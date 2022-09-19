@@ -37,8 +37,8 @@
 
     --INTERNAL-CODE-font: var(--CODE-font, "Consolas", menlo, monospace);
 
-    --INTERNAL-MERMAID-theme: var(--CONFIG-MERMAID-theme, var(--MERMAID-theme, default));
-    --INTERNAL-SWAGGER-theme: var(--CONFIG-SWAGGER-theme, var(--SWAGGER-theme, light));
+    --INTERNAL-MERMAID-theme: var(--CONFIG-MERMAID-theme, var(--MERMAID-theme, var(--INTERNAL-PRINT-MERMAID-theme)));
+    --INTERNAL-SWAGGER-theme: var(--CONFIG-SWAGGER-theme, var(--SWAGGER-theme, var(--INTERNAL-PRINT-SWAGGER-theme)));
 
     --INTERNAL-TAG-BG-color: var(--TAG-BG-color, var(--INTERNAL-PRIMARY-color));
 
@@ -89,6 +89,15 @@
     --INTERNAL-BOX-NOTE-TEXT-color: var(--BOX-NOTE-TEXT-color, var(--INTERNAL-BOX-ORANGE-TEXT-color));
     --INTERNAL-BOX-TIP-TEXT-color: var(--BOX-TIP-TEXT-color, var(--INTERNAL-BOX-GREEN-TEXT-color));
     --INTERNAL-BOX-WARNING-TEXT-color: var(--BOX-WARNING-TEXT-color, var(--INTERNAL-BOX-RED-TEXT-color));
+
+    /* print style, values taken from relearn-light as it is used as a default print style */
+    --INTERNAL-PRINT-MERMAID-theme: var(--PRINT-MERMAID-theme, default);
+    --INTERNAL-PRINT-MAIN-BG-color: var(--PRINT-MAIN-BG-color, #ffffff);
+    --INTERNAL-PRINT-CODE-font: var(--PRINT-CODE-font, "Consolas", menlo, monospace);
+    --INTERNAL-PRINT-TAG-BG-color: var(--PRINT-TAG-BG-color, #7dc903);
+    --INTERNAL-PRINT-MAIN-font: var(--PRINT-MAIN-font, "Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif);
+    --INTERNAL-PRINT-MAIN-TEXT-color: var(--PRINT-MAIN-TEXT-color, #101010);
+    --INTERNAL-PRINT-SWAGGER-theme: var(--PRINT-SWAGGER-theme, light);
 }
 
 body {
@@ -142,6 +151,7 @@ a:hover,
     background-color: var(--INTERNAL-MENU-SECTIONS-ACTIVE-BG-color);
 }
 
+#sidebar ul.topics li.active > label:after,
 #sidebar ul.topics li.active > a {
     background-color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BG-color);
     color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
@@ -173,7 +183,7 @@ h2 {
     font-family: var(--INTERNAL-MAIN-TITLES-H2-font);
 }
 
-h3 {
+h3, .article-subheading {
     color: var(--INTERNAL-MAIN-TITLES-H3-color);
     font-family: var(--INTERNAL-MAIN-TITLES-H3-font);
 }

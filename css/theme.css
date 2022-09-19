@@ -3,46 +3,6 @@
 @import "tags.css";
 @import "tabs.css";
 
-@font-face {
-    font-family: 'Work Sans';
-    font-style: normal;
-    font-weight: 200;
-    src: url("../fonts/WorkSans-ExtraLight.woff") format("woff2"), url("../fonts/WorkSans-ExtraLight.woff") format("woff");
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Work Sans';
-    font-style: normal;
-    font-weight: 300;
-    src: url("../fonts/WorkSans-Light.woff2") format("woff2"), url("../fonts/WorkSans-Light.woff") format("woff");
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Work Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: url("../fonts/WorkSans-Regular.woff2") format("woff2"), url("../fonts/WorkSans-Regular.woff") format("woff");
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Work Sans';
-    font-style: normal;
-    font-weight: 500;
-    src: url("../fonts/WorkSans-Medium.woff2") format("woff2"), url("../fonts/WorkSans-Medium.woff") format("woff");
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Work Sans';
-    font-style: normal;
-    font-weight: 600;
-    src: url("../fonts/WorkSans-Bold.woff2") format("woff2"), url("../fonts/WorkSans-Bold.woff") format("woff");
-    font-display: swap;
-}
-
 html {
     width: 100%;
     height: 100%;
@@ -60,17 +20,17 @@ body {
     width: 100%;
 }
 
-body #body-inner .chapter h1 {
+body:not(.print) #body-inner.narrow h1 {
     font-size: 3.5rem;
 }
 @media only screen and (min-width: 48em) and (max-width: 59.938em) {
-    body #body-inner .chapter h1 {
+    body:not(.print) #body-inner.narrow h1 {
         font-size: 2.8rem;
     }
 }
 @media only screen and (max-width: 47.938em) {
-    body #body-inner .chapter h1 {
-        font-size: 2rem;
+    body:not(.print) #body-inner.narrow h1 {
+        font-size: 2.5rem;
     }
 }
 
@@ -104,7 +64,7 @@ th {
     max-width: 300px;
     position: fixed;
     width: 300px;
-    z-index: 310;
+    z-index: 80;
 }
 
 #header-wrapper {
@@ -170,7 +130,7 @@ th {
     flex: 1; /* fill rest of vertical space */
     overflow: hidden;
     position: relative; /* PS */
-    z-index: 410;
+    z-index: 100;
 }
 
 #sidebar a.padding {
@@ -179,10 +139,6 @@ th {
 
 #sidebar ul.topics {
     margin: 0 1rem;
-}
-
-#sidebar ul.topics.searched ul {
-    display: block;
 }
 
 #sidebar ul.topics ul {
@@ -332,7 +288,7 @@ th {
     overflow-wrap: break-word; /* avoid x-scrolling of body if it is to large to fit */
     position: relative; /* PS */
     width: calc( 100% - 300px);
-    z-index: 300;
+    z-index: 70;
 }
 
 #body img,
@@ -364,7 +320,7 @@ th {
     flex: auto;
     flex-direction: column;
     overflow-y: auto;
-    padding: 0 3rem 4rem 3rem;
+    padding: 0 3.25rem 4rem 3.25rem;
     position: relative; /* PS */
 }
 @media screen and (max-width: 59.938em) {
@@ -374,7 +330,7 @@ th {
 }
 @media screen and (max-width: 47.938em) {
     #body-inner {
-        padding: 0 1rem 5px 1rem;
+        padding: 0 1.25rem 5px 1.25rem;
     }
 }
 
@@ -393,38 +349,43 @@ th {
     #body .flex-block-wrapper {
         margin-left: auto;
         margin-right: auto;
-        max-width: 1000px;
+        min-width: calc( 1300px - 300px - 2 * 3.25rem );
+        width: calc( 1300px - 300px - 2 * 3.25rem );
+        max-width: calc( 1300px - 300px - 2 * 3.25rem );
+    }
+    body:not(.print) #body .narrow .flex-block-wrapper {
+        min-width: calc( 1300px - 300px - 2 * 9.75rem );
+        width: calc( 1300px - 300px - 2 * 9.75rem );
+        max-width: calc( 1300px - 300px - 2 * 9.75rem );
     }
 }
 
-#body-inner.chapter {
-    margin-left: auto;
-    margin-right: auto;
-    padding: 2rem 9rem;
+body:not(.print) #body-inner.narrow {
+    padding: 2rem 9.75rem;
 }
 @media screen and (max-width: 59.938em) {
-    #body-inner.chapter {
-        padding: 15px 4rem 15px 4rem;
+    body:not(.print) #body-inner.narrow {
+        padding: 15px 6.5rem;
     }
 }
 @media screen and (max-width: 47.938em) {
-    #body-inner.chapter {
-        padding: 5px 2rem 5px 2rem;
+    body:not(.print) #body-inner.narrow {
+        padding: 5px 3.25rem;
     }
 }
 
-#body-inner .chapter h3:first-of-type {
+#body-inner div.article-subheading,
+#body-inner .chapter.deprecated h3:first-of-type {
     font-weight: 200;
     margin-top: 0;
     text-align: center;
 }
 
-#body-inner .chapter h1 {
+body:not(.print) #body-inner.narrow h1 {
     border-bottom: 4px solid rgba( 134, 134, 134, .125 );
-    font-size: 5rem;
 }
 
-#body-inner .chapter p {
+body:not(.print) #body-inner.narrow p {
     font-size: 1.2rem;
     text-align: justify;
 }
@@ -435,7 +396,7 @@ h1 {
     text-transform: uppercase;
 }
 
-h2, h3, h4, h5, h6 {
+h2, h3, .article-subheading, h4, h5, h6 {
     letter-spacing: -1px;
     text-rendering: optimizeLegibility;
 }
@@ -606,7 +567,8 @@ hr {
 #body-inner h3,
 #body-inner h4,
 #body-inner h5,
-#body-inner h6 {
+#body-inner h6,
+#body-inner .article-subheading {
     /* big titles cause a horizontal scrollbar - fixing this by wrapping text */
     overflow-wrap: break-word;
     overflow-x: hidden;
@@ -656,7 +618,7 @@ td {
     text-transform: none;
     white-space: pre;
     word-wrap: break-word;
-    z-index: 450;
+    z-index: 140;
 }
 
 .tooltipped:before {
@@ -668,7 +630,7 @@ td {
     pointer-events: none;
     position: absolute;
     width: 0;
-    z-index: 460;
+    z-index: 150;
 }
 
 .tooltipped:hover:before,
@@ -788,7 +750,7 @@ td {
 #topbar {
     min-height: 3rem;
     position: relative;
-    z-index: 480;
+    z-index: 170;
 }
 
 #topbar > div {
@@ -931,7 +893,7 @@ span.nav i{
     }
     .mobile-support.sidebar-flyout #sidebar {
         left: 0;
-        z-index: 400;
+        z-index: 90;
     }
     .mobile-support.sidebar-flyout #body {
         margin-left: 230px;
@@ -945,7 +907,7 @@ span.nav i{
         position: absolute;
         right: 0;
         top: 0;
-        z-index: 500;
+        z-index: 190;
     }
 }
 
@@ -978,6 +940,16 @@ pre .copy-to-clipboard-button {
     position: absolute;
     right: 4px;
     top: 4px;
+}
+
+.disableInlineCopyToClipboard :not(pre) > code.copy-to-clipboard-code + span.copy-to-clipboard-button {
+    display: none;
+}
+
+.disableInlineCopyToClipboard :not(pre) > code.copy-to-clipboard-code {
+    border-bottom-right-radius: 2px;
+    border-top-right-radius: 2px;
+    border-right-width: 1px;
 }
 
 #homelinks {
@@ -1131,7 +1103,7 @@ option {
     position: absolute;
     right: 0;
     top: 0;
-    z-index: 470;
+    z-index: 160;
 }
 
 .progress {
@@ -1142,7 +1114,7 @@ option {
     overflow: hidden;
     position: absolute;
     width: 0;
-    z-index: 490;
+    z-index: 180;
 }
 
 .toc-flyout .progress {
@@ -1256,7 +1228,7 @@ h6 a {
     margin-top: 2rem;
 }
 
-#body h3 {
+#body h3, #body .article-subheading {
     font-size: 1.8rem;
     font-weight: 500;
     margin-top: 2rem;
@@ -1367,6 +1339,10 @@ rapi-doc {
     display: initial;
 }
 
+.footerVisitedLinks a {
+	cursor: pointer;
+}
+
 @media screen and (max-width: 47.938em) {
     #breadcrumbs .links {
         display: none;
@@ -1394,17 +1370,23 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     display: inline;
     height: 1rem;
     left: 0;
-    margin-top: .25em;
+    margin-top: .2em;
 	position: absolute;
     width: 1rem;
 }
 
 #sidebar .collapsible-menu input.toggle + label:after {
-    content: "▸";
+    content: "\f054";
+    font-family: "Font Awesome 5 Free";
+    font-size: .8rem;
+    font-weight: 900;
 }
 
 #sidebar .collapsible-menu input.toggle:checked + label:after {
-    content: "▾";
+    content: "\f078";
+    font-family: "Font Awesome 5 Free";
+    font-size: .8rem;
+    font-weight: 900;
 }
 
 #sidebar .collapsible-menu input.toggle + label + a + ul {
@@ -1413,4 +1395,25 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 #sidebar .collapsible-menu input.toggle:checked + label + a + ul {
 	display: inline;
+}
+
+.math.align-center > mjx-container{
+    text-align: center !important;
+}
+
+.math.align-left > mjx-container{
+    text-align: left !important;
+}
+
+.math.align-right > mjx-container{
+    text-align: right !important;
+}
+
+.scrollbar-measure {
+    /* https://davidwalsh.name/detect-scrollbar-width */
+	height: 100px;
+	overflow: scroll;
+	position: absolute;
+	width: 100px;
+	top: -9999px;
 }

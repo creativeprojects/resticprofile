@@ -106,7 +106,7 @@ body h2 {
         0 0 10px var(--INTERNAL-MAIN-TITLES-H2-color);
 }
 
-body h3 {
+body h3, body .article-subheading {
     color: #fff;
     text-shadow:
         0 0  1px #fff,
@@ -150,7 +150,7 @@ body h6 {
         0 0 10px var(--INTERNAL-MAIN-TITLES-H5-color);
 }
 
-body #sidebar ul.topics li.active > label,
+body #sidebar ul.topics li.active > label:after,
 body #sidebar ul.topics li.active > a {
     color: #fff;
     text-shadow:
@@ -228,7 +228,7 @@ body .box.cstyle.transparent {
 @media print {
     #body h1,
     #body h2,
-    #body h3,
+    #body h3, #body .article-subheading,
     #body h4,
     #body h5,
     #body h6 {
@@ -246,7 +246,7 @@ body .box.cstyle.transparent {
 above will not apply, so we have to repeat it here */
 .print #body h1,
 .print #body h2,
-.print #body h3,
+.print #body h3, .print #body .article-subheading,
 .print #body h4,
 .print #body h5,
 .print #body h6 {
