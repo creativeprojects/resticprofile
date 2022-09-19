@@ -8,6 +8,7 @@ global:
     default-command: snapshots
     initialize: false
     priority: low
+    prevent-sleep: true
     # restic-binary: ~/fake_restic
     # legacy-arguments: true
 

@@ -31,6 +31,7 @@ With resticprofile:
 * **[new for v0.18.0]** Send messages to [HTTP hooks]({{< ref "/configuration/http_hooks" >}}) before, after a successful or failed job (backup, forget, check, prune, copy)
 * **[new for v0.18.0]** Automatically initialize the secondary repository using `copy-chunker-params` flag
 * **[new for v0.18.0]** Send resticprofile logs to a syslog server
+* **[new for v0.19.0]** Preventing your system from idle sleeping
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0

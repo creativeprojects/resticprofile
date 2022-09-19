@@ -26,6 +26,7 @@ type Global struct {
 	SystemdTimerTemplate string        `mapstructure:"systemd-timer-template"`
 	SenderTimeout        time.Duration `mapstructure:"send-timeout"`
 	CACertificates       []string      `mapstructure:"ca-certificates"`
+	PreventSleep         bool          `mapstructure:"prevent-sleep"`
 }
 
 // NewGlobal instantiates a new Global with default values

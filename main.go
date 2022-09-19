@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
+	"github.com/creativeprojects/resticprofile/preventsleep"
 	"github.com/creativeprojects/resticprofile/priority"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
@@ -162,6 +163,26 @@ func main() {
 		exitCode = 1
 		return
 	}
+
+	// prevent computer from sleeping
+	var caffeinate *preventsleep.Caffeinate
+	if global.PreventSleep {
+		clog.Debug("preventing the system from sleeping")
+		caffeinate = preventsleep.New()
+		err = caffeinate.Start()
+		if err != nil {
+			clog.Errorf("preventing system sleep: %s", err)
+		}
+	}
+	// and stop at the end
+	defer func() {
+		if caffeinate != nil {
+			err = caffeinate.Stop()
+			if err != nil {
+				clog.Error(err)
+			}
+		}
+	}()
 
 	// Check memory pressure
 	if global.MinMemory > 0 {
