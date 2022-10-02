@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/spf13/pflag"
 )
 
@@ -32,6 +32,7 @@ type commandLineFlags struct {
 	parentPort  int
 	noPriority  bool
 	run         string
+	usagesHelp  string
 }
 
 // loadFlags loads command line flags (before any command)
@@ -41,15 +42,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flags := commandLineFlags{}
 
 	flagset.Usage = func() {
-		fmt.Println("\nUsage of resticprofile:")
-		fmt.Println("\tresticprofile [resticprofile flags] [profile name.][restic command] [restic flags]")
-		fmt.Println("\tresticprofile [resticprofile flags] [profile name.][resticprofile command] [command specific flags]")
-		fmt.Println("\nresticprofile flags:")
-		flagset.PrintDefaults()
-		fmt.Println("\nresticprofile own commands:")
-		displayOwnCommands(os.Stdout, flags.verbose)
-		fmt.Println("\nDocumentation available at https://creativeprojects.github.io/resticprofile/")
-		fmt.Println("")
+		_ = displayHelpCommand(os.Stdout, nil, flags, args)
 	}
 
 	flagset.BoolVarP(&flags.help, "help", "h", false, "display this help")
@@ -86,6 +79,10 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	// stop at the first non flag found; the rest will be sent to the restic command line
 	flagset.SetInterspersed(false)
+
+	// Store usage help for help command
+	width, _ := term.OsStdoutTerminalSize()
+	flags.usagesHelp = flagset.FlagUsagesWrapped(width)
 
 	err := flagset.Parse(args)
 	if err != nil {

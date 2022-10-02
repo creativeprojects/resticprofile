@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mattn/go-colorable"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -79,6 +80,17 @@ func OsStdoutIsTerminal() bool {
 	return terminal.IsTerminal(fd)
 }
 
+// OsStdoutIsTerminal returns true as os.Stdout is a terminal session
+func OsStdoutTerminalSize() (width, height int) {
+	fd := int(os.Stdout.Fd())
+	var err error
+	width, height, err = terminal.GetSize(fd)
+	if err != nil {
+		width, height = 0, 0
+	}
+	return
+}
+
 type LockedWriter struct {
 	writer io.Writer
 	mutex  sync.Mutex
@@ -98,6 +110,15 @@ func SetOutput(w io.Writer) {
 // GetOutput returns the default output of the Print* functions
 func GetOutput() io.Writer {
 	return terminalOutput
+}
+
+// GetColorableOutput returns an output supporting ANSI color if output is a terminal
+func GetColorableOutput() io.Writer {
+	out := GetOutput()
+	if out == os.Stdout && OsStdoutIsTerminal() {
+		return colorable.NewColorable(os.Stdout)
+	}
+	return colorable.NewNonColorable(out)
 }
 
 // SetErrorOutput changes the error output for the Print* functions

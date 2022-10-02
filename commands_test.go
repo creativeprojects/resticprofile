@@ -57,12 +57,25 @@ func thirdCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string)
 
 func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
-	displayOwnCommands(buffer, false)
+	flags := commandLineFlags{}
+	displayOwnCommands(buffer, flags)
 	assert.Equal(t, "   first    first first\n   second   second second\n", buffer.String())
+}
 
-	buffer.Reset()
-	displayOwnCommands(buffer, true, "second")
-	assert.Equal(t, "   second   second second\n            flags:\n            -f, --first     first flag\n            -s, --seccond   second flag\n            \n", buffer.String())
+func TestDisplayOwnCommand(t *testing.T) {
+	buffer := &strings.Builder{}
+	flags := commandLineFlags{}
+	displayOwnCommandHelp(buffer, "second", flags)
+	assert.Equal(t, `Purpose: second second
+
+Usage:
+   resticprofile [resticprofile flags] [profile name.]second [command specific flags]
+
+Flags:
+   -f, --first     first flag
+   -s, --seccond   second flag
+
+`, buffer.String())
 }
 
 func TestIsOwnCommand(t *testing.T) {
