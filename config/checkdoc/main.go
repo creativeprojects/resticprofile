@@ -58,6 +58,7 @@ func main() {
 	os.Exit(exitCode)
 }
 
+// findConfiguration returns true when the configuration is valid
 func findConfiguration(path string) bool {
 	file, err := os.Open(path)
 	if err != nil {
@@ -66,7 +67,7 @@ func findConfiguration(path string) bool {
 	}
 	defer file.Close()
 
-	noError := true
+	hasError := false
 	ignoreError := false
 	configType := ""
 	configLines := false
@@ -84,14 +85,16 @@ func findConfiguration(path string) bool {
 					// finished reading a configuration, send the buffer for checking
 					cfg, err := config.Load(configBuffer, configType)
 					if err != nil {
-						clog.Error(err)
 						if !ignoreError {
-							noError = false
+							clog.Error(err)
+							hasError = true
+						} else {
+							clog.Warning(err)
 						}
 					}
 					if cfg == nil {
 						clog.Errorf("empty %s configuration", configType)
-						noError = false
+						hasError = true
 					}
 					ignoreError = false
 					return
@@ -118,5 +121,5 @@ func findConfiguration(path string) bool {
 		clog.Errorf("error scanning file %q: %w", path, err)
 		return false
 	}
-	return noError
+	return !hasError
 }

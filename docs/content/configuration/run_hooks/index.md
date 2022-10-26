@@ -60,15 +60,15 @@ documents:
 documents {
     inherit = "default"
     run-before = "echo \"== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND\""
-    run-after = "echo \"== run-after profile $PROFILE_NAME and command $PROFILE_COMMAND"'
-    run-after-fail = "echo \"== ERROR in profile $PROFILE_NAME command ${PROFILE_COMMAND}: $ERROR_MESSAGE"'
-    run-finally = "echo \"== run-finally from profile $PROFILE_NAME after command $PROFILE_COMMAND"'
+    run-after = "echo \"== run-after profile $PROFILE_NAME and command $PROFILE_COMMAND\""
+    run-after-fail = "echo \"== ERROR in profile $PROFILE_NAME command ${PROFILE_COMMAND}: $ERROR_MESSAGE\""
+    run-finally = "echo \"== run-finally from profile $PROFILE_NAME after command $PROFILE_COMMAND\""
 
     backup = {
-        run-before = "echo \"=== run-before backup in profile $PROFILE_NAME"'
-        run-after = "echo \"=== run-after backup in profile $PROFILE_NAME"'
-        run-after-fail" = "echo \"=== ERROR in backup for profile ${PROFILE_NAME}: $ERROR_MESSAGE"'
-        run-finally = "echo \"=== run-finally after backup in profile $PROFILE_NAME"'
+        run-before = "echo \"=== run-before backup in profile $PROFILE_NAME\""
+        run-after = "echo \"=== run-after backup in profile $PROFILE_NAME\""
+        run-after-fail = "echo \"=== ERROR in backup for profile ${PROFILE_NAME}: $ERROR_MESSAGE\""
+        run-finally = "echo \"=== run-finally after backup in profile $PROFILE_NAME\""
         source = "~/Documents"
     }
 }
