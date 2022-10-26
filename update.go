@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -20,7 +21,7 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 			Validator:  &selfupdate.ChecksumValidator{UniqueFilename: "checksums.txt"},
 			Prerelease: prerelease,
 		})
-	latest, found, err := updater.DetectLatest("creativeprojects/resticprofile")
+	latest, found, err := updater.DetectLatest(context.Background(), selfupdate.NewRepositorySlug("creativeprojects", "resticprofile"))
 	if err != nil {
 		return fmt.Errorf("unable to detect latest version: %w", err)
 	}
@@ -43,7 +44,7 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 	if err != nil {
 		return errors.New("could not locate executable path")
 	}
-	if err := updater.UpdateTo(latest, exe); err != nil {
+	if err := updater.UpdateTo(context.Background(), latest, exe); err != nil {
 		return fmt.Errorf("unable to update binary: %w", err)
 	}
 	clog.Infof("Successfully updated to version %s", latest.Version())
