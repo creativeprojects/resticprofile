@@ -548,22 +548,51 @@ func TestBackupWithSupressedWarnings(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestRunBeforeBackupFailed(t *testing.T) {
+func TestRunShellCommands(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "name")
-	profile.Backup = &config.BackupSection{RunBefore: []string{"exit 2"}}
-	wrapper := newResticWrapper(nil, mockBinary, false, profile, "backup", nil, nil)
-	err := wrapper.runProfile()
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "exit status 2")
-}
+	profile.Backup = &config.BackupSection{}
+	profile.Check = &config.SectionWithScheduleAndMonitoring{}
+	profile.Copy = &config.CopySection{}
+	profile.Forget = &config.SectionWithScheduleAndMonitoring{}
+	profile.Init = &config.InitSection{}
+	profile.Prune = &config.SectionWithScheduleAndMonitoring{}
 
-func TestRunAfterBackupFailed(t *testing.T) {
-	profile := config.NewProfile(&config.Config{}, "name")
-	profile.Backup = &config.BackupSection{RunAfter: []string{"exit 2"}}
-	wrapper := newResticWrapper(nil, mockBinary, false, profile, "backup", nil, nil)
-	err := wrapper.runProfile()
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "exit status 2")
+	sections := map[string]*config.RunShellCommandsSection{
+		"backup": profile.Backup.GetRunShellCommands(),
+		//"check":  profile.Check.GetRunShellCommands(),
+		"copy": profile.Copy.GetRunShellCommands(),
+		//"forget": profile.Forget.GetRunShellCommands(),
+		//"init": profile.Init.GetRunShellCommands(),
+		//"prune":  profile.Prune.GetRunShellCommands(),
+	}
+
+	for command, section := range sections {
+		t.Run(fmt.Sprintf("run-before '%s'", command), func(t *testing.T) {
+			section.RunBefore = []string{"exit 2"}
+			wrapper := newResticWrapper(nil, mockBinary, false, profile, command, nil, nil)
+			err := wrapper.runProfile()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "exit status 2")
+
+			section.RunBefore = []string{""}
+			wrapper = newResticWrapper(nil, mockBinary, false, profile, command, nil, nil)
+			err = wrapper.runProfile()
+			require.NoError(t, err)
+		})
+
+		t.Run(fmt.Sprintf("run-after '%s'", command), func(t *testing.T) {
+			section.RunAfter = []string{"exit 2"}
+			wrapper := newResticWrapper(nil, mockBinary, false, profile, command, nil, nil)
+			err := wrapper.runProfile()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "exit status 2")
+
+			section.RunAfter = []string{""}
+			wrapper = newResticWrapper(nil, mockBinary, false, profile, command, nil, nil)
+			err = wrapper.runProfile()
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestRunStreamErrorHandler(t *testing.T) {

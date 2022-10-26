@@ -56,6 +56,7 @@ Flags used by resticprofile only
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
 * **run-after-fail**: string OR list of strings
+* **run-finally**: string OR list of strings
 * **status-file**: string
 * **prometheus-save-to-file**: string
 * **prometheus-push**: string
@@ -92,6 +93,8 @@ Flags used by resticprofile only
 
 * **run-before**: string OR list of strings
 * **run-after**: string OR list of strings
+* **run-after-fail**: string OR list of strings
+* **run-finally**: string OR list of strings
 * **check-before**: true / false
 * **check-after**: true / false
 * **schedule**: string OR list of strings
@@ -237,6 +240,10 @@ Flags passed to the restic command line
 Flags used by resticprofile only
 
 * **initialize**: true / false
+* **run-before**: string OR list of strings
+* **run-after**: string OR list of strings
+* **run-after-fail**: string OR list of strings
+* **run-finally**: string OR list of strings
 * **schedule**: string OR list of strings
 * **schedule-permission**: string (`user` or `system`)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
