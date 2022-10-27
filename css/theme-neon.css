@@ -106,6 +106,19 @@ body h2 {
         0 0 10px var(--INTERNAL-MAIN-TITLES-H2-color);
 }
 
+@media screen {
+    body:not(.print) rapi-doc::part(section-overview-title) {
+        color: #fff;
+        text-shadow:
+            0 0  1px #fff,
+            0 0  2px #fff,
+            0 0  8px #808080,
+            0 0  4px var(--INTERNAL-MAIN-TITLES-H2-color),
+            0 0  8px var(--INTERNAL-MAIN-TITLES-H2-color),
+            0 0 10px var(--INTERNAL-MAIN-TITLES-H2-color);
+    }
+}
+
 body h3, body .article-subheading {
     color: #fff;
     text-shadow:
@@ -150,7 +163,7 @@ body h6 {
         0 0 10px var(--INTERNAL-MAIN-TITLES-H5-color);
 }
 
-body #sidebar ul.topics li.active > label:after,
+body #sidebar ul.collapsible-menu li.active > .toggle,
 body #sidebar ul.topics li.active > a {
     color: #fff;
     text-shadow:
@@ -162,7 +175,8 @@ body #sidebar ul.topics li.active > a {
 }
 
 body #sidebar select:hover,
-body #sidebar label:hover,
+body #sidebar .collapsible-menu .toggle:hover,
+body #sidebar .select-container:hover,
 body #sidebar a:hover {
     color: #fff;
     text-shadow:

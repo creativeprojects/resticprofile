@@ -526,7 +526,7 @@ function tocEscapeHandler( event ){
 }
 
 function sidebarShortcutHandler( event ){
-    if( event.altKey && event.ctrlKey && event.which == 77 /* m */ ){
+    if( event.altKey && event.ctrlKey && event.which == 78 /* n */ ){
         showNav();
     }
 }
@@ -538,7 +538,7 @@ function tocShortcutHandler( event ){
 }
 
 function editShortcutHandler( event ){
-    if( event.altKey && event.ctrlKey && event.which == 69 /* e */ ){
+    if( event.altKey && event.ctrlKey && event.which == 87 /* w */ ){
         showEdit();
     }
 }

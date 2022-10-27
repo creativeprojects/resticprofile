@@ -4,10 +4,10 @@
     display: none;
 }
 #body {
-    margin-left: 0;
-    min-width: 100%;
-    max-width: 100%;
-    width: 100%;
+    margin-left: 0 !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
 }
 #body #navigation {
     display: none;
@@ -154,12 +154,58 @@ div.box {
 div.box > .box-content {
     background-color: white;
 }
+
 rapi-doc{
-    /* adjust rapi-doc internals to fill out available space */
-    font-size: 4pt;
-    margin-left: -12px;
-    width: calc( 100% + 12px + 8px );
+    /* adjust rapi-doc internals to fill out available space with render-style=read */
+    margin-left: calc( -80px );
+    width: calc( 100% + 80px + 80px );
 }
+@media (max-width: 1023px) {
+    rapi-doc {
+        margin-left: calc( -8px );
+        width: calc( 100% + 8px + 8px );
+    }
+}
+rapi-doc::part(section-tag) {
+    /* adjust rapi-doc internals to fill out available space with render-style=read */
+    margin-left: 80px;
+    margin-right: 80px;
+    padding-left: 0;
+    padding-right: 0;
+}
+@media (max-width: 1023px) {
+    rapi-doc::part(section-tag) {
+        margin-left: 8px;
+        margin-right: 8px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+rapi-doc::part(section-main-content) {
+    /* override variables for adapting rapidoc design to print theme */
+    --font-size-regular: 8.9pt;
+    --fg: black;
+    --fg2: black;
+    --fg3: black;
+}
+
+rapi-doc::part(section-overview-title) {
+    /* set print color for titles */
+    color: black !important;
+}
+
+rapi-doc::part(operation-divider) {
+    /* remove whitespace */
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+rapi-doc::part(section-navbar) {
+    /* removes the nav bar for render-style=read */
+    display: none;
+}
+
 .btn,
 #body .tab-nav-button {
     color: black !important;

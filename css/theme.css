@@ -86,11 +86,11 @@ th {
     margin-top: 1rem;
 }
 
-.searchbox label {
+.searchbox > i {
     color: rgba( 255, 255, 255, .8 );
     position: absolute;
     left: 10px;
-    top: 3px;
+    top: 6px;
 }
 
 .searchbox span {
@@ -133,7 +133,7 @@ th {
     z-index: 100;
 }
 
-#sidebar a.padding {
+#sidebar .padding {
     padding: 0 1rem;
 }
 
@@ -163,12 +163,7 @@ th {
     display: block;
 }
 
-#sidebar ul.topics input.toggle,
-#sidebar ul.topics label {
-    display: none;
-}
-
-#sidebar ul.topics > li > label,
+#sidebar ul.collapsible-menu > li > .toggle,
 #sidebar ul.topics > li > a {
     font-size: 1.1rem;
     line-height: 2rem;
@@ -292,10 +287,19 @@ th {
 }
 
 #body img,
+#body img.center,
 #body .video-container {
     display: block;
     margin: 1.5rem auto;
     text-align: center;
+}
+
+#body img.left {
+    margin-left: 0;
+}
+
+#body img.right {
+    margin-right: 0;
 }
 
 #body img.border,
@@ -976,6 +980,10 @@ option {
     width: .6rem;
 }
 
+.expand-content {
+    margin-top: .5rem;
+}
+
 /* expander collapsed, default */
 .expand > .expand-label > .fa-chevron-down {
     display: none;
@@ -1271,9 +1279,40 @@ h6 a {
 }
 
 rapi-doc {
-    /* adjust rapi-doc internals to fill out available space */
+    /* adjust rapi-doc internals to fill out available space with render-style=view */
     margin-left: calc( -8px - 24px );
     width: calc( 100% + 8px + 24px + 8px );
+}
+@media (max-width: 767px) {
+    rapi-doc {
+        margin-left: calc( -12px );
+        width: calc( 100% + 12px + 4px );
+    }
+}
+
+rapi-doc::part(section-main-content) {
+    /* override variables for adapting rapidoc design to theme */
+    --font-mono: var(--INTERNAL-CODE-font);
+    --font-size-mono: 15px;
+    --font-regular: var(--INTERNAL-MAIN-font);
+    --font-size-regular: 16.25px;
+    font-weight: 300 !important;
+}
+
+rapi-doc::part(section-overview-title) {
+    color: var(--INTERNAL-MAIN-TITLES-H2-color);
+    font-size: 2.55rem;
+    font-weight: 500;
+}
+
+rapi-doc::part(btn) {
+    /* makes download button large enough to not overflow default text */
+    width: unset !important;
+}
+
+rapi-doc::part(section-endpoint-head-method) {
+    /* makes method marker large enough to not overflow on text DELETE */
+    font-size: 11px;
 }
 
 .select-container i {
@@ -1356,44 +1395,43 @@ input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 #sidebar ul.collapsible-menu input.toggle {
-	cursor: pointer;
-    display: block;
-	left: -1rem;
-	opacity: 0;
-    overflow: hidden;
-	position: absolute;
-	top: 0;
-}
-
-#sidebar ul.collapsible-menu label {
+    -webkit-appearance: none;
+    appearance: none;
     cursor: pointer;
-    display: inline;
-    height: 1rem;
-    left: 0;
-    margin-top: .2em;
-	position: absolute;
-    width: 1rem;
+    height: 2rem;
+    left: 1rem;
+    padding-top: .35rem;
+    position: absolute;
+    width: 1px;
 }
 
-#sidebar .collapsible-menu input.toggle + label:after {
+#sidebar ul.collapsible-menu > li > input.toggle {
+    padding-top: .25rem;
+}
+
+#sidebar .collapsible-menu input.toggle:before {
     content: "\f054";
     font-family: "Font Awesome 5 Free";
     font-size: .8rem;
     font-weight: 900;
+    margin-left: -1rem;
+    padding-bottom: .65rem;
+    padding-left: .2rem;
+    padding-right: .2rem;
+    padding-top: .6rem;
 }
 
-#sidebar .collapsible-menu input.toggle:checked + label:after {
+#sidebar .collapsible-menu input.toggle:checked:before {
     content: "\f078";
-    font-family: "Font Awesome 5 Free";
-    font-size: .8rem;
-    font-weight: 900;
+    padding-left: .1rem;
+    padding-right: .1rem;
 }
 
-#sidebar .collapsible-menu input.toggle + label + a + ul {
+#sidebar .collapsible-menu input.toggle + label.toggle + a + ul {
     display: none;
 }
 
-#sidebar .collapsible-menu input.toggle:checked + label + a + ul {
+#sidebar .collapsible-menu input.toggle:checked + label.toggle + a + ul {
 	display: inline;
 }
 
@@ -1416,4 +1454,56 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 	position: absolute;
 	width: 100px;
 	top: -9999px;
+}
+
+.a11y-only {
+    /* idea taken from https://www.filamentgroup.com/lab/a11y-form-labels.html */
+    clip: rect(1px,1px,1px,1px);
+    overflow: hidden;
+    position: absolute;
+    height: 1px;
+    transform: translateY(-100%);
+    transition: transform .5s cubic-bezier(.18,.89,.32,1.28);
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* filament style for making action visible on focus - not adepted yet
+.a11y-only:focus {
+    position: fixed;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    margin: 0 0 0 -100px;
+    top: -.3em;
+    left: 50%;
+    text-align: center;
+    width: 200px;
+    background: #fff;
+    color: #368512;
+    padding: .8em 0 .7em;
+    font-size: 16px;
+    z-index: 5000;
+    text-decoration: none;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    outline: 0;
+    transform: translateY(0%);
+}
+*/
+
+.align-right {
+    display: flex;
+    justify-content: right;
+}
+
+.align-center {
+    display: flex;
+    justify-content: center;
+}
+
+.align-left {
+    display: flex;
+    justify-content: left;
 }

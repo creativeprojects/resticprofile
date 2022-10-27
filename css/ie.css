@@ -37,13 +37,15 @@
 		background-color: #323232; /* var(--MENU-SEARCH-BG-color) */
 	}
 
-	#sidebar .collapsible-menu label:after,
+	#sidebar .collapsible-menu .toggle,
+	#sidebar .select-container,
 	#sidebar a {
 		color: #bababa; /* var(--MENU-SECTIONS-LINK-color) */
 	}
 
 	#sidebar select:hover,
-	#sidebar .collapsible-menu label:hover:after,
+	#sidebar .collapsible-menu .toggle:hover,
+	#sidebar .select-container:hover,
 	#sidebar a:hover {
 		color: #ffffff; /* var(--MENU-SECTIONS-LINK-HOVER-color) */
 	}
@@ -53,7 +55,7 @@
 		background-color: rgba( 0, 0, 0, .166 ); /* var(--MENU-SECTIONS-ACTIVE-BG-color) */
 	}
 
-	#sidebar ul.topics li.active > label:after,
+	#sidebar ul.collapsible-menu li.active > .toggle,
 	#sidebar ul.topics li.active > a {
 		background-color: #ffffff; /* var(--MENU-SECTION-ACTIVE-CATEGORY-BG-color) */
 		color: #444444; /* var(--MENU-SECTION-ACTIVE-CATEGORY-color) */
