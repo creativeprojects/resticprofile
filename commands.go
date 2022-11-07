@@ -170,18 +170,18 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 	return false
 }
 
-func runOwnCommand(configuration *config.Config, command string, flags commandLineFlags, args []string) error {
-	for _, commandDef := range ownCommands {
-		if commandDef.name == command {
-			if containsString(args, "--help") || containsString(args, "-h") {
-				args = append([]string{commandDef.name}, args...)
+func runOwnCommand(configuration *config.Config, commandName string, flags commandLineFlags, args []string) error {
+	for _, command := range ownCommands {
+		if command.name == commandName {
+			if help := containsString(args, "--help") || containsString(args, "-h"); help && !command.hide {
+				args = append([]string{command.name}, args...)
 				return displayHelpCommand(os.Stdout, configuration, flags, args)
 			} else {
-				return commandDef.action(os.Stdout, configuration, flags, args)
+				return command.action(os.Stdout, configuration, flags, args)
 			}
 		}
 	}
-	return fmt.Errorf("command not found: %v", command)
+	return fmt.Errorf("command not found: %v", commandName)
 }
 
 func selfUpdate(_ io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
