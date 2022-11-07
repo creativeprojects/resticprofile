@@ -66,9 +66,9 @@ func (c *Config) loadGroupsV1() (err error) {
 				// fits previous version into new structure
 				for groupName, group := range groups {
 					c.groups[groupName] = Group{
-						Description: "",
-						Profiles:    group,
-						NextOnError: false,
+						Description:     "",
+						Profiles:        group,
+						ContinueOnError: false,
 					}
 				}
 			}

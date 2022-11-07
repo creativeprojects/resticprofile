@@ -27,7 +27,7 @@ type Global struct {
 	SenderTimeout        time.Duration `mapstructure:"send-timeout"`
 	CACertificates       []string      `mapstructure:"ca-certificates"`
 	PreventSleep         bool          `mapstructure:"prevent-sleep"`
-	GroupNextOnError     bool          `mapstructure:"group-next-on-error"`
+	GroupContinueOnError bool          `mapstructure:"group-continue-on-error"`
 }
 
 // NewGlobal instantiates a new Global with default values
