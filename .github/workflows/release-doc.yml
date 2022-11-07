@@ -2,13 +2,11 @@ name: documentation
 
 on:
   push:
-    branches:
-      - master
-    paths:
-      - "docs/**"
+    tags:
+      - '*'
   
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
 
@@ -34,3 +32,11 @@ jobs:
 
       - name: Build
         run: cd docs && hugo --minify
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        # if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-docs
+          publish_dir: ./public
