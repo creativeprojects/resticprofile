@@ -59,7 +59,7 @@ func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
 	flags := commandLineFlags{}
 	displayOwnCommands(buffer, flags)
-	assert.Equal(t, "   first    first first\n   second   second second\n", buffer.String())
+	assert.Equal(t, "  first   first first\n  second  second second\n", buffer.String())
 }
 
 func TestDisplayOwnCommand(t *testing.T) {
@@ -69,11 +69,11 @@ func TestDisplayOwnCommand(t *testing.T) {
 	assert.Equal(t, `Purpose: second second
 
 Usage:
-   resticprofile [resticprofile flags] [profile name.]second [command specific flags]
+  resticprofile [resticprofile flags] [profile name.]second [command specific flags]
 
 Flags:
-   -f, --first     first flag
-   -s, --seccond   second flag
+  -f, --first    first flag
+  -s, --seccond  second flag
 
 `, buffer.String())
 }

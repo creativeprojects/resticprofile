@@ -39,7 +39,7 @@ func displayWriter(output io.Writer, flags commandLineFlags) (out func(args ...a
 		output = colorable.NewNonColorable(output)
 	}
 
-	w := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
+	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 
 	out = func(args ...any) io.Writer {
 		if len(args) > 0 {
@@ -301,14 +301,14 @@ func displayProfiles(output io.Writer, configuration *config.Config, flags comma
 	if len(profiles) == 0 {
 		out("\nThere's no available profile in the configuration\n")
 	} else {
-		out("\nProfiles available (name, sections, description):\n")
+		out("\n%s (name, sections, description):\n", ansiBold("Profiles available"))
 		for _, name := range keys {
 			sections := profiles[name].DefinedCommands()
 			sort.Strings(sections)
 			if len(sections) == 0 {
 				out("\t%s:\t(n/a)\t%s\n", name, profiles[name].Description)
 			} else {
-				out("\t%s:\t(%s)\t%s\n", name, strings.Join(sections, ", "), profiles[name].Description)
+				out("\t%s:\t(%s)\t%s\n", name, ansiCyan(strings.Join(sections, ", ")), profiles[name].Description)
 			}
 		}
 	}
@@ -323,9 +323,9 @@ func displayGroups(output io.Writer, configuration *config.Config, flags command
 	if len(groups) == 0 {
 		return
 	}
-	out("Groups available (name, profiles, description):\n")
+	out("%s (name, profiles, description):\n", ansiBold("Groups available"))
 	for name, groupList := range groups {
-		out("\t%s:\t[%s]\t%s\n", name, strings.Join(groupList.Profiles, ", "), groupList.Description)
+		out("\t%s:\t[%s]\t%s\n", name, ansiCyan(strings.Join(groupList.Profiles, ", ")), groupList.Description)
 	}
 	out("\n")
 }

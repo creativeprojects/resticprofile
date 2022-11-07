@@ -42,7 +42,7 @@ func TestDisplayWriter(t *testing.T) {
 
 	t.Run("write-tabs", func(t *testing.T) {
 		actual := write(flags, "col1\tcol2\tcol3\nvalue1\tvalue2\tvalue3")
-		assert.Equal(t, "col1     col2     col3\nvalue1   value2   value3", actual)
+		assert.Equal(t, "col1    col2    col3\nvalue1  value2  value3", actual)
 	})
 
 	t.Run("no-ansi", func(t *testing.T) {
