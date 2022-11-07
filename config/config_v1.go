@@ -15,13 +15,13 @@ import (
 // Most configuration file formats allow only one declaration per section
 // This is not the case for HCL where you can declare a bloc multiple times:
 //
-// "global" {
-//   key1 = "value"
-// }
+//	"global" {
+//	  key1 = "value"
+//	}
 //
-// "global" {
-//   key2 = "value"
-// }
+//	"global" {
+//	  key2 = "value"
+//	}
 //
 // For that matter, viper creates a slice of maps instead of a map for the other configuration file formats
 // This configOptionV1HCL deals with the slice to merge it into a single map
@@ -66,13 +66,15 @@ func (c *Config) loadGroupsV1() (err error) {
 				// fits previous version into new structure
 				for groupName, group := range groups {
 					c.groups[groupName] = Group{
-						Profiles: group,
+						Description: "",
+						Profiles:    group,
+						NextOnError: false,
 					}
 				}
 			}
 		}
 	}
-	return
+	return err
 }
 
 // getProfileV1 from version 1 configuration. If the profile is not found, it returns errNotFound

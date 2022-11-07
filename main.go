@@ -264,6 +264,10 @@ func main() {
 				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
 				if err != nil {
 					clog.Error(err)
+					if group.NextOnError || global.GroupNextOnError {
+						// keep going to the next profile
+						continue
+					}
 					exitCode = 1
 					return
 				}
