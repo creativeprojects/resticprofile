@@ -26,8 +26,6 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-          check-latest: true
-          cache: true
 
       - name: Check configuration snippets in documentation
         run: go run ./config/checkdoc -r docs/content
