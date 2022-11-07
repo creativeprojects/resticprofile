@@ -17,17 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - uses: actions/checkout@v3
+        with:
+          submodules: true  # Fetch Hugo themes (true OR recursive)
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
       - name: Set up Go 1.19
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
           check-latest: true
           cache: true
-
-      - uses: actions/checkout@v3
-        with:
-          submodules: true  # Fetch Hugo themes (true OR recursive)
-          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
       - name: Check configuration snippets in documentation
         run: go run ./config/checkdoc -r docs/content
