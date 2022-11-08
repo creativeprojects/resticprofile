@@ -16,7 +16,7 @@ declare -F complete &>/dev/null || exit 1
 __resticprofile_script=""
 
 if [[ -x "$(which resticprofile)" ]] ; then
-  __resticprofile_script="$(resticprofile completion-script --bash)"
+  __resticprofile_script="$(resticprofile generate --bash-completion)"
 else
   echo "resticprofile not found or not executable"
   exit 1
