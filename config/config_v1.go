@@ -68,7 +68,7 @@ func (c *Config) loadGroupsV1() (err error) {
 					c.groups[groupName] = Group{
 						Description:     "",
 						Profiles:        group,
-						ContinueOnError: false,
+						ContinueOnError: nil,
 					}
 				}
 			}

@@ -4,5 +4,5 @@ package config
 type Group struct {
 	Description     string   `mapstructure:"description"`
 	Profiles        []string `mapstructure:"profiles"`
-	ContinueOnError bool     `mapstructure:"continue-on-error"`
+	ContinueOnError *bool    `mapstructure:"continue-on-error"`
 }
