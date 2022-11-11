@@ -272,8 +272,8 @@ func main() {
 
 	} else {
 		clog.Errorf("profile or group not found '%s'", flags.name)
-		displayProfiles(os.Stdout, c)
-		displayGroups(os.Stdout, c)
+		displayProfiles(os.Stdout, c, flags)
+		displayGroups(os.Stdout, c, flags)
 		exitCode = 1
 		return
 	}

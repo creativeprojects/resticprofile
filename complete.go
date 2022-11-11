@@ -179,11 +179,11 @@ func (c *Completer) completeOwnCommandFlags(name, word string) (completions []st
 
 	for _, command := range c.ownCommands {
 		if command.name == name {
-			for names, _ := range command.flags { // e.g. "-q, --quiet"
+			for names, _ := range command.flags { // e.g. "-q, --quiet, --size [size|"
 				var flagNames []string
 
 				for _, flag := range strings.Split(names, ",") {
-					flag = strings.TrimSpace(flag)
+					flag = strings.Split(strings.TrimSpace(flag), " ")[0] // strip value (if any)
 					flagNames = append(flagNames, flag)
 
 					// Remove this flag if already specified

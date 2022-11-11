@@ -10,11 +10,9 @@ import (
 	"os"
 	"regexp"
 	"runtime"
-	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -28,6 +26,7 @@ import (
 type ownCommand struct {
 	name              string
 	description       string
+	longDescription   string
 	action            func(io.Writer, *config.Config, commandLineFlags, []string) error
 	needConfiguration bool              // true if the action needs a configuration file loaded
 	hide              bool              // don't display the command in help and completion
@@ -44,15 +43,24 @@ func init() {
 func getOwnCommands() []ownCommand {
 	return []ownCommand{
 		{
+			name:              "help",
+			description:       "display help (use resticprofile help [command])",
+			longDescription:   "The \"help\" command prints commandline help on resticprofile flags & commands (own and restic) including information on flags passed to restic from various profiles defined in the current configuration.\n\nHelp on a specific command is displayed by adding the command name as argument after \"help\", e.g. use \"resticprofile help version\" to get details on the \"version\" command.",
+			action:            displayHelpCommand,
+			needConfiguration: false,
+		},
+		{
 			name:              "version",
 			description:       "display version (run in verbose mode for detailed information)",
+			longDescription:   "The \"version\" command displays brief or detailed version information",
 			action:            displayVersion,
 			needConfiguration: false,
-			flags:             map[string]string{"-v, --verbose": "display details information"},
+			flags:             map[string]string{"-v, --verbose": "display detailed version information"},
 		},
 		{
 			name:              "self-update",
-			description:       "update to latest resticprofile (use -q/--quiet flag to update without confirmation)",
+			description:       "update to latest resticprofile",
+			longDescription:   "The \"self-update\" command checks for the latest resticprofile release and updates the current application binary if a newer version is available",
 			action:            selfUpdate,
 			needConfiguration: false,
 			flags:             map[string]string{"-q, --quiet": "update without confirmation prompt"},
@@ -60,12 +68,14 @@ func getOwnCommands() []ownCommand {
 		{
 			name:              "profiles",
 			description:       "display profile names from the configuration file",
+			longDescription:   "The \"profiles\" command prints brief information on all profiles and groups that are declared in the configuration file",
 			action:            displayProfilesCommand,
 			needConfiguration: true,
 		},
 		{
 			name:              "show",
 			description:       "show all the details of the current profile",
+			longDescription:   "The \"show\" command prints the effective configuration of the selected profile.\n\nThe effective profile configuration is built by loading all includes, applying inheritance, mixins, templates and variables and parsing the result.",
 			action:            showProfile,
 			needConfiguration: true,
 		},
@@ -78,7 +88,8 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "schedule",
-			description:       "schedule jobs from a profile (use --all flag to schedule all jobs of all profiles)",
+			description:       "schedule jobs from a profile (or of all profiles)",
+			longDescription:   "The \"schedule\" command registers declared schedules of the selected profile (or of all profiles) as scheduled jobs within the scheduling service of the operating system",
 			action:            createSchedule,
 			needConfiguration: true,
 			hide:              false,
@@ -89,7 +100,8 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "unschedule",
-			description:       "remove scheduled jobs of a profile (use --all flag to unschedule all profiles)",
+			description:       "remove scheduled jobs of a profile (or of all profiles)",
+			longDescription:   "The \"unschedule\" command removes scheduled jobs from the scheduling service of the operating system. The command removes jobs for schedules declared in the selected profile (or of all profiles)",
 			action:            removeSchedule,
 			needConfiguration: true,
 			hide:              false,
@@ -97,7 +109,8 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "status",
-			description:       "display the status of scheduled jobs (use --all flag for all profiles)",
+			description:       "display the status of scheduled jobs of a profile (or of all profiles)",
+			longDescription:   "The \"status\" command prints all declared schedules of the selected profile (or of all profiles) and shows the status of related scheduled jobs in the scheduling service of the operating system",
 			action:            statusSchedule,
 			needConfiguration: true,
 			hide:              false,
@@ -105,14 +118,15 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "generate",
-			description:       "generate resources (--random-key [size], --bash-completion & --zsh-completion)",
+			description:       "generate resources such as random key, bash/zsh completion scripts, etc.",
+			longDescription:   "The \"generate\" command is used to create various resources and print them to stdout",
 			action:            generateCommand,
 			needConfiguration: false,
 			hide:              false,
 			flags: map[string]string{
-				"--random-key":      "generate a cryptographically secure random key to use as a restic keyfile",
-				"--bash-completion": "generate a shell completion script for bash",
-				"--zsh-completion":  "generate a shell completion script for zsh",
+				"--random-key [size]": "generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)",
+				"--bash-completion":   "generate a shell completion script for bash",
+				"--zsh-completion":    "generate a shell completion script for zsh",
 			},
 		},
 		// hidden commands
@@ -147,18 +161,6 @@ func getOwnCommands() []ownCommand {
 	}
 }
 
-func displayOwnCommands(output io.Writer) {
-	commandsWriter := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
-	for _, command := range ownCommands {
-		if command.hide {
-			continue
-		}
-		_, _ = fmt.Fprintf(commandsWriter, "\t%s\t%s\n", command.name, command.description)
-		// TODO: find a nice way to display command flags
-	}
-	_ = commandsWriter.Flush()
-}
-
 func isOwnCommand(command string, configurationLoaded bool) bool {
 	for _, commandDef := range ownCommands {
 		if commandDef.name == command && commandDef.needConfiguration == configurationLoaded {
@@ -168,86 +170,18 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 	return false
 }
 
-func runOwnCommand(configuration *config.Config, command string, flags commandLineFlags, args []string) error {
-	for _, commandDef := range ownCommands {
-		if commandDef.name == command {
-			return commandDef.action(os.Stdout, configuration, flags, args)
-		}
-	}
-	return fmt.Errorf("command not found: %v", command)
-}
-
-func displayProfilesCommand(output io.Writer, configuration *config.Config, _ commandLineFlags, _ []string) error {
-	displayProfiles(output, configuration)
-	displayGroups(output, configuration)
-	return nil
-}
-
-func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
-	fmt.Fprintf(output, "resticprofile version %s commit %q\n", version, commit)
-
-	// allow for the general verbose flag, or specified after the command
-	if flags.verbose || (len(args) > 0 && (args[0] == "-v" || args[0] == "--verbose")) {
-		w := tabwriter.NewWriter(output, 0, 0, 3, ' ', 0)
-		_, _ = fmt.Fprintf(w, "\n")
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "os", runtime.GOOS)
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "arch", runtime.GOARCH)
-		if goarm > 0 {
-			_, _ = fmt.Fprintf(w, "\t%s:\tv%d\n", "arm", goarm)
-		}
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "version", version)
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "commit", commit)
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "compiled", date)
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "by", builtBy)
-		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "go version", runtime.Version())
-		_, _ = fmt.Fprintf(w, "\n")
-		_, _ = fmt.Fprintf(w, "\t%s:\n", "go modules")
-		bi, _ := debug.ReadBuildInfo()
-		for _, dep := range bi.Deps {
-			_, _ = fmt.Fprintf(w, "\t\t%s\t%s\n", dep.Path, dep.Version)
-		}
-		_, _ = fmt.Fprintf(w, "\n")
-
-		w.Flush()
-	}
-	return nil
-}
-
-func displayProfiles(output io.Writer, configuration *config.Config) {
-	profiles := configuration.GetProfiles()
-	keys := sortedProfileKeys(profiles)
-	if len(profiles) == 0 {
-		fmt.Fprintln(output, "\nThere's no available profile in the configuration")
-	} else {
-		fmt.Fprintln(output, "\nProfiles available (name, sections, description):")
-		w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
-		for _, name := range keys {
-			sections := profiles[name].DefinedCommands()
-			sort.Strings(sections)
-			if len(sections) == 0 {
-				_, _ = fmt.Fprintf(w, "\t%s:\t(n/a)\t%s\n", name, profiles[name].Description)
+func runOwnCommand(configuration *config.Config, commandName string, flags commandLineFlags, args []string) error {
+	for _, command := range ownCommands {
+		if command.name == commandName {
+			if help := containsString(args, "--help") || containsString(args, "-h"); help && !command.hide {
+				args = append([]string{command.name}, args...)
+				return displayHelpCommand(os.Stdout, configuration, flags, args)
 			} else {
-				_, _ = fmt.Fprintf(w, "\t%s:\t(%s)\t%s\n", name, strings.Join(sections, ", "), profiles[name].Description)
+				return command.action(os.Stdout, configuration, flags, args)
 			}
 		}
-		_ = w.Flush()
 	}
-	fmt.Fprintln(output, "")
-}
-
-func displayGroups(output io.Writer, configuration *config.Config) {
-	groups := configuration.GetProfileGroups()
-	if len(groups) == 0 {
-		return
-	}
-	fmt.Fprintln(output, "Groups available (name, profiles, description):")
-	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
-	for name, groupList := range groups {
-		_, _ = fmt.Fprintf(w, "\t%s:\t[%s]\t%s\n", name, strings.Join(groupList.Profiles, ", "), groupList.Description)
-	}
-	_ = w.Flush()
-	fmt.Fprintln(output, "")
+	return fmt.Errorf("command not found: %v", commandName)
 }
 
 func selfUpdate(_ io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
@@ -313,6 +247,9 @@ var bashCompletionScript string
 var zshCompletionScript string
 
 func generateCommand(output io.Writer, config *config.Config, flags commandLineFlags, args []string) (err error) {
+	// enforce no-log
+	clog.GetDefaultLogger().SetHandler(clog.NewDiscardHandler())
+
 	if containsString(args, "--bash-completion") {
 		_, err = fmt.Fprintln(output, bashCompletionScript)
 	} else if containsString(args, "--random-key") {
