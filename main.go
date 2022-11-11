@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/bools"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
@@ -264,6 +265,11 @@ func main() {
 				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
 				if err != nil {
 					clog.Error(err)
+					if global.GroupContinueOnError && bools.IsTrueOrUndefined(group.ContinueOnError) ||
+						bools.IsTrue(group.ContinueOnError) {
+						// keep going to the next profile
+						continue
+					}
 					exitCode = 1
 					return
 				}

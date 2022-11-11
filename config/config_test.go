@@ -197,6 +197,157 @@ profile:
 	}
 }
 
+func TestBoolPointer(t *testing.T) {
+	boolPointer := func(value bool) *bool {
+		output := &value
+		return output
+	}
+
+	fixtures := []struct {
+		testTemplate
+		continueOnError *bool
+	}{
+		{
+			testTemplate: testTemplate{
+				format: FormatTOML,
+				config: `
+version = 2
+[groups]
+[groups.groupname]
+profiles = []
+`,
+			},
+			continueOnError: nil,
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatYAML,
+				config: `
+version: 2
+groups:
+  groupname:
+    profiles: []
+`,
+			},
+			continueOnError: nil,
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatJSON,
+				config: `
+{
+	"version": 2,
+	"groups": {
+		"groupname":{
+			"profiles": []
+		}
+	}
+}
+`,
+			},
+			continueOnError: nil,
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatTOML,
+				config: `
+version = 2
+[groups]
+[groups.groupname]
+profiles = []
+continue-on-error = true
+`,
+			},
+			continueOnError: boolPointer(true),
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatYAML,
+				config: `
+version: 2
+groups:
+ groupname:
+  profiles: []
+  continue-on-error: true
+`,
+			},
+			continueOnError: boolPointer(true),
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatJSON,
+				config: `
+{
+	"version": 2,
+	"groups": {
+		"groupname":{
+			"profiles": [],
+			"continue-on-error": true
+		}
+	}
+}
+`,
+			},
+			continueOnError: boolPointer(true),
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatTOML,
+				config: `
+version = 2
+[groups]
+[groups.groupname]
+profiles = []
+continue-on-error = false
+`,
+			},
+			continueOnError: boolPointer(false),
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatYAML,
+				config: `
+version: 2
+groups:
+  groupname:
+    profiles: []
+    continue-on-error: false
+`,
+			},
+			continueOnError: boolPointer(false),
+		},
+		{
+			testTemplate: testTemplate{
+				format: FormatJSON,
+				config: `
+{
+	"version": 2,
+	"groups": {
+		"groupname":{
+			"profiles": [],
+			"continue-on-error": false
+		}
+	}
+}
+`,
+			},
+			continueOnError: boolPointer(false),
+		},
+	}
+
+	for _, fixture := range fixtures {
+		t.Run(fixture.format, func(t *testing.T) {
+			c, err := Load(bytes.NewBufferString(fixture.config), fixture.format)
+			require.NoError(t, err)
+
+			group, err := c.GetProfileGroup("groupname")
+			require.NoError(t, err)
+
+			assert.Equal(t, fixture.continueOnError, group.ContinueOnError)
+		})
+	}
+}
+
 func TestGetIncludes(t *testing.T) {
 	config, err := Load(bytes.NewBufferString(`includes=["i1", "i2"]`), "toml")
 	require.NoError(t, err)

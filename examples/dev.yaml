@@ -11,11 +11,12 @@ global:
     prevent-sleep: true
     # restic-binary: ~/fake_restic
     # legacy-arguments: true
+    group-continue-on-error: true
 
 groups:
     full-backup:
-    - root
     - src
+    - root
 
 default:
     description: Contains default parameters like repository and password file

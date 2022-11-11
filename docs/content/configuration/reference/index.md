@@ -36,6 +36,7 @@ None of these flags are directly passed on to the restic command line
 | **send-timeout** | duration [^duration] | 30 seconds | timeout when sending messages to a webhook - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
 | **ca-certificates** | string, or list of strings | | certificates (file in PEM format) to authenticate HTTP servers - see [HTTP Hooks]({{< ref "http_hooks" >}}) |
 | **prevent-sleep** | true / false | false | prevent the system from sleeping - see [Preventing system sleep]({{< ref "sleep" >}}) |
+| **group-continue-on-error** | true / false | false | if set to `true` it allows the next profile(s) to run after a failure |
 
 ### Profile sections
 
