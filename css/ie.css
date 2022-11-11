@@ -1,4 +1,50 @@
 @media all and (-ms-high-contrast:none) {
+	/* turn off LTR support as it is dependend on CSS properties that aren't supported by IE11 */
+	article,
+	.toc-wrapper,
+	.tags {
+		direction: ltr;
+	}
+	blockquote {
+		border-left: 10px solid rgba( 134, 134, 134, .4 );
+		padding-left: 0.85rem;
+	}
+	blockquote cite {
+		text-align: right;
+	}
+	th {
+		text-align: left;
+	}
+	.disableInlineCopyToClipboard span > code.copy-to-clipboard-code {
+		border-bottom-right-radius: 2px;
+		border-top-right-radius: 2px;
+		border-right-width: 1px;
+	}
+	.anchor {
+		margin-left: .66em;
+	}
+	div.attachments .box-content {
+		padding-left: 1.75rem;
+	}
+	.expand > .expand-label > .expand-rtl.direction-rtl {
+		display: none;
+	}
+	.expand > .expand-label > .expand-ltr.direction-rtl {
+		display: inline-block;
+	}
+	.expand.expand-expanded > .expand-label > .fa-chevron-right {
+		display: none;
+	}
+	#body .tab-nav-button {
+		margin-left: 4px;
+	}
+	#body .tab-nav-button.direction-rtl {
+		float: left;
+	}
+	#body .tab-nav-button:first-child {
+		margin-left: 9px;
+	}
+
 	/* set default colors as in variant.css for IE11 */
 	body {
 		background-color: #ffffff; /* var(--MAIN-BG-color) */
@@ -6,6 +52,7 @@
 		font-family: "Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif; /* var(--MAIN-font) */
 	}
 
+	.footerVisitedLinks > *,
 	a,
 	.anchor,
 	#toc-menu,
@@ -39,14 +86,16 @@
 
 	#sidebar .collapsible-menu .toggle,
 	#sidebar .select-container,
-	#sidebar a {
+	#sidebar a,
+	#sidebar button {
 		color: #bababa; /* var(--MENU-SECTIONS-LINK-color) */
 	}
 
 	#sidebar select:hover,
 	#sidebar .collapsible-menu .toggle:hover,
 	#sidebar .select-container:hover,
-	#sidebar a:hover {
+	#sidebar a:hover,
+	#sidebar button:hover {
 		color: #ffffff; /* var(--MENU-SECTIONS-LINK-HOVER-color) */
 	}
 
@@ -85,6 +134,10 @@
 	h2, h3, .article-subheading, h4, h5, h6 {
 		color: #4a4a4a; /* var(--MAIN-TITLES-TEXT-color) */
 		font-family: "Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif; /* var(--MAIN-TITLES-TEXT-font) */
+	}
+
+	h2, h3, h4, h5, h6 {
+		padding-right: 2rem;
 	}
 
 	div.box {
@@ -402,6 +455,7 @@
 	#body .tags a.tag-link {
 		background-color: #7dc903; /* var(--TAG-BG-color) */
 		color: #ffffff; /* var(--MAIN-BG-color) */
+		margin-right: 16px;
 	}
 
 	#body .tags a.tag-link:before {
@@ -416,9 +470,7 @@
 		background-color: #ffffff !important; /* var(--MAIN-BG-color) */
 		border-bottom-color: #ffffff !important; /* var(--MAIN-BG-color) */
 	}
-}
 
-@media all and (-ms-high-contrast:none) {
 	/* set further styles to fix broken stuff in IE11 */
 
 	/* turn off animiation in IE because this causes the menu

@@ -177,7 +177,8 @@ body #sidebar ul.topics li.active > a {
 body #sidebar select:hover,
 body #sidebar .collapsible-menu .toggle:hover,
 body #sidebar .select-container:hover,
-body #sidebar a:hover {
+body #sidebar a:hover,
+body #sidebar button:hover {
     color: #fff;
     text-shadow:
         0 0  1px #fff,

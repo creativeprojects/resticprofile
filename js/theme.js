@@ -250,13 +250,14 @@ function initAnchorClipboard(){
     });
 
     $(".anchor").on('mouseleave', function(e) {
-        $(this).attr('aria-label', null).removeClass('tooltipped tooltipped-s tooltipped-w');
+        $(this).attr('aria-label', null).removeClass('tooltipped tooltipped-se tooltipped-sw');
     });
 
     var clip = new ClipboardJS('.anchor');
     clip.on('success', function(e) {
         e.clearSelection();
-        $(e.trigger).attr('aria-label', window.T_Link_copied_to_clipboard).addClass('tooltipped tooltipped-s');
+        var rtl = $(e.trigger).closest('*[dir]').attr('dir') == 'rtl';
+        $(e.trigger).attr('aria-label', window.T_Link_copied_to_clipboard).addClass('tooltipped tooltipped-s'+(rtl?'e':'w') );
     });
 }
 
@@ -300,20 +301,22 @@ function initCodeClipboard(){
             clip.on('success', function(e) {
                 e.clearSelection();
                 var inPre = $(e.trigger).parent().prop('tagName') == 'PRE';
-                $(e.trigger).attr('aria-label', window.T_Copied_to_clipboard).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'));
+                var rtl = $(e.trigger).closest('*[dir]').attr('dir') == 'rtl';
+                $(e.trigger).attr('aria-label', window.T_Copied_to_clipboard).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')));
             });
 
             clip.on('error', function(e) {
                 var inPre = $(e.trigger).parent().prop('tagName') == 'PRE';
-                $(e.trigger).attr('aria-label', fallbackMessage(e.action)).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'));
+                var rtl = $(this).closest('*[dir]').attr('dir') == 'rtl';
+                $(e.trigger).attr('aria-label', fallbackMessage(e.action)).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')));
                 $(document).one('copy', function(){
-                    $(e.trigger).attr('aria-label', window.T_Copied_to_clipboard).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'));
+                    $(e.trigger).attr('aria-label', window.T_Copied_to_clipboard).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')));
                 });
             });
 
             code.addClass('copy-to-clipboard-code');
             if( inPre ){
-                parent.addClass( 'copy-to-clipboard' );
+                parent.addClass( 'copy-to-clipboard' ).addClass( 'pre-code' );
             }
             else{
                 code.replaceWith($('<span/>', {'class': 'copy-to-clipboard'}).append(code.clone() ));
@@ -321,7 +324,8 @@ function initCodeClipboard(){
             }
             code.after( $('<span>').addClass("copy-to-clipboard-button").attr("title", window.T_Copy_to_clipboard).append("<i class='fas fa-copy'></i>") );
             code.next('.copy-to-clipboard-button').on('mouseleave', function() {
-                $(this).attr('aria-label', null).removeClass('tooltipped tooltipped-s tooltipped-w');
+                var rtl = $(this).closest('*[dir]').attr('dir') == 'rtl';
+                $(this).attr('aria-label', null).removeClass('tooltipped tooltipped-w tooltipped-se tooltipped-sw');
             });
         }
     });
@@ -448,61 +452,6 @@ function initMenuScrollbar(){
     }
     window.addEventListener('resize', adjustContentWidth );
     adjustContentWidth();
-}
-
-function initLightbox(){
-    // wrap image inside a lightbox (to get a full size view in a popup)
-    var images = $("main#body-inner img").not(".inline");
-    images.wrap(function(){
-        var image =$(this);
-        var o = getUrlParameter(image[0].src);
-        var f = o['featherlight'];
-        // IF featherlight is false, do not use feather light
-        if (f != 'false') {
-            if (!image.parent("a").length) {
-                var html = $( "<a>" ).attr("href", image[0].src).attr("data-featherlight", "image").get(0).outerHTML;
-                return html;
-            }
-        }
-    });
-
-    $('a[rel="lightbox"]').featherlight({
-        root: 'div#body'
-    });
-}
-
-function initImageStyles(){
-    // change image styles, depending on parameters set to the image
-    var images = $("main#body-inner img").not(".inline");
-    images.each(function(index){
-        var image = $(this)
-        var o = getUrlParameter(image[0].src);
-        if (typeof o !== "undefined") {
-            var h = o["height"];
-            var w = o["width"];
-            var c = o["classes"];
-            image.css("width", function() {
-                if (typeof w !== "undefined") {
-                    return w;
-                } else {
-                    return "auto";
-                }
-            });
-            image.css("height", function() {
-                if (typeof h !== "undefined") {
-                    return h;
-                } else {
-                    return "auto";
-                }
-            });
-            if (typeof c !== "undefined") {
-                var classes = c.split(',');
-                for (i = 0; i < classes.length; i++) {
-                    image.addClass(classes[i]);
-                }
-            }
-        }
-    });
 }
 
 function sidebarEscapeHandler( event ){
@@ -813,22 +762,6 @@ function initSearch() {
     $('#body-inner a:not(:has(img)):not(.btn):not(a[rel="footnote"])').addClass('highlight');
 }
 
-// Get Parameters from some url
-function getUrlParameter(sPageURL) {
-    var url = sPageURL.split('?');
-    var obj = {};
-    if (url.length == 2) {
-      var sURLVariables = url[1].split('&'),
-          sParameterName,
-          i;
-      for (i = 0; i < sURLVariables.length; i++) {
-          sParameterName = sURLVariables[i].split('=');
-          obj[sParameterName[0]] = sParameterName[1];
-      }
-    }
-    return obj;
-};
-
 // debouncing function from John Hann
 // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
 (function($, sr) {
@@ -865,8 +798,6 @@ jQuery(function() {
     initMenuScrollbar();
     scrollToActiveMenu();
     scrollToFragment();
-    initLightbox();
-    initImageStyles();
     initToc();
     initAnchorClipboard();
     initCodeClipboard();

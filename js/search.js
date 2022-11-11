@@ -1,40 +1,65 @@
 var lunrIndex, pagesIndex;
 
-// Initialize lunrjs using our generated index file
-function initLunr() {
-    // First retrieve the index file
-    $.getJSON(index_url)
+function initLunrIndex( index ){
+    pagesIndex = index;
+    // Set up lunrjs by declaring the fields we use
+    // Also provide their boost level for the ranking
+    lunrIndex = lunr(function() {
+        this.use(lunr.multiLanguage.apply(null, contentLangs));
+        this.ref('index');
+        this.field('title', {
+            boost: 15
+        });
+        this.field('tags', {
+            boost: 10
+        });
+        this.field('content', {
+            boost: 5
+        });
+
+        this.pipeline.remove(lunr.stemmer);
+        this.searchPipeline.remove(lunr.stemmer);
+
+        // Feed lunr with each file and let lunr actually index them
+        pagesIndex.forEach(function(page, idx) {
+            page.index = idx;
+            this.add(page);
+        }, this);
+    })
+}
+
+function initLunrJson() {
+    // old way to load the search index via XHR;
+    // this does not work if pages are served via
+    // file:// protocol; this is only left for
+    // backward compatiblity if the user did not
+    // define the SEARCH output format for the homepage
+    if( window.index_json_url && !window.index_js_url ){
+        $.getJSON(index_json_url)
         .done(function(index) {
-            pagesIndex = index;
-            // Set up lunrjs by declaring the fields we use
-            // Also provide their boost level for the ranking
-            lunrIndex = lunr(function() {
-                this.use(lunr.multiLanguage.apply(null, contentLangs));
-                this.ref('index');
-                this.field('title', {
-                    boost: 15
-                });
-                this.field('tags', {
-                    boost: 10
-                });
-                this.field('content', {
-                    boost: 5
-                });
-
-                this.pipeline.remove(lunr.stemmer);
-                this.searchPipeline.remove(lunr.stemmer);
-
-                // Feed lunr with each file and let lunr actually index them
-                pagesIndex.forEach(function(page, idx) {
-                    page.index = idx;
-                    this.add(page);
-                }, this);
-            })
+            initLunrIndex(index);
         })
         .fail(function(jqxhr, textStatus, error) {
             var err = textStatus + ', ' + error;
             console.error('Error getting Hugo index file:', err);
         });
+    }
+}
+
+function initLunrJs() {
+    // new way to load our search index
+    if( window.index_js_url ){
+        var js = document.createElement("script");
+        js.src = index_js_url;
+        js.setAttribute("async", "");
+        js.onload = function(){
+            initLunrIndex(relearn_search_index);
+        };
+        js.onerror = function(e){
+            console.error('Error getting Hugo index file');
+        };
+        document.head.appendChild(js);
+    }
 }
 
 /**
@@ -62,7 +87,8 @@ function searchPatterns(word) {
 }
 
 // Let's get started
-initLunr();
+initLunrJson();
+initLunrJs();
 $(function() {
     var searchList = new autoComplete({
         /* selector for the search box element */

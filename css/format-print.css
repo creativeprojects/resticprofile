@@ -27,6 +27,11 @@ code.copy-to-clipboard-code {
     border-top-right-radius: 2px;
     border-right-width: 1px;
 }
+span > code.copy-to-clipboard-code {
+    border-end-end-radius: 2px;
+    border-start-end-radius: 2px;
+    border-inline-end-width: 1px;
+}
 pre {
     border: 1px solid #ccc;
 }

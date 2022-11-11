@@ -174,7 +174,7 @@ th, td {
   padding: 0.425rem 0; }
 
 th {
-  text-align: left; }
+  text-align: start; }
 
 body {
   font-size: 1rem;
@@ -214,7 +214,7 @@ ul, ol {
 
 blockquote {
   margin: 1.5rem 0;
-  padding-left: 0.85rem; }
+  padding-inline-start: 0.85rem; }
 
 cite {
   display: block;
