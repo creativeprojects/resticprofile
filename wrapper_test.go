@@ -557,10 +557,27 @@ func TestRunShellCommands(t *testing.T) {
 	profile.Init = &config.InitSection{}
 	profile.Prune = &config.SectionWithScheduleAndMonitoring{}
 
+	profile.Dump = &config.GenericSection{}
+	profile.Find = &config.GenericSection{}
+	profile.Ls = &config.GenericSection{}
+	profile.Mount = &config.GenericSection{}
+	profile.Restore = &config.GenericSection{}
+	profile.Snapshots = &config.GenericSection{}
+	profile.Stats = &config.GenericSection{}
+	profile.Tag = &config.GenericSection{}
+
 	sections := map[string]*config.RunShellCommandsSection{
-		"backup": profile.Backup.GetRunShellCommands(),
+		"backup":    profile.Backup.GetRunShellCommands(),
+		"copy":      profile.Copy.GetRunShellCommands(),
+		"dump":      profile.Dump.GetRunShellCommands(),
+		"find":      profile.Find.GetRunShellCommands(),
+		"ls":        profile.Ls.GetRunShellCommands(),
+		"mount":     profile.Mount.GetRunShellCommands(),
+		"restore":   profile.Restore.GetRunShellCommands(),
+		"snapshots": profile.Snapshots.GetRunShellCommands(),
+		"stats":     profile.Stats.GetRunShellCommands(),
+		"tag":       profile.Tag.GetRunShellCommands(),
 		//"check":  profile.Check.GetRunShellCommands(),
-		"copy": profile.Copy.GetRunShellCommands(),
 		//"forget": profile.Forget.GetRunShellCommands(),
 		//"init": profile.Init.GetRunShellCommands(),
 		//"prune":  profile.Prune.GetRunShellCommands(),

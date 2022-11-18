@@ -62,17 +62,25 @@ type Profile struct {
 	Retention               *RetentionSection                 `mapstructure:"retention"`
 	Check                   *SectionWithScheduleAndMonitoring `mapstructure:"check"`
 	Prune                   *SectionWithScheduleAndMonitoring `mapstructure:"prune"`
-	Snapshots               *OtherFlagsSection                `mapstructure:"snapshots"`
+	Snapshots               *GenericSection                   `mapstructure:"snapshots"`
 	Forget                  *SectionWithScheduleAndMonitoring `mapstructure:"forget"`
-	Mount                   *OtherFlagsSection                `mapstructure:"mount"`
+	Mount                   *GenericSection                   `mapstructure:"mount"`
 	Copy                    *CopySection                      `mapstructure:"copy"`
-	Dump                    *OtherFlagsSection                `mapstructure:"dump"`
-	Find                    *OtherFlagsSection                `mapstructure:"find"`
-	Ls                      *OtherFlagsSection                `mapstructure:"ls"`
-	Restore                 *OtherFlagsSection                `mapstructure:"restore"`
-	Stats                   *OtherFlagsSection                `mapstructure:"stats"`
-	Tag                     *OtherFlagsSection                `mapstructure:"tag"`
+	Dump                    *GenericSection                   `mapstructure:"dump"`
+	Find                    *GenericSection                   `mapstructure:"find"`
+	Ls                      *GenericSection                   `mapstructure:"ls"`
+	Restore                 *GenericSection                   `mapstructure:"restore"`
+	Stats                   *GenericSection                   `mapstructure:"stats"`
+	Tag                     *GenericSection                   `mapstructure:"tag"`
 }
+
+// GenericSection is used for all restic commands that are not covered in specific section types
+type GenericSection struct {
+	OtherFlagsSection       `mapstructure:",squash"`
+	RunShellCommandsSection `mapstructure:",squash"`
+}
+
+func (g *GenericSection) IsEmpty() bool { return g == nil }
 
 // InitSection contains the specific configuration to the 'init' command
 type InitSection struct {
