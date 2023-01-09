@@ -10,7 +10,7 @@ weight: 20
 resticprofile has 2 places where you can run commands around restic:
 
 - commands that will run before and after every restic command (snapshots, backup, check, forget, prune, mount, etc.). These are placed at the root of each profile and are always considered.
-- commands that will only run before and after specific restic commands. These are placed in supported sections of your profiles (supported are `backup` & `copy`).
+- commands that will only run before and after specific restic commands. These are placed in supported sections of your profiles (currently supported are `backup`, `copy`, `dump`, `find`, `ls`, `mount`, `restore`, `snapshots`, `stats` and `tag`).
 
 Here's an example of all the external commands that you can run during the execution of a profile:
 
