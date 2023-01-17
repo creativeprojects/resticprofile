@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSendHook(t *testing.T) {
+func TestSend(t *testing.T) {
 	testCases := []struct {
 		cfg   config.SendMonitoringSection
 		calls int
@@ -87,13 +87,30 @@ func TestSendHook(t *testing.T) {
 				Stdout: "test_stdout",
 			}
 
-			sender := NewSender(nil, "resticprofile_test", 10*time.Second)
+			sender := NewSender(nil, "resticprofile_test", 10*time.Second, false)
 			err := sender.Send(testCase.cfg, ctx)
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.calls, calls)
 		})
 	}
+}
+
+func TestDryRun(t *testing.T) {
+	var calls uint32
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddUint32(&calls, 1)
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	sender := NewSender(nil, "", time.Second, true)
+	err := sender.Send(config.SendMonitoringSection{
+		URL: server.URL,
+	}, Context{})
+	assert.NoError(t, err)
+
+	assert.Equal(t, uint32(0), atomic.LoadUint32(&calls))
 }
 
 func TestSenderTimeout(t *testing.T) {
@@ -106,7 +123,7 @@ func TestSenderTimeout(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
@@ -123,7 +140,7 @@ func TestInsecureRequests(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
@@ -151,7 +168,7 @@ func TestRequestWithCA(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
@@ -169,7 +186,7 @@ func TestRequestWithCA(t *testing.T) {
 	assert.NoError(t, err)
 
 	// 2: request using the right CA certificate
-	sender = NewSender([]string{filename}, "resticprofile_test", 300*time.Millisecond)
+	sender = NewSender([]string{filename}, "resticprofile_test", 300*time.Millisecond, false)
 	err = sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
@@ -183,7 +200,7 @@ func TestFailedRequest(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 	}, Context{})
@@ -199,7 +216,7 @@ func TestUserAgent(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender(nil, "", 300*time.Millisecond)
+	sender := NewSender(nil, "", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: server.URL,
 		Headers: []config.SendMonitoringHeader{
@@ -234,7 +251,7 @@ func TestParseTemplate(t *testing.T) {
 	}))
 	defer server.Close()
 
-	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond)
+	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err = sender.Send(config.SendMonitoringSection{
 		URL:          server.URL,
 		Method:       http.MethodPost,

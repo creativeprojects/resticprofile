@@ -21,9 +21,10 @@ type Sender struct {
 	client         *http.Client
 	insecureClient *http.Client
 	userAgent      string
+	dryRun         bool
 }
 
-func NewSender(certificates []string, userAgent string, timeout time.Duration) *Sender {
+func NewSender(certificates []string, userAgent string, timeout time.Duration, dryRun bool) *Sender {
 	if userAgent == "" {
 		userAgent = "resticprofile/1.0"
 	}
@@ -53,6 +54,7 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration) *
 		client:         client,
 		insecureClient: insecureClient,
 		userAgent:      userAgent,
+		dryRun:         dryRun,
 	}
 }
 
@@ -65,18 +67,27 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 	if method == "" {
 		method = http.MethodGet
 	}
-	var body io.Reader = http.NoBody
+	var (
+		body       string    // only used in dry-run mode
+		bodyReader io.Reader = http.NoBody
+	)
 	if cfg.BodyTemplate != "" {
 		bodyTemplate, err := loadBodyTemplate(cfg.BodyTemplate, ctx)
 		if err != nil {
 			return err
 		}
-		body = bytes.NewBufferString(bodyTemplate)
+		body = bodyTemplate
+		bodyReader = bytes.NewBufferString(body)
 	}
 	if cfg.Body != "" {
-		body = bytes.NewBufferString(resolve(cfg.Body, ctx))
+		body = resolve(cfg.Body, ctx)
+		bodyReader = bytes.NewBufferString(body)
 	}
-	req, err := http.NewRequest(method, url, body)
+	if s.dryRun {
+		clog.Infof("dry-run: webhook request method=%s url=%q body=%q", method, url, body)
+		return nil
+	}
+	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return err
 	}
