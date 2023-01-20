@@ -59,6 +59,8 @@ func (h *HandlerWindows) CreateJob(job *config.ScheduleConfig, schedules []*cale
 	perm := schtasks.SystemAccount
 	if permission == constants.SchedulePermissionUser {
 		perm = schtasks.UserAccount
+	} else if permission == constants.SchedulePermissionUserLoggedOn {
+		perm = schtasks.UserLoggedOnAccount
 	}
 	err := schtasks.Create(job, schedules, perm)
 	if err != nil {

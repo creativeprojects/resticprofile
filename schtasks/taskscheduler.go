@@ -47,6 +47,7 @@ type Permission int
 const (
 	UserAccount Permission = iota
 	SystemAccount
+	UserLoggedOnAccount
 )
 
 var (
@@ -93,6 +94,9 @@ func Create(config *config.ScheduleConfig, schedules []*calendar.Event, permissi
 
 	if permission == SystemAccount {
 		return createSystemTask(config, schedules)
+	}
+	if permission == UserLoggedOnAccount {
+		return createUserLoggedOnTask(config, schedules)
 	}
 	return createUserTask(config, schedules)
 }
@@ -199,6 +203,77 @@ func userCredentials() (string, string, error) {
 		return "", "", err
 	}
 	return userName, userPassword, nil
+}
+
+// createUserLoggedOnTask creates a new user task. Will update an existing task instead of overwritting
+func createUserLoggedOnTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title, config.SubTitle)
+	registeredTask, err := taskService.GetRegisteredTask(taskName)
+	if err != nil {
+		return err
+	}
+	if registeredTask != nil {
+		return updateUserLoggedOnTask(registeredTask, config, schedules)
+	}
+
+	task := taskService.NewTaskDefinition()
+
+	task.AddExecAction(
+		config.Command,
+		strings.Join(config.Arguments, " "),
+		config.WorkingDirectory,
+		"")
+	task.Principal.LogonType = taskmaster.TASK_LOGON_INTERACTIVE_TOKEN
+	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
+	task.RegistrationInfo.Author = "resticprofile"
+	task.RegistrationInfo.Description = config.JobDescription
+
+	createSchedules(&task, schedules)
+
+	_, created, err := taskService.CreateTaskEx(
+		taskName,
+		task,
+		"",
+		"",
+		taskmaster.TASK_LOGON_INTERACTIVE_TOKEN,
+		false)
+	if err != nil {
+		return err
+	}
+	if !created {
+		return errors.New("cannot create user task")
+	}
+	return nil
+}
+
+// updateUserLoggedOnTask updates an existing task
+func updateUserLoggedOnTask(task *taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.Title, config.SubTitle)
+
+	// clear up all actions and put ours back
+	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
+	task.Definition.AddExecAction(
+		config.Command,
+		strings.Join(config.Arguments, " "),
+		config.WorkingDirectory,
+		"")
+	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_INTERACTIVE_TOKEN
+	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
+
+	// clear up all schedules and put them back
+	task.Definition.Triggers = []taskmaster.Trigger{}
+	createSchedules(&task.Definition, schedules)
+
+	_, err := taskService.UpdateTaskEx(
+		taskName,
+		task.Definition,
+		"",
+		"",
+		taskmaster.TASK_LOGON_INTERACTIVE_TOKEN)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // createSystemTask creates a new system task. Will update an existing task instead of overwritting
@@ -484,9 +559,10 @@ func getTaskPath(profileName, commandName string) string {
 // the second one is a list of all the differences in between
 //
 // Example:
-//  input = 01:00, 02:00, 03:00, 04:00, 06:00, 08:00
-//  first list = 1H, 1H, 1H, 2H, 2H
-//  second list = 1H, 2H
+//
+//	input = 01:00, 02:00, 03:00, 04:00, 06:00, 08:00
+//	first list = 1H, 1H, 1H, 2H, 2H
+//	second list = 1H, 2H
 func compileDifferences(recurrences []time.Time) ([]time.Duration, []time.Duration) {
 	// now calculate the difference in between each
 	differences := make([]time.Duration, len(recurrences)-1)
