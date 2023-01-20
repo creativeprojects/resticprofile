@@ -8,6 +8,8 @@ COPY build/restic-${ARCH} /usr/bin/restic
 COPY build/rclone-${ARCH} /usr/bin/rclone
 COPY resticprofile /usr/bin/resticprofile
 
+RUN apk add --no-cache openssh
+
 VOLUME /resticprofile
 WORKDIR /resticprofile
 
