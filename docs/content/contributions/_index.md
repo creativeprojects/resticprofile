@@ -16,3 +16,4 @@ I have created a [contributions section](https://github.com/creativeprojects/res
 - [export status to grafana](https://github.com/creativeprojects/resticprofile/tree/master/contrib/grafana)
 - [send email on systemd timer error](https://github.com/creativeprojects/resticprofile/tree/master/contrib/systemd)
 - [get backup status information in zabbix](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix)
+- [scheduling inside a docker container](https://github.com/creativeprojects/resticprofile/tree/master/contrib/schedule-in-docker)
