@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
@@ -570,7 +570,7 @@ func retryElevated(err error, flags commandLineFlags) error {
 		return nil
 	}
 	// maybe can find a better way than searching for the word "denied"?
-	if runtime.GOOS == "windows" && !flags.isChild && strings.Contains(err.Error(), "denied") {
+	if platform.IsWindows() && !flags.isChild && strings.Contains(err.Error(), "denied") {
 		clog.Info("restarting resticprofile in elevated mode...")
 		err := elevated(flags)
 		if err != nil {
@@ -582,7 +582,7 @@ func retryElevated(err error, flags commandLineFlags) error {
 }
 
 func elevated(flags commandLineFlags) error {
-	if runtime.GOOS != "windows" {
+	if !platform.IsWindows() {
 		return errors.New("only available on Windows platform")
 	}
 
