@@ -45,4 +45,12 @@ Starting from version `0.18.0`, the resticprofile docker image is available in t
 
 Starting from version `0.18.0`, the resticprofile docker image also includes [rclone][1].
 
+## Scheduling with docker compose
+
+There's an example in the contribution section how to schedule backups in a long running container.
+The configuration needs to specify the use `crond` as a scheduler.
+
+See [contrib][2]
+
 [1]: https://rclone.org/
+[2]: https://github.com/creativeprojects/resticprofile/tree/master/contrib/schedule-in-docker
