@@ -72,11 +72,13 @@ profile:
 
 ### schedule-permission
 
-`schedule-permission` accepts two parameters: `user` or `system`:
-
-* `user`: your backup will be running using your current user permissions on files. This is fine if you're only saving your documents (or any other file inside your profile). Please note on **systemd** that the schedule **will only run when your user is logged in**.
+`schedule-permission` accepts three parameters: `system`, `user` or `user_logged_in`:
 
 * `system`: if you need to access some system or protected files. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed).
+
+* `user`: your backup will be running using your current user permissions on files. This is fine if you're only saving your documents (or any other file inside your profile). Please note on **systemd** that the schedule **will only run when your user is logged in**. This mode will ask you for your user password on Windows.
+
+* `user_logged_in`: **For Windows only** - This gives the same permissions as `user`. This mode is not asking for your user password but will only run while the user is logged in.
 
 * *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user) and fallback to `user`
 
