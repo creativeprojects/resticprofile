@@ -48,7 +48,7 @@ Starting from version `0.18.0`, the resticprofile docker image also includes [rc
 ## Scheduling with docker compose
 
 There's an example in the contribution section how to schedule backups in a long running container.
-The configuration needs to specify the use `crond` as a scheduler.
+The configuration needs to specify `crond` as a scheduler.
 
 See [contrib][2]
 
