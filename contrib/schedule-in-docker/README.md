@@ -17,12 +17,11 @@ services:
     entrypoint: '/bin/sh'
     command:
       - '-c'
-      - 'crond && resticprofile-schedule.sh && inotifyd resticprofile-schedule.sh /etc/resticprofile/profiles.yaml:w'
+      - 'resticprofile schedule --all && crond -f'
     volumes:
       - ~/.ssh:/root/.ssh
       - './profiles.yaml:/etc/resticprofile/profiles.yaml:ro'
       - './key:/etc/resticprofile/key:ro'
-      - './resticprofile-schedule.sh:/usr/local/bin/resticprofile-schedule.sh:ro'
     environment:
       - TZ=Etc/UTC
 ```
@@ -45,14 +44,5 @@ default:
     schedule: "*:00,15,30,45"
     schedule-permission: system
     check-before: true
-
-```
-
-The `resticprofile-schedule.sh` is only setting up the cron tasks:
-
-```sh
-#!/bin/sh
-
-resticprofile schedule --all
 
 ```
