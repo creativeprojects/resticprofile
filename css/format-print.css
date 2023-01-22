@@ -67,7 +67,7 @@ pre {
 #body code, #body strong, #body b,
 #body li, #body dd, #body dt,
 #body p,
-#body a {
+#body a, #body button, #body .badge .badge-content {
     /* better contrast for colored elements */
     color: black;
 }
@@ -112,7 +112,8 @@ body,
     margin-top: 1.5rem;
     padding-top: .75rem;
 }
-#body #body-inner .footline a {
+#body #body-inner .footline a,
+#body #body-inner .btn a {
     text-decoration: none;
 }
 #body #body-inner a {

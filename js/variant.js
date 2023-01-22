@@ -223,7 +223,7 @@ var variants = {
 		}
 	},
 
-	generator: function( vargenerator, vardownload, varreset ){
+	generator: function( vargenerator ){
 		var graphDefinition = this.generateGraph();
 		var graphs = document.querySelectorAll( vargenerator );
 		graphs.forEach( function( e ){ e.innerHTML = graphDefinition; });
@@ -234,12 +234,6 @@ var variants = {
 				this.styleGraph();
 			}
 		}.bind( this ), 25 );
-
-		var downloads = document.querySelectorAll( vardownload );
-		downloads.forEach( function( e ){ e.addEventListener('click', this.getStylesheet.bind( this )); }.bind( this ) );
-
-		var resets = document.querySelectorAll( varreset );
-		resets.forEach( function( e ){ e.addEventListener('click', this.resetVariant.bind( this )); }.bind( this ) );
 	},
 
 	download: function(data, mimetype, filename){
@@ -326,20 +320,27 @@ var variants = {
 	},
 
 	findLoadedStylesheet: function( id ){
-		var style = null;
 		for( var n = 0; n < document.styleSheets.length; ++n ){
 			if( document.styleSheets[n].ownerNode.id == id ){
 				var s = document.styleSheets[n];
-				for( var m = 0; m < s.rules.length; ++m ){
-					if( s.rules[m].selectorText == ':root' ){
-						style = s.rules[m].style;
-						break;
+				if( s.rules && s.rules.length ){
+					for( var m = 0; m < s.rules.length; ++m ){
+						if( s.rules[m].selectorText == ':root' ){
+							return s.rules[m].style;
+						}
+						if( s.rules[m].cssRules && s.rules[m].cssRules.length ){
+							for( var o = 0; o < s.rules[m].cssRules.length; ++o ){
+								if( s.rules[m].cssRules[o].selectorText == ':root' ){
+									return s.rules[m].cssRules[o].style;
+								}
+							}
+						}
 					}
 				}
 				break;
 			}
 		}
-		return style;
+		return null;
 	},
 
 	changeColor: function( c, without_prompt ){
@@ -434,6 +435,7 @@ var variants = {
 		}.bind( this ) );
 		this.styleGraphGroup( '#maincontent', 'MAIN-BG-color' );
 		this.styleGraphGroup( '#mainheadings', 'MAIN-BG-color' );
+		this.styleGraphGroup( '#code', 'CODE-BLOCK-BG-color' );
 		this.styleGraphGroup( '#inlinecode', 'CODE-INLINE-BG-color' );
 		this.styleGraphGroup( '#blockcode', 'CODE-BLOCK-BG-color' );
 		this.styleGraphGroup( '#thirdparty', 'MAIN-BG-color' );
@@ -492,13 +494,17 @@ var variants = {
 			'      direction LR\n' +
 					g_groups[ 'headings' ].reduce( function( a, e ){ return a + '      ' + this.generateGraphGroupedEdge( e ) + '\n'; }.bind( this ), '' ) +
 			'    end\n' +
-			'    subgraph inlinecode["inline code"]\n' +
-			'      direction LR\n' +
-					g_groups[ 'inline code' ].reduce( function( a, e ){ return a + '      ' + this.generateGraphGroupedEdge( e ) + '\n'; }.bind( this ), '' ) +
-			'    end\n' +
-			'    subgraph blockcode["code blocks"]\n' +
-			'      direction LR\n' +
-					g_groups[ 'code blocks' ].reduce( function( a, e ){ return a + '      ' + this.generateGraphGroupedEdge( e ) + '\n'; }.bind( this ), '' ) +
+			'    subgraph code["code"]\n' +
+			'      direction TB\n' +
+					g_groups[ 'code' ].reduce( function( a, e ){ return a + '    ' + this.generateGraphGroupedEdge( e ) + '\n'; }.bind( this ), '' ) +
+			'      subgraph inlinecode["inline code"]\n' +
+			'        direction LR\n' +
+						g_groups[ 'inline code' ].reduce( function( a, e ){ return a + '      ' + this.generateGraphGroupedEdge( e ) + '\n'; }.bind( this ), '' ) +
+			'      end\n' +
+			'      subgraph blockcode["code blocks"]\n' +
+			'        direction LR\n' +
+						g_groups[ 'code blocks' ].reduce( function( a, e ){ return a + '      ' + this.generateGraphGroupedEdge( e ) + '\n'; }.bind( this ), '' ) +
+			'      end\n' +
 			'    end\n' +
 			'    subgraph thirdparty["3rd party"]\n' +
 			'      direction LR\n' +
@@ -519,14 +525,16 @@ var variants = {
 	variantvariables: [
 		{ name: 'PRIMARY-color',                         group: 'content',       fallback: 'MENU-HEADER-BG-color',        tooltip: 'brand primary color', },
 		{ name: 'SECONDARY-color',                       group: 'content',       fallback: 'MAIN-LINK-color',             tooltip: 'brand secondary color', },
+		{ name: 'ACCENT-color',                          group: 'content',        default: '#ffff00',                     tooltip: 'brand accent color, used for search highlights', },
 
-		{ name: 'MAIN-TEXT-color',                       group: 'content',        default: '#101010',                     tooltip: 'text color of content and h1 titles', },
 		{ name: 'MAIN-LINK-color',                       group: 'content',       fallback: 'SECONDARY-color',             tooltip: 'link color of content', },
 		{ name: 'MAIN-LINK-HOVER-color',                 group: 'content',       fallback: 'MAIN-LINK-color',             tooltip: 'hoverd link color of content', },
 		{ name: 'MAIN-BG-color',                         group: 'content',        default: '#ffffff',                     tooltip: 'background color of content', },
 		{ name: 'TAG-BG-color',                          group: 'content',       fallback: 'PRIMARY-color',               tooltip: 'tag color', },
 
-		{ name: 'MAIN-TITLES-TEXT-color',                group: 'headings',       default: '#4a4a4a',                     tooltip: 'text color of h2-h6 titles and transparent box titles', },
+		{ name: 'MAIN-TEXT-color',                       group: 'content',        default: '#101010',                     tooltip: 'text color of content and h1 titles', },
+
+		{ name: 'MAIN-TITLES-TEXT-color',                group: 'headings',      fallback: 'MAIN-TEXT-color',             tooltip: 'text color of h2-h6 titles and transparent box titles', },
 		{ name: 'MAIN-TITLES-H1-color',                  group: 'headings',      fallback: 'MAIN-TEXT-color',             tooltip: 'text color of h1 titles', },
 		{ name: 'MAIN-TITLES-H2-color',                  group: 'headings',      fallback: 'MAIN-TITLES-TEXT-color',      tooltip: 'text color of h2-h6 titles', },
 		{ name: 'MAIN-TITLES-H3-color',                  group: 'headings',      fallback: 'MAIN-TITLES-H2-color',        tooltip: 'text color of h3-h6 titles', },
@@ -552,7 +560,7 @@ var variants = {
 		{ name: 'CODE-INLINE-BG-color',                  group: 'inline code',    default: '#fffae9',                     tooltip: 'background color of inline code', },
 		{ name: 'CODE-INLINE-BORDER-color',              group: 'inline code',    default: '#fbf0cb',                     tooltip: 'border color of inline code', },
 
-		{ name: 'CODE-font',                             group: 'content',        default: '"Consolas", menlo, monospace', tooltip: 'text font of code', },
+		{ name: 'CODE-font',                             group: 'code',           default: '"Consolas", menlo, monospace', tooltip: 'text font of code', },
 
 		{ name: 'MERMAID-theme',                         group: '3rd party',      default: 'default',                     tooltip: 'name of the default Mermaid theme for this variant, can be overridden in config.toml', },
 		{ name: 'SWAGGER-theme',                         group: '3rd party',      default: 'light',                       tooltip: 'name of the default Swagger theme for this variant, can be overridden in config.toml', },
@@ -576,7 +584,7 @@ var variants = {
 
 		{ name: 'BOX-CAPTION-color',                     group: 'colored boxes',  default: 'rgba( 255, 255, 255, 1 )',    tooltip: 'text color of colored box titles', },
 		{ name: 'BOX-BG-color',                          group: 'colored boxes',  default: 'rgba( 255, 255, 255, .833 )', tooltip: 'background color of colored boxes', },
-		{ name: 'BOX-TEXT-color',                        group: 'colored boxes',  default: 'rgba( 16, 16, 16, 1 )',       tooltip: 'text color of colored box content', },
+		{ name: 'BOX-TEXT-color',                        group: 'colored boxes', fallback: 'MAIN-TEXT-color',             tooltip: 'text color of colored box content', },
 
 		{ name: 'BOX-BLUE-color',                        group: 'colored boxes',  default: 'rgba( 48, 117, 229, 1 )',     tooltip: 'background color of blue boxes', },
 		{ name: 'BOX-INFO-color',                        group: 'colored boxes', fallback: 'BOX-BLUE-color',              tooltip: 'background color of info boxes', },

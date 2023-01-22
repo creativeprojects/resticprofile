@@ -8,9 +8,10 @@
 :root {
     --PRIMARY-color: #7dc903; /* brand primary color */
     --SECONDARY-color: #6c8ce3; /* brand secondary color */
+    --ACCENT-color: #ff44ff; /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: #e0e0e0; /* text color of content and h1 titles */
-    --MAIN-LINK-HOVER-color: #93b0ff; /* hoverd link color of content */
+    --MAIN-LINK-HOVER-color: #93b0ff; /* hovered link color of content */
     --MAIN-BG-color: #202020; /* background color of content */
     --MAIN-TITLES-TEXT-color: #ffffff; /* text color of h2-h6 titles and transparent box titles */
 
@@ -25,8 +26,8 @@
     --MERMAID-theme: dark; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
     --SWAGGER-theme: dark; /* name of the default Swagger theme for this variant, can be overridden in config.toml */
 
-    --MENU-HOME-LINK-color: #323232; /* home button color if configured */
-    --MENU-HOME-LINK-HOVER-color: #5e5e5e; /* hoverd home button color if configured */
+    --MENU-HOME-LINK-color: #404040; /* home button color if configured */
+    --MENU-HOME-LINK-HOVER-color: #000000; /* hovered home button color if configured */
 
     --MENU-SEARCH-color: #e0e0e0; /* text and icon color of search box */
     --MENU-SEARCH-BG-color: #323232; /* background color of search box */
@@ -34,7 +35,7 @@
 
     --MENU-SECTIONS-BG-color: #2b2b2b; /* background of the menu; this is NOT just a color value but can be a complete CSS background definition including gradients, etc. */
     --MENU-SECTIONS-LINK-color: #bababa; /* link color of menu topics */
-    --MENU-SECTIONS-LINK-HOVER-color: #ffffff; /* hoverd link color of menu topics */
+    --MENU-SECTIONS-LINK-HOVER-color: #ffffff; /* hovered link color of menu topics */
     --MENU-SECTIONS-ACTIVE-BG-color: #323232; /* background color of the active menu section */
     --MENU-SECTION-ACTIVE-CATEGORY-color: #82e550; /* text color of the displayed menu topic */
     --MENU-SECTION-HR-color: #606060; /* separator color of menu footer */

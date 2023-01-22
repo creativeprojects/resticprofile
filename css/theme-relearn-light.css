@@ -8,9 +8,10 @@
 :root {
     --PRIMARY-color: #7dc903; /* brand primary color */
     --SECONDARY-color: #486ac9; /* brand secondary color */
+    --ACCENT-color: #ff88ff; /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: #101010; /* text color of content and h1 titles */
-    --MAIN-LINK-HOVER-color: #202891; /* hoverd link color of content */
+    --MAIN-LINK-HOVER-color: #202891; /* hovered link color of content */
     --MAIN-BG-color: #ffffff; /* background color of content */
     --MAIN-TITLES-TEXT-color: #4a4a4a; /* text color of h2-h6 titles and transparent box titles */
 
@@ -26,8 +27,8 @@
     --MERMAID-theme: default; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
     --SWAGGER-theme: light; /* name of the default Swagger theme for this variant, can be overridden in config.toml */
 
-    --MENU-HOME-LINK-color: #323232; /* home button color if configured */
-    --MENU-HOME-LINK-HOVER-color: #808080; /* hoverd home button color if configured */
+    --MENU-HOME-LINK-color: #404040; /* home button color if configured */
+    --MENU-HOME-LINK-HOVER-color: #000000; /* hovered home button color if configured */
 
     --MENU-SEARCH-color: #e0e0e0; /* text and icon color of search box */
     --MENU-SEARCH-BG-color: #323232; /* background color of search box */
@@ -36,7 +37,7 @@
     --MENU-SECTIONS-BG-color: #282828; /* background of the menu; this is NOT just a color value but can be a complete CSS background definition including gradients, etc. */
     --MENU-SECTIONS-ACTIVE-BG-color: rgba( 0, 0, 0, .166 ); /* background color of the active menu section */
     --MENU-SECTIONS-LINK-color: #bababa; /* link color of menu topics */
-    --MENU-SECTIONS-LINK-HOVER-color: #ffffff; /* hoverd link color of menu topics */
+    --MENU-SECTIONS-LINK-HOVER-color: #ffffff; /* hovered link color of menu topics */
     --MENU-SECTION-ACTIVE-CATEGORY-color: #444444; /* text color of the displayed menu topic */
     --MENU-SECTION-HR-color: #606060; /* separator color of menu footer */
 

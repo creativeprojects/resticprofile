@@ -1,3 +1,5 @@
+window.relearn = window.relearn || {};
+
 var theme = true;
 var isIE = /*@cc_on!@*/false || !!document.documentMode;
 if( isIE ){
@@ -21,6 +23,12 @@ Prism.manual = true;
 var psc;
 var psm;
 var pst;
+var elc = document.querySelector('#body-inner');
+
+function documentFocus(){
+    document.querySelector( '#body-inner' ).focus();
+    psc && psc.scrollbarY.focus();
+}
 
 function scrollbarWidth(){
     // https://davidwalsh.name/detect-scrollbar-width
@@ -33,6 +41,17 @@ function scrollbarWidth(){
     // Delete the DIV
     document.body.removeChild(scrollDiv);
     return scrollbarWidth;
+}
+
+var scrollbarSize = scrollbarWidth();
+function adjustContentWidth(){
+    var left = parseFloat( getComputedStyle( elc ).getPropertyValue( 'padding-left' ) );
+    var right = left;
+    if( elc.scrollHeight > elc.clientHeight ){
+        // if we have a scrollbar reduce the right margin by the scrollbar width
+        right = Math.max( 0, left - scrollbarSize );
+    }
+    elc.style[ 'padding-right' ] = '' + right + 'px';
 }
 
 function switchTab(tabGroup, tabId) {
@@ -106,11 +125,14 @@ function initMermaid( update, attrs ) {
             dir = JSON.parse( '{ "dummy": ' + m[2] ).dummy;
             content = graph.substring( d.lastIndex );
         }
+        content = content.trim();
         return { dir: dir, content: content };
     };
 
     var serializeGraph = function( graph ){
-        return '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n' + graph.content;
+        var s = '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n';
+        s += graph.content;
+        return s;
     };
 
     var init_func = function( attrs ){
@@ -348,12 +370,14 @@ function initArrowNav(){
 
     // keyboard navigation
     jQuery(document).keydown(function(e) {
-      if(e.which == '37') {
-        jQuery('a.nav-prev').click();
-      }
-      if(e.which == '39') {
-        jQuery('a.nav-next').click();
-      }
+        if(!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey){
+            if(e.which == '37') {
+                jQuery('a.nav-prev').click();
+            }
+            if(e.which == '39') {
+                jQuery('a.nav-next').click();
+            }
+        }
     });
 
     // avoid keyboard navigation for input fields
@@ -369,11 +393,10 @@ function initMenuScrollbar(){
         return;
     }
 
-    var elc = document.querySelector('#body-inner');
     var elm = document.querySelector('#content-wrapper');
     var elt = document.querySelector('#TableOfContents');
 
-    var autofocus = false;
+    var autofocus = true;
     document.addEventListener('keydown', function(event){
         // for initial keyboard scrolling support, no element
         // may be hovered, but we still want to react on
@@ -382,6 +405,13 @@ function initMenuScrollbar(){
         // it and give focus to the scrollbar - only
         // to just remove the focus right after scrolling
         // happend
+        autofocus = false;
+        if( event.shiftKey || event.altKey || event.ctrlKey || event.metaKey || event.which < 32 || event.which > 40 ){
+            // if tab key was pressed, we are ended with our initial
+            // focus job
+            return;
+        }
+
         var c = elc && elc.matches(':hover');
         var m = elm && elm.matches(':hover');
         var t = elt && elt.matches(':hover');
@@ -389,7 +419,6 @@ function initMenuScrollbar(){
         if( !c && !m && !t && !f ){
             // only do this hack if none of our scrollbars
             // is hovered
-            autofocus = true;
             // if we are showing the sidebar as a flyout we
             // want to scroll the content-wrapper, otherwise we want
             // to scroll the body
@@ -440,16 +469,6 @@ function initMenuScrollbar(){
     });
 
     // finally, we want to adjust the contents right padding if there is a scrollbar visible
-    var scrollbarSize = scrollbarWidth();
-    function adjustContentWidth(){
-        var left = parseFloat( getComputedStyle( elc ).getPropertyValue( 'padding-left' ) );
-        var right = left;
-        if( elc.scrollHeight > elc.clientHeight ){
-            // if we have a scrollbar reduce the right margin by the scrollbar width
-            right = Math.max( 0, left - scrollbarSize );
-        }
-        elc.style[ 'padding-right' ] = '' + right + 'px';
-    }
     window.addEventListener('resize', adjustContentWidth );
     adjustContentWidth();
 }
@@ -459,8 +478,7 @@ function sidebarEscapeHandler( event ){
         var b = document.querySelector( 'body' );
         b.classList.remove( 'sidebar-flyout' );
         document.removeEventListener( 'keydown', sidebarEscapeHandler );
-        document.querySelector( '#body-inner' ).focus();
-        psc && psc.scrollbarY.focus();
+        documentFocus();
     }
 }
 
@@ -469,32 +487,56 @@ function tocEscapeHandler( event ){
         var b = document.querySelector( 'body' );
         b.classList.remove( 'toc-flyout' );
         document.removeEventListener( 'keydown', tocEscapeHandler );
-        document.querySelector( '#body-inner' ).focus();
-        psc && psc.scrollbarY.focus();
+        documentFocus();
     }
 }
 
 function sidebarShortcutHandler( event ){
-    if( event.altKey && event.ctrlKey && event.which == 78 /* n */ ){
+    if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 78 /* n */ ){
         showNav();
     }
 }
 
+function searchShortcutHandler( event ){
+    if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 70 /* f */ ){
+        showSearch();
+    }
+}
+
 function tocShortcutHandler( event ){
-    if( event.altKey && event.ctrlKey && event.which == 84 /* t */ ){
+    if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 84 /* t */ ){
         showToc();
     }
 }
 
 function editShortcutHandler( event ){
-    if( event.altKey && event.ctrlKey && event.which == 87 /* w */ ){
+    if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 87 /* w */ ){
         showEdit();
     }
 }
 
 function printShortcutHandler( event ){
-    if( event.altKey && event.ctrlKey && event.which == 80 /* p */ ){
+    if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 80 /* p */ ){
         showPrint();
+    }
+}
+
+function showSearch(){
+    var s = document.querySelector( '#search-by' );
+    if( !s ){
+        return;
+    }
+    var b = document.querySelector( 'body' );
+    if( s == document.activeElement ){
+        if( b.classList.contains( 'sidebar-flyout' ) ){
+            showNav();
+        }
+        documentFocus();
+    } else {
+        if( !b.classList.contains( 'sidebar-flyout' ) ){
+            showNav();
+        }
+        s.focus();
     }
 }
 
@@ -512,8 +554,7 @@ function showNav(){
     }
     else{
         document.removeEventListener( 'keydown', sidebarEscapeHandler );
-        document.querySelector( '#body-inner' ).focus();
-        psc && psc.scrollbarY.focus();
+        documentFocus();
     }
 }
 
@@ -527,12 +568,13 @@ function showToc(){
     b.classList.toggle( 'toc-flyout' );
     if( b.classList.contains( 'toc-flyout' ) ){
         pst && pst.update();
+        pst && pst.scrollbarY.focus();
+        document.querySelector( '.toc-wrapper ul a' ).focus();
         document.addEventListener( 'keydown', tocEscapeHandler );
     }
     else{
         document.removeEventListener( 'keydown', tocEscapeHandler );
-        document.querySelector( '#body-inner' ).focus();
-        psc && psc.scrollbarY.focus();
+        documentFocus();
     }
 }
 
@@ -558,15 +600,8 @@ function initToc(){
     document.addEventListener( 'keydown', editShortcutHandler );
     document.addEventListener( 'keydown', printShortcutHandler );
     document.addEventListener( 'keydown', sidebarShortcutHandler );
+    document.addEventListener( 'keydown', searchShortcutHandler );
     document.addEventListener( 'keydown', tocShortcutHandler );
-    // avoid keyboard navigation for input fields
-    jQuery(formelements).keydown(function (e) {
-        if( e.altKey && event.ctrlKey ){
-            if( e.which == 77 /* m */ || e.which == 84 /* t */ || e.which == 69 /* e */ || e.which == 80 /* p */ ){
-                e.stopPropagation();
-            }
-        }
-    });
 
     document.querySelector( '#sidebar-overlay' ).addEventListener( 'click', showNav );
     document.querySelector( '#sidebar-toggle' ).addEventListener( 'click', showNav );
@@ -580,8 +615,7 @@ function initToc(){
     }
 
     // finally give initial focus to allow keyboard scrolling in FF
-    document.querySelector( '#body-inner' ).focus();
-    psc && psc.scrollbarY.focus();
+    documentFocus();
 }
 
 function initSwipeHandler(){
@@ -611,8 +645,7 @@ function initSwipeHandler(){
                 var b = document.querySelector( 'body' );
                 b.classList.remove( 'sidebar-flyout' );
                 document.removeEventListener( 'keydown', sidebarEscapeHandler );
-                document.querySelector( '#body-inner' ).focus();
-                psc && psc.scrollbarY.focus();
+                documentFocus();
             }
         }
         return false;
@@ -690,6 +723,10 @@ function scrollToFragment() {
 }
 
 function mark(){
+    // mark some additonal stuff as searchable
+    $('#topbar a:not(:has(img)):not(.btn)').addClass('highlight');
+    $('#body-inner a:not(:has(img)):not(.btn):not(a[rel="footnote"])').addClass('highlight');
+
     var value = sessionStorage.getItem(baseUriFull+'search-value');
     $(".highlightable").highlight(value, { element: 'mark' });
     $("mark").parents(".expand").addClass("expand-marked");
@@ -703,6 +740,7 @@ function mark(){
     });
     psm && psm.update();
 }
+window.relearn.markSearch = mark;
 
 function unmark(){
     sessionStorage.removeItem(baseUriFull+'search-value');
@@ -719,20 +757,42 @@ function unmark(){
     psm && psm.update();
 }
 
+function searchInputHandler(value) {
+    unmark();
+    if (value.length) {
+        sessionStorage.setItem(baseUriFull+'search-value', value);
+        mark();
+    }
+}
+
 function initSearch() {
-    jQuery('[data-search-input]').on('input', function() {
-        var input = jQuery(this);
-        var value = input.val();
-        unmark();
-        if (value.length) {
-            sessionStorage.setItem(baseUriFull+'search-value', value);
-            mark();
+    // sync input/escape between searchbox and searchdetail
+    jQuery('input.search-by').on('keydown', function(event) {
+        if (event.key == "Escape") {
+            var input = jQuery(this);
+            input.blur();
+            searchInputHandler( '' );
+            jQuery('input.search-by').val('');
+            documentFocus();
         }
     });
+    jQuery('input.search-by').on('input', function() {
+        var input = jQuery(this);
+        var value = input.val();
+        searchInputHandler( value );
+        jQuery('input.search-by').not(this).val($(this).val());
+    });
+
     jQuery('[data-search-clear]').on('click', function() {
         jQuery('[data-search-input]').val('').trigger('input');
         unmark();
     });
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var value = urlParams.get('search-by');
+    if( value ){
+        sessionStorage.setItem(baseUriFull+'search-value', value);
+    }
     mark();
 
     // custom sizzle case insensitive "contains" pseudo selector
@@ -757,9 +817,8 @@ function initSearch() {
         }
     }
 
-    // mark some additonal stuff as searchable
-    $('#topbar a:not(:has(img)):not(.btn)').addClass('highlight');
-    $('#body-inner a:not(:has(img)):not(.btn):not(a[rel="footnote"])').addClass('highlight');
+    window.relearn.isSearchInit = true;
+    window.relearn.runInitialSearch && window.relearn.runInitialSearch();
 }
 
 // debouncing function from John Hann

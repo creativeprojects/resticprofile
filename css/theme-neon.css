@@ -5,12 +5,17 @@
    - remove the following `@import` of the self-defined chroma stylesheet */
 @import "chroma-neon.css";
 
+/* this variant does not work well if we use fallback styles for IE11 so better
+   ignore this variant in IE completely */
+@supports not (-ms-high-contrast:none) {
+
 :root {
     --PRIMARY-color: #f300b2; /* brand primary color */
     --SECONDARY-color: #1c90f3; /* brand secondary color */
+    --ACCENT-color: #ffaa00; /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: #e0e0e0; /* text color of content and h1 titles */
-    --MAIN-LINK-HOVER-color: #4cabff; /* hoverd link color of content */
+    --MAIN-LINK-HOVER-color: #4cabff; /* hovered link color of content */
     --MAIN-BG-color: #202020; /* background color of content */
 
     /* optional overwrites for specific headers */
@@ -31,8 +36,8 @@
 
     --MENU-HEADER-BG-color: rgba( 0, 0, 0, 0 ); /* background color of menu header */
 
-    --MENU-HOME-LINK-color: #323232; /* home button color if configured */
-    --MENU-HOME-LINK-HOVER-color: #5e5e5e; /* hoverd home button color if configured */
+    --MENU-HOME-LINK-color: #ffffff; /* home button color if configured */
+    --MENU-HOME-LINK-HOVER-color: #d0d0d0; /* hovered home button color if configured */
 
     --MENU-SEARCH-color: #e0e0e0; /* text and icon color of search box */
     --MENU-SEARCH-BG-color: #323232; /* background color of search box */
@@ -41,7 +46,7 @@
     --MENU-SECTIONS-BG-color: linear-gradient( 165deg, #f300b2d3 0%, #1c90f3b3 65%, #00e3d3b3 100% ); /* background of the menu; this is NOT just a color value but can be a complete CSS background definition including gradients, etc. */
     --MENU-SECTIONS-ACTIVE-BG-color: rgba( 0, 0, 0, .166 ); /* background color of the active menu section */
     --MENU-SECTIONS-LINK-color: #ffffff; /* link color of menu topics */
-    --MENU-SECTIONS-LINK-HOVER-color: #d0d0d0; /* hoverd link color of menu topics */
+    --MENU-SECTIONS-LINK-HOVER-color: #d0d0d0; /* hovered link color of menu topics */
     --MENU-SECTION-ACTIVE-CATEGORY-color: #56ffe8; /* text color of the displayed menu topic */
     --MENU-SECTION-HR-color: #bababa; /* separator color of menu footer */
 
@@ -52,7 +57,7 @@
     --BOX-BG-color: rgba( 20, 20, 20, 1 ); /* background color of colored boxes */
     --BOX-TEXT-color: initial; /* text color of colored box content */
 
-    /* optional base colors for colored boxes as in attachments and notice shortcode */
+    /* optional base colors for colored boxes as in attachments, badges, buttons and notice shortcode */
     --BOX-BLUE-color: rgba( 48, 117, 229, 1 ); /* background color of blue boxes */
     --BOX-BLUE-TEXT-color: var( --BOX-BLUE-color ); /* text color of blue boxes */
     --BOX-GREEN-color: rgba( 42, 178, 24, 1 ); /* background color of green boxes */
@@ -174,6 +179,17 @@ body #sidebar ul.topics li.active > a {
         0 0  8px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
 }
 
+body #sidebar .searchbox button:hover,
+body .searchbox span:hover {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MENU-SEARCH-color),
+        0 0  8px var(--INTERNAL-MENU-SEARCH-color);
+}
+
 body #sidebar select:hover,
 body #sidebar .collapsible-menu .toggle:hover,
 body #sidebar .select-container:hover,
@@ -188,6 +204,16 @@ body #sidebar button:hover {
         0 0  8px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
 }
 
+body #homelinks a:hover {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MENU-HOME-LINK-HOVER-color),
+        0 0  8px var(--INTERNAL-MENU-HOME-LINK-HOVER-color);
+}
+
 body h1 a,
 body h2 a,
 body h3 a,
@@ -198,6 +224,7 @@ body .anchor {
     text-shadow: none;
 }
 
+body .badge,
 body .btn,
 body div.box {
     box-shadow:
@@ -207,7 +234,9 @@ body div.box {
         0 0  4px var(--VARIABLE-BOX-color);
 }
 
+body .badge > .badge-content,
 body .btn,
+body .btn > *,
 body div.box > .box-label {
     text-shadow:
         0 0  1px #fff,
@@ -216,22 +245,24 @@ body div.box > .box-label {
         0 0  4px var(--VARIABLE-BOX-CAPTION-color);
 }
 
+body .badge.cstyle:not(.transparent),
 body .btn.cstyle {
     --VARIABLE-BOX-TEXT-color: var(--VARIABLE-BOX-CAPTION-color);
 }
 
+body .badge.cstyle.transparent,
 body .btn.cstyle.transparent {
     --VARIABLE-BOX-BG-color: var(--INTERNAL-BOX-BG-color);
 }
 
-body .btn.cstyle.transparent a {
+body .btn.cstyle.transparent > * {
     border-color: var(--VARIABLE-BOX-color);
     color: var(--VARIABLE-BOX-CAPTION-color);
 }
 
-body .btn.cstyle.transparent a:hover,
-body .btn.cstyle.transparent a:focus,
-body .btn.cstyle.transparent a:active {
+body .btn.cstyle.transparent > *:hover,
+body .btn.cstyle.transparent > *:focus,
+body .btn.cstyle.transparent > *:active {
     background-color: var(--INTERNAL-MAIN-TITLES-TEXT-color);
     color: var(--INTERNAL-MAIN-TEXT-color);
 }
@@ -272,4 +303,6 @@ above will not apply, so we have to repeat it here */
 .print #body div.box > .box-label {
     box-shadow: none;
     text-shadow: none;
+}
+
 }

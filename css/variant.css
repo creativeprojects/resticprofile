@@ -3,12 +3,14 @@
     this is only possible because every color variant defines this variable, otherwise we would have been lost */
     --INTERNAL-PRIMARY-color: var(--PRIMARY-color, var(--MENU-HEADER-BG-color, rgba( 0, 0, 0, 0 ))); /* not --INTERNAL-MENU-HEADER-BG-color */
     --INTERNAL-SECONDARY-color: var(--SECONDARY-color, var(--MAIN-LINK-color, #486ac9)); /* not --INTERNAL-MAIN-LINK-color */
+    --INTERNAL-ACCENT-color: var(--ACCENT-color, #ffff00);
 
-    --INTERNAL-MAIN-TEXT-color: var(--MAIN-TEXT-color, #101010);
-    --INTERNAL-MAIN-TITLES-TEXT-color: var(--MAIN-TITLES-TEXT-color, #4a4a4a);
     --INTERNAL-MAIN-LINK-color: var(--MAIN-LINK-color, var(--SECONDARY-color, #486ac9)); /* not --INTERNAL-SECONDARY-color */
     --INTERNAL-MAIN-LINK-HOVER-color: var(--MAIN-LINK-HOVER-color, var(--INTERNAL-MAIN-LINK-color));
     --INTERNAL-MAIN-BG-color: var(--MAIN-BG-color, #ffffff);
+
+    --INTERNAL-MAIN-TEXT-color: var(--MAIN-TEXT-color, #101010);
+    --INTERNAL-MAIN-TITLES-TEXT-color: var(--MAIN-TITLES-TEXT-color, var(--INTERNAL-MAIN-TEXT-color));
 
     --INTERNAL-MAIN-TITLES-H1-color: var(--MAIN-TITLES-H1-color, var(--INTERNAL-MAIN-TEXT-color));
     --INTERNAL-MAIN-TITLES-H2-color: var(--MAIN-TITLES-H2-color, var(--INTERNAL-MAIN-TITLES-TEXT-color));
@@ -64,7 +66,7 @@
 
     --INTERNAL-BOX-CAPTION-color: var(--BOX-CAPTION-color, rgba( 255, 255, 255, 1 ));
     --INTERNAL-BOX-BG-color: var(--BOX-BG-color, rgba( 255, 255, 255, .833 ));
-    --INTERNAL-BOX-TEXT-color: var(--BOX-TEXT-color, rgba( 16, 16, 16, 1 ));
+    --INTERNAL-BOX-TEXT-color: var(--BOX-TEXT-color, var(--INTERNAL-MAIN-TEXT-color));
 
     --INTERNAL-BOX-BLUE-color: var(--BOX-BLUE-color, rgba( 48, 117, 229, 1 ));
     --INTERNAL-BOX-GREEN-color: var(--BOX-GREEN-color, rgba( 42, 178, 24, 1 ));
@@ -110,7 +112,8 @@ body {
 a,
 .anchor,
 #toc-menu,
-#body a.highlight:after {
+#body a.highlight:after,
+#searchresults .autocomplete-suggestion {
     color: var(--INTERNAL-MAIN-LINK-color);
 }
 
@@ -158,8 +161,11 @@ a:hover,
 
 #sidebar ul.collapsible-menu li.active > .toggle,
 #sidebar ul.topics li.active > a {
-    background-color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BG-color);
     color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
+}
+
+#sidebar ul.topics li.active > a {
+    background-color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BG-color);
 }
 
 #sidebar ul li.visited > a .read-icon {
@@ -176,6 +182,10 @@ a:hover,
 
 #footer {
     color: var(--INTERNAL-MENU-SECTIONS-LINK-color);
+}
+
+mark {
+    background-color: var(--INTERNAL-ACCENT-color);
 }
 
 h1 {
@@ -302,6 +312,10 @@ pre {
     color: var(--INTERNAL-CODE-BLOCK-color);
 }
 
+table {
+    background-color: var(--INTERNAL-MAIN-BG-color);
+}
+
 div.featherlight .featherlight-content{
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
@@ -310,7 +324,8 @@ div.featherlight .featherlight-content{
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
 
-#body a[aria-disabled="true"] {
+#body a[aria-disabled="true"],
+#searchresults .autocomplete-suggestion > .context {
     color: var(--INTERNAL-MAIN-TEXT-color);
 }
 
@@ -366,14 +381,14 @@ pre .copy-to-clipboard-button:hover {
     background-color: var(--VARIABLE-BOX-color);
 }
 
-.btn a {
+.btn > * {
     border-color: var(--VARIABLE-BOX-color);
     color: var(--VARIABLE-BOX-CAPTION-color);
 }
 
-.btn a:hover,
-.btn a:focus,
-.btn a:active {
+.btn > *:hover,
+.btn > *:focus,
+.btn > *:active {
     background-color: var(--VARIABLE-BOX-BG-color);
     color: var(--VARIABLE-BOX-TEXT-color);
 }
@@ -388,7 +403,7 @@ pre .copy-to-clipboard-button:hover {
     background-color: var(--INTERNAL-BOX-NEUTRAL-color);
 }
 
-.btn.cstyle.transparent a {
+.btn.cstyle.transparent > * {
     --VARIABLE-BOX-color: var(--INTERNAL-BOX-NEUTRAL-color);
     --VARIABLE-BOX-TEXT-color: var(--VARIABLE-BOX-CAPTION-color);
 }
@@ -409,4 +424,17 @@ pre .copy-to-clipboard-button:hover {
 #body .tab-nav-button.active {
     background-color: var(--INTERNAL-MAIN-BG-color) !important;
     border-bottom-color: var(--INTERNAL-MAIN-BG-color) !important;
+}
+
+.badge > * {
+    border-color: var(--VARIABLE-BOX-TEXT-color);
+}
+
+.badge > .badge-content {
+    background-color: var(--VARIABLE-BOX-color);
+    color: var(--VARIABLE-BOX-CAPTION-color);
+}
+
+.badge.cstyle.transparent{
+    --VARIABLE-BOX-BG-color: var(--INTERNAL-BOX-BG-color);
 }

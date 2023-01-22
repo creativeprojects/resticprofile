@@ -1,8 +1,13 @@
 /*
-    JavaScript autoComplete v1.0.4
+    JavaScript autoComplete v1.0.4+
 		#46 - positioning
 		#75 - complete
         McShelby/hugo-theme-relearn#155
+            - sticky dropdown on scrolling
+        McShelby/hugo-theme-relearn#3xx
+            - don't empty search input if no data-val is given
+            - don't delete search term but close suggestions when suggestions are open
+            - delete search term when suggestions are closed
     Copyright (c) 2014 Simon Steinberger / Pixabay
     GitHub: https://github.com/Pixabay/JavaScript-autoComplete
     License: http://www.opensource.org/licenses/mit-license.php
@@ -159,21 +164,44 @@ var autoComplete = (function(){
                     if (!sel) {
                         next = (key == 40) ? that.sc.querySelector('.autocomplete-suggestion') : that.sc.childNodes[that.sc.childNodes.length - 1]; // first : last
                         next.className += ' selected';
-                        that.value = next.getAttribute('data-val');
+                        if (next.getAttribute('data-val')) that.value = next.getAttribute('data-val');
                     } else {
                         next = (key == 40) ? sel.nextSibling : sel.previousSibling;
                         if (next) {
                             sel.className = sel.className.replace('selected', '');
                             next.className += ' selected';
-                            that.value = next.getAttribute('data-val');
+                            if (next.getAttribute('data-val')) that.value = next.getAttribute('data-val');
                         }
-                        else { sel.className = sel.className.replace('selected', ''); that.value = that.last_val; next = 0; }
+                        else {
+                            sel.className = sel.className.replace('selected', '');
+                            that.value = that.last_val;
+                            next = 0;
+                        }
                     }
                     that.updateSC(0, next);
                     return false;
                 }
                 // esc
-                else if (key == 27) { that.value = that.last_val; that.sc.style.display = 'none'; }
+                else if (key == 27) {
+                    if( that.sc.style.display != 'none' ){
+                        var sel = that.sc.querySelector('.autocomplete-suggestion.selected');
+                        if (sel) {
+                            e.preventDefault();
+                            setTimeout(function(){
+                                that.value = that.last_val;
+                                that.focus();
+                                that.sc.style.display = 'none';
+                            }, 0);
+                        }
+                        else{
+                            that.value = '';
+                            that.sc.style.display = 'none';
+                        }
+                    }
+                    else{
+                        that.value = '';
+                    }
+                }
                 // enter
                 else if (key == 13 || key == 9) {
                     var sel = that.sc.querySelector('.autocomplete-suggestion.selected');

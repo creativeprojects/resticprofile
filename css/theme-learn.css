@@ -8,6 +8,7 @@
 :root {
     --MAIN-TEXT-color: #323232; /* Color of text by default */
     --MAIN-TITLES-TEXT-color: #5e5e5e; /* Color of titles h2-h3-h4-h5-h6 */
+    --MAIN-TITLES-H1-color: #222222; /* text color of h1 titles */
     --MAIN-LINK-color: #00bdf3; /* Color of links */
     --MAIN-LINK-HOVER-color: #0082a7; /* Color of hovered links */
     --MAIN-BG-color: #ffffff; /* color of text by default */
@@ -21,8 +22,8 @@
     --CODE-INLINE-BG-color: #fff7dd; /* color for inline code background */
     --CODE-INLINE-BORDER-color: #fbf0cb; /* color of inline code border */
 
-    --MENU-HOME-LINK-color: #cccccc; /* Color of the home button text */
-    --MENU-HOME-LINK-HOVER-color: #e6e6e6; /* Color of the hovered home button text */
+    --MENU-HOME-LINK-color: #e0e0e0; /* Color of the home button text */
+    --MENU-HOME-LINK-HOVER-color: #f0f0f0; /* Color of the hovered home button text */
 
     --MENU-HEADER-BG-color: #8451a1; /* Background color of menu header */
     --MENU-HEADER-BORDER-color: #9c6fb6; /*Color of menu header border */
