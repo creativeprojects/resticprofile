@@ -1,0 +1,15 @@
+
+global:
+  scheduler: crond
+
+default:
+  password-file: key
+  repository: sftp:nas17:/tmp/backup
+  initialize: true
+  backup:
+    source: /
+    exclude-caches: true
+    one-file-system: true
+    schedule: "*:00,05,10,15,30,45"
+    schedule-permission: system
+    check-before: true
