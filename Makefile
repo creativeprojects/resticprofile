@@ -142,7 +142,7 @@ rest-server:
 
 nightly: $(GOBIN)/goreleaser
 	@echo "[*] $@"
-	goreleaser --snapshot --skip-publish --rm-dist
+	goreleaser --snapshot --skip-publish --rm-dist --debug
 
 toc:
 	@echo "[*] $@"
