@@ -101,7 +101,7 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 			mi := new(mixin)
 			if err := mapstructure.Decode(definition, mi); err == nil {
 				keysToUpper(mi.DefaultVariables)
-				mixins[name] = mi
+				mixins[strings.ToLower(name)] = mi
 			} else {
 				clog.Warningf("failed parsing \"mixins.%s\": %s", name, err.Error())
 			}
@@ -166,6 +166,9 @@ func parseMixinUses(rawValue interface{}) (uses []*mixinUse, err error) {
 		}
 	}
 
+	for _, use := range uses {
+		use.Name = strings.ToLower(use.Name)
+	}
 	return
 }
 
