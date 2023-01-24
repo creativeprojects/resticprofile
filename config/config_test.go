@@ -434,7 +434,7 @@ repository = "overridden-repo"`)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, NewConfidentialValue("overridden-repo"), profile.Repository)
 	})
 
@@ -462,7 +462,7 @@ use = "another-run-before2"`)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"default-before", "another-run-before", "another-run-before2"}, profile.RunBefore)
 	})
 
@@ -505,19 +505,19 @@ use = "another-run-before2"`)
 		createFile(t, "b-"+testID+".inc.json", `{"two":{}}`)
 
 		_, err := LoadFile(configFile, "")
-		assert.Error(t, err)
+		assert.ErrorContains(t, err, "cannot include different versions of the configuration file")
 	})
 
 	t.Run("cannot-load-different-versions", func(t *testing.T) {
 		defer cleanFiles()
-		content := fmt.Sprintf(`{"version": 2, "includes"=[\"*%s.inc.json\"}]`, testID)
+		content := fmt.Sprintf(`{"version": 2, "includes":["*%s.inc.json"]}`, testID)
 
 		configFile := createFile(t, "profiles.json", content)
-		createFile(t, "c-"+testID+".inc.json", `{"two":{}}`)
-		createFile(t, "d-"+testID+".inc.json", `{"version": 2, "profiles": {"one":{}}}`)
+		createFile(t, "c-"+testID+".inc.json", `{"version": 1, "two":{}}`)
+		createFile(t, "d-"+testID+".inc.json", `{"profiles": {"one":{}}}`)
 
 		_, err := LoadFile(configFile, "")
-		assert.Error(t, err)
+		assert.ErrorContains(t, err, "cannot include different versions of the configuration file")
 	})
 }
 

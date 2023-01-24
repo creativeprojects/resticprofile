@@ -276,7 +276,7 @@ profiles:
       source: "source-profile"
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "status-two", p.StatusFile)
 		assert.Equal(t, []string{"source-two"}, p.Backup.Source)
 		assert.Equal(t, []string{"mount /backup", "mountpoint -q /backup"}, p.Backup.RunBefore)
@@ -295,7 +295,7 @@ profiles:
       run-before: "base"
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"new-before-head", "new-before-tail"}, p.Backup.RunBefore)
 	})
 
@@ -310,7 +310,7 @@ profiles:
       run-before: ["echo profile-before"]
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"echo profile-before"}, p.Backup.RunBefore)
 		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
 	})
@@ -326,7 +326,7 @@ profiles:
     inherit: default
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"mount /backup", "echo profile-default"}, p.Backup.RunBefore)
 		assert.Equal(t, []string{"unmount /backup"}, p.Backup.RunAfter)
 	})
@@ -344,7 +344,7 @@ profiles:
       run-before: ["base"]
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"new-begin", "base", "new-end"}, p.Backup.RunBefore)
 	})
 
@@ -356,7 +356,7 @@ profiles:
     a: b
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, map[string][]string{"a": {"b"}}, p.GetCommonFlags().ToMap())
 	})
 
@@ -374,11 +374,11 @@ profiles:
             named-source: my-source
 `)
 		p, err := config.getProfile("profile-simple")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"default-source", "${another-source}"}, p.Backup.Source)
 
 		p, err = config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"my-source", "${another-source}"}, p.Backup.Source)
 	})
 
@@ -400,11 +400,11 @@ profiles:
           another-source: my-other-implicit-source
 `)
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"my-source", "${another-source}"}, p.Backup.Source)
 
 		p, err = config.getProfile("profile-both")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"my-source", "my-other-implicit-source"}, p.Backup.Source)
 	})
 
@@ -434,7 +434,7 @@ profiles:
 		assert.NotContains(t, mixins, "tinvalid-no-object2")
 
 		p, err := config.getProfile("profile")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "abc 1 false ${list} ${obj}", p.StatusFile)
 	})
 
@@ -469,5 +469,21 @@ profiles:
 			_, err := Load(buffer, FormatYAML)
 			assert.EqualError(t, err, "cannot parse yaml configuration: failed collecting profiles.profile.use: "+errorMessage)
 		}
+	})
+
+	t.Run("use-is-not-case-sensitive", func(t *testing.T) {
+		config := load(t, `
+  UPPER:
+    lock: u-lock-file
+
+profiles:
+  profile:
+    use: ["T1", "upper"]
+    a: b
+`)
+		p, err := config.getProfile("profile")
+		require.NoError(t, err)
+		assert.Equal(t, "status-one", p.StatusFile)
+		assert.Equal(t, "u-lock-file", p.Lock)
 	})
 }
