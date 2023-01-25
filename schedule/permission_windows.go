@@ -15,7 +15,7 @@ func detectSchedulePermission(permission string) (detected string, safe bool) {
 	if permission == constants.SchedulePermissionUser {
 		return constants.SchedulePermissionUser, true
 	}
-	if permission == constants.SchedulePermissionUserLoggedOn {
+	if permission == constants.SchedulePermissionUserLoggedOn || permission == constants.SchedulePermissionUserLoggedIn {
 		return constants.SchedulePermissionUserLoggedOn, true
 	}
 	return constants.SchedulePermissionSystem, true

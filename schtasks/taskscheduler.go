@@ -40,7 +40,7 @@ const (
 	maxTriggers = 60
 )
 
-// Permission is a choice between User and System
+// Permission is a choice between System, User and User Logged On
 type Permission int
 
 // Permission available

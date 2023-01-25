@@ -31,6 +31,8 @@ func TestDetectSchedulePermissionOnWindows(t *testing.T) {
 		{"something", "system", true},
 		{"system", "system", true},
 		{"user", "user", true},
+		{"user_logged_on", "user_logged_on", true},
+		{"user_logged_in", "user_logged_on", true}, // I did the typo as I was writing the doc, so let's add it here :)
 	}
 	for _, fixture := range fixtures {
 		t.Run(fixture.input, func(t *testing.T) {
