@@ -9,4 +9,22 @@ ignore:
   - main.go
   - syslog.go
   - syslog_windows.go
-  
+
+codecov:
+  notify:
+    after_n_builds: 6
+
+comment:
+  after_n_builds: 6
+
+coverage:
+  round: nearest
+  status:
+    project:
+      default:
+        target: auto
+        threshold: "2%"
+    patch: 
+      default:
+        target: "80%"
+        threshold: "2%"
