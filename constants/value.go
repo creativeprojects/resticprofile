@@ -2,8 +2,10 @@ package constants
 
 // Parameter values
 const (
-	SchedulePermissionUser     = "user"
-	SchedulePermissionSystem   = "system"
-	SchedulePriorityBackground = "background"
-	SchedulePriorityStandard   = "standard"
+	SchedulePermissionUser         = "user"
+	SchedulePermissionUserLoggedOn = "user_logged_on"
+	SchedulePermissionUserLoggedIn = "user_logged_in"
+	SchedulePermissionSystem       = "system"
+	SchedulePriorityBackground     = "background"
+	SchedulePriorityStandard       = "standard"
 )

@@ -99,7 +99,7 @@ Flags used by resticprofile only
 * **check-before**: true / false
 * **check-after**: true / false
 * **schedule**: string OR list of strings
-* **schedule-permission**: string (`user` or `system`)
+* **schedule-permission**: string (`user`, `system` or `user_logged_on` for Windows only)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`) 
 * **schedule-lock-wait**: duration 
 * **schedule-log**: string
@@ -134,7 +134,7 @@ Flags used by resticprofile only
 * **before-backup**: true / false
 * **after-backup**: true / false
 * **schedule**: string OR list of strings
-* **schedule-permission**: string (`user` or `system`)
+* **schedule-permission**: string (`user` or `system` or `user_logged_on` for Windows only)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
@@ -173,7 +173,7 @@ Flags passed to the restic command line
 Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
-* **schedule-permission**: string (`user` or `system`)
+* **schedule-permission**: string (`user` or `system` or `user_logged_on` for Windows only)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
@@ -201,7 +201,7 @@ Flags passed to the restic command line
 Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
-* **schedule-permission**: string (`user` or `system`)
+* **schedule-permission**: string (`user` or `system` or `user_logged_on` for Windows only)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
@@ -218,7 +218,7 @@ Flags passed to the restic command line
 Flags used by resticprofile only
 
 * **schedule**: string OR list of strings
-* **schedule-permission**: string (`user` or `system`)
+* **schedule-permission**: string (`user` or `system` or `user_logged_on` for Windows only)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string
@@ -246,7 +246,7 @@ Flags used by resticprofile only
 * **run-after-fail**: string OR list of strings
 * **run-finally**: string OR list of strings
 * **schedule**: string OR list of strings
-* **schedule-permission**: string (`user` or `system`)
+* **schedule-permission**: string (`user` or `system` or `user_logged_on` for Windows only)
 * **schedule-lock-mode**: string (`default`, `fail` or `ignore`)
 * **schedule-lock-wait**: duration
 * **schedule-log**: string

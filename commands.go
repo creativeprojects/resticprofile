@@ -141,7 +141,7 @@ func getOwnCommands() []ownCommand {
 			name:              "elevation",
 			description:       "test windows elevated mode",
 			action:            testElevationCommand,
-			needConfiguration: true,
+			needConfiguration: false,
 			hide:              true,
 		},
 		{
@@ -554,7 +554,7 @@ func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags,
 		client := remote.NewClient(flags.parentPort)
 		term.Print("first line", "\n")
 		term.Println("second", "one")
-		term.Printf("value = %d", 11)
+		term.Printf("value = %d\n", 11)
 		err := client.Done()
 		if err != nil {
 			return err
