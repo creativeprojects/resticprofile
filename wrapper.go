@@ -190,6 +190,7 @@ func (r *resticWrapper) runProfile() error {
 
 	r.startTime = time.Now()
 	profileShellCommands, shellCommands := r.profile.GetRunShellCommandsSections(r.command)
+	sendMonitoring := r.profile.GetMonitoringSections(r.command)
 
 	err := lockRun(lockFile, r.profile.ForceLock, r.lockWait, func(setPID lock.SetPID) error {
 		r.setPID = setPID
@@ -202,7 +203,7 @@ func (r *resticWrapper) runProfile() error {
 					// it's ok for the initialize to error out when the repository exists
 				}
 
-				r.sendBefore(r.command)
+				r.sendBefore(sendMonitoring, r.command)
 
 				// Main command
 				{
@@ -224,13 +225,13 @@ func (r *resticWrapper) runProfile() error {
 				}
 
 				if err == nil {
-					r.sendAfter(r.command)
+					r.sendAfter(sendMonitoring, r.command)
 				}
 				return
 			}),
 			// on failure
 			func(err error) {
-				r.sendAfterFail(r.command, err)
+				r.sendAfterFail(sendMonitoring, r.command, err)
 				// "run-after-fail" in section (returns nil when no-error or not defined)
 				if r.runAfterFailCommands(shellCommands, err, r.command) == nil {
 					// "run-after-fail" in profile
@@ -240,7 +241,7 @@ func (r *resticWrapper) runProfile() error {
 			// finally
 			func(err error) {
 				r.runFinalShellCommands(r.command, err)
-				r.sendFinally(r.command, err)
+				r.sendFinally(sendMonitoring, r.command, err)
 			},
 		)
 	})
@@ -554,6 +555,7 @@ func (r *resticWrapper) runShellCommands(commands []string, commandsType, comman
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
 		rCommand.stderr = term.GetErrorOutput()
+		term.FlushAllOutput()
 		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
 			err = fmt.Errorf("%s on profile '%s': %w", commandsType, r.profile.Name, err)
@@ -583,6 +585,7 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 			// stdout are stderr are coming from the default terminal (in case they're redirected)
 			rCommand.stdout = term.GetOutput()
 			rCommand.stderr = term.GetErrorOutput()
+			term.FlushAllOutput()
 			_, _, err := runShellCommand(rCommand)
 			if err != nil {
 				clog.Errorf("run-finally command %d/%d failed ('%s' on profile '%s'): %w",
@@ -593,65 +596,32 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 }
 
 // sendBefore a command
-func (r *resticWrapper) sendBefore(command string) {
-	monitoringSections := r.profile.GetMonitoringSections(command)
-	if monitoringSections == nil {
-		return
-	}
-
-	for i, send := range monitoringSections.SendBefore {
-		clog.Debugf("starting 'send-before' from %s %d/%d", command, i+1, len(monitoringSections.SendBefore))
-		err := r.sender.Send(send, r.getContext())
-		if err != nil {
-			clog.Warningf("'send-before' returned an error: %s", err)
-		}
-	}
+func (r *resticWrapper) sendBefore(monitoring config.SendMonitoringSections, command string) {
+	r.sendMonitoring(monitoring.SendBefore, command, "send-before", nil)
 }
 
 // sendAfter a command
-func (r *resticWrapper) sendAfter(command string) {
-	monitoringSections := r.profile.GetMonitoringSections(command)
-	if monitoringSections == nil {
-		return
-	}
-
-	for i, send := range monitoringSections.SendAfter {
-		clog.Debugf("starting 'send-after' from %s %d/%d", command, i+1, len(monitoringSections.SendAfter))
-		err := r.sender.Send(send, r.getContext())
-		if err != nil {
-			clog.Warningf("'send-after' returned an error: %s", err)
-		}
-	}
+func (r *resticWrapper) sendAfter(monitoring config.SendMonitoringSections, command string) {
+	r.sendMonitoring(monitoring.SendAfter, command, "send-after", nil)
 }
 
 // sendAfterFail a command
-func (r *resticWrapper) sendAfterFail(command string, err error) {
-	monitoringSections := r.profile.GetMonitoringSections(command)
-	if monitoringSections == nil {
-		return
-	}
-
-	for i, send := range monitoringSections.SendAfterFail {
-		clog.Debugf("starting 'send-after-fail' from %s %d/%d", command, i+1, len(monitoringSections.SendAfterFail))
-		err := r.sender.Send(send, r.getContextWithError(err))
-		if err != nil {
-			clog.Warningf("'send-after-fail' returned an error: %s", err)
-		}
-	}
+func (r *resticWrapper) sendAfterFail(monitoring config.SendMonitoringSections, command string, err error) {
+	r.sendMonitoring(monitoring.SendAfterFail, command, "send-after-fail", err)
 }
 
 // sendFinally sends all final hooks
-func (r *resticWrapper) sendFinally(command string, err error) {
-	monitoringSections := r.profile.GetMonitoringSections(command)
-	if monitoringSections == nil {
-		return
-	}
+func (r *resticWrapper) sendFinally(monitoring config.SendMonitoringSections, command string, err error) {
+	r.sendMonitoring(monitoring.SendFinally, command, "send-finally", err)
+}
 
-	for i, send := range monitoringSections.SendFinally {
-		clog.Debugf("starting 'send-finally' from %s %d/%d", command, i+1, len(monitoringSections.SendFinally))
-		err := r.sender.Send(send, r.getContextWithError(err))
+func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, command, sendType string, err error) {
+	for i, section := range sections {
+		clog.Debugf("starting %q from %s %d/%d", sendType, command, i+1, len(sections))
+		term.FlushAllOutput()
+		err := r.sender.Send(section, r.getContextWithError(err))
 		if err != nil {
-			clog.Warningf("'send-finally' returned an error: %s", err)
+			clog.Warningf("%q returned an error: %s", sendType, err.Error())
 		}
 	}
 }

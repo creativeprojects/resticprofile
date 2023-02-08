@@ -569,7 +569,7 @@ Please note there are some functions only made available by hugo though, resticp
 
 ## Template functions
 
-In addition to the defaults, resticprofile provides the following functions in all templates:
+resticprofile supports the following set of own functions in all templates:
 
 * `{{ "some old string" | replace "old" "new" }}` => `"some new string"`
 * `{{ "some old string" | regex "(old)" "$1 and new" }}` => `"some old and new string"`
@@ -581,5 +581,9 @@ In addition to the defaults, resticprofile provides the following functions in a
 * `{{ "A,B,C" | split "," }}` => `["A", "B", "C"]`
 * `{{ "A,B,C" | split "," | join ";" }}` => `"A;B;C"`
 * `{{ range $v := list "A" "B" "C" }} ({{ $v }}) {{ end }}` => ` (A)  (B)  (C) `
+* `{{ tempDir }}` => `"/tmp/resticprofile.../t"` - unique OS specific existing temporary directory
+* `{{ tempFile "filename" }}` => `"/tmp/resticprofile.../t/filename"` - unique OS specific existing temporary file
 
-Please refer to the official documentation for the set of default functions provided in go templates. 
+The temporary directory and files returned by the `{{ temp* }}` functions are guaranteed to exist, accessible and removed when resticprofile ends.
+
+Please refer to the official documentation for the set of additional default functions provided in go templates. 

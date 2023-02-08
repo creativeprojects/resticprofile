@@ -2,11 +2,15 @@ package templates
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
 	"text/template"
 
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"golang.org/x/exp/maps"
 )
@@ -24,6 +28,8 @@ import (
 //   - {{ "A,B,C" | split "," }} => ["A", "B", "C"]
 //   - {{ "A,B,C" | split "," | join ";" }} => "A;B;C"
 //   - {{ list "A" "B" "C" }} => ["A", "B", "C"]
+//   - {{ tempDir }} => "/path/to/unique-tempdir"
+//   - {{ tempFile "filename" }} => "/path/to/unique-tempdir/filename"
 func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 	toString := func(arg any) string { return fmt.Sprint(arg) }
 	toAny := func(arg string) any { return arg }
@@ -48,6 +54,8 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 		"split":      func(sep, src string) []any { return collect.From(strings.Split(src, sep), toAny) },
 		"join":       func(sep string, src []any) string { return strings.Join(collect.From(src, toString), sep) },
 		"list":       func(args ...any) []any { return args },
+		"tempDir":    TempDir,
+		"tempFile":   TempFile,
 	}
 
 	for _, funcsMap := range funcs {
@@ -60,5 +68,35 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 func New(name string, funcs ...map[string]any) (tpl *template.Template) {
 	tpl = template.New(name)
 	tpl.Funcs(TemplateFuncs(funcs...))
+	return
+}
+
+var tempDirInitializer sync.Once
+
+const tempDirName = "t"
+
+// TempDir returns the volatile temporary directory that is returned by template function tempDir
+func TempDir() string {
+	dir, err := util.TempDir()
+	if err == nil {
+		dir = path.Join(filepath.ToSlash(dir), tempDirName) // must use slash, backslash is escape in some config files
+		tempDirInitializer.Do(func() {
+			err = os.MkdirAll(dir, 0755)
+		})
+	}
+	if err != nil {
+		panic(err)
+	}
+	return dir
+}
+
+// TempFile returns the volatile temporary file that is returned by template function tempFile
+func TempFile(name string) (filename string) {
+	filename = path.Join(TempDir(), name)
+	if file, err := os.OpenFile(filename, os.O_CREATE, 0644); err == nil {
+		_ = file.Close()
+	} else if !os.IsExist(err) {
+		panic(err)
+	}
 	return
 }

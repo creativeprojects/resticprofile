@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/maps"
@@ -662,12 +664,15 @@ profile:
 }
 
 func TestSchedules(t *testing.T) {
-	assert := assert.New(t)
+	util.ClearTempDir()
+	defer util.ClearTempDir()
+	logFile := path.Join(filepath.ToSlash(util.MustGetTempDir()), "rp.log")
 
 	testConfig := func(command string, scheduled bool) string {
 		schedule := ""
 		if scheduled {
-			schedule = `schedule = "@hourly"`
+			schedule = `schedule = "@hourly"
+schedule-log = "` + logFile + `"`
 		}
 
 		config := `
@@ -681,29 +686,28 @@ initialize = true
 	}
 
 	sections := NewProfile(nil, "").SchedulableCommands()
-	assert.Len(sections, 6)
+	require.GreaterOrEqual(t, len(sections), 6)
 
 	for _, command := range sections {
-		// Check that schedule is supported
-		profile, err := getProfile("toml", testConfig(command, true), "profile", "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		assert.NotNil(profile)
+		t.Run(command, func(t *testing.T) {
+			// Check that schedule is supported
+			profile, err := getProfile("toml", testConfig(command, true), "profile", "")
+			require.NoError(t, err)
+			assert.NotNil(t, profile)
 
-		config := profile.Schedules()
-		assert.Len(config, 1)
-		assert.Equal(config[0].SubTitle, command)
-		assert.Len(config[0].Schedules, 1)
-		assert.Equal(config[0].Schedules[0], "@hourly")
+			config := profile.Schedules()
+			assert.Len(t, config, 1)
+			assert.Equal(t, config[0].SubTitle, command)
+			assert.Len(t, config[0].Schedules, 1)
+			assert.Equal(t, config[0].Schedules[0], "@hourly")
+			assert.Equal(t, config[0].Log, path.Join(constants.TemporaryDirMarker, "rp.log"))
 
-		// Check that schedule is optional
-		profile, err = getProfile("toml", testConfig(command, false), "profile", "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		assert.NotNil(profile)
-		assert.Empty(profile.Schedules())
+			// Check that schedule is optional
+			profile, err = getProfile("toml", testConfig(command, false), "profile", "")
+			require.NoError(t, err)
+			assert.NotNil(t, profile)
+			assert.Empty(t, profile.Schedules())
+		})
 	}
 }
 
@@ -1084,7 +1088,8 @@ profile:
 
 						assert.Equal(t, 2, len(monitoringSections.SendAfter))
 					} else {
-						assert.Nil(t, monitoringSections)
+						assert.Empty(t, monitoringSections.SendBefore)
+						assert.Empty(t, monitoringSections.SendAfter)
 					}
 				})
 			}

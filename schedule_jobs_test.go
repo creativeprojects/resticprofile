@@ -41,19 +41,14 @@ func TestArgumentsOnScheduleJobNoLog(t *testing.T) {
 
 func TestArgumentsOnScheduleJobLogFile(t *testing.T) {
 	handler := getMockHandler(t)
-	handler.On("CreateJob",
+	handler.EXPECT().CreateJob(
 		mock.AnythingOfType("*config.ScheduleConfig"),
 		mock.AnythingOfType("[]*calendar.Event"),
 		mock.AnythingOfType("string")).
-		Return(func(scheduleConfig *config.ScheduleConfig, events []*calendar.Event, permission string) error {
-			if platform.IsDarwin() {
-				// on mac os, we use the launchd output redirection
-				assert.Equal(t, []string{"--no-ansi", "--config", "", "--name", "profile", "backup"}, scheduleConfig.Arguments)
-			} else {
-				assert.Equal(t, []string{"--no-ansi", "--config", "", "--name", "profile", "--log", "/path/to/file", "backup"}, scheduleConfig.Arguments)
-			}
-			return nil
-		})
+		Run(func(scheduleConfig *config.ScheduleConfig, events []*calendar.Event, permission string) {
+			assert.Equal(t, []string{"--no-ansi", "--config", "", "--name", "profile", "--log", "/path/to/file", "backup"}, scheduleConfig.Arguments)
+		}).
+		Return(nil)
 
 	scheduleConfig := &config.ScheduleConfig{
 		Title:    "profile",

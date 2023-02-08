@@ -1,14 +1,20 @@
 package templates
 
 import (
+	"path"
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTemplateFuncs(t *testing.T) {
+	defer util.ClearTempDir()
+	dir := TempDir()
+	file := TempFile("test.txt")
+
 	tests := []struct {
 		template, expected string
 	}{
@@ -23,6 +29,10 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ list "A" "B" "C" | join ";" }}`, expected: `A;B;C`},
 		{template: `{{ range $v := "A,B,C" | split "," }} {{ $v }} {{ end }}`, expected: ` A  B  C `},
 		{template: `{{ range $v := list "A" "B" "C" }} {{ $v }} {{ end }}`, expected: ` A  B  C `},
+		{template: `{{ tempDir }}`, expected: dir},
+		{template: `{{ tempDir }}`, expected: dir}, // constant results when repeated
+		{template: `{{ tempFile "test.txt" }}`, expected: file},
+		{template: `{{ tempFile "test.txt" }}`, expected: file}, // constant results when repeated
 		{template: `{{ hello }}`, expected: `Hello World`},
 	}
 
@@ -30,20 +40,27 @@ func TestTemplateFuncs(t *testing.T) {
 		"hello": func() string { return "Hello World" },
 	}
 
-	tpl := New("test-template", extraFuncs)
 	buffer := &strings.Builder{}
 
 	for _, test := range tests {
-
 		t.Run(test.template, func(t *testing.T) {
-			t2, err := tpl.Parse(test.template)
+			tpl, err := New("test-template", extraFuncs).Parse(test.template)
 			require.NoError(t, err)
-			require.NotNil(t, t2)
+			require.NotNil(t, tpl)
 
 			buffer.Reset()
-			err = t2.Execute(buffer, nil)
+			err = tpl.Execute(buffer, nil)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, buffer.String())
 		})
 	}
+
+	t.Run("tempFile", func(t *testing.T) {
+		expected := path.Join(TempDir(), "tf.txt")
+		assert.NoFileExists(t, expected)
+
+		file := TempFile("tf.txt")
+		assert.Equal(t, expected, file)
+		assert.FileExists(t, file)
+	})
 }
