@@ -146,6 +146,10 @@ func (c *Config) templateName(name string) string {
 }
 
 func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
+	if rs, ok := input.(io.ReadSeeker); ok {
+		input = NewUTF8Reader(rs)
+	}
+
 	inputString := &strings.Builder{}
 	_, err := io.Copy(inputString, input)
 	if err != nil {
