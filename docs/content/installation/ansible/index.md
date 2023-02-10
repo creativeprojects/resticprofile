@@ -8,7 +8,12 @@ weight: 15
 
 Installation using Ansible is not streamlined, but here's the playbook I'm using on my servers:
 
-{{%attachments title="Playbooks" pattern=".*"/%}}
+<!-- {{%attachments title="Playbooks" color="green" pattern=".*"/%}} -->
+
+{{% notice style="secondary" title="Playbooks" icon="paperclip" %}}
+* [resticprofile.yml](files/resticprofile.yml)
+{{% /notice %}}
+
 
 This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.
 
