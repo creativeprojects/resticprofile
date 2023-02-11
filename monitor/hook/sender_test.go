@@ -50,7 +50,7 @@ func TestSend(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run("", func(t *testing.T) {
 			calls := 0
-			if testCase.cfg.URL == "" {
+			if testCase.cfg.URL.Value() == "" {
 				handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					assert.Equal(t, testCase.cfg.Method, r.Method)
 					assert.Equal(t, "resticprofile_test", r.Header.Get("User-Agent"))
@@ -72,7 +72,7 @@ func TestSend(t *testing.T) {
 				})
 				server := httptest.NewServer(handler)
 				defer server.Close()
-				testCase.cfg.URL = server.URL
+				testCase.cfg.URL = config.NewConfidentialValue(server.URL)
 			}
 
 			ctx := Context{
@@ -106,7 +106,7 @@ func TestDryRun(t *testing.T) {
 
 	sender := NewSender(nil, "", time.Second, true)
 	err := sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 	}, Context{})
 	assert.NoError(t, err)
 
@@ -125,7 +125,7 @@ func TestSenderTimeout(t *testing.T) {
 
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 	}, Context{})
 	assert.Error(t, err)
 
@@ -143,14 +143,14 @@ func TestInsecureRequests(t *testing.T) {
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 	}, Context{})
 	assert.Error(t, err)
 	assert.Equal(t, 0, calls)
 
 	// 2: request allowing bad certificate
 	err = sender.Send(config.SendMonitoringSection{
-		URL:     server.URL,
+		URL:     config.NewConfidentialValue(server.URL),
 		SkipTLS: true,
 	}, Context{})
 	assert.NoError(t, err)
@@ -171,7 +171,7 @@ func TestRequestWithCA(t *testing.T) {
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 	}, Context{})
 	assert.Error(t, err)
 	assert.Equal(t, 0, calls)
@@ -188,7 +188,7 @@ func TestRequestWithCA(t *testing.T) {
 	// 2: request using the right CA certificate
 	sender = NewSender([]string{filename}, "resticprofile_test", 300*time.Millisecond, false)
 	err = sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 	}, Context{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
@@ -202,7 +202,7 @@ func TestFailedRequest(t *testing.T) {
 
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 	}, Context{})
 	assert.Error(t, err)
 }
@@ -218,9 +218,9 @@ func TestUserAgent(t *testing.T) {
 
 	sender := NewSender(nil, "", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
-		URL: server.URL,
+		URL: config.NewConfidentialValue(server.URL),
 		Headers: []config.SendMonitoringHeader{
-			{Name: "User-Agent", Value: testAgent},
+			{Name: "User-Agent", Value: config.NewConfidentialValue(testAgent)},
 		},
 	}, Context{})
 	assert.NoError(t, err)
@@ -253,9 +253,31 @@ func TestParseTemplate(t *testing.T) {
 
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err = sender.Send(config.SendMonitoringSection{
-		URL:          server.URL,
+		URL:          config.NewConfidentialValue(server.URL),
 		Method:       http.MethodPost,
 		BodyTemplate: filename,
 	}, ctx)
 	assert.NoError(t, err)
+}
+
+func TestResponseSanitizer(t *testing.T) {
+	var tests [][]string
+	for i := 0; i < 256; i++ {
+		if (i < 32 && i != '\f' && i != '\t' && i != '\r' && i != '\n') || i > 127 {
+			tests = append(tests, []string{string([]byte{byte(i)}), " "})
+		}
+	}
+
+	tests = append(tests, [][]string{
+		{`[{"key": "value"}]`, `[{"key": "value"}]`},
+		{`<x a="2"></x>`, `<x a="2"></x>`},
+		{`{{((_-'987654321'-_*,.;:!"§$%&"))}}`, `{{((_-'987654321'-_*,.;:!"§$%&"))}}`},
+		{"\r\n\t ", "\r\n\t "},
+		{"\r\n", "\r\n"},
+		{"\ufeffxyc", " xyc"},
+	}...)
+
+	for i, test := range tests {
+		assert.Equal(t, test[1], responseContentSanitizer.ReplaceAllString(test[0], " "), "test #%d", i)
+	}
 }

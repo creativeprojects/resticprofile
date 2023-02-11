@@ -13,8 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var defaultUrl = "local:user:pass@host"
-var defaultUrlReplaced = fmt.Sprintf("local:user:%s@host", ConfidentialReplacement)
+var (
+	defaultUrl             = "local:user:pass@host"
+	defaultUrlReplaced     = fmt.Sprintf("local:user:%s@host", ConfidentialReplacement)
+	defaultHttpUrl         = "http://huser:hpw@host"
+	defaultHttpUrlReplaced = fmt.Sprintf("http://huser:%s@host", ConfidentialReplacement)
+)
 
 func TestConfidentialHideAll(t *testing.T) {
 	value := NewConfidentialValue("val")
@@ -205,13 +209,37 @@ profile:
   repository: "local:user:pass@host"
   env:
     MY_PASSWORD: "otherval"
+  backup:
+    send-after:
+      url: "http://huser:hpw@host"
+      headers: { "name": "Authorization", value: "Basic" }
 `
 	profile, err := getProfile("yaml", testConfig, "profile", "")
 	assert.Nil(t, err)
 	assert.NotNil(t, profile)
 
-	result := GetNonConfidentialValues(profile, []string{"a", defaultUrl, "b", "otherval", "c"})
-	assert.Equal(t, []string{"a", defaultUrlReplaced, "b", ConfidentialReplacement, "c"}, result)
+	result := GetNonConfidentialValues(profile, []string{
+		"a",
+		defaultUrl,
+		"b",
+		"otherval",
+		"c",
+		defaultHttpUrl,
+		"d",
+		"Basic",
+		"e",
+	})
+	assert.Equal(t, []string{
+		"a",
+		defaultUrlReplaced,
+		"b",
+		ConfidentialReplacement,
+		"c",
+		defaultHttpUrlReplaced,
+		"d",
+		ConfidentialReplacement,
+		"e",
+	}, result)
 }
 
 func TestGetNonConfidentialArgs(t *testing.T) {
