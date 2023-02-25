@@ -23,7 +23,8 @@ require (
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.1.0
 	golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
-	golang.org/x/sys v0.1.0
+	golang.org/x/sys v0.5.0
+	golang.org/x/text v0.7.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.0
 )
@@ -63,10 +64,9 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xanzy/go-gitlab v0.76.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.1.0 // indirect
-	golang.org/x/term v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
