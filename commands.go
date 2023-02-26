@@ -184,12 +184,7 @@ func isOwnCommand(command string, configurationLoaded bool) bool {
 func runOwnCommand(configuration *config.Config, commandName string, flags commandLineFlags, args []string) error {
 	for _, command := range ownCommands {
 		if command.name == commandName {
-			if help := slices.Contains(args, "--help") || slices.Contains(args, "-h"); help && !command.hide {
-				args = append([]string{command.name}, args...)
-				return displayHelpCommand(os.Stdout, configuration, flags, args)
-			} else {
-				return command.action(os.Stdout, configuration, flags, args)
-			}
+			return command.action(os.Stdout, configuration, flags, args)
 		}
 	}
 	return fmt.Errorf("command not found: %v", commandName)

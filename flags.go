@@ -8,7 +8,9 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/spf13/pflag"
+	"golang.org/x/exp/slices"
 )
 
 type commandLineFlags struct {
@@ -95,6 +97,11 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	// if there are no further arguments, no further parsing is needed
 	if len(flags.resticArgs) == 0 {
 		return flagset, flags, err
+	}
+
+	// handle explicit help request in command args (works with restic and own commands)
+	if slices.ContainsFunc(flags.resticArgs, collect.In("--help", "-h")) {
+		flags.help = true
 	}
 
 	// parse first postitional argument as <profile>.<command> if the profile was not set via name

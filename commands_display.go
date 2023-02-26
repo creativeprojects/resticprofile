@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
 )
@@ -234,22 +235,22 @@ func displayHelpCommand(output io.Writer, configuration *config.Config, flags co
 		clog.GetDefaultLogger().SetHandler(clog.NewDiscardHandler()) // disable log output
 	}
 
-	helpForCommand := ""
-	for _, arg := range args {
-		if !strings.HasPrefix(arg, "-") && regexp.MustCompile(`^\w{2,}[-\w]*$`).MatchString(arg) {
-			helpForCommand = arg
-			break
-		}
+	validCommandName := regexp.MustCompile(`^\w{2,}[-\w]*$`).MatchString
+
+	helpForCommand := collect.First(args, validCommandName)
+	if helpForCommand == nil {
+		commandArgs := collect.All(flags.resticArgs, collect.Not(collect.In("help")))
+		helpForCommand = collect.First(commandArgs, validCommandName)
 	}
 
-	if helpForCommand == "" {
+	if helpForCommand == nil {
 		displayCommonUsageHelp(out("\n"), flags)
 
-	} else if isOwnCommand(helpForCommand, true) || isOwnCommand(helpForCommand, false) {
-		displayOwnCommandHelp(out("\n"), helpForCommand, flags)
+	} else if isOwnCommand(*helpForCommand, true) || isOwnCommand(*helpForCommand, false) {
+		displayOwnCommandHelp(out("\n"), *helpForCommand, flags)
 
 	} else {
-		displayResticHelp(out(), configuration, flags, helpForCommand)
+		displayResticHelp(out(), configuration, flags, *helpForCommand)
 	}
 
 	return nil
