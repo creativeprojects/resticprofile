@@ -138,14 +138,14 @@ func TestJsonSchemaValidation(t *testing.T) {
 
 	extensionMatcher := regexp.MustCompile(`\.(conf|toml|yaml|json)$`)
 	version2Matcher := regexp.MustCompile(`^version[:=\s]+2`)
-	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf)$`)
+	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf)$`)
 	testCount := 0
 
 	err := filepath.Walk("../../examples/", func(filename string, info fs.FileInfo, err error) error {
 		if !info.IsDir() && extensionMatcher.MatchString(filename) && !exclusions.MatchString(filename) {
 			content, e := os.ReadFile(filename)
 			require.NoError(t, e)
-			if bytes.Contains(content, []byte("{{")) {
+			if bytes.Contains(content, []byte("{{ define")) || bytes.Contains(content, []byte("{{ template")) {
 				return nil // skip test for templates
 			}
 			testCount++

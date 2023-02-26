@@ -1,0 +1,16 @@
+#:schema http://localhost:1313/resticprofile/jsonschema/config-1.json
+
+version = "1"
+
+global = { initialize = false }
+
+includes = [
+  "utf8bom.conf",
+  "utf16le.conf",
+  "utf16be.conf"
+]
+
+[default]
+  repository = "r:\\backup"
+  password-file = "..\\key"
+  lock = "r:\\resticprofile-{{ .Profile.Name }}.lock"

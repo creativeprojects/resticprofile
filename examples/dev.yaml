@@ -1,8 +1,4 @@
-{{ define "tags" }}
-        tag:
-        - dev
-        - {{ .Profile.Name }}
-{{ end }}
+# yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config-1.json
 
 global:
     default-command: snapshots
@@ -55,8 +51,6 @@ documents:
         source: ~/Documents
     initialize: false
     repository: ~/backup/{{ .Hostname }}
-    snapshots:
-        {{ template "tags" . }}
 
 root:
     backup:
@@ -68,7 +62,7 @@ root:
         one-file-system: false
         source:
         - .
-        {{ template "tags" . }}
+
     inherit: default
     initialize: true
     retention:
@@ -86,7 +80,7 @@ root:
         keep-within: 3h
         keep-yearly: 1
         prune: false
-        {{ template "tags" . }}
+
     forget:
         host: true
         keep-daily: 1
@@ -99,7 +93,7 @@ root:
         keep-within: 3h
         keep-yearly: 1
         prune: false
-        {{ template "tags" . }}
+
 
 self:
     force-inactive-lock: true
@@ -111,13 +105,13 @@ self:
         extended-status: false
         check-before: false
         no-error-on-warning: true
-        source: {{ .CurrentDir }}
+        source: "{{ .CurrentDir }}"
         exclude:
           - "/**/.git/"
         schedule:
           - "*:00,30"
         schedule-permission: user
-        {{ template "tags" . }}
+
     run-after-fail:
       - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"
       - "echo restic stderr = ${RESTIC_STDERR}"
@@ -146,14 +140,13 @@ syslog:
     backup:
         verbose: true
         no-error-on-warning: true
-        source: {{ .CurrentDir }}
+        source: "{{ .CurrentDir }}"
         exclude:
           - "/**/.git/"
         schedule:
           - "*:*"
         schedule-permission: user
         schedule-log: "tcp://localhost:5514"
-        {{ template "tags" . }}
 
 prom:
     force-inactive-lock: true
@@ -162,16 +155,13 @@ prom:
     prometheus-save-to-file: "self.prom"
     prometheus-push: "http://localhost:9091/"
     prometheus-labels:
-      - host: {{ .Hostname }}
+      host: "{{ .Hostname }}"
     status-file: /Volumes/RAMDisk/status.json
     backup:
         extended-status: true
         no-error-on-warning: true
         source:
-          - {{ .CurrentDir }}
-        {{ template "tags" . }}
-        # exclude:
-        #   - examples/private
+          - "{{ .CurrentDir }}"
 
 system:
     initialize: true
@@ -197,10 +187,10 @@ src:
         - "echo Hello {{ .Env.LOGNAME }}"
         - "echo current dir: {{ .CurrentDir }}"
         - "echo config dir: {{ .ConfigDir }}"
-        - "echo profile started at {{ .Now.Format "02 Jan 06 15:04 MST" }}"
+        # - "echo profile started at {{ .Now.Format "02 Jan 06 15:04 MST" }}"
         source:
         - "{{ .Env.HOME }}/go/src"
-        {{ template "tags" . }}
+
     inherit: default
     initialize: true
     retention:
@@ -209,9 +199,7 @@ src:
         compact: false
         keep-within: 30d
         prune: true
-    snapshots:
-        {{ template "tags" . }}
-        
+       
 home:
     inherit: default
     # cache-dir: "${TMPDIR}.restic/"
@@ -230,10 +218,8 @@ stdin:
     backup:
         stdin: true
         stdin-filename: stdin-test
-        {{ template "tags" . }}
+
     inherit: default
-    snapshots:
-        {{ template "tags" . }}
 
 stdin-command:
     backup:
@@ -241,10 +227,9 @@ stdin-command:
           - "cat *.go | gzip"
           - "cat shell/*.go | gzip"
         stdin-filename: stdin-test
-        {{ template "tags" . }}
+
     inherit: default
-    snapshots:
-        {{ template "tags" . }}
+
 
 dropbox:
     initialize: false
@@ -260,11 +245,10 @@ escape:
     inherit: default
     backup:
         source:
-            - {{ .CurrentDir }}/examples/private/file with space
-            - {{ .CurrentDir }}/examples/private/quoted"file
-            - {{ .CurrentDir }}/examples/private/Côte d'Ivoire
+            - "{{ .CurrentDir }}/examples/private/file with space"
+            - "{{ .CurrentDir }}/examples/private/quoted\"file"
+            - "{{ .CurrentDir }}/examples/private/Côte d'Ivoire"
         exclude:
-            #- file with space
             - "**/.git"
             - quoted"file
             - Côte d'Ivoire
@@ -289,7 +273,7 @@ copytag:
             - "."
             - "{{ .CurrentDir }}"
         exclude: "private"
-        {{ template "tags" . }}
+
     snapshots:
         tag: true
     forget:
@@ -317,3 +301,11 @@ copypath:
 
 documents2:
     inherit: documents
+
+run-before-after:
+    inherit: default
+
+    snapshots:
+        host: true
+        run-before: "echo Before snapshots"
+        run-after: "echo After snapshots"
