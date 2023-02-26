@@ -1,8 +1,4 @@
-{{ define "tags" }}
-        tag:
-        - dev
-        - {{ .Profile.Name }}
-{{ end }}
+# yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config-1.json
 
 global:
     default-command: snapshots
@@ -20,7 +16,7 @@ test_user1:
     initialize: true
     verbose: true
     backup:
-        source: {{ .CurrentDir }}
+        source: "{{ .CurrentDir }}"
         exclude:
           - "/**/.git/"
           - "resticp\\*"
@@ -37,7 +33,7 @@ test_user2:
     initialize: true
     verbose: true
     backup:
-        source: {{ .CurrentDir }}
+        source: "{{ .CurrentDir }}"
         exclude:
           - "/**/.git/"
           - "resticp\\*"
