@@ -351,12 +351,7 @@ type SendMonitoringSections struct {
 }
 
 func (s *SendMonitoringSections) setRootPath(_ *Profile, rootPath string) {
-	for _, monitoringSections := range [][]SendMonitoringSection{
-		s.SendBefore,
-		s.SendAfter,
-		s.SendAfterFail,
-		s.SendFinally,
-	} {
+	for _, monitoringSections := range s.getAllSendMonitoringSections() {
 		for index, value := range monitoringSections {
 			monitoringSections[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, absolutePrefix(rootPath))
 		}
@@ -365,10 +360,19 @@ func (s *SendMonitoringSections) setRootPath(_ *Profile, rootPath string) {
 
 func (s *SendMonitoringSections) GetSendMonitoring() *SendMonitoringSections { return s }
 
+func (s *SendMonitoringSections) getAllSendMonitoringSections() [][]SendMonitoringSection {
+	return [][]SendMonitoringSection{
+		s.SendBefore,
+		s.SendAfter,
+		s.SendAfterFail,
+		s.SendFinally,
+	}
+}
+
 // SendMonitoringSection is used to send monitoring information to third party software
 type SendMonitoringSection struct {
 	Method       string                 `mapstructure:"method" enum:"GET;DELETE;HEAD;OPTIONS;PATCH;POST;PUT;TRACE" default:"GET" description:"HTTP method of the request"`
-	URL          string                 `mapstructure:"url" format:"uri" description:"URL of the target to send to"`
+	URL          ConfidentialValue      `mapstructure:"url" format:"uri" description:"URL of the target to send to"`
 	Headers      []SendMonitoringHeader `mapstructure:"headers" description:"Additional HTTP headers to send with the request"`
 	Body         string                 `mapstructure:"body" description:"Request body, overrides \"body-template\""`
 	BodyTemplate string                 `mapstructure:"body-template" description:"Path to a file containing the request body (go template). See https://creativeprojects.github.io/resticprofile/configuration/http_hooks/#body-template"`
@@ -377,8 +381,8 @@ type SendMonitoringSection struct {
 
 // SendMonitoringHeader is used to send HTTP headers
 type SendMonitoringHeader struct {
-	Name  string `mapstructure:"name" regex:"^\\w([\\w-]+)\\w$" examples:"\"Authorization\";\"Cache-Control\";\"Content-Disposition\";\"Content-Type\"" description:"Name of the HTTP header"`
-	Value string `mapstructure:"value" examples:"\"Bearer ...\";\"Basic ...\";\"no-cache\";\"attachment;; filename=stats.txt\";\"application/json\";\"text/plain\";\"text/xml\"" description:"Value of the header"`
+	Name  string            `mapstructure:"name" regex:"^\\w([\\w-]+)\\w$" examples:"\"Authorization\";\"Cache-Control\";\"Content-Disposition\";\"Content-Type\"" description:"Name of the HTTP header"`
+	Value ConfidentialValue `mapstructure:"value" examples:"\"Bearer ...\";\"Basic ...\";\"no-cache\";\"attachment;; filename=stats.txt\";\"application/json\";\"text/plain\";\"text/xml\"" description:"Value of the header"`
 }
 
 // OtherFlagsSection contains additional restic command line flags

@@ -1079,7 +1079,7 @@ profile:
 						require.NotNil(t, monitoringSections)
 
 						assert.Equal(t, 1, len(monitoringSections.SendBefore))
-						assert.Equal(t, "test url before", monitoringSections.SendBefore[0].URL)
+						assert.Equal(t, "test url before", monitoringSections.SendBefore[0].URL.String())
 						assert.Equal(t, "HEAD", monitoringSections.SendBefore[0].Method)
 
 						assert.Equal(t, 2, len(monitoringSections.SendAfter))

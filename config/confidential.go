@@ -81,6 +81,7 @@ func confidentialValueDecoder() func(from reflect.Type, to reflect.Type, data in
 
 // See https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html
 var (
+	httpHeaderNames     = regexp.MustCompile("(?i)^(Authorization)$")
 	urlConfidentialPart = regexp.MustCompile("[:/][^:/@]+?:([^:@]+?)@[^:/@]+?") // user:pass@host
 	urlEnvKeys          = regexp.MustCompile("(?i)^.+(_AUTH|_URL)$")
 	hiddenEnvKeys       = regexp.MustCompile("(?i)^(.+_KEY|.+_TOKEN|.*PASSWORD.*|.*SECRET.*)$")
@@ -105,15 +106,46 @@ func ProcessConfidentialValues(profile *Profile) {
 			profile.Environment[name] = value
 		}
 	}
+
+	// Handle HTTP hooks
+	for _, sections := range GetSectionsWith[Monitoring](profile) {
+		for _, monitoringSections := range sections.GetSendMonitoring().getAllSendMonitoringSections() {
+			for index, section := range monitoringSections {
+				// URL
+				monitoringSections[index].URL.hideSubmatches(urlConfidentialPart)
+				// Headers
+				for hi, header := range section.Headers {
+					if httpHeaderNames.MatchString(header.Name) {
+						section.Headers[hi].Value.hideValue()
+					}
+				}
+			}
+		}
+	}
 }
 
 func getAllConfidentialValues(profile *Profile) []*ConfidentialValue {
 	var confidentials []*ConfidentialValue
 
 	if profile != nil {
+		// Repository
 		confidentials = append(confidentials, &profile.Repository)
+
+		// Env
 		for _, value := range profile.Environment {
 			confidentials = append(confidentials, &value)
+		}
+
+		// HTTP hooks
+		for _, sections := range GetSectionsWith[Monitoring](profile) {
+			for _, monitoringSections := range sections.GetSendMonitoring().getAllSendMonitoringSections() {
+				for _, section := range monitoringSections {
+					confidentials = append(confidentials, &section.URL)
+					for _, header := range section.Headers {
+						confidentials = append(confidentials, &header.Value)
+					}
+				}
+			}
 		}
 	}
 

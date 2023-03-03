@@ -9,6 +9,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
+	"text/tabwriter"
 	"text/template"
 	"time"
 
@@ -59,10 +62,11 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 }
 
 func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
-	if cfg.URL == "" {
+	if cfg.URL.Value() == "" {
 		return errors.New("URL field is empty")
 	}
-	url := resolve(cfg.URL, ctx)
+	url := resolve(cfg.URL.Value(), ctx)
+	publicUrl := resolve(cfg.URL.String(), ctx)
 	method := cfg.Method
 	if method == "" {
 		method = http.MethodGet
@@ -83,10 +87,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		body = resolve(cfg.Body, ctx)
 		bodyReader = bytes.NewBufferString(body)
 	}
-	if s.dryRun {
-		clog.Infof("dry-run: webhook request method=%s url=%q body=%q", method, url, body)
-		return nil
-	}
+
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return err
@@ -95,7 +96,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		if header.Name == "" {
 			continue
 		}
-		req.Header.Add(header.Name, header.Value)
+		req.Header.Add(header.Name, header.Value.Value())
 	}
 	s.setUserAgent(req)
 
@@ -104,18 +105,60 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		client = s.insecureClient
 	}
 
-	clog.Debugf("calling %q", req.URL.String())
+	if s.dryRun {
+		clog.Infof("dry-run: webhook request method=%s url=%q headers:\n%s", method, publicUrl, s.stringifyHeaders(req.Header, cfg.Headers))
+		if len(body) > 0 {
+			clog.Infof("dry-run: webhook request body:\n%s", body)
+		}
+		return nil
+	}
+
+	clog.Debugf("calling: %s %q\n%s", method, publicUrl, s.stringifyHeaders(req.Header, cfg.Headers))
+	if len(body) > 0 {
+		clog.Debugf("request body:\n%s", body)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	_ = resp.Body.Close()
+	defer resp.Body.Close()
+
+	s.logResponse(publicUrl, resp)
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("HTTP %s", resp.Status)
 	}
-	clog.Debugf("%q returned status %s", req.URL.String(), resp.Status)
 	return nil
+}
+
+var responseContentSanitizer = regexp.MustCompile(`(?i)[^\d\w\s.,:;_*+\-=?!"'$%&§/\\\[\](){}<>]+`)
+
+func (s *Sender) logResponse(url string, resp *http.Response) {
+	clog.Debugf("%q returned: %s\n%s", url, resp.Status, s.stringifyHeaders(resp.Header, nil))
+
+	if content, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024)); len(content) > 0 {
+		content = responseContentSanitizer.ReplaceAll(content, []byte(" "))
+		clog.Tracef("response body (sanitized):\n%s", string(content))
+	}
+}
+
+func (s *Sender) stringifyHeaders(headers http.Header, config []config.SendMonitoringHeader) string {
+	buf := &strings.Builder{}
+	w := tabwriter.NewWriter(buf, 0, 0, 2, ' ', 0)
+	for name, values := range headers {
+		// Translate values to confidential replacement
+		for i, value := range values {
+			for _, ch := range config {
+				if ch.Value.IsConfidential() && ch.Value.Value() == value {
+					values[i] = ch.Value.String()
+				}
+			}
+		}
+		// Print header
+		_, _ = fmt.Fprintf(w, "%s:\t%s\n", name, strings.Join(values, "; "))
+	}
+	_ = w.Flush()
+	return buf.String()
 }
 
 func (s *Sender) setUserAgent(req *http.Request) {

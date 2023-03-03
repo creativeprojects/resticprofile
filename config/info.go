@@ -571,10 +571,14 @@ func customizeProperties(sectionName string, properties map[string]PropertyInfo)
 	for propertyName, property := range properties {
 		if isExcluded(sectionName, propertyName) || isExcluded("*", propertyName) || property == nil {
 			delete(properties, propertyName)
-		} else {
+
+		} else if ap, ok := property.(accessibleProperty); ok {
 			for _, customizer := range propertyCustomizers {
-				if ap, ok := property.(accessibleProperty); ok {
-					customizer(sectionName, propertyName, ap)
+				customizer(sectionName, propertyName, ap)
+			}
+			if nested := property.PropertySet(); nested != nil {
+				if ps, ok := nested.(*namedPropertySet); ok {
+					customizeProperties("nested:"+nested.TypeName(), ps.properties)
 				}
 			}
 		}
@@ -700,9 +704,9 @@ func NewProfileInfoForRestic(resticVersion string, withDefaultOptions bool) Prof
 				if option, found := command.Lookup(optionName); found {
 					nameAliases[option.Name] = info.Name()
 					p := newResticPropertyInfo(info.Name(), option)
-					if p.originField = ap.field(); p.originField != nil {
-						configurePropertyFromType(&p.basicPropertyInfo, p.originField.Type)
-						configureBasicPropertyFromTags(&p.basicPropertyInfo, p.originField)
+					if p.originField = ap.field(); p.field() != nil {
+						configurePropertyFromType(p.basic(), p.field().Type)
+						configureBasicPropertyFromTags(p.basic(), p.field())
 					}
 					info = p
 				} else {
