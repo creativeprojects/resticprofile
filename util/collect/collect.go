@@ -24,6 +24,18 @@ func In[E comparable](values ...E) (condition func(item E) bool) {
 	return func(item E) bool { return slices.Contains(values, item) }
 }
 
+// With returns a new condition that is true when all conditions match
+func With[C ~func(t T) bool, T any](conditions ...C) (condition C) {
+	return func(item T) bool {
+		for _, c := range conditions {
+			if !c(item) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
 // From translates a slice into another using a mapper func (T) => (R).
 // Empty or nil input returns nil output
 func From[I ~[]T, T, R any](input I, mapper func(t T) R) (output []R) {

@@ -227,7 +227,7 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 	}
 }
 
-func displayHelpCommand(output io.Writer, configuration *config.Config, flags commandLineFlags, args []string) error {
+func displayHelpCommand(output io.Writer, configuration *config.Config, flags commandLineFlags, _ []string) error {
 	out, closer := displayWriter(output, flags)
 	defer closer()
 
@@ -236,11 +236,11 @@ func displayHelpCommand(output io.Writer, configuration *config.Config, flags co
 	}
 
 	validCommandName := regexp.MustCompile(`^\w{2,}[-\w]*$`).MatchString
+	notHelp := collect.Not(collect.In("help"))
 
-	helpForCommand := collect.First(args, validCommandName)
+	helpForCommand := collect.First(flags.resticArgs, collect.With(validCommandName, notHelp))
 	if helpForCommand == nil {
-		commandArgs := collect.All(flags.resticArgs, collect.Not(collect.In("help")))
-		helpForCommand = collect.First(commandArgs, validCommandName)
+		helpForCommand = collect.First(flags.resticArgs, validCommandName)
 	}
 
 	if helpForCommand == nil {
