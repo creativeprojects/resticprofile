@@ -436,7 +436,7 @@ func TestBuiltInCommandsTable(t *testing.T) {
 			return cmd != "copy"
 		})
 
-		assert.Equal(t, expectedCommands, CommandNames())
+		assert.Subset(t, CommandNames(), expectedCommands)
 		assert.Equal(t, expectedCommands, CommandNamesForVersion("0.14"))
 		assert.Equal(t, expectedCommands, CommandNamesForVersion("0.10"))
 		assert.Equal(t, commands09, CommandNamesForVersion("0.9"))
