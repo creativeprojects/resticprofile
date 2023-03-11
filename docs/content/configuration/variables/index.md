@@ -4,38 +4,49 @@ date: 2022-05-16T20:04:35+01:00
 weight: 25
 ---
 
-
 ## Variable expansion in configuration file
 
-You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where specific bits will be replaced by a variable.
+You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where
+specific bits will be replaced by a variable.
 
 ## Pre-defined variables
 
 The syntax for using a pre-defined variable is:
+
 ```
 {{ .VariableName }}
 ```
 
-
 The list of pre-defined variables is:
 
-| Variable | Type | Description |
-|----------|------|-------------|
-| **.Profile.Name** | string | Profile name |
-| **.Now** | [time.Time](https://golang.org/pkg/time/) object | Now object: see explanation bellow |
-| **.CurrentDir** | string | Current directory at the time resticprofile was started |
-| **.ConfigDir** | string | Directory where the configuration was loaded from |
-| **.TempDir** | string | OS temporary directory (might not exist) |
-| **.BinaryDir** | string | Directory where resticprofile was started from (added in `v0.18.0`) |
-| **.Hostname** | string | Host name |
-| **.Env.{NAME}** | string | Environment variable `${NAME}` |
+| Variable          | Type                                             | Description                                                      |
+|-------------------|--------------------------------------------------|------------------------------------------------------------------|
+| **.Profile.Name** | string                                           | Profile name                                                     |
+| **.Now**          | [time.Time](https://golang.org/pkg/time/) object | Now object: see explanation bellow                               |
+| **.CurrentDir**   | string                                           | Current directory at the time resticprofile was started          |
+| **.ConfigDir**    | string                                           | Directory where the configuration was loaded from                |
+| **.TempDir**      | string                                           | OS temporary directory (might not exist)                         |
+| **.BinaryDir**    | string                                           | Directory where resticprofile was started from (since `v0.18.0`) |
+| **.OS**           | string                                           | GOOS name: "windows", "linux", "darwin", etc. (since `v0.21.0`)  |
+| **.Arch**         | string                                           | GOARCH name: "386", "amd64", "arm64", etc. (since `v0.21.0`)     |
+| **.Hostname**     | string                                           | Host name                                                        |
+| **.Env.{NAME}**   | string                                           | Environment variable `${NAME}`                                   |
 
-Environment variables are accessible using `.Env.` followed by the name of the environment variable.
+Environment variables are accessible using `.Env.` followed by the (upper case) name of the environment variable.
 
 Example: `{{ .Env.HOME }}` will be replaced by your home directory (on unixes). The equivalent on Windows would be `{{ .Env.USERPROFILE }}`.
 
-For variables that are objects, you can call all public field or method on it.
-For example, for the variable `.Now` you can use:
+Default and fallback values for an empty or unset variable can be declared with `{{ ... | or ... }}`.
+For example `{{ .Env.HOME | or .Env.USERPROFILE | or "/fallback-homedir" }}` will try to resolve `$HOME`, if empty try to resolve `$USERPROFILE` 
+and finally default to `/fallback-homedir` if none of the env variables are defined.
+
+The variables `.OS` and `.Arch` are filled with the target platform that `resticprofile` was compiled for (see 
+[releases](https://github.com/creativeprojects/resticprofile/releases) for more information on existing precompiled platform binaries). 
+
+For variables that are objects, you can call all public fields or methods on it.
+For example, for the variable `.Now` ([time.Time](https://golang.org/pkg/time/)) you can use:
+
+- `(.Now.AddDate years months days)`
 - `.Now.Day`
 - `.Now.Format layout`
 - `.Now.Hour`
@@ -47,6 +58,12 @@ For example, for the variable `.Now` you can use:
 - `.Now.Weekday`
 - `.Now.Year`
 - `.Now.YearDay`
+
+Time can be formatted with `.Now.Format layout`, for example `{{ .Now.Format "2006-01-02T15:04:05Z07:00" }}` formats the current time as RFC3339 timestamp. 
+Check [time.Time#constants](https://pkg.go.dev/time#pkg-constants) for more layout examples.
+
+The variable `.Now` also allows to derive a relative `Time`. For example `{{ (.Now.AddDate 0 -6 -14).Format "2006-01-02" }}` formats a date that 
+is 6 months and 14 days before now.
 
 
 ### Example
@@ -319,13 +336,16 @@ profile src:
               dev
 ```
 
-As you can see, the `src` profile inherited from the `generic` profile. The tags `{{ .Profile.Name }}` got replaced by the name of the current profile `src`. Now you can reuse the same generic configuration in another profile.
+As you can see, the `src` profile inherited from the `generic` profile. The tags `{{ .Profile.Name }}` got replaced by the name of the current profile `src`.
+Now you can reuse the same generic configuration in another profile.
 
-You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
+You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be
+checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
 
 ## Hand-made variables
 
-But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
+But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and
+assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
 
 ```yaml
 # declare and assign a value to the variable
@@ -335,9 +355,7 @@ But you can also define variables yourself. Hand-made variables starts with a `$
 tag: "{{ $name }}"
 ```
 
-
 ### Example
-
 
 Here's an example of a configuration on Linux where I use a variable `$mountpoint` set to a USB drive mount point:
 
@@ -389,7 +407,6 @@ default:
 
 {{% /tab %}}
 {{% tab name="hcl" %}}
-
 
 ```hcl
 global {

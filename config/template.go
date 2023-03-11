@@ -4,25 +4,19 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
-	"time"
 
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"golang.org/x/exp/maps"
 )
 
 // TemplateData contain the variables fed to a config template
 type TemplateData struct {
-	Profile    ProfileTemplateData
-	Schedule   ScheduleTemplateData
-	Now        time.Time
-	CurrentDir string
-	ConfigDir  string
-	TempDir    string
-	BinaryDir  string
-	Hostname   string
-	Env        map[string]string
+	templates.DefaultData
+	Profile   ProfileTemplateData
+	Schedule  ScheduleTemplateData
+	ConfigDir string
 }
 
 // ProfileTemplateData contains profile data
@@ -37,50 +31,28 @@ type ScheduleTemplateData struct {
 
 // newTemplateData populates a TemplateData struct ready to use
 func newTemplateData(configFile, profileName, scheduleName string) TemplateData {
-	currentDir, _ := os.Getwd()
-	currentDir = filepath.ToSlash(currentDir)
-
 	configDir := filepath.Dir(configFile)
 	if !filepath.IsAbs(configDir) {
+		currentDir, _ := os.Getwd()
 		configDir = filepath.Join(currentDir, configDir)
 	}
 	configDir = filepath.ToSlash(configDir)
 
-	binary, _ := os.Executable()
-	binaryDir := filepath.ToSlash(filepath.Dir(binary))
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "localhost"
-	}
-	env := make(map[string]string, len(os.Environ()))
-	for _, envValue := range os.Environ() {
-		keyValuePair := strings.SplitN(envValue, "=", 2)
-		if keyValuePair[0] == "" {
-			continue
-		}
-		env[keyValuePair[0]] = keyValuePair[1]
-	}
 	return TemplateData{
+		DefaultData: templates.NewDefaultData(nil),
 		Profile: ProfileTemplateData{
 			Name: profileName,
 		},
 		Schedule: ScheduleTemplateData{
 			Name: scheduleName,
 		},
-		Now:        time.Now(),
-		ConfigDir:  configDir,
-		CurrentDir: currentDir,
-		TempDir:    os.TempDir(),
-		BinaryDir:  binaryDir,
-		Hostname:   hostname,
-		Env:        env,
+		ConfigDir: configDir,
 	}
 }
 
 // TemplateInfoData is used as data for go templates that render config references
 type TemplateInfoData struct {
-	TemplateData
+	templates.DefaultData
 	Global, Group       PropertySet
 	Profile             ProfileInfo
 	KnownResticVersions []string
@@ -142,7 +114,7 @@ func (t *TemplateInfoData) GetFuncs() map[string]any {
 // NewTemplateInfoData returns template data to render references for the specified resticVersion
 func NewTemplateInfoData(resticVersion string) *TemplateInfoData {
 	return &TemplateInfoData{
-		TemplateData:        newTemplateData("", "", ""),
+		DefaultData:         templates.NewDefaultData(nil),
 		Global:              NewGlobalInfo(),
 		Group:               NewGroupInfo(),
 		Profile:             NewProfileInfoForRestic(resticVersion, false),

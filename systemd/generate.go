@@ -64,6 +64,7 @@ var (
 
 // templateInfo to create systemd unit
 type templateInfo struct {
+	templates.DefaultData
 	JobDescription   string
 	TimerDescription string
 	WorkingDirectory string
@@ -123,6 +124,7 @@ func Generate(config Config) error {
 	}
 
 	info := templateInfo{
+		DefaultData:      templates.NewDefaultData(nil),
 		JobDescription:   config.JobDescription,
 		TimerDescription: config.TimerDescription,
 		WorkingDirectory: config.WorkingDirectory,

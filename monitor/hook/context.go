@@ -1,6 +1,9 @@
 package hook
 
+import "github.com/creativeprojects/resticprofile/util/templates"
+
 type Context struct {
+	templates.DefaultData
 	ProfileName    string
 	ProfileCommand string
 	Error          ErrorContext

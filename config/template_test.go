@@ -1,10 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -37,18 +37,16 @@ lock = "/tmp/{{ .Profile.Name }}.lock"
 }
 
 func TestResolveYear(t *testing.T) {
-	// clog.SetTestLog(t)
-	// defer clog.CloseTestLog()
-
 	testConfig := `
 [profile1]
-cache-dir = "{{ .Now.Year }}"
+cache-dir = "{{ .Now.Year }}-{{ (.Now.AddDate -1 0 0).Year }}"
 `
 	profile, err := getResolvedProfile("toml", testConfig, "profile1")
 	require.NoError(t, err)
 	require.NotEmpty(t, profile)
 
-	assert.Equal(t, strconv.Itoa(time.Now().Year()), profile.CacheDir)
+	year := time.Now().Year()
+	assert.Equal(t, fmt.Sprintf("%d-%d", year, year-1), profile.CacheDir)
 }
 
 func TestResolveSliceValue(t *testing.T) {
@@ -245,6 +243,34 @@ tag = "{{ .Hostname }}"
 	assert.Contains(t, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"], hostname)
 }
 
+func TestResolveGoOSAndArch(t *testing.T) {
+	testConfig := `
+[profile1.snapshots]
+tag = ["{{ .OS }}-{{ .Arch }}"]
+`
+	profile, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile)
+
+	expected := fmt.Sprintf("%s-%s", runtime.GOOS, runtime.GOARCH)
+	assert.Contains(t, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"], expected)
+}
+
+func TestResolveEnv(t *testing.T) {
+	testConfig := `
+[profile1.snapshots]
+tag = ["{{ .Env.__NOT_THERE__  | or .Env.__IS_THERE__ }}"]
+`
+	_ = os.Unsetenv("__NOT_THERE__")
+	assert.NoError(t, os.Setenv("__IS_THERE__", "SimpleValue"))
+
+	profile, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile)
+
+	assert.Contains(t, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"], os.Getenv("__IS_THERE__"))
+}
+
 func TestResolveCurrentDir(t *testing.T) {
 	testConfig := `
 [profile1]
@@ -261,6 +287,19 @@ tag = "{{ .CurrentDir }}"
 	require.NotEmpty(t, profile)
 
 	assert.Equal(t, currentDir, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"])
+}
+
+func TestResolveTempDir(t *testing.T) {
+	testConfig := `
+[profile1.snapshots]
+tag = "{{ .TempDir }}"
+`
+	profile, err := getResolvedProfile("toml", testConfig, "profile1")
+	require.NoError(t, err)
+	require.NotEmpty(t, profile)
+
+	tempDir := filepath.ToSlash(os.TempDir())
+	assert.Equal(t, tempDir, profile.OtherSections[constants.CommandSnapshots].OtherFlags["tag"])
 }
 
 func TestResolveBinaryDir(t *testing.T) {
@@ -395,10 +434,7 @@ func TestInfoData(t *testing.T) {
 	assert.NotEmpty(t, data.Env)
 	assert.NotEmpty(t, data.CurrentDir)
 	assert.NotEmpty(t, data.Hostname)
-	assert.NotEmpty(t, data.ConfigDir)
 	assert.NotEmpty(t, data.BinaryDir)
-	assert.Empty(t, data.TemplateData.Profile.Name)
-	assert.Empty(t, data.TemplateData.Schedule.Name)
 
 	assert.IsType(t, new(profileInfo), data.Profile)
 	assert.Equal(t, NewGlobalInfo(), data.Global)
