@@ -177,6 +177,7 @@ generate-restic:
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.12.0 --version=0.12.0 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.13.0 --version=0.13.0 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.14.0 --version=0.14.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.15.0 --version=0.15.0 --commands $(RESTIC_CMD)
 
 	cp $(RESTIC_CMD) restic/commands.json
 
@@ -199,6 +200,8 @@ generate-jsonschema: build
 	$(abspath $(BINARY)) generate --json-schema --version 0.13 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-13.json
 	$(abspath $(BINARY)) generate --json-schema --version 0.14 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-14.json
 	$(abspath $(BINARY)) generate --json-schema --version 0.14 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-14.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.15 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-15.json
+	$(abspath $(BINARY)) generate --json-schema --version 0.15 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-15.json
 
 generate-config-reference: build
 	@echo "[*] $@"

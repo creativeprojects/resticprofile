@@ -150,6 +150,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "no-scan",
+        "Alias": "",
+        "Default": "false",
+        "Description": "do not run scanner to estimate size of backup",
+        "Once": true,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "one-file-system",
         "Alias": "x",
         "Default": "false",
@@ -165,6 +174,15 @@
         "Description": "use this parent snapshot (default: last snapshot in the repository that has the same target files/directories, and is not newer than the snapshot time)",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "read-concurrency",
+        "Alias": "",
+        "Default": "0",
+        "Description": "read n files concurrently (default: $RESTIC_READ_CONCURRENCY or 2)",
+        "Once": true,
+        "FromVersion": "0.15.0",
         "RemovedInVersion": ""
       },
       {
@@ -392,7 +410,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when no snapshot ID is given (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -428,7 +446,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path, when no snapshot ID is given",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -455,7 +473,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist, when no snapshot ID is given",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -516,7 +534,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host when the snapshot ID is \"latest\" (can be specified multiple times)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -525,7 +543,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path for snapshot ID \"latest\"",
+        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -534,7 +552,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist for snapshot ID \"latest\"",
+        "Description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -569,7 +587,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when no snapshot ID is given (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -623,7 +641,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path, when no snapshot-ID is given",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -650,7 +668,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist, when no snapshot-ID is given",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -712,7 +730,7 @@
         "Name": "host",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots with the given host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -856,7 +874,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -901,7 +919,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist in the format tag[,tag,...] (can be specified multiple times)",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -948,6 +966,15 @@
         "Description": "write man pages to directory",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "powershell-completion",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "write powershell completion file",
+        "Once": true,
+        "FromVersion": "0.15.0",
         "RemovedInVersion": ""
       },
       {
@@ -1184,7 +1211,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1202,7 +1229,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1299,7 +1326,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1326,7 +1353,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1493,7 +1520,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host when the snapshot ID is \"latest\" (can be specified multiple times)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1529,16 +1556,25 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path for snapshot ID \"latest\"",
+        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "sparse",
+        "Alias": "",
+        "Default": "false",
+        "Description": "restore files as sparse",
+        "Once": true,
+        "FromVersion": "0.15.0",
         "RemovedInVersion": ""
       },
       {
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist for snapshot ID \"latest\"",
+        "Description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1559,6 +1595,104 @@
         "Description": "verify restored files content",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "rewrite",
+    "Description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.",
+    "FromVersion": "0.15.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "dry-run",
+        "Alias": "n",
+        "Default": "false",
+        "Description": "do not do anything, just print what would be done",
+        "Once": true,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude",
+        "Alias": "e",
+        "Default": "",
+        "Description": "exclude a pattern (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "read exclude patterns from a file (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "forget",
+        "Alias": "",
+        "Default": "false",
+        "Description": "remove original snapshots after creating new ones",
+        "Once": true,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for rewrite",
+        "Once": true,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iexclude",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --exclude pattern but ignores the casing of filenames",
+        "Once": false,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iexclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --exclude-file but ignores casing of filenames in patterns",
+        "Once": false,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.15.0",
         "RemovedInVersion": ""
       }
     ]
@@ -1653,7 +1787,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots for this path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1662,7 +1796,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist in the format tag[,tag,...] (can be specified multiple times)",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1688,7 +1822,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots with the given host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1706,7 +1840,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -1715,7 +1849,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist in the format tag[,tag,...] (can be specified multiple times)",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -1750,7 +1884,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when no snapshot ID is given (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1759,7 +1893,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this (absolute) path, when no snapshot-ID is given",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1786,7 +1920,7 @@
         "Name": "tag",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots which include this taglist, when no snapshot-ID is given",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2026,7 +2160,7 @@
         "Name": "verbose",
         "Alias": "v",
         "Default": "0",
-        "Description": "be verbose (specify multiple times or a level using --verbose=n, max level/times is 3)",
+        "Description": "be verbose (specify multiple times or a level using --verbose=n, max level/times is 2)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
