@@ -13,7 +13,7 @@ import (
 
 func TestCompleter(t *testing.T) {
 	completer := &Completer{}
-	completer.init(nil)
+	completer.init(nil, ownCommands.All())
 
 	expectedProfiles := func() []string {
 		return []string{"default", "full-backup", "linux", "no-cache", "root", "src", "stdin"}
@@ -168,7 +168,7 @@ func TestCompleter(t *testing.T) {
 
 			t.Run("CommandsWithProfile", func(t *testing.T) {
 				var commands []string
-				for _, command := range getOwnCommands() {
+				for _, command := range ownCommands.All() {
 					if command.needConfiguration && !command.hide && !command.hideInCompletion {
 						commands = append(commands, command.name)
 					}
@@ -198,7 +198,7 @@ func TestCompleter(t *testing.T) {
 		var commands []string
 		commandValues := map[string][]string{}
 
-		for _, command := range getOwnCommands() {
+		for _, command := range ownCommands.All() {
 			if !command.hide && !command.hideInCompletion {
 				commands = append(commands, command.name)
 			}

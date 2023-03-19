@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	// Change default commands for testing ones
-	ownCommands = []ownCommand{
+func fakeCommands() *OwnCommands {
+	ownCommands := NewOwnCommands()
+	ownCommands.Register([]ownCommand{
 		{
 			name:              "first",
 			description:       "first first",
@@ -40,32 +40,31 @@ func init() {
 			needConfiguration: false,
 			hide:              true,
 		},
-	}
+	})
+	return ownCommands
 }
 
-func firstCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
+func firstCommand(_ io.Writer, _ commandRequest) error {
 	return errors.New("first")
 }
 
-func secondCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
+func secondCommand(_ io.Writer, _ commandRequest) error {
 	return errors.New("second")
 }
 
-func thirdCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
+func thirdCommand(_ io.Writer, _ commandRequest) error {
 	return errors.New("third")
 }
 
 func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
-	flags := commandLineFlags{}
-	displayOwnCommands(buffer, flags)
+	displayOwnCommands(buffer, commandRequest{ownCommands: fakeCommands()})
 	assert.Equal(t, "  first   first first\n  second  second second\n", buffer.String())
 }
 
 func TestDisplayOwnCommand(t *testing.T) {
 	buffer := &strings.Builder{}
-	flags := commandLineFlags{}
-	displayOwnCommandHelp(buffer, "second", flags)
+	displayOwnCommandHelp(buffer, "second", commandRequest{ownCommands: fakeCommands()})
 	assert.Equal(t, `Purpose: second second
 
 Usage:
@@ -79,36 +78,36 @@ Flags:
 }
 
 func TestIsOwnCommand(t *testing.T) {
-	assert.True(t, isOwnCommand("first", false))
-	assert.True(t, isOwnCommand("second", true))
-	assert.True(t, isOwnCommand("third", false))
-	assert.False(t, isOwnCommand("another one", true))
+	assert.True(t, fakeCommands().Exists("first", false))
+	assert.True(t, fakeCommands().Exists("second", true))
+	assert.True(t, fakeCommands().Exists("third", false))
+	assert.False(t, fakeCommands().Exists("another one", true))
 }
 
 func TestRunOwnCommand(t *testing.T) {
-	assert.EqualError(t, runOwnCommand(nil, "first", commandLineFlags{}, nil), "first")
-	assert.EqualError(t, runOwnCommand(nil, "second", commandLineFlags{}, nil), "second")
-	assert.EqualError(t, runOwnCommand(nil, "third", commandLineFlags{}, nil), "third")
-	assert.EqualError(t, runOwnCommand(nil, "another one", commandLineFlags{}, nil), "command not found: another one")
+	assert.EqualError(t, fakeCommands().Run(nil, "first", commandLineFlags{}, nil), "first")
+	assert.EqualError(t, fakeCommands().Run(nil, "second", commandLineFlags{}, nil), "second")
+	assert.EqualError(t, fakeCommands().Run(nil, "third", commandLineFlags{}, nil), "third")
+	assert.EqualError(t, fakeCommands().Run(nil, "another one", commandLineFlags{}, nil), "command not found: another one")
 }
 
 func TestPanicCommand(t *testing.T) {
 	assert.Panics(t, func() {
-		_ = panicCommand(nil, nil, commandLineFlags{}, nil)
+		_ = panicCommand(nil, commandRequest{})
 	})
 }
 
 func TestRandomKeyOfInvalidSize(t *testing.T) {
-	assert.Error(t, randomKey(os.Stdout, nil, commandLineFlags{resticArgs: []string{"restic", "size"}}, nil))
+	assert.Error(t, randomKey(os.Stdout, commandRequest{flags: commandLineFlags{resticArgs: []string{"restic", "size"}}}))
 }
 
 func TestRandomKeyOfZeroSize(t *testing.T) {
-	assert.Error(t, randomKey(os.Stdout, nil, commandLineFlags{resticArgs: []string{"restic", "0"}}, nil))
+	assert.Error(t, randomKey(os.Stdout, commandRequest{flags: commandLineFlags{resticArgs: []string{"restic", "0"}}}))
 }
 
 func TestRandomKey(t *testing.T) {
 	// doesn't look like much, but it's testing the random generator is not throwing an error
-	assert.NoError(t, randomKey(os.Stdout, nil, commandLineFlags{}, nil))
+	assert.NoError(t, randomKey(os.Stdout, commandRequest{}))
 }
 
 func TestRemovableSchedules(t *testing.T) {
@@ -236,10 +235,8 @@ func TestFlagsForProfile(t *testing.T) {
 }
 
 func TestCompleteCall(t *testing.T) {
-	flags := commandLineFlags{}
-
 	completer := &Completer{}
-	completer.init(nil)
+	completer.init(nil, ownCommands.All())
 	newline := fmt.Sprintln("")
 	expectedFlags := strings.Join(completer.completeFlagSet(""), newline) + newline
 
@@ -256,33 +253,32 @@ func TestCompleteCall(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(strings.Join(test.args, " "), func(t *testing.T) {
 			buffer := &strings.Builder{}
-			assert.Nil(t, completeCommand(buffer, nil, flags, test.args))
+			assert.Nil(t, completeCommand(buffer, commandRequest{ownCommands: ownCommands, args: test.args}))
 			assert.Equal(t, test.expected, buffer.String())
 		})
 	}
 }
 
 func TestGenerateCommand(t *testing.T) {
-	flags := commandLineFlags{}
 	buffer := &strings.Builder{}
 
 	t.Run("--bash-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--bash-completion"}))
+		assert.Nil(t, generateCommand(buffer, commandRequest{args: []string{"--bash-completion"}}))
 		assert.Equal(t, strings.TrimSpace(bashCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, bashCompletionScript, "#!/usr/bin/env bash")
 	})
 
 	t.Run("--zsh-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--zsh-completion"}))
+		assert.Nil(t, generateCommand(buffer, commandRequest{args: []string{"--zsh-completion"}}))
 		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
 	})
 
 	t.Run("--config-reference", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--config-reference"}))
+		assert.NoError(t, generateCommand(buffer, commandRequest{args: []string{"--config-reference"}}))
 		ref := buffer.String()
 		assert.Contains(t, ref, "| **ionice-class** |")
 		assert.Contains(t, ref, "| **check-after** |")
@@ -291,7 +287,7 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--json-schema"}))
+		assert.NoError(t, generateCommand(buffer, commandRequest{args: []string{"--json-schema"}}))
 		ref := buffer.String()
 		assert.Contains(t, ref, "\"profiles\":")
 		assert.Contains(t, ref, "/jsonschema/config-2.json")
@@ -299,21 +295,21 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema v1", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--json-schema", "v1"}))
+		assert.NoError(t, generateCommand(buffer, commandRequest{args: []string{"--json-schema", "v1"}}))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1.json")
 	})
 
 	t.Run("--json-schema --version 0.13 v1", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, nil, flags, []string{"--json-schema", "--version", "0.13", "v1"}))
+		assert.NoError(t, generateCommand(buffer, commandRequest{args: []string{"--json-schema", "--version", "0.13", "v1"}}))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1-restic-0-13.json")
 	})
 
 	t.Run("--random-key", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, nil, flags, []string{"--random-key", "512"}))
+		assert.Nil(t, generateCommand(buffer, commandRequest{args: []string{"--random-key", "512"}}))
 		assert.Equal(t, 684, len(strings.TrimSpace(buffer.String())))
 	})
 
@@ -322,7 +318,7 @@ func TestGenerateCommand(t *testing.T) {
 		opts := []string{"", "invalid", "--unknown"}
 		for _, option := range opts {
 			buffer.Reset()
-			err := generateCommand(buffer, nil, flags, []string{option})
+			err := generateCommand(buffer, commandRequest{args: []string{option}})
 			assert.EqualError(t, err, fmt.Sprintf("nothing to generate for: %s", option))
 			assert.Equal(t, 0, buffer.Len())
 		}

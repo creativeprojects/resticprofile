@@ -49,10 +49,11 @@ func main() {
 		}
 	}()
 
-	flagset, flags, flagErr := loadFlags(os.Args[1:])
+	args := os.Args[1:]
+	_, flags, flagErr := loadFlags(args)
 	if flagErr != nil && flagErr != pflag.ErrHelp {
 		fmt.Println(flagErr)
-		flagset.Usage()
+		_ = displayHelpCommand(os.Stdout, commandRequest{ownCommands: ownCommands, flags: flags, args: args})
 		exitCode = 2
 		return
 	}
@@ -75,7 +76,7 @@ func main() {
 
 	// help
 	if flags.help || flagErr == pflag.ErrHelp {
-		flagset.Usage()
+		_ = displayHelpCommand(os.Stdout, commandRequest{ownCommands: ownCommands, flags: flags, args: args})
 		return
 	}
 
@@ -117,22 +118,10 @@ func main() {
 
 	banner()
 
-	// Deprecated in version 0.7.0
-	// Keep for compatibility with version 0.6.1
-	if flags.selfUpdate {
-		err = confirmAndSelfUpdate(flags.quiet, flags.verbose, version, false)
-		if err != nil {
-			clog.Error(err)
-			exitCode = 1
-			return
-		}
-		return
-	}
-
 	// resticprofile own commands (configuration file NOT loaded)
 	if len(flags.resticArgs) > 0 {
-		if isOwnCommand(flags.resticArgs[0], false) {
-			err = runOwnCommand(nil, flags.resticArgs[0], flags, flags.resticArgs[1:])
+		if ownCommands.Exists(flags.resticArgs[0], false) {
+			err = ownCommands.Run(nil, flags.resticArgs[0], flags, flags.resticArgs[1:])
 			if err != nil {
 				clog.Error(err)
 				exitCode = 1
@@ -227,8 +216,8 @@ func main() {
 	}
 
 	// resticprofile own commands (with configuration file)
-	if isOwnCommand(resticCommand, true) {
-		err = runOwnCommand(c, resticCommand, flags, resticArguments)
+	if ownCommands.Exists(resticCommand, true) {
+		err = ownCommands.Run(c, resticCommand, flags, resticArguments)
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1

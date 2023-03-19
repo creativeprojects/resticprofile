@@ -30,7 +30,7 @@ type Completer struct {
 	enableProfilePrefixes bool
 }
 
-func (c *Completer) init(args []string) {
+func (c *Completer) init(args []string, ownCommands []ownCommand) {
 	var initArgs []string
 	nameFlagFound := false
 	nameFlagMatcher := regexp.MustCompile("^-{1,2}(n|name)(=.*|$)")
@@ -46,7 +46,7 @@ func (c *Completer) init(args []string) {
 
 	c.flags, _, _ = loadFlags(initArgs)
 	c.flagsInArgs = nil
-	c.ownCommands = getOwnCommands()
+	c.ownCommands = ownCommands
 	c.profiles = nil
 	c.enableProfilePrefixes = !nameFlagFound
 }
@@ -258,7 +258,7 @@ func (c *Completer) isOwnCommand(command string, configurationLoaded bool) bool 
 // To get completions for a specific element use "__POS:{FOLLOWING-ARG-INDEX}" in args.
 func (c *Completer) Complete(args []string) (completions []string) {
 	args = append([]string{}, args...)
-	c.init(args)
+	c.init(args, c.ownCommands)
 
 	lookupFlag := func(word string) (flag *pflag.Flag) {
 		if strings.HasPrefix(word, "-") {

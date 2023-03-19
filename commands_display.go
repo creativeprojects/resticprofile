@@ -73,11 +73,11 @@ func getCommonUsageHelpLine(commandName string, withProfile bool) string {
 	)
 }
 
-func displayOwnCommands(output io.Writer, flags commandLineFlags) {
-	out, closer := displayWriter(output, flags)
+func displayOwnCommands(output io.Writer, request commandRequest) {
+	out, closer := displayWriter(output, request.flags)
 	defer closer()
 
-	for _, command := range ownCommands {
+	for _, command := range request.ownCommands.commands {
 		if command.hide {
 			continue
 		}
@@ -86,12 +86,12 @@ func displayOwnCommands(output io.Writer, flags commandLineFlags) {
 	}
 }
 
-func displayOwnCommandHelp(output io.Writer, commandName string, clf commandLineFlags) {
-	out, closer := displayWriter(output, clf)
+func displayOwnCommandHelp(output io.Writer, commandName string, request commandRequest) {
+	out, closer := displayWriter(output, request.flags)
 	defer closer()
 
 	var command *ownCommand
-	for _, c := range ownCommands {
+	for _, c := range request.ownCommands.commands {
 		if c.name == commandName {
 			command = &c
 			break
@@ -130,8 +130,8 @@ func displayOwnCommandHelp(output io.Writer, commandName string, clf commandLine
 	}
 }
 
-func displayCommonUsageHelp(output io.Writer, flags commandLineFlags) {
-	out, closer := displayWriter(output, flags)
+func displayCommonUsageHelp(output io.Writer, request commandRequest) {
+	out, closer := displayWriter(output, request.flags)
 	defer closer()
 
 	out("resticprofile is a configuration profiles manager for backup profiles and ")
@@ -142,10 +142,10 @@ func displayCommonUsageHelp(output io.Writer, flags commandLineFlags) {
 	out("\t%s [command specific flags]\n", getCommonUsageHelpLine("resticprofile-command", true))
 	out("\n")
 	out(ansiBold("resticprofile flags:\n"))
-	out(flags.usagesHelp)
+	out(request.flags.usagesHelp)
 	out("\n\n")
 	out(ansiBold("resticprofile own commands:\n"))
-	displayOwnCommands(out(), flags)
+	displayOwnCommands(out(), request)
 	out("\n")
 
 	out("%s at %s\n",
@@ -227,8 +227,10 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 	}
 }
 
-func displayHelpCommand(output io.Writer, configuration *config.Config, flags commandLineFlags, _ []string) error {
-	out, closer := displayWriter(output, flags)
+func displayHelpCommand(output io.Writer, request commandRequest) error {
+	flags := request.flags
+
+	out, closer := displayWriter(output, request.flags)
 	defer closer()
 
 	if flags.log == "" {
@@ -244,26 +246,26 @@ func displayHelpCommand(output io.Writer, configuration *config.Config, flags co
 	}
 
 	if helpForCommand == nil {
-		displayCommonUsageHelp(out("\n"), flags)
+		displayCommonUsageHelp(out("\n"), request)
 
-	} else if isOwnCommand(*helpForCommand, true) || isOwnCommand(*helpForCommand, false) {
-		displayOwnCommandHelp(out("\n"), *helpForCommand, flags)
+	} else if request.ownCommands.Exists(*helpForCommand, true) || request.ownCommands.Exists(*helpForCommand, false) {
+		displayOwnCommandHelp(out("\n"), *helpForCommand, request)
 
 	} else {
-		displayResticHelp(out(), configuration, flags, *helpForCommand)
+		displayResticHelp(out(), request.config, flags, *helpForCommand)
 	}
 
 	return nil
 }
 
-func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
-	out, closer := displayWriter(output, flags)
+func displayVersion(output io.Writer, request commandRequest) error {
+	out, closer := displayWriter(output, request.flags)
 	defer closer()
 
 	out("resticprofile version %s commit %s\n", ansiBold(version), ansiYellow(commit))
 
 	// allow for the general verbose flag, or specified after the command
-	if flags.verbose || (len(args) > 0 && (args[0] == "-v" || args[0] == "--verbose")) {
+	if request.flags.verbose || (len(request.args) > 0 && (request.args[0] == "-v" || request.args[0] == "--verbose")) {
 		out("\n")
 		out("\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
 		out("\t%s:\t%s\n", "os", runtime.GOOS)
@@ -287,9 +289,9 @@ func displayVersion(output io.Writer, _ *config.Config, flags commandLineFlags, 
 	return nil
 }
 
-func displayProfilesCommand(output io.Writer, configuration *config.Config, flags commandLineFlags, _ []string) error {
-	displayProfiles(output, configuration, flags)
-	displayGroups(output, configuration, flags)
+func displayProfilesCommand(output io.Writer, request commandRequest) error {
+	displayProfiles(output, request.config, request.flags)
+	displayGroups(output, request.config, request.flags)
 	return nil
 }
 

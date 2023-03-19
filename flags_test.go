@@ -3,9 +3,9 @@ package main
 import (
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/creativeprojects/resticprofile/constants"
 )
 
 func TestUnknownShortFlag(t *testing.T) {

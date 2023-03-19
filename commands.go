@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -27,24 +26,15 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type ownCommand struct {
-	name              string
-	description       string
-	longDescription   string
-	action            func(io.Writer, *config.Config, commandLineFlags, []string) error
-	needConfiguration bool              // true if the action needs a configuration file loaded
-	hide              bool              // don't display the command in help and completion
-	hideInCompletion  bool              // don't display the command in completion
-	flags             map[string]string // own command flags should be simple enough to be handled manually for now
-}
-
-var ownCommands []ownCommand
+var (
+	ownCommands = NewOwnCommands()
+)
 
 func init() {
-	ownCommands = getOwnCommands()
+	ownCommands.Register(getOwnCommands())
 
 	// own commands have no profile section, prevent their definition
-	for _, command := range ownCommands {
+	for _, command := range ownCommands.All() {
 		config.ExcludeProfileSection(command.name)
 	}
 }
@@ -65,14 +55,6 @@ func getOwnCommands() []ownCommand {
 			action:            displayVersion,
 			needConfiguration: false,
 			flags:             map[string]string{"-v, --verbose": "display detailed version information"},
-		},
-		{
-			name:              "self-update",
-			description:       "update to latest resticprofile",
-			longDescription:   "The \"self-update\" command checks for the latest resticprofile release and updates the current application binary if a newer version is available",
-			action:            selfUpdate,
-			needConfiguration: false,
-			flags:             map[string]string{"-q, --quiet": "update without confirmation prompt"},
 		},
 		{
 			name:              "profiles",
@@ -162,56 +144,15 @@ func getOwnCommands() []ownCommand {
 			needConfiguration: false,
 			hide:              true,
 		},
-		{
-			name:              "test",
-			description:       "placeholder for a quick test",
-			action:            testCommand,
-			needConfiguration: true,
-			hide:              true,
-		},
 	}
 }
 
-func isOwnCommand(command string, configurationLoaded bool) bool {
-	for _, commandDef := range ownCommands {
-		if commandDef.name == command && commandDef.needConfiguration == configurationLoaded {
-			return true
-		}
-	}
-	return false
-}
-
-func runOwnCommand(configuration *config.Config, commandName string, flags commandLineFlags, args []string) error {
-	for _, command := range ownCommands {
-		if command.name == commandName {
-			return command.action(os.Stdout, configuration, flags, args)
-		}
-	}
-	return fmt.Errorf("command not found: %v", commandName)
-}
-
-func selfUpdate(_ io.Writer, _ *config.Config, flags commandLineFlags, args []string) error {
-	quiet := flags.quiet
-	if !quiet && len(args) > 0 && (args[0] == "-q" || args[0] == "--quiet") {
-		quiet = true
-	}
-	err := confirmAndSelfUpdate(quiet, flags.verbose, version, true)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func panicCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
+func panicCommand(_ io.Writer, _ commandRequest) error {
 	panic("you asked for it")
 }
 
-func testCommand(_ io.Writer, _ *config.Config, _ commandLineFlags, _ []string) error {
-	clog.Info("Nothing to test")
-	return nil
-}
-
-func completeCommand(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) error {
+func completeCommand(output io.Writer, request commandRequest) error {
+	args := request.args
 	requester := "unknown"
 	requesterVersion := 0
 
@@ -252,7 +193,10 @@ var bashCompletionScript string
 //go:embed contrib/completion/zsh-completion.sh
 var zshCompletionScript string
 
-func generateCommand(output io.Writer, config *config.Config, flags commandLineFlags, args []string) (err error) {
+func generateCommand(output io.Writer, request commandRequest) (err error) {
+	config := request.config
+	flags := request.flags
+	args := request.args
 	// enforce no-log
 	logger := clog.GetDefaultLogger()
 	handler := logger.GetHandler()
@@ -265,8 +209,8 @@ func generateCommand(output io.Writer, config *config.Config, flags commandLineF
 	} else if slices.Contains(args, "--json-schema") {
 		err = generateJsonSchema(output, config, flags, args[slices.Index(args, "--json-schema")+1:])
 	} else if slices.Contains(args, "--random-key") {
-		flags.resticArgs = args[slices.Index(args, "--random-key"):]
-		err = randomKey(output, config, flags, args)
+		request.flags.resticArgs = args[slices.Index(args, "--random-key"):]
+		err = randomKey(output, request)
 	} else if slices.Contains(args, "--zsh-completion") {
 		_, err = fmt.Fprintln(output, zshCompletionScript)
 	} else {
@@ -336,7 +280,10 @@ func sortedProfileKeys(data map[string]*config.Profile) []string {
 	return keys
 }
 
-func showProfile(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+func showProfile(output io.Writer, request commandRequest) error {
+	c := request.config
+	flags := request.flags
+
 	defer c.DisplayConfigurationIssues()
 
 	// Show global section first
@@ -384,8 +331,9 @@ func showSchedules(output io.Writer, schedulesConfig []*config.ScheduleConfig) {
 }
 
 // randomKey simply display a base64'd random key to the console
-func randomKey(output io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+func randomKey(output io.Writer, request commandRequest) error {
 	var err error
+	flags := request.flags
 	size := uint64(1024)
 	// flags.resticArgs contain the command and the rest of the command line
 	if len(flags.resticArgs) > 1 {
@@ -441,7 +389,11 @@ func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlag
 }
 
 // createSchedule accepts one argument from the commandline: --no-start
-func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+func createSchedule(_ io.Writer, request commandRequest) error {
+	c := request.config
+	flags := request.flags
+	args := request.args
+
 	defer c.DisplayConfigurationIssues()
 
 	type profileJobs struct {
@@ -492,7 +444,11 @@ func createSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 	return nil
 }
 
-func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+func removeSchedule(_ io.Writer, request commandRequest) error {
+	c := request.config
+	flags := request.flags
+	args := request.args
+
 	// Unschedule all jobs of all selected profiles
 	for _, profileName := range selectProfiles(c, flags, args) {
 		profileFlags := flagsForProfile(flags, profileName)
@@ -511,7 +467,11 @@ func removeSchedule(_ io.Writer, c *config.Config, flags commandLineFlags, args 
 	return nil
 }
 
-func statusSchedule(w io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
+func statusSchedule(w io.Writer, request commandRequest) error {
+	c := request.config
+	flags := request.flags
+	args := request.args
+
 	defer c.DisplayConfigurationIssues()
 
 	if !slices.Contains(args, "--all") {
@@ -603,9 +563,9 @@ func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedul
 	return scheduler, profile, schedules, nil
 }
 
-func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags, args []string) error {
-	if flags.isChild {
-		client := remote.NewClient(flags.parentPort)
+func testElevationCommand(_ io.Writer, request commandRequest) error {
+	if request.flags.isChild {
+		client := remote.NewClient(request.flags.parentPort)
 		term.Print("first line", "\n")
 		term.Println("second", "one")
 		term.Printf("value = %d\n", 11)
@@ -616,7 +576,7 @@ func testElevationCommand(_ io.Writer, c *config.Config, flags commandLineFlags,
 		return nil
 	}
 
-	return elevated(flags)
+	return elevated(request.flags)
 }
 
 func retryElevated(err error, flags commandLineFlags) error {
