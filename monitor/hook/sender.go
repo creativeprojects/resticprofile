@@ -9,15 +9,16 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/tabwriter"
-	"text/template"
 	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/templates"
 )
 
 type Sender struct {
@@ -216,10 +217,11 @@ func resolve(body string, ctx Context) string {
 }
 
 func loadBodyTemplate(filename string, ctx Context) (string, error) {
-	tmpl, err := template.ParseFiles(filename)
+	tmpl, err := templates.New(filepath.Base(filename)).ParseFiles(filename)
 	if err != nil {
 		return "", err
 	}
+	ctx.InitDefaults()
 	buffer := &bytes.Buffer{}
 	err = tmpl.Execute(buffer, ctx)
 	if err != nil {
