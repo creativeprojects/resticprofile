@@ -26,6 +26,26 @@ func TestAll(t *testing.T) {
 	assert.Nil(t, All([]int{3}, even))
 }
 
+func TestIn(t *testing.T) {
+	isIn := In("a", "b", "c")
+	assert.False(t, isIn(""))
+	assert.False(t, isIn("d"))
+	assert.False(t, isIn("A"))
+	assert.True(t, isIn("a"))
+	assert.True(t, isIn("b"))
+	assert.True(t, isIn("c"))
+}
+
+func TestWith(t *testing.T) {
+	isIn := With(Not(In("a", "c")), In("a", "b", "c"))
+	assert.False(t, isIn(""))
+	assert.False(t, isIn("d"))
+	assert.False(t, isIn("A"))
+	assert.False(t, isIn("a"))
+	assert.True(t, isIn("b"))
+	assert.False(t, isIn("c"))
+}
+
 func TestFrom(t *testing.T) {
 	input := []string{"1", "2", "3"}
 	expected := []int{1, 2, 3}

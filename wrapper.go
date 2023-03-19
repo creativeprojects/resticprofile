@@ -59,6 +59,9 @@ func newResticWrapper(
 	if global == nil {
 		global = config.NewGlobal()
 	}
+
+	senderDryRun := dryRun || slices.ContainsFunc(moreArgs, collect.In("--dry-run", "-n"))
+
 	return &resticWrapper{
 		resticBinary:  resticBinary,
 		dryRun:        dryRun,
@@ -71,7 +74,7 @@ func newResticWrapper(
 		sigChan:       c,
 		stdin:         os.Stdin,
 		progress:      make([]monitor.Receiver, 0),
-		sender:        hook.NewSender(global.CACertificates, "resticprofile/"+version, global.SenderTimeout, dryRun),
+		sender:        hook.NewSender(global.CACertificates, "resticprofile/"+version, global.SenderTimeout, senderDryRun),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
@@ -319,7 +322,7 @@ func (r *resticWrapper) validArgumentsFilter(validArgs []string) argumentsFilter
 
 func (r *resticWrapper) getShell() (shell []string) {
 	if r.global != nil {
-		shell = collect.All(r.global.ShellBinary, func(s string) bool { return s != "auto" })
+		shell = collect.All(r.global.ShellBinary, collect.Not(collect.In("auto")))
 	}
 	return
 }
