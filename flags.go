@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"strings"
 	"time"
 
@@ -43,10 +42,6 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	flags := commandLineFlags{}
 
-	flagset.Usage = func() {
-		_ = displayHelpCommand(os.Stdout, nil, flags, args)
-	}
-
 	flagset.BoolVarP(&flags.help, "help", "h", false, "display this help")
 	flagset.BoolVarP(&flags.quiet, "quiet", "q", constants.DefaultQuietFlag, "display only warnings and errors")
 	flagset.BoolVarP(&flags.verbose, "verbose", "v", constants.DefaultVerboseFlag, "display some debugging information")
@@ -75,10 +70,6 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		_ = flagset.MarkHidden(constants.FlagPort)
 	}
 
-	// Deprecated since 0.7.0
-	flagset.BoolVar(&flags.selfUpdate, "self-update", false, "auto update of resticprofile (does not update restic)")
-	_ = flagset.MarkHidden("self-update")
-
 	// stop at the first non flag found; the rest will be sent to the restic command line
 	flagset.SetInterspersed(false)
 
@@ -104,7 +95,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		flags.help = true
 	}
 
-	// parse first postitional argument as <profile>.<command> if the profile was not set via name
+	// parse first positional argument as <profile>.<command> if the profile was not set via name
 	nameFlag := flagset.Lookup("name")
 	if (nameFlag == nil || !nameFlag.Changed) && strings.Contains(flags.resticArgs[0], ".") {
 		// split first argument at `.`

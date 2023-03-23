@@ -1,16 +1,48 @@
+//go:build !no_self_update
+
 package main
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/go-selfupdate"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
 )
+
+func init() {
+	def := ownCommand{
+		name:              "self-update",
+		description:       "update to latest resticprofile",
+		longDescription:   "The \"self-update\" command checks for the latest resticprofile release and updates the current application binary if a newer version is available",
+		action:            selfUpdate,
+		needConfiguration: false,
+		flags:             map[string]string{"-q, --quiet": "update without confirmation prompt"},
+	}
+	ownCommands.Register([]ownCommand{
+		def,
+	})
+	// own commands have no profile section, prevent their definition
+	config.ExcludeProfileSection(def.name)
+}
+
+func selfUpdate(_ io.Writer, request commandRequest) error {
+	quiet := request.flags.quiet
+	if !quiet && len(request.args) > 0 && (request.args[0] == "-q" || request.args[0] == "--quiet") {
+		quiet = true
+	}
+	err := confirmAndSelfUpdate(quiet, request.flags.verbose, version, true)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) error {
 	if debug {

@@ -1,3 +1,5 @@
+//go:build !no_self_update
+
 package main
 
 import (
