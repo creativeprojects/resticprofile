@@ -2,14 +2,18 @@ package config
 
 import (
 	"fmt"
+	"path"
+	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/exp/maps"
@@ -710,6 +714,12 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				ConfigFile:  p.config.configFile,
 			}
 
+			if len(config.Log) > 0 {
+				if tempDir, err := util.TempDir(); err == nil && strings.HasPrefix(config.Log, filepath.ToSlash(tempDir)) {
+					config.Log = path.Join(constants.TemporaryDirMarker, config.Log[len(tempDir):])
+				}
+			}
+
 			configs = append(configs, config)
 		}
 	}
@@ -730,9 +740,9 @@ func (p *Profile) GetRunShellCommandsSections(command string) (profileCommands R
 	return
 }
 
-func (p *Profile) GetMonitoringSections(command string) (monitoring *SendMonitoringSections) {
+func (p *Profile) GetMonitoringSections(command string) (monitoring SendMonitoringSections) {
 	if section, ok := GetSectionWith[Monitoring](p, command); ok {
-		monitoring = section.GetSendMonitoring()
+		monitoring = *section.GetSendMonitoring()
 	}
 	return
 }

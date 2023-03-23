@@ -4,10 +4,12 @@ package schedule
 
 import (
 	"bytes"
+	"path"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -130,23 +132,32 @@ func TestLaunchdJobLog(t *testing.T) {
 	fixtures := []struct {
 		log      string
 		expected string
+		noLogArg bool
 	}{
-		{"", "local.resticprofile.profile.backup.log"},
-		{"udp://localhost:123", "local.resticprofile.profile.backup.log"},
-		{"tcp://127.0.0.1:123", "local.resticprofile.profile.backup.log"},
-		{"other file", "other file"},
+		{log: path.Join(constants.TemporaryDirMarker, "file"), expected: "local.resticprofile.profile.backup.log"},
+		{log: "", expected: "local.resticprofile.profile.backup.log", noLogArg: true},
+		{log: "udp://localhost:123", expected: "local.resticprofile.profile.backup.log"},
+		{log: "tcp://127.0.0.1:123", expected: "local.resticprofile.profile.backup.log"},
+		{log: "other file", expected: "other file", noLogArg: true},
 	}
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.log, func(t *testing.T) {
 			handler := NewHandler(SchedulerLaunchd{})
+			args := []string{"--log", fixture.log}
 			cfg := &config.ScheduleConfig{
-				Title:    "profile",
-				SubTitle: "backup",
-				Log:      fixture.log,
+				Title:     "profile",
+				SubTitle:  "backup",
+				Log:       fixture.log,
+				Arguments: args,
 			}
 			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
 			assert.Equal(t, fixture.expected, launchdJob.StandardOutPath)
+			if fixture.noLogArg {
+				assert.NotSubset(t, launchdJob.ProgramArguments, args)
+			} else {
+				assert.Subset(t, launchdJob.ProgramArguments, args)
+			}
 		})
 	}
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/bools"
+	"github.com/creativeprojects/resticprofile/util/shutdown"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/spf13/pflag"
 )
@@ -48,6 +49,9 @@ func main() {
 			os.Exit(exitCode)
 		}
 	}()
+
+	// run shutdown hooks just before returning an exit code
+	defer shutdown.RunHooks()
 
 	args := os.Args[1:]
 	_, flags, flagErr := loadFlags(args)
