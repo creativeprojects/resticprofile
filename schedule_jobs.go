@@ -8,8 +8,6 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/dial"
-	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
@@ -40,11 +38,7 @@ func scheduleJobs(handler schedule.Handler, profileName string, configs []*confi
 		}
 
 		if scheduleConfig.Log != "" {
-			// On darwin, we only use --log for url target
-			// On the other platforms, we send any target to --log
-			if !platform.IsDarwin() || dial.IsURL(scheduleConfig.Log) {
-				args = append(args, "--log", scheduleConfig.Log)
-			}
+			args = append(args, "--log", scheduleConfig.Log)
 		}
 
 		if scheduleConfig.GetLockMode() == config.ScheduleLockModeDefault {

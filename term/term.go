@@ -17,6 +17,12 @@ var (
 	errorOutput    io.Writer = os.Stderr
 )
 
+// Flusher allows a Writer to declare it may buffer content that can be flushed
+type Flusher interface {
+	// Flush writes any pending bytes to output
+	Flush() error
+}
+
 // AskYesNo prompts the user for a message asking for a yes/no answer
 func AskYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
 	if !strings.HasSuffix(message, "?") {
@@ -93,7 +99,7 @@ func OsStdoutTerminalSize() (width, height int) {
 
 type LockedWriter struct {
 	writer io.Writer
-	mutex  sync.Mutex
+	mutex  *sync.Mutex
 }
 
 func (w *LockedWriter) Write(p []byte) (n int, err error) {
@@ -102,9 +108,18 @@ func (w *LockedWriter) Write(p []byte) (n int, err error) {
 	return w.writer.Write(p)
 }
 
+func (w *LockedWriter) Flush() (err error) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	if f, ok := w.writer.(Flusher); ok {
+		err = f.Flush()
+	}
+	return
+}
+
 // SetOutput changes the default output for the Print* functions
 func SetOutput(w io.Writer) {
-	terminalOutput = &LockedWriter{writer: w}
+	terminalOutput = &LockedWriter{writer: w, mutex: new(sync.Mutex)}
 }
 
 // GetOutput returns the default output of the Print* functions
@@ -123,7 +138,7 @@ func GetColorableOutput() io.Writer {
 
 // SetErrorOutput changes the error output for the Print* functions
 func SetErrorOutput(w io.Writer) {
-	errorOutput = &LockedWriter{writer: w}
+	errorOutput = &LockedWriter{writer: w, mutex: new(sync.Mutex)}
 }
 
 // GetErrorOutput returns the error output of the Print* functions
@@ -133,8 +148,18 @@ func GetErrorOutput() io.Writer {
 
 // SetAllOutput changes the default and error output for the Print* functions
 func SetAllOutput(w io.Writer) {
-	terminalOutput = w
-	errorOutput = w
+	single := new(sync.Mutex)
+	terminalOutput = &LockedWriter{writer: w, mutex: single}
+	errorOutput = &LockedWriter{writer: w, mutex: single}
+}
+
+// FlushAllOutput flushes all buffered output (if supported by the underlying Writer).
+func FlushAllOutput() {
+	for _, writer := range []io.Writer{terminalOutput, errorOutput} {
+		if f, ok := writer.(Flusher); ok {
+			_ = f.Flush()
+		}
+	}
 }
 
 // Print formats using the default formats for its operands and writes to standard output.

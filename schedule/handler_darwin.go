@@ -18,6 +18,7 @@ import (
 	"github.com/creativeprojects/resticprofile/dial"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/spf13/afero"
+	"golang.org/x/exp/slices"
 	"howett.net/plist"
 )
 
@@ -149,10 +150,18 @@ Do you want to start it now?`
 
 func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*calendar.Event) *LaunchdJob {
 	name := getJobName(job.Title, job.SubTitle)
+	args := job.Arguments
 	logfile := job.Log
-	// if logfile is a url, we can't use it as a target
-	if dial.IsURL(logfile) {
+
+	// if logfile is an url or in the volatile temp folder, we can't use it as a target for LaunchJob
+	if dial.IsURL(logfile) || strings.HasPrefix(logfile, constants.TemporaryDirMarker) {
 		logfile = ""
+	} else {
+		// removing the "--log" flag if we can use LaunchdJob's logging facility
+		logIndex := slices.Index(args, "--log")
+		if logIndex > -1 && len(args) >= logIndex+2 && args[logIndex+1] == logfile {
+			args = slices.Delete(args, logIndex, logIndex+2)
+		}
 	}
 	if logfile == "" {
 		logfile = name + ".log"
@@ -174,7 +183,7 @@ func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*
 	launchdJob := &LaunchdJob{
 		Label:                 name,
 		Program:               job.Command,
-		ProgramArguments:      append([]string{job.Command, "--no-prio"}, job.Arguments...),
+		ProgramArguments:      append([]string{job.Command, "--no-prio"}, args...),
 		StandardOutPath:       logfile,
 		StandardErrorPath:     logfile,
 		WorkingDirectory:      job.WorkingDirectory,
@@ -207,7 +216,7 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission stri
 	return filename, nil
 }
 
-// removeJob stops and unloads the agent from launchd, then removes the configuration file
+// RemoveJob stops and unloads the agent from launchd, then removes the configuration file
 func (h *HandlerLaunchd) RemoveJob(job *config.ScheduleConfig, permission string) error {
 	name := getJobName(job.Title, job.SubTitle)
 	filename, err := getFilename(name, permission)
@@ -282,11 +291,12 @@ var (
 
 // CalendarInterval contains date and time trigger definition inside a map.
 // keys of the map should be:
-//  "Month"   Month of year (1..12, 1 being January)
-// 	"Day"     Day of month (1..31)
-// 	"Weekday" Day of week (0..7, 0 and 7 being Sunday)
-// 	"Hour"    Hour of day (0..23)
-// 	"Minute"  Minute of hour (0..59)
+//
+//	"Month"   Month of year (1..12, 1 being January)
+//	"Day"     Day of month (1..31)
+//	"Weekday" Day of week (0..7, 0 and 7 being Sunday)
+//	"Hour"    Hour of day (0..23)
+//	"Minute"  Minute of hour (0..59)
 type CalendarInterval map[string]int
 
 // newCalendarInterval creates a new map of 5 elements
@@ -320,24 +330,31 @@ func getFilename(name, permission string) (string, error) {
 
 // getCalendarIntervalsFromSchedules converts schedules into launchd calendar events
 // let's say we've setup these rules:
-// Mon-Fri *-*-* *:0,30:00  = every half hour
-// Sat     *-*-* 0,12:00:00 = twice a day on saturday
-//         *-*-01 *:*:*     = the first of each month
+//
+//	Mon-Fri *-*-* *:0,30:00  = every half hour
+//	Sat     *-*-* 0,12:00:00 = twice a day on saturday
+//	        *-*-01 *:*:*     = the first of each month
 //
 // it should translate as:
 // 1st rule
-//    Weekday = Monday, Minute = 0
-//    Weekday = Monday, Minute = 30
-//    ... same from Tuesday to Thurday
-//    Weekday = Friday, Minute = 0
-//    Weekday = Friday, Minute = 30
+//
+//	Weekday = Monday, Minute = 0
+//	Weekday = Monday, Minute = 30
+//	... same from Tuesday to Thurday
+//	Weekday = Friday, Minute = 0
+//	Weekday = Friday, Minute = 30
+//
 // Total of 10 rules
 // 2nd rule
-//    Weekday = Saturday, Hour = 0
-//    Weekday = Saturday, Hour = 12
+//
+//	Weekday = Saturday, Hour = 0
+//	Weekday = Saturday, Hour = 12
+//
 // Total of 2 rules
 // 3rd rule
-//    Day = 1
+//
+//	Day = 1
+//
 // Total of 1 rule
 func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
 	entries := make([]CalendarInterval, 0, len(schedules))

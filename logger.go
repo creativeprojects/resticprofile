@@ -4,11 +4,17 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/dial"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 )
 
 type LogCloser interface {
@@ -37,7 +43,7 @@ func setupRemoteLogger(client *remote.Client) {
 func setupTargetLogger(flags commandLineFlags) (io.Closer, error) {
 	var (
 		handler LogCloser
-		file    *os.File
+		file    io.Writer
 		err     error
 	)
 	scheme, hostPort, isURL := dial.GetAddr(flags.log)
@@ -62,12 +68,39 @@ func setupTargetLogger(flags commandLineFlags) (io.Closer, error) {
 	return handler, nil
 }
 
-func getFileHandler(flags commandLineFlags) (*clog.StandardLogHandler, *os.File, error) {
-	file, err := os.OpenFile(flags.log, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+func getFileHandler(flags commandLineFlags) (*clog.StandardLogHandler, io.Writer, error) {
+	if strings.HasPrefix(flags.log, constants.TemporaryDirMarker) {
+		if tempDir, err := util.TempDir(); err == nil {
+			flags.log = flags.log[len(constants.TemporaryDirMarker):]
+			if len(flags.log) > 0 && os.IsPathSeparator(flags.log[0]) {
+				flags.log = flags.log[1:]
+			}
+			flags.log = filepath.Join(tempDir, flags.log)
+			_ = os.MkdirAll(filepath.Dir(flags.log), 0755)
+		}
+	}
+
+	// create a platform aware log file appender
+	keepOpen, appender := true, appendFunc(nil)
+	if platform.IsWindows() {
+		keepOpen = false
+		appender = func(dst []byte, c byte) []byte {
+			switch c {
+			case '\n':
+				return append(dst, '\r', '\n') // normalize to CRLF on Windows
+			case '\r':
+				return dst
+			}
+			return append(dst, c)
+		}
+	}
+
+	writer, err := newDeferredFileWriter(flags.log, keepOpen, appender)
 	if err != nil {
 		return nil, nil, err
 	}
-	return clog.NewStandardLogHandler(file, "", log.LstdFlags), file, nil
+
+	return clog.NewStandardLogHandler(writer, "", log.LstdFlags), writer, nil
 }
 
 func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logger {
@@ -106,4 +139,136 @@ func changeLevelFilter(level clog.LogLevel) {
 	if ok {
 		filter.SetLevel(level)
 	}
+}
+
+// deferredFileWriter accumulates Write requests and writes them at a fixed rate (every 250 ms)
+type deferredFileWriter struct {
+	done, flush chan chan error
+	data        chan []byte
+}
+
+func (d *deferredFileWriter) Close() error {
+	req := make(chan error)
+	d.done <- req
+	return <-req
+}
+
+func (d *deferredFileWriter) Flush() error {
+	req := make(chan error)
+	d.flush <- req
+	return <-req
+}
+
+func (d *deferredFileWriter) Write(data []byte) (n int, _ error) {
+	c := make([]byte, len(data))
+	n = copy(c, data)
+	d.data <- c
+	return
+}
+
+type appendFunc func(dst []byte, c byte) []byte
+
+func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) (io.WriteCloser, error) {
+	d := &deferredFileWriter{
+		flush: make(chan chan error),
+		done:  make(chan chan error),
+		data:  make(chan []byte, 64),
+	}
+
+	var (
+		buffer    []byte
+		lastError error
+		file      *os.File
+	)
+
+	closeFile := func() {
+		if file != nil {
+			lastError = file.Close()
+			file = nil
+		}
+	}
+
+	flush := func(alsoEmpty bool) {
+		if len(buffer) == 0 && !alsoEmpty {
+			return
+		}
+		if file == nil {
+			file, lastError = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+		}
+		if file != nil {
+			var written int
+			written, lastError = file.Write(buffer)
+			if written == len(buffer) {
+				buffer = buffer[:0]
+			} else {
+				buffer = buffer[written:]
+			}
+		}
+		if keepOpen {
+			_ = file.Sync()
+		} else {
+			closeFile()
+		}
+	}
+
+	// test if we can create the file
+	buffer = make([]byte, 0, 4096)
+	flush(true)
+
+	// data appending
+	addToBuffer := func(data []byte) {
+		buffer = append(buffer, data...) // fast path
+	}
+	if appender != nil {
+		addToBuffer = func(data []byte) {
+			for _, c := range data {
+				buffer = appender(buffer, c)
+			}
+		}
+	}
+
+	addPendingData := func(max int) {
+		for ; max > 0; max-- {
+			select {
+			case data, ok := <-d.data:
+				if ok {
+					addToBuffer(data)
+				} else {
+					return // closed
+				}
+			default:
+				return // no-more-data
+			}
+		}
+	}
+
+	// data transport
+	go func() {
+		ticker := time.NewTicker(250 * time.Millisecond)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case data := <-d.data:
+				addToBuffer(data)
+			case <-ticker.C:
+				flush(false)
+			case req := <-d.flush:
+				addPendingData(1024)
+				flush(false)
+				req <- lastError
+			case req := <-d.done:
+				close(d.done)
+				close(d.flush)
+				close(d.data)
+				addPendingData(1024)
+				flush(false)
+				closeFile()
+				req <- lastError
+				return
+			}
+		}
+	}()
+
+	return d, lastError
 }
