@@ -116,8 +116,8 @@ func getOwnCommands() []ownCommand {
 			hide:              false,
 			flags: map[string]string{
 				"--random-key [size]":                            "generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)",
-				"--config-reference [--version 0.14] [template]": "generate a config file reference from a go template (defaults to the built-in markdown template when omitted)",
-				"--json-schema [--version 0.14] [v1|v2]":         "generate a JSON schema that validates resticprofile configuration files in YAML or JSON format",
+				"--config-reference [--version 0.15] [template]": "generate a config file reference from a go template (defaults to the built-in markdown template when omitted)",
+				"--json-schema [--version 0.15] [v1|v2]":         "generate a JSON schema that validates resticprofile configuration files in YAML or JSON format",
 				"--bash-completion":                              "generate a shell completion script for bash",
 				"--zsh-completion":                               "generate a shell completion script for zsh",
 			},
