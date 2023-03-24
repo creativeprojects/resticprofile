@@ -1,4 +1,4 @@
-#:schema http://localhost:1313/resticprofile/jsonschema/config-1.json
+#:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
 
 version = "1"
 

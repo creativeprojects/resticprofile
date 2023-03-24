@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config-1.json
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
 
 global:
     default-command: snapshots
