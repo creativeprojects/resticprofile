@@ -155,7 +155,7 @@ rest-server:
 
 nightly: $(GOBIN)/goreleaser
 	@echo "[*] $@"
-	goreleaser --snapshot --skip-publish --rm-dist --debug
+	GITLAB_TOKEN= goreleaser --snapshot --skip-publish --clean --debug
 
 toc:
 	@echo "[*] $@"

@@ -28,6 +28,8 @@ builds:
       - "7"
     ignore:
       - goos: darwin
+        goarch: "386"
+      - goos: darwin
         goarch: arm
       - goos: freebsd
         goarch: arm64
@@ -45,6 +47,10 @@ builds:
     goarch:
       - "386"
       - amd64
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: "386"
 
 archives:
   - id: targz
