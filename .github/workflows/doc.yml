@@ -22,10 +22,10 @@ jobs:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      - name: Set up Go 1.19
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.20
 
       - name: Check configuration snippets in documentation
         run: go run ./config/checkdoc -r docs/content
