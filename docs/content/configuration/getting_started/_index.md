@@ -57,8 +57,9 @@ Create a file named `profiles` with the extension of your choice (.toml, .yaml, 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
+<!-- checkdoc-ignore -->
 ```toml
-#:schema http://localhost:1313/resticprofile/jsonschema/config-1.json
+#:schema {{< absolute "jsonschema/config-1.json" nohtml >}}
 #
 # indentation is not needed but it makes it easier to read ;)
 #
@@ -76,8 +77,9 @@ version = "1"
 {{% /tab %}}
 {{% tab name="yaml" %}}
 
+<!-- checkdoc-ignore -->
 ```yaml
-# yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config-1.json
+# yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
 
 version: "1"
 
@@ -112,9 +114,10 @@ default {
 {{% /tab %}}
 {{% tab name="json" %}}
 
+<!-- checkdoc-ignore -->
 ```json
 {
-  "$schema": "http://localhost:1313/resticprofile/jsonschema/config-1.json",
+  "$schema": "{{< absolute "jsonschema/config-1.json" nohtml >}}",
   "version": "1",
   "default": {
     "repository": "local:/backup",
@@ -228,8 +231,9 @@ Add a line in your configuration (in the **default -> backup** section) with an 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
+<!-- checkdoc-ignore -->
 ```toml
-#:schema http://localhost:1313/resticprofile/jsonschema/config-1.json
+#:schema {{< absolute "jsonschema/config-1.json" nohtml >}}
 #
 # indentation is not needed but it makes it easier to read ;)
 #
@@ -248,8 +252,9 @@ version = "1"
 {{% /tab %}}
 {{% tab name="yaml" %}}
 
+<!-- checkdoc-ignore -->
 ```yaml
-# yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config-1.json
+# yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
 
 version: "1"
 
@@ -286,9 +291,10 @@ default {
 {{% /tab %}}
 {{% tab name="json" %}}
 
+<!-- checkdoc-ignore -->
 ```json
 {
-  "$schema": "http://localhost:1313/resticprofile/jsonschema/config-1.json",
+  "$schema": "{{< absolute "jsonschema/config-1.json" nohtml >}}",
   "version": "1",
   "default": {
     "repository": "local:/backup",
