@@ -176,13 +176,13 @@ The configuration file reference is generated from resticprofile's data model an
   * [Section <strong>global</strong>](#section-global)
   * [Profile sections](#profile-sections)
     * [Section <strong>profile</strong>](#section-profile)
-    {{ range .ProfileSections -}}
+{{- range .ProfileSections }}
     * [Section profile\.<strong>{{ .Name }}</strong>](#section-profile{{ .Name | lower }})
-    {{ end -}}
+{{- end }}
   * [Nested profile sections](#nested-profile-sections)
-    {{ range .NestedProfileSections -}}
+{{- range .NestedProfileSections }}
     * [Nested <em>{{ .Name }}</em>](#nested-{{ .Name | lower }})
-    {{ end -}}
+{{- end }}
   * [Section <strong>groups</strong>](#section-groups)
 * [Value types](#value-types)
 * [JSON schema](#json-schema)
