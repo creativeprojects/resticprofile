@@ -307,7 +307,7 @@ default {
 {{% /tab %}}
 {{% /tabs %}}
 
-**resticprofile** can schedule work on macOS, Windows, most Unixes and Linux distributions.
+**resticprofile** can [schedule]({{< ref "/schedules" >}}) work on macOS, Windows, most Unixes and Linux distributions: it is simply adding an entry in the default scheduler of your platform.
 
 To schedule the backup of the default profile, simply type the command:
 

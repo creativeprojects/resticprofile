@@ -22,7 +22,7 @@ Profile configuration merging follows the same logic as [configuration merging](
 
 
 {{< tabs groupId="profile-inheritance-example" >}}
-{{% tab name="Profile \"base\" (yaml)" %}}
+{{% tab name="Profile 'base' (yaml)" %}}
 
 ```yaml
 base:
@@ -48,7 +48,7 @@ base:
 ```
 
 {{% /tab %}}
-{{% tab name="Profile \"backup-homes\" (yaml)" %}}
+{{% tab name="Profile 'backup-homes' (yaml)" %}}
 
 ```yaml
 backup-homes:
@@ -73,7 +73,7 @@ backup-homes:
 ```
 
 {{% /tab %}}
-{{% tab name="... after applying \"inherit\"" %}}
+{{% tab name="... after applying 'inherit'" %}}
 
 ```yaml
 backup-homes:

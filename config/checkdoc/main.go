@@ -23,12 +23,19 @@ const (
 // once a configuration snippet has been detected, it tries to load it to see if there's no error in it ;)
 func main() {
 	exitCode := 0
-	clog.SetDefaultLogger(clog.NewFilteredConsoleLogger(clog.LevelDebug))
-	clog.Info("checking documentation for configuration examples")
 
 	var root string
+	var verbose bool
 	pflag.StringVarP(&root, "root", "r", "", "root directory where to search for documentation files (*.md)")
+	pflag.BoolVarP(&verbose, "verbose", "v", false, "display more information")
 	pflag.Parse()
+
+	level := clog.LevelInfo
+	if verbose {
+		level = clog.LevelDebug
+	}
+	clog.SetDefaultLogger(clog.NewFilteredConsoleLogger(level))
+	clog.Info("checking documentation for configuration examples")
 
 	// if there's an error here, wd is going to be empty, and that's ok
 	wd, _ := os.Getwd()
@@ -81,22 +88,25 @@ func findConfiguration(path string) bool {
 			if strings.HasPrefix(line, configTag) {
 				if configLines {
 					configLines = false
-					clog.Debugf(" - end of %q block on line %d", configType, lineNum)
 					// finished reading a configuration, send the buffer for checking
 					cfg, err := config.Load(configBuffer, configType)
 					if err != nil {
 						if !ignoreError {
-							clog.Error(err)
+							clog.Errorf("    %q on line %d: %s", configType, lineNum, err)
 							hasError = true
 						} else {
-							clog.Warning(err)
+							clog.Warningf("    %q on line %d: %s (ignored)", configType, lineNum, err)
+						}
+					} else {
+						if cfg == nil {
+							clog.Errorf("empty %s configuration", configType)
+							hasError = true
+						} else if !cfg.IsSet("version") {
+							clog.Infof("    %q on line %d: missing 'version' option in configuration", configType, lineNum)
 						}
 					}
-					if cfg == nil {
-						clog.Errorf("empty %s configuration", configType)
-						hasError = true
-					}
 					ignoreError = false
+					clog.Debugf(" - end of %q block on line %d", configType, lineNum)
 					return
 				}
 				configType = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), configTag))
