@@ -66,6 +66,10 @@ $(GOBIN)/goreleaser: $(GOBIN)/eget
 	@echo "[*] $@"
 	eget goreleaser/goreleaser --to $(GOBIN)
 
+$(GOBIN)/github-markdown-toc.go: $(GOBIN)/eget
+	@echo "[*] $@"
+	eget ekalinin/github-markdown-toc.go --file gh-md-toc --to $(GOBIN)
+
 .PHONY: prepare
 prepare: download
 	@echo "[*] $@"
@@ -157,9 +161,8 @@ nightly: $(GOBIN)/goreleaser
 	@echo "[*] $@"
 	GITLAB_TOKEN= goreleaser --snapshot --skip-publish --clean --debug
 
-toc:
+toc: $(GOBIN)/github-markdown-toc.go
 	@echo "[*] $@"
-	$(GOINSTALL) github.com/ekalinin/github-markdown-toc.go/cmd/gh-md-toc@latest
 	cat ${README} | gh-md-toc --hide-footer > ${TOC_PATH}
 	sed -i ".1" "/${TOC_START}/,/${TOC_END}/{//!d;}" "${README}"
 	sed -i ".2" "/${TOC_START}/r ${TOC_PATH}" "${README}"
