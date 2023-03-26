@@ -6,12 +6,14 @@ weight: 5
 
 ## Simple configuration using Azure storage
 
-Here's a simple configuration file using a Microsoft Azure backend:
+Here's a simple configuration file using a Microsoft Azure backend. You will notice that the `env` section lets you define environment variables:
 
 {{< tabs groupId="config-with-hcl" >}}
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [default]
   repository = "azure:restic:/"
   password-file = "key"
@@ -32,6 +34,8 @@ Here's a simple configuration file using a Microsoft Azure backend:
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 default:
   repository: "azure:restic:/"
   password-file: "key"
@@ -56,6 +60,7 @@ default:
 {{% tab name="hcl" %}}
 
 ```hcl
+version = 1
 
 default {
     repository = "azure:restic:/"
@@ -88,12 +93,14 @@ Here's a more complex configuration file showing profile inheritance and two bac
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [global]
   # ionice is available on Linux only
   ionice = false
   ionice-class = 2
   ionice-level = 6
-  # priority is using priority class on windows, and "nice" on unixes - it's acting on CPU usage only
+  # priority is using priority class on windows, and "nice" on unixes
   priority = "low"
   # run 'snapshots' when no command is specified when invoking resticprofile
   default-command = "snapshots"
@@ -104,11 +111,13 @@ Here's a more complex configuration file showing profile inheritance and two bac
 
 # a group is a profile that will call all profiles one by one
 [groups]
-  # when starting a backup on profile "full-backup", it will run the "root" and "src" backup profiles
+  # when starting a backup on profile "full-backup",
+  # it will run the "root" and "src" backup profiles
   full-backup = [ "root", "src" ]
 
-# Default profile when not specified (-n or --name)
-# Please note there's no default inheritance from the 'default' profile (you can use the 'inherit' flag if needed)
+# Default profile when not specified on the command line (-n or --name)
+# There's no default inheritance from the 'default' profile,
+# you can use the 'inherit' flag if needed
 [default]
   # you can use a relative path, it will be relative to the configuration file
   repository = "/backup"
@@ -121,22 +130,17 @@ Here's a more complex configuration file showing profile inheritance and two bac
   # add this parameter to run the script in case of a failure
   run-after-fail = "umount /backup"
 
+  # add environment variables
   [default.env]
     TMPDIR= "/tmp"
-
-[no-cache]
-  inherit = "default"
-  no-cache = true
-  initialize = false
 
 # New profile named 'root'
 [root]
   inherit = "default"
   initialize = true
-  # this will add a LOCAL lockfile so you cannot run the same profile more than once at a time
+  # LOCAL lockfile so you cannot run the same profile more than once at a time
   # (it's totally independent of the restic locks on the repository)
   lock = "/tmp/resticprofile-root.lock"
-  force-inactive-lock = false
 
   # 'backup' command of profile 'root'
   [root.backup]
@@ -146,36 +150,32 @@ Here's a more complex configuration file showing profile inheritance and two bac
     one-file-system = false
     tag = [ "test", "dev" ]
     source = [ "/" ]
-    # if scheduled, will run every day at midnight
+    # ignore restic warnings when files cannot be read
+    no-error-on-warning = true
+    # run every day at midnight
     schedule = "daily"
     schedule-permission = "system"
     schedule-lock-wait = "2h"
-    # run this after a backup to share a repository between a user and root (via sudo)
-    run-after = "chown -R $SUDO_USER $HOME/.cache/restic /backup"
-    # ignore restic warnings (otherwise the backup is considered failed when restic couldn't read some files)
-    no-error-on-warning = true
 
   # retention policy for profile root
+  # retention is a special section that run the "forget" command
+  # before or after a backup
   [root.retention]
     before-backup = false
     after-backup = true
-    keep-last = 3
     keep-hourly = 1
     keep-daily = 1
     keep-weekly = 1
     keep-monthly = 1
-    keep-yearly = 1
     keep-within = "3h"
     keep-tag = [ "forever" ]
-    compact = false
     prune = false
-    # path can be a boolean ('true' meaning to copy source paths from 'backup') 
-    # or a path or list of paths to use instead. Default is `true` if not specified.
-    #path = []
     # tag can be a boolean ('true' meaning to copy tag set from 'backup') 
-    # or a custom set of tags. Default is 'false', meaning that tags are NOT used.
+    # or a custom set of tags.
+    # Default is 'false', meaning that tags are NOT used.
     tag = true
-    # host can be a boolean ('true' meaning current hostname) or a string to specify a different hostname
+    # host can be a boolean ('true' meaning current hostname)
+    # or a string to specify a different hostname
     host = true
 
 # New profile named 'src'
@@ -204,7 +204,6 @@ Here's a more complex configuration file showing profile inheritance and two bac
     before-backup = false
     after-backup = true
     keep-within = "30d"
-    compact = false
     prune = true
 
   # check command of profile src
@@ -219,101 +218,133 @@ Here's a more complex configuration file showing profile inheritance and two bac
 {{% tab name="yaml" %}}
 
 ```yaml
-global:
-    default-command: snapshots
-    initialize: false
-    priority: low
+version: "1"
 
+global:
+  # run 'snapshots' when no command is specified when invoking resticprofile
+  default-command: snapshots
+  # initialize a repository if none exist at location
+  initialize: false
+  # priority is using priority class on windows, and "nice" on unixes
+  priority: low
+  # resticprofile won't start a profile if there's less than 100MB of RAM available
+  min-memory: 100
+
+# a group is a profile that will call all profiles one by one
 groups:
-    full-backup:
+  # when starting a backup on profile "full-backup",
+  # it will run the "root" and "src" backup profiles
+  full-backup:
     - root
     - src
 
+# Default profile when not specified on the command line (-n or --name)
+# There's no default inheritance from the 'default' profile,
+# you can use the 'inherit' flag if needed
 default:
-    env:
-        tmp: /tmp
-    password-file: key
-    repository: /backup
+  # add environment variables
+  env:
+    TMPDIR: /tmp
+  password-file: key
+  # you can use a relative path, it will be relative to the configuration file
+  repository: /backup
+  # will run these scripts before and after each command (including 'backup')
+  run-before: mount /backup
+  run-after: umount /backup
+  # if a restic command fails, the run-after won't be running
+  # add this parameter to run the script in case of a failure
+  run-after-fail: umount /backup
 
-documents:
-    backup:
-        source: ~/Documents
-    repository: ~/backup
-    snapshots:
-        tag:
-        - documents
-
+# New profile named 'root'
 root:
-    backup:
-        exclude-caches: true
-        exclude-file:
-        - root-excludes
-        - excludes
-        one-file-system: false
-        source:
-        - /
-        tag:
-        - test
-        - dev
-    inherit: default
-    initialize: true
-    retention:
-        after-backup: true
-        before-backup: false
-        compact: false
-        host: true
-        keep-daily: 1
-        keep-hourly: 1
-        keep-last: 3
-        keep-monthly: 1
-        keep-tag:
-        - forever
-        keep-weekly: 1
-        keep-within: 3h
-        keep-yearly: 1
-        prune: false
-        tag:
-        - test
-        - dev
+  inherit: default
+  initialize: true
+  # LOCAL lockfile so you cannot run the same profile more than once at a time
+  # (it's totally independent of the restic locks on the repository)
+  lock: /tmp/resticprofile-root.lock
 
-self:
-    backup:
-        source: ./
-    repository: ../backup
-    snapshots:
-        tag:
-        - self
+  backup:
+    exclude-caches: true
+    # files with no path are relative to the configuration file
+    exclude-file:
+      - root-excludes
+      - excludes
+    one-file-system: false
+    source:
+      - /
+    tag:
+      - test
+      - dev
+    # ignore restic warnings when files cannot be read
+    no-error-on-warning: true
+    # run every day at midnight
+    schedule: daily
+    schedule-permission: system
+    schedule-lock-wait: 2h
 
+  # retention policy for profile root
+  # retention is a special section that run the "forget" command
+  # before or after a backup
+  retention:
+    before-backup: false
+    after-backup: true
+    keep-daily: 1
+    keep-hourly: 1
+    keep-weekly: 1
+    keep-monthly: 1
+    keep-within: 3h
+    keep-tag:
+      - forever
+    prune: false
+    # tag can be a boolean ('true' meaning to copy tag set from 'backup') 
+    # or a custom set of tags.
+    # Default is 'false', meaning that tags are NOT used.
+    tag: true
+    # host can be a boolean ('true' meaning current hostname)
+    # or a string to specify a different hostname
+    host: true
+
+# New profile named 'src'
 src:
-    lock: "/tmp/resticprofile-profile-src.lock"
-    force-inactive-lock: false
-    backup:
-        check-before: true
-        exclude:
-        - /**/.git
-        exclude-caches: true
-        one-file-system: false
-        run-after: echo All Done!
-        run-before:
-        - echo Starting!
-        - ls -al ~/go
-        source:
-        - ~/go
-        tag:
-        - test
-        - dev
-    inherit: default
-    initialize: true
-    retention:
-        after-backup: true
-        before-backup: false
-        compact: false
-        keep-within: 30d
-        prune: true
-    snapshots:
-        tag:
-        - test
-        - dev
+  lock: "/tmp/resticprofile-profile-src.lock"
+  force-inactive-lock: false
+  inherit: default
+  initialize: true
+
+  # 'backup' command of profile 'src'
+  backup:
+    check-before: true
+    exclude:
+      - /**/.git
+    exclude-caches: true
+    one-file-system: false
+    # will only run these scripts before and after a backup
+    run-before:
+      - echo Starting!
+      - ls -al ~/go
+    run-after: echo All Done!
+    source:
+      - ~/go
+    tag:
+      - test
+      - dev
+    # run every 30 minutes
+    schedule: "*:0,30"
+    schedule-permission: user
+    schedule-lock-wait: 10m
+
+  # retention policy for profile src
+  retention:
+    before-backup: false
+    after-backup: true
+    keep-within: 30d
+    prune: true
+
+  # check command of profile src
+  check:
+    read-data: true
+    # check the repository the first day of each month at 3am
+    schedule: "*-*-01 03:00"
 
 ```
 
@@ -321,6 +352,8 @@ src:
 {{% tab name="hcl" %}}
 
 ```hcl
+version = 1
+
 global {
     priority = "low"
     ionice = true
@@ -403,11 +436,14 @@ self {
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [global]
   restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
 
 # Default profile when not specified on the command line
-# Please note there's no default inheritance from the 'default' profile (you can use the 'inherit' flag if needed)
+# There's no default inheritance from the 'default' profile,
+# but you can use the 'inherit' flag if needed
 [default]
   repository = "local:r:/"
   password-file = "key"
@@ -425,7 +461,8 @@ self {
     check-after = true
     run-before = "dir /l"
     run-after = "echo All Done!"
-    # ignore restic warnings (otherwise the backup is considered failed when restic couldn't read some files)
+    # ignore restic warnings
+    # without it the backup is considered failed when restic can't read some files
     no-error-on-warning = true
 ```
 
@@ -433,18 +470,25 @@ self {
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 global:
   restic-binary: c:\ProgramData\chocolatey\bin\restic.exe
 
+# Default profile when not specified on the command line
+# There's no default inheritance from the 'default' profile,
+# but you can use the 'inherit' flag if needed
 default:
   repository: local:r:/
   password-file: key
   initialize: false
 
+# New profile named 'test'
 test:
   inherit: default
   initialize: true
 
+  # 'backup' command of profile 'test'
   backup:
     tag:
       - windows
@@ -453,6 +497,8 @@ test:
     check-after: true
     run-before: dir /l
     run-after: echo All Done!
+    # ignore restic warnings
+    # without it the backup is considered failed when restic can't read some files
     no-error-on-warning: true
 ```
 
@@ -460,6 +506,7 @@ test:
 {{% tab name="hcl" %}}
 
 ```hcl
+version = "1"
 
 global {
   restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
@@ -498,6 +545,7 @@ Simple example sending a file via stdin
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
 
 [stdin]
   repository = "local:/backup/restic"
@@ -522,7 +570,8 @@ Simple example sending a file via stdin
 {{% tab name="yaml" %}}
 
 ```yaml
-        
+version: "1"
+
 stdin:
   repository: "local:/backup/restic"
   password-file: key
@@ -546,6 +595,8 @@ mysql:
 {{% tab name="hcl" %}}
 
 ```hcl
+version = "1"
+
 # sending stream through stdin
 stdin {
     repository = "local:/backup/restic"

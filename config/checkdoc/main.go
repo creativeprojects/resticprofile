@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -14,7 +15,12 @@ import (
 )
 
 const (
-	configTag = "```"
+	configTag  = "```"
+	replaceURL = "http://localhost:1313/resticprofile/jsonschema/config-$1.json"
+)
+
+var (
+	urlPattern = regexp.MustCompile(`{{< [^>}]+config-(\d)\.json"[^>}]+ >}}`)
 )
 
 // this small script walks through files and picks all the .md ones (containing documentation)
@@ -118,6 +124,10 @@ func findConfiguration(path string) bool {
 				return
 			}
 			if configLines {
+				// replace hugo tags
+				if strings.Contains(line, "{{") {
+					line = urlPattern.ReplaceAllString(line, replaceURL)
+				}
 				configBuffer.WriteString(line)
 				configBuffer.WriteString("\n")
 			}

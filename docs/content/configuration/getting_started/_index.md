@@ -4,12 +4,20 @@ date: 2023-03-25T14:44:47+00:00
 weight: 2
 ---
 
+## Prerequisite
+
+**resticprofile** is one of many automation tools for restic, also called a *wrapper*.
+
+In a nutshell, **resticprofile** provides a configuration file and a runner that will generate all the necessary calls to **restic**.
+
+Unless you're using the **resticprofile** [Docker image]({{< ref "/installation/docker" >}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
+
 ## Choose your favourite format
 
-resticprofile configuration file can be written in:
+**resticprofile** configuration file can be written in:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ or _.conf_
-* [JSON](https://en.wikipedia.org/wiki/JSON) : configuration file with extension _.json_
 * [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
+* [JSON](https://en.wikipedia.org/wiki/JSON) : configuration file with extension _.json_
 * [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
 
 We recommend using either TOML or YAML.
@@ -20,7 +28,7 @@ HCL can be interesting if you already use a tool from the Hashicorp stack otherw
 
 ## Configure your text editor
 
-We're going to show you how to get documentation and auto-completion for the resticprofile configuration using [Visual Studio Code](https://code.visualstudio.com/).
+We're going to show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
 
 You can use any other editor that recognise the [JSON schema]({{< ref "/configuration/jsonschema" >}}). The same JSON schema can be used for JSON, TOML and YAML file formats.
 
@@ -28,13 +36,13 @@ You can use any other editor that recognise the [JSON schema]({{< ref "/configur
 
 In Visual Studio Code, you need to install an extension that supports completion and syntax validation using a JSON schema.
 
-For example you can install the **Even Better TOML** extension:
+For example you can install the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension:
 
 ![TOML extension](TOML.png)
 
 ### YAML
 
-Same for YAML: in Visual Studio Code you need to install an extension like the one provided by Redhat to understand the shape of your configuration file.
+Same for YAML: in Visual Studio Code you need to install an extension like the one [provided by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) to understand the shape of your configuration file.
 
 ![YAML extension](YAML.png)
 
@@ -57,7 +65,6 @@ Create a file named `profiles` with the extension of your choice (.toml, .yaml, 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
-<!-- checkdoc-ignore -->
 ```toml
 #:schema {{< absolute "jsonschema/config-1.json" nohtml >}}
 #
@@ -77,7 +84,6 @@ version = "1"
 {{% /tab %}}
 {{% tab name="yaml" %}}
 
-<!-- checkdoc-ignore -->
 ```yaml
 # yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
 
@@ -114,7 +120,6 @@ default {
 {{% /tab %}}
 {{% tab name="json" %}}
 
-<!-- checkdoc-ignore -->
 ```json
 {
   "$schema": "{{< absolute "jsonschema/config-1.json" nohtml >}}",
@@ -137,7 +142,7 @@ default {
 
 ## Generate a secure password
 
-resticprofile has a handy command that can generate a [cryptographically secure password file]({{< ref "/usage/keyfile" >}}) for you:
+**resticprofile** has a handy command that can generate a [cryptographically secure password file]({{< ref "/usage/keyfile" >}}) for you:
 
 ```shell
 resticprofile generate --random-key > password.txt
@@ -165,7 +170,7 @@ irrecoverably lost.
 
 ## Test your first backup
 
-Before going live, you can *dry run* your first backup by using the resticprofile `--dry-run` flag.
+Before going live, you can *dry run* your first backup by using the **resticprofile** `--dry-run` flag.
 
 ```shell
 resticprofile --dry-run backup
@@ -179,14 +184,14 @@ And here's the result:
 2023/03/25 15:49:51 profile 'default': finished 'backup'
 ```
 
-As you can see, resticprofile converted your backup profile into this command line:
+As you can see, **resticprofile** converted your backup profile into this command line:
 ```shell
 /usr/local/bin/restic backup --password-file password.txt --repo local:/backup --verbose /home
 ```
 
 ## Flags
 
-Let's stop a moment and analyse the command line: we passed the flag `--dry-run` before the command `backup`: it means the flag is used by **resticprofile**.
+Let's stop a moment and analyse the command line: we passed the flag `--dry-run` **before the command** `backup`: it means the flag is used by **resticprofile**.
 
 Let's try again with the flag after the command:
 
@@ -219,7 +224,7 @@ processed 0 files, 0 B in 0:00
 2023/03/25 15:50:03 profile 'default': finished 'backup'
 ```
 
-If you add flags **after** the command, the flags will be sent to **restic** instead. As you can see, **restic** simulated a backup of your `/home` folder.
+If you add flags **after the command**, the flags will be sent to **restic** instead. As you can see, **restic** simulated a backup of your `/home` folder.
 
 ## Schedule
 
@@ -231,7 +236,6 @@ Add a line in your configuration (in the **default -> backup** section) with an 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
 
-<!-- checkdoc-ignore -->
 ```toml
 #:schema {{< absolute "jsonschema/config-1.json" nohtml >}}
 #
@@ -252,7 +256,6 @@ version = "1"
 {{% /tab %}}
 {{% tab name="yaml" %}}
 
-<!-- checkdoc-ignore -->
 ```yaml
 # yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
 
@@ -291,7 +294,6 @@ default {
 {{% /tab %}}
 {{% tab name="json" %}}
 
-<!-- checkdoc-ignore -->
 ```json
 {
   "$schema": "{{< absolute "jsonschema/config-1.json" nohtml >}}",
@@ -321,7 +323,7 @@ To schedule the backup of the default profile, simply type the command:
 resticprofile schedule
 ```
 
-Now your backup will run every day at 12:30.
+Now your backup will run every day at 12:30. As simple as that!
 
 ## Inline help
 
