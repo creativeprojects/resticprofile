@@ -20,7 +20,6 @@ A restic warning occurs when it cannot read some files, but a snapshot was succe
 version = "1"
 
 [profile]
-  inherit = "default"
 
   [profile.backup]
     no-error-on-warning = true
@@ -35,7 +34,6 @@ version = "1"
 version: "1"
 
 profile:
-    inherit: default
     backup:
         no-error-on-warning: true
 ```
@@ -45,7 +43,6 @@ profile:
 
 ```hcl
 "profile" = {
-  "inherit" = "default"
 
   "backup" = {
     "no-error-on-warning" = true
@@ -60,7 +57,6 @@ profile:
 {
   "version": "1",
   "profile": {
-    "inherit": "default",
     "backup": {
       "no-error-on-warning": true
     }

@@ -49,7 +49,6 @@ The configuration is the same for each of these 4 types of hooks:
 version = "1"
 
 [profile]
-inherit = "default"
 
   [profile.backup]
   source = "/source"
@@ -110,7 +109,6 @@ inherit = "default"
 version: "1"
 
 profile:
-    inherit: default
 
     backup:
         source: "/source"
@@ -163,7 +161,6 @@ profile:
 
 ```hcl
 "profile" {
-  "inherit" = "default"
 
   "backup" = {
     "source" = "/source"
@@ -229,7 +226,6 @@ profile:
 {
   "version": "1",
   "profile": {
-    "inherit": "default",
     "backup": {
       "source": "/source",
       "exclude": [

@@ -52,6 +52,7 @@ base:
 {{% /tab %}}
 {{% tab name="Profile 'backup-homes' (yaml)" %}}
 
+<!-- checkdoc-ignore -->
 ```yaml
 version: "1"
 

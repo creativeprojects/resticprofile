@@ -15,24 +15,31 @@ import (
 )
 
 const (
-	configTag  = "```"
-	replaceURL = "http://localhost:1313/resticprofile/jsonschema/config-$1.json"
+	configTag      = "```"
+	checkdocIgnore = "<!-- checkdoc-ignore -->"
+	replaceURL     = "http://localhost:1313/resticprofile/jsonschema/config-$1.json"
 )
 
 var (
 	urlPattern = regexp.MustCompile(`{{< [^>}]+config-(\d)\.json"[^>}]+ >}}`)
+	_          = regexp.MustCompile(`{{< [^>}]+config-(\d)\.json"[^>}]+ >}}`) // Remove this when VS Code fixed the syntax highlighting issues
+)
+
+var (
+	tempDir string
 )
 
 // this small script walks through files and picks all the .md ones (containing documentation)
 // then it parses the .md files to see if there's some configuration examples, as they should be starting
 // with the tag ``` followed by the types: yaml, json, toml and hcl
-// once a configuration snippet has been detected, it tries to load it to see if there's no error in it ;)
+// once a configuration snippet has been detected, it tries to detect and load the profiles to see if there's any error
 func main() {
 	exitCode := 0
 
 	var root string
 	var verbose bool
 	pflag.StringVarP(&root, "root", "r", "", "root directory where to search for documentation files (*.md)")
+	pflag.StringVarP(&tempDir, "temp-dir", "t", "", "temporary directory to store extracted configuration files")
 	pflag.BoolVarP(&verbose, "verbose", "v", false, "display more information")
 	pflag.Parse()
 
@@ -42,6 +49,10 @@ func main() {
 	}
 	clog.SetDefaultLogger(clog.NewFilteredConsoleLogger(level))
 	clog.Info("checking documentation for configuration examples")
+
+	deleteFunc := setupTempDir()
+	defer deleteFunc()
+	clog.Debugf("using temporary directory %q", tempDir)
 
 	// if there's an error here, wd is going to be empty, and that's ok
 	wd, _ := os.Getwd()
@@ -63,7 +74,7 @@ func main() {
 		}
 		simplePath := strings.TrimPrefix(path, wd)
 		clog.Infof("* file %s", simplePath)
-		if !findConfiguration(path) {
+		if !extractConfigurationSnippets(path) {
 			exitCode = 1
 		}
 		return nil
@@ -71,8 +82,8 @@ func main() {
 	os.Exit(exitCode)
 }
 
-// findConfiguration returns true when the configuration is valid
-func findConfiguration(path string) bool {
+// extractConfigurationSnippets returns true when the configuration is valid
+func extractConfigurationSnippets(path string) bool {
 	file, err := os.Open(path)
 	if err != nil {
 		clog.Error("error reading %q: %s", path, err)
@@ -93,24 +104,18 @@ func findConfiguration(path string) bool {
 		func(line string) {
 			if strings.HasPrefix(line, configTag) {
 				if configLines {
+					// end of configuration snippet
 					configLines = false
-					// finished reading a configuration, send the buffer for checking
-					cfg, err := config.Load(configBuffer, configType)
-					if err != nil {
-						if !ignoreError {
-							clog.Errorf("    %q on line %d: %s", configType, lineNum, err)
-							hasError = true
-						} else {
-							clog.Warningf("    %q on line %d: %s (ignored)", configType, lineNum, err)
+					// finished reading a configuration, save the buffer for checking
+					if !ignoreError {
+						filename, err := saveConfiguration(configBuffer.Bytes(), configType)
+						defer os.Remove(filename)
+						if err != nil {
+							clog.Errorf("cannot save configuration: %s", err)
+							return
 						}
-					} else {
-						if cfg == nil {
-							clog.Errorf("empty %s configuration", configType)
+						if !checkConfiguration(filename, configType, lineNum) {
 							hasError = true
-						} else if configType != "hcl" && !cfg.IsSet("version") {
-							clog.Infof("    %q on line %d: missing 'version' option in configuration", configType, lineNum)
-						} else if configType == "hcl" && cfg.IsSet("version") {
-							clog.Infof("    %q on line %d: HCL configuration has the 'version' option specified", configType, lineNum)
 						}
 					}
 					ignoreError = false
@@ -119,21 +124,31 @@ func findConfiguration(path string) bool {
 				}
 				configType = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), configTag))
 				if configType == "toml" || configType == "json" || configType == "yaml" || configType == "hcl" {
+					// start of configuration snippet
 					configLines = true
 					configBuffer.Reset()
-					clog.Debugf(" - start of %q block on line %d", configType, lineNum)
+					ignored := ""
+					if ignoreError {
+						ignored = "(ignored)"
+					}
+					clog.Debugf(" - start of %q block on line %d %s", configType, lineNum, ignored)
 				}
 				return
 			}
 			if configLines {
+				// inside a configuration snippet
 				// replace hugo tags
 				if strings.Contains(line, "{{") {
 					line = urlPattern.ReplaceAllString(line, replaceURL)
 				}
+				if strings.Contains(line, "{{ define") {
+					// we can't deal with this for now, we need to fix config.GetProfileNames() method first
+					ignoreError = true
+				}
 				configBuffer.WriteString(line)
 				configBuffer.WriteString("\n")
 			}
-			if line == "<!-- checkdoc-ignore -->" {
+			if line == checkdocIgnore {
 				ignoreError = true
 			}
 		}(scanner.Text())
@@ -144,4 +159,53 @@ func findConfiguration(path string) bool {
 		return false
 	}
 	return !hasError
+}
+
+func saveConfiguration(content []byte, configType string) (string, error) {
+	filename := filepath.Join(tempDir, "profiles."+configType)
+	err := os.WriteFile(filename, content, 0600)
+	return filename, err
+}
+
+// checkConfiguration returns true when the configuration is valid
+func checkConfiguration(filename, configType string, lineNum int) bool {
+	cfg, err := config.LoadFile(filename, configType)
+	if err != nil {
+		clog.Errorf("    %q on line %d: %s", configType, lineNum, err)
+		return false
+	}
+	if cfg == nil {
+		clog.Errorf("    %q on line %d: configuration is empty", configType, lineNum)
+		return false
+	}
+	if configType != "hcl" && !cfg.IsSet("version") {
+		clog.Infof("    %q on line %d: missing 'version' option in configuration", configType, lineNum)
+	}
+	if configType == "hcl" && cfg.IsSet("version") {
+		clog.Infof("    %q on line %d: configuration has the 'version' option specified", configType, lineNum)
+	}
+	profiles := cfg.GetProfileNames()
+	if len(profiles) == 0 && !cfg.IsSet("global") {
+		clog.Warningf("    %q on line %d: configuration has no profile", configType, lineNum)
+	}
+	for _, profileName := range profiles {
+		_, err := cfg.GetProfile(profileName)
+		if err != nil {
+			clog.Errorf("    %q on line %d: profile %s: %s", configType, lineNum, profileName, err)
+			return false
+		}
+	}
+	return true
+}
+
+// setupTempDir is using the tempDir global variable
+func setupTempDir() func() {
+	if tempDir != "" {
+		_ = os.MkdirAll(tempDir, 0700)
+		return func() {}
+	}
+	tempDir, _ = os.MkdirTemp("", "checkdoc*")
+	return func() {
+		_ = os.RemoveAll(tempDir)
+	}
 }

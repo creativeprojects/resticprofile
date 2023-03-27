@@ -46,7 +46,9 @@ func (c *Config) getProfileNamesV1() (names []string) {
 	for sectionKey := range c.viper.AllSettings() {
 		if sectionKey == constants.SectionConfigurationGlobal ||
 			sectionKey == constants.SectionConfigurationGroups ||
-			sectionKey == constants.SectionConfigurationIncludes {
+			sectionKey == constants.SectionConfigurationIncludes ||
+			sectionKey == constants.ParameterVersion ||
+			sectionKey == constants.JSONSchema {
 			continue
 		}
 		names = append(names, sectionKey)

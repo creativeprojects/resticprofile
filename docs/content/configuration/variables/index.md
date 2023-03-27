@@ -356,8 +356,9 @@ assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(
 # declare and assign a value to the variable
 {{ $name := "something" }}
 
-# put the content of the variable here
-tag: "{{ $name }}"
+profile:
+  # put the content of the variable here
+  tag: "{{ $name }}"
 ```
 
 ### Example

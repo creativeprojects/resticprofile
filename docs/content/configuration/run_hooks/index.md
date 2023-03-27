@@ -21,7 +21,6 @@ Here's an example of all the external commands that you can run during the execu
 version = "1"
 
 [documents]
-  inherit = "default"
   run-before = 'echo "== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND"'
   run-after = 'echo "== run-after profile $PROFILE_NAME and command $PROFILE_COMMAND"'
   run-after-fail = 'echo "== ERROR in profile $PROFILE_NAME command ${PROFILE_COMMAND}: $ERROR_MESSAGE"'
@@ -43,7 +42,6 @@ version = "1"
 version: "1"
 
 documents:
-  inherit: default
   run-before: 'echo "== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND"'
   run-after: 'echo "== run-after profile $PROFILE_NAME and command $PROFILE_COMMAND"'
   run-after-fail: 'echo "== ERROR in profile $PROFILE_NAME command ${PROFILE_COMMAND}: $ERROR_MESSAGE"'
@@ -62,7 +60,6 @@ documents:
 
 ```hcl
 documents {
-    inherit = "default"
     run-before = "echo \"== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND\""
     run-after = "echo \"== run-after profile $PROFILE_NAME and command $PROFILE_COMMAND\""
     run-after-fail = "echo \"== ERROR in profile $PROFILE_NAME command ${PROFILE_COMMAND}: $ERROR_MESSAGE\""
@@ -85,7 +82,6 @@ documents {
 {
   "version": "1",
   "documents": {
-    "inherit": "default",
     "run-before": "echo \"== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND\"",
     "run-after": "echo \"== run-after profile $PROFILE_NAME and command $PROFILE_COMMAND\"",
     "run-after-fail": "echo \"== ERROR in profile $PROFILE_NAME command ${PROFILE_COMMAND}: $ERROR_MESSAGE\"",

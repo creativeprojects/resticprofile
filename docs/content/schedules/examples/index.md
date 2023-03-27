@@ -115,6 +115,8 @@ With this example of configuration for Linux:
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [default]
   password-file = "key"
   repository = "/tmp/backup"
@@ -138,6 +140,8 @@ With this example of configuration for Linux:
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 default:
   password-file: key
   repository: /tmp/backup
@@ -188,6 +192,7 @@ test1:
 
 ```json
 {
+  "version": "1",
   "default": {
     "password-file": "key",
     "repository": "/tmp/backup"

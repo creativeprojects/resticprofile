@@ -6,7 +6,7 @@ weight: 105
 
 
 
-systemd is a common service manager in use by many Linux distributions.
+**systemd** is a common service manager in use by many Linux distributions.
 resticprofile has the ability to create systemd timer and service files.
 systemd can be used in place of cron to schedule backups.
 
