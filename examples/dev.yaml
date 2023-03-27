@@ -309,3 +309,18 @@ run-before-after:
         host: true
         run-before: "echo Before snapshots"
         run-after: "echo After snapshots"
+
+tempfile:
+    inherit: default
+
+    backup:
+        verbose: true
+        no-error-on-warning: true
+        source: "{{ .CurrentDir }}"
+        exclude:
+          - "/**/.git/"
+        schedule:
+          - "*:*"
+        schedule-permission: user
+        schedule-log: '{{ tempFile "backup.log" }}'
+        run-finally: 'cp {{ tempFile "backup.log" }} ./backup{{ .Now.Format "2006-01-02T15-04-05" }}.log'
