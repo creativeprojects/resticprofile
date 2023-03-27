@@ -15,6 +15,8 @@ The copy command needs two repositories (and quite likely 2 different set of key
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [default]
   initialize = false
   repository = "/backup/original"
@@ -30,6 +32,8 @@ The copy command needs two repositories (and quite likely 2 different set of key
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 default:
     initialize: false
     repository: "/backup/original"
@@ -45,7 +49,6 @@ default:
 
 
 ```hcl
-
 default {
     initialize = false
     repository = "/backup/original"
@@ -73,6 +76,8 @@ If you want to initialize the *copy* repository using the `copy-chunker-params` 
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [profile]
   initialize = false
   repository = "/backup/original"
@@ -89,6 +94,8 @@ If you want to initialize the *copy* repository using the `copy-chunker-params` 
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 profile:
     initialize: false
     repository: "/backup/original"
@@ -105,7 +112,6 @@ profile:
 
 
 ```hcl
-
 profile {
     initialize = false
     repository = "/backup/original"

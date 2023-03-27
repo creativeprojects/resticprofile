@@ -74,6 +74,8 @@ You can use a combination of inheritance and variables in the resticprofile conf
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [generic]
   password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
   repository = "/backup/{{ .Now.Weekday }}"
@@ -112,7 +114,7 @@ You can use a combination of inheritance and variables in the resticprofile conf
     source = [ "{{ .Env.HOME }}/go/src" ]
   
   [src.check]
-    # Weekday is an integer from 0 to 6
+    # Weekday is an integer from 0 to 6 (starting from Sunday)
     # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
     read-data-subset = "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
 
@@ -123,6 +125,8 @@ You can use a combination of inheritance and variables in the resticprofile conf
 
 ```yaml
 ---
+version: "1"
+
 generic:
     password-file: "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
     repository: "/backup/{{ .Now.Weekday }}"
@@ -168,7 +172,7 @@ src:
           - "{{ .Env.HOME }}/go/src"
 
     check:
-        # Weekday is an integer from 0 to 6
+        # Weekday is an integer from 0 to 6 (starting from Sunday)
         # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
         read-data-subset: "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
 
@@ -216,7 +220,7 @@ src:
   }
 
   "check" = {
-    # Weekday is an integer from 0 to 6
+    # Weekday is an integer from 0 to 6 (starting from Sunday)
     # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
     "read-data-subset" = "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
   }
@@ -228,6 +232,7 @@ src:
 
 ```json
 {
+  "version": "1",
   "generic": {
     "password-file": "{{ .ConfigDir }}/{{ .Profile.Name }}-key",
     "repository": "/backup/{{ .Now.Weekday }}",
@@ -363,6 +368,8 @@ Here's an example of a configuration on Linux where I use a variable `$mountpoin
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [global]
   priority = "low"
 
@@ -385,6 +392,8 @@ Here's an example of a configuration on Linux where I use a variable `$mountpoin
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 global:
   priority: low
 
@@ -437,6 +446,7 @@ default {
 ```json
 {{ $mountpoint := "/mnt/external" }}
 {
+  "version": "1",
   "global": {
     "priority": "low"
   },

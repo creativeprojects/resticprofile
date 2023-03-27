@@ -103,9 +103,6 @@ default:
 {{% tab name="hcl" %}}
 
 ```hcl
-
-version = 1
-
 default {
     repository = "local:/backup"
     password-file = "password.txt"
@@ -276,9 +273,6 @@ default:
 {{% tab name="hcl" %}}
 
 ```hcl
-
-version = 1
-
 default {
     repository = "local:/backup"
     password-file = "password.txt"

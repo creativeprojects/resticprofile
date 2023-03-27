@@ -1,6 +1,7 @@
 ---
 title: "Include"
 date: 2022-05-02T20:00:00+02:00
+tags: ["v0.18.0"]
 weight: 15
 ---
 
@@ -11,6 +12,8 @@ E.g. the following `profiles.conf` loads configurations from `conf.d` and `profi
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 # Includes
 includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 
@@ -24,7 +27,8 @@ includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 {{% tab name="yaml" %}}
 
 ```yaml
-        
+version: "1"
+
 includes:
   - "conf.d/*.conf"
   - "profiles.d/*.yaml"
@@ -52,6 +56,7 @@ global {
 
 ```json
 {
+  "version": "1",
   "includes": [
     "conf.d/*.conf",
     "profiles.d/*.yaml",
@@ -108,6 +113,8 @@ Configuration **merging** follows the logic:
 {{% tab name="Final configuration" %}}
 
 ```yaml
+version: "1"
+
 includes:
   - first.yaml
   - second.yaml
@@ -126,15 +133,17 @@ default:
 {{% tab name="profiles.yaml" %}}
 
 ```yaml
+version: "1"
+
 includes:
   - first.yaml
   - second.yaml
 
 default:
    
-   backup:
-      source:
-         - /usr
+  backup:
+    source:
+        - /usr
 
 
         
@@ -144,16 +153,18 @@ default:
 {{% tab name="first.yaml" %}}
 
 ```yaml
+version: "1"
+
         
 
 
 
 default:
-   initialize: false
-   backup:
-      source:
-         - /etc
-         - /opt
+  initialize: false
+  backup:
+    source:
+        - /etc
+        - /opt
 
         
 ```
@@ -162,15 +173,17 @@ default:
 {{% tab name="second.yaml" %}}
 
 ```yaml
-        
+version: "1"
+
+
 
 
 
 default:
-   initialize: true
-   backup:
-      exclude:
-         - .*
+  initialize: true
+  backup:
+    exclude:
+        - .*
 
 
         
@@ -182,7 +195,7 @@ default:
 
 {{% notice style="note" %}}
 
-`resticprofile` prior to v0.18.0 had a slightly different behavior when merging configuration properties of a different type (e.g. number <-> text or list <-> single value). In such cases the existing value was not overridden by an included file, breaking the rule "what includes later overrides what defines earlier".
+`resticprofile` prior to v0.18.0 had a slightly different behaviour when merging configuration properties of a different type (e.g. number <-> text or list <-> single value). In such cases the existing value was not overridden by an included file, breaking the rule "what includes later overrides what defines earlier".
 
 {{% /notice %}}
 

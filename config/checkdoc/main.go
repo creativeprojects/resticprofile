@@ -107,8 +107,10 @@ func findConfiguration(path string) bool {
 						if cfg == nil {
 							clog.Errorf("empty %s configuration", configType)
 							hasError = true
-						} else if !cfg.IsSet("version") {
+						} else if configType != "hcl" && !cfg.IsSet("version") {
 							clog.Infof("    %q on line %d: missing 'version' option in configuration", configType, lineNum)
+						} else if configType == "hcl" && cfg.IsSet("version") {
+							clog.Infof("    %q on line %d: HCL configuration has the 'version' option specified", configType, lineNum)
 						}
 					}
 					ignoreError = false

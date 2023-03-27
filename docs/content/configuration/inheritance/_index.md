@@ -25,6 +25,8 @@ Profile configuration merging follows the same logic as [configuration merging](
 {{% tab name="Profile 'base' (yaml)" %}}
 
 ```yaml
+version: "1"
+
 base:
   initialize: true
   repository: local:/backup/my-repo
@@ -51,6 +53,8 @@ base:
 {{% tab name="Profile 'backup-homes' (yaml)" %}}
 
 ```yaml
+version: "1"
+
 backup-homes:
   inherit: base
   
@@ -76,6 +80,8 @@ backup-homes:
 {{% tab name="... after applying 'inherit'" %}}
 
 ```yaml
+version: "1"
+
 backup-homes:
   initialize: true
   repository: local:/backup/my-repo
@@ -421,6 +427,8 @@ For example, a flag like `insecure-tls` can be set at profile level and will be 
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [default]
 repository = "rest:https://backup-host/my-repo"
 insecure-tls = true
@@ -432,6 +440,8 @@ source = "/"
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 default:
   repository: rest:https://backup-host/my-repo
   insecure-tls: true
@@ -457,6 +467,7 @@ default {
 
 ```json
 {
+  "version": "1",
   "default": {
     "repository": "rest:https://backup-host/my-repo",
     "insecure-tls": true,

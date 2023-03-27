@@ -60,8 +60,6 @@ default:
 {{% tab name="hcl" %}}
 
 ```hcl
-version = 1
-
 default {
     repository = "azure:restic:/"
     password-file = "key"
@@ -352,8 +350,6 @@ src:
 {{% tab name="hcl" %}}
 
 ```hcl
-version = 1
-
 global {
     priority = "low"
     ionice = true
@@ -506,8 +502,6 @@ test:
 {{% tab name="hcl" %}}
 
 ```hcl
-version = "1"
-
 global {
   restic-binary = "c:\\ProgramData\\chocolatey\\bin\\restic.exe"
 }
@@ -595,8 +589,6 @@ mysql:
 {{% tab name="hcl" %}}
 
 ```hcl
-version = "1"
-
 # sending stream through stdin
 stdin {
     repository = "local:/backup/restic"

@@ -17,6 +17,8 @@ A restic warning occurs when it cannot read some files, but a snapshot was succe
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [profile]
   inherit = "default"
 
@@ -30,6 +32,8 @@ A restic warning occurs when it cannot read some files, but a snapshot was succe
 
 
 ```yaml
+version: "1"
+
 profile:
     inherit: default
     backup:
@@ -54,6 +58,7 @@ profile:
 
 ```json
 {
+  "version": "1",
   "profile": {
     "inherit": "default",
     "backup": {

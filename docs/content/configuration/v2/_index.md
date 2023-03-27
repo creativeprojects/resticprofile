@@ -50,7 +50,6 @@ I will show the specification using the `yaml` as examples, because it's probabl
 ### version
 
 ```yaml
----
 version: 2
 ```
 
@@ -59,7 +58,6 @@ version: 2
 The global section does not change. We'll keep all the global configuration in there.
 
 ```yaml
----
 global:
     default-command: snapshots
     initialize: false
@@ -72,6 +70,8 @@ global:
 All your profiles will be nested under a `profiles` section. Please note the schedules are no longer described inside the profile, but in a separate section `schedules` (see the following example).
 
 ```yaml
+version: "2"
+
 profiles:
     default:
         env:
@@ -93,6 +93,8 @@ profiles:
 The list of profiles will be nested under a `profiles` section, so we can add more configuration to groups later.
 
 ```yaml
+version: "2"
+
 groups:
     full: # name of your group
         profiles:
@@ -106,6 +108,8 @@ groups:
 A new schedule section could schedule either a group or a list of profiles.
 
 ```yaml
+version: "2"
+
 schedules:
     full-backup: # give a name to your schedule
         group: full

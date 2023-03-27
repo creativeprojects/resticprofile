@@ -18,6 +18,8 @@ Here's an example of all the external commands that you can run during the execu
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [documents]
   inherit = "default"
   run-before = 'echo "== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND"'
@@ -38,6 +40,8 @@ Here's an example of all the external commands that you can run during the execu
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 documents:
   inherit: default
   run-before: 'echo "== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND"'
@@ -79,6 +83,7 @@ documents {
 
 ```json
 {
+  "version": "1",
   "documents": {
     "inherit": "default",
     "run-before": "echo \"== run-before profile $PROFILE_NAME and command $PROFILE_COMMAND\"",
@@ -206,6 +211,8 @@ In addition to hooks around profile and command execution, resticprofile allows 
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [default]
 
 [[default.stream-error]]
@@ -219,6 +226,8 @@ min-matches = 5
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 default:
   stream-error:
     - pattern: ".+ERROR.+"
@@ -244,6 +253,7 @@ default {
 
 ```json
 {
+  "version": "1",
   "default": {
     "stream-error": [
       {
@@ -277,6 +287,8 @@ The following example shows how this could have been used with restic to address
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [default]
 
 [[default.stream-error]]
@@ -292,6 +304,8 @@ run = "cat - | cut -d : -f 2 - | grep -E 'mkdir /tmp[^ \\.]+$' | sed 's/mkdir/mk
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 default:
   stream-error:
     - pattern: "/tmp/restic-check-cache.+no space left on device"

@@ -52,6 +52,8 @@ Here's a working example:
     source = [ "/" ]
 {{ end }}
 
+version = "1"
+
 [global]
   priority = "low"
   ionice = true
@@ -154,6 +156,8 @@ Here's a working example:
     source:
       - /
 {{ end }}
+
+version: "1"
 
 global:
   priority: low
@@ -334,6 +338,7 @@ azure-mysql:
     ],
 {{ end }}
 {
+  "version": "1",
   "global": {
     "priority": "low",
     "ionice": true,
@@ -416,6 +421,8 @@ There's something to be aware of when dealing with templates: at the time the te
 
 <!-- checkdoc-ignore -->
 ```toml
+version = "1"
+
 {{ define "retention" }}
   [{{ .Profile.Name }}.retention]
     after-backup = true
@@ -528,6 +535,8 @@ exit status 1
     keep-within = "30d"
     prune = true
 {{ end }}
+
+version = "1"
 
 [src]
   password-file = "{{ .ConfigDir }}/{{ .Profile.Name }}-key"
