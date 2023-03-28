@@ -42,6 +42,7 @@ To use a schema with **vscode**, begin your config files with:
 ``````toml
 #:schema {{< absolute "jsonschema/config-2.json" nohtml >}}
 
+version = "2"
  
 ``````
 {{% /tab %}}
@@ -49,13 +50,15 @@ To use a schema with **vscode**, begin your config files with:
 ``````yaml
 # yaml-language-server: $schema={{< absolute "jsonschema/config-2.json" nohtml >}}
 
+version: "2"
  
 ``````
 {{% /tab %}}
 {{% tab name="json" %}}
 ``````json
 {
-    "$schema": "{{< absolute "jsonschema/config-2.json" nohtml >}}"
+    "$schema": "{{< absolute "jsonschema/config-2.json" nohtml >}}",
+    "version": "2"
 }
 ``````
 {{% /tab %}}

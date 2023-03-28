@@ -194,8 +194,6 @@ var bashCompletionScript string
 var zshCompletionScript string
 
 func generateCommand(output io.Writer, request commandRequest) (err error) {
-	config := request.config
-	flags := request.flags
 	args := request.args
 	// enforce no-log
 	logger := clog.GetDefaultLogger()
@@ -205,9 +203,9 @@ func generateCommand(output io.Writer, request commandRequest) (err error) {
 	if slices.Contains(args, "--bash-completion") {
 		_, err = fmt.Fprintln(output, bashCompletionScript)
 	} else if slices.Contains(args, "--config-reference") {
-		err = generateConfigReference(output, config, flags, args[slices.Index(args, "--config-reference")+1:])
+		err = generateConfigReference(output, args[slices.Index(args, "--config-reference")+1:])
 	} else if slices.Contains(args, "--json-schema") {
-		err = generateJsonSchema(output, config, flags, args[slices.Index(args, "--json-schema")+1:])
+		err = generateJsonSchema(output, args[slices.Index(args, "--json-schema")+1:])
 	} else if slices.Contains(args, "--random-key") {
 		request.flags.resticArgs = args[slices.Index(args, "--random-key"):]
 		err = randomKey(output, request)
@@ -226,7 +224,7 @@ func generateCommand(output io.Writer, request commandRequest) (err error) {
 //go:embed contrib/templates/config-reference.gomd
 var configReferenceTemplate string
 
-func generateConfigReference(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) (err error) {
+func generateConfigReference(output io.Writer, args []string) (err error) {
 	resticVersion := restic.AnyVersion
 	if slices.Contains(args, "--version") {
 		args = args[slices.Index(args, "--version"):]
@@ -253,7 +251,7 @@ func generateConfigReference(output io.Writer, _ *config.Config, _ commandLineFl
 	return
 }
 
-func generateJsonSchema(output io.Writer, _ *config.Config, _ commandLineFlags, args []string) (err error) {
+func generateJsonSchema(output io.Writer, args []string) (err error) {
 	resticVersion := restic.AnyVersion
 	if slices.Contains(args, "--version") {
 		args = args[slices.Index(args, "--version"):]

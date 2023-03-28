@@ -18,6 +18,8 @@ In your profile, you simply need to add a new parameter, which is the location o
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [profile]
   status-file = "backup-status.json"
 ```
@@ -26,6 +28,8 @@ In your profile, you simply need to add a new parameter, which is the location o
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 profile:
   status-file: backup-status.json
 ```
@@ -44,6 +48,7 @@ profile:
 
 ```json
 {
+  "version": "1",
   "profile": {
     "status-file": "backup-status.json"
   }
@@ -107,8 +112,9 @@ This is a technical limitation to ensure restic displays terminal output correct
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [profile]
-  inherit = "default"
   status-file = "/home/backup/status.json"
 
   [profile.backup]
@@ -121,8 +127,9 @@ This is a technical limitation to ensure restic displays terminal output correct
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 profile:
-  inherit: default
   status-file: /home/backup/status.json
   backup:
     extended-status: true
@@ -137,7 +144,6 @@ profile:
 
 ```hcl
 "profile" = {
-  "inherit" = "default"
   "status-file" = "/home/backup/status.json"
 
   "backup" = {
@@ -153,8 +159,8 @@ profile:
 
 ```json
 {
+  "version": "1",
   "profile": {
-    "inherit": "default",
     "status-file": "/home/backup/status.json",
     "backup": {
       "extended-status": true,

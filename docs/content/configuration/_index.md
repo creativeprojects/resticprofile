@@ -9,9 +9,57 @@ weight = 10
 # Configuration file
 
 * A configuration is a set of _profiles_.
-* Each profile is in its own `[section]` (in TOML).
+* Each profile is in a new section that has the name of the profile.
 * Inside each profile, you can specify different flags for each command.
-* A command definition is `[section.command]` (in TOML).
+* A command definition is in a subsection of the name of the command.
+
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+[profile_name]
+
+  [profile_name.backup]
+
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+profile_name:
+
+  backup:
+
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+profile_name {
+
+    backup = {
+
+    }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "profile_name": {
+    "backup": {
+
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
 
 All the restic flags can be defined in a section. For most of them you just need to remove the two dashes in front.
 
@@ -35,6 +83,8 @@ For resticprofile to generate this command automatically for you, here's the con
 ```toml
 # indentation is not needed but it makes it easier to read ;)
 #
+version = "1"
+
 [default]
   repository = "local:/backup"
   password-file = "password.txt"
@@ -48,7 +98,8 @@ For resticprofile to generate this command automatically for you, here's the con
 {{% tab name="yaml" %}}
 
 ```yaml
----
+version: "1"
+
 default:
   repository: "local:/backup"
   password-file: "password.txt"
@@ -63,7 +114,6 @@ default:
 {{% tab name="hcl" %}}
 
 ```hcl
-
 default {
     repository = "local:/backup"
     password-file = "password.txt"
@@ -80,6 +130,7 @@ default {
 
 ```json
 {
+  "version": "1",
   "default": {
     "repository": "local:/backup",
     "password-file": "password.txt",

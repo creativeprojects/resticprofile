@@ -46,8 +46,9 @@ The configuration is the same for each of these 4 types of hooks:
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [profile]
-inherit = "default"
 
   [profile.backup]
   source = "/source"
@@ -105,8 +106,9 @@ inherit = "default"
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 profile:
-    inherit: default
 
     backup:
         source: "/source"
@@ -159,7 +161,6 @@ profile:
 
 ```hcl
 "profile" {
-  "inherit" = "default"
 
   "backup" = {
     "source" = "/source"
@@ -223,8 +224,8 @@ profile:
 
 ```json
 {
+  "version": "1",
   "profile": {
-    "inherit": "default",
     "backup": {
       "source": "/source",
       "exclude": [
@@ -356,6 +357,8 @@ And here's an example of a configuration using a body template:
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [profile]
 
   [profile.backup]
@@ -376,6 +379,8 @@ And here's an example of a configuration using a body template:
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 profile:
 
     backup:
@@ -419,6 +424,7 @@ profile:
 
 ```json
 {
+  "version": "1",
   "profile": {
     "backup": {
       "source": "/source",
@@ -465,6 +471,8 @@ The format is like:
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [global]
   send-timeout = "10s"
   ca-certificates = [ "ca-chain.cert.pem" ]
@@ -475,7 +483,8 @@ The format is like:
 {{% tab name="yaml" %}}
 
 ```yaml
-        
+version: "1"
+
 global:
   send-timeout: 10s
   ca-certificates:
@@ -499,6 +508,7 @@ global {
 
 ```json
 {
+  "version": "1",
   "global": {
     "send-timeout": "10s",
     "ca-certificates": [

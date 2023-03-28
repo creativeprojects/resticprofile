@@ -171,6 +171,22 @@ date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
 The configuration file reference is generated from resticprofile's data model and restic's manual pages.
 {{ $layoutNoticeEnd }}
 
+
+* [Sections](#sections)
+  * [Section <strong>global</strong>](#section-global)
+  * [Profile sections](#profile-sections)
+    * [Section <strong>profile</strong>](#section-profile)
+{{- range .ProfileSections }}
+    * [Section profile\.<strong>{{ .Name }}</strong>](#section-profile{{ .Name | lower }})
+{{- end }}
+  * [Nested profile sections](#nested-profile-sections)
+{{- range .NestedProfileSections }}
+    * [Nested <em>{{ .Name }}</em>](#nested-{{ .Name | lower }})
+{{- end }}
+  * [Section <strong>groups</strong>](#section-groups)
+* [Value types](#value-types)
+* [JSON schema](#json-schema)
+
 {{ $layoutHeadings -}}# Sections
 
 {{ $layoutHeadings -}}## Section **global**

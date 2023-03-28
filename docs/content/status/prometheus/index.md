@@ -13,8 +13,9 @@ Here's a configuration example with both options to generate a file and send to 
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [root]
-  inherit = "default"
   prometheus-save-to-file = "root.prom"
   prometheus-push = "http://localhost:9091/"
 
@@ -28,8 +29,9 @@ Here's a configuration example with both options to generate a file and send to 
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 root:
-  inherit: default
   prometheus-save-to-file: "root.prom"
   prometheus-push: "http://localhost:9091/"
   backup:
@@ -44,7 +46,6 @@ root:
 
 ```hcl
 "root" = {
-  "inherit" = "default"
   "prometheus-save-to-file" = "root.prom"
   "prometheus-push" = "http://localhost:9091/"
 
@@ -61,8 +62,8 @@ root:
 
 ```json
 {
+  "version": "1",
   "root": {
-    "inherit": "default",
     "prometheus-save-to-file": "root.prom",
     "prometheus-push": "http://localhost:9091/",
     "backup": {
@@ -137,8 +138,9 @@ Here's an example:
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [root]
-  inherit = "default"
   prometheus-save-to-file = "root.prom"
   prometheus-push = "http://localhost:9091/"
 
@@ -155,8 +157,9 @@ Here's an example:
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 root:
-  inherit: default
   prometheus-save-to-file: "root.prom"
   prometheus-push: "http://localhost:9091/"
   prometheus-labels:
@@ -173,7 +176,6 @@ root:
 
 ```hcl
 "root" = {
-  "inherit" = "default"
   "prometheus-save-to-file" = "root.prom"
   "prometheus-push" = "http://localhost:9091/"
 
@@ -194,8 +196,8 @@ root:
 
 ```json
 {
+  "version": "1",
   "root": {
-    "inherit": "default",
     "prometheus-save-to-file": "root.prom",
     "prometheus-push": "http://localhost:9091/",
     "prometheus-labels": [

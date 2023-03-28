@@ -16,6 +16,8 @@ For this to happen you can specify a lock file in each profile:
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [src]
   lock = "/tmp/resticprofile-profile-src.lock"
 
@@ -36,6 +38,8 @@ For this to happen you can specify a lock file in each profile:
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 src:
   lock: "/tmp/resticprofile-profile-src.lock"
   backup:
@@ -80,6 +84,7 @@ src:
 
 ```json
 {
+  "version": "1",
   "src": {
     "lock": "/tmp/resticprofile-profile-src.lock",
     "backup": {
@@ -122,6 +127,8 @@ For that matter, if you add the flag `force-inactive-lock` to your profile, rest
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [global]
   restic-stale-lock-age = "2h"
 
@@ -134,6 +141,8 @@ For that matter, if you add the flag `force-inactive-lock` to your profile, rest
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 global:
   restic-stale-lock-age: 2h
 
@@ -161,6 +170,7 @@ src:
 
 ```json
 {
+  "version": "1",
   "global": {
     "restic-stale-lock-age": "2h"
   },
@@ -194,6 +204,8 @@ resticprofile can retry restic commands that fail on acquiring a lock and can al
 {{% tab name="toml" %}}
 
 ```toml
+version = "1"
+
 [global]
   # Retry a restic command that failed on acquiring a lock every minute 
   # (at least), for up to the time specified in "--lock-wait duration". 
@@ -207,6 +219,8 @@ resticprofile can retry restic commands that fail on acquiring a lock and can al
 {{% tab name="yaml" %}}
 
 ```yaml
+version: "1"
+
 global:
   # Retry a restic command that failed on acquiring a lock every minute 
   # (at least), for up to the time specified in "--lock-wait duration". 
@@ -235,6 +249,7 @@ global:
 
 ```json
 {
+  "version": "1",
   "global": {
     "restic-lock-retry-after": "1m",
     "restic-stale-lock-age": "2h"
