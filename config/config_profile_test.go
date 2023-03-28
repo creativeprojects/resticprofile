@@ -95,7 +95,11 @@ profiles:
 
 func TestGetProfileNames(t *testing.T) {
 	testData := []testProfileData{
-		{FormatTOML, `includes = "somefile"
+		{FormatTOML, `version = "1"
+includes = "somefile"
+{{ define "a_template" }}
+  tags = [ "some_tag" ]
+{{ end }}
 [profile1]
 [profile1.backup]
 source = "/"
@@ -109,7 +113,9 @@ some = "value"
 [global]
 something = true
 `},
-		{FormatJSON, `{"global":{"something": true},
+		{FormatJSON, `{"$schema":"schema url",
+"version":"1",
+"global":{"something": true},
 "includes": ["somefile"],
 "profile1": {
 	"backup": {"source": "/"}
@@ -123,6 +129,10 @@ something = true
 }
 }`},
 		{FormatYAML, `---
+version: 1
+{{ define "a_template" }}
+  tags: [ "some_tag" ]
+{{ end }}
 global:
   something: true
 includes: somefile
@@ -230,7 +240,8 @@ profiles:
 			c, err := Load(bytes.NewBufferString(testConfig), format)
 			require.NoError(t, err)
 
-			assert.False(t, c.HasProfile("something"))
+			// make sure the template definition is well understood
+			assert.False(t, c.HasProfile("tags"))
 			assert.True(t, c.HasProfile("profile1"))
 			assert.True(t, c.HasProfile("profile2"))
 			assert.True(t, c.HasProfile("profile3"))

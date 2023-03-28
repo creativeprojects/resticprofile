@@ -17,6 +17,7 @@ import (
 const (
 	configTag      = "```"
 	checkdocIgnore = "<!-- checkdoc-ignore -->"
+	goTemplate     = "{{"
 	replaceURL     = "http://localhost:1313/resticprofile/jsonschema/config-$1.json"
 )
 
@@ -138,12 +139,8 @@ func extractConfigurationSnippets(path string) bool {
 			if configLines {
 				// inside a configuration snippet
 				// replace hugo tags
-				if strings.Contains(line, "{{") {
+				if strings.Contains(line, goTemplate) {
 					line = urlPattern.ReplaceAllString(line, replaceURL)
-				}
-				if strings.Contains(line, "{{ define") {
-					// we can't deal with this for now, we need to fix config.GetProfileNames() method first
-					ignoreError = true
 				}
 				configBuffer.WriteString(line)
 				configBuffer.WriteString("\n")

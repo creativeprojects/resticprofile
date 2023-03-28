@@ -40,7 +40,7 @@ Here's a working example:
 
 # nested template declarations
 # this template declaration won't appear here in the configuration file
-# it will only appear when called by {{ template "backup_root" . }}
+# it will only appear when called by { { template "backup_root" . } }
 {{ define "backup_root" }}
     exclude = [ "{{ .Profile.Name }}-backup.log" ]
     exclude-file = [
@@ -142,7 +142,7 @@ version = "1"
 
 # nested template declarations
 # this template declaration won't appear here in the configuration file
-# it will only appear when called by {{ template "backup_root" . }}
+# it will only appear when called by { { template "backup_root" . } }
 
 {{ define "backup_root" }}
     exclude:
@@ -185,7 +185,7 @@ nas-root:
   inherit: nas
   backup:
     # get the content of "backup_root" defined at the top
-    {{ template "backup_root" . }}
+{{ template "backup_root" . }}
     schedule: '01:47'
     schedule-permission: system
     schedule-log: '{{ .Profile.Name }}-backup.log'
@@ -203,7 +203,7 @@ azure-root:
   inherit: azure
   backup:
     # get the content of "backup_root" defined at the top
-    {{ template "backup_root" . }}
+{{ template "backup_root" . }}
     schedule: '03:58'
 
 azure-mysql:
@@ -233,7 +233,7 @@ azure-mysql:
 
 # nested template declarations
 # this template declaration won't appear here in the configuration file
-# it will only appear when called by {{ template "backup_root" . }}
+# it will only appear when called by { { template "backup_root" . } }
 
 {{ define "backup_root" }}
   "exclude" = ["{{ .Profile.Name }}-backup.log"]
