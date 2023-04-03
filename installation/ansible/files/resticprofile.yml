@@ -137,7 +137,7 @@
       command: "install {{ temp_dir }}/resticprofile {{ target_bin }}/"
       when: install_resticprofile
 
-    # # TODO: unschedule all profiles
+    # TODO: unschedule all profiles
 
     - name: Ensures resticprofile configuration directory exists
       file:

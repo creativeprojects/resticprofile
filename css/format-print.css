@@ -5,6 +5,7 @@
 }
 #body {
     margin-left: 0 !important;
+    margin-right: 0 !important;
     min-width: 100% !important;
     max-width: 100% !important;
     width: 100% !important;
@@ -12,24 +13,15 @@
 #body #navigation {
     display: none;
 }
-html,
-body #body{
-    font-size: 8.9pt;
+html{
+    font-size: 8.763pt;
 }
 body {
     background-color: white;
 }
-pre code {
-    font-size: 8.3pt;
-}
 code.copy-to-clipboard-code {
-    border-bottom-right-radius: 2px;
-    border-top-right-radius: 2px;
-    border-right-width: 1px;
-}
-span > code.copy-to-clipboard-code {
-    border-end-end-radius: 2px;
     border-start-end-radius: 2px;
+    border-end-end-radius: 2px;
     border-inline-end-width: 1px;
 }
 pre {
@@ -39,8 +31,9 @@ pre {
     background-color: #fff; /* avoid background bleeding*/
     border-bottom: 1px solid #ddd;
     border-radius: 0;
-    padding-left: 0; /* for print, we want to align with the footer to ease the layout */
     color: #777;
+    padding-left: 0; /* for print, we want to align with the footer to ease the layout */
+    padding-right: 0;
 }
 .navigation,
 #top-print-link,
@@ -101,7 +94,12 @@ body,
 #body-inner .chapter h3:first-of-type {
     margin-top: 2rem;
 }
-#body-inner .chapter p {
+
+/* Children shortcode */
+.children p,
+.children-li p,
+.children-h2 p,
+.children-h3 p {
     font-size: 1rem;
 }
 
@@ -190,7 +188,6 @@ rapi-doc::part(section-tag) {
 
 rapi-doc::part(section-main-content) {
     /* override variables for adapting rapidoc design to print theme */
-    --font-size-regular: 8.9pt;
     --fg: black;
     --fg2: black;
     --fg3: black;

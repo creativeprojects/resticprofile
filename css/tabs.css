@@ -1,4 +1,8 @@
-#body .tab-nav-button {
+#body .tab-panel{
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+}
+#body .tab-nav-button{
     background-color: rgba( 134, 134, 134, .166 );
     border-color: rgba( 134, 134, 134, .333 );
     border-radius: 4px 4px 0 0;
@@ -16,27 +20,27 @@
     padding: 6px 12px;
     position: relative;
 }
-#body .tab-nav-button.direction-rtl {
+html[dir="rtl"] #body .tab-nav-button{
     float: right;
 }
 
-#body .tab-nav-button:first-child {
+#body .tab-nav-button:after {
+    content: "\200b"
+}
+
+#body .tab-nav-button:first-child{
     margin-inline-start: 9px;
 }
-#body .tab-nav-button:not(.active) {
+#body .tab-nav-button:not(.active){
     border-bottom-color: rgba( 134, 134, 134, .1 );
     margin-top: 8px;
     padding-bottom: 2px !important;
     padding-top: 2px !important;
 }
-#body .tab-nav-button:not(.active) span {
+#body .tab-nav-button:not(.active) span{
     opacity: .8;
 }
-#body .tab-panel {
-    margin-bottom: 1.5rem;
-    margin-top: 1.5rem;
-}
-#body .tab-content {
+#body .tab-content{
     background-color: transparent;
     border-color: rgba( 134, 134, 134, .333 );
     border-style: solid;
@@ -48,15 +52,15 @@
     padding: 8px;
     z-index: 10;
 }
-#body .tab-content .tab-item{
+#body .tab-content-text{
     display: none;
 }
 
-#body .tab-content .tab-item.active{
+#body .tab-content-text.active{
     display: block;
 }
 
-#body .tab-item pre{
+#body .tab-content-text pre{
     margin-bottom: 0;
     margin-top: 0;
 }

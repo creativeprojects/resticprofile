@@ -1,5 +1,6 @@
 .autocomplete-suggestions {
-    text-align: left;
+    text-align: start;
+    color-scheme: only light; /* set browser scrollbar color */
     cursor: default;
     border: 1px solid #ccc;
     border-top: 0;
@@ -10,8 +11,8 @@
     position: absolute;
     display: none;
     z-index: 9999;
-    max-height: 150px;
-    max-height: calc( 100vh - 150px );
+    max-height: 10em;
+    max-height: calc( 100vh - 10em );
     overflow: hidden;
     overflow-y: auto;
     box-sizing: border-box;
@@ -19,8 +20,8 @@
 .autocomplete-suggestion {
     position: relative;
     cursor: pointer;
-    padding: 7px;
-    line-height: 23px;
+    padding: .46em;
+    line-height: 1.5em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -51,7 +52,7 @@
 }
 
 .autocomplete-suggestion > .context {
-    font-size: 12px;
+    font-size: .7869em;
     margin-inline-start: 1em;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -11,6 +11,20 @@ else{
 }
 var isPrint = document.querySelector( 'body' ).classList.contains( 'print' );
 
+var isRtl = document.querySelector( 'html' ).getAttribute( 'dir' ) == 'rtl';
+var dir_padding_start = 'padding-left';
+var dir_padding_end = 'padding-right';
+var dir_key_start = 37;
+var dir_key_end = 39;
+var dir_scroll = 1;
+if( isRtl && !isIE ){
+    dir_padding_start = 'padding-right';
+    dir_padding_end = 'padding-left';
+    dir_key_start = 39;
+    dir_key_end = 37;
+    dir_scroll = -1;
+}
+
 var touchsupport = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
 
 var formelements = 'button, datalist, fieldset, input, label, legend, meter, optgroup, option, output, progress, select, textarea';
@@ -26,7 +40,7 @@ var pst;
 var elc = document.querySelector('#body-inner');
 
 function documentFocus(){
-    document.querySelector( '#body-inner' ).focus();
+    elc.focus();
     psc && psc.scrollbarY.focus();
 }
 
@@ -45,32 +59,41 @@ function scrollbarWidth(){
 
 var scrollbarSize = scrollbarWidth();
 function adjustContentWidth(){
-    var left = parseFloat( getComputedStyle( elc ).getPropertyValue( 'padding-left' ) );
-    var right = left;
+    var start = parseFloat( getComputedStyle( elc ).getPropertyValue( dir_padding_start ) );
+    var end = start;
     if( elc.scrollHeight > elc.clientHeight ){
-        // if we have a scrollbar reduce the right margin by the scrollbar width
-        right = Math.max( 0, left - scrollbarSize );
+        // if we have a scrollbar reduce the end margin by the scrollbar width
+        end = Math.max( 0, start - scrollbarSize );
     }
-    elc.style[ 'padding-right' ] = '' + right + 'px';
+    elc.style[ dir_padding_end ] = '' + end + 'px';
 }
 
 function switchTab(tabGroup, tabId) {
-    var tabs = jQuery(".tab-panel").has("[data-tab-group='"+tabGroup+"'][data-tab-item='"+tabId+"']");
-    var allTabItems = tabs.find("[data-tab-group='"+tabGroup+"']");
-    var targetTabItems = tabs.find("[data-tab-group='"+tabGroup+"'][data-tab-item='"+tabId+"']");
+    var tabs = Array.from( document.querySelectorAll( '.tab-panel[data-tab-group="'+tabGroup+'"]' ) ).filter( function( e ){
+        return !!e.querySelector( '[data-tab-item="'+tabId+'"]' );
+    });
+    var allTabItems = tabs && tabs.reduce( function( a, e ){
+        return a.concat( Array.from( e.querySelectorAll( '[data-tab-item]' ) ).filter( function( es ){
+            return es.parentNode.parentNode == e;
+        }) );
+    }, [] );
+    var targetTabItems = tabs && tabs.reduce( function( a, e ){
+        return a.concat( Array.from( e.querySelectorAll( '[data-tab-item="'+tabId+'"]' ) ).filter( function( es ){
+            return es.parentNode.parentNode == e;
+        }) );
+    }, [] );
 
     // if event is undefined then switchTab was called from restoreTabSelection
     // so it's not a button event and we don't need to safe the selction or
     // prevent page jump
-    var isButtonEvent = event != undefined;
-
+    var isButtonEvent = event && event.target && event.target.getBoundingClientRect;
     if(isButtonEvent){
       // save button position relative to viewport
       var yposButton = event.target.getBoundingClientRect().top;
     }
 
-    allTabItems.removeClass("active");
-    targetTabItems.addClass("active");
+    allTabItems && allTabItems.forEach( function( e ){ e.classList.remove( 'active' ); });
+    targetTabItems && targetTabItems.forEach( function( e ){ e.classList.add( 'active' ); });
 
     if(isButtonEvent){
       // reset screen to the same position relative to clicked button to prevent page jump
@@ -210,10 +233,31 @@ function initMermaid( update, attrs ) {
     attrs = attrs || {
         'theme': variants.getColorValue( 'MERMAID-theme' ),
     };
+
+    var search;
+    if( update ){
+        search = sessionStorage.getItem( baseUriFull+'search-value' );
+        unmark();
+    }
     var is_initialized = ( update ? update_func( attrs ) : init_func( attrs ) );
     if( is_initialized ){
         mermaid.init();
-        $(".mermaid svg").svgPanZoom({});
+        // zoom for Mermaid
+        // https://github.com/mermaid-js/mermaid/issues/1860#issuecomment-1345440607
+        var svgs = d3.selectAll( '.mermaid.zoom svg' );
+        svgs.each( function(){
+            var svg = d3.select( this );
+            svg.html( '<g>' + svg.html() + '</g>' );
+            var inner = svg.select( 'g' );
+            var zoom = d3.zoom().on( 'zoom', function( e ){
+                inner.attr( 'transform', e.transform);
+            });
+            svg.call( zoom );
+        });
+    }
+    if( update && search && search.length ){
+        sessionStorage.setItem( baseUriFull+'search-value', search );
+        mark();
     }
 }
 
@@ -261,8 +305,8 @@ function initSwagger( update, attrs ){
 
 function initAnchorClipboard(){
     document.querySelectorAll( 'h1~h2,h1~h3,h1~h4,h1~h5,h1~h6').forEach( function( element ){
-        var url = encodeURI(document.location.origin + document.location.pathname);
-        var link = url + "#"+element.id;
+        var url = encodeURI( (document.location.origin == "null" ? (document.location.protocol + "//" + document.location.host) : document.location.origin )+ document.location.pathname);
+        var link = url + "#" + element.id;
         var new_element = document.createElement( 'span' );
         new_element.classList.add( 'anchor' );
         new_element.setAttribute( 'title', window.T_Copy_link_to_clipboard );
@@ -271,23 +315,26 @@ function initAnchorClipboard(){
         element.appendChild( new_element );
     });
 
-    $(".anchor").on('mouseleave', function(e) {
-        $(this).attr('aria-label', null).removeClass('tooltipped tooltipped-se tooltipped-sw');
-    });
+    var anchors = document.querySelectorAll( '.anchor' );
+    for( var i = 0; i < anchors.length; i++ ) {
+      anchors[i].addEventListener( 'mouseleave', function( e ){
+        this.removeAttribute( 'aria-label' );
+        this.classList.remove( 'tooltipped', 'tooltipped-se', 'tooltipped-sw' );
+      });
+    }
 
-    var clip = new ClipboardJS('.anchor');
-    clip.on('success', function(e) {
+    var clip = new ClipboardJS( '.anchor' );
+    clip.on( 'success', function( e ){
         e.clearSelection();
-        var rtl = $(e.trigger).closest('*[dir]').attr('dir') == 'rtl';
-        $(e.trigger).attr('aria-label', window.T_Link_copied_to_clipboard).addClass('tooltipped tooltipped-s'+(rtl?'e':'w') );
+        e.trigger.setAttribute( 'aria-label', window.T_Link_copied_to_clipboard );
+        e.trigger.classList.add( 'tooltipped', 'tooltipped-s'+(isRtl?'e':'w') );
     });
 }
 
 function initCodeClipboard(){
-    function fallbackMessage(action) {
+    function fallbackMessage( action ){
         var actionMsg = '';
         var actionKey = (action === 'cut' ? 'X' : 'C');
-
         if (/iPhone|iPad/i.test(navigator.userAgent)) {
             actionMsg = 'No support :(';
         }
@@ -297,60 +344,71 @@ function initCodeClipboard(){
         else {
             actionMsg = 'Press Ctrl-' + actionKey + ' to ' + action;
         }
-
         return actionMsg;
     }
 
-    $('code').each(function() {
-        var code = $(this);
-        var text = code.text();
-        var parent = code.parent();
-        var inPre = parent.prop('tagName') == 'PRE';
+	var codeElements = document.querySelectorAll( 'code' );
+	for( var i = 0; i < codeElements.length; i++ ){
+        var code = codeElements[i];
+        var text = code.textContent;
+        var inPre = code.parentNode.tagName.toLowerCase() == 'pre';
 
-        if (inPre || text.length > 5) {
-            var clip = new ClipboardJS('.copy-to-clipboard-button', {
-                text: function(trigger) {
-                    var text = $(trigger).prev('code').text();
+        if( inPre || text.length > 5 ){
+            var clip = new ClipboardJS( '.copy-to-clipboard-button', {
+                text: function( trigger ){
+                    var text = trigger.previousElementSibling && trigger.previousElementSibling.matches( 'code' ) && trigger.previousElementSibling.textContent;
                     // remove a trailing line break, this may most likely
                     // come from the browser / Hugo transformation
-                    text = text.replace(/\n$/, '');
+                    text = text.replace( /\n$/, '' );
                     // removes leading $ signs from text in an assumption
                     // that this has to be the unix prompt marker - weird
-                    return text.replace(/^\$\s/gm, '');
+                    return text.replace( /^\$\s/gm, '' );
                 }
             });
 
-            clip.on('success', function(e) {
+            clip.on( 'success', function( e ){
                 e.clearSelection();
-                var inPre = $(e.trigger).parent().prop('tagName') == 'PRE';
-                var rtl = $(e.trigger).closest('*[dir]').attr('dir') == 'rtl';
-                $(e.trigger).attr('aria-label', window.T_Copied_to_clipboard).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')));
+                var inPre = e.trigger.parentNode.tagName.toLowerCase() == 'pre';
+                e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
             });
 
-            clip.on('error', function(e) {
-                var inPre = $(e.trigger).parent().prop('tagName') == 'PRE';
-                var rtl = $(this).closest('*[dir]').attr('dir') == 'rtl';
-                $(e.trigger).attr('aria-label', fallbackMessage(e.action)).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')));
-                $(document).one('copy', function(){
-                    $(e.trigger).attr('aria-label', window.T_Copied_to_clipboard).addClass('tooltipped tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')));
-                });
+            clip.on( 'error', function( e ){
+                var inPre = e.trigger.parentNode.tagName.toLowerCase() == 'pre';
+                e.trigger.setAttribute( 'aria-label', fallbackMessage(e.action) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
+                var f = function(){
+                    e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
+                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
+                    document.removeEventListener( 'copy', f );
+                };
+                document.addEventListener( 'copy', f );
             });
 
-            code.addClass('copy-to-clipboard-code');
+            code.classList.add( 'copy-to-clipboard-code' );
             if( inPre ){
-                parent.addClass( 'copy-to-clipboard' ).addClass( 'pre-code' );
+                code.classList.add( 'copy-to-clipboard' );
+                code.parentNode.classList.add( 'pre-code' );
             }
             else{
-                code.replaceWith($('<span/>', {'class': 'copy-to-clipboard'}).append(code.clone() ));
-                code = parent.children('.copy-to-clipboard').last().children('.copy-to-clipboard-code');
+                var clone = code.cloneNode( true );
+                var span = document.createElement( 'span' );
+                span.classList.add( 'copy-to-clipboard' );
+                span.appendChild( clone );
+                code.parentNode.replaceChild( span, code );
+                code = clone;
             }
-            code.after( $('<span>').addClass("copy-to-clipboard-button").attr("title", window.T_Copy_to_clipboard).append("<i class='fas fa-copy'></i>") );
-            code.next('.copy-to-clipboard-button').on('mouseleave', function() {
-                var rtl = $(this).closest('*[dir]').attr('dir') == 'rtl';
-                $(this).attr('aria-label', null).removeClass('tooltipped tooltipped-w tooltipped-se tooltipped-sw');
+            var button = document.createElement( 'span' );
+            button.classList.add( 'copy-to-clipboard-button' );
+            button.setAttribute( 'title', window.T_Copy_to_clipboard );
+            button.innerHTML = '<i class="fas fa-copy"></i>';
+            button.addEventListener( 'mouseleave', function() {
+                this.removeAttribute( 'aria-label' );
+                this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
             });
+            code.parentNode.insertBefore( button, code.nextSibling );
         }
-    });
+    }
 }
 
 function initArrowNav(){
@@ -359,32 +417,62 @@ function initArrowNav(){
     }
 
     // button navigation
-    jQuery(function() {
-        jQuery('a.nav-prev').click(function(){
-            location.href = jQuery(this).attr('href');
-        });
-        jQuery('a.nav-next').click(function() {
-            location.href = jQuery(this).attr('href');
-        });
-    });
+    var prev = document.querySelector( 'a.nav-prev' );
+    prev && prev.addEventListener( 'click', navPrev );
+    var next = document.querySelector( 'a.nav-next' );
+    next && next.addEventListener( 'click', navNext );
 
     // keyboard navigation
-    jQuery(document).keydown(function(e) {
-        if(!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey){
-            if(e.which == '37') {
-                jQuery('a.nav-prev').click();
+    // avoid prev/next navigation if we are not at the start/end of the
+    // horizontal area
+    var el = document.querySelector('#body-inner');
+    var scrollStart = 0;
+    var scrollEnd = 0;
+    document.addEventListener('keydown', function(event){
+        if( !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey ){
+            if( event.which == dir_key_start ){
+                if( !scrollStart && +el.scrollLeft.toFixed()*dir_scroll <= 0 ){
+                    prev && prev.click();
+                }
+                else if( scrollStart != -1 ){
+                    clearTimeout( scrollStart );
+                }
+                scrollStart = -1;
             }
-            if(e.which == '39') {
-                jQuery('a.nav-next').click();
+            if( event.which == dir_key_end ){
+                if( !scrollEnd && +el.scrollLeft.toFixed()*dir_scroll + +el.clientWidth.toFixed() >= +el.scrollWidth.toFixed() ){
+                    next && next.click();
+                }
+                else if( scrollEnd != -1 ){
+                    clearTimeout( scrollEnd );
+                }
+                scrollEnd = -1;
+            }
+        }
+    });
+    document.addEventListener('keyup', function(event){
+        if( !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey ){
+            if( event.which == dir_key_start ){
+                // check for false indication if keyup is delayed after navigation
+                if( scrollStart == -1 ){
+                    scrollStart = setTimeout( function(){ scrollStart = 0; }, 300 );
+                }
+            }
+            if( event.which == dir_key_end ){
+                if( scrollEnd == -1 ){
+                    scrollEnd = setTimeout( function(){ scrollEnd = 0; }, 300 );
+                }
             }
         }
     });
 
     // avoid keyboard navigation for input fields
-    jQuery(formelements).keydown(function (e) {
-        if (e.which == '37' || e.which == '39') {
-            e.stopPropagation();
-        }
+    document.querySelectorAll( formelements ).forEach( function( e ){
+        e.addEventListener( 'keydown', function( event ){
+            if( event.which == dir_key_start || event.which == dir_key_end ){
+                event.stopPropagation();
+            }
+        });
     });
 }
 
@@ -456,21 +544,33 @@ function initMenuScrollbar(){
     // on resize, we have to redraw the scrollbars to let new height
     // affect their size
     window.addEventListener('resize', function(){
-        pst && pst.update();
-        psm && psm.update();
-        psc && psc.update();
+        pst && setTimeout( function(){ pst.update(); }, 10 );
+        psm && setTimeout( function(){ psm.update(); }, 10 );
+        psc && setTimeout( function(){ psc.update(); }, 10 );
     });
     // now that we may have collapsible menus, we need to call a resize
     // for the menu scrollbar if sections are expanded/collapsed
-    document.querySelectorAll('#sidebar .collapsible-menu input.toggle').forEach( function(e){
+    document.querySelectorAll('#sidebar .collapsible-menu input').forEach( function(e){
         e.addEventListener('change', function(){
-            psm && psm.update();
+            psm && setTimeout( function(){ psm.update(); }, 10 );
         });
     });
+    // bugfix for PS in RTL mode: the initial scrollbar position is off;
+    // calling update() once, fixes this
+    pst && setTimeout( function(){ pst.update(); }, 10 );
+    psm && setTimeout( function(){ psm.update(); }, 10 );
+    psc && setTimeout( function(){ psc.update(); }, 10 );
 
-    // finally, we want to adjust the contents right padding if there is a scrollbar visible
+    // finally, we want to adjust the contents end padding if there is a scrollbar visible
     window.addEventListener('resize', adjustContentWidth );
     adjustContentWidth();
+}
+
+function imageEscapeHandler( event ){
+    if( event.key == "Escape" ){
+        var image = event.target;
+        image.click();
+    }
 }
 
 function sidebarEscapeHandler( event ){
@@ -567,7 +667,7 @@ function showToc(){
     var b = document.querySelector( 'body' );
     b.classList.toggle( 'toc-flyout' );
     if( b.classList.contains( 'toc-flyout' ) ){
-        pst && pst.update();
+        pst && setTimeout( function(){ pst.update(); }, 10 );
         pst && pst.scrollbarY.focus();
         document.querySelector( '.toc-wrapper ul a' ).focus();
         document.addEventListener( 'keydown', tocEscapeHandler );
@@ -591,6 +691,16 @@ function showPrint(){
         l.click();
     }
 }
+
+function navPrev(){
+    var e = document.querySelector( 'a.nav-prev' );
+    location.href = e && e.getAttribute( 'href' );
+};
+
+function navNext(){
+    var e = document.querySelector( 'a.nav-next' );
+    location.href = e && e.getAttribute( 'href' );
+};
 
 function initToc(){
     if( isPrint ){
@@ -667,6 +777,10 @@ function initSwipeHandler(){
     document.querySelectorAll( '#sidebar *' ).forEach( function(e){ e.addEventListener("touchend", handleEndX); }, false);
 }
 
+function initImage(){
+    document.querySelectorAll( '.lightbox' ).forEach( function(e){ e.addEventListener("keydown", imageEscapeHandler); }, false);
+}
+
 function clearHistory() {
     var visitedItem = baseUriFull + 'visited-url/'
     for( var item in sessionStorage ){
@@ -676,14 +790,16 @@ function clearHistory() {
             // in case we have `relativeURLs=true` we have to strip the
             // relative path to root
             url = url.replace( /\.\.\//g, '/' ).replace( /^\/+\//, '/' );
-            jQuery('[data-nav-id="' + url + '"]').removeClass('visited');
+            document.querySelectorAll( '[data-nav-id="'+url+'"]' ).forEach( function( e ){
+                e.classList.remove( 'visited' );
+            });
         }
     }
 }
 
 function initHistory() {
     var visitedItem = baseUriFull + 'visited-url/'
-    sessionStorage.setItem(visitedItem+jQuery('body').data('url'), 1);
+    sessionStorage.setItem( visitedItem+document.querySelector( 'body' ).dataset.url, 1);
 
     // loop through the sessionStorage and see if something should be marked as visited
     for( var item in sessionStorage ){
@@ -692,171 +808,322 @@ function initHistory() {
             // in case we have `relativeURLs=true` we have to strip the
             // relative path to root
             url = url.replace( /\.\.\//g, '/' ).replace( /^\/+\//, '/' );
-            jQuery('[data-nav-id="' + url + '"]').addClass('visited');
+            document.querySelectorAll( '[data-nav-id="'+url+'"]' ).forEach( function( e ){
+                e.classList.add( 'visited' );
+            });
         }
     }
 }
 
-function scrollToActiveMenu() {
-    window.setTimeout(function(){
-        var e = document.querySelector( '#sidebar ul.topics li.active a' );
+function initScrollPositionSaver(){
+    function savePosition( event ){
+        var state = window.history.state || {};
+        state = Object.assign( {}, ( typeof state === 'object' ) ? state : {} );
+        state.contentScrollTop = +elc.scrollTop;
+        window.history.replaceState( state, '', window.location );
+    };
+    window.addEventListener( 'pagehide', savePosition );
+}
+
+function scrollToPositions() {
+    // show active menu entry
+    window.setTimeout( function(){
+        var e = document.querySelector( '#sidebar li.active a' );
         if( e && e.scrollIntoView ){
             e.scrollIntoView({
                 block: 'center',
             });
         }
-    }, 10);
-}
+    }, 10 );
 
-function scrollToFragment() {
-    if( !window.location.hash || window.location.hash.length <= 1 ){
+    // scroll the content to point of interest;
+    // if we have a scroll position saved, the user was here
+    // before in his history stack and we want to reposition
+    // to the position he was when he left the page;
+    // otherwise if he used page search before, we want to position
+    // to its last outcome;
+    // otherwise he may want to see a specific fragment
+
+    var state = window.history.state || {};
+    state = ( typeof state === 'object')  ? state : {};
+    if( state.hasOwnProperty( 'contentScrollTop' ) ){
+        window.setTimeout( function(){
+            elc.scrollTop = +state.contentScrollTop;
+        }, 10 );
         return;
     }
-    window.setTimeout(function(){
-        var e = document.querySelector( window.location.hash );
-        if( e && e.scrollIntoView ){
-            e.scrollIntoView({
-                block: 'start',
-            });
+
+    var search = sessionStorage.getItem( baseUriFull+'search-value' );
+    if( search && search.length ){
+        var found = elementContains( search, elc );
+        var searchedElem = found.length && found[ 0 ];
+        if( searchedElem ){
+            searchedElem.scrollIntoView( true );
+            var scrolledY = window.scrollY;
+            if( scrolledY ){
+                window.scroll( 0, scrolledY - 125 );
+            }
         }
-    }, 10);
+        return;
+    }
+
+    if( window.location.hash && window.location.hash.length > 1 ){
+        window.setTimeout( function(){
+            try{
+                var e = document.querySelector( window.location.hash );
+                if( e && e.scrollIntoView ){
+                    e.scrollIntoView({
+                        block: 'start',
+                    });
+                }
+            } catch( e ){}
+        }, 10 );
+        return;
+    }
 }
 
-function mark(){
-    // mark some additonal stuff as searchable
-    $('#topbar a:not(:has(img)):not(.btn)').addClass('highlight');
-    $('#body-inner a:not(:has(img)):not(.btn):not(a[rel="footnote"])').addClass('highlight');
+function mark() {
+	// mark some additional stuff as searchable
+	var topbarLinks = document.querySelectorAll( '#topbar a:not(.topbar-link):not(.btn)' );
+	for( var i = 0; i < topbarLinks.length; i++ ){
+		topbarLinks[i].classList.add( 'highlight' );
+	}
 
-    var value = sessionStorage.getItem(baseUriFull+'search-value');
-    $(".highlightable").highlight(value, { element: 'mark' });
-    $("mark").parents(".expand").addClass("expand-marked");
-    $("mark").parents("li").each( function(){
-        var i = jQuery(this).children("input.toggle:not(.menu-marked)");
-        if( i.length ){
-            e = jQuery(i[0]);
-            e.attr("data-checked", (e.prop('checked')?"true":"false")).addClass("menu-marked");
-            i[0].checked = true;
-        }
-    });
-    psm && psm.update();
+	var bodyInnerLinks = document.querySelectorAll( '#body-inner a:not(.lightbox-link):not(.btn):not(.lightbox)' );
+	for( var i = 0; i < bodyInnerLinks.length; i++ ){
+		bodyInnerLinks[i].classList.add( 'highlight' );
+	}
+
+	var value = sessionStorage.getItem( baseUriFull + 'search-value' );
+    var highlightableElements = document.querySelectorAll( '.highlightable' );
+    highlight( highlightableElements, value, { element: 'mark' } );
+
+	var markedElements = document.querySelectorAll( 'mark' );
+	for( var i = 0; i < markedElements.length; i++ ){
+		var parent = markedElements[i].parentNode;
+		while( parent && parent.classList ){
+			if( parent.classList.contains( 'expand' ) ){
+				var expandInputs = parent.querySelectorAll( 'input:not(.expand-marked)' );
+				if( expandInputs.length ){
+					expandInputs[0].classList.add( 'expand-marked' );
+					expandInputs[0].dataset.checked = expandInputs[0].checked ? 'true' : 'false';
+					expandInputs[0].checked = true;
+				}
+			}
+			if( parent.tagName.toLowerCase() === 'li' && parent.parentNode && parent.parentNode.tagName.toLowerCase() === 'ul' && parent.parentNode.classList.contains( 'collapsible-menu' )){
+				var toggleInputs = parent.querySelectorAll( 'input:not(.menu-marked)' );
+				if( toggleInputs.length ){
+					toggleInputs[0].classList.add( 'menu-marked' );
+					toggleInputs[0].dataset.checked = toggleInputs[0].checked ? 'true' : 'false';
+					toggleInputs[0].checked = true;
+				}
+			}
+			parent = parent.parentNode;
+		}
+	}
+    psm && setTimeout( function(){ psm.update(); }, 10 );
 }
 window.relearn.markSearch = mark;
 
-function unmark(){
-    sessionStorage.removeItem(baseUriFull+'search-value');
-    $("mark").parents("li").each( function(){
-        var i = jQuery(this).children("input.toggle.menu-marked");
-        if( i.length ){
-            e = jQuery(i[0]);
-            i[0].checked = (e.attr("data-checked")=="true");
-            e.attr("data-checked", null).removeClass("menu-marked");
-        }
+function highlight( es, words, options ){
+    var settings = {
+        className: 'highlight',
+        element: 'span',
+        caseSensitive: false,
+        wordsOnly: false
+    };
+    Object.assign( settings, options );
+
+    if( !words ){ return; }
+    if( words.constructor === String ){
+        words = [ words ];
+    }
+    words = words.filter( function( word, i ){
+        return word != '';
     });
-    $("mark").parents(".expand-marked").removeClass("expand-marked");
-    $(".highlightable").unhighlight({ element: 'mark' })
-    psm && psm.update();
+    words = words.map( function( word, i ){
+        return word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    });
+    if( words.length == 0 ){ return this; }
+
+    var flag = settings.caseSensitive ? '' : 'i';
+    var pattern = "(" + words.join( '|' ) + ')';
+    if( settings.wordsOnly ){
+        pattern = '\\b' + pattern + '\\b';
+    }
+    var re = new RegExp( pattern, flag );
+
+	for( var i = 0; i < es.length; i++ ){
+        highlightNode( es[i], re, settings.element, settings.className );
+	}
+};
+
+function highlightNode( node, re, nodeName, className ){
+    if( node.nodeType === 3 && node.parentElement && node.parentElement.namespaceURI == 'http://www.w3.org/1999/xhtml' ) { // text nodes
+        var match = node.data.match( re );
+        if( match ){
+            var highlight = document.createElement( nodeName || 'span' );
+            highlight.className = className || 'highlight';
+            var wordNode = node.splitText( match.index );
+            wordNode.splitText( match[0].length );
+            var wordClone = wordNode.cloneNode( true );
+            highlight.appendChild( wordClone );
+            wordNode.parentNode.replaceChild( highlight, wordNode );
+            return 1; //skip added node in parent
+        }
+    } else if( (node.nodeType === 1 && node.childNodes) && // only element nodes that have children
+        !/(script|style)/i.test(node.tagName) && // ignore script and style nodes
+        !(node.tagName === nodeName.toUpperCase() && node.className === className) ){ // skip if already highlighted
+        for( var i = 0; i < node.childNodes.length; i++ ){
+            i += highlightNode( node.childNodes[i], re, nodeName, className );
+        }
+    }
+    return 0;
+};
+
+function unmark() {
+	sessionStorage.removeItem( baseUriFull + 'search-value' );
+	var markedElements = document.querySelectorAll( 'mark' );
+	for( var i = 0; i < markedElements.length; i++ ){
+		var parent = markedElements[i].parentNode;
+		while( parent && parent.classList ){
+			if( parent.tagName.toLowerCase() === 'li' && parent.parentNode && parent.parentNode.tagName.toLowerCase() === 'ul' && parent.parentNode.classList.contains( 'collapsible-menu' )){
+				var toggleInputs = parent.querySelectorAll( 'input.menu-marked' );
+				if( toggleInputs.length ){
+					toggleInputs[0].checked = toggleInputs[0].dataset.checked === 'true';
+					toggleInputs[0].dataset.checked = null;
+					toggleInputs[0].classList.remove( 'menu-marked' );
+				}
+			}
+			if( parent.classList.contains( 'expand' ) ){
+				var expandInputs = parent.querySelectorAll( 'input.expand-marked' );
+				if( expandInputs.length ){
+					expandInputs[0].checked = expandInputs[0].dataset.checked === 'true';
+					expandInputs[0].dataset.checked = null;
+					expandInputs[0].classList.remove( 'expand-marked' );
+				}
+			}
+			parent = parent.parentNode;
+		}
+	}
+
+	var highlighted = document.querySelectorAll( '.highlightable' );
+    unhighlight( highlighted, { element: 'mark' } );
+    psm && setTimeout( function(){ psm.update(); }, 10 );
 }
 
-function searchInputHandler(value) {
+function unhighlight( es, options ){
+    var settings = {
+        className: 'highlight',
+        element: 'span'
+    };
+    Object.assign( settings, options );
+
+	for( var i = 0; i < es.length; i++ ){
+        var highlightedElements = es[i].querySelectorAll( settings.element + '.' + settings.className );
+        for( var j = 0; j < highlightedElements.length; j++ ){
+            var parent = highlightedElements[j].parentNode;
+            parent.replaceChild( highlightedElements[j].firstChild, highlightedElements[j] );
+            parent.normalize();
+        }
+	}
+};
+
+// replace jQuery.createPseudo with https://stackoverflow.com/a/66318392
+function elementContains( txt, e ){
+    var regex = RegExp( txt, 'i' );
+    var nodes = [];
+    if( e ){
+        var tree = document.createTreeWalker( e, 4 /* NodeFilter.SHOW_TEXT */, function( node ){
+            return regex.test( node.data );
+        }, false );
+        var node = null;
+        while( node = tree.nextNode() ){
+            nodes.push( node.parentElement );
+        }
+    }
+    return nodes;
+}
+
+function searchInputHandler( value ){
     unmark();
-    if (value.length) {
-        sessionStorage.setItem(baseUriFull+'search-value', value);
+    if( value.length ){
+        sessionStorage.setItem( baseUriFull+'search-value', value );
         mark();
     }
 }
 
 function initSearch() {
     // sync input/escape between searchbox and searchdetail
-    jQuery('input.search-by').on('keydown', function(event) {
-        if (event.key == "Escape") {
-            var input = jQuery(this);
-            input.blur();
-            searchInputHandler( '' );
-            jQuery('input.search-by').val('');
-            documentFocus();
-        }
-    });
-    jQuery('input.search-by').on('input', function() {
-        var input = jQuery(this);
-        var value = input.val();
-        searchInputHandler( value );
-        jQuery('input.search-by').not(this).val($(this).val());
+    var inputs = document.querySelectorAll( 'input.search-by' );
+    inputs.forEach( function( e ){
+        e.addEventListener( 'keydown', function( event ){
+            if( event.key == 'Escape' ){
+                var input = event.target;
+                var search = sessionStorage.getItem( baseUriFull+'search-value' );
+                if( !search || !search.length ){
+                    input.blur();
+                }
+                searchInputHandler( '' );
+                inputs.forEach( function( e ){
+                    e.value = '';
+                });
+                if( !search || !search.length ){
+                    documentFocus();
+                }
+            }
+        });
+        e.addEventListener( 'input', function( event ){
+            var input = event.target;
+            var value = input.value;
+            searchInputHandler( value );
+            inputs.forEach( function( e ){
+                if( e != input ){
+                    e.value = value;
+                }
+            });
+        });
     });
 
-    jQuery('[data-search-clear]').on('click', function() {
-        jQuery('[data-search-input]').val('').trigger('input');
-        unmark();
+    document.querySelectorAll( '[data-search-clear]' ).forEach( function( e ){
+        e.addEventListener( 'click', function(){
+            inputs.forEach( function( e ){
+                e.value = '';
+                var event = document.createEvent( 'Event' );
+                event.initEvent( 'input', false, false );
+                e.dispatchEvent( event );
+            });
+            unmark();
+        });
     });
 
-    var urlParams = new URLSearchParams(window.location.search);
-    var value = urlParams.get('search-by');
+    var urlParams = new URLSearchParams( window.location.search );
+    var value = urlParams.get( 'search-by' );
     if( value ){
-        sessionStorage.setItem(baseUriFull+'search-value', value);
+        sessionStorage.setItem( baseUriFull+'search-value', value );
     }
     mark();
 
-    // custom sizzle case insensitive "contains" pseudo selector
-    $.expr[":"].contains = $.expr.createPseudo(function(arg) {
-        return function( elem ) {
-            return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
-        };
-    });
-
-    // set initial search value on page load
-    if (sessionStorage.getItem(baseUriFull+'search-value')) {
-        var searchValue = sessionStorage.getItem(baseUriFull+'search-value')
-        $('[data-search-input]').val(searchValue);
-        $('[data-search-input]').trigger('input');
-        var searchedElem = $('#body-inner').find(':contains(' + searchValue + ')').get(0);
-        if (searchedElem) {
-            searchedElem.scrollIntoView(true);
-            var scrolledY = window.scrollY;
-            if(scrolledY){
-                window.scroll(0, scrolledY - 125);
-            }
-        }
+    // set initial search value for inputs on page load
+    if( sessionStorage.getItem( baseUriFull+'search-value' ) ){
+        var search = sessionStorage.getItem( baseUriFull+'search-value' );
+        inputs.forEach( function( e ){
+            e.value = search;
+            var event = document.createEvent( 'Event' );
+            event.initEvent( 'input', false, false );
+            e.dispatchEvent( event );
+        });
     }
 
     window.relearn.isSearchInit = true;
     window.relearn.runInitialSearch && window.relearn.runInitialSearch();
 }
 
-// debouncing function from John Hann
-// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-(function($, sr) {
-
-    var debounce = function(func, threshold, execAsap) {
-        var timeout;
-
-        return function debounced() {
-            var obj = this, args = arguments;
-
-            function delayed() {
-                if (!execAsap)
-                    func.apply(obj, args);
-                timeout = null;
-            };
-
-            if (timeout)
-                clearTimeout(timeout);
-            else if (execAsap)
-                func.apply(obj, args);
-
-            timeout = setTimeout(delayed, threshold || 100);
-        };
-    }
-    // smartresize
-    jQuery.fn[sr] = function(fn) { return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
-
-})(jQuery, 'smartresize');
-
-jQuery(function() {
+ready( function(){
     initArrowNav();
     initMermaid();
     initSwagger();
     initMenuScrollbar();
-    scrollToActiveMenu();
-    scrollToFragment();
     initToc();
     initAnchorClipboard();
     initCodeClipboard();
@@ -864,81 +1131,10 @@ jQuery(function() {
     initSwipeHandler();
     initHistory();
     initSearch();
+    initImage();
+    initScrollPositionSaver();
+    scrollToPositions();
 });
-
-jQuery.extend({
-    highlight: function(node, re, nodeName, className) {
-        if (node.nodeType === 3 && node.parentElement && node.parentElement.namespaceURI == 'http://www.w3.org/1999/xhtml') { // text nodes
-            var match = node.data.match(re);
-            if (match) {
-                var highlight = document.createElement(nodeName || 'span');
-                highlight.className = className || 'highlight';
-                var wordNode = node.splitText(match.index);
-                wordNode.splitText(match[0].length);
-                var wordClone = wordNode.cloneNode(true);
-                highlight.appendChild(wordClone);
-                wordNode.parentNode.replaceChild(highlight, wordNode);
-                return 1; //skip added node in parent
-            }
-        } else if ((node.nodeType === 1 && node.childNodes) && // only element nodes that have children
-            !/(script|style)/i.test(node.tagName) && // ignore script and style nodes
-            !(node.tagName === nodeName.toUpperCase() && node.className === className)) { // skip if already highlighted
-            for (var i = 0; i < node.childNodes.length; i++) {
-                i += jQuery.highlight(node.childNodes[i], re, nodeName, className);
-            }
-        }
-        return 0;
-    }
-});
-
-jQuery.fn.unhighlight = function(options) {
-    var settings = {
-        className: 'highlight',
-        element: 'span'
-    };
-    jQuery.extend(settings, options);
-
-    return this.find(settings.element + "." + settings.className).each(function() {
-        var parent = this.parentNode;
-        parent.replaceChild(this.firstChild, this);
-        parent.normalize();
-    }).end();
-};
-
-jQuery.fn.highlight = function(words, options) {
-    var settings = {
-        className: 'highlight',
-        element: 'span',
-        caseSensitive: false,
-        wordsOnly: false
-    };
-    jQuery.extend(settings, options);
-
-    if (!words) { return; }
-
-    if (words.constructor === String) {
-        words = [words];
-    }
-    words = jQuery.grep(words, function(word, i) {
-        return word != '';
-    });
-    words = jQuery.map(words, function(word, i) {
-        return word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-    });
-    if (words.length == 0) { return this; }
-    ;
-
-    var flag = settings.caseSensitive ? "" : "i";
-    var pattern = "(" + words.join("|") + ")";
-    if (settings.wordsOnly) {
-        pattern = "\\b" + pattern + "\\b";
-    }
-    var re = new RegExp(pattern, flag);
-
-    return this.each(function() {
-        jQuery.highlight(this, re, settings.element, settings.className);
-    });
-};
 
 function useMermaid( config ){
     if( !Object.assign ){

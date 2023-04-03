@@ -12,7 +12,7 @@
 :root {
     --PRIMARY-color: #f300b2; /* brand primary color */
     --SECONDARY-color: #1c90f3; /* brand secondary color */
-    --ACCENT-color: #ffaa00; /* brand accent color, used for search highlights */
+    --ACCENT-color: #ffff00; /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: #e0e0e0; /* text color of content and h1 titles */
     --MAIN-LINK-HOVER-color: #4cabff; /* hovered link color of content */
@@ -31,6 +31,7 @@
     --CODE-INLINE-BG-color: #282a36; /* background color of inline code */
     --CODE-INLINE-BORDER-color: #464646; /* border color of inline code */
 
+    --BROWSER-theme: dark; /* name of the theme for browser scrollbars of the main section */
     --MERMAID-theme: dark; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
     --SWAGGER-theme: dark; /* name of the default Swagger theme for this variant, can be overridden in config.toml */
 
@@ -39,9 +40,9 @@
     --MENU-HOME-LINK-color: #ffffff; /* home button color if configured */
     --MENU-HOME-LINK-HOVER-color: #d0d0d0; /* hovered home button color if configured */
 
-    --MENU-SEARCH-color: #e0e0e0; /* text and icon color of search box */
-    --MENU-SEARCH-BG-color: #323232; /* background color of search box */
-    --MENU-SEARCH-BORDER-color: #e0e0e0; /* border color of search box */
+    --MENU-SEARCH-color: #f8f8f8; /* text and icon color of search box */
+    --MENU-SEARCH-BG-color: rgba( 16, 16, 16, .6 ); /* background color of search box */
+    --MENU-SEARCH-BORDER-color: #e8e8e8; /* border color of search box */
 
     --MENU-SECTIONS-BG-color: linear-gradient( 165deg, #f300b2d3 0%, #1c90f3b3 65%, #00e3d3b3 100% ); /* background of the menu; this is NOT just a color value but can be a complete CSS background definition including gradients, etc. */
     --MENU-SECTIONS-ACTIVE-BG-color: rgba( 0, 0, 0, .166 ); /* background color of the active menu section */
@@ -71,18 +72,19 @@
 }
 
 body a#logo,
+body a#logo:hover,
 body #logo svg,
 body #logo svg * {
-    color: var(--INTERNAL-MENU-SEARCH-color);
-    fill: var(--INTERNAL-MENU-SEARCH-color) !important;
+    color: var(--INTERNAL-MENU-SEARCH-BORDER-color);
+    fill: var(--INTERNAL-MENU-SEARCH-BORDER-color) !important;
 }
 
 body a#logo{
-    color: var(--INTERNAL-MENU-SEARCH-color);
+    color: var(--INTERNAL-MENU-SEARCH-BORDER-color);
     text-shadow:
-        0 0  1px var(--INTERNAL-MENU-SEARCH-color),
-        0 0  2px var(--INTERNAL-MENU-SEARCH-color),
-        0 0  4px var(--INTERNAL-MENU-SEARCH-color),
+        0 0  1px var(--INTERNAL-MENU-SEARCH-BORDER-color),
+        0 0  2px var(--INTERNAL-MENU-SEARCH-BORDER-color),
+        0 0  4px var(--INTERNAL-MENU-SEARCH-BORDER-color),
         0 0  8px #808080,
         0 0  4px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color),
         0 0  8px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
@@ -168,17 +170,6 @@ body h6 {
         0 0 10px var(--INTERNAL-MAIN-TITLES-H5-color);
 }
 
-body #sidebar ul.collapsible-menu li.active > .toggle,
-body #sidebar ul.topics li.active > a {
-    color: #fff;
-    text-shadow:
-        0 0  1px #fff,
-        0 0  2px #fff,
-        0 0  8px #808080,
-        0 0  4px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color),
-        0 0  8px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
-}
-
 body #sidebar .searchbox button:hover,
 body .searchbox span:hover {
     color: #fff;
@@ -191,7 +182,7 @@ body .searchbox span:hover {
 }
 
 body #sidebar select:hover,
-body #sidebar .collapsible-menu .toggle:hover,
+body #sidebar .collapsible-menu label:hover,
 body #sidebar .select-container:hover,
 body #sidebar a:hover,
 body #sidebar button:hover {
@@ -202,6 +193,17 @@ body #sidebar button:hover {
         0 0  8px #808080,
         0 0  4px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color),
         0 0  8px var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
+}
+
+body #sidebar li.active > label,
+body #sidebar li.active > a {
+    color: #fff;
+    text-shadow:
+        0 0  1px #fff,
+        0 0  2px #fff,
+        0 0  8px #808080,
+        0 0  4px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color),
+        0 0  8px var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
 }
 
 body #homelinks a:hover {
@@ -303,6 +305,11 @@ above will not apply, so we have to repeat it here */
 .print #body div.box > .box-label {
     box-shadow: none;
     text-shadow: none;
+}
+
+#content-wrapper {
+    --ps-thumb-color: #d0d0d0;
+    --ps-thumb-hover-color: #ccc;
 }
 
 }

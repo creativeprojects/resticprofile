@@ -39,6 +39,7 @@
 
     --INTERNAL-CODE-font: var(--CODE-font, "Consolas", menlo, monospace);
 
+    --INTERNAL-BROWSER-theme: var(--BROWSER-theme, light);
     --INTERNAL-MERMAID-theme: var(--CONFIG-MERMAID-theme, var(--MERMAID-theme, var(--INTERNAL-PRINT-MERMAID-theme)));
     --INTERNAL-SWAGGER-theme: var(--CONFIG-SWAGGER-theme, var(--SWAGGER-theme, var(--INTERNAL-PRINT-SWAGGER-theme)));
 
@@ -93,13 +94,17 @@
     --INTERNAL-BOX-WARNING-TEXT-color: var(--BOX-WARNING-TEXT-color, var(--INTERNAL-BOX-RED-TEXT-color));
 
     /* print style, values taken from relearn-light as it is used as a default print style */
-    --INTERNAL-PRINT-MERMAID-theme: var(--PRINT-MERMAID-theme, default);
     --INTERNAL-PRINT-MAIN-BG-color: var(--PRINT-MAIN-BG-color, #ffffff);
     --INTERNAL-PRINT-CODE-font: var(--PRINT-CODE-font, "Consolas", menlo, monospace);
     --INTERNAL-PRINT-TAG-BG-color: var(--PRINT-TAG-BG-color, #7dc903);
     --INTERNAL-PRINT-MAIN-font: var(--PRINT-MAIN-font, "Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif);
     --INTERNAL-PRINT-MAIN-TEXT-color: var(--PRINT-MAIN-TEXT-color, #101010);
+    --INTERNAL-PRINT-MERMAID-theme: var(--PRINT-MERMAID-theme, default);
     --INTERNAL-PRINT-SWAGGER-theme: var(--PRINT-SWAGGER-theme, light);
+}
+
+html {
+    color-scheme: only var(--INTERNAL-BROWSER-theme);
 }
 
 body {
@@ -139,7 +144,18 @@ a:hover,
     background-color: var(--INTERNAL-MENU-SEARCH-BG-color);
 }
 
-#sidebar .collapsible-menu .toggle,
+#sidebar .searchbox > :first-child,
+#sidebar .searchbox button,
+.searchbox span {
+    color: var(--INTERNAL-MENU-SEARCH-color);
+}
+
+.searchbox input::-webkit-input-placeholder,
+.searchbox input::placeholder {
+    color: var(--INTERNAL-MENU-SEARCH-color);
+}
+
+#sidebar .collapsible-menu label,
 #sidebar .select-container,
 #sidebar a,
 #sidebar button {
@@ -147,28 +163,28 @@ a:hover,
 }
 
 #sidebar select:hover,
-#sidebar .collapsible-menu .toggle:hover,
+#sidebar .collapsible-menu label:hover,
 #sidebar .select-container:hover,
 #sidebar a:hover,
 #sidebar button:hover {
     color: var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
 }
 
-#sidebar ul.topics > li.parent,
-#sidebar ul.topics > li.active {
+#sidebar ul.enlarge > li.parent,
+#sidebar ul.enlarge > li.active {
     background-color: var(--INTERNAL-MENU-SECTIONS-ACTIVE-BG-color);
 }
 
-#sidebar ul.collapsible-menu li.active > .toggle,
-#sidebar ul.topics li.active > a {
+#sidebar li.active > label,
+#sidebar li.active > a {
     color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color);
 }
 
-#sidebar ul.topics li.active > a {
+#sidebar li.active > a {
     background-color: var(--INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BG-color);
 }
 
-#sidebar ul li.visited > a .read-icon {
+#sidebar ul li > a .read-icon {
     color: var(--INTERNAL-MENU-VISITED-color);
 }
 
@@ -261,6 +277,11 @@ div.box > .box-content {
     --VARIABLE-BOX-TEXT-color: var(--INTERNAL-MAIN-TEXT-color);
 }
 
+.cstyle.accent {
+    --VARIABLE-BOX-color: var(--INTERNAL-ACCENT-color);
+    --VARIABLE-BOX-TEXT-color: var(--INTERNAL-MAIN-TEXT-color);
+}
+
 .cstyle.blue {
     --VARIABLE-BOX-color: var(--INTERNAL-BOX-BLUE-color);
     --VARIABLE-BOX-TEXT-color: var(--INTERNAL-BOX-BLUE-TEXT-color);
@@ -316,7 +337,7 @@ table {
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
 
-div.featherlight .featherlight-content{
+.lightbox img{
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
 
@@ -350,6 +371,18 @@ pre .copy-to-clipboard-button:hover {
     background-color: var(--INTERNAL-MAIN-LINK-color);
     border-color: var(--INTERNAL-MAIN-LINK-color);
     color: var(--INTERNAL-CODE-BLOCK-BG-color);
+}
+
+.expand > label {
+    color: var(--INTERNAL-MAIN-LINK-color);
+}
+
+.expand > label:hover {
+    color: var(--INTERNAL-MAIN-LINK-HOVER-color);
+}
+
+.expand > label:after {
+    background-color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
 #homelinks {

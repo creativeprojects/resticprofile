@@ -49,12 +49,9 @@
 }
 
 body a#logo,
+body a#logo:hover,
 body #logo svg,
 body #logo svg * {
     color: var(--INTERNAL-MENU-SEARCH-color);
     fill: var(--INTERNAL-MENU-SEARCH-color) !important;
-}
-
-body a#logo:hover {
-    color: var(--INTERNAL-MENU-SEARCH-color);
 }

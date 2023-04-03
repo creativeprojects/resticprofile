@@ -24,6 +24,7 @@
     --CODE-INLINE-BG-color: #fffae9; /* background color of inline code */
     --CODE-INLINE-BORDER-color: #f8e8c8; /* border color of inline code */
 
+    --BROWSER-theme: light; /* name of the theme for browser scrollbars of the main section */
     --MERMAID-theme: default; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
     --SWAGGER-theme: light; /* name of the default Swagger theme for this variant, can be overridden in config.toml */
 
