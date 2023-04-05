@@ -3,6 +3,8 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -268,6 +270,35 @@ array2 = ["one", "two"]
 		assert.Equal([]string{"42"}, flags["int"])
 		assert.Equal([]string{"1"}, flags["array1"])
 		assert.Equal([]string{"one", "two"}, flags["array2"])
+	})
+}
+
+func TestEnvironmentInProfileRepo(t *testing.T) {
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `
+		[` + prefix + `profile]
+		repository = "~/$TEST_VAR"
+		password-file = "~/${TEST_VAR}.key"
+		[` + prefix + `profile.copy]
+		repository = "~/$TEST_VAR"
+		[` + prefix + `profile.init]
+		from-repository = "~/$TEST_VAR"
+		`
+		profile, err := getProfile("toml", testConfig, "profile", "")
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+
+		testVar := fmt.Sprintf("v%d", rand.Int())
+		require.NoError(t, os.Setenv("TEST_VAR", testVar))
+		homeDir, err := os.UserHomeDir()
+		require.NoError(t, err)
+		repoPath := filepath.ToSlash(filepath.Join(homeDir, testVar))
+
+		profile.SetRootPath("/any")
+		assert.Equal(t, repoPath, filepath.ToSlash(profile.Repository.Value()))
+		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
+		assert.Equal(t, repoPath, filepath.ToSlash(profile.Init.FromRepository.Value()))
+		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.Repository.Value()))
 	})
 }
 

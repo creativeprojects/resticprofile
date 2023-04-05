@@ -26,6 +26,14 @@ func (c *ConfidentialValue) IsConfidential() bool {
 	return c.public != c.confidential
 }
 
+// setValue updates the Value. The public part is updated if the value is not confidential.
+func (c *ConfidentialValue) setValue(value string) {
+	if !c.IsConfidential() {
+		c.public = value
+	}
+	c.confidential = value
+}
+
 // hideValue hides the entire value in the public representation
 func (c *ConfidentialValue) hideValue() {
 	if c.IsConfidential() {

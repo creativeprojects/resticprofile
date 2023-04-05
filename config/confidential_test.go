@@ -44,6 +44,21 @@ func TestConfidentialHideSubmatch(t *testing.T) {
 	assert.Equal(t, expected, value.String())
 }
 
+func TestUpdateConfidentialValue(t *testing.T) {
+	v := NewConfidentialValue("abc")
+
+	v.setValue("xyz")
+	assert.Equal(t, "xyz", v.Value())
+	assert.Equal(t, "xyz", v.String())
+
+	v.hideSubmatches(regexp.MustCompile("(z)"))
+	assert.Equal(t, "xy"+ConfidentialReplacement, v.String())
+
+	v.setValue("abc")
+	assert.Equal(t, "abc", v.Value())
+	assert.Equal(t, "xy"+ConfidentialReplacement, v.String())
+}
+
 func TestFmtStringDoesntLeakConfidentialValues(t *testing.T) {
 	value := NewConfidentialValue("secret")
 	value.hideValue()
