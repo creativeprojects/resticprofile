@@ -137,10 +137,13 @@ var responseContentSanitizer = regexp.MustCompile(`(?i)[^\d\w\s.,:;_*+\-=?!"'$%&
 func (s *Sender) logResponse(url string, resp *http.Response) {
 	clog.Debugf("%q returned: %s\n%s", url, resp.Status, s.stringifyHeaders(resp.Header, nil))
 
-	if content, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024)); len(content) > 0 {
-		content = responseContentSanitizer.ReplaceAll(content, []byte(" "))
-		clog.Tracef("response body (sanitized):\n%s", string(content))
-	}
+	clog.Trace(func() string {
+		if content, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024)); len(content) > 0 {
+			content = responseContentSanitizer.ReplaceAll(content, []byte(" "))
+			return fmt.Sprintf("response body (sanitized):\n%s", string(content))
+		}
+		return "response body is empty"
+	})
 }
 
 func (s *Sender) stringifyHeaders(headers http.Header, config []config.SendMonitoringHeader) string {

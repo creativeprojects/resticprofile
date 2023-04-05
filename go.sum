@@ -61,8 +61,8 @@ github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnht
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
-github.com/creativeprojects/clog v0.12.0 h1:HVOgbuMB2ZalcfLzNrjdRM+cQnDBUTGNhwUOx/8qWxY=
-github.com/creativeprojects/clog v0.12.0/go.mod h1:rl6nNjCyJcMCtIhritmjdnl6fI3GuNrPAKrr05cCOqs=
+github.com/creativeprojects/clog v0.13.0 h1:QVWO65Za2/XfCQeNnDvO4td9i7fwV2xuv8V5jzFIONk=
+github.com/creativeprojects/clog v0.13.0/go.mod h1:4CBBbXkwjxTSIE/OyrC77aTrEEHj6daYGFEDrNjfOkU=
 github.com/creativeprojects/go-selfupdate v1.0.1 h1:5Un4MTv4puCR5GBgkDLC14J72fljGuMC60E63cFGq1o=
 github.com/creativeprojects/go-selfupdate v1.0.1/go.mod h1:nm7AWUJfrfYt/SB97NAcMhR0KEpPqlrVHXkWFti+ezw=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

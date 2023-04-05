@@ -285,7 +285,7 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 			return fmt.Errorf("cannot execute %w", err)
 		}
 
-		traceConfig(data.Profile.Name, name, replace, buffer.String())
+		traceConfig(data.Profile.Name, name, replace, buffer)
 		return c.load(buffer, format, replace)
 	}
 
@@ -709,14 +709,25 @@ func (c *Config) newUnmarshaller(output any) (*mapstructure.Decoder, error) {
 }
 
 // traceConfig sends a log of level trace to show the resulting configuration after resolving the template
-func traceConfig(profileName, name string, replace bool, config string) {
-	lines := strings.Split(config, "\n")
-	output := ""
-	for i := 0; i < len(lines); i++ {
-		output += fmt.Sprintf("%3d: %s\n", i+1, lines[i])
-	}
-	clog.Tracef("Resulting configuration for profile '%s' ('%s' / replace=%v):\n"+
-		"====================\n"+
-		"%s"+
-		"====================\n", profileName, name, replace, output)
+func traceConfig(profileName, name string, replace bool, config *bytes.Buffer) {
+	clog.Trace(func() string {
+		output := &strings.Builder{}
+
+		lines := bytes.Split(config.Bytes(), []byte("\n"))
+		gutter := "%3d: "
+		if len(lines) > 999 {
+			gutter = "%4d: "
+		}
+		for i := 0; i < len(lines); i++ {
+			output.WriteString(fmt.Sprintf(gutter, i+1))
+			output.Write(lines[i])
+			output.WriteString("\n")
+		}
+
+		return fmt.Sprintf(""+
+			"Resulting configuration for profile '%s' ('%s' / replace=%v):\n"+
+			"====================\n"+
+			"%s"+
+			"====================\n", profileName, name, replace, output)
+	})
 }

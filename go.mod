@@ -7,7 +7,7 @@ require (
 	github.com/adrg/xdg v0.4.0
 	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
 	github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/creativeprojects/clog v0.12.0
+	github.com/creativeprojects/clog v0.13.0
 	github.com/creativeprojects/go-selfupdate v1.0.1
 	github.com/fatih/color v1.14.1
 	github.com/mackerelio/go-osstat v0.2.3
