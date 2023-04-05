@@ -13,8 +13,8 @@ global:
 
 groups:
     full-backup:
-    - src
-    - root
+        - src
+        - root
 
 default:
     description: Contains default parameters like repository and password file
@@ -37,9 +37,9 @@ repo2:
     password-file: key
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     init:
-      copy-chunker-params: true
-      from-repository: "/Volumes/RAMDisk/default"
-      from-password-file: key
+        copy-chunker-params: true
+        from-repository: "/Volumes/RAMDisk/default"
+        from-password-file: key
 
 space:
     description: Repository contains space
@@ -52,18 +52,18 @@ documents:
     backup:
         source: ~/Documents
     initialize: false
-    repository: ~/backup/{{ .Hostname }}
+    repository: ~/backup/$PROFILE_NAME
 
 root:
     backup:
         schedule: "*:0,15,30,45"
         exclude-caches: true
         exclude-file:
-        - root-excludes
-        - excludes
+            - root-excludes
+            - excludes
         one-file-system: false
         source:
-        - .
+            - .
 
     inherit: default
     initialize: true
@@ -77,7 +77,7 @@ root:
         keep-last: 3
         keep-monthly: 1
         keep-tag:
-        - forever
+            - forever
         keep-weekly: 1
         keep-within: 3h
         keep-yearly: 1
@@ -90,12 +90,11 @@ root:
         keep-last: 3
         keep-monthly: 1
         keep-tag:
-        - forever
+            - forever
         keep-weekly: 1
         keep-within: 3h
         keep-yearly: 1
         prune: false
-
 
 self:
     force-inactive-lock: true
@@ -109,17 +108,17 @@ self:
         no-error-on-warning: true
         source: "{{ .CurrentDir }}"
         exclude:
-          - "/**/.git/"
+            - "/**/.git/"
         schedule:
-          - "*:00,30"
+            - "*:00,30"
         schedule-permission: user
 
     run-after-fail:
-      - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"
-      - "echo restic stderr = ${RESTIC_STDERR}"
+        - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"
+        - "echo restic stderr = ${RESTIC_STDERR}"
     check:
         schedule:
-          - "*:15"
+            - "*:15"
     retention:
         after-backup: true
     forget:
@@ -128,7 +127,7 @@ self:
     copy:
         initialize: true
         schedule:
-          - "*:45"
+            - "*:45"
     snapshots:
         host: true
         run-before: "echo Before snapshots"
@@ -144,9 +143,9 @@ syslog:
         no-error-on-warning: true
         source: "{{ .CurrentDir }}"
         exclude:
-          - "/**/.git/"
+            - "/**/.git/"
         schedule:
-          - "*:*"
+            - "*:*"
         schedule-permission: user
         schedule-log: "tcp://localhost:5514"
 
@@ -157,13 +156,13 @@ prom:
     prometheus-save-to-file: "self.prom"
     prometheus-push: "http://localhost:9091/"
     prometheus-labels:
-      host: "{{ .Hostname }}"
+        host: "{{ .Hostname }}"
     status-file: /Volumes/RAMDisk/status.json
     backup:
         extended-status: true
         no-error-on-warning: true
         source:
-          - "{{ .CurrentDir }}"
+            - "{{ .CurrentDir }}"
 
 system:
     initialize: true
@@ -172,7 +171,7 @@ system:
     backup:
         source: ./
         schedule:
-        - "*:5,10,20,25,35,40,50,55"
+            - "*:5,10,20,25,35,40,50,55"
         schedule-permission: system
     forget:
         schedule: "weekly"
@@ -181,17 +180,17 @@ src:
     backup:
         check-before: true
         exclude:
-        - /**/.git
+            - /**/.git
         exclude-caches: true
         one-file-system: false
         run-after: echo All Done!
         run-before:
-        - "echo Hello {{ .Env.LOGNAME }}"
-        - "echo current dir: {{ .CurrentDir }}"
-        - "echo config dir: {{ .ConfigDir }}"
+            - "echo Hello {{ .Env.LOGNAME }}"
+            - "echo current dir: {{ .CurrentDir }}"
+            - "echo config dir: {{ .ConfigDir }}"
         # - "echo profile started at {{ .Now.Format "02 Jan 06 15:04 MST" }}"
         source:
-        - "{{ .Env.HOME }}/go/src"
+            - "{{ .Env.HOME }}/go/src"
 
     inherit: default
     initialize: true
@@ -201,20 +200,18 @@ src:
         compact: false
         keep-within: 30d
         prune: true
-       
+
 home:
     inherit: default
-    # cache-dir: "${TMPDIR}.restic/"
+    repository: ${HOME}/backup/$PROFILE_NAME
     backup:
         source: "${HOME}/Projects"
 
     stream-error:
-        -
-            pattern: "find-one"
-            run: "echo Found One!"
-        -
-            pattern: "find-two"
-            run: "echo Found Two!"
+        - pattern: "find-one"
+          run: "echo Found One!"
+        - pattern: "find-two"
+          run: "echo Found Two!"
 
 stdin:
     backup:
@@ -226,12 +223,11 @@ stdin:
 stdin-command:
     backup:
         stdin-command:
-          - "cat *.go | gzip"
-          - "cat shell/*.go | gzip"
+            - "cat *.go | gzip"
+            - "cat shell/*.go | gzip"
         stdin-filename: stdin-test
 
     inherit: default
-
 
 dropbox:
     initialize: false
@@ -248,7 +244,7 @@ escape:
     backup:
         source:
             - "{{ .CurrentDir }}/examples/private/file with space"
-            - "{{ .CurrentDir }}/examples/private/quoted\"file"
+            - '{{ .CurrentDir }}/examples/private/quoted"file'
             - "{{ .CurrentDir }}/examples/private/Côte d'Ivoire"
         exclude:
             - "**/.git"
@@ -256,7 +252,7 @@ escape:
             - Côte d'Ivoire
     retention:
         after-backup: true
-        
+
 nobackup:
     initialize: false
     repository: /Volumes/RAMDisk/{{ .Profile.Name }}
@@ -301,9 +297,6 @@ copypath:
         keep-last: 3
         path: true
 
-documents2:
-    inherit: documents
-
 run-before-after:
     inherit: default
 
@@ -320,9 +313,9 @@ tempfile:
         no-error-on-warning: true
         source: "{{ .CurrentDir }}"
         exclude:
-          - "/**/.git/"
+            - "/**/.git/"
         schedule:
-          - "*:*"
+            - "*:*"
         schedule-permission: user
         schedule-log: '{{ tempFile "backup.log" }}'
         run-finally: 'cp {{ tempFile "backup.log" }} ./backup{{ .Now.Format "2006-01-02T15-04-05" }}.log'
