@@ -12,8 +12,8 @@ import (
 )
 
 func TestCompleter(t *testing.T) {
-	completer := &Completer{}
-	completer.init(nil, ownCommands.All())
+	completer := NewCompleter(ownCommands.All(), DefaultFlagsLoader)
+	completer.init(nil)
 
 	expectedProfiles := func() []string {
 		return []string{"default", "full-backup", "linux", "no-cache", "root", "src", "stdin"}

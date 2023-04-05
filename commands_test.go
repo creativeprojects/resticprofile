@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/schedule"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -235,16 +237,24 @@ func TestFlagsForProfile(t *testing.T) {
 }
 
 func TestCompleteCall(t *testing.T) {
-	completer := &Completer{}
-	completer.init(nil, ownCommands.All())
+	completer := NewCompleter(ownCommands.All(), DefaultFlagsLoader)
+	completer.init(nil)
 	newline := fmt.Sprintln("")
 	expectedFlags := strings.Join(completer.completeFlagSet(""), newline) + newline
+
+	visibleCommands := collect.Not(func(c ownCommand) bool { return c.hideInCompletion || c.hide })
+	commandName := func(c ownCommand) string { return c.name }
+	commandNames := collect.From(collect.All(ownCommands.All(), visibleCommands), commandName)
+	sort.Strings(commandNames)
+	expectedCommands := strings.Join(commandNames, newline) + newline +
+		RequestResticCompletion + newline
 
 	testTable := []struct {
 		args     []string
 		expected string
 	}{
 		{args: []string{"--"}, expected: expectedFlags},
+		{args: []string{"--config=does-not-exist", ""}, expected: expectedCommands},
 		{args: []string{"bash:v1", "--"}, expected: expectedFlags},
 		{args: []string{"bash:v10", "--"}, expected: ""},
 		{args: []string{"zsh:v1", "--"}, expected: ""},

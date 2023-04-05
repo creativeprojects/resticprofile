@@ -178,7 +178,7 @@ func completeCommand(output io.Writer, request commandRequest) error {
 		return nil
 	}
 
-	completions := (&Completer{}).Complete(args)
+	completions := NewCompleter(request.ownCommands.All(), DefaultFlagsLoader).Complete(args)
 	if len(completions) > 0 {
 		for _, completion := range completions {
 			fmt.Fprintln(output, completion)
