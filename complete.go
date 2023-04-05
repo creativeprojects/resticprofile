@@ -23,6 +23,7 @@ const (
 
 // Completer provides context aware shell completions for the current commandline argument(s)
 type Completer struct {
+	loader                FlagsLoader
 	flags                 *pflag.FlagSet
 	flagsInArgs           []*pflag.Flag
 	ownCommands           []ownCommand
@@ -30,7 +31,18 @@ type Completer struct {
 	enableProfilePrefixes bool
 }
 
-func (c *Completer) init(args []string, ownCommands []ownCommand) {
+type FlagsLoader func(args []string) *pflag.FlagSet
+
+func DefaultFlagsLoader(args []string) (flags *pflag.FlagSet) {
+	flags, _, _ = loadFlags(args)
+	return
+}
+
+func NewCompleter(commands []ownCommand, loader FlagsLoader) *Completer {
+	return &Completer{ownCommands: commands, loader: loader}
+}
+
+func (c *Completer) init(args []string) {
 	var initArgs []string
 	nameFlagFound := false
 	nameFlagMatcher := regexp.MustCompile("^-{1,2}(n|name)(=.*|$)")
@@ -44,9 +56,8 @@ func (c *Completer) init(args []string, ownCommands []ownCommand) {
 		}
 	}
 
-	c.flags, _, _ = loadFlags(initArgs)
+	c.flags = c.loader(initArgs)
 	c.flagsInArgs = nil
-	c.ownCommands = ownCommands
 	c.profiles = nil
 	c.enableProfilePrefixes = !nameFlagFound
 }
@@ -258,7 +269,7 @@ func (c *Completer) isOwnCommand(command string, configurationLoaded bool) bool 
 // To get completions for a specific element use "__POS:{FOLLOWING-ARG-INDEX}" in args.
 func (c *Completer) Complete(args []string) (completions []string) {
 	args = append([]string{}, args...)
-	c.init(args, c.ownCommands)
+	c.init(args)
 
 	lookupFlag := func(word string) (flag *pflag.Flag) {
 		if strings.HasPrefix(word, "-") {
