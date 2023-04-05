@@ -93,11 +93,11 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 	definitions := config.GetStringMap(constants.SectionConfigurationMixins)
 	for name, def := range definitions {
 		if definition, ok := def.(map[string]interface{}); ok {
-			{
-				buf := &strings.Builder{}
-				yaml.NewEncoder(buf).Encode(definition)
-				clog.Tracef("mixin declaration \"%s\": \n%s", name, buf.String())
-			}
+			clog.Trace(func() string {
+				buffer := &strings.Builder{}
+				_ = yaml.NewEncoder(buffer).Encode(definition)
+				return fmt.Sprintf("mixin declaration \"%s\": \n%s", name, buffer)
+			})
 			mi := new(mixin)
 			if err := mapstructure.Decode(definition, mi); err == nil {
 				keysToUpper(mi.DefaultVariables)

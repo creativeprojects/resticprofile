@@ -88,7 +88,7 @@ func main() {
 	if flags.isChild {
 		// use a remote logger
 		client := remote.NewClient(flags.parentPort)
-		setupRemoteLogger(client)
+		setupRemoteLogger(flags, client)
 
 		// also redirect the terminal through the client
 		term.SetAllOutput(term.NewRemoteTerm(client))

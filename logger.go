@@ -34,9 +34,9 @@ func setupConsoleLogger(flags commandLineFlags) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupRemoteLogger(client *remote.Client) {
-	logger := clog.NewLogger(client)
+func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	client.SetPrefix("elevated user: ")
+	logger := newFilteredLogger(flags, clog.NewLogger(client))
 	clog.SetDefaultLogger(logger)
 }
 
