@@ -123,8 +123,9 @@ type InitSection struct {
 func (i *InitSection) IsEmpty() bool { return i == nil }
 
 func (i *InitSection) setRootPath(_ *Profile, rootPath string) {
-	i.FromRepositoryFile = fixPath(i.FromRepositoryFile, expandEnv, absolutePrefix(rootPath))
-	i.FromPasswordFile = fixPath(i.FromPasswordFile, expandEnv, absolutePrefix(rootPath))
+	i.FromRepositoryFile = fixPath(i.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	i.FromPasswordFile = fixPath(i.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
 }
 
 func (i *InitSection) getCommandFlags(profile *Profile) (flags *shell.Args) {
@@ -184,10 +185,10 @@ func (b *BackupSection) resolve(p *Profile) {
 func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
 	s.SendMonitoringSections.setRootPath(p, rootPath)
 
-	s.ExcludeFile = fixPaths(s.ExcludeFile, expandEnv, absolutePrefix(rootPath))
-	s.FilesFrom = fixPaths(s.FilesFrom, expandEnv, absolutePrefix(rootPath))
-	s.Exclude = fixPaths(s.Exclude, expandEnv)
-	s.Iexclude = fixPaths(s.Iexclude, expandEnv)
+	s.ExcludeFile = fixPaths(s.ExcludeFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	s.FilesFrom = fixPaths(s.FilesFrom, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	s.Exclude = fixPaths(s.Exclude, expandEnv, expandUserHome)
+	s.Iexclude = fixPaths(s.Iexclude, expandEnv, expandUserHome)
 }
 
 // RetentionSection contains the specific configuration to
@@ -259,8 +260,9 @@ func (s *CopySection) IsEmpty() bool { return s == nil }
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
 	c.SendMonitoringSections.setRootPath(p, rootPath)
 
-	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, absolutePrefix(rootPath))
-	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, absolutePrefix(rootPath))
+	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
 }
 
 func (s *CopySection) getInitFlags(profile *Profile) *shell.Args {
@@ -357,7 +359,7 @@ type SendMonitoringSections struct {
 func (s *SendMonitoringSections) setRootPath(_ *Profile, rootPath string) {
 	for _, monitoringSections := range s.getAllSendMonitoringSections() {
 		for index, value := range monitoringSections {
-			monitoringSections[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, absolutePrefix(rootPath))
+			monitoringSections[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, expandUserHome, absolutePrefix(rootPath))
 		}
 	}
 }
@@ -489,11 +491,12 @@ func (p *Profile) SetResticVersion(resticVersion string) (err error) {
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (p *Profile) SetRootPath(rootPath string) {
 	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath))
-	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, absolutePrefix(rootPath))
-	p.RepositoryFile = fixPath(p.RepositoryFile, expandEnv, absolutePrefix(rootPath))
-	p.CacheDir = fixPath(p.CacheDir, expandEnv, absolutePrefix(rootPath))
-	p.CACert = fixPath(p.CACert, expandEnv, absolutePrefix(rootPath))
-	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, absolutePrefix(rootPath))
+	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	p.RepositoryFile = fixPath(p.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	p.Repository.setValue(fixPath(p.Repository.Value(), expandEnv, expandUserHome))
+	p.CacheDir = fixPath(p.CacheDir, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	p.CACert = fixPath(p.CACert, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 
 	// Forward to sections accepting paths
 	for _, s := range GetSectionsWith[relativePath](p) {
@@ -513,7 +516,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 			if paths, ok := stringifyValueOf(section[flag]); ok && len(paths) > 0 {
 				for i, path := range paths {
 					if len(path) > 0 {
-						paths[i] = fixPath(path, expandEnv, absolutePrefix(rootPath))
+						paths[i] = fixPath(path, expandEnv, expandUserHome, absolutePrefix(rootPath))
 					}
 				}
 				section[flag] = paths
