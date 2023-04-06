@@ -77,7 +77,7 @@ The HCL format is special in that it cannot be mixed with other formats.
 
 Included files cannot include nested files. Specifying `includes` inside an included file has no effect.
 
-Within included files, the current [configuration path]({{< ref "/configuration/#path-resolution-in-configuration" >}}) is not changed. Path resolution remains relative to the path of the main configuration file.
+Within included files, the current [configuration path]({{< ref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" >}}) is not changed. Path resolution remains relative to the path of the main configuration file.
 
 ## Configuration Merging
 
@@ -89,7 +89,7 @@ Configuration files are loaded and applied in a fixed order:
 2. `includes` are iterated in declaration order:
    * Every item may be a single file path or glob expression
    * Glob expressions are resolved and iterated in alphabetical order
-   * All paths are resolved relative to [configuration path]({{< ref "/configuration/#path-resolution-in-configuration" >}})
+   * All paths are resolved relative to [configuration path]({{< ref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" >}})
 
 Configuration files are loaded in the following order when assuming `/etc/resticprofile/profiles.conf` with `includes = ["first.conf", "conf.d/*.conf", "last.conf"]`:
 ```

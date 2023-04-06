@@ -71,6 +71,7 @@ type Profile struct {
 	resticVersion           *semver.Version
 	Name                    string
 	Description             string                            `mapstructure:"description" description:"Describes the profile"`
+	BaseDir                 string                            `mapstructure:"base-dir" description:"Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead"`
 	Quiet                   bool                              `mapstructure:"quiet" argument:"quiet"`
 	Verbose                 int                               `mapstructure:"verbose" argument:"verbose"`
 	KeyHint                 string                            `mapstructure:"key-hint" argument:"key-hint"`
@@ -462,6 +463,9 @@ func (p *Profile) fillOtherSections() {
 func (p *Profile) ResolveConfiguration() {
 	p.fillOtherSections()
 
+	// Resolve paths that do not depend on root path
+	p.BaseDir = fixPath(p.BaseDir, expandEnv, expandUserHome)
+
 	// Resolve all sections implementing resolver
 	for _, r := range GetSectionsWith[resolver](p) {
 		r.resolve(p)
@@ -561,10 +565,11 @@ func (p *Profile) SetTag(tags ...string) {
 // SetPath will replace any path value from a boolean to sourcePaths and change paths to absolute
 func (p *Profile) SetPath(sourcePaths ...string) {
 	resolvePath := func(origin string, paths []string, revolver func(string) []string) (resolved []string) {
+		hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir)
 		for _, path := range paths {
 			if len(path) > 0 {
 				for _, rp := range revolver(path) {
-					if rp != path && p.config != nil {
+					if rp != path && p.config != nil && !hasAbsoluteBase {
 						p.config.reportChangedPath(rp, path, origin)
 					}
 					resolved = append(resolved, rp)

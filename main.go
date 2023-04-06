@@ -335,6 +335,24 @@ func runProfile(
 		return fmt.Errorf("cannot load profile '%s'", profileName)
 	}
 
+	if len(profile.BaseDir) > 0 {
+		if current, err := os.Getwd(); err == nil {
+			defer func(dir string) {
+				if e := os.Chdir(dir); e != nil {
+					panic(fmt.Errorf("failed restoring working directory %q: %w", dir, e))
+				}
+			}(current)
+		} else {
+			return fmt.Errorf("changing base directory not allowed as current directory is unknown in profile %q; cause: %w", profileName, err)
+		}
+
+		if err = os.Chdir(profile.BaseDir); err == nil {
+			clog.Infof("profile '%s': base directory is %q", profileName, profile.BaseDir)
+		} else {
+			return fmt.Errorf("cannot change to base directory %q in profile %q; cause: %w", profile.BaseDir, profileName, err)
+		}
+	}
+
 	displayProfileDeprecationNotices(profile)
 	c.DisplayConfigurationIssues()
 

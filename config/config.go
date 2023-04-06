@@ -321,9 +321,11 @@ func (c *Config) DisplayConfigurationIssues() {
 		}
 		sort.Strings(msg)
 		msg = append([]string{
-			"the configuration contains relative 'path' items which may lead to unstable results in restic " +
-				"commands that select snapshots. Consider using absolute paths in 'path' (and 'source') or use " +
-				"'tag' instead of 'path' (path = false) to select snapshots for restic commands. Affected paths:",
+			"the configuration contains relative \"path\" items which may lead to unstable results in restic " +
+				"commands that select snapshots. Consider using absolute paths in \"path\" (and \"source\"), " +
+				"set \"base-dir\" in the profile or use \"tag\" instead of \"path\" (path = false) to select " +
+				"snapshots for restic commands.",
+			"Affected paths are:",
 		}, msg...)
 		clog.Info(strings.Join(msg, fmt.Sprintln()))
 	}

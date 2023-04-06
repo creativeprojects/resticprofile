@@ -310,7 +310,10 @@ func TestSetRootInProfileUnix(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
 		testConfig := version + `
 [` + prefix + `profile]
+base-dir = "~"
 status-file = "status"
+prometheus-save-to-file = "prom"
+repository = "local-repo"
 password-file = "key"
 lock = "lock"
 [` + prefix + `profile.backup]
@@ -328,13 +331,19 @@ from-repository-file = "key"
 from-password-file = "key"
 `
 		profile, err := getProfile("toml", testConfig, "profile", "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		assert.NotNil(t, profile)
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+
+		homeDir, err := os.UserHomeDir()
+		require.NoError(t, err)
+
+		profile.ResolveConfiguration()
+		assert.Equal(t, homeDir, profile.BaseDir)
 
 		profile.SetRootPath("/wd")
 		assert.Equal(t, "status", profile.StatusFile)
+		assert.Equal(t, "local-repo", profile.Repository.Value())
+		assert.Equal(t, "prom", profile.PrometheusSaveToFile)
 		assert.Equal(t, "/wd/key", profile.PasswordFile)
 		assert.Equal(t, "/wd/lock", profile.Lock)
 		assert.Equal(t, "", profile.CacheDir)
@@ -540,7 +549,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 	backupTags := []string{"one", "two"}
 
-	testProfile := func(t *testing.T, version Version, retention string) *Profile {
+	testProfileWithBase := func(t *testing.T, version Version, retention, baseDir string) *Profile {
 		prefix := ""
 		if version > Version01 {
 			prefix = "profiles."
@@ -554,6 +563,8 @@ func TestPathAndTagInRetention(t *testing.T) {
 		config := `
             version = ` + fmt.Sprintf("%d", version) + `
 
+            [` + prefix + `profile]
+            base-dir = "` + baseDir + `"
             [` + prefix + `profile.backup]
             ` + tag + `
             source = ["` + sourcePattern + `"]
@@ -566,6 +577,10 @@ func TestPathAndTagInRetention(t *testing.T) {
 		require.NotNil(t, profile)
 
 		return profile
+	}
+
+	testProfile := func(t *testing.T, version Version, retention string) *Profile {
+		return testProfileWithBase(t, version, retention, "")
 	}
 
 	t.Run("Path", func(t *testing.T) {
@@ -603,6 +618,19 @@ func TestPathAndTagInRetention(t *testing.T) {
 			}
 			profile := testProfile(t, Version01, `path = ["relative/custom/path", "."]`)
 			assert.Equal(t, expected, pathFlag(t, profile))
+			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
+		})
+
+		t.Run("AbsoluteBasePath", func(t *testing.T) {
+			profile := testProfileWithBase(t, Version01, `path = ["."]`, t.TempDir())
+			assert.Equal(t, []string{cwd}, pathFlag(t, profile))
+			assert.Empty(t, profile.config.issues.changedPaths)
+		})
+
+		t.Run("RelativeBasePath", func(t *testing.T) {
+			expectedIssues := map[string][]string{`path "."`: {cwd}}
+			profile := testProfileWithBase(t, Version01, `path = ["."]`, "base")
+			assert.Equal(t, []string{cwd}, pathFlag(t, profile))
 			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
 		})
 
