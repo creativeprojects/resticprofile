@@ -564,7 +564,7 @@ func TestPathAndTagInRetention(t *testing.T) {
             version = ` + fmt.Sprintf("%d", version) + `
 
             [` + prefix + `profile]
-            base-dir = "` + baseDir + `"
+            base-dir = "` + filepath.ToSlash(baseDir) + `"
             [` + prefix + `profile.backup]
             ` + tag + `
             source = ["` + sourcePattern + `"]
@@ -575,6 +575,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 		profile, err := getResolvedProfile("toml", config, "profile")
 		require.NoError(t, err)
 		require.NotNil(t, profile)
+		profile.SetRootPath(examples) // ensure relative paths are converted to absolute paths
 
 		return profile
 	}
