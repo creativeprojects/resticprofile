@@ -129,6 +129,12 @@ resticprofile_build_info{goversion="go1.19",version="0.19.0"} 1
 
 ```
 
+## Prometheus Pushgateway
+
+Prometheus Pushgateway uses the job label as a grouping key. All metrics with the same grouping key get replaced when pushed. To prevent metrics from multiple profiles getting overwritten by each other, the default job label is set to `<profile_name>.<command>` (e.g. `root.backup`).
+
+If you need more control over the job label, you can use the `prometheus-push-job` property. This property can contain the `$command` placeholder, which is replaced with the name of the executed command.
+
 ## User defined labels
 
 You can add your own prometheus labels. Please note they will be applied to **all** the metrics.

@@ -1,6 +1,10 @@
 package prom
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
@@ -55,7 +59,17 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 		}
 	}
 	if p.profile.PrometheusPush != "" {
-		err := p.metrics.Push(p.profile.PrometheusPush, command)
+		jobName := p.profile.PrometheusPushJob
+		if jobName == "" {
+			jobName = fmt.Sprintf("%s.%s", p.profile.Name, command)
+		}
+		jobName = os.Expand(jobName, func(name string) string {
+			if strings.EqualFold(name, "command") {
+				return command
+			}
+			return ""
+		})
+		err := p.metrics.Push(p.profile.PrometheusPush, jobName)
 		if err != nil {
 			// not important enough to throw an error here
 			clog.Warningf("pushing prometheus metrics to %q: %v", p.profile.PrometheusPush, err)
