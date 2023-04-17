@@ -48,6 +48,9 @@ date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
 {{- end }}
 
 {{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- if .Env.WEB_BASE_URL -}}
+    {{- $webBaseUrl = .Env.WEB_BASE_URL -}}
+{{- end -}}
 {{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
 
 {{ define "printCell" -}}
@@ -344,7 +347,8 @@ JSON schema URLs for a specific *restic* version:
 * `.../config-2-restic-{MAJOR}-{MINOR}.json`
 
 Available URLs:
-{{ range $v := .KnownResticVersions }}
-  * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $v | replace "." "-" }}.json
-  * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $v | replace "." "-" }}.json
+{{ range $version := .KnownResticVersions }}
+    {{- $version = slice ($version | split ".") 0 2 | join "." -}}
+    * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $version | replace "." "-" }}.json
+    * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $version | replace "." "-" }}.json
 {{- end }}

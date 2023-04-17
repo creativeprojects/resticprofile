@@ -231,13 +231,19 @@ func main() {
 	}
 
 	// detect restic version
-	if len(global.ResticVersion) == 0 {
-		if global.ResticVersion, err = restic.GetVersion(resticBinary); err != nil {
-			clog.Warningf("assuming restic is at latest known version ; %s", err.Error())
-			global.ResticVersion = restic.AnyVersion
+	{
+		detected := ""
+		if len(global.ResticVersion) == 0 {
+			if global.ResticVersion, err = restic.GetVersion(resticBinary); err == nil {
+				detected = " (detected)"
+			} else {
+				clog.Warningf("assuming restic is at latest known version ; %s", err.Error())
+				global.ResticVersion = restic.AnyVersion
+				detected = "unknown version (any)"
+			}
 		}
+		clog.Debugf("restic %s%s", global.ResticVersion, detected)
 	}
-	clog.Debugf("restic %s", global.ResticVersion)
 
 	if c.HasProfile(flags.name) {
 		// if running as a systemd timer

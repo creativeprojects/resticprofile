@@ -85,7 +85,7 @@ version = "1"
 {{% tab name="yaml" %}}
 
 ```yaml
-# yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
+# yaml-language-server: $schema={{< absolute "jsonschema/config.json" nohtml >}}
 
 version: "1"
 
@@ -119,7 +119,7 @@ default {
 
 ```json
 {
-  "$schema": "{{< absolute "jsonschema/config-1.json" nohtml >}}",
+  "$schema": "{{< absolute "jsonschema/config.json" nohtml >}}",
   "version": "1",
   "default": {
     "repository": "local:/backup",

@@ -32,6 +32,7 @@ RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
 RESTIC_CMD=$(BUILD)restic-commands.json
 
+CONTRIB_DIR=contrib
 JSONSCHEMA_DIR=docs/static/jsonschema
 CONFIG_REFERENCE_DIR=docs/content/configuration/reference
 
@@ -192,6 +193,8 @@ generate-jsonschema: build
 	@echo "[*] $@"
 
 	mkdir -p $(JSONSCHEMA_DIR) || echo "$(JSONSCHEMA_DIR) exists"
+
+	$(abspath $(BINARY)) generate --config-reference $(CONTRIB_DIR)/templates/config-schema.gojson > $(JSONSCHEMA_DIR)/config.json
 
 	$(abspath $(BINARY)) generate --json-schema v1 > $(JSONSCHEMA_DIR)/config-1.json
 	$(abspath $(BINARY)) generate --json-schema v2 > $(JSONSCHEMA_DIR)/config-2.json

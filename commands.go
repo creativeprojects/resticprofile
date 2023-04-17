@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -235,8 +236,12 @@ func generateConfigReference(output io.Writer, args []string) (err error) {
 	}
 
 	data := config.NewTemplateInfoData(resticVersion)
-	tpl := templates.New("config-reference", data.GetFuncs())
+	name := "config-reference"
+	if len(args) > 0 {
+		name = filepath.Base(args[0])
+	}
 
+	tpl := templates.New(name, data.GetFuncs())
 	if len(args) > 0 {
 		tpl, err = tpl.ParseFiles(args...)
 	} else {
