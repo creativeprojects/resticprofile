@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/adrg/xdg v0.4.0
-	github.com/capnspacehook/taskmaster v0.0.0-20190802050140-eebf732b5748
+	github.com/capnspacehook/taskmaster v0.0.0-20210519235353-1629df7c85e9
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.13.0
 	github.com/creativeprojects/go-selfupdate v1.0.1
@@ -14,7 +14,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.14.0
-	github.com/rickb777/date v1.12.3
+	github.com/rickb777/date v1.14.2
 	github.com/shirou/gopsutil/v3 v3.23.1
 	github.com/spf13/afero v1.9.4
 	github.com/spf13/cast v1.5.0

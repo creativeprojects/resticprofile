@@ -72,7 +72,7 @@ func Connect() error {
 	var err error
 
 	if !IsConnected() {
-		taskService, err = taskmaster.Connect("", "", "", "")
+		taskService, err = taskmaster.Connect()
 	}
 	return err
 }
