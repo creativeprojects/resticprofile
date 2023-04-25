@@ -89,6 +89,7 @@ type Profile struct {
 	StatusFile              string                            `mapstructure:"status-file" description:"Path to the status file to update with a summary of last restic command result"`
 	PrometheusSaveToFile    string                            `mapstructure:"prometheus-save-to-file" description:"Path to the prometheus metrics file to update with a summary of the last restic command result"`
 	PrometheusPush          string                            `mapstructure:"prometheus-push" format:"uri" description:"URL of the prometheus push gateway to send the summary of the last restic command result to"`
+	PrometheusPushJob       string                            `mapstructure:"prometheus-push-job" description:"Prometheus push gateway job name. $command placeholder is replaced with restic command"`
 	PrometheusLabels        map[string]string                 `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
 	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process"`
 	Init                    *InitSection                      `mapstructure:"init"`
