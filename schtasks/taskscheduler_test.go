@@ -3,16 +3,21 @@
 package schtasks
 
 import (
-	"math"
+	"bytes"
+	"encoding/xml"
+	"os/exec"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/rickb777/date/period"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/html/charset"
 )
 
 func TestConversionWeekdaysToBitmap(t *testing.T) {
@@ -118,4 +123,79 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	monthlyDOWEvent, ok := task.Triggers[4].(taskmaster.MonthlyDOWTrigger)
 	require.True(t, ok)
 	t.Logf("%+v", monthlyDOWEvent)
+}
+
+func TestStatusUnknownTask(t *testing.T) {
+	err := Connect()
+	defer Close()
+	assert.NoError(t, err)
+
+	err = Status("test", "test")
+	assert.Error(t, err)
+	t.Log(err)
+}
+
+func TestCreationOfTasks(t *testing.T) {
+	fixtures := []struct {
+		description string
+		schedules   []string
+	}{
+		{
+			"single date time",
+			[]string{"2020-01-02 03:04"},
+		},
+	}
+
+	count := 0
+	for _, fixture := range fixtures {
+		count++
+		t.Run(fixture.description, func(t *testing.T) {
+			err := Connect()
+			defer Close()
+			assert.NoError(t, err)
+
+			scheduleConfig := &config.ScheduleConfig{
+				Title:            "test",
+				SubTitle:         strconv.Itoa(count),
+				Command:          "echo",
+				Arguments:        []string{"hello"},
+				WorkingDirectory: "C:\\",
+			}
+
+			schedules := make([]*calendar.Event, len(fixture.schedules))
+			for index, schedule := range fixture.schedules {
+				event := calendar.NewEvent()
+				err := event.Parse(schedule)
+				require.NoError(t, err)
+				schedules[index] = event
+			}
+			// user logged in doesn't need a password
+			err = createUserLoggedOnTask(scheduleConfig, schedules)
+			assert.NoError(t, err)
+			defer Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
+
+			taskName := getTaskPath(scheduleConfig.Title, scheduleConfig.SubTitle)
+			buffer, err := exportTask(taskName)
+			assert.NoError(t, err)
+
+			decoder := xml.NewDecoder(bytes.NewReader(buffer))
+			decoder.CharsetReader = charset.NewReaderLabel
+			for {
+				token, err := decoder.Token()
+				if token == nil {
+					break
+				}
+				assert.NoError(t, err)
+			}
+			t.Logf("%+v", string(buffer))
+		})
+	}
+}
+
+func exportTask(taskName string) ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	cmd := exec.Command("schtasks", "/query", "/xml", "/tn", taskName)
+	cmd.Stdout = buffer
+	err := cmd.Run()
+	return buffer.Bytes(), err
 }
