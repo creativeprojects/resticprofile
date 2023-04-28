@@ -380,7 +380,7 @@ func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 	_, compactDifferences := compileDifferences(recurrences)
 
 	if len(compactDifferences) == 1 {
-		// easy case
+		// case with regular repetition
 		interval, _ := period.NewOf(compactDifferences[0])
 		task.AddTrigger(taskmaster.DailyTrigger{
 			DayInterval: 1,
@@ -388,7 +388,7 @@ func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 				Enabled:       true,
 				StartBoundary: start,
 				RepetitionPattern: taskmaster.RepetitionPattern{
-					RepetitionDuration: period.NewYMD(0, 0, 1),
+					RepetitionDuration: getRepetionDuration(start, recurrences),
 					RepetitionInterval: interval,
 				},
 			},
@@ -436,7 +436,7 @@ func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) 
 	_, compactDifferences := compileDifferences(recurrences)
 
 	if len(compactDifferences) == 1 {
-		// easy case
+		// case with regular repetition
 		interval, _ := period.NewOf(compactDifferences[0])
 		task.AddTrigger(taskmaster.WeeklyTrigger{
 			DaysOfWeek:   taskmaster.DayOfWeek(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
@@ -445,7 +445,7 @@ func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) 
 				Enabled:       true,
 				StartBoundary: start,
 				RepetitionPattern: taskmaster.RepetitionPattern{
-					RepetitionDuration: period.NewYMD(0, 0, 1),
+					RepetitionDuration: getRepetionDuration(start, recurrences),
 					RepetitionInterval: interval,
 				},
 			},
@@ -652,4 +652,14 @@ func convertDaysToBitmap(days []int) int {
 		bitmap |= int(math.Exp2(float64(day - 1)))
 	}
 	return bitmap
+}
+
+func getRepetionDuration(start time.Time, recurrences []time.Time) period.Period {
+	last := recurrences[len(recurrences)-1]
+	duration := period.Between(start, last)
+	// convert 1439 minutes to 23 hours
+	if duration.DurationApprox() == 1439*time.Minute {
+		duration = period.NewHMS(0, 1440, 0)
+	}
+	return duration
 }

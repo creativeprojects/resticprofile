@@ -134,6 +134,7 @@ func TestStatusUnknownTask(t *testing.T) {
 	t.Log(err)
 }
 
+// this creates tasks through the API and compares it with the XML export
 func TestCreationOfTasks(t *testing.T) {
 	everyDay := ""
 	for day := 1; day <= 31; day++ {
@@ -166,7 +167,7 @@ func TestCreationOfTasks(t *testing.T) {
 		{
 			"every hour",
 			[]string{"*-*-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
@@ -178,8 +179,21 @@ func TestCreationOfTasks(t *testing.T) {
 		{
 			"every minute at 12",
 			[]string{"*-*-* 12:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
+		},
+		// daily - more than one
+		{
+			"three times a day",
+			[]string{"*-*-* 03..05:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT2H</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"twice every hour",
+			[]string{"*-*-* *:04..05"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			48,
 		},
 		// weekly
 		{
@@ -191,7 +205,7 @@ func TestCreationOfTasks(t *testing.T) {
 		{
 			"every hour on mondays",
 			[]string{"mon *-*-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
@@ -203,7 +217,20 @@ func TestCreationOfTasks(t *testing.T) {
 		{
 			"every minute at 12 on mondays",
 			[]string{"mon *-*-* 12:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		// more than once weekly
+		{
+			"twice weekly",
+			[]string{"mon *-*-* 03..04:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT1H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"twice mondays and tuesdays",
+			[]string{"mon,tue *-*-* 03:04..06"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT2M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*<Tuesday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
 		},
 		// monthly
@@ -219,6 +246,19 @@ func TestCreationOfTasks(t *testing.T) {
 			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*<January />\s*</Months>\s*<DaysOfMonth>\s*` + everyDay + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24,
 		},
+		// monthly with weekdays
+		{
+			"mondays in January",
+			[]string{"mon *-01-* 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January />\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every hour on Mondays in january",
+			[]string{"mon *-01-* *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January />\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
+			24,
+		},
 		// some days every month
 		{
 			"one day per month",
@@ -231,6 +271,13 @@ func TestCreationOfTasks(t *testing.T) {
 			[]string{"*-*-01 *:04"},
 			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24, // 1 per hour
+		},
+		// more than once per month
+		{
+			"twice in one day per month",
+			[]string{"*-*-01 03..04:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			2,
 		},
 	}
 
@@ -261,7 +308,7 @@ func TestCreationOfTasks(t *testing.T) {
 			// user logged in doesn't need a password
 			err = createUserLoggedOnTask(scheduleConfig, schedules)
 			assert.NoError(t, err)
-			defer Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
+			// defer Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
 
 			taskName := getTaskPath(scheduleConfig.Title, scheduleConfig.SubTitle)
 			buffer, err := exportTask(taskName)
@@ -273,7 +320,9 @@ func TestCreationOfTasks(t *testing.T) {
 
 			if t.Failed() {
 				t.Log(buffer)
+				return
 			}
+			Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
 		})
 	}
 }
