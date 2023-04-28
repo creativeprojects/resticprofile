@@ -105,8 +105,8 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	// 2nd task will be a daily recurring
 	dailyEvent, ok := task.Triggers[1].(taskmaster.DailyTrigger)
 	require.True(t, ok)
-	assert.Equal(t, period.NewHMS(0, 15, 0), dailyEvent.RepetitionInterval)
-	assert.Equal(t, period.NewYMD(0, 0, 1), dailyEvent.RepetitionDuration)
+	assert.Equal(t, period.NewHMS(0, 15, 0), dailyEvent.RepetitionInterval)  // 15 minutes
+	assert.Equal(t, period.NewHMS(23, 45, 0), dailyEvent.RepetitionDuration) // 23h 45 minutes
 
 	// 3rd task will be a weekly recurring
 	weeklyEvent, ok := task.Triggers[2].(taskmaster.WeeklyTrigger)
