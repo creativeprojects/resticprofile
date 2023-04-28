@@ -653,34 +653,3 @@ func convertDaysToBitmap(days []int) int {
 	}
 	return bitmap
 }
-
-// addMonthlyTrigger is a (hopefully) temporary fix for AddMonthlyTrigger
-// func addMonthlyTrigger(
-// 	taskDefinition *taskmaster.Definition,
-// 	dayOfMonth taskmaster.DayOfMonth,
-// 	monthOfYear taskmaster.Month,
-// 	randomDelay period.Period,
-// 	startBoundary time.Time) {
-// 	// check how many items we have now
-// 	countBefore := len(taskDefinition.Triggers)
-// 	tempDay := countBefore + 1
-// 	if tempDay > 31 {
-// 		tempDay -= 31
-// 	}
-// 	tempPeriod := period.NewHMS(11, tempDay, tempDay)
-// 	taskDefinition.AddMonthlyTrigger(tempDay, monthOfYear, tempPeriod, startBoundary)
-// 	// Now search for the previous entry to update it
-// 	for index, trigger := range taskDefinition.Triggers {
-// 		if monthlyTrigger, ok := trigger.(taskmaster.MonthlyTrigger); ok {
-// 			// check it's the right temporary data
-// 			if monthlyTrigger.DaysOfMonth == taskmaster.DayOfMonth(tempDay) &&
-// 				monthlyTrigger.RandomDelay == tempPeriod {
-// 				// update to the right data
-// 				monthlyTrigger.DaysOfMonth = dayOfMonth
-// 				monthlyTrigger.RandomDelay = randomDelay
-// 				taskDefinition.Triggers[index] = monthlyTrigger
-// 				break
-// 			}
-// 		}
-// 	}
-// }

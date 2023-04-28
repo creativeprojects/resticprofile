@@ -135,15 +135,102 @@ func TestStatusUnknownTask(t *testing.T) {
 }
 
 func TestCreationOfTasks(t *testing.T) {
+	everyDay := ""
+	for day := 1; day <= 31; day++ {
+		everyDay += `<Day>` + strconv.Itoa(day) + `</Day>\s*`
+	}
+	everyMonth := ""
+	for month := 1; month <= 12; month++ {
+		everyMonth += `<` + time.Month(month).String() + ` />\s*`
+	}
+
 	fixtures := []struct {
-		description string
-		schedules   []string
-		expected    string
+		description        string
+		schedules          []string
+		expected           string
+		expectedMatchCount int
 	}{
 		{
-			"single date time",
+			"only once",
 			[]string{"2020-01-02 03:04"},
 			`<TimeTrigger>\s*<StartBoundary>2020-01-02T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*</TimeTrigger>`,
+			1,
+		},
+		// daily
+		{
+			"once every day",
+			[]string{"*-*-* 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every hour",
+			[]string{"*-*-* *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every minute",
+			[]string{"*-*-* *:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every minute at 12",
+			[]string{"*-*-* 12:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			1,
+		},
+		// weekly
+		{
+			"once weekly",
+			[]string{"mon *-*-* 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every hour on mondays",
+			[]string{"mon *-*-* *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every minute on mondays",
+			[]string{"mon *-*-* *:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every minute at 12 on mondays",
+			[]string{"mon *-*-* 12:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		// monthly
+		{
+			"once monthly",
+			[]string{"*-01-* 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*<January />\s*</Months>\s*<DaysOfMonth>\s*` + everyDay + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every hour in january",
+			[]string{"*-01-* *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*<January />\s*</Months>\s*<DaysOfMonth>\s*` + everyDay + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			24,
+		},
+		// some days every month
+		{
+			"one day per month",
+			[]string{"*-*-01 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every hour on the 1st of each month",
+			[]string{"*-*-01 *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			24, // 1 per hour
 		},
 	}
 
@@ -161,6 +248,7 @@ func TestCreationOfTasks(t *testing.T) {
 				Command:          "echo",
 				Arguments:        []string{"hello"},
 				WorkingDirectory: "C:\\",
+				JobDescription:   fixture.description,
 			}
 
 			schedules := make([]*calendar.Event, len(fixture.schedules))
@@ -180,8 +268,12 @@ func TestCreationOfTasks(t *testing.T) {
 			assert.NoError(t, err)
 
 			pattern := regexp.MustCompile(fixture.expected)
-			match := pattern.FindString(buffer)
-			assert.NotEmptyf(t, match, "expected to find %q in %q", fixture.expected, buffer)
+			match := pattern.FindAllString(buffer, -1)
+			assert.Len(t, match, fixture.expectedMatchCount)
+
+			if t.Failed() {
+				t.Log(buffer)
+			}
 		})
 	}
 }
