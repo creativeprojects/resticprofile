@@ -18,7 +18,15 @@ func TestTemplateFuncs(t *testing.T) {
 	tests := []struct {
 		template, expected string
 	}{
+		{template: `{{ "some string" | contains "some" }}`, expected: `true`},
+		{template: `{{ "some string" | contains "else" }}`, expected: `false`},
+		{template: `{{ "1 2 3 5" | split " " | contains "3" }}`, expected: `true`},
+		{template: `{{ "1 2 3 5" | split " " | contains 03.0 }}`, expected: `true`},
+		{template: `{{ "1 2 3 5" | split " " | contains "23" }}`, expected: `false`},
+		{template: `{{ "some string" | matches "^.+str.+$" }}`, expected: `true`},
+		{template: `{{ "some string" | matches "^.+else.+$" }}`, expected: `false`},
 		{template: `{{ "some old string" | replace "old" "new" }}`, expected: `some new string`},
+		{template: `{{ "some old string" | replaceR "(old)" "$1 and new" }}`, expected: `some old and new string`},
 		{template: `{{ "some old string" | regex "(old)" "$1 and new" }}`, expected: `some old and new string`},
 		{template: `{{ "ABC" | lower }}`, expected: `abc`},
 		{template: `{{ "abc" | upper }}`, expected: `ABC`},
@@ -26,9 +34,15 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ "--A-" | trimPrefix "--" }}`, expected: `A-`},
 		{template: `{{ "--A-" | trimSuffix "-" }}`, expected: `--A`},
 		{template: `{{ "A,B,C" | split "," | join ";" }}`, expected: `A;B;C`},
+		{template: `{{ "A , B,C" | splitR "\\s*,\\s*" | join ";" }}`, expected: `A;B;C`},
 		{template: `{{ list "A" "B" "C" | join ";" }}`, expected: `A;B;C`},
+		{template: `{{ "1 2 3 5" | split " " | list | join "-" }}`, expected: `[1,2,3,5]`},
 		{template: `{{ range $v := "A,B,C" | split "," }} {{ $v }} {{ end }}`, expected: ` A  B  C `},
 		{template: `{{ range $v := list "A" "B" "C" }} {{ $v }} {{ end }}`, expected: ` A  B  C `},
+		{template: `{{ with $v := map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}`, expected: ` v1-v2 `},
+		{template: `{{ with $v := map "k1" nil nil "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}`, expected: ` <no value>-<no value> `},
+		{template: `{{ with $v := list "A" "B" nil "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._2 }}-{{ ._3 }} {{ end }}`, expected: ` A-B-<no value>-D `},
+		{template: `{{ with $v := list "A" "B" nil "D" | map "key" }} {{ .key | join "-" }} {{ end }}`, expected: ` A-B-<nil>-D `},
 		{template: `{{ tempDir }}`, expected: dir},
 		{template: `{{ tempDir }}`, expected: dir}, // constant results when repeated
 		{template: `{{ tempFile "test.txt" }}`, expected: file},

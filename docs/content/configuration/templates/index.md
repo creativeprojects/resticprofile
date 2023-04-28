@@ -579,9 +579,12 @@ Please note there are some functions only made available by hugo though, resticp
 ## Template functions
 
 resticprofile supports the following set of own functions in all templates:
-
+* `{{ "some string" | contains "some" }}` => `true`
+* `{{ "some string" | matches "^.+str.+$" }}` => `true`
 * `{{ "some old string" | replace "old" "new" }}` => `"some new string"`
+* `{{ "some old string" | replaceR "(old)" "$1 and new" }}` => `"some old and new string"`
 * `{{ "some old string" | regex "(old)" "$1 and new" }}` => `"some old and new string"`
+  (`regex` is an alias to `replaceR`) 
 * `{{ "ABC" | lower }}` => `"abc"`
 * `{{ "abc" | upper }}` => `"ABC"`
 * `{{ "  A " | trim }}` => `"A"`
@@ -589,10 +592,14 @@ resticprofile supports the following set of own functions in all templates:
 * `{{ "--A-" | trimSuffix "-" }}` => `"--A"`
 * `{{ "A,B,C" | split "," }}` => `["A", "B", "C"]`
 * `{{ "A,B,C" | split "," | join ";" }}` => `"A;B;C"`
+* `{{ "A, B, C" | splitR "\\s*,\\s*" | join ";" }}` => `"A;B;C"`
 * `{{ range $v := list "A" "B" "C" }} ({{ $v }}) {{ end }}` => ` (A)  (B)  (C) `
+* `{{ with $v := map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}` => ` v1-v2 `
+* `{{ with $v := list "A" "B" "C" "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._3 }} {{ end }}` => ` A-B-D `
+* `{{ with $v := list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}` => ` A-B-C-D `
 * `{{ tempDir }}` => `"/tmp/resticprofile.../t"` - unique OS specific existing temporary directory
 * `{{ tempFile "filename" }}` => `"/tmp/resticprofile.../t/filename"` - unique OS specific existing temporary file
 
-The temporary directory and files returned by the `{{ temp* }}` functions are guaranteed to exist, accessible and removed when resticprofile ends.
+The temporary directory and files returned by the `{{ temp* }}` functions are guaranteed to exist, be accessible and are removed when resticprofile ends.
 
 Please refer to the official documentation for the set of additional default functions provided in go templates. 
