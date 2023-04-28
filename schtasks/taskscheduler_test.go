@@ -4,8 +4,8 @@ package schtasks
 
 import (
 	"bytes"
-	"encoding/xml"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"testing"
 	"time"
@@ -17,7 +17,6 @@ import (
 	"github.com/rickb777/date/period"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/net/html/charset"
 )
 
 func TestConversionWeekdaysToBitmap(t *testing.T) {
@@ -139,10 +138,12 @@ func TestCreationOfTasks(t *testing.T) {
 	fixtures := []struct {
 		description string
 		schedules   []string
+		expected    string
 	}{
 		{
 			"single date time",
 			[]string{"2020-01-02 03:04"},
+			`<TimeTrigger>\s*<StartBoundary>2020-01-02T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*</TimeTrigger>`,
 		},
 	}
 
@@ -178,24 +179,17 @@ func TestCreationOfTasks(t *testing.T) {
 			buffer, err := exportTask(taskName)
 			assert.NoError(t, err)
 
-			decoder := xml.NewDecoder(bytes.NewReader(buffer))
-			decoder.CharsetReader = charset.NewReaderLabel
-			for {
-				token, err := decoder.Token()
-				if token == nil {
-					break
-				}
-				assert.NoError(t, err)
-			}
-			t.Logf("%+v", string(buffer))
+			pattern := regexp.MustCompile(fixture.expected)
+			match := pattern.FindString(buffer)
+			assert.NotEmptyf(t, match, "expected to find %q in %q", fixture.expected, buffer)
 		})
 	}
 }
 
-func exportTask(taskName string) ([]byte, error) {
+func exportTask(taskName string) (string, error) {
 	buffer := &bytes.Buffer{}
 	cmd := exec.Command("schtasks", "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
 	err := cmd.Run()
-	return buffer.Bytes(), err
+	return buffer.String(), err
 }
