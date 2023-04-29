@@ -308,7 +308,7 @@ func TestCreationOfTasks(t *testing.T) {
 			// user logged in doesn't need a password
 			err = createUserLoggedOnTask(scheduleConfig, schedules)
 			assert.NoError(t, err)
-			// defer Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
+			defer Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
 
 			taskName := getTaskPath(scheduleConfig.Title, scheduleConfig.SubTitle)
 			buffer, err := exportTask(taskName)
@@ -320,9 +320,7 @@ func TestCreationOfTasks(t *testing.T) {
 
 			if t.Failed() {
 				t.Log(buffer)
-				return
 			}
-			Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
 		})
 	}
 }
