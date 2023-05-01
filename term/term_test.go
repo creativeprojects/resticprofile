@@ -2,6 +2,7 @@ package term
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"testing"
 
@@ -60,22 +61,45 @@ func TestAskYesNo(t *testing.T) {
 		{"no\r\n", false, false},
 	}
 	for _, testItem := range testData {
+		StartRecording(RecordOutput)
 		result := AskYesNo(
 			bytes.NewBufferString(testItem.input),
 			"message",
 			testItem.defaultAnswer,
 		)
-		assert.Equalf(t, testItem.expected, result, "when input was %q", testItem.input)
+		assert.Contains(t, StopRecording(), "message? (")
+		assert.Equal(t, testItem.expected, result, "when input was %q", testItem.input)
 	}
 }
 
-func ExamplePrint() {
+func TestExamplePrint(t *testing.T) {
 	SetOutput(os.Stdout)
 	Print("ExamplePrint")
 	// Output: ExamplePrint
 }
 
+func TestOutputCapture(t *testing.T) {
+	SetOutput(os.Stdout)
+	SetErrorOutput(os.Stderr)
+
+	StartRecording(RecordOutput)
+	_, _ = Print("ExamplePrint")
+	assert.Equal(t, "ExamplePrint", ReadRecording())
+	_, _ = Print("1")
+	assert.Equal(t, "1", StopRecording())
+
+	StartRecording(RecordError)
+	_, _ = fmt.Fprintf(GetErrorOutput(), "ExamplePrint")
+	assert.Equal(t, "ExamplePrint", StopRecording())
+
+	StartRecording(RecordBoth)
+	_, _ = fmt.Fprintf(GetOutput(), "Info")
+	_, _ = fmt.Fprintf(GetErrorOutput(), "Error")
+	assert.Equal(t, "InfoError", StopRecording())
+}
+
 func TestCanRedirectTermOutput(t *testing.T) {
+	defer SetOutput(os.Stdout)
 	message := "TestCanRedirectTermOutput"
 	buffer := &bytes.Buffer{}
 	SetOutput(buffer)

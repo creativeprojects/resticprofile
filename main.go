@@ -84,6 +84,9 @@ func main() {
 		return
 	}
 
+	// Configure terminal color
+	term.EnableColorableOutput(!flags.noAnsi)
+
 	// setting up the logger - we can start logging right after
 	if flags.isChild {
 		// use a remote logger
