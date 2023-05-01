@@ -13,7 +13,7 @@ func TestPointerValueShouldReturnErrorMessage(t *testing.T) {
 	concrete := "test"
 	value := &concrete
 	argValue, _ := stringifyValueOf(value)
-	assert.Equal(t, []string{"ERROR: unexpected type ptr"}, argValue)
+	assert.Equal(t, []string{"test"}, argValue)
 }
 
 func TestNilValueFlag(t *testing.T) {

@@ -715,6 +715,10 @@ func (m *mockOutputAnalysis) GetRemoteLockedBy() (string, bool) {
 	return m.lockWho, len(m.lockWho) > 1
 }
 
+func (m *mockOutputAnalysis) GetFailedFiles() []string {
+	return nil
+}
+
 func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 	mockOutput := &mockOutputAnalysis{lockWho: "TestCanRetryAfterRemoteStaleLockFailure"}
 

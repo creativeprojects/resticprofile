@@ -171,6 +171,37 @@ func TestDeprecatedSection(t *testing.T) {
 	require.True(t, set.PropertyInfo("schedule").IsDeprecated())
 }
 
+func TestStdoutHiddenProperty(t *testing.T) {
+	var testType = struct {
+		RedirectOutputSection `mapstructure:",squash"`
+	}{}
+
+	var tests = []struct {
+		section  string
+		expected string
+	}{
+		{section: constants.CommandCat, expected: `Default is "true" when redirected`},
+		{section: constants.CommandDump, expected: `Default is "true" when redirected`},
+		{section: constants.CommandCopy, expected: ``},
+		{section: constants.CommandBackup, expected: ``}, // Default is "true" when "extended-status" is set
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			set := propertySetFromType(reflect.TypeOf(testType))
+			require.NotNil(t, set.PropertyInfo(constants.ParameterStdoutHidden))
+
+			base := set.PropertyInfo(constants.ParameterStdoutHidden).Description()
+			assert.NotEmpty(t, base)
+
+			customizeProperties(test.section, set.properties)
+			assert.Equal(t,
+				strings.TrimSuffix(strings.TrimSpace(fmt.Sprintf("%s. %s", base, test.expected)), "."),
+				set.PropertyInfo(constants.ParameterStdoutHidden).Description())
+		})
+	}
+}
+
 func TestHelpIsExcluded(t *testing.T) {
 	assert.True(t, isExcluded("*", "help"))
 	assert.False(t, isExcluded("*", "any-other"))

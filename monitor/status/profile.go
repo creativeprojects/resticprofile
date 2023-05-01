@@ -30,26 +30,22 @@ type CommandStatus struct {
 // BackupStatus contains the last backup status
 type BackupStatus struct {
 	CommandStatus
-	FilesNew        int    `json:"files_new"`
-	FilesChanged    int    `json:"files_changed"`
-	FilesUnmodified int    `json:"files_unmodified"`
-	DirsNew         int    `json:"dirs_new"`
-	DirsChanged     int    `json:"dirs_changed"`
-	DirsUnmodified  int    `json:"dirs_unmodified"`
-	FilesTotal      int    `json:"files_total"`
+	FilesNew        int64  `json:"files_new"`
+	FilesChanged    int64  `json:"files_changed"`
+	FilesUnmodified int64  `json:"files_unmodified"`
+	DirsNew         int64  `json:"dirs_new"`
+	DirsChanged     int64  `json:"dirs_changed"`
+	DirsUnmodified  int64  `json:"dirs_unmodified"`
+	FilesTotal      int64  `json:"files_total"`
 	BytesAdded      uint64 `json:"bytes_added"`
 	BytesTotal      uint64 `json:"bytes_total"`
+	SnapshotID      string `json:"snapshot_id"`
 }
 
 // BackupSuccess indicates the last backup was successful
 func (p *Profile) BackupSuccess(summary monitor.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
-		CommandStatus: CommandStatus{
-			Success:  true,
-			Time:     time.Now(),
-			Duration: int64(math.Ceil(summary.Duration.Seconds())),
-			Stderr:   stderr,
-		},
+		CommandStatus:   *newSuccess(summary.Duration, stderr),
 		FilesNew:        summary.FilesNew,
 		FilesChanged:    summary.FilesChanged,
 		FilesUnmodified: summary.FilesUnmodified,
@@ -59,30 +55,15 @@ func (p *Profile) BackupSuccess(summary monitor.Summary, stderr string) *Profile
 		FilesTotal:      summary.FilesTotal,
 		BytesAdded:      summary.BytesAdded,
 		BytesTotal:      summary.BytesTotal,
+		SnapshotID:      summary.SnapshotID,
 	}
 	return p
 }
 
 // BackupError sets the error of the last backup
 func (p *Profile) BackupError(err error, summary monitor.Summary, stderr string) *Profile {
-	p.Backup = &BackupStatus{
-		CommandStatus: CommandStatus{
-			Success:  false,
-			Time:     time.Now(),
-			Error:    err.Error(),
-			Duration: int64(math.Ceil(summary.Duration.Seconds())),
-			Stderr:   stderr,
-		},
-		FilesNew:        0,
-		FilesChanged:    0,
-		FilesUnmodified: 0,
-		DirsNew:         0,
-		DirsChanged:     0,
-		DirsUnmodified:  0,
-		FilesTotal:      0,
-		BytesAdded:      0,
-		BytesTotal:      0,
-	}
+	p.BackupSuccess(summary, stderr)
+	p.Backup.CommandStatus = *newError(err, summary.Duration, stderr)
 	return p
 }
 

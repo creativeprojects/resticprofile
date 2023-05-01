@@ -659,11 +659,10 @@ func NewProfileInfoForRestic(resticVersion string, withDefaultOptions bool) Prof
 	// Building initial set including generic sections (from data model)
 	profileSet := propertySetFromType(infoTypes.profile)
 	{
-		genericSection := propertySetFromType(infoTypes.genericSection)
 		for _, name := range infoTypes.genericSectionNames {
 			pi := new(propertyInfo)
 			pi.nested = &namedPropertySet{
-				propertySet: genericSection,
+				propertySet: propertySetFromType(infoTypes.genericSection),
 				name:        name,
 			}
 			profileSet.properties[name] = pi

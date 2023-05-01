@@ -25,6 +25,7 @@ type shellCommandDefinition struct {
 	sigChan     chan os.Signal
 	setPID      shell.SetPID
 	scanOutput  shell.ScanOutput
+	receivers   []monitor.Receiver
 	streamError []config.StreamErrorSection
 }
 
@@ -88,6 +89,7 @@ func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, s
 	// scan output
 	if command.scanOutput != nil {
 		shellCmd.ScanStdout = command.scanOutput
+		shellCmd.Receivers = command.receivers
 	}
 
 	// stderr callbacks

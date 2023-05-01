@@ -14,6 +14,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/monitor/console"
 	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/preventsleep"
@@ -403,6 +404,7 @@ func runProfile(
 	}
 
 	// add progress receivers if necessary
+	wrapper.addProgress(console.NewProgress(profile))
 	if profile.StatusFile != "" {
 		wrapper.addProgress(status.NewProgress(profile, status.NewStatus(profile.StatusFile)))
 	}

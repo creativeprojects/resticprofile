@@ -205,7 +205,10 @@ func stringify(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
 		sort.Strings(flatMap)
 		return flatMap, len(flatMap) > 0
 
-	case reflect.Interface:
+	case reflect.Interface, reflect.Pointer:
+		if value.IsNil() {
+			return emptyStringArray, false
+		}
 		return stringify(value.Elem(), onlySimplyValues)
 
 	default:

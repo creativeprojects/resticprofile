@@ -29,7 +29,7 @@ type SetPID func(pid int)
 
 // ScanOutput is a callback to scan the default output of the command
 // The implementation is expected to send everything read from the reader back to the writer
-type ScanOutput func(r io.Reader, summary *monitor.Summary, w io.Writer) error
+type ScanOutput func(r io.Reader, provider monitor.Provider, w io.Writer) error
 
 // Command holds the configuration to run a shell command
 type Command struct {
@@ -43,6 +43,7 @@ type Command struct {
 	Stderr     io.Writer
 	SetPID     SetPID
 	ScanStdout ScanOutput
+	Receivers  []monitor.Receiver
 	sigChan    chan os.Signal
 	done       chan interface{}
 	analyser   *OutputAnalyser
@@ -80,11 +81,14 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	var err error
 	var stdout, stderr io.ReadCloser
 
-	summary := monitor.Summary{OutputAnalysis: c.analyser.Reset()}
+	provider := monitor.NewProvider(c.Receivers...)
+	provider.UpdateSummary(func(summary *monitor.Summary) {
+		summary.OutputAnalysis = c.analyser.Reset()
+	})
 
 	command, args, err := c.GetShellCommand()
 	if err != nil {
-		return summary, "", err
+		return provider.CurrentSummary(), "", err
 	}
 
 	// clog.Tracef("command: %s %q", command, args)
@@ -94,7 +98,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 		// install a pipe for scanning the output
 		stdout, err = cmd.StdoutPipe()
 		if err != nil {
-			return summary, "", err
+			return provider.CurrentSummary(), "", err
 		}
 	} else {
 		cmd.Stdout = c.Stdout
@@ -116,7 +120,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 
 	// spawn the child process
 	if err = cmd.Start(); err != nil {
-		return summary, "", err
+		return provider.CurrentSummary(), "", err
 	}
 	if c.SetPID != nil {
 		// send the PID back (to write down in a lockfile)
@@ -132,18 +136,24 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 			c.propagateSignal(cmd.Process)
 			// close stdin (if possible) to unblock Wait on cmd.Process
 			if in, canClose := cmd.Stdin.(io.Closer); canClose && in != nil {
-				in.Close()
+				_ = in.Close()
 			}
 		}()
 	}
 
-	// output scanner
-	if stdout != nil {
-		err = c.ScanStdout(stdout, &summary, c.Stdout)
-		if err != nil {
-			return summary, "", err
+	// run output scanner (async)
+	scanResult := make(chan error, 1) // must be buffered chan (to not block on panic in ScanStdout)
+	go func() {
+		var err error
+		defer func() {
+			scanResult <- err
+			close(scanResult)
+		}()
+		if stdout != nil {
+			err = c.ScanStdout(stdout, provider, c.Stdout)
+			_, _ = io.Copy(c.Stdout, stdout) // copy remaining
 		}
-	}
+	}()
 
 	// handle command errors
 	errors := &bytes.Buffer{}
@@ -167,10 +177,20 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 		err = cmd.Wait()
 	}
 
+	// wait for output scanner
+	if scanErr := <-scanResult; scanErr != nil {
+		clog.Errorf("failed scanning stdout from command: %s ; Cause: %s", command, scanErr.Error())
+		if err == nil {
+			err = scanErr
+		}
+	}
+
 	// finish summary
-	summary.Duration = time.Since(start)
+	provider.UpdateSummary(func(summary *monitor.Summary) {
+		summary.Duration = time.Since(start)
+	})
 	errorText := errors.String()
-	return summary, errorText, err
+	return provider.CurrentSummary(), errorText, err
 }
 
 // GetShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)

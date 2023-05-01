@@ -5,15 +5,20 @@ import "time"
 // Summary of the profile run
 type Summary struct {
 	Duration        time.Duration
-	FilesNew        int
-	FilesChanged    int
-	FilesUnmodified int
-	DirsNew         int
-	DirsChanged     int
-	DirsUnmodified  int
-	FilesTotal      int
+	FilesNew        int64
+	FilesChanged    int64
+	FilesUnmodified int64
+	DirsNew         int64
+	DirsChanged     int64
+	DirsUnmodified  int64
+	FilesTotal      int64
 	BytesAdded      uint64
+	BytesStored     uint64
 	BytesTotal      uint64
+	Compression     float64
+	SnapshotID      string
+	Extended        bool
+	DryRun          bool
 	OutputAnalysis  OutputAnalysis
 }
 
@@ -28,4 +33,7 @@ type OutputAnalysis interface {
 
 	// GetRemoteLockedBy returns who locked the remote lock, if available.
 	GetRemoteLockedBy() (string, bool)
+
+	// GetFailedFiles returns a list of files that failed to get processed.
+	GetFailedFiles() []string
 }
