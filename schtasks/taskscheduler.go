@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rickb777/date/period"
 )
@@ -36,8 +37,9 @@ import (
 //    - on specific days (1 to 31)
 
 const (
-	tasksPath   = `\resticprofile backup\`
-	maxTriggers = 60
+	tasksPath      = `\resticprofile backup\`
+	maxTriggers    = 60
+	systemUserName = "SYSTEM"
 )
 
 // Permission is a choice between System, User and User Logged On
@@ -52,7 +54,7 @@ const (
 
 var (
 	// no need to recreate the service every time
-	taskService *taskmaster.TaskService
+	taskService taskmaster.TaskService
 	// current user
 	userName = ""
 	// ask the user password only once
@@ -64,7 +66,7 @@ var ErrorNotConnected = errors.New("local task scheduler not connected")
 
 // IsConnected returns whether a connection to the local task scheduler is established
 func IsConnected() bool {
-	return taskService != nil && taskService.IsConnected()
+	return taskService.IsConnected()
 }
 
 // Connect initializes a connection to the local task scheduler
@@ -72,18 +74,14 @@ func Connect() error {
 	var err error
 
 	if !IsConnected() {
-		taskService, err = taskmaster.Connect("", "", "", "")
+		taskService, err = taskmaster.Connect()
 	}
 	return err
 }
 
 // Close releases the ressources used by the task service
 func Close() {
-	if taskService == nil {
-		return
-	}
 	taskService.Disconnect()
-	taskService = nil
 }
 
 // Create or update a task (if the name already exists in the Task Scheduler)
@@ -105,10 +103,8 @@ func Create(config *config.ScheduleConfig, schedules []*calendar.Event, permissi
 func createUserTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.Title, config.SubTitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
-	if err != nil {
-		return err
-	}
-	if registeredTask != nil {
+	if err == nil {
+		// the task already exists
 		return updateUserTask(registeredTask, config, schedules)
 	}
 
@@ -118,16 +114,15 @@ func createUserTask(config *config.ScheduleConfig, schedules []*calendar.Event) 
 	}
 
 	task := taskService.NewTaskDefinition()
-
-	task.AddExecAction(
-		config.Command,
-		strings.Join(config.Arguments, " "),
-		config.WorkingDirectory,
-		"")
+	task.AddAction(taskmaster.ExecAction{
+		Path:       config.Command,
+		Args:       strings.Join(config.Arguments, " "),
+		WorkingDir: config.WorkingDirectory,
+	})
 	task.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
 	task.Principal.UserID = username
-	task.RegistrationInfo.Author = "resticprofile"
+	task.RegistrationInfo.Author = constants.ApplicationName
 	task.RegistrationInfo.Description = config.JobDescription
 
 	createSchedules(&task, schedules)
@@ -149,7 +144,7 @@ func createUserTask(config *config.ScheduleConfig, schedules []*calendar.Event) 
 }
 
 // updateUserTask updates an existing task
-func updateUserTask(task *taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
+func updateUserTask(task taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.Title, config.SubTitle)
 
 	username, password, err := userCredentials()
@@ -159,11 +154,11 @@ func updateUserTask(task *taskmaster.RegisteredTask, config *config.ScheduleConf
 
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
-	task.Definition.AddExecAction(
-		config.Command,
-		strings.Join(config.Arguments, " "),
-		config.WorkingDirectory,
-		"")
+	task.Definition.AddAction(taskmaster.ExecAction{
+		Path:       config.Command,
+		Args:       strings.Join(config.Arguments, " "),
+		WorkingDir: config.WorkingDirectory,
+	})
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
 	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
 	task.Definition.Principal.UserID = username
@@ -209,23 +204,20 @@ func userCredentials() (string, string, error) {
 func createUserLoggedOnTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.Title, config.SubTitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
-	if err != nil {
-		return err
-	}
-	if registeredTask != nil {
+	if err == nil {
+		// the task already exists
 		return updateUserLoggedOnTask(registeredTask, config, schedules)
 	}
 
 	task := taskService.NewTaskDefinition()
-
-	task.AddExecAction(
-		config.Command,
-		strings.Join(config.Arguments, " "),
-		config.WorkingDirectory,
-		"")
+	task.AddAction(taskmaster.ExecAction{
+		Path:       config.Command,
+		Args:       strings.Join(config.Arguments, " "),
+		WorkingDir: config.WorkingDirectory,
+	})
 	task.Principal.LogonType = taskmaster.TASK_LOGON_INTERACTIVE_TOKEN
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
-	task.RegistrationInfo.Author = "resticprofile"
+	task.RegistrationInfo.Author = constants.ApplicationName
 	task.RegistrationInfo.Description = config.JobDescription
 
 	createSchedules(&task, schedules)
@@ -247,16 +239,16 @@ func createUserLoggedOnTask(config *config.ScheduleConfig, schedules []*calendar
 }
 
 // updateUserLoggedOnTask updates an existing task
-func updateUserLoggedOnTask(task *taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
+func updateUserLoggedOnTask(task taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.Title, config.SubTitle)
 
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
-	task.Definition.AddExecAction(
-		config.Command,
-		strings.Join(config.Arguments, " "),
-		config.WorkingDirectory,
-		"")
+	task.Definition.AddAction(taskmaster.ExecAction{
+		Path:       config.Command,
+		Args:       strings.Join(config.Arguments, " "),
+		WorkingDir: config.WorkingDirectory,
+	})
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_INTERACTIVE_TOKEN
 	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_LUA
 
@@ -280,23 +272,21 @@ func updateUserLoggedOnTask(task *taskmaster.RegisteredTask, config *config.Sche
 func createSystemTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.Title, config.SubTitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
-	if err != nil {
-		return err
-	}
-	if registeredTask != nil {
+	if err == nil {
+		// the task already exists
 		return updateSystemTask(registeredTask, config, schedules)
 	}
 
 	task := taskService.NewTaskDefinition()
-	task.AddExecAction(
-		config.Command,
-		strings.Join(config.Arguments, " "),
-		config.WorkingDirectory,
-		"")
+	task.AddAction(taskmaster.ExecAction{
+		Path:       config.Command,
+		Args:       strings.Join(config.Arguments, " "),
+		WorkingDir: config.WorkingDirectory,
+	})
 	task.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
-	task.Principal.UserID = "SYSTEM"
-	task.RegistrationInfo.Author = "resticprofile"
+	task.Principal.UserID = systemUserName
+	task.RegistrationInfo.Author = constants.ApplicationName
 	task.RegistrationInfo.Description = config.JobDescription
 
 	createSchedules(&task, schedules)
@@ -312,19 +302,19 @@ func createSystemTask(config *config.ScheduleConfig, schedules []*calendar.Event
 }
 
 // updateSystemTask updates an existing task
-func updateSystemTask(task *taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
+func updateSystemTask(task taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.Title, config.SubTitle)
 
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
-	task.Definition.AddExecAction(
-		config.Command,
-		strings.Join(config.Arguments, " "),
-		config.WorkingDirectory,
-		"")
+	task.Definition.AddAction(taskmaster.ExecAction{
+		Path:       config.Command,
+		Args:       strings.Join(config.Arguments, " "),
+		WorkingDir: config.WorkingDirectory,
+	})
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
 	task.Definition.Principal.RunLevel = taskmaster.TASK_RUNLEVEL_HIGHEST
-	task.Definition.Principal.UserID = "SYSTEM"
+	task.Definition.Principal.UserID = systemUserName
 
 	// clear up all schedules and put them back
 	task.Definition.Triggers = []taskmaster.Trigger{}
@@ -341,7 +331,13 @@ func createSchedules(task *taskmaster.Definition, schedules []*calendar.Event) {
 	for _, schedule := range schedules {
 		if once, ok := schedule.AsTime(); ok {
 			// one time only
-			task.AddTimeTrigger(period.Period{}, once)
+			task.AddTrigger(taskmaster.TimeTrigger{
+				RandomDelay: period.Period{},
+				TaskTrigger: taskmaster.TaskTrigger{
+					Enabled:       true,
+					StartBoundary: once,
+				},
+			})
 			continue
 		}
 		if schedule.IsDaily() {
@@ -362,7 +358,6 @@ func createSchedules(task *taskmaster.Definition, schedules []*calendar.Event) {
 }
 
 func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
-	emptyPeriod := period.Period{}
 	start := schedule.Next(time.Now())
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
@@ -372,26 +367,32 @@ func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 	}
 	// Is it only once a day?
 	if len(recurrences) == 1 {
-		task.AddDailyTrigger(1, emptyPeriod, recurrences[0])
+		task.AddTrigger(taskmaster.DailyTrigger{
+			DayInterval: 1,
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: recurrences[0],
+			},
+		})
 		return
 	}
 	// now calculate the difference in between each, and check if they're all the same
 	_, compactDifferences := compileDifferences(recurrences)
 
 	if len(compactDifferences) == 1 {
-		// easy case
+		// case with regular repetition
 		interval, _ := period.NewOf(compactDifferences[0])
-		task.AddDailyTriggerEx(
-			1,
-			emptyPeriod,
-			"",
-			start,
-			time.Time{},
-			emptyPeriod,
-			period.NewYMD(0, 0, 1),
-			interval,
-			false,
-			true)
+		task.AddTrigger(taskmaster.DailyTrigger{
+			DayInterval: 1,
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: start,
+				RepetitionPattern: taskmaster.RepetitionPattern{
+					RepetitionDuration: getRepetionDuration(start, recurrences),
+					RepetitionInterval: interval,
+				},
+			},
+		})
 		return
 	}
 
@@ -401,12 +402,17 @@ func createDailyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
 	}
 	// install them all
 	for _, recurrence := range recurrences {
-		task.AddDailyTrigger(1, emptyPeriod, recurrence)
+		task.AddTrigger(taskmaster.DailyTrigger{
+			DayInterval: 1,
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: recurrence,
+			},
+		})
 	}
 }
 
 func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
-	emptyPeriod := period.Period{}
 	start := schedule.Next(time.Now())
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
@@ -416,29 +422,34 @@ func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) 
 	}
 	// Is it only once per 24h?
 	if len(recurrences) == 1 {
-		task.AddWeeklyTrigger(
-			taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
-			1, emptyPeriod, recurrences[0])
+		task.AddTrigger(taskmaster.WeeklyTrigger{
+			DaysOfWeek:   taskmaster.DayOfWeek(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+			WeekInterval: 1,
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: recurrences[0],
+			},
+		})
 		return
 	}
 	// now calculate the difference in between each, and check if they're all the same
 	_, compactDifferences := compileDifferences(recurrences)
 
 	if len(compactDifferences) == 1 {
-		// easy case
+		// case with regular repetition
 		interval, _ := period.NewOf(compactDifferences[0])
-		task.AddWeeklyTriggerEx(
-			taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
-			1,
-			emptyPeriod,
-			"",
-			start,
-			time.Time{},
-			emptyPeriod,
-			period.NewYMD(0, 0, 1),
-			interval,
-			false,
-			true)
+		task.AddTrigger(taskmaster.WeeklyTrigger{
+			DaysOfWeek:   taskmaster.DayOfWeek(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+			WeekInterval: 1,
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: start,
+				RepetitionPattern: taskmaster.RepetitionPattern{
+					RepetitionDuration: getRepetionDuration(start, recurrences),
+					RepetitionInterval: interval,
+				},
+			},
+		})
 		return
 	}
 
@@ -448,14 +459,18 @@ func createWeeklyTrigger(task *taskmaster.Definition, schedule *calendar.Event) 
 	}
 	// install them all
 	for _, recurrence := range recurrences {
-		task.AddWeeklyTrigger(
-			taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
-			1, emptyPeriod, recurrence)
+		task.AddTrigger(taskmaster.WeeklyTrigger{
+			DaysOfWeek:   taskmaster.DayOfWeek(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+			WeekInterval: 1,
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: recurrence,
+			},
+		})
 	}
 }
 
 func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event) {
-	emptyPeriod := period.Period{}
 	start := schedule.Next(time.Now())
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
@@ -475,29 +490,25 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 			return
 		}
 		if schedule.WeekDay.HasValue() {
-			task.AddMonthlyDOWTrigger(
-				taskmaster.Day(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
-				taskmaster.First|taskmaster.Second|taskmaster.Third|taskmaster.Fourth|taskmaster.Last,
-				taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
-				true,
-				emptyPeriod,
-				recurrence,
-			)
+			task.AddTrigger(taskmaster.MonthlyDOWTrigger{
+				DaysOfWeek:   taskmaster.DayOfWeek(convertWeekdaysToBitmap(schedule.WeekDay.GetRangeValues())),
+				WeeksOfMonth: taskmaster.AllWeeks,
+				MonthsOfYear: taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
+				TaskTrigger: taskmaster.TaskTrigger{
+					Enabled:       true,
+					StartBoundary: recurrence,
+				},
+			})
 			continue
 		}
-		// Temporary fix: https://github.com/capnspacehook/taskmaster/issues/10
-		// task.AddMonthlyTrigger(
-		// 	convertDaysToBitmap(schedule.Day.GetRangeValues()),
-		// 	taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
-		// 	emptyPeriod,
-		// 	recurrence,
-		// )
-		addMonthlyTrigger(task,
-			taskmaster.DayOfMonth(convertDaysToBitmap(schedule.Day.GetRangeValues())),
-			taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
-			emptyPeriod,
-			recurrence,
-		)
+		task.AddTrigger(taskmaster.MonthlyTrigger{
+			DaysOfMonth:  taskmaster.DayOfMonth(convertDaysToBitmap(schedule.Day.GetRangeValues())),
+			MonthsOfYear: taskmaster.Month(convertMonthsToBitmap(schedule.Month.GetRangeValues())),
+			TaskTrigger: taskmaster.TaskTrigger{
+				Enabled:       true,
+				StartBoundary: recurrence,
+			},
+		})
 	}
 }
 
@@ -527,10 +538,8 @@ func Status(title, subtitle string) error {
 	taskName := getTaskPath(title, subtitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
-		return err
-	}
-	if registeredTask == nil {
-		return fmt.Errorf("%w: %s", ErrorNotRegistered, taskName)
+		// if there's an error here, it is very likely that the task is not registered
+		return fmt.Errorf("%s: %w: %s", taskName, ErrorNotRegistered, err)
 	}
 	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintf(writer, "Task:\t %s\n", registeredTask.Path)
@@ -645,33 +654,12 @@ func convertDaysToBitmap(days []int) int {
 	return bitmap
 }
 
-// addMonthlyTrigger is a (hopefully) temporary fix for AddMonthlyTrigger
-func addMonthlyTrigger(
-	taskDefinition *taskmaster.Definition,
-	dayOfMonth taskmaster.DayOfMonth,
-	monthOfYear taskmaster.Month,
-	randomDelay period.Period,
-	startBoundary time.Time) {
-	// check how many items we have now
-	countBefore := len(taskDefinition.Triggers)
-	tempDay := countBefore + 1
-	if tempDay > 31 {
-		tempDay -= 31
+func getRepetionDuration(start time.Time, recurrences []time.Time) period.Period {
+	last := recurrences[len(recurrences)-1]
+	duration := period.Between(start, last)
+	// convert 1439 minutes to 23 hours
+	if duration.DurationApprox() == 1439*time.Minute {
+		duration = period.NewHMS(0, 1440, 0)
 	}
-	tempPeriod := period.NewHMS(11, tempDay, tempDay)
-	taskDefinition.AddMonthlyTrigger(tempDay, monthOfYear, tempPeriod, startBoundary)
-	// Now search for the previous entry to update it
-	for index, trigger := range taskDefinition.Triggers {
-		if monthlyTrigger, ok := trigger.(taskmaster.MonthlyTrigger); ok {
-			// check it's the right temporary data
-			if monthlyTrigger.DaysOfMonth == taskmaster.DayOfMonth(tempDay) &&
-				monthlyTrigger.RandomDelay == tempPeriod {
-				// update to the right data
-				monthlyTrigger.DaysOfMonth = dayOfMonth
-				monthlyTrigger.RandomDelay = randomDelay
-				taskDefinition.Triggers[index] = monthlyTrigger
-				break
-			}
-		}
-	}
+	return duration
 }
