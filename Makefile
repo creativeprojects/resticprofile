@@ -64,11 +64,11 @@ $(GOBIN)/eget:
 
 $(GOBIN)/goreleaser: $(GOBIN)/eget
 	@echo "[*] $@"
-	eget goreleaser/goreleaser --to $(GOBIN)
+	eget goreleaser/goreleaser --upgrade-only --to $(GOBIN)
 
 $(GOBIN)/github-markdown-toc.go: $(GOBIN)/eget
 	@echo "[*] $@"
-	eget ekalinin/github-markdown-toc.go --file gh-md-toc --to $(GOBIN)
+	eget ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to $(GOBIN)
 
 .PHONY: prepare
 prepare: download

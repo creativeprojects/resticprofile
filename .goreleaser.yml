@@ -52,15 +52,51 @@ builds:
       - goos: darwin
         goarch: "386"
 
+  - id: resticprofile_no_self_update
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -tags=no_self_update
+    goos:
+      - darwin
+      - freebsd
+      - linux
+      - windows
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
+
 archives:
   - id: targz
     builds:
-    - resticprofile_targz
+      - resticprofile_targz
+    format: tar.gz
+
+  - id: targz_no_self_update
+    builds:
+      - resticprofile_no_self_update
+    name_template: '{{ .ProjectName }}_no_self_update_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format: tar.gz
 
   - id: zip
     builds:
-    - resticprofile_zip
+      - resticprofile_zip
     format: zip
     
 checksum:
@@ -78,51 +114,51 @@ changelog:
 
 dockers:
   - image_templates:
-    - "creativeprojects/resticprofile:latest-amd64"
-    - "creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
+      - "creativeprojects/resticprofile:latest-amd64"
+      - "creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
     ids:
-    - resticprofile_targz
+      - resticprofile_targz
     use: buildx
     goos: linux
     goarch: amd64
     dockerfile: build/Dockerfile
     extra_files:
-    - build/restic-amd64
-    - build/rclone-amd64
+      - build/restic-amd64
+      - build/rclone-amd64
     build_flag_templates:
-    - "--platform=linux/amd64"
-    - "--build-arg=ARCH=amd64"
+      - "--platform=linux/amd64"
+      - "--build-arg=ARCH=amd64"
   - image_templates:
-    - "creativeprojects/resticprofile:latest-arm64v8"
-    - "creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
+      - "creativeprojects/resticprofile:latest-arm64v8"
+      - "creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
     ids:
-    - resticprofile_targz
+      - resticprofile_targz
     use: buildx
     goos: linux
     goarch: arm64
     dockerfile: build/Dockerfile
     extra_files:
-    - build/restic-arm64
-    - build/rclone-arm64
+      - build/restic-arm64
+      - build/rclone-arm64
     build_flag_templates:
-    - "--platform=linux/arm64/v8"
-    - "--build-arg=ARCH=arm64"
+      - "--platform=linux/arm64/v8"
+      - "--build-arg=ARCH=arm64"
 
 docker_manifests:
   - name_template: creativeprojects/resticprofile:{{ .RawVersion }}
     image_templates:
-    - creativeprojects/resticprofile:{{ .RawVersion }}-amd64
-    - creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
+      - creativeprojects/resticprofile:{{ .RawVersion }}-amd64
+      - creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
   - name_template: creativeprojects/resticprofile:latest
     image_templates:
-    - creativeprojects/resticprofile:latest-amd64
-    - creativeprojects/resticprofile:latest-arm64v8
+      - creativeprojects/resticprofile:latest-amd64
+      - creativeprojects/resticprofile:latest-arm64v8
 
 brews:
   - 
     name: resticprofile
     ids:
-      - targz
+      - targz_no_self_update
     goarm: "6"
     tap:
       owner: creativeprojects

@@ -53,7 +53,8 @@ The configuration file accepts various formats:
 
 <!--te-->
 
+We recommend you start by reading the [getting started](https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html) section
 
 # Using resticprofile
 
-Documentation has been moved to [creativeprojects.github.io](https://creativeprojects.github.io/resticprofile/)
+The full documentation has been moved to [creativeprojects.github.io](https://creativeprojects.github.io/resticprofile/)
