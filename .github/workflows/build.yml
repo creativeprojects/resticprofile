@@ -20,6 +20,9 @@ jobs:
       matrix:
         go_version: ['1.19', '1.20']
         os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      OS: ${{ matrix.os }}
+      GO: ${{ matrix.go_version }}
 
     steps:
 
@@ -44,6 +47,12 @@ jobs:
 
       - name: Code coverage with codecov
         uses: codecov/codecov-action@v3
+        with:
+          env_vars: OS,GO
+          file: ./coverage.out
+          flags: unittests
+          fail_ci_if_error: false
+          verbose: true
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
