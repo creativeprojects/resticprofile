@@ -163,7 +163,7 @@ a:hover,
 }
 
 #sidebar select:hover,
-#sidebar .collapsible-menu label:hover,
+#sidebar .collapsible-menu li:not(.active) > label:hover,
 #sidebar .select-container:hover,
 #sidebar a:hover,
 #sidebar button:hover {

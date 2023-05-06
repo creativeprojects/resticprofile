@@ -182,7 +182,7 @@ body .searchbox span:hover {
 }
 
 body #sidebar select:hover,
-body #sidebar .collapsible-menu label:hover,
+body #sidebar .collapsible-menu li:not(.active) > label:hover,
 body #sidebar .select-container:hover,
 body #sidebar a:hover,
 body #sidebar button:hover {

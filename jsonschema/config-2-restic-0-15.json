@@ -3492,14 +3492,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -3906,14 +3906,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -4216,11 +4216,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "from-key-hint": {
                   "title": "from-key-hint",
                   "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -4277,6 +4272,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -4611,14 +4611,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -4829,11 +4829,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -4849,6 +4844,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5094,11 +5094,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -5119,6 +5114,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5817,11 +5817,6 @@
                   "description": "copy chunker parameters from the secondary repository (useful with the copy command) [restic \u003e= 0.10.0]",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "from-key-hint": {
                   "title": "from-key-hint",
                   "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -5855,6 +5850,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6013,17 +6013,17 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6241,14 +6241,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6453,11 +6453,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -6473,6 +6468,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6915,11 +6915,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -6935,6 +6930,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7185,6 +7185,12 @@
               "minLength": 0,
               "format": "uri"
             },
+            "prometheus-push-job": {
+              "title": "prometheus-push-job",
+              "description": "Prometheus push gateway job name. $command placeholder is replaced with restic command",
+              "type": "string",
+              "minLength": 0
+            },
             "prometheus-save-to-file": {
               "title": "prometheus-save-to-file",
               "description": "Path to the prometheus metrics file to update with a summary of the last restic command result",
@@ -7252,14 +7258,14 @@
                   "description": "do not modify the repository, just print what would be done [restic \u003e= 0.12.0]",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7549,14 +7555,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7751,14 +7757,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7993,11 +7999,6 @@
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -8049,6 +8050,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8301,11 +8307,6 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -8328,6 +8329,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "keep-daily": {
@@ -9040,11 +9046,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -9066,6 +9067,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9293,11 +9299,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -9313,6 +9314,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9581,11 +9587,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -9601,6 +9602,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9844,14 +9850,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {

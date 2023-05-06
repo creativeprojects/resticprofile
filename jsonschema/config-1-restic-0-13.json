@@ -2017,14 +2017,14 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -2262,14 +2262,14 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -2946,11 +2946,6 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "host": {
               "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
             },
@@ -2962,6 +2957,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3121,6 +3121,11 @@
               "description": "do not delete anything, just print what would be done",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "group-by": {
               "title": "group-by",
               "default": "host,paths",
@@ -3134,11 +3139,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -3689,14 +3689,14 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3806,17 +3806,17 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "host": {
               "$ref": "#/$defs/id-0c8ddafad83236e17c1fe5bedb0bb757"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -4216,6 +4216,12 @@
           "minLength": 0,
           "format": "uri"
         },
+        "prometheus-push-job": {
+          "title": "prometheus-push-job",
+          "description": "Prometheus push gateway job name. $command placeholder is replaced with restic command",
+          "type": "string",
+          "minLength": 0
+        },
         "prometheus-save-to-file": {
           "title": "prometheus-save-to-file",
           "description": "Path to the prometheus metrics file to update with a summary of the last restic command result",
@@ -4433,14 +4439,14 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -4675,6 +4681,11 @@
             "exclude": {
               "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "host": {
               "$ref": "#/$defs/id-0c8ddafad83236e17c1fe5bedb0bb757"
             },
@@ -4690,11 +4701,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5243,17 +5249,17 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "host": {
               "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5382,17 +5388,17 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "host": {
               "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5514,14 +5520,14 @@
               "description": "auto remove old cache directories",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {

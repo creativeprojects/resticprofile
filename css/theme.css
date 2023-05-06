@@ -170,7 +170,6 @@ dd {
     margin: .25rem 0 0 0;
     min-width: 1rem;
     position: absolute;
-    z-index: -1;
 }
 
 #sidebar ul li.visited > a .read-icon {
@@ -1586,17 +1585,17 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 }
 
 /* task list and its checkboxes */
-article ul li:has(input[type="checkbox"]) {
+article ul > li:has(> input[type="checkbox"]) {
     list-style: none;
     margin-inline-start: -1rem;
 }
 
-article ul li:has(input[type="checkbox"])::before {
+article ul > li:has(> input[type="checkbox"])::before {
     content: "\200B"; /* accessibilty for Safari https://developer.mozilla.org/en-US/docs/Web/CSS/list-style */
 }
 
 /* https://moderncss.dev/pure-css-custom-checkbox-style/ */
-article ul li input[type="checkbox"] {
+article ul > li > input[type="checkbox"] {
     -webkit-appearance: none;
     appearance: none;
     /* For iOS < 15 */
@@ -1613,7 +1612,7 @@ article ul li input[type="checkbox"] {
     width: 1.15em;
 }
 
-article ul li input[type="checkbox"]::before {
+article ul > li > input[type="checkbox"]::before {
     box-shadow: inset 1em 1em var(--INTERNAL-PRIMARY-color);
     clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
     content: "";
@@ -1626,7 +1625,7 @@ article ul li input[type="checkbox"]::before {
     background-color: CanvasText;
 }
 
-article ul li input[type="checkbox"]:checked::before {
+article ul > li > input[type="checkbox"]:checked::before {
     transform: scale(1);
 }
 
