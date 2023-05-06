@@ -538,6 +538,39 @@ source = "` + sourcePattern + `"
 	assert.Equal(t, sources, profile.Backup.Source)
 }
 
+func TestResolveSourcesAgainstBase(t *testing.T) {
+	backupSource := func(base, source string) []string {
+		config := `
+			[profile.backup]
+			source-base = "` + filepath.ToSlash(base) + `"
+			source = "` + filepath.ToSlash(source) + `"
+		`
+		profile, err := getProfile("toml", config, "profile", "./examples")
+		profile.ResolveConfiguration()
+		require.NoError(t, err)
+		assert.NotNil(t, profile)
+		return profile.Backup.Source
+	}
+
+	cwd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	t.Run("no-base", func(t *testing.T) {
+		assert.Equal(t, []string{"src"}, backupSource("", "src"))
+	})
+	t.Run("relative-base", func(t *testing.T) {
+		assert.Equal(t, []string{filepath.Join("rel", "src")}, backupSource("rel", "src"))
+	})
+	t.Run("absolute-base", func(t *testing.T) {
+		assert.Equal(t, []string{filepath.Join(cwd, "src")}, backupSource(cwd, "src"))
+	})
+	t.Run("env-var-base", func(t *testing.T) {
+		assert.NoError(t, os.Setenv("RP_TEST_CWD", cwd))
+		defer os.Unsetenv("RP_TEST_CWD")
+		assert.Equal(t, []string{filepath.Join(cwd, "path", "src")}, backupSource("${RP_TEST_CWD}/path", "src"))
+	})
+}
+
 func TestPathAndTagInRetention(t *testing.T) {
 	cwd, err := filepath.Abs(".")
 	require.NoError(t, err)

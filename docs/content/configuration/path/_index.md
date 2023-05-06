@@ -7,13 +7,15 @@ weight: 10
 ## How paths inside the configuration are resolved
 
 All file paths in the configuration are resolved relative to the configuration path, the path where 
-the configuration file was loaded from. 
+the main configuration file was loaded from. 
 
-The big **exceptions** are `source` in the `backup` section, `status-file` & `prometheus-save-to-file` and the 
+The big **exceptions** are `source` in the `backup` section, `status-file`, `prometheus-save-to-file` and the 
 restic `repository` (if it is a file). These paths are taken as specified, which means they are resolved 
-from the current working directory where you started resticprofile from. The profile flag `base-dir` 
-allows to set the working directory that resticprofile will change into so that profiles do no longer
-depend on the path where you started resticprofile from.
+from the current working directory where you started resticprofile from. 
+
+You can influence this behaviour with profile flag `base-dir`. It allows to set the working directory 
+that resticprofile will change into so that profiles do no longer depend on the path where you started 
+resticprofile from.
 
 For the following configuration example, when assuming it is stored in `/opt/resticprofile/profiles.*` and 
 resticprofile is started from `/home/user/`, the individual paths are resolved to:
@@ -36,6 +38,7 @@ version = "1"
   password-file = "password.txt"
 
   [default.backup]
+    source-base = ""
     source = [ "files" ]
 ```
 
@@ -51,6 +54,7 @@ default:
   password-file: "password.txt"
 
   backup:
+    source-base: ""
     source:
     - "files"
 ```
@@ -65,6 +69,7 @@ default {
     password-file = "password.txt"
 
     backup = {
+        source-base = ""
         source = [ "files" ]
     }
 }
@@ -81,6 +86,7 @@ default {
     "repository": "local:backup",
     "password-file": "password.txt",
     "backup": {
+      "source-base": "",
       "source": [
         "files"
       ]
@@ -93,7 +99,8 @@ default {
 {{% /tabs %}}
 
 {{% notice hint %}}
-Set `base-dir` to an absolute path to resolve `files` and `local:backup` relative to it
+Set `base-dir` to an absolute path to resolve `files` and `local:backup` relative to it.
+Set `source-base` if you need a separate base path for backup sources.
 {{% /notice %}}
 
 ## How the configuration file is resolved

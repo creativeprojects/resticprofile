@@ -16,7 +16,9 @@ type pathFix func(string) string
 // fixPath applies all the path fixing callbacks one by one
 func fixPath(value string, callbacks ...pathFix) string {
 	for _, callback := range callbacks {
-		value = callback(value)
+		if callback != nil {
+			value = callback(value)
+		}
 	}
 	return value
 }
