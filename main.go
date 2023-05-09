@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"syscall"
 	"text/tabwriter"
@@ -315,6 +316,48 @@ func setPriority(nice int, class string) error {
 	return nil
 }
 
+func openProfile(c *config.Config, profileName string) (profile *config.Profile, cleanup func(), err error) {
+	cleanup = func() {}
+	done := false
+
+	for attempts := 3; attempts > 0 && !done; attempts-- {
+		profile, err = c.GetProfile(profileName)
+		if err != nil || profile == nil {
+			err = fmt.Errorf("cannot load profile '%s': %w", profileName, err)
+			break
+		}
+
+		done = true
+
+		// Adjust baseDir if needed
+		if len(profile.BaseDir) > 0 {
+			var currentDir string
+			currentDir, err = os.Getwd()
+			if err != nil {
+				err = fmt.Errorf("changing base directory not allowed as current directory is unknown in profile %q: %w", profileName, err)
+				break
+			}
+
+			if baseDir, _ := filepath.Abs(profile.BaseDir); filepath.ToSlash(baseDir) != filepath.ToSlash(currentDir) {
+				cleanup = func() {
+					if e := os.Chdir(currentDir); e != nil {
+						panic(fmt.Errorf(`fatal: failed restoring working directory "%s": %w`, currentDir, e))
+					}
+				}
+
+				if err = os.Chdir(baseDir); err == nil {
+					clog.Infof("profile '%s': base directory is %q", profileName, baseDir)
+					done = false // reload the profile as .CurrentDir & .Env has changed
+				} else {
+					err = fmt.Errorf(`cannot change to base directory "%s" in profile %q: %w`, baseDir, profileName, err)
+					break
+				}
+			}
+		}
+	}
+	return
+}
+
 func runProfile(
 	c *config.Config,
 	global *config.Global,
@@ -325,32 +368,10 @@ func runProfile(
 	resticCommand string,
 	group string,
 ) error {
-	var err error
-
-	profile, err := c.GetProfile(profileName)
+	profile, cleanup, err := openProfile(c, profileName)
+	defer cleanup()
 	if err != nil {
-		clog.Warning(err)
-	}
-	if profile == nil {
-		return fmt.Errorf("cannot load profile '%s'", profileName)
-	}
-
-	if len(profile.BaseDir) > 0 {
-		if current, err := os.Getwd(); err == nil {
-			defer func(dir string) {
-				if e := os.Chdir(dir); e != nil {
-					panic(fmt.Errorf("failed restoring working directory %q: %w", dir, e))
-				}
-			}(current)
-		} else {
-			return fmt.Errorf("changing base directory not allowed as current directory is unknown in profile %q; cause: %w", profileName, err)
-		}
-
-		if err = os.Chdir(profile.BaseDir); err == nil {
-			clog.Infof("profile '%s': base directory is %q", profileName, profile.BaseDir)
-		} else {
-			return fmt.Errorf("cannot change to base directory %q in profile %q; cause: %w", profile.BaseDir, profileName, err)
-		}
+		return err
 	}
 
 	displayProfileDeprecationNotices(profile)

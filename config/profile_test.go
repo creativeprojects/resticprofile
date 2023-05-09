@@ -295,11 +295,13 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 		require.NoError(t, err)
 		repoPath := filepath.ToSlash(filepath.Join(homeDir, testVar))
 
-		profile.SetRootPath("/any")
+		profile.ResolveConfiguration()
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Repository.Value()))
-		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Init.FromRepository.Value()))
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.Repository.Value()))
+
+		profile.SetRootPath("any")
+		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
 	})
 }
 
@@ -339,15 +341,18 @@ from-password-file = "key"
 
 		profile.ResolveConfiguration()
 		assert.Equal(t, homeDir, profile.BaseDir)
+		assert.Equal(t, "local-repo", profile.Repository.Value())
 
 		profile.SetRootPath("/wd")
 		assert.Equal(t, "status", profile.StatusFile)
-		assert.Equal(t, "local-repo", profile.Repository.Value())
 		assert.Equal(t, "prom", profile.PrometheusSaveToFile)
 		assert.Equal(t, "/wd/key", profile.PasswordFile)
 		assert.Equal(t, "/wd/lock", profile.Lock)
 		assert.Equal(t, "", profile.CacheDir)
-		assert.ElementsMatch(t, []string{"backup", "root"}, profile.GetBackupSource())
+		assert.ElementsMatch(t, []string{
+			filepath.Join(homeDir, "backup"),
+			filepath.Join(homeDir, "root"),
+		}, profile.GetBackupSource())
 		assert.ElementsMatch(t, []string{"/wd/exclude"}, profile.Backup.ExcludeFile)
 		assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)

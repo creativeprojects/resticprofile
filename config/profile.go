@@ -124,10 +124,13 @@ type InitSection struct {
 
 func (i *InitSection) IsEmpty() bool { return i == nil }
 
+func (i *InitSection) resolve(p *Profile) {
+	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
+}
+
 func (i *InitSection) setRootPath(_ *Profile, rootPath string) {
 	i.FromRepositoryFile = fixPath(i.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	i.FromPasswordFile = fixPath(i.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
 }
 
 func (i *InitSection) getCommandFlags(profile *Profile) (flags *shell.Args) {
@@ -269,12 +272,15 @@ type CopySection struct {
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
 
+func (c *CopySection) resolve(p *Profile) {
+	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
+}
+
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
 	c.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
 
 	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
 }
 
 func (s *CopySection) getInitFlags(profile *Profile) *shell.Args {
@@ -466,6 +472,7 @@ func (p *Profile) ResolveConfiguration() {
 
 	// Resolve paths that do not depend on root path
 	p.BaseDir = fixPath(p.BaseDir, expandEnv, expandUserHome)
+	p.Repository.setValue(fixPath(p.Repository.Value(), expandEnv, expandUserHome))
 
 	// Resolve all sections implementing resolver
 	for _, r := range GetSectionsWith[resolver](p) {
@@ -510,7 +517,6 @@ func (p *Profile) SetRootPath(rootPath string) {
 	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath))
 	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.RepositoryFile = fixPath(p.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	p.Repository.setValue(fixPath(p.Repository.Value(), expandEnv, expandUserHome))
 	p.CacheDir = fixPath(p.CacheDir, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.CACert = fixPath(p.CACert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, expandUserHome, absolutePrefix(rootPath))
@@ -542,13 +548,21 @@ func (p *Profile) SetRootPath(rootPath string) {
 	}
 }
 
-func (p *Profile) resolveSourcePath(base string, sourcePaths ...string) []string {
-	// Backup source is NOT relative to the configuration, but to PWD or base (if not empty)
-	var applyBase pathFix
-	if base = strings.TrimSpace(base); base != "" {
-		applyBase = absolutePrefix(base)
+func (p *Profile) resolveSourcePath(sourceBase string, sourcePaths ...string) []string {
+	var applySourceBase, applyBaseDir pathFix
+
+	// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
+	// Applying "sourceBase" if set
+	if sourceBase = strings.TrimSpace(sourceBase); sourceBase != "" {
+		sourceBase = fixPath(sourceBase, expandEnv, expandUserHome)
+		applySourceBase = absolutePrefix(sourceBase)
 	}
-	sourcePaths = fixPaths(sourcePaths, applyBase, expandEnv, expandUserHome)
+	// Applying a custom PWD eagerly so that own commands (e.g. "show") display correct paths
+	if p.BaseDir != "" {
+		applyBaseDir = absolutePrefix(p.BaseDir)
+	}
+
+	sourcePaths = fixPaths(sourcePaths, expandEnv, expandUserHome, applySourceBase, applyBaseDir)
 	sourcePaths = resolveGlob(sourcePaths)
 	sourcePaths = fixPaths(sourcePaths, filepath.ToSlash, filepath.FromSlash)
 	return sourcePaths

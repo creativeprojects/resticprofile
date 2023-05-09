@@ -339,6 +339,11 @@ func (c *Config) DisplayConfigurationIssues() {
 	}
 
 	// Reset issues
+	c.ClearConfigurationIssues()
+}
+
+// ClearConfigurationIssues removes all configuration issues
+func (c *Config) ClearConfigurationIssues() {
 	c.issues.changedPaths = nil
 	c.issues.failedSection = nil
 }
@@ -524,6 +529,8 @@ func (c *Config) loadGroups() (err error) {
 
 // GetProfile in configuration. If the profile is not found, it returns errNotFound
 func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
+	c.ClearConfigurationIssues()
+
 	if c.sourceTemplates != nil {
 		err = c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
 		if err != nil {
