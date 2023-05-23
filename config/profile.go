@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
@@ -249,13 +251,19 @@ type ScheduleBaseSection struct {
 	SchedulePriority   string        `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
 	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+	ScheduleEnvCapture []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule."`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
 	s.ScheduleLog = fixPath(s.ScheduleLog, expandEnv, expandUserHome)
 }
 
-func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection { return s }
+func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection {
+	if s != nil && s.ScheduleEnvCapture == nil {
+		s.ScheduleEnvCapture = []string{"RESTIC_*"}
+	}
+	return s
+}
 
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
@@ -737,8 +745,24 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 	for name, section := range sections {
 		if s := section.GetSchedule(); len(s.Schedule) > 0 {
 			env := map[string]string{}
+			// Capture OS env
+			if len(s.ScheduleEnvCapture) > 0 {
+				for _, envValue := range os.Environ() {
+					kv := strings.SplitN(envValue, "=", 2)
+					key, value := strings.ToUpper(strings.TrimSpace(kv[0])), kv[1]
+
+					for _, pattern := range s.ScheduleEnvCapture {
+						if matched, err := filepath.Match(pattern, key); err == nil && matched {
+							env[key] = value
+						} else if err != nil {
+							clog.Tracef("env not matched with invalid glob expression '%s': %s", pattern, err.Error())
+						}
+					}
+				}
+			}
+			// Add env from profile
 			for key, value := range p.Environment {
-				env[key] = value.Value()
+				env[strings.ToUpper(strings.TrimSpace(key))] = value.Value()
 			}
 
 			config := &ScheduleConfig{
