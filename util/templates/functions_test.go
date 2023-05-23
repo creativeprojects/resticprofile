@@ -39,14 +39,19 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ "1 2 3 5" | split " " | list | join "-" }}`, expected: `[1,2,3,5]`},
 		{template: `{{ range $v := "A,B,C" | split "," }} {{ $v }} {{ end }}`, expected: ` A  B  C `},
 		{template: `{{ range $v := list "A" "B" "C" }} {{ $v }} {{ end }}`, expected: ` A  B  C `},
-		{template: `{{ with $v := map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}`, expected: ` v1-v2 `},
-		{template: `{{ with $v := map "k1" nil nil "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}`, expected: ` <no value>-<no value> `},
-		{template: `{{ with $v := list "A" "B" nil "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._2 }}-{{ ._3 }} {{ end }}`, expected: ` A-B-<no value>-D `},
-		{template: `{{ with $v := list "A" "B" nil "D" | map "key" }} {{ .key | join "-" }} {{ end }}`, expected: ` A-B-<nil>-D `},
+		{template: `{{ with map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}`, expected: ` v1-v2 `},
+		{template: `{{ with map "k1" nil nil "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}`, expected: ` <no value>-<no value> `},
+		{template: `{{ with list "A" "B" nil "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._2 }}-{{ ._3 }} {{ end }}`, expected: ` A-B-<no value>-D `},
+		{template: `{{ with list "A" "B" nil "D" | map "key" }} {{ .key | join "-" }} {{ end }}`, expected: ` A-B-<nil>-D `},
 		{template: `{{ tempDir }}`, expected: dir},
 		{template: `{{ tempDir }}`, expected: dir}, // constant results when repeated
 		{template: `{{ tempFile "test.txt" }}`, expected: file},
 		{template: `{{ tempFile "test.txt" }}`, expected: file}, // constant results when repeated
+		{template: `{{ "a & b\n" | html }}`, expected: "a &amp; b\n"},
+		{template: `{{ "a & b\n" | urlquery }}`, expected: "a+%26+b%0A"},
+		{template: `{{ "a & b\n" | js }}`, expected: "a \\u0026 b\\u000A"},
+		{template: `{{ "plain" | hex }}`, expected: "706c61696e"},
+		{template: `{{ "plain" | base64 }}`, expected: "cGxhaW4="},
 		{template: `{{ hello }}`, expected: `Hello World`},
 	}
 

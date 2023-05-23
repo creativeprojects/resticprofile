@@ -579,27 +579,43 @@ Please note there are some functions only made available by hugo though, resticp
 ## Template functions
 
 resticprofile supports the following set of own functions in all templates:
+
 * `{{ "some string" | contains "some" }}` => `true`
 * `{{ "some string" | matches "^.+str.+$" }}` => `true`
-* `{{ "some old string" | replace "old" "new" }}` => `"some new string"`
-* `{{ "some old string" | replaceR "(old)" "$1 and new" }}` => `"some old and new string"`
-* `{{ "some old string" | regex "(old)" "$1 and new" }}` => `"some old and new string"`
+* `{{ "some old string" | replace "old" "new" }}` => `some new string`
+* `{{ "some old string" | replaceR "(old)" "$1 and new" }}` => `some old and new string`
+* `{{ "some old string" | regex "(old)" "$1 and new" }}` => `some old and new string`
   (`regex` is an alias to `replaceR`) 
-* `{{ "ABC" | lower }}` => `"abc"`
-* `{{ "abc" | upper }}` => `"ABC"`
-* `{{ "  A " | trim }}` => `"A"`
-* `{{ "--A-" | trimPrefix "--" }}` => `"A-"`
-* `{{ "--A-" | trimSuffix "-" }}` => `"--A"`
-* `{{ "A,B,C" | split "," }}` => `["A", "B", "C"]`
-* `{{ "A,B,C" | split "," | join ";" }}` => `"A;B;C"`
-* `{{ "A, B, C" | splitR "\\s*,\\s*" | join ";" }}` => `"A;B;C"`
+* `{{ "ABC" | lower }}` => `abc`
+* `{{ "abc" | upper }}` => `ABC`
+* `{{ "  A " | trim }}` => `A`
+* `{{ "--A-" | trimPrefix "--" }}` => `A-`
+* `{{ "--A-" | trimSuffix "-" }}` => `--A`
+* `{{ range $v := "A,B,C" | split "," }} ({{ $v }}) {{ end }}` => ` (A)  (B)  (C) `
+* `{{ "A,B,C" | split "," | join ";" }}` => `A;B;C`
+* `{{ "A, B, C" | splitR "\\s*,\\s*" | join ";" }}` => `A;B;C`
 * `{{ range $v := list "A" "B" "C" }} ({{ $v }}) {{ end }}` => ` (A)  (B)  (C) `
-* `{{ with $v := map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}` => ` v1-v2 `
-* `{{ with $v := list "A" "B" "C" "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._3 }} {{ end }}` => ` A-B-D `
-* `{{ with $v := list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}` => ` A-B-C-D `
-* `{{ tempDir }}` => `"/tmp/resticprofile.../t"` - unique OS specific existing temporary directory
-* `{{ tempFile "filename" }}` => `"/tmp/resticprofile.../t/filename"` - unique OS specific existing temporary file
+* `{{ with map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}` => ` v1-v2 `
+* `{{ with list "A" "B" "C" "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._3 }} {{ end }}` => ` A-B-D `
+* `{{ with list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}` => ` A-B-C-D `
+* `{{ tempDir }}` => `/tmp/resticprofile.../t` - unique OS specific existing temporary directory
+* `{{ tempFile "filename" }}` => `/tmp/resticprofile.../t/filename` - unique OS specific existing temporary file
 
-The temporary directory and files returned by the `{{ temp* }}` functions are guaranteed to exist, be accessible and are removed when resticprofile ends.
+All `{{ temp* }}` functions guarantee that returned temporary directories and files are existing & writable. 
+When resticprofile ends, temporary directories and files are removed.
 
-Please refer to the official documentation for the set of additional default functions provided in go templates. 
+The following functions can be used to encode data (e.g. when dealing with arbitrary input):
+
+* `{{ "a & b\n" | js }}` => `a \u0026 b\u000A` - JSON string equivalent of the input (*builtin*)
+* `{{ "a & b\n" | html }}` => `a &amp; b\n` - HTML text escaped input (*builtin*)
+* `{{ "a & b\n" | urlquery }}` => `a+%26+b%0A` - URL query escaped input (*builtin*)
+* `{{ "plain" | base64 }}` => `cGxhaW4=` - Base64 encoded input
+* `{{ "plain" | hex }}` => `706c61696e` - Hexadecimal encoded input
+
+{{% notice hint %}}
+Encode with `js` when creating **strings** in *YAML*, *TOML* or *JSON* configuration files, e.g.: `"{{ .Env.MyVar | js }}"`. 
+This ensures the markup remains correct and can be parsed regardless of the input data.
+{{% /notice %}}
+
+
+Please refer to the [official documentation](https://golang.org/pkg/text/template/) for the general syntax and set of default functions provided in go text templates. 

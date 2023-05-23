@@ -1,6 +1,8 @@
 package templates
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path"
@@ -36,6 +38,8 @@ import (
 //   - {{ with $v := map "k1" "v1" "k2" "v2" }} {{ .k1 }}-{{ .k2 }} {{ end }}  => " v1-v2 "
 //   - {{ with $v := list "A" "B" "C" "D" | map }} {{ ._0 }}-{{ ._1 }}-{{ ._3 }} {{ end }}  => " A-B-D "
 //   - {{ with $v := list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}  => " A-B-C-D "
+//   - {{ "plain" | hex }} => "706c61696e"
+//   - {{ "plain" | base64 }} => "cGxhaW4="
 //   - {{ tempDir }} => "/path/to/unique-tempdir"
 //   - {{ tempFile "filename" }} => "/path/to/unique-tempdir/filename"
 func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
@@ -63,6 +67,8 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 		"join":       func(sep string, src []any) string { return strings.Join(collect.From(src, toString), sep) },
 		"list":       func(args ...any) []any { return args },
 		"map":        toMap,
+		"base64":     func(src any) string { return base64.StdEncoding.EncodeToString([]byte(toString(src))) },
+		"hex":        func(src any) string { return hex.EncodeToString([]byte(toString(src))) },
 		"tempDir":    TempDir,
 		"tempFile":   TempFile,
 	}
@@ -119,6 +125,8 @@ func toString(arg any) string {
 	switch t := arg.(type) {
 	case string:
 		return t
+	case []byte:
+		return string(t)
 	case []any:
 		return "[" + strings.Join(collect.From(t, toString), ",") + "]"
 	default:
