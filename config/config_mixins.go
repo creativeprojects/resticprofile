@@ -57,8 +57,11 @@ func (m *mixin) translate(source, variables map[string]interface{}) map[string]i
 
 func (m *mixin) expandVariables(value string, variables map[string]interface{}) string {
 	return os.Expand(value, func(name string) string {
-		lookup := strings.ToUpper(name)
+		if name == "$" {
+			return "$" // allow to escape "$" as "$$"
+		}
 
+		lookup := strings.ToUpper(name)
 		replacement := variables[lookup]
 		if replacement == nil {
 			replacement = m.DefaultVariables[lookup]

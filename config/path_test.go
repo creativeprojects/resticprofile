@@ -86,3 +86,13 @@ func TestFixWindowsPaths(t *testing.T) {
 		assert.Equalf(t, testPath.expected, fixed, "source was '%s'", testPath.source)
 	}
 }
+
+func TestExpandEnv(t *testing.T) {
+	path := os.Getenv("PATH")
+	assert.Equal(t, path, expandEnv("$PATH"))
+	assert.Equal(t, path, expandEnv("${PATH}"))
+	assert.Equal(t, "%PATH%", expandEnv("%PATH%"))
+	assert.Equal(t, "$PATH", expandEnv("$$PATH"))
+	assert.Equal(t, "", expandEnv("${__UNDEFINED_ENV_VAR__}"))
+	assert.Equal(t, "", expandEnv("$__UNDEFINED_ENV_VAR__"))
+}

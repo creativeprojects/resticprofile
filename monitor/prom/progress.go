@@ -66,6 +66,8 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 		jobName = os.Expand(jobName, func(name string) string {
 			if strings.EqualFold(name, "command") {
 				return command
+			} else if name == "$" {
+				return "$" // allow to escape "$" as "$$"
 			}
 			return ""
 		})

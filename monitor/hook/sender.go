@@ -212,6 +212,9 @@ func resolve(body string, ctx Context) string {
 		case constants.EnvErrorStderr:
 			return ctx.Error.Stderr
 
+		case "$":
+			return "$" // allow to escape "$" as "$$"
+
 		default:
 			return os.Getenv(s)
 		}
