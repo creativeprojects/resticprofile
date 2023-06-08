@@ -463,6 +463,8 @@ func (p *Profile) ResolveConfiguration() {
 		// Copy tags from backup if tag is set to boolean true
 		if tags, ok := stringifyValueOf(p.Backup.OtherFlags[constants.ParameterTag]); ok {
 			p.SetTag(tags...)
+		} else {
+			p.SetTag() // resolve tag parameters when no tag is set in backup
 		}
 
 		// Copy parameter path from backup sources if path is set to boolean true
@@ -792,7 +794,11 @@ func replaceTrueValue(source map[string]any, key string, replace ...string) {
 	if genericValue, ok := source[key]; ok {
 		if value, ok := genericValue.(bool); ok {
 			if value {
-				source[key] = replace
+				if len(replace) > 0 {
+					source[key] = replace
+				} else {
+					delete(source, key)
+				}
 			}
 		}
 	}
