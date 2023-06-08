@@ -317,9 +317,7 @@ func setPriority(nice int, class string) error {
 }
 
 func openProfile(c *config.Config, profileName string) (profile *config.Profile, cleanup func(), err error) {
-	cleanup = func() {}
 	done := false
-
 	for attempts := 3; attempts > 0 && !done; attempts-- {
 		profile, err = c.GetProfile(profileName)
 		if err != nil || profile == nil {
@@ -339,9 +337,11 @@ func openProfile(c *config.Config, profileName string) (profile *config.Profile,
 			}
 
 			if baseDir, _ := filepath.Abs(profile.BaseDir); filepath.ToSlash(baseDir) != filepath.ToSlash(currentDir) {
-				cleanup = func() {
-					if e := os.Chdir(currentDir); e != nil {
-						panic(fmt.Errorf(`fatal: failed restoring working directory "%s": %w`, currentDir, e))
+				if cleanup == nil {
+					cleanup = func() {
+						if e := os.Chdir(currentDir); e != nil {
+							panic(fmt.Errorf(`fatal: failed restoring working directory "%s": %w`, currentDir, e))
+						}
 					}
 				}
 
@@ -354,6 +354,10 @@ func openProfile(c *config.Config, profileName string) (profile *config.Profile,
 				}
 			}
 		}
+	}
+
+	if cleanup == nil {
+		cleanup = func() {}
 	}
 	return
 }
