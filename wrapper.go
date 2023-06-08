@@ -308,7 +308,7 @@ func (r *resticWrapper) validArgumentsFilter(validArgs []string) argumentsFilter
 					if !includesValue {
 						skipValue = false
 					}
-				} else {
+				} else if !allowExtraValues { // if "allowExtraValues" => args with values must use "--arg=value"
 					skipValue = !includesValue
 				}
 				continue
