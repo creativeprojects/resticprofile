@@ -1,10 +1,13 @@
 package shell
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"regexp"
-	"runtime"
 	"strings"
+
+	"github.com/creativeprojects/resticprofile/platform"
 )
 
 var (
@@ -28,6 +31,26 @@ const (
 	ArgLegacyConfigBackupSource
 )
 
+var emptyArgValueMarker = func() string {
+	token := make([]byte, 16)
+	n, err := rand.Read(token)
+	if err == nil && n != 16 {
+		err = fmt.Errorf("insufficient random bytes %d", n)
+	}
+	if err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(token)
+}()
+
+func EmptyArgValue() string {
+	return emptyArgValueMarker
+}
+
+func NewEmptyValueArg() Arg {
+	return NewArg(EmptyArgValue(), ArgConfigKeepGlobQuote)
+}
+
 type Arg struct {
 	raw     string
 	argType ArgType
@@ -45,6 +68,9 @@ func (a Arg) HasValue() bool {
 }
 
 func (a Arg) Value() string {
+	if a.raw == EmptyArgValue() {
+		return ""
+	}
 	return a.raw
 }
 
@@ -53,32 +79,39 @@ func (a Arg) Type() ArgType {
 }
 
 func (a Arg) String() string {
-	if runtime.GOOS == "windows" {
-		return a.raw
-	}
+	value := a.Value()
+
 	if !a.HasValue() {
 		return ""
 	}
-	switch a.argType {
-	case ArgConfigKeepGlobQuote:
-		if doubleQuotePattern.MatchString(a.raw) {
-			return `"` + escapeString(a.raw, []byte{'"'}) + `"`
-		}
 
-	case ArgConfigEscape, ArgCommandLineEscape, ArgConfigBackupSource:
-		return escapeString(a.raw, escapeNoGlobCharacters)
-
-	// legacy mode was a mess: 4 different ways of escaping arguments!
-	case ArgLegacyEscape:
-		return quoteArgument(escapeString(a.raw, []byte{' '}))
-
-	case ArgLegacyKeepGlobQuote:
-		return quoteArgument(escapeString(a.raw, []byte{' ', '*', '?'}))
-
-	case ArgLegacyConfigBackupSource:
-		return escapeString(a.raw, []byte{' '})
+	if a.Value() == "" {
+		return `""`
 	}
-	return a.raw
+
+	if !platform.IsWindows() {
+		switch a.argType {
+		case ArgConfigKeepGlobQuote:
+			if doubleQuotePattern.MatchString(value) {
+				return `"` + escapeString(value, []byte{'"'}) + `"`
+			}
+
+		case ArgConfigEscape, ArgCommandLineEscape, ArgConfigBackupSource:
+			return escapeString(value, escapeNoGlobCharacters)
+
+		// legacy mode was a mess: 4 different ways of escaping arguments!
+		case ArgLegacyEscape:
+			return quoteArgument(escapeString(value, []byte{' '}))
+
+		case ArgLegacyKeepGlobQuote:
+			return quoteArgument(escapeString(value, []byte{' ', '*', '?'}))
+
+		case ArgLegacyConfigBackupSource:
+			return escapeString(value, []byte{' '})
+		}
+	}
+
+	return value
 }
 
 // escapeString adds a '\' in front of the characters to escape.

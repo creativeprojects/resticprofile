@@ -14,6 +14,7 @@ const (
 	ParameterHost            = "host"
 	ParameterPath            = "path"
 	ParameterTag             = "tag"
+	ParameterKeepTag         = "keep-tag"
 	ParameterVerbose         = "verbose"
 	ParameterDescription     = "description"
 	ParameterVersion         = "version"
