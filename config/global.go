@@ -48,6 +48,9 @@ func NewGlobal() *Global {
 }
 
 func (p *Global) SetRootPath(rootPath string) {
+	p.ShellBinary = fixPaths(p.ShellBinary, expandEnv)
+	p.ResticBinary = fixPath(p.ResticBinary, expandEnv)
+
 	p.SystemdUnitTemplate = fixPath(p.SystemdUnitTemplate, expandEnv, absolutePrefix(rootPath))
 	p.SystemdTimerTemplate = fixPath(p.SystemdTimerTemplate, expandEnv, absolutePrefix(rootPath))
 

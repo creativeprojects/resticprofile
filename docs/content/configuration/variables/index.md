@@ -471,3 +471,87 @@ default {
 
 {{% /tab %}}
 {{% /tabs %}}
+
+
+## Variable expansion in configuration **values**
+
+Variable expansion as described in the previous section using the `{{ .Var }}` syntax refers to [template variables]({{< ref "/configuration/templates" >}}) that are expanded prior to parsing the configuration file. 
+This means they must be used carefully to create correct config markup, but they are also very flexible.
+
+There is also unix style variable expansion using the `${variable}` or `$variable` syntax on configuration **values** that expand after the config file was parsed. Values that take a file path or path expression and a few others support this expansion. 
+
+If not specified differently, these variables resolve to the corresponding environment variable or to an empty value if no such environment variable exists. Exceptions are [mixins]({{< ref "/configuration/inheritance#mixins" >}}) where `$variable` style is used for parametrisation and the profile [config flag]({{< ref "configuration/reference#section-profile" >}}) `prometheus-push-job`.
+
+### Example
+
+Backup current dir (`$PWD`) but prevent backup of `$HOME` where the repository is located:
+
+{{< tabs groupId="config-with-json" >}}
+{{% tab name="toml" %}}
+
+```toml
+version = "1"
+
+[default]
+  repository = "local:${HOME}/backup"
+  password-file = "${HOME}/backup.key"
+
+  [default.backup]
+    source = "$PWD"
+    exclude = ["$HOME/**", ".*", "~*"]
+
+```
+
+{{% /tab %}}
+{{% tab name="yaml" %}}
+
+```yaml
+version: "1"
+
+default:
+  repository: 'local:${HOME}/backup'
+  password-file: '${HOME}/backup.key'
+
+  backup:
+    source: '$PWD'
+    exclude: ['$HOME/**', '.*', '~*']
+
+```
+
+{{% /tab %}}
+{{% tab name="hcl" %}}
+
+```hcl
+default {
+    repository = "local:${HOME}/backup"
+    password-file = "${HOME}/backup.key"
+
+    backup {
+        source = [ "$PWD" ]
+        exclude = [ "$HOME/**", ".*", "~*" ]
+    }
+}
+```
+
+{{% /tab %}}
+{{% tab name="json" %}}
+
+```json
+{
+  "default": {
+    "repository": "local:${HOME}/backup",
+    "password-file": "${HOME}/backup.key",
+    "backup": {
+      "source": [ "$PWD" ],
+      "exclude": [ "$HOME/**", ".*", "~*" ]
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% /tabs %}}
+
+{{% notice style="hint" %}}
+Use `$$` to escape a single `$` in configuration values that support variable expansion. E.g. on Windows you might want to exclude `$RECYCLE.BIN`. Specify it as: `exclude = ["$$RECYCLE.BIN"]`.
+{{% /notice %}}
