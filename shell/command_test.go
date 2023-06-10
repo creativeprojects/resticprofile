@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -125,6 +126,10 @@ func TestShellCommand(t *testing.T) {
 }
 
 func TestShellArgumentsComposing(t *testing.T) {
+	exeWithSpace := filepath.Join(t.TempDir(), "some folder", "executable")
+	require.NoError(t, os.MkdirAll(filepath.Dir(exeWithSpace), 0700))
+	require.NoError(t, os.WriteFile(exeWithSpace, []byte{0}, 0700))
+
 	tests := []struct {
 		command               string
 		shell, args, expected []string
@@ -150,11 +155,11 @@ func TestShellArgumentsComposing(t *testing.T) {
 		{
 			shell:   []string{powershell, powershell6},
 			command: mockBinary,
-			args:    []string{"a", "\"-$PROFILE_NAME- -\"", "$True $Env:custom ${Env:c2} $$ $? $Error \"$home\""},
+			args:    []string{"a", "\"-$PROFILE_NAME- -\"", "$True $Env:custom $custom ${Env:c2} $$ $? $Error \"${home}\""},
 			expected: []string{
 				"-Command", mockBinary, "a",
 				"-${Env:PROFILE_NAME}- -",
-				"${True} $Env:custom ${Env:c2} $$ $? ${Error} \"${home}\"",
+				"$True $Env:custom $custom ${Env:c2} $$ $? $Error \"${home}\"",
 			},
 		},
 		{
@@ -162,6 +167,24 @@ func TestShellArgumentsComposing(t *testing.T) {
 			command:  "echo \"$PROFILE_NAME\"",
 			args:     nil,
 			expected: []string{"-Command", "echo \"${Env:PROFILE_NAME}\""},
+		},
+		{
+			shell:    []string{powershell, powershell6},
+			command:  `$PROFILE_NAME = "custom"; echo "$PROFILE_NAME"`,
+			args:     nil,
+			expected: []string{"-Command", `$PROFILE_NAME = "custom"; echo "$PROFILE_NAME"`},
+		},
+		{
+			shell:    []string{powershell, powershell6},
+			command:  `New-Variable -name "Profile_Name" && echo "$PROFILE_NAME"`,
+			args:     nil,
+			expected: []string{"-Command", `New-Variable -name "Profile_Name" && echo "$PROFILE_NAME"`},
+		},
+		{
+			shell:    []string{powershell, powershell6},
+			command:  exeWithSpace,
+			args:     []string{"arg1", "arg 2"},
+			expected: []string{"-Command", fmt.Sprintf(`& "%s"`, exeWithSpace), "arg1", "arg 2"},
 		},
 	}
 
@@ -176,7 +199,12 @@ func TestShellArgumentsComposing(t *testing.T) {
 			}
 			for _, shell := range shells {
 				t.Run(shell, func(t *testing.T) {
-					c := &Command{Shell: []string{shell}, Command: test.command, Arguments: test.args}
+					c := &Command{
+						Shell:     []string{shell},
+						Command:   test.command,
+						Arguments: test.args,
+						Environ:   []string{"PROFILE_NAME=test"},
+					}
 					composedArgs := getArgumentsComposer(shell)(c)
 					assert.Equal(t, test.expected, composedArgs)
 				})
