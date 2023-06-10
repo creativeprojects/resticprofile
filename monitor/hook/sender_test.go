@@ -3,6 +3,7 @@ package hook
 import (
 	"bytes"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -39,6 +40,10 @@ func TestSend(t *testing.T) {
 		}, 1},
 		{config.SendMonitoringSection{
 			Method: http.MethodPost,
+			Body:   "test $$escaped\n",
+		}, 1},
+		{config.SendMonitoringSection{
+			Method: http.MethodPost,
 			Body:   "$PROFILE_NAME\n$PROFILE_COMMAND",
 		}, 1},
 		{config.SendMonitoringSection{
@@ -47,8 +52,8 @@ func TestSend(t *testing.T) {
 		}, 1},
 	}
 
-	for _, testCase := range testCases {
-		t.Run("", func(t *testing.T) {
+	for i, testCase := range testCases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			calls := 0
 			if testCase.cfg.URL.Value() == "" {
 				handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +72,7 @@ func TestSend(t *testing.T) {
 					body = strings.ReplaceAll(body, "$ERROR_EXIT_CODE", "test_exit_code")
 					body = strings.ReplaceAll(body, "$ERROR_STDERR", "test_stderr")
 					body = strings.ReplaceAll(body, "$ERROR", "test_error_message")
+					body = strings.ReplaceAll(body, "$$", "$")
 					assert.Equal(t, body, buffer.String())
 					calls++
 				})

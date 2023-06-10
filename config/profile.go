@@ -184,7 +184,7 @@ func (b *BackupSection) resolve(p *Profile) {
 }
 
 func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
-	s.SendMonitoringSections.setRootPath(p, rootPath)
+	s.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
 
 	s.ExcludeFile = fixPaths(s.ExcludeFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	s.FilesFrom = fixPaths(s.FilesFrom, expandEnv, expandUserHome, absolutePrefix(rootPath))
@@ -229,6 +229,11 @@ type SectionWithScheduleAndMonitoring struct {
 	OtherFlagsSection      `mapstructure:",squash"`
 }
 
+func (s *SectionWithScheduleAndMonitoring) setRootPath(p *Profile, rootPath string) {
+	s.SendMonitoringSections.setRootPath(p, rootPath)
+	s.ScheduleBaseSection.setRootPath(p, rootPath)
+}
+
 func (s *SectionWithScheduleAndMonitoring) IsEmpty() bool { return s == nil }
 
 // ScheduleBaseSection contains the parameters for scheduling a command (backup, check, forget, etc.)
@@ -239,6 +244,10 @@ type ScheduleBaseSection struct {
 	SchedulePriority   string        `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
 	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+}
+
+func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
+	s.ScheduleLog = fixPath(s.ScheduleLog, expandEnv, expandUserHome)
 }
 
 func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection { return s }
@@ -259,7 +268,7 @@ type CopySection struct {
 func (s *CopySection) IsEmpty() bool { return s == nil }
 
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
-	c.SendMonitoringSections.setRootPath(p, rootPath)
+	c.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
 
 	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))

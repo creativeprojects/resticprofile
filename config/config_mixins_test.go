@@ -39,8 +39,8 @@ func TestMixin(t *testing.T) {
 			"int", 321,
 			"bool", true,
 			"list", list(1, "2", 3),
-			"list_with_vars", list("${var-1}", "$VAR_2", "[$MyVar]", "-${myvar}-", "-${MYVAR}-"),
-			"string_with_vars", "${var-1} $Var_2 [$MyVar] -${myvar}- -${MYVAR}-",
+			"list_with_vars", list("${var-1}", "$VAR_2", "[$MyVar]", "-${myvar}-", "-${MYVAR}-", "-$${escaped}-"),
+			"string_with_vars", "${var-1} $Var_2 [$MyVar] -${myvar}- -${MYVAR}- $$escaped",
 			"nested_with_vars", list(
 				mm(
 					"list_with_vars", list("${var-1}"),
@@ -58,8 +58,8 @@ func TestMixin(t *testing.T) {
 			"int", 321,
 			"bool", true,
 			"list", list(1, "2", 3),
-			"list_with_vars", list("${var-1}", "${VAR_2}", "[MyDefault]", "-MyDefault-", "-MyDefault-"),
-			"string_with_vars", "${var-1} ${Var_2} [MyDefault] -MyDefault- -MyDefault-",
+			"list_with_vars", list("${var-1}", "${VAR_2}", "[MyDefault]", "-MyDefault-", "-MyDefault-", "-${escaped}-"),
+			"string_with_vars", "${var-1} ${Var_2} [MyDefault] -MyDefault- -MyDefault- $escaped",
 			"nested_with_vars", list(
 				mm(
 					"list_with_vars", list("${var-1}"),
@@ -77,8 +77,8 @@ func TestMixin(t *testing.T) {
 			"int", 321,
 			"bool", true,
 			"list", list(1, "2", 3),
-			"list_with_vars", list("${var-1}", "${VAR_2}", "[MySpecific]", "-MySpecific-", "-MySpecific-"),
-			"string_with_vars", "${var-1} ${Var_2} [MySpecific] -MySpecific- -MySpecific-",
+			"list_with_vars", list("${var-1}", "${VAR_2}", "[MySpecific]", "-MySpecific-", "-MySpecific-", "-${escaped}-"),
+			"string_with_vars", "${var-1} ${Var_2} [MySpecific] -MySpecific- -MySpecific- $escaped",
 			"nested_with_vars", list(
 				mm(
 					"list_with_vars", list("${var-1}"),
@@ -87,7 +87,7 @@ func TestMixin(t *testing.T) {
 				),
 				"${var_2}",
 			),
-		), tpl.Resolve(keysToUpper(mm("myvar", "MySpecific"))))
+		), tpl.Resolve(keysToUpper(mm("myvar", "MySpecific", "escaped", "-"))))
 	})
 
 	t.Run("all-resolved", func(t *testing.T) {
@@ -96,8 +96,8 @@ func TestMixin(t *testing.T) {
 			"int", 321,
 			"bool", true,
 			"list", list(1, "2", 3),
-			"list_with_vars", list("val1", "val2", "[MySpecific]", "-MySpecific-", "-MySpecific-"),
-			"string_with_vars", "val1 val2 [MySpecific] -MySpecific- -MySpecific-",
+			"list_with_vars", list("val1", "val2", "[MySpecific]", "-MySpecific-", "-MySpecific-", "-${escaped}-"),
+			"string_with_vars", "val1 val2 [MySpecific] -MySpecific- -MySpecific- $escaped",
 			"nested_with_vars", list(
 				mm(
 					"list_with_vars", list("val1"),
@@ -111,6 +111,7 @@ func TestMixin(t *testing.T) {
 				"myvar", "MySpecific",
 				"var-1", "val1",
 				"var_2", "val2",
+				"escaped", "-",
 			)),
 		))
 	})

@@ -34,7 +34,12 @@ func fixPaths(sources []string, callbacks ...pathFix) (fixed []string) {
 
 func expandEnv(value string) string {
 	if strings.Contains(value, "$") || strings.Contains(value, "%") {
-		value = os.ExpandEnv(value)
+		value = os.Expand(value, func(name string) string {
+			if name == "$" {
+				return "$" // allow to escape "$" as "$$"
+			}
+			return os.Getenv(name)
+		})
 	}
 	return value
 }
