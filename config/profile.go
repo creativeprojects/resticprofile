@@ -532,7 +532,7 @@ func (p *Profile) ResolveConfiguration() {
 	if p.Backup != nil {
 		// Copy tags from backup if tag is set to boolean true
 		if tags, ok := stringifyValueOf(p.Backup.OtherFlags[constants.ParameterTag]); ok {
-			p.SetTag(tags...)
+			p.SetTag(strings.Join(tags, ",")) // must use "tag1,tag2,..." to require all tags
 		} else {
 			p.SetTag() // resolve tag parameters when no tag is set in backup
 		}

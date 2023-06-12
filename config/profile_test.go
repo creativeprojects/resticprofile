@@ -586,6 +586,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 	require.NoError(t, err)
 
 	backupTags := []string{"one", "two"}
+	flatBackupTags := func() []string { return []string{strings.Join(backupTags, ",")} }
 
 	testProfileWithBase := func(t *testing.T, version Version, retention, baseDir string) *Profile {
 		prefix := ""
@@ -693,12 +694,12 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 		t.Run("ImplicitCopyTagInV2", func(t *testing.T) {
 			profile := testProfile(t, Version02, ``)
-			assert.Equal(t, backupTags, tagFlag(t, profile))
+			assert.Equal(t, flatBackupTags(), tagFlag(t, profile))
 		})
 
 		t.Run("CopyTag", func(t *testing.T) {
 			profile := testProfile(t, Version01, `tag = true`)
-			assert.Equal(t, backupTags, tagFlag(t, profile))
+			assert.Equal(t, flatBackupTags(), tagFlag(t, profile))
 		})
 
 		t.Run("ReplaceTag", func(t *testing.T) {
