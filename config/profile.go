@@ -205,26 +205,56 @@ func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
 type RetentionSection struct {
 	ScheduleBaseSection `mapstructure:",squash" deprecated:"0.11.0"`
 	OtherFlagsSection   `mapstructure:",squash"`
-	BeforeBackup        bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
-	AfterBackup         bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded"`
+	BeforeBackup        *bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
+	AfterBackup         *bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
 
-func (r *RetentionSection) resolve(p *Profile) {
+func (r *RetentionSection) resolve(profile *Profile) {
 	// Special cases of retention
 	if r.OtherFlags == nil {
 		r.OtherFlags = make(map[string]any)
 	}
+
+	isSet := func(of OtherFlags, name string) (found bool) { _, found = of.GetOtherFlags()[name]; return }
+	hasBackup := !profile.Backup.IsEmpty()
+
 	// Copy "source" from "backup" as "path" if it hasn't been redefined
-	if _, found := r.OtherFlags[constants.ParameterPath]; !found {
+	if hasBackup && !isSet(r, constants.ParameterPath) {
 		r.OtherFlags[constants.ParameterPath] = true
 	}
 
-	// Copy "tag" from "backup" if it hasn't been redefined (only for Version >= 2 to be backward compatible)
-	if p.config != nil && p.config.version >= Version02 {
-		if _, found := r.OtherFlags[constants.ParameterTag]; !found {
+	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
+	if profile.config != nil && profile.config.version >= Version02 {
+		// Auto-enable "after-backup" if nothing was specified explicitly and any "keep-" was configured
+		if bools.IsUndefined(r.AfterBackup) && bools.IsUndefined(r.BeforeBackup) {
+			for name, _ := range r.OtherFlags {
+				if strings.HasPrefix(name, "keep-") {
+					r.AfterBackup = bools.True()
+					break
+				}
+			}
+		}
+
+		// Copy "tag" from "backup" if it was set and hasn't been redefined here
+		// Allow setting it at profile level when not defined in "backup" or "retention"
+		if hasBackup &&
+			!isSet(r, constants.ParameterTag) &&
+			isSet(profile.Backup, constants.ParameterTag) {
+
 			r.OtherFlags[constants.ParameterTag] = true
+		}
+
+		// Copy "host" from "backup" if it was set and hasn't been redefined here
+		// Or use os.Hostname() same as restic does for backup when not setting it, see:
+		// https://github.com/restic/restic/blob/master/cmd/restic/cmd_backup.go#L48
+		if !isSet(r, constants.ParameterHost) {
+			if hasBackup && isSet(profile.Backup, constants.ParameterHost) {
+				r.OtherFlags[constants.ParameterHost] = profile.Backup.OtherFlags[constants.ParameterHost]
+			} else if !isSet(profile, constants.ParameterHost) {
+				r.OtherFlags[constants.ParameterHost] = true // resolved with os.Hostname()
+			}
 		}
 	}
 }
