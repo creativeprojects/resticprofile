@@ -15,6 +15,7 @@ const (
 	ParameterPath            = "path"
 	ParameterTag             = "tag"
 	ParameterKeepTag         = "keep-tag"
+	ParameterGroupBy         = "group-by"
 	ParameterVerbose         = "verbose"
 	ParameterDescription     = "description"
 	ParameterVersion         = "version"

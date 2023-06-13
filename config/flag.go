@@ -22,7 +22,9 @@ func init() {
 }
 
 var allowedEmptyValueArgs = []string{
-	constants.ParameterKeepTag,
+	constants.ParameterKeepTag, // allows --keep-tag="" - means keep all with any assigned tag
+	constants.ParameterTag,     // allows --tag=""      - means match all untagged snapshots
+	constants.ParameterGroupBy, // allows --group-by="" - means do not group snapshots
 }
 
 // tryAddEmptyArg adds empty value arguments (e.g. --arg="") where restic allows and requires this.

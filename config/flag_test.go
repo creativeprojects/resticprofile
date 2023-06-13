@@ -202,39 +202,54 @@ func TestGetArgAliasesFromStruct(t *testing.T) {
 }
 
 func TestTryAddEmptyArg(t *testing.T) {
-	expected := map[string][]string{
-		constants.ParameterKeepTag: {shell.NewEmptyValueArg().String()},
-	}
-
-	t.Run("tryAddEmptyArg", func(t *testing.T) {
-		args := shell.NewArgs()
-		assert.False(t, tryAddEmptyArg(args, "some-arg", ""))
-		assert.False(t, tryAddEmptyArg(args, constants.ParameterKeepTag, "value"))
-		assert.False(t, tryAddEmptyArg(args, constants.ParameterKeepTag, []string{}))
-		assert.False(t, tryAddEmptyArg(args, constants.ParameterKeepTag, []string{""}))
-		assert.Empty(t, args.ToMap())
-
-		assert.True(t, tryAddEmptyArg(args, constants.ParameterKeepTag, ""))
-		assert.Equal(t, expected, args.ToMap())
-	})
-
-	t.Run("addArgsFromMap", func(t *testing.T) {
-		args := shell.NewArgs()
-		addArgsFromMap(args, nil, map[string]any{
-			"some-arg":                 "",
-			constants.ParameterKeepTag: "",
+	t.Run("allowedEmptyValueArgs", func(t *testing.T) {
+		assert.Subset(t, allowedEmptyValueArgs, []string{
+			constants.ParameterKeepTag,
+			constants.ParameterTag,
+			constants.ParameterGroupBy,
 		})
-		assert.Equal(t, expected, args.ToMap())
 	})
 
-	t.Run("addArgsFromStruct", func(t *testing.T) {
-		args := shell.NewArgs()
-		addArgsFromStruct(args, struct {
-			S string `argument:"some-arg"`
-			K string `argument:"keep-tag"`
-		}{})
-		assert.Equal(t, expected, args.ToMap())
-	})
+	for _, allowedEmptyParameter := range allowedEmptyValueArgs {
+		t.Run(allowedEmptyParameter, func(t *testing.T) {
+			expected := map[string][]string{
+				allowedEmptyParameter: {shell.NewEmptyValueArg().String()},
+			}
+
+			t.Run("tryAddEmptyArg", func(t *testing.T) {
+				args := shell.NewArgs()
+				assert.False(t, tryAddEmptyArg(args, "some-arg", ""))
+				assert.False(t, tryAddEmptyArg(args, allowedEmptyParameter, "value"))
+				assert.False(t, tryAddEmptyArg(args, allowedEmptyParameter, []string{}))
+				assert.False(t, tryAddEmptyArg(args, allowedEmptyParameter, []string{""}))
+				assert.Empty(t, args.ToMap())
+
+				assert.True(t, tryAddEmptyArg(args, allowedEmptyParameter, ""))
+				assert.Equal(t, expected, args.ToMap())
+			})
+
+			t.Run("addArgsFromMap", func(t *testing.T) {
+				args := shell.NewArgs()
+				addArgsFromMap(args, nil, map[string]any{
+					"some-arg":            "",
+					allowedEmptyParameter: "",
+				})
+				assert.Equal(t, expected, args.ToMap())
+			})
+
+			t.Run("addArgsFromStruct", func(t *testing.T) {
+				if allowedEmptyParameter != constants.ParameterKeepTag {
+					t.Skip()
+				}
+				args := shell.NewArgs()
+				addArgsFromStruct(args, struct {
+					S string `argument:"some-arg"`
+					K string `argument:"keep-tag"`
+				}{})
+				assert.Equal(t, expected, args.ToMap())
+			})
+		})
+	}
 }
 
 func BenchmarkFormatInt(b *testing.B) {
