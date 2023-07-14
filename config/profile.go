@@ -206,7 +206,7 @@ type RetentionSection struct {
 	ScheduleBaseSection `mapstructure:",squash" deprecated:"0.11.0"`
 	OtherFlagsSection   `mapstructure:",squash"`
 	BeforeBackup        *bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
-	AfterBackup         *bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded"`
+	AfterBackup         *bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true if any \"keep-*\" flag is set and \"before-backup\" is unset"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
@@ -238,7 +238,7 @@ func (r *RetentionSection) resolve(profile *Profile) {
 		}
 
 		// Copy "tag" from "backup" if it was set and hasn't been redefined here
-		// Allow setting it at profile level when not defined in "backup" or "retention"
+		// Allow setting it at profile level when not defined in "backup" nor "retention"
 		if hasBackup &&
 			!isSet(r, constants.ParameterTag) &&
 			isSet(profile.Backup, constants.ParameterTag) {
