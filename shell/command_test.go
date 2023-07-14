@@ -157,9 +157,9 @@ func TestShellArgumentsComposing(t *testing.T) {
 			command: mockBinary,
 			args:    []string{"a", "\"-$PROFILE_NAME- -\"", "$True $Env:custom $custom ${Env:c2} $$ $? $Error \"${home}\""},
 			expected: []string{
-				"-Command", mockBinary, "a",
-				"-${Env:PROFILE_NAME}- -",
-				"$True $Env:custom $custom ${Env:c2} $$ $? $Error \"${home}\"",
+				"-Command", mockBinary, "\"a\"",
+				"\"-${Env:PROFILE_NAME}- -\"",
+				"\"$True $Env:custom $custom ${Env:c2} $$ $? $Error `\"${home}`\"\"",
 			},
 		},
 		{
@@ -183,8 +183,8 @@ func TestShellArgumentsComposing(t *testing.T) {
 		{
 			shell:    []string{powershell, powershell6},
 			command:  exeWithSpace,
-			args:     []string{"arg1", "arg 2"},
-			expected: []string{"-Command", fmt.Sprintf(`& "%s"`, exeWithSpace), "arg1", "arg 2"},
+			args:     []string{"arg1", "arg 2", "arg` custom` escape"},
+			expected: []string{"-Command", fmt.Sprintf(`& "%s"`, exeWithSpace), "\"arg1\"", "\"arg 2\"", "arg` custom` escape"},
 		},
 	}
 

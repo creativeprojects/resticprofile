@@ -183,7 +183,8 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 			searchList = append(searchList, sh)
 		}
 	}
-	if len(searchList) == 0 {
+	defaultList := len(searchList) == 0
+	if defaultList {
 		searchList = c.getShellSearchList()
 	}
 
@@ -200,6 +201,16 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 
 	composer := getArgumentsComposer(shell)
 	arguments = composer(c)
+
+	clog.Trace(func() string {
+		listKind := ""
+		if defaultList {
+			listKind = "default list "
+		}
+		return fmt.Sprintf("selected shell from %s[%s], results in command:\n%s\n%s",
+			listKind, strings.Join(searchList, ", "), shell, strings.Join(arguments, "\n"))
+	})
+
 	return
 }
 
@@ -287,9 +298,17 @@ func composePowershellArguments(c *Command) []string {
 		}
 	}
 
+	// Arguments are treated as markup in PWSH, we need to escape them as strings
+	arguments = collect.From(removeQuotes(arguments), func(arg string) string {
+		if !strings.Contains(arg, "`") {
+			arg = fmt.Sprintf(`"%s"`, strings.ReplaceAll(arg, "\"", "`\""))
+		}
+		return arg
+	})
+
 	return append(
 		[]string{"-Command", command},
-		removeQuotes(arguments)...,
+		arguments...,
 	)
 }
 
