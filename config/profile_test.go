@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
@@ -540,23 +541,27 @@ func TestPathAndTagInRetention(t *testing.T) {
 	backupTags := []string{"one", "two"}
 
 	testProfile := func(t *testing.T, version Version, retention string) *Profile {
-		p := ""
+		prefix := ""
 		if version > Version01 {
-			p = "profiles."
+			prefix = "profiles."
+		}
+
+		tag := ""
+		if len(backupTags) > 0 {
+			tag = `tag = ["` + strings.Join(backupTags, `", "`) + `"]`
 		}
 
 		config := `
             version = ` + fmt.Sprintf("%d", version) + `
 
-            [` + p + `profile.backup]
-            tag = ["one", "two"]
+            [` + prefix + `profile.backup]
+            ` + tag + `
             source = ["` + sourcePattern + `"]
 
-            [` + p + `profile.retention]
+            [` + prefix + `profile.retention]
             ` + retention
 
 		profile, err := getResolvedProfile("toml", config, "profile")
-		profile.SetRootPath(examples) // ensure relative paths are converted to absolute paths
 		require.NoError(t, err)
 		require.NotNil(t, profile)
 
@@ -637,6 +642,19 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 		t.Run("NoTag", func(t *testing.T) {
 			profile := testProfile(t, Version01, `tag = false`)
+			assert.Nil(t, tagFlag(t, profile))
+		})
+
+		t.Run("NoCopyOnEmptyTags", func(t *testing.T) {
+			backup := backupTags
+			backupTags = nil
+			defer func() { backupTags = backup }()
+
+			profile := testProfile(t, Version01, `tag = true`)
+			assert.Nil(t, tagFlag(t, profile))
+			profile = testProfile(t, Version02, `tag = true`)
+			assert.Nil(t, tagFlag(t, profile))
+			profile = testProfile(t, Version02, ``)
 			assert.Nil(t, tagFlag(t, profile))
 		})
 	})
