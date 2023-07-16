@@ -20,6 +20,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/monitor/status"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
@@ -104,7 +105,18 @@ func TestValidArgumentsFilter(t *testing.T) {
 
 	for _, arg := range validArgs {
 		var args []string
-		list := []string{"-x", "-x=1", "-x 2 extra x=y", "--xxx", "--xxx=v", "--xxx k=v", arg, arg + "=1", arg + " ka=va", arg + " ka=va extra2"}
+		list := []string{
+			"-x",
+			"-x=1",
+			"-x 2 extra x=y",
+			"--xxx",
+			"--xxx=v",
+			"--xxx k=v",
+			arg,
+			arg + "=1",
+			arg + " ka=va",
+			arg + " ka=va extra2",
+		}
 
 		for i := 0; i < 20; i++ {
 			rand.Shuffle(len(list), func(i, j int) { list[i], list[j] = list[j], list[i] })
@@ -113,22 +125,75 @@ func TestValidArgumentsFilter(t *testing.T) {
 				args = append(args, strings.Split(item, " ")...)
 			}
 
+			// Test filter when extra values are allowed (args with values must use --arg=value)
 			filtered := filter(args, true)
 
-			assert.Len(t, filtered, 9)
-			assert.Subset(t, []string{arg, arg + "=1", "ka=va", "x=y", "extra", "extra2"}, filtered)
-			for _, item := range []string{"-x", "--xxx"} {
+			assert.Len(t, filtered, 11)
+			for _, item := range []string{arg, arg + "=1", "ka=va", "k=v", "x=y", "extra", "extra2", "2"} {
+				assert.Contains(t, filtered, item)
+			}
+			for _, item := range []string{"-x", "--xxx", "--xxx=v"} {
 				assert.NotContains(t, filtered, item)
 			}
 
+			// Test filter when extra values are disallowed (args with values can be --arg=value or --arg value)
 			filtered = filter(args, false)
 
 			assert.Len(t, filtered, 6)
 			assert.Subset(t, []string{arg, arg + "=1", "ka=va"}, filtered)
-			for _, item := range []string{"-x", "--xxx", "x=y", "k=v", "---xxx=v", "extra", "extra2"} {
+			for _, item := range []string{"-x", "--xxx", "--xxx=v", "x=y", "k=v", "extra", "extra2", "2"} {
 				assert.NotContains(t, filtered, item)
 			}
 		}
+	}
+}
+
+func TestFilteredArgumentsRegression(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip()
+	}
+
+	tests := []struct {
+		format, config string
+		expected       map[string][]string
+	}{
+		{
+			format: "toml",
+			config: `
+				version = "1"
+				
+				[default]
+				password-command = 'echo password'
+				initialize = true
+				no-error-on-warning = true
+				repository = 'backup'
+				
+				[default.backup]
+				source = [
+					'test-folder',
+					'test-folder-2'
+				]`,
+			expected: map[string][]string{
+				"backup": {"backup", "--password-command=echo\\ password", "--repo=backup", "test-folder", "test-folder-2"},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			cfg, err := config.Load(strings.NewReader(test.config), test.format)
+			require.NoError(t, err)
+			profile, err := cfg.GetProfile("default")
+			require.NoError(t, err)
+			wrapper := newResticWrapper(nil, "restic", true, profile, "test", nil, nil)
+
+			for command, commandline := range test.expected {
+				args := profile.GetCommandFlags(command)
+				cmd := wrapper.prepareCommand(command, args, true)
+
+				assert.Equal(t, commandline, cmd.args)
+			}
+		})
 	}
 }
 
