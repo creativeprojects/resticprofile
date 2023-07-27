@@ -10,6 +10,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/util"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -18,6 +19,23 @@ var (
 
 func init() {
 	emptyStringArray = make([]string, 0)
+}
+
+var allowedEmptyValueArgs = []string{
+	constants.ParameterKeepTag, // allows --keep-tag="" - means keep all with any assigned tag
+	constants.ParameterTag,     // allows --tag=""      - means match all untagged snapshots
+	constants.ParameterGroupBy, // allows --group-by="" - means do not group snapshots
+}
+
+// tryAddEmptyArg adds empty value arguments (e.g. --arg="") where restic allows and requires this.
+// Returns true when the arg was added which requires that the actual value is an empty string and the arg name is allowed.
+func tryAddEmptyArg(args *shell.Args, name string, value any) bool {
+	sv, ok := value.(string)
+	if ok && sv == "" && slices.Contains(allowedEmptyValueArgs, name) {
+		args.AddFlag(name, shell.EmptyArgValue(), shell.NewEmptyValueArg().Type())
+		return true
+	}
+	return false
 }
 
 func addArgsFromStruct(args *shell.Args, section any) {
@@ -42,6 +60,8 @@ func addArgsFromStruct(args *shell.Args, section any) {
 						argType = shell.ArgConfigKeepGlobQuote
 					}
 					args.AddFlags(argument, convert, argType)
+				} else if len(convert) == 1 {
+					_ = tryAddEmptyArg(args, argument, convert[0])
 				}
 			}
 		}
@@ -69,11 +89,13 @@ func addArgsFromMap(args *shell.Args, argAliases map[string]string, argsMap map[
 		if name == constants.SectionConfigurationMixinUse {
 			continue
 		}
+		if targetName, found := argAliases[name]; found {
+			name = targetName
+		}
 		if convert, ok := stringifyValueOf(value); ok {
-			if targetName, found := argAliases[name]; found {
-				name = targetName
-			}
 			args.AddFlags(name, convert, shell.ArgConfigEscape)
+		} else {
+			_ = tryAddEmptyArg(args, name, value)
 		}
 	}
 }

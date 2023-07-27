@@ -671,12 +671,13 @@ source = "/"
 
 [profile.forget]
 keep-daily = 1
+keep-tag = ""
 `},
 		{"json", `
 {
   "profile": {
     "backup": {"source": "/"},
-    "forget": {"keep-daily": 1}
+    "forget": {"keep-daily": 1, "keep-tag": ""}
   }
 }`},
 		{"yaml", `---
@@ -685,6 +686,7 @@ profile:
     source: "/"
   forget:
     keep-daily: 1
+    keep-tag: ""
 `},
 		{"hcl", `
 "profile" = {
@@ -693,6 +695,7 @@ profile:
     }
     forget = {
         keep-daily = 1
+		keep-tag = ""
     }
 }
 `},
@@ -708,6 +711,7 @@ profile:
 			assert.NotNil(t, profile)
 			assert.NotNil(t, profile.Forget)
 			assert.NotEmpty(t, profile.Forget.OtherFlags["keep-daily"])
+			assert.Equal(t, "", profile.Forget.OtherFlags["keep-tag"])
 		})
 	}
 }

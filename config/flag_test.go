@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/stretchr/testify/assert"
 )
@@ -196,6 +197,57 @@ func TestGetArgAliasesFromStruct(t *testing.T) {
 			aliases := argAliasesFromStruct(element)
 			assert.NotNil(t, aliases)
 			assert.Equal(t, map[string]string{"unsigned-int": "u-int"}, aliases)
+		})
+	}
+}
+
+func TestTryAddEmptyArg(t *testing.T) {
+	t.Run("allowedEmptyValueArgs", func(t *testing.T) {
+		assert.Subset(t, allowedEmptyValueArgs, []string{
+			constants.ParameterKeepTag,
+			constants.ParameterTag,
+			constants.ParameterGroupBy,
+		})
+	})
+
+	for _, allowedEmptyParameter := range allowedEmptyValueArgs {
+		t.Run(allowedEmptyParameter, func(t *testing.T) {
+			expected := map[string][]string{
+				allowedEmptyParameter: {shell.NewEmptyValueArg().String()},
+			}
+
+			t.Run("tryAddEmptyArg", func(t *testing.T) {
+				args := shell.NewArgs()
+				assert.False(t, tryAddEmptyArg(args, "some-arg", ""))
+				assert.False(t, tryAddEmptyArg(args, allowedEmptyParameter, "value"))
+				assert.False(t, tryAddEmptyArg(args, allowedEmptyParameter, []string{}))
+				assert.False(t, tryAddEmptyArg(args, allowedEmptyParameter, []string{""}))
+				assert.Empty(t, args.ToMap())
+
+				assert.True(t, tryAddEmptyArg(args, allowedEmptyParameter, ""))
+				assert.Equal(t, expected, args.ToMap())
+			})
+
+			t.Run("addArgsFromMap", func(t *testing.T) {
+				args := shell.NewArgs()
+				addArgsFromMap(args, nil, map[string]any{
+					"some-arg":            "",
+					allowedEmptyParameter: "",
+				})
+				assert.Equal(t, expected, args.ToMap())
+			})
+
+			t.Run("addArgsFromStruct", func(t *testing.T) {
+				if allowedEmptyParameter != constants.ParameterKeepTag {
+					t.Skip()
+				}
+				args := shell.NewArgs()
+				addArgsFromStruct(args, struct {
+					S string `argument:"some-arg"`
+					K string `argument:"keep-tag"`
+				}{})
+				assert.Equal(t, expected, args.ToMap())
+			})
 		})
 	}
 }

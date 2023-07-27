@@ -112,7 +112,7 @@ func (a *Args) Remove(name string) ([]Arg, bool) {
 }
 
 func (a *Args) RemoveArg(name string) (removed []Arg) {
-	nameMatch := func(t Arg) bool { return t.raw == name }
+	nameMatch := func(t Arg) bool { return t.Value() == name }
 	removed = collect.All(a.more, nameMatch)
 	a.more = collect.All(a.more, collect.Not(nameMatch))
 	return

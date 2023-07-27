@@ -7,6 +7,7 @@ import (
 	"testing"
 	"text/tabwriter"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,4 +64,18 @@ func displayEscapedString(input string) string {
 		output = output[1 : len(output)-1]
 	}
 	return output
+}
+
+func TestEmptyArgValue(t *testing.T) {
+	noValue := NewArg("", ArgConfigKeepGlobQuote)
+	emptyValue := NewArg(EmptyArgValue(), ArgConfigKeepGlobQuote)
+
+	assert.False(t, noValue.HasValue())
+	assert.Equal(t, "", noValue.Value())
+
+	assert.True(t, emptyValue.HasValue())
+	assert.Equal(t, "", emptyValue.Value())
+	if !platform.IsWindows() {
+		assert.Equal(t, `""`, emptyValue.String())
+	}
 }
