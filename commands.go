@@ -282,38 +282,49 @@ func showProfile(output io.Writer, request commandRequest) error {
 	c := request.config
 	flags := request.flags
 
-	defer c.DisplayConfigurationIssues()
-
-	// Show global section first
+	// Load global section
 	global, err := c.GetGlobalSection()
 	if err != nil {
 		return fmt.Errorf("cannot load global section: %w", err)
 	}
-	err = config.ShowStruct(output, global, constants.SectionConfigurationGlobal)
-	if err != nil {
-		return fmt.Errorf("cannot show global section: %w", err)
-	}
-	fmt.Fprintln(output, "")
 
-	// Show profile
-	profile, err := c.GetProfile(flags.name)
+	// Load profile
+	profile, cleanup, err := openProfile(c, flags.name)
+	defer cleanup()
 	if err != nil {
 		if errors.Is(err, config.ErrNotFound) {
 			return fmt.Errorf("profile '%s' not found", flags.name)
 		}
-		return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+		if profile == nil {
+			return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+		} else {
+			clog.Errorf("failed loading profile '%s': %s", flags.name, err)
+		}
 	}
 
-	// Display deprecation notice
-	displayProfileDeprecationNotices(profile)
+	// Show global
+	err = config.ShowStruct(output, global, constants.SectionConfigurationGlobal)
+	if err != nil {
+		clog.Errorf("cannot show global section: %s", err.Error())
+	}
+	_, _ = fmt.Fprintln(output)
 
+	// Show profile
 	err = config.ShowStruct(output, profile, "profile "+flags.name)
 	if err != nil {
-		return fmt.Errorf("cannot show profile '%s': %w", flags.name, err)
+		clog.Errorf("cannot show profile '%s': %s", flags.name, err.Error())
 	}
-	fmt.Fprintln(output, "")
+	_, _ = fmt.Fprintln(output)
 
+	// Show schedules
 	showSchedules(output, profile.Schedules())
+
+	// Show deprecation notice
+	displayProfileDeprecationNotices(profile)
+
+	// Show config issues
+	c.DisplayConfigurationIssues()
+
 	return nil
 }
 

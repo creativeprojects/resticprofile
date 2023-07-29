@@ -47,6 +47,13 @@ date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
     {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
 {{- end }}
 
+{{- $layoutUpLink := "" -}}
+{{- if .Env.LAYOUT_UPLINK -}}
+    {{ $layoutUpLink = .Env.LAYOUT_UPLINK -}}
+{{- else if not .Env.LAYOUT_NO_HEADLINE -}}
+    {{ $layoutUpLink = "[up](#resticprofile-configuration-reference)" -}}
+{{- end }}
+
 {{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
 {{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
 
@@ -227,6 +234,8 @@ Most **restic** command flags defined in profile sections below can also be set 
 They will be inherited in all sections that define these flags and ignored in all others.
 {{ $layoutNoticeEnd }}
 
+{{ $layoutUpLink }}
+
 {{ range .ProfileSections -}}{{ $layoutHeadings -}}### Section profile.**{{.Name}}**
 
 {{ if .IsCommandSection -}}
@@ -259,6 +268,8 @@ They will be inherited in all sections that define these flags and ignored in al
 Flags declared for the **restic** command line in section *[profile](#section-profile)*
 can be overridden in this section.
 {{ $layoutHintEnd }}
+
+{{ $layoutUpLink }}
 {{ end }}
 
 {{ $layoutHeadings -}}## Nested profile sections
@@ -277,6 +288,8 @@ configuration, see [HTTP Hooks]({{- $configWebUrl -}}/http_hooks/) as an example
 {{- end }}
 {{- end }}
 
+{{ $layoutUpLink }}
+
 {{ $layoutHeadings -}}## Section **groups**
 
 Config file format v1 uses a simplified groups section. Every named item below `groups`
@@ -287,6 +300,8 @@ following the format described below (see [Configuration v2]({{- $configWebUrl -
 for details):
 
 {{ template "printPropertyTable" .Group | properties }}
+
+{{ $layoutUpLink }}
 
 {{ $layoutHeadings -}}# Value types
 
@@ -327,6 +342,8 @@ in `[type]`.
 **Type**: `key` => `value`
 : Is a value that is configuration structure of `string` keys and values of any type.
 
+{{ $layoutUpLink }}
+
 {{ $layoutHeadings -}}# JSON schema
 
 resticprofile provides a JSON schema for v1 & v2 configuration files. The schema may be
@@ -348,3 +365,5 @@ Available URLs:
   * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $v | replace "." "-" }}.json
   * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $v | replace "." "-" }}.json
 {{- end }}
+
+{{ $layoutUpLink }}

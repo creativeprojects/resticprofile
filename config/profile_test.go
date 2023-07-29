@@ -295,11 +295,13 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 		require.NoError(t, err)
 		repoPath := filepath.ToSlash(filepath.Join(homeDir, testVar))
 
-		profile.SetRootPath("/any")
+		profile.ResolveConfiguration()
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Repository.Value()))
-		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Init.FromRepository.Value()))
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.Repository.Value()))
+
+		profile.SetRootPath("any")
+		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
 	})
 }
 
@@ -310,7 +312,10 @@ func TestSetRootInProfileUnix(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
 		testConfig := version + `
 [` + prefix + `profile]
+base-dir = "~"
 status-file = "status"
+prometheus-save-to-file = "prom"
+repository = "local-repo"
 password-file = "key"
 lock = "lock"
 [` + prefix + `profile.backup]
@@ -328,17 +333,26 @@ from-repository-file = "key"
 from-password-file = "key"
 `
 		profile, err := getProfile("toml", testConfig, "profile", "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		assert.NotNil(t, profile)
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+
+		homeDir, err := os.UserHomeDir()
+		require.NoError(t, err)
+
+		profile.ResolveConfiguration()
+		assert.Equal(t, homeDir, profile.BaseDir)
+		assert.Equal(t, "local-repo", profile.Repository.Value())
 
 		profile.SetRootPath("/wd")
 		assert.Equal(t, "status", profile.StatusFile)
+		assert.Equal(t, "prom", profile.PrometheusSaveToFile)
 		assert.Equal(t, "/wd/key", profile.PasswordFile)
 		assert.Equal(t, "/wd/lock", profile.Lock)
 		assert.Equal(t, "", profile.CacheDir)
-		assert.ElementsMatch(t, []string{"backup", "root"}, profile.GetBackupSource())
+		assert.ElementsMatch(t, []string{
+			filepath.Join(homeDir, "backup"),
+			filepath.Join(homeDir, "root"),
+		}, profile.GetBackupSource())
 		assert.ElementsMatch(t, []string{"/wd/exclude"}, profile.Backup.ExcludeFile)
 		assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
@@ -529,6 +543,39 @@ source = "` + sourcePattern + `"
 	assert.Equal(t, sources, profile.Backup.Source)
 }
 
+func TestResolveSourcesAgainstBase(t *testing.T) {
+	backupSource := func(base, source string) []string {
+		config := `
+			[profile.backup]
+			source-base = "` + filepath.ToSlash(base) + `"
+			source = "` + filepath.ToSlash(source) + `"
+		`
+		profile, err := getProfile("toml", config, "profile", "./examples")
+		profile.ResolveConfiguration()
+		require.NoError(t, err)
+		assert.NotNil(t, profile)
+		return profile.Backup.Source
+	}
+
+	cwd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	t.Run("no-base", func(t *testing.T) {
+		assert.Equal(t, []string{"src"}, backupSource("", "src"))
+	})
+	t.Run("relative-base", func(t *testing.T) {
+		assert.Equal(t, []string{filepath.Join("rel", "src")}, backupSource("rel", "src"))
+	})
+	t.Run("absolute-base", func(t *testing.T) {
+		assert.Equal(t, []string{filepath.Join(cwd, "src")}, backupSource(cwd, "src"))
+	})
+	t.Run("env-var-base", func(t *testing.T) {
+		assert.NoError(t, os.Setenv("RP_TEST_CWD", cwd))
+		defer os.Unsetenv("RP_TEST_CWD")
+		assert.Equal(t, []string{filepath.Join(cwd, "path", "src")}, backupSource("${RP_TEST_CWD}/path", "src"))
+	})
+}
+
 func TestPathAndTagInRetention(t *testing.T) {
 	cwd, err := filepath.Abs(".")
 	require.NoError(t, err)
@@ -540,7 +587,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 	backupTags := []string{"one", "two"}
 
-	testProfile := func(t *testing.T, version Version, retention string) *Profile {
+	testProfileWithBase := func(t *testing.T, version Version, retention, baseDir string) *Profile {
 		prefix := ""
 		if version > Version01 {
 			prefix = "profiles."
@@ -554,6 +601,8 @@ func TestPathAndTagInRetention(t *testing.T) {
 		config := `
             version = ` + fmt.Sprintf("%d", version) + `
 
+            [` + prefix + `profile]
+            base-dir = "` + filepath.ToSlash(baseDir) + `"
             [` + prefix + `profile.backup]
             ` + tag + `
             source = ["` + sourcePattern + `"]
@@ -564,8 +613,13 @@ func TestPathAndTagInRetention(t *testing.T) {
 		profile, err := getResolvedProfile("toml", config, "profile")
 		require.NoError(t, err)
 		require.NotNil(t, profile)
+		profile.SetRootPath(examples) // ensure relative paths are converted to absolute paths
 
 		return profile
+	}
+
+	testProfile := func(t *testing.T, version Version, retention string) *Profile {
+		return testProfileWithBase(t, version, retention, "")
 	}
 
 	t.Run("Path", func(t *testing.T) {
@@ -603,6 +657,19 @@ func TestPathAndTagInRetention(t *testing.T) {
 			}
 			profile := testProfile(t, Version01, `path = ["relative/custom/path", "."]`)
 			assert.Equal(t, expected, pathFlag(t, profile))
+			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
+		})
+
+		t.Run("AbsoluteBasePath", func(t *testing.T) {
+			profile := testProfileWithBase(t, Version01, `path = ["."]`, t.TempDir())
+			assert.Equal(t, []string{cwd}, pathFlag(t, profile))
+			assert.Empty(t, profile.config.issues.changedPaths)
+		})
+
+		t.Run("RelativeBasePath", func(t *testing.T) {
+			expectedIssues := map[string][]string{`path "."`: {cwd}}
+			profile := testProfileWithBase(t, Version01, `path = ["."]`, "base")
+			assert.Equal(t, []string{cwd}, pathFlag(t, profile))
 			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
 		})
 

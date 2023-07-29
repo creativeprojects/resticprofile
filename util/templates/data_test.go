@@ -23,7 +23,13 @@ func TestBinaryDir(t *testing.T) {
 func TestCurrentDir(t *testing.T) {
 	dir, err := os.Getwd()
 	require.NoError(t, err)
-	assert.Equal(t, filepath.ToSlash(dir), NewDefaultData(nil).CurrentDir)
+	defer func(d string) { _ = os.Chdir(d) }(dir)
+
+	require.NoError(t, os.Chdir(t.TempDir()))
+	currentDir, _ := os.Getwd()
+
+	assert.Equal(t, filepath.ToSlash(dir), NewDefaultData(nil).StartupDir)
+	assert.Equal(t, filepath.ToSlash(currentDir), NewDefaultData(nil).CurrentDir)
 }
 
 func TestTempDir(t *testing.T) {

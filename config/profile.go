@@ -71,6 +71,7 @@ type Profile struct {
 	resticVersion           *semver.Version
 	Name                    string
 	Description             string                            `mapstructure:"description" description:"Describes the profile"`
+	BaseDir                 string                            `mapstructure:"base-dir" description:"Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead"`
 	Quiet                   bool                              `mapstructure:"quiet" argument:"quiet"`
 	Verbose                 int                               `mapstructure:"verbose" argument:"verbose"`
 	KeyHint                 string                            `mapstructure:"key-hint" argument:"key-hint"`
@@ -123,10 +124,13 @@ type InitSection struct {
 
 func (i *InitSection) IsEmpty() bool { return i == nil }
 
+func (i *InitSection) resolve(p *Profile) {
+	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
+}
+
 func (i *InitSection) setRootPath(_ *Profile, rootPath string) {
 	i.FromRepositoryFile = fixPath(i.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	i.FromPasswordFile = fixPath(i.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
 }
 
 func (i *InitSection) getCommandFlags(profile *Profile) (flags *shell.Args) {
@@ -160,6 +164,7 @@ type BackupSection struct {
 	CheckAfter                       bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
 	UseStdin                         bool     `mapstructure:"stdin" argument:"stdin"`
 	StdinCommand                     []string `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
+	SourceBase                       string   `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
 	Source                           []string `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
 	Exclude                          []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
 	Iexclude                         []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
@@ -180,7 +185,7 @@ func (b *BackupSection) resolve(p *Profile) {
 	if b.unresolvedSource == nil {
 		b.unresolvedSource = b.Source
 	}
-	b.Source = p.resolveSourcePath(b.unresolvedSource...)
+	b.Source = p.resolveSourcePath(b.SourceBase, b.unresolvedSource...)
 }
 
 func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
@@ -267,12 +272,15 @@ type CopySection struct {
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
 
+func (c *CopySection) resolve(p *Profile) {
+	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
+}
+
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
 	c.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
 
 	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
 }
 
 func (s *CopySection) getInitFlags(profile *Profile) *shell.Args {
@@ -433,7 +441,7 @@ func (p *Profile) fillOtherSections() {
 		return
 	}
 
-	for name, _ := range p.OtherSections {
+	for name := range p.OtherSections {
 		if content := p.OtherFlags[name]; content != nil {
 			section := new(GenericSection)
 
@@ -462,6 +470,10 @@ func (p *Profile) fillOtherSections() {
 func (p *Profile) ResolveConfiguration() {
 	p.fillOtherSections()
 
+	// Resolve paths that do not depend on root path
+	p.BaseDir = fixPath(p.BaseDir, expandEnv, expandUserHome)
+	p.Repository.setValue(fixPath(p.Repository.Value(), expandEnv, expandUserHome))
+
 	// Resolve all sections implementing resolver
 	for _, r := range GetSectionsWith[resolver](p) {
 		r.resolve(p)
@@ -477,10 +489,10 @@ func (p *Profile) ResolveConfiguration() {
 		}
 
 		// Copy parameter path from backup sources if path is set to boolean true
-		p.SetPath(p.Backup.unresolvedSource...)
+		p.SetPath(p.Backup.SourceBase, p.Backup.unresolvedSource...)
 	} else {
 		// Resolve path parameter (no copy since backup is not defined)
-		p.SetPath()
+		p.SetPath("")
 	}
 }
 
@@ -505,7 +517,6 @@ func (p *Profile) SetRootPath(rootPath string) {
 	p.Lock = fixPath(p.Lock, expandEnv, absolutePrefix(rootPath))
 	p.PasswordFile = fixPath(p.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.RepositoryFile = fixPath(p.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	p.Repository.setValue(fixPath(p.Repository.Value(), expandEnv, expandUserHome))
 	p.CacheDir = fixPath(p.CacheDir, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.CACert = fixPath(p.CACert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, expandUserHome, absolutePrefix(rootPath))
@@ -537,10 +548,23 @@ func (p *Profile) SetRootPath(rootPath string) {
 	}
 }
 
-func (p *Profile) resolveSourcePath(sourcePaths ...string) []string {
-	// Backup source is NOT relative to the configuration, but where the script was launched instead
-	sourcePaths = fixPaths(sourcePaths, expandEnv, expandUserHome)
+func (p *Profile) resolveSourcePath(sourceBase string, sourcePaths ...string) []string {
+	var applySourceBase, applyBaseDir pathFix
+
+	// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
+	// Applying "sourceBase" if set
+	if sourceBase = strings.TrimSpace(sourceBase); sourceBase != "" {
+		sourceBase = fixPath(sourceBase, expandEnv, expandUserHome)
+		applySourceBase = absolutePrefix(sourceBase)
+	}
+	// Applying a custom PWD eagerly so that own commands (e.g. "show") display correct paths
+	if p.BaseDir != "" {
+		applyBaseDir = absolutePrefix(p.BaseDir)
+	}
+
+	sourcePaths = fixPaths(sourcePaths, expandEnv, expandUserHome, applySourceBase, applyBaseDir)
 	sourcePaths = resolveGlob(sourcePaths)
+	sourcePaths = fixPaths(sourcePaths, filepath.ToSlash, filepath.FromSlash)
 	return sourcePaths
 }
 
@@ -559,12 +583,13 @@ func (p *Profile) SetTag(tags ...string) {
 }
 
 // SetPath will replace any path value from a boolean to sourcePaths and change paths to absolute
-func (p *Profile) SetPath(sourcePaths ...string) {
+func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
 	resolvePath := func(origin string, paths []string, revolver func(string) []string) (resolved []string) {
+		hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir)
 		for _, path := range paths {
 			if len(path) > 0 {
 				for _, rp := range revolver(path) {
-					if rp != path && p.config != nil {
+					if rp != path && p.config != nil && !hasAbsoluteBase {
 						p.config.reportChangedPath(rp, path, origin)
 					}
 					resolved = append(resolved, rp)
@@ -587,7 +612,7 @@ func (p *Profile) SetPath(sourcePaths ...string) {
 			// Replace bool-true with absolute sourcePaths
 			if !sourcePathsResolved {
 				sourcePaths = resolvePath("path (from source)", sourcePaths, func(path string) []string {
-					return fixPaths(p.resolveSourcePath(path), absolutePath)
+					return fixPaths(p.resolveSourcePath(basePath, path), absolutePath)
 				})
 				sourcePathsResolved = true
 			}

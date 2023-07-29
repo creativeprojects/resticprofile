@@ -321,9 +321,11 @@ func (c *Config) DisplayConfigurationIssues() {
 		}
 		sort.Strings(msg)
 		msg = append([]string{
-			"the configuration contains relative 'path' items which may lead to unstable results in restic " +
-				"commands that select snapshots. Consider using absolute paths in 'path' (and 'source') or use " +
-				"'tag' instead of 'path' (path = false) to select snapshots for restic commands. Affected paths:",
+			"the configuration contains relative \"path\" items which may lead to unstable results in restic " +
+				"commands that select snapshots. Consider using absolute paths in \"path\" (and \"source\"), " +
+				"set \"base-dir\" in the profile or use \"tag\" instead of \"path\" (path = false) to select " +
+				"snapshots for restic commands.",
+			"Affected paths are:",
 		}, msg...)
 		clog.Info(strings.Join(msg, fmt.Sprintln()))
 	}
@@ -337,6 +339,11 @@ func (c *Config) DisplayConfigurationIssues() {
 	}
 
 	// Reset issues
+	c.ClearConfigurationIssues()
+}
+
+// ClearConfigurationIssues removes all configuration issues
+func (c *Config) ClearConfigurationIssues() {
 	c.issues.changedPaths = nil
 	c.issues.failedSection = nil
 }
@@ -522,6 +529,8 @@ func (c *Config) loadGroups() (err error) {
 
 // GetProfile in configuration. If the profile is not found, it returns errNotFound
 func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
+	c.ClearConfigurationIssues()
+
 	if c.sourceTemplates != nil {
 		err = c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
 		if err != nil {

@@ -23,7 +23,8 @@ The list of pre-defined variables is:
 |-------------------|--------------------------------------------------|------------------------------------------------------------------|
 | **.Profile.Name** | string                                           | Profile name                                                     |
 | **.Now**          | [time.Time](https://golang.org/pkg/time/) object | Now object: see explanation bellow                               |
-| **.CurrentDir**   | string                                           | Current directory at the time resticprofile was started          |
+| **.StartupDir**   | string                                           | Current directory at the time resticprofile was started          |
+| **.CurrentDir**   | string                                           | Current directory at the time a profile is executed              |
 | **.ConfigDir**    | string                                           | Directory where the configuration was loaded from                |
 | **.TempDir**      | string                                           | OS temporary directory (might not exist)                         |
 | **.BinaryDir**    | string                                           | Directory where resticprofile was started from (since `v0.18.0`) |

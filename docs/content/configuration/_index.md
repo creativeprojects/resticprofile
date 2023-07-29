@@ -163,15 +163,9 @@ If you have any doubt on what it's running, you can try a `--dry-run`:
 ```shell
 $ resticprofile --dry-run backup
 2022/05/18 17:14:07 profile 'default': starting 'backup'
-2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file key --repo local:/backup --verbose /home
+2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file password.txt --repo local:/backup --verbose /home
 2022/05/18 17:14:07 profile 'default': finished 'backup'
 ```
-
-## Path resolution in configuration
-
-All files path in the configuration are resolved from the configuration path. The big **exception** being `source` in `backup` section where it's resolved from the current path where you started resticprofile.
-
-Using the basic configuration from earlier, and taking into account that the configuration file is saved in the directory `/opt/resticprofile`, the password key file `password.txt` is expected to be found at `/opt/resticprofile/password.txt` no matter your current directory.
 
 ## More information
 

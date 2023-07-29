@@ -6,12 +6,15 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/creativeprojects/clog"
 )
 
 // DefaultData provides default variables for templates
 type DefaultData struct {
 	Now        time.Time
 	CurrentDir string
+	StartupDir string
 	TempDir    string
 	BinaryDir  string
 	Hostname   string
@@ -30,16 +33,20 @@ func (d *DefaultData) InitDefaults() {
 // NewDefaultData returns an initialized DefaultData
 func NewDefaultData(env map[string]string) (data DefaultData) {
 	data = DefaultData{
-		Now:      time.Now(),
-		TempDir:  filepath.ToSlash(os.TempDir()),
-		OS:       runtime.GOOS,
-		Arch:     runtime.GOARCH,
-		Hostname: "localhost",
-		Env:      formatEnv(env),
+		Now:        time.Now(),
+		TempDir:    filepath.ToSlash(os.TempDir()),
+		OS:         runtime.GOOS,
+		Arch:       runtime.GOARCH,
+		Hostname:   "localhost",
+		Env:        formatEnv(env),
+		StartupDir: startupDir,
+		CurrentDir: startupDir,
 	}
 
 	if cwd, err := os.Getwd(); err == nil {
 		data.CurrentDir = filepath.ToSlash(cwd)
+	} else {
+		clog.Warning("failed retrieving pwd: %s", err.Error())
 	}
 
 	if binary, err := os.Executable(); err == nil {
@@ -74,3 +81,12 @@ func formatEnv(env map[string]string) map[string]string {
 	}
 	return env
 }
+
+var startupDir = (func() string {
+	if dir, err := os.Getwd(); err == nil {
+		return filepath.ToSlash(dir)
+	} else {
+		clog.Warning("failed retrieving pwd: %s", err.Error())
+		return "."
+	}
+})()
