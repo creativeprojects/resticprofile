@@ -14,6 +14,8 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/monitor"
+	"github.com/creativeprojects/resticprofile/util/collect"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -181,7 +183,8 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 			searchList = append(searchList, sh)
 		}
 	}
-	if len(searchList) == 0 {
+	defaultList := len(searchList) == 0
+	if defaultList {
 		searchList = c.getShellSearchList()
 	}
 
@@ -198,6 +201,16 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 
 	composer := getArgumentsComposer(shell)
 	arguments = composer(c)
+
+	clog.Trace(func() string {
+		listKind := ""
+		if defaultList {
+			listKind = "default list "
+		}
+		return fmt.Sprintf("selected shell from %s[%s], results in command:\n%s\n%s",
+			listKind, strings.Join(searchList, ", "), shell, strings.Join(arguments, "\n"))
+	})
+
 	return
 }
 
@@ -248,20 +261,54 @@ var powershellBuiltins = regexp.MustCompile("(?i)^(\\$|\\?|^|_|args|ConsoleFileN
 	"PWD|Sender|ShellId|StackTrace|switch|this|True)$")
 
 func composePowershellArguments(c *Command) []string {
+	commandEnvNames := collect.From(c.Environ, func(env string) string {
+		return strings.ToLower(strings.SplitN(env, "=", 2)[0])
+	})
+
 	// Rewrite unix style env variables ($var) to powershell env style ($Env:var) with fallback to local variable
+	// Is limited to existing env variables and will not modify variables that have been set to a value (using $var=).
 	mapper := func(name string) string {
-		if powershellBuiltins.MatchString(name) {
-			return fmt.Sprintf("${%s}", name)
-		} else {
-			return fmt.Sprintf("${Env:%s}", name)
+		hasEnv := slices.Contains(commandEnvNames, strings.ToLower(name))
+		if !hasEnv {
+			_, hasEnv = os.LookupEnv(name)
 		}
+
+		if hasEnv && !powershellBuiltins.MatchString(name) {
+			assignment, err := regexp.Compile(fmt.Sprintf(`(?i)\$%[1]s\s*=|-Variable\s+-Name\s+"%[1]s"`, regexp.QuoteMeta(name)))
+			if err != nil || !assignment.MatchString(c.Command) {
+				return fmt.Sprintf("${Env:%s}", name)
+			}
+		}
+
+		return "" // leave variable unchanged
 	}
+
+	// Check if mapper is disabled (when $RESTICPROFILE_PWSH_NO_AUTOENV is set to any value)
+	if mapper("RESTICPROFILE_PWSH_NO_AUTOENV") != "" {
+		mapper = func(name string) string { return "" }
+	}
+
 	arguments := rewriteVariables(c.Arguments, mapper)
 	command := resolveCommand(rewriteVariables([]string{c.Command}, mapper)[0])
 
+	// Absolute path to an executable must be escaped in PWSH:
+	if strings.Contains(command, " ") && !strings.Contains(command, `"`) {
+		if stat, err := os.Stat(command); err == nil && !stat.IsDir() {
+			command = fmt.Sprintf(`& "%s"`, command)
+		}
+	}
+
+	// Arguments are treated as markup in PWSH, we need to escape them as strings
+	arguments = collect.From(removeQuotes(arguments), func(arg string) string {
+		if !strings.Contains(arg, "`") {
+			arg = fmt.Sprintf(`"%s"`, strings.ReplaceAll(arg, "\"", "`\""))
+		}
+		return arg
+	})
+
 	return append(
 		[]string{"-Command", command},
-		removeQuotes(arguments)...,
+		arguments...,
 	)
 }
 
@@ -306,6 +353,9 @@ func makeRegexVariablesFunc(mapper func(string) string) func(string) string {
 				if len(name) > 0 {
 					if len(mapped) == 0 {
 						mapped = mapper(name)
+						if len(mapped) == 0 {
+							return matches[0] // return original if mapper returns empty string
+						}
 					} else {
 						mapped += name
 					}
