@@ -630,20 +630,13 @@ func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, 
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration
-func (r *resticWrapper) getEnvironment() []string {
-	if r.profile.Environment == nil || len(r.profile.Environment) == 0 {
-		return nil
-	}
-	env := make([]string, len(r.profile.Environment))
-	i := 0
+func (r *resticWrapper) getEnvironment() (env []string) {
+	// Note: variable names match the original case for OS variables. Custom vars are all uppercase.
 	for key, value := range r.profile.Environment {
-		// env variables are always uppercase
-		key = strings.ToUpper(key)
-		clog.Debugf("setting up environment variable '%s'", key)
-		env[i] = fmt.Sprintf("%s=%s", key, value.Value())
-		i++
+		clog.Debugf("setting up environment variable: %s=%s", key, value)
+		env = append(env, fmt.Sprintf("%s=%s", key, value.Value()))
 	}
-	return env
+	return
 }
 
 // getProfileEnvironment returns some environment variables about the current profile

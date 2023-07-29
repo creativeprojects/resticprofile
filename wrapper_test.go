@@ -209,6 +209,7 @@ func TestGetSingleEnvironment(t *testing.T) {
 	profile.Environment = map[string]config.ConfidentialValue{
 		"User": config.NewConfidentialValue("me"),
 	}
+	profile.ResolveConfiguration()
 	wrapper := newResticWrapper(nil, "restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
 	assert.Equal(t, []string{"USER=me"}, env)
@@ -220,6 +221,7 @@ func TestGetMultipleEnvironment(t *testing.T) {
 		"User":     config.NewConfidentialValue("me"),
 		"Password": config.NewConfidentialValue("secret"),
 	}
+	profile.ResolveConfiguration()
 	wrapper := newResticWrapper(nil, "restic", false, profile, "test", nil, nil)
 	env := wrapper.getEnvironment()
 	assert.Len(t, env, 2)

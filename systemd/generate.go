@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/spf13/afero"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -78,6 +79,7 @@ type templateInfo struct {
 // Config for generating systemd unit and timer files
 type Config struct {
 	CommandLine      string
+	Environment      []string
 	WorkingDirectory string
 	Title            string
 	SubTitle         string
@@ -108,7 +110,7 @@ func Generate(config Config) error {
 		}
 	}
 
-	environment := make([]string, 0, 2)
+	environment := slices.Clone(config.Environment)
 	// add $HOME to the environment variables (as a fallback if not defined in profile)
 	if home, err := os.UserHomeDir(); err == nil {
 		environment = append(environment, fmt.Sprintf("HOME=%s", home))

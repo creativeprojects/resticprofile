@@ -4,6 +4,8 @@ package schedule
 
 import (
 	"bytes"
+	"fmt"
+	"os"
 	"path"
 	"testing"
 
@@ -158,6 +160,27 @@ func TestLaunchdJobLog(t *testing.T) {
 			} else {
 				assert.Subset(t, launchdJob.ProgramArguments, args)
 			}
+		})
+	}
+}
+
+func TestLaunchdJobPreservesEnv(t *testing.T) {
+	pathEnv := os.Getenv("PATH")
+	fixtures := []struct {
+		environment []string
+		expected    map[string]string
+	}{
+		{expected: map[string]string{"PATH": pathEnv}},
+		{environment: []string{"path=extra-var"}, expected: map[string]string{"PATH": pathEnv, "path": "extra-var"}},
+		{environment: []string{"PATH=custom-path"}, expected: map[string]string{"PATH": "custom-path"}},
+	}
+
+	for i, fixture := range fixtures {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			handler := NewHandler(SchedulerLaunchd{})
+			cfg := &config.ScheduleConfig{Title: "t", SubTitle: "s", Environment: fixture.environment}
+			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
+			assert.Equal(t, fixture.expected, launchdJob.EnvironmentVariables)
 		})
 	}
 }

@@ -105,6 +105,7 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 	}
 	err := systemd.Generate(systemd.Config{
 		CommandLine:      job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
+		Environment:      job.Environment,
 		WorkingDirectory: job.WorkingDirectory,
 		Title:            job.Title,
 		SubTitle:         job.SubTitle,

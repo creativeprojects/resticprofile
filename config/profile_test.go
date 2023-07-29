@@ -801,7 +801,8 @@ func TestSchedules(t *testing.T) {
 			initialize = true
 
 			[profile.env]
-			TEST_VAR="test-value"
+			TEST_VAR="non-captured-test-value"
+			RESTIC_VAR="profile-only-value"
 			RESTIC_ANY2="123"
 
 			[profile.%s]
@@ -819,7 +820,7 @@ func TestSchedules(t *testing.T) {
 	for _, command := range sections {
 		t.Run(command, func(t *testing.T) {
 			// Check that schedule is supported
-			profile, err := getProfile("toml", testConfig(command, true), "profile", "")
+			profile, err := getResolvedProfile("toml", testConfig(command, true), "profile")
 			require.NoError(t, err)
 			assert.NotNil(t, profile)
 
@@ -831,10 +832,10 @@ func TestSchedules(t *testing.T) {
 			assert.Equal(t, []string{"@hourly"}, schedule.Schedules)
 			assert.Equal(t, path.Join(constants.TemporaryDirMarker, "rp.log"), schedule.Log)
 			assert.Equal(t, map[string]string{
-				"TEST_VAR":    "test-value",
+				"RESTIC_VAR":  "profile-only-value",
 				"RESTIC_ANY1": "xyz",
 				"RESTIC_ANY2": "123",
-			}, schedule.Environment)
+			}, util.NewDefaultEnvironment(schedule.Environment...).ValuesAsMap())
 
 			// Check that schedule is optional
 			profile, err = getProfile("toml", testConfig(command, false), "profile", "")

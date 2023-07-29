@@ -17,6 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/dial"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
 	"howett.net/plist"
@@ -167,10 +168,10 @@ func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*
 		logfile = name + ".log"
 	}
 
-	// Add path to env variables
-	env := make(map[string]string, 1)
-	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
-		env["PATH"] = pathEnv
+	// Format schedule env, adding PATH if not yet provided by the schedule config
+	env := util.NewDefaultEnvironment(job.Environment...)
+	if !env.Has("PATH") {
+		env.Put("PATH", os.Getenv("PATH"))
 	}
 
 	lowPriorityIO := true
@@ -188,7 +189,7 @@ func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*
 		StandardErrorPath:     logfile,
 		WorkingDirectory:      job.WorkingDirectory,
 		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
-		EnvironmentVariables:  env,
+		EnvironmentVariables:  env.ValuesAsMap(),
 		Nice:                  nice,
 		ProcessType:           priorityValues[job.GetPriority()],
 		LowPriorityIO:         lowPriorityIO,

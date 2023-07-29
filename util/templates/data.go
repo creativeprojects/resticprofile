@@ -4,10 +4,10 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/util"
 )
 
 // DefaultData provides default variables for templates
@@ -38,7 +38,6 @@ func NewDefaultData(env map[string]string) (data DefaultData) {
 		OS:         runtime.GOOS,
 		Arch:       runtime.GOARCH,
 		Hostname:   "localhost",
-		Env:        formatEnv(env),
 		StartupDir: startupDir,
 		CurrentDir: startupDir,
 	}
@@ -57,29 +56,13 @@ func NewDefaultData(env map[string]string) (data DefaultData) {
 		data.Hostname = hostname
 	}
 
-	for _, envValue := range os.Environ() {
-		kv := strings.SplitN(envValue, "=", 2)
-		key, value := strings.ToUpper(strings.TrimSpace(kv[0])), kv[1]
-		if _, contains := data.Env[key]; !contains && key != "" {
-			data.Env[key] = value
-		}
+	osEnv := util.NewDefaultEnvironment(os.Environ()...)
+	for name, value := range env {
+		osEnv.Put(osEnv.ResolveName(name), value)
 	}
+	data.Env = osEnv.ValuesAsMap()
 
 	return data
-}
-
-func formatEnv(env map[string]string) map[string]string {
-	if env == nil {
-		env = make(map[string]string)
-	} else {
-		for name, v := range env {
-			if un := strings.ToUpper(name); un != name {
-				delete(env, name)
-				env[un] = v
-			}
-		}
-	}
-	return env
 }
 
 var startupDir = (func() string {
