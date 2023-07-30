@@ -1,1 +1,19 @@
+# Mockery config >= v2.31.0
 with-expecter: true
+
+dir: "{{.InterfaceDir}}/mocks"
+outpkg: "mocks"
+filename: "{{.InterfaceName}}.go"
+mockname: "{{.InterfaceName}}"
+
+packages:
+  github.com/creativeprojects/resticprofile/config:
+    interfaces:
+      ProfileInfo:
+      PropertyInfo:
+      SectionInfo:
+      NamedPropertySet:
+
+  github.com/creativeprojects/resticprofile/schedule:
+    interfaces:
+      Handler:

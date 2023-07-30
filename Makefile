@@ -56,27 +56,36 @@ TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
 all: prepare test build
-.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc generate-install syslog checkdoc
+.PHONY: test test-ci coverage
+.PHONY: download download-restic-key
+.PHONY: build build-mac build-linux build-pi build-windows build-no-selfupdate build-all
+.PHONY: generate-config-reference generate-jsonschema generate-install generate-restic
+.PHONY: all verify prepare install clean ramdisk rest-server nightly toc syslog checkdoc
 
-$(GOBIN)/eget:
+verify:
+ifeq ($(wildcard $(GOPATH)/.),)
+	@echo "GOPATH not found, please check your go installation"
+	exit 1
+endif
+
+$(GOBIN)/eget: verify
 	@echo "[*] $@"
 	go install -v github.com/zyedidia/eget@latest
 
-$(GOBIN)/goreleaser: $(GOBIN)/eget
+$(GOBIN)/goreleaser: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	eget goreleaser/goreleaser --upgrade-only --to $(GOBIN)
 
-$(GOBIN)/github-markdown-toc.go: $(GOBIN)/eget
+$(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	eget ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to $(GOBIN)
 
-.PHONY: prepare
-prepare: download
+prepare: verify download $(GOBIN)/eget
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
  	$(GOCMD) generate ./...
 
-download:
+download: verify
 	@echo "[*] $@"
 	@$(GOMOD) download
 
@@ -133,6 +142,7 @@ clean:
 	@echo "[*] $@"
 	$(GOCLEAN)
 	rm -rf $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_PI) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic* dist/*
+	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
 
 ramdisk: ${TMP_MOUNT}

@@ -16,8 +16,6 @@ import (
 )
 
 // ProfileInfo provides structural information on profiles and can be used for specification and validation
-//
-//go:generate mockery --name=ProfileInfo
 type ProfileInfo interface {
 	// PropertySet contains properties shared across sections
 	PropertySet
@@ -28,8 +26,6 @@ type ProfileInfo interface {
 }
 
 // SectionInfo provides structural information on a particular profile section
-//
-//go:generate mockery --name=SectionInfo
 type SectionInfo interface {
 	// Named provides Name and Description of the section
 	Named
@@ -66,16 +62,12 @@ type PropertySet interface {
 }
 
 // NamedPropertySet is Named and PropertySet
-//
-//go:generate mockery --name=NamedPropertySet
 type NamedPropertySet interface {
 	Named
 	PropertySet
 }
 
 // PropertyInfo provides details on an individual property
-//
-//go:generate mockery --name=PropertyInfo
 type PropertyInfo interface {
 	// Named provides Name and Description of the property
 	Named
