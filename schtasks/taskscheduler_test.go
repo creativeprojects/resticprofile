@@ -136,6 +136,14 @@ func TestStatusUnknownTask(t *testing.T) {
 
 // this creates tasks through the API and compares it with the XML export
 func TestCreationOfTasks(t *testing.T) {
+	// some tests are using the 1st day of the month as a reference,
+	// but this cause issues when we're running the tests on the first day of the month.
+	// typically the test will only generate entries at a time after the time we run the test
+	// anyway, let's generate a day that is not today
+	dayOfTheMonth := "1"
+	if time.Now().Day() == 1 {
+		dayOfTheMonth = "2"
+	}
 	everyDay := ""
 	for day := 1; day <= 31; day++ {
 		everyDay += `<Day>` + strconv.Itoa(day) + `</Day>\s*`
@@ -262,21 +270,21 @@ func TestCreationOfTasks(t *testing.T) {
 		// some days every month
 		{
 			"one day per month",
-			[]string{"*-*-01 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			[]string{"*-*-0" + dayOfTheMonth + " 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T03:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
 			"every hour on the 1st of each month",
-			[]string{"*-*-01 *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			[]string{"*-*-0" + dayOfTheMonth + " *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24, // 1 per hour
 		},
 		// more than once per month
 		{
 			"twice in one day per month",
-			[]string{"*-*-01 03..04:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-01T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>1</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			[]string{"*-*-0" + dayOfTheMonth + " 03..04:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			2,
 		},
 	}

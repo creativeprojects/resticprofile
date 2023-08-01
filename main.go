@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"syscall"
 	"text/tabwriter"
-	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -35,10 +34,6 @@ var (
 	date    = ""
 	builtBy = ""
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano() - time.Now().Unix())
-}
 
 func main() {
 	var exitCode = 0

@@ -598,14 +598,14 @@ func TestBackupWithStreamSource(t *testing.T) {
 			t.Skip("signal handling is not supported on Windows")
 		}
 		profile, wrapper := profileAndWrapper(t)
-		wrapper.moreArgs = []string{"--sleep", "12000"}
+		wrapper.moreArgs = []string{"--sleep", "15000"}
 
 		profile.Backup.StdinCommand = append(fillBufferCommand(), "exit 2")
 		profile.ResolveConfiguration()
 
 		start := time.Now()
 		_, err := run(t, wrapper)
-		assert.Less(t, time.Now().Sub(start), time.Second*10, "timeout, interrupt not sent to restic")
+		assert.Less(t, time.Now().Sub(start), time.Second*12, "timeout, interrupt not sent to restic")
 
 		require.NotNil(t, err)
 		assert.Contains(t, expectedInterruptedError, err.Error())

@@ -13,10 +13,10 @@ ignore:
 
 codecov:
   notify:
-    after_n_builds: 6
+    after_n_builds: 3
 
 comment:
-  after_n_builds: 6
+  after_n_builds: 3
 
 coverage:
   round: nearest
