@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -61,6 +62,15 @@ func NewDefaultData(env map[string]string) (data DefaultData) {
 		osEnv.Put(osEnv.ResolveName(name), value)
 	}
 	data.Env = osEnv.ValuesAsMap()
+
+	// add uppercase env variants to simplify usage in templates
+	for name, value := range data.Env {
+		if un := strings.ToUpper(name); un != name {
+			if _, exists := data.Env[un]; !exists {
+				data.Env[un] = value
+			}
+		}
+	}
 
 	return data
 }

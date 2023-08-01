@@ -81,4 +81,8 @@ func TestEnv(t *testing.T) {
 		rKey := osEnv.ResolveName(key)
 		assert.Equal(t, customEnv[key], env[rKey], "key = %s, rKey = %s", key, rKey)
 	}
+
+	// templates offer uppercase variant
+	assert.Equal(t, customEnv["__test_k1"], env["__test_k1"])
+	assert.Equal(t, customEnv["__test_k1"], env["__TEST_K1"])
 }
