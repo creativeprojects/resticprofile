@@ -1,4 +1,4 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
 
 package systemd
 
@@ -25,17 +25,15 @@ func TestGenerateSystemUnit(t *testing.T) {
 	assertNoFileExists(t, timerFile)
 
 	err := Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"",
-		"",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
@@ -77,17 +75,15 @@ WantedBy=timers.target
 	assertNoFileExists(t, timerFile)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		UserUnit,
-		"low",
-		"",
-		"",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         UserUnit,
+		Priority:         "low",
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
@@ -106,17 +102,16 @@ func TestGenerateUnitTemplateNotFound(t *testing.T) {
 	fs = afero.NewMemMapFs()
 
 	err := Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"unit-file",
-		"",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		UnitFile:         "unit-file",
 	})
 	require.Error(t, err)
 }
@@ -125,17 +120,16 @@ func TestGenerateTimerTemplateNotFound(t *testing.T) {
 	fs = afero.NewMemMapFs()
 
 	err := Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"",
-		"timer-file",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		TimerFile:        "timer-file",
 	})
 	require.Error(t, err)
 }
@@ -147,17 +141,16 @@ func TestGenerateUnitTemplateFailed(t *testing.T) {
 	require.NoError(t, err)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"unit",
-		"",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		UnitFile:         "unit",
 	})
 	require.Error(t, err)
 }
@@ -169,17 +162,16 @@ func TestGenerateTimerTemplateFailed(t *testing.T) {
 	require.NoError(t, err)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"",
-		"timer",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		TimerFile:        "timer",
 	})
 	require.Error(t, err)
 }
@@ -191,17 +183,16 @@ func TestGenerateUnitTemplateFailedToExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"unit",
-		"",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		UnitFile:         "unit",
 	})
 	require.Error(t, err)
 }
@@ -213,17 +204,16 @@ func TestGenerateTimerTemplateFailedToExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"",
-		"timer",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		TimerFile:        "timer",
 	})
 	require.Error(t, err)
 }
@@ -244,17 +234,17 @@ func TestGenerateFromUserDefinedTemplates(t *testing.T) {
 	require.NoError(t, err)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"unit",
-		"timer",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		UnitFile:         "unit",
+		TimerFile:        "timer",
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
@@ -275,17 +265,15 @@ func TestGenerateOnReadOnlyFs(t *testing.T) {
 	fs = afero.NewReadOnlyFs(fs)
 
 	err = Generate(Config{
-		"commandLine",
-		"workdir",
-		"name",
-		"backup",
-		"job description",
-		"timer description",
-		[]string{"daily"},
-		SystemUnit,
-		"low",
-		"",
-		"",
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
 	})
 	require.Error(t, err)
 }

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
@@ -17,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 // resticVersion14 is the semver of restic 0.14 (the version where several flag names were changed)
@@ -249,13 +252,19 @@ type ScheduleBaseSection struct {
 	SchedulePriority   string        `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
 	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+	ScheduleEnvCapture []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
 	s.ScheduleLog = fixPath(s.ScheduleLog, expandEnv, expandUserHome)
 }
 
-func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection { return s }
+func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection {
+	if s != nil && s.ScheduleEnvCapture == nil {
+		s.ScheduleEnvCapture = []string{"RESTIC_*"}
+	}
+	return s
+}
 
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
@@ -477,6 +486,16 @@ func (p *Profile) ResolveConfiguration() {
 	// Resolve all sections implementing resolver
 	for _, r := range GetSectionsWith[resolver](p) {
 		r.resolve(p)
+	}
+
+	// Resolve environment variable name case (p.Environment keys are all lower case due to config parser)
+	// Custom env variables (without a match in os.Environ) are changed to uppercase (like before in wrapper)
+	osEnv := util.NewFoldingEnvironment(os.Environ()...)
+	for name, value := range p.Environment {
+		if newName := osEnv.ResolveName(strings.ToUpper(name)); newName != name {
+			delete(p.Environment, name)
+			p.Environment[newName] = value
+		}
 	}
 
 	// Deal with "path" & "tag" flags
@@ -736,9 +755,29 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 
 	for name, section := range sections {
 		if s := section.GetSchedule(); len(s.Schedule) > 0 {
-			env := map[string]string{}
-			for key, value := range p.Environment {
-				env[key] = value.Value()
+			env := util.NewDefaultEnvironment()
+
+			if len(s.ScheduleEnvCapture) > 0 {
+				// Capture OS env
+				env.SetValues(os.Environ()...)
+
+				// Capture profile env
+				for key, value := range p.Environment {
+					env.Put(key, value.Value())
+				}
+
+				for index, key := range env.Names() {
+					matched := slices.ContainsFunc(s.ScheduleEnvCapture, func(pattern string) bool {
+						matched, err := filepath.Match(pattern, key)
+						if err != nil && index == 0 {
+							clog.Tracef("env not matched with invalid glob expression '%s': %s", pattern, err.Error())
+						}
+						return matched
+					})
+					if !matched {
+						env.Remove(key)
+					}
+				}
 			}
 
 			config := &ScheduleConfig{
@@ -746,7 +785,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				SubTitle:    name,
 				Schedules:   s.Schedule,
 				Permission:  s.SchedulePermission,
-				Environment: env,
+				Environment: env.Values(),
 				Log:         s.ScheduleLog,
 				LockMode:    s.ScheduleLockMode,
 				LockWait:    s.ScheduleLockWait,

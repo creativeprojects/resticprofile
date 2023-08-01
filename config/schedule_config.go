@@ -28,7 +28,7 @@ type ScheduleConfig struct {
 	WorkingDirectory string
 	Command          string
 	Arguments        []string
-	Environment      map[string]string
+	Environment      []string
 	JobDescription   string
 	TimerDescription string
 	Priority         string

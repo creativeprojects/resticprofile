@@ -791,16 +791,22 @@ func TestSchedules(t *testing.T) {
 	testConfig := func(command string, scheduled bool) string {
 		schedule := ""
 		if scheduled {
-			schedule = `schedule = "@hourly"
-schedule-log = "` + logFile + `"`
+			schedule = `
+				schedule = "@hourly"
+				schedule-log = "` + logFile + `"`
 		}
 
 		config := `
-[profile]
-initialize = true
+			[profile]
+			initialize = true
 
-[profile.%s]
-%s
+			[profile.env]
+			TEST_VAR="non-captured-test-value"
+			RESTIC_VAR="profile-only-value"
+			RESTIC_ANY2="123"
+
+			[profile.%s]
+			%s
 `
 		return fmt.Sprintf(config, command, schedule)
 	}
@@ -808,19 +814,28 @@ initialize = true
 	sections := NewProfile(nil, "").SchedulableCommands()
 	require.GreaterOrEqual(t, len(sections), 6)
 
+	require.NoError(t, os.Setenv("RESTIC_ANY1", "xyz"))
+	require.NoError(t, os.Setenv("RESTIC_ANY2", "xyz"))
+
 	for _, command := range sections {
 		t.Run(command, func(t *testing.T) {
 			// Check that schedule is supported
-			profile, err := getProfile("toml", testConfig(command, true), "profile", "")
+			profile, err := getResolvedProfile("toml", testConfig(command, true), "profile")
 			require.NoError(t, err)
 			assert.NotNil(t, profile)
 
 			config := profile.Schedules()
-			assert.Len(t, config, 1)
-			assert.Equal(t, config[0].SubTitle, command)
-			assert.Len(t, config[0].Schedules, 1)
-			assert.Equal(t, config[0].Schedules[0], "@hourly")
-			assert.Equal(t, config[0].Log, path.Join(constants.TemporaryDirMarker, "rp.log"))
+			require.Len(t, config, 1)
+
+			schedule := config[0]
+			assert.Equal(t, command, schedule.SubTitle)
+			assert.Equal(t, []string{"@hourly"}, schedule.Schedules)
+			assert.Equal(t, path.Join(constants.TemporaryDirMarker, "rp.log"), schedule.Log)
+			assert.Equal(t, map[string]string{
+				"RESTIC_VAR":  "profile-only-value",
+				"RESTIC_ANY1": "xyz",
+				"RESTIC_ANY2": "123",
+			}, util.NewDefaultEnvironment(schedule.Environment...).ValuesAsMap())
 
 			// Check that schedule is optional
 			profile, err = getProfile("toml", testConfig(command, false), "profile", "")

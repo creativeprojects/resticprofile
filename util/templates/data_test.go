@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -62,9 +62,7 @@ func TestOsAndArch(t *testing.T) {
 }
 
 func TestEnv(t *testing.T) {
-	osEnvKeys := collect.From(os.Environ(), func(s string) string {
-		return strings.SplitN(s, "=", 2)[0]
-	})
+	osEnv := util.NewDefaultEnvironment(os.Environ()...)
 
 	customEnv := map[string]string{
 		"path":      "my-test-path",
@@ -74,12 +72,17 @@ func TestEnv(t *testing.T) {
 
 	env := NewDefaultData(customEnv).Env
 
-	for _, key := range osEnvKeys {
-		if key != "" && key != "PATH" {
-			assert.Equal(t, os.Getenv(key), env[strings.ToUpper(key)], "key = %s", key)
+	for _, key := range osEnv.Names() {
+		if key != "" && strings.ToUpper(key) != "PATH" {
+			assert.Equal(t, os.Getenv(key), env[key], "key = %s", key)
 		}
 	}
 	for key := range customEnv {
-		assert.Equal(t, customEnv[key], env[strings.ToUpper(key)], "key = %s", key)
+		rKey := osEnv.ResolveName(key)
+		assert.Equal(t, customEnv[key], env[rKey], "key = %s, rKey = %s", key, rKey)
 	}
+
+	// templates offer uppercase variant
+	assert.Equal(t, customEnv["__test_k1"], env["__test_k1"])
+	assert.Equal(t, customEnv["__test_k1"], env["__TEST_K1"])
 }
