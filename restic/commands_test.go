@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -426,21 +427,30 @@ func TestBuiltInCommandsTable(t *testing.T) {
 		"copy", "diff", "dump", "find",
 		"forget", "generate", "init", "key",
 		"list", "ls", "migrate", "mount",
-		"prune", "rebuild-index", "recover", "restore",
+		"prune", "recover",
+		//"repair", "repair-index", "repair-snapshots",
+		"restore", "rewrite",
 		"self-update", "snapshots", "stats", "tag",
 		"unlock", "version",
 	}
 
-	t.Run("available commands", func(t *testing.T) {
-		commands09 := collect.All(expectedCommands, func(cmd string) bool {
-			return cmd != "copy"
-		})
+	re := regexp.MustCompile
 
+	expectedCommands15 := append(
+		collect.All(expectedCommands, collect.Not(re("^repair.*").MatchString)),
+		"rebuild-index")
+	sort.Strings(expectedCommands15)
+
+	expectedCommands14 := collect.All(expectedCommands15, collect.Not(re("^rewrite$").MatchString))
+	expectedCommands09 := collect.All(expectedCommands14, collect.Not(re("^copy").MatchString))
+
+	t.Run("available commands", func(t *testing.T) {
 		assert.Subset(t, CommandNames(), expectedCommands)
-		assert.Equal(t, expectedCommands, CommandNamesForVersion("0.14"))
-		assert.Equal(t, expectedCommands, CommandNamesForVersion("0.10"))
-		assert.Equal(t, commands09, CommandNamesForVersion("0.9"))
-		assert.Equal(t, commands09, CommandNamesForVersion("0.0"))
+		assert.Equal(t, expectedCommands15, CommandNamesForVersion("0.15"))
+		assert.Equal(t, expectedCommands14, CommandNamesForVersion("0.14"))
+		assert.Equal(t, expectedCommands14, CommandNamesForVersion("0.10"))
+		assert.Equal(t, expectedCommands09, CommandNamesForVersion("0.9"))
+		assert.Equal(t, expectedCommands09, CommandNamesForVersion("0.0"))
 	})
 
 	t.Run("get commands", func(t *testing.T) {
@@ -481,10 +491,14 @@ func TestBuiltInCommandsTable(t *testing.T) {
 			"tls-client-cert",
 			"verbose",
 		}
+		matched := 0
 		for _, option := range GetDefaultOptions() {
-			assert.Contains(t, expectedOptions, option.Name)
+			if slices.Contains(expectedOptions, option.Name) {
+				matched++
+			}
 			assert.True(t, option.AvailableForOS())
 		}
+		assert.Equal(t, len(expectedOptions), matched, "expectedOptions matched count")
 		assert.GreaterOrEqual(t, len(GetDefaultOptions()), len(expectedOptions))
 	})
 
