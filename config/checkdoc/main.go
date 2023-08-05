@@ -18,12 +18,12 @@ const (
 	configTag      = "```"
 	checkdocIgnore = "<!-- checkdoc-ignore -->"
 	goTemplate     = "{{"
-	replaceURL     = "http://localhost:1313/resticprofile/jsonschema/config-$1.json"
+	replaceURL     = "http://localhost:1313/resticprofile/jsonschema/config$1.json"
 )
 
 var (
-	urlPattern = regexp.MustCompile(`{{< [^>}]+config-(\d)\.json"[^>}]+ >}}`)
-	_          = regexp.MustCompile(`{{< [^>}]+config-(\d)\.json"[^>}]+ >}}`) // Remove this when VS Code fixed the syntax highlighting issues
+	urlPattern = regexp.MustCompile(`{{< [^>}]+config(-\d)?\.json"[^>}]+ >}}`)
+	_          = regexp.MustCompile(`{{< [^>}]+config(-\d)?\.json"[^>}]+ >}}`) // Remove this when VS Code fixed the syntax highlighting issues
 )
 
 var (

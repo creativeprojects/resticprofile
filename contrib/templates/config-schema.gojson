@@ -1,0 +1,184 @@
+{{- /* ------------------------------------------------------------------------------
+
+  Template that generates a global json schema which redirects to versioned URLs
+  depending on "version" and "restic-version" properties
+
+  Usage: resticprofile generate \
+         --config-reference contrib/templates/config-schema.gojson
+
+------------------------------------------------------------------------------ */ -}}
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+{{- $baseUrl := "https://creativeprojects.github.io/resticprofile/jsonschema" -}}
+{{- if .Env.SCHEMA_BASE_URL -}}
+{{- $baseUrl = .Env.SCHEMA_BASE_URL -}}
+{{- end -}}
+{{- $refBaseUrl := $baseUrl -}}
+{{- if .Env.SCHEMA_REF_BASE_URL -}}
+{{- $refBaseUrl = .Env.SCHEMA_REF_BASE_URL -}}
+{{- end -}}
+{
+    "$id": "{{ $baseUrl | js }}/config.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$defs": {
+        "version-1": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "version": {
+                            "type": "string",
+                            "const": "1"
+                        }
+                    },
+                    "required": [
+                        "version"
+                    ]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "version": {
+                            "type": "string",
+                            "maxLength": 0
+                        }
+                    },
+                    "required": [
+                        "version"
+                    ]
+                }
+            ]
+        },
+        "version-2": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string",
+                    "const": "2"
+                }
+            },
+            "required": [
+                "version"
+            ]
+        },
+        "no-version": {
+            "not": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                    }
+                },
+                "required": [
+                    "version"
+                ]
+            }
+        },
+        "no-restic-version": {
+            "type": "object",
+            "properties": {
+                "global": {
+                    "not": {
+                        "type": "object",
+                        "properties": {
+                            "restic-version": {
+                            }
+                        },
+                        "required": [
+                            "restic-version"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "if": {
+        "$ref": "#/$defs/no-version"
+    },
+    "then": {
+        "$ref": "{{ $refBaseUrl | js }}/config-1.json"
+    },
+    "else": {
+        "if": {
+            "$ref": "#/$defs/no-restic-version"
+        },
+        "then": {
+            "oneOf": [
+                {
+                    {{ block "noResticVersion" (list $refBaseUrl "2") -}}
+                    {{- $base := index . 0 -}}
+                    {{- $config := index . 1 -}}
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-{{ $config }}"
+                        },
+                        {
+                            "$ref": "{{ $base | js }}/config-{{ $config }}.json"
+                        }
+                    ]
+                    {{ end }}
+                },
+                {
+                    {{ template "noResticVersion" (list $refBaseUrl "1") }}
+                }
+            ]
+        },
+        "else": {
+            "oneOf": [
+                {{ define "schemaWithResticVersion" }}
+                {{- $base := index . 0 -}}
+                {{- $config := index . 1 -}}
+                {{- $version := index . 2 -}}
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-{{ $config | js }}"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "{{ $version | replace "." "\\." | js }}.*",
+                                                    "default": "{{ $version | js }}",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "{{ $version | js }}"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "{{ $base | js }}/config-{{ $config | js }}-restic-{{ $version | replace "." "-" | js }}.json"
+                        }
+                    ]
+                }
+                {{ end -}}
+                {{- /* restic major version ( assuming it is "0.$major", may need to change when restic reaches v1 ) */ -}}
+                {{ range $index, $version := .KnownResticVersions -}}
+                {{- $version = slice ($version | split ".") 0 2 | join "." -}}
+                {{- if gt $index 0 -}}{{ "," }}{{- end -}}
+                {{- template "schemaWithResticVersion" (list $refBaseUrl "2" $version) -}}
+                {{ "," }}
+                {{- template "schemaWithResticVersion" (list $refBaseUrl "1" $version) -}}
+                {{- end }}
+            ]
+        }
+    },
+    "title": "resticprofile configuration",
+    "type": "object"
+}

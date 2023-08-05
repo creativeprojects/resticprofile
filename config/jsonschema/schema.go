@@ -411,14 +411,7 @@ func applyListAppendSchema(target SchemaType) {
 func schemaForConfigV1(profileInfo config.ProfileInfo) (object *schemaObject) {
 	object = schemaForProfile(profileInfo)
 
-	// exclude non-profile properties from profile-schema
-	profilesPattern := fmt.Sprintf(`^(?!%s).*$`, strings.Join([]string{
-		constants.SectionConfigurationGlobal,
-		constants.SectionConfigurationGroups,
-		constants.SectionConfigurationIncludes,
-		constants.ParameterVersion,
-	}, "|"))
-	object.PatternProperties[profilesPattern] = object.PatternProperties[matchAll]
+	object.AdditionalProperties = object.PatternProperties[matchAll]
 	delete(object.PatternProperties, matchAll)
 
 	object.Description = "resticprofile configuration v1"

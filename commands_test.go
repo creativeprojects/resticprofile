@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -293,6 +294,20 @@ func TestGenerateCommand(t *testing.T) {
 		assert.Contains(t, ref, "| **ionice-class** |")
 		assert.Contains(t, ref, "| **check-after** |")
 		assert.Contains(t, ref, "| **continue-on-error** |")
+	})
+
+	t.Run("--config-reference config-schema.gojson", func(t *testing.T) {
+		buffer.Reset()
+		assert.NoError(t, generateCommand(buffer, commandRequest{args: []string{"--config-reference", "contrib/templates/config-schema.gojson"}}))
+		ref := buffer.String()
+		assert.Contains(t, ref, `"$schema"`)
+		assert.Contains(t, ref, "/jsonschema/config-1.json")
+		assert.Contains(t, ref, "/jsonschema/config-2.json")
+
+		decoder := json.NewDecoder(strings.NewReader(ref))
+		content := make(map[string]any)
+		assert.NoError(t, decoder.Decode(&content))
+		assert.Contains(t, content, `$schema`)
 	})
 
 	t.Run("--json-schema", func(t *testing.T) {
