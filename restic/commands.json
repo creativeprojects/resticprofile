@@ -96,6 +96,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "group-by",
+        "Alias": "g",
+        "Default": "host,paths",
+        "Description": "group snapshots by host, paths and/or tags, separated by comma (disable grouping with '')",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "help",
         "Alias": "h",
         "Default": "false",
@@ -171,7 +180,7 @@
         "Name": "parent",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "use this parent snapshot (default: last snapshot in the repository that has the same target files/directories, and is not newer than the snapshot time)",
+        "Description": "use this parent snapshot (default: latest snapshot in the group determined by --group-by and not newer than the timestamp determined by --time)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -339,7 +348,7 @@
         "Name": "with-cache",
         "Alias": "",
         "Default": "false",
-        "Description": "use the cache",
+        "Description": "use existing cache, only read uncached data from repository",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -593,6 +602,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "human-readable",
+        "Alias": "",
+        "Default": "false",
+        "Description": "print sizes in human readable format",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "ignore-case",
         "Alias": "i",
         "Default": "false",
@@ -711,7 +729,7 @@
       {
         "Name": "group-by",
         "Alias": "g",
-        "Default": "\"host,paths\"",
+        "Default": "host,paths",
         "Description": "group snapshots by host, paths and/or tags, separated by comma (disable grouping with '')",
         "Once": true,
         "FromVersion": "",
@@ -739,7 +757,7 @@
         "Name": "keep-daily",
         "Alias": "d",
         "Default": "0",
-        "Description": "keep the last n daily snapshots",
+        "Description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -748,7 +766,7 @@
         "Name": "keep-hourly",
         "Alias": "H",
         "Default": "0",
-        "Description": "keep the last n hourly snapshots",
+        "Description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -757,7 +775,7 @@
         "Name": "keep-last",
         "Alias": "l",
         "Default": "0",
-        "Description": "keep the last n snapshots",
+        "Description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -766,7 +784,7 @@
         "Name": "keep-monthly",
         "Alias": "m",
         "Default": "0",
-        "Description": "keep the last n monthly snapshots",
+        "Description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -784,7 +802,7 @@
         "Name": "keep-weekly",
         "Alias": "w",
         "Default": "0",
-        "Description": "keep the last n weekly snapshots",
+        "Description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -847,7 +865,7 @@
         "Name": "keep-yearly",
         "Alias": "y",
         "Default": "0",
-        "Description": "keep the last n yearly snapshots",
+        "Description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1199,6 +1217,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "human-readable",
+        "Alias": "",
+        "Default": "false",
+        "Description": "print sizes in human readable format",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "long",
         "Alias": "l",
         "Default": "false",
@@ -1453,7 +1480,7 @@
     "Name": "rebuild-index",
     "Description": "The \"rebuild-index\" command creates a new index based on the pack files in the\nrepository.",
     "FromVersion": "",
-    "RemovedInVersion": "",
+    "RemovedInVersion": "0.16.0",
     "Options": [
       {
         "Name": "help",
@@ -1488,6 +1515,111 @@
         "Description": "help for recover",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "repair",
+    "Description": "Repair the repository",
+    "FromVersion": "0.16.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for repair",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "repair-index",
+    "Description": "The \"repair index\" command creates a new index based on the pack files in the\nrepository.",
+    "FromVersion": "0.16.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for index",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "read-all-packs",
+        "Alias": "",
+        "Default": "false",
+        "Description": "read all pack files to generate new index from scratch",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "repair-snapshots",
+    "Description": "The \"repair snapshots\" command repairs broken snapshots. It scans the given\nsnapshots and generates new ones with damaged directories and file contents\nremoved. If the broken snapshots are deleted, a prune run will be able to\nclean up the repository.\n\nThe command depends on a correct index, thus make sure to run \"repair index\"\nfirst!",
+    "FromVersion": "0.16.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "dry-run",
+        "Alias": "n",
+        "Default": "false",
+        "Description": "do not do anything, just print what would be done",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "forget",
+        "Alias": "",
+        "Default": "false",
+        "Description": "remove original snapshots after creating new ones",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for snapshots",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.16.0",
         "RemovedInVersion": ""
       }
     ]
@@ -1741,7 +1873,7 @@
       {
         "Name": "group-by",
         "Alias": "g",
-        "Default": "\"\"",
+        "Default": "",
         "Description": "group snapshots by host, paths and/or tags, separated by comma",
         "Once": true,
         "FromVersion": "0.10.0",
@@ -1972,7 +2104,7 @@
   },
   {
     "Name": "__default",
-    "Description": "restic is a backup program which allows saving multiple revisions of files and\ndirectories in an encrypted repository stored on different backends.",
+    "Description": "restic is a backup program which allows saving multiple revisions of files and\ndirectories in an encrypted repository stored on different backends.\n\nThe full documentation can be found at https://restic.readthedocs.io/ .",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1980,7 +2112,7 @@
         "Name": "cacert",
         "Alias": "",
         "Default": "",
-        "Description": "file to load root certificates from (default: use system certificates)",
+        "Description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2007,7 +2139,7 @@
         "Name": "compression",
         "Alias": "",
         "Default": "auto",
-        "Description": "compression mode (only available for repository format version 2), one of (auto|off|max)",
+        "Description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION)",
         "Once": true,
         "FromVersion": "0.14.0",
         "RemovedInVersion": ""
@@ -2148,10 +2280,19 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "retry-lock",
+        "Alias": "",
+        "Default": "0s",
+        "Description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries)",
+        "Once": true,
+        "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "tls-client-cert",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "path to a file containing PEM encoded TLS client certificate and private key",
+        "Description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
