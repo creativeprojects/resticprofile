@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -22,12 +23,14 @@ import (
 	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/restic"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -853,27 +856,98 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.False(t, retry)
 
 	// No retry when disabled
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
 	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// No retry when no time left
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime - time.Nanosecond)
-	wrapper.global.ResticLockRetryAfter = constants.MinResticLockRetryTime // enable remote lock retry
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay - time.Nanosecond)
+	wrapper.global.ResticLockRetryAfter = constants.MinResticLockRetryDelay // enable remote lock retry
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryAfter)
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
-	assert.Equal(t, constants.MinResticLockRetryTime, sleep)
+	assert.Equal(t, constants.MinResticLockRetryDelay, sleep)
 
-	wrapper.maxWaitOnLock(constants.MaxResticLockRetryTime + 50*time.Millisecond)
-	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryTime
+	wrapper.maxWaitOnLock(constants.MaxResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryDelay
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
-	assert.Equal(t, constants.MaxResticLockRetryTime, sleep)
+	assert.Equal(t, constants.MaxResticLockRetryDelay, sleep)
+}
+
+func TestCanUseResticLockRetry(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Repository = config.NewConfidentialValue("my-repo")
+	emptyArgs := shell.NewArgs()
+	argMatcher := regexp.MustCompile(".*retry-lock.*").MatchString
+
+	getWrapper := func() *resticWrapper {
+		wrapper := newResticWrapper(nil, "restic", true, profile, constants.CommandBackup, nil, nil)
+		wrapper.startTime = time.Now()
+		wrapper.global.ResticLockRetryAfter = 1 * time.Minute
+		wrapper.global.ResticVersion = "0.16"
+		return wrapper
+	}
+
+	t.Run("SubtractsResticLockRetryAfter", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(10*time.Minute + 10*time.Second)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=8m")
+		assert.Equal(t, 8*time.Minute, wrapper.lockRetryTime)
+	})
+
+	t.Run("SubtractsRemainingTime", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(10*time.Minute + 10*time.Second)
+		wrapper.executionTime = 3 * time.Minute
+		wrapper.startTime = wrapper.startTime.Add(-5 * time.Minute) // 2 minutes for locks, 3 minutes for execution
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=6m")
+		assert.Equal(t, 6*time.Minute, wrapper.lockRetryTime)
+	})
+
+	t.Run("10MinutesIsMax", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(10 * constants.MaxResticLockRetryTimeArgument)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=10m")
+		assert.Equal(t, constants.MaxResticLockRetryTimeArgument, wrapper.lockRetryTime)
+	})
+
+	t.Run("1MinuteIsMin", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(3*time.Minute + 10*time.Second)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=1m")
+		assert.True(t, slices.ContainsFunc(command.args, argMatcher))
+		assert.Equal(t, 1*time.Minute, wrapper.lockRetryTime)
+
+		wrapper.maxWaitOnLock(3 * time.Minute)
+		command = wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
+		assert.Equal(t, time.Duration(0), wrapper.lockRetryTime)
+	})
+
+	t.Run("NotAddedInRestic15", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.global.ResticVersion = "0.15"
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
+	})
+
+	t.Run("NotAddedWithoutFilter", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.global.FilterResticFlags = false
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
+	})
 }
 
 func TestLocksAndLockWait(t *testing.T) {
