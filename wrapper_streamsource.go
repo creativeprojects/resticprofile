@@ -7,13 +7,14 @@ import (
 	"io"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 )
 
 func (r *resticWrapper) prepareStreamSource() (io.ReadCloser, error) {
@@ -34,22 +35,25 @@ func (r *resticWrapper) prepareStdinStreamSource() (io.ReadCloser, error) {
 		return nil, fmt.Errorf("stdin was already consumed. cannot read it twice")
 	}
 
-	totalBytes := int64(0)
-
-	readCloser := &readerWrapper{
-		reader: r.stdin,
-		read: func(w *readerWrapper, bytes []byte) (n int, err error) {
-			n, err = w.reader.Read(bytes)
-			totalBytes += int64(n)
-			return
-		},
-		close: func(w *readerWrapper) error {
-			if totalBytes > 0 && r.stdin != nil {
-				r.stdin = nil
-				w.close = nil
-			}
-			return nil
-		},
+	var readCloser io.ReadCloser
+	{
+		totalBytes := int64(0)
+		reader := r.stdin
+		readCloser = util.NewSyncReader(util.NewFilterReadCloser(
+			// Read
+			func(bytes []byte) (n int, err error) {
+				n, err = reader.Read(bytes)
+				totalBytes += int64(n)
+				return
+			},
+			// Close
+			func() error {
+				if totalBytes > 0 && r.stdin != nil {
+					r.stdin = nil
+				}
+				return nil
+			},
+		))
 	}
 
 	return readCloser, nil
@@ -113,55 +117,34 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 		}
 	}
 
-	readCloser := &readerWrapper{
-		reader: io.MultiReader(initialReader, pipeReader),
+	var readCloser io.ReadCloser
+	{
+		var readLock, closeLock sync.Mutex
+		reader := io.MultiReader(initialReader, pipeReader)
+		readCloser = util.NewSyncReaderMutex(
+			util.NewFilterReadCloser(
+				// Read
+				func(bytes []byte) (n int, err error) {
+					n, err = reader.Read(bytes)
 
-		read: func(w *readerWrapper, bytes []byte) (n int, err error) {
-			n, err = w.reader.Read(bytes)
-
-			// Stopping restic when stream source command fails while producing content
-			if err != nil && err != io.EOF {
-				clog.Errorf("interrupting '%s' after stdin read error: %s", r.command, err)
-				if runtime.GOOS == "windows" {
-					return // that will close stdin and stops restic
-				} else if r.sigChan != nil {
-					r.sigChan <- os.Interrupt
-				}
-				// Wait for the signal to arrive before allowing further read from stdin
-				time.Sleep(750 * time.Millisecond)
-			}
-			return
-		},
-
-		close: func(w *readerWrapper) error {
-			w.close = nil
-			return closePipe()
-		},
+					// Stopping restic when stream source command fails while producing content
+					if err != nil && err != io.EOF {
+						clog.Errorf("interrupting '%s' after stdin read error: %s", r.command, err)
+						if platform.IsWindows() {
+							return // that will close stdin and stops restic
+						} else if r.sigChan != nil {
+							r.sigChan <- os.Interrupt
+						}
+						// Wait for the signal to arrive before allowing further read from stdin
+						time.Sleep(750 * time.Millisecond)
+					}
+					return
+				},
+				// Close
+				closePipe,
+			), &readLock, &closeLock,
+		)
 	}
 
 	return readCloser, nil
-}
-
-type readerWrapper struct {
-	reader              io.Reader
-	readLock, closeLock sync.Mutex
-	read                func(w *readerWrapper, bytes []byte) (n int, err error)
-	close               func(w *readerWrapper) error
-}
-
-func (w *readerWrapper) Read(bytes []byte) (n int, err error) {
-	w.readLock.Lock()
-	defer w.readLock.Unlock()
-
-	return w.read(w, bytes)
-}
-
-func (w *readerWrapper) Close() error {
-	w.closeLock.Lock()
-	defer w.closeLock.Unlock()
-
-	if w.close != nil {
-		return w.close(w)
-	}
-	return nil
 }

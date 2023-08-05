@@ -1,8 +1,6 @@
 package schedule
 
 import (
-	"bytes"
-	"os"
 	"os/exec"
 	"runtime"
 	"testing"
@@ -38,12 +36,11 @@ func TestDisplayParseSchedules(t *testing.T) {
 	events, err := parseSchedules([]string{"daily"})
 	assert.NoError(t, err)
 
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 
 	displayParsedSchedules("command", events)
-	output := buffer.String()
+	output := term.ReadRecording()
 	assert.Contains(t, output, "Original form: daily\n")
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00\n")
 }
@@ -52,12 +49,11 @@ func TestDisplayParseSchedulesIndexAndTotal(t *testing.T) {
 	events, err := parseSchedules([]string{"daily", "monthly", "yearly"})
 	assert.NoError(t, err)
 
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 
 	displayParsedSchedules("command", events)
-	output := buffer.String()
+	output := term.ReadRecording()
 	assert.Contains(t, output, "schedule 1/3")
 	assert.Contains(t, output, "schedule 2/3")
 	assert.Contains(t, output, "schedule 3/3")
@@ -74,14 +70,13 @@ func TestDisplaySystemdSchedules(t *testing.T) {
 		t.Skip("systemd-analyze not available")
 	}
 
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 
 	err = displaySystemdSchedules("command", []string{"daily"})
 	assert.NoError(t, err)
 
-	output := buffer.String()
+	output := term.ReadRecording()
 	assert.Contains(t, output, "Original form: daily")
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00")
 }

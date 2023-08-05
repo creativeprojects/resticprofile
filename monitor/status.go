@@ -1,11 +1,13 @@
 package monitor
 
 type Status struct {
-	PercentDone  float64
-	TotalFiles   int
-	FilesDone    int
-	TotalBytes   int64
-	BytesDone    int64
-	ErrorCount   int
-	CurrentFiles []string
+	PercentDone      float64
+	SecondsElapsed   int
+	SecondsRemaining int
+	TotalFiles       int64
+	FilesDone        int64
+	TotalBytes       uint64
+	BytesDone        uint64
+	ErrorCount       int64
+	CurrentFiles     []string
 }

@@ -119,6 +119,31 @@ func init() {
 		}
 	})
 
+	// Profile: "stdout-hidden" default values
+	redirectOutput, noRedirectOutput := &RedirectOutputSection{StdoutFile: []string{""}}, &RedirectOutputSection{}
+	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
+		if propertyName == constants.ParameterStdoutHidden {
+			property.basic().addDescriptionFilter(func(desc string) string {
+				var def string
+				if redirectOutput.IsOutputHidden(sectionName, false) == HideOutput {
+					def = `Default is "true" when redirected`
+				} else if noRedirectOutput.IsOutputHidden(sectionName, false) == HideOutput {
+					def = `Default is "true"`
+				} else if noRedirectOutput.IsOutputHidden(sectionName, true) == HideOutput {
+					if sectionName == constants.CommandBackup {
+						def = `Default is "true" when "extended-status" is set`
+					} else {
+						def = `Default is "true" when "json" is requested`
+					}
+				}
+				if def != "" {
+					desc = fmt.Sprintf("%s. %s", strings.TrimSuffix(strings.TrimSpace(desc), "."), def)
+				}
+				return desc
+			})
+		}
+	})
+
 	// Profile: exclude "help" (--help flag doesn't need to be in the reference)
 	ExcludeProfileProperty("*", "help")
 }

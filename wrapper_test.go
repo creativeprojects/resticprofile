@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -330,95 +329,95 @@ func Example_runProfile() {
 }
 
 func TestRunRedirectOutputOfEchoProfile(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper(nil, "echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "test", strings.TrimSpace(buffer.String()))
+	assert.Equal(t, "test", strings.TrimSpace(term.ReadRecording()))
 }
 
 func TestDryRun(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper(nil, "echo", true, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "", buffer.String())
+	assert.Equal(t, "", term.ReadRecording())
 }
 
 func TestEnvProfileName(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "TestEnvProfileName")
 	profile.RunBefore = []string{"echo profile name = $PROFILE_NAME"}
 
 	wrapper := newResticWrapper(nil, "echo", false, profile, "test", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "profile name = TestEnvProfileName\ntest\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+	assert.Equal(t, "profile name = TestEnvProfileName\ntest\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
 }
 
 func TestEnvProfileCommand(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	profile.RunBefore = []string{"echo profile command = $PROFILE_COMMAND"}
 
 	wrapper := newResticWrapper(nil, "echo", false, profile, "test-command", nil, nil)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "profile command = test-command\ntest-command\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+	assert.Equal(t, "profile command = test-command\ntest-command\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
 }
 
 func TestEnvError(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo error: $ERROR_MESSAGE"}
 
 	wrapper := newResticWrapper(nil, "exit", false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
 }
 
 func TestEnvErrorCommandLine(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo cmd: $ERROR_COMMANDLINE"}
 
 	wrapper := newResticWrapper(nil, "exit", false, profile, "1", nil, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "cmd: \"exit\" \"1\"\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+	assert.Equal(t, "cmd: \"exit\" \"1\"\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
 }
 
 func TestEnvErrorExitCode(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo exit-code: $ERROR_EXIT_CODE"}
 
 	wrapper := newResticWrapper(nil, "exit", false, profile, "5", nil, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "exit-code: 5\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
+	assert.Equal(t, "exit-code: 5\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
 }
 
 func TestEnvStderr(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo stderr: $ERROR_STDERR"}
 
 	wrapper := newResticWrapper(nil, mockBinary, false, profile, "command", []string{"--stderr", "error_message", "--exit", "1"}, nil)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "stderr: error_message", strings.TrimSpace(strings.ReplaceAll(buffer.String(), "\r\n", "\n")))
+	assert.Equal(t, "stderr: error_message", strings.TrimSpace(strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n")))
 }
 
 func TestRunProfileWithSetPIDCallback(t *testing.T) {
@@ -730,8 +729,8 @@ func TestRunShellCommands(t *testing.T) {
 }
 
 func TestRunStreamErrorHandler(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
+	term.StartRecording(term.RecordOutput)
+	defer term.StopRecording()
 
 	errorCommand := `echo "detected error in $PROFILE_COMMAND"`
 
@@ -742,7 +741,7 @@ func TestRunStreamErrorHandler(t *testing.T) {
 
 	err := wrapper.runProfile()
 	require.NoError(t, err)
-	assert.Contains(t, buffer.String(), "detected error in backup")
+	assert.Contains(t, term.ReadRecording(), "detected error in backup")
 }
 
 func TestRunStreamErrorHandlerDoesNotBreakCommand(t *testing.T) {
@@ -781,6 +780,10 @@ func (m *mockOutputAnalysis) GetRemoteLockedSince() (time.Duration, bool) {
 
 func (m *mockOutputAnalysis) GetRemoteLockedBy() (string, bool) {
 	return m.lockWho, len(m.lockWho) > 1
+}
+
+func (m *mockOutputAnalysis) GetFailedFiles() []string {
+	return nil
 }
 
 func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {

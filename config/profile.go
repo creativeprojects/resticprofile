@@ -45,6 +45,21 @@ type RunShellCommands interface {
 	GetRunShellCommands() *RunShellCommandsSection
 }
 
+type OutputHidden int
+
+const (
+	ShowOutput = OutputHidden(iota)
+	HideJsonOutput
+	HideOutput
+)
+
+// RedirectOutput provides access to output redirection settings
+type RedirectOutput interface {
+	IsOutputHidden(commandName string, jsonRequested bool) OutputHidden
+	IsOutputRedirected() bool
+	GetRedirectOutput() *RedirectOutputSection
+}
+
 // OtherFlags provides access to dynamic commandline flags
 type OtherFlags interface {
 	GetOtherFlags() map[string]any
@@ -110,6 +125,7 @@ type Profile struct {
 type GenericSection struct {
 	OtherFlagsSection       `mapstructure:",squash"`
 	RunShellCommandsSection `mapstructure:",squash"`
+	RedirectOutputSection   `mapstructure:",squash"`
 }
 
 func (g *GenericSection) IsEmpty() bool { return g == nil }
@@ -162,6 +178,7 @@ func (i *InitSection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 type BackupSection struct {
 	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
 	RunShellCommandsSection          `mapstructure:",squash"`
+	RedirectOutputSection            `mapstructure:",squash"`
 	unresolvedSource                 []string
 	CheckBefore                      bool     `mapstructure:"check-before" description:"Check the repository before starting the backup command"`
 	CheckAfter                       bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
@@ -173,7 +190,7 @@ type BackupSection struct {
 	Iexclude                         []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
 	ExcludeFile                      []string `mapstructure:"exclude-file" argument:"exclude-file"`
 	FilesFrom                        []string `mapstructure:"files-from" argument:"files-from"`
-	ExtendedStatus                   bool     `mapstructure:"extended-status" argument:"json"`
+	ExtendedStatus                   *bool    `mapstructure:"extended-status" argument:"json"`
 	NoErrorOnWarning                 bool     `mapstructure:"no-error-on-warning" description:"Do not fail the backup when some files could not be read"`
 }
 
@@ -183,6 +200,10 @@ func (b *BackupSection) resolve(p *Profile) {
 	// Ensure UseStdin is set when Backup.StdinCommand is defined
 	if len(b.StdinCommand) > 0 {
 		b.UseStdin = true
+	}
+	// Enable ExtendedStatus if unset and required for full functionality
+	if bools.IsUndefined(b.ExtendedStatus) && len(p.StatusFile)+len(p.PrometheusSaveToFile)+len(p.PrometheusPush) != 0 {
+		b.ExtendedStatus = bools.True()
 	}
 	// Resolve source paths
 	if b.unresolvedSource == nil {
@@ -270,6 +291,7 @@ func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection {
 type CopySection struct {
 	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
 	RunShellCommandsSection          `mapstructure:",squash"`
+	RedirectOutputSection            `mapstructure:",squash"`
 	Initialize                       bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
 	InitializeCopyChunkerParams      *bool             `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
 	Repository                       ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
@@ -416,6 +438,37 @@ type SendMonitoringSection struct {
 type SendMonitoringHeader struct {
 	Name  string            `mapstructure:"name" regex:"^\\w([\\w-]+)\\w$" examples:"\"Authorization\";\"Cache-Control\";\"Content-Disposition\";\"Content-Type\"" description:"Name of the HTTP header"`
 	Value ConfidentialValue `mapstructure:"value" examples:"\"Bearer ...\";\"Basic ...\";\"no-cache\";\"attachment;; filename=stats.txt\";\"application/json\";\"text/plain\";\"text/xml\"" description:"Value of the header"`
+}
+
+// RedirectOutputSection contains settings to redirect restic command output
+type RedirectOutputSection struct {
+	StdoutHidden  *bool    `mapstructure:"stdout-hidden" description:"Toggles whether stdout is hidden in console & log"`
+	StdoutFile    []string `mapstructure:"stdout-file" description:"Redirect restic stdout to file(s)"`
+	StdoutCommand []string `mapstructure:"stdout-command" description:"Pipe restic stdout to shell command(s)"`
+}
+
+func (r *RedirectOutputSection) GetRedirectOutput() *RedirectOutputSection { return r }
+
+func (r *RedirectOutputSection) IsOutputRedirected() bool {
+	return r != nil &&
+		(len(r.StdoutFile) > 0 || len(r.StdoutCommand) > 0)
+}
+
+func (r *RedirectOutputSection) IsOutputHidden(commandName string, jsonRequested bool) (hidden OutputHidden) {
+	if r != nil {
+		if bools.IsTrue(r.StdoutHidden) {
+			hidden = HideOutput
+		} else if !bools.IsStrictlyFalse(r.StdoutHidden) {
+			if commandName == constants.CommandDump || commandName == constants.CommandCat {
+				if r.IsOutputRedirected() {
+					hidden = HideOutput
+				}
+			} else if commandName == constants.CommandBackup && jsonRequested {
+				hidden = HideJsonOutput
+			}
+		}
+	}
+	return
 }
 
 // OtherFlagsSection contains additional restic command line flags

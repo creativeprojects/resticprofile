@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -146,12 +144,12 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 						fixture.cmdlineArgs,
 						nil,
 					)
-					buffer := &bytes.Buffer{}
+
 					// setting the output via the package global setter could lead to some issues
 					// when some tests are running in parallel. I should fix that at some point :-/
-					term.SetOutput(buffer)
+					term.StartRecording(term.RecordOutput)
 					err = wrapper.runCommand(fixture.commandName)
-					term.SetOutput(os.Stdout)
+					stdout := term.StopRecording()
 
 					require.NoError(t, err)
 
@@ -163,7 +161,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 							t.SkipNow()
 						}
 					}
-					assert.Equal(t, expected, strings.TrimSpace(buffer.String()))
+					assert.Equal(t, expected, strings.TrimSpace(stdout))
 				})
 
 				if runtime.GOOS == "windows" {
@@ -187,16 +185,16 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 						fixture.cmdlineArgs,
 						nil,
 					)
-					buffer := &bytes.Buffer{}
+
 					// setting the output via the package global setter could lead to some issues
 					// when some tests are running in parallel. I should fix that at some point :-/
-					term.SetOutput(buffer)
+					term.StartRecording(term.RecordOutput)
 					err = wrapper.runCommand(fixture.commandName)
-					term.SetOutput(os.Stdout)
+					content := term.StopRecording()
 
 					require.NoError(t, err)
 
-					assert.Equal(t, fixture.legacy, strings.TrimSpace(buffer.String()))
+					assert.Equal(t, fixture.legacy, strings.TrimSpace(content))
 				})
 			}
 		})

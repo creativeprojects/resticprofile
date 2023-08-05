@@ -16,28 +16,17 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/ansi"
 	"github.com/creativeprojects/resticprofile/util/collect"
-	"github.com/fatih/color"
-	"github.com/mattn/go-colorable"
 )
 
-var (
-	ansiBold   = color.New(color.Bold).SprintFunc()
-	ansiCyan   = color.New(color.FgCyan).SprintFunc()
-	ansiYellow = color.New(color.FgYellow).SprintFunc()
-)
-
-func displayWriter(output io.Writer, flags commandLineFlags) (out func(args ...any) io.Writer, closer func()) {
+func displayWriter(output io.Writer) (out func(args ...any) io.Writer, closer func()) {
 	if term.GetOutput() == output {
 		output = term.GetColorableOutput()
 
 		if width, _ := term.OsStdoutTerminalSize(); width > 10 {
-			output = newLineLengthWriter(output, width)
+			output = ansi.NewLineLengthWriter(output, width)
 		}
-	}
-
-	if flags.noAnsi {
-		output = colorable.NewNonColorable(output)
 	}
 
 	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
@@ -69,12 +58,12 @@ func getCommonUsageHelpLine(commandName string, withProfile bool) string {
 	}
 	return fmt.Sprintf(
 		"%s [resticprofile flags] %s%s",
-		ansiBold("resticprofile"), profile, ansiBold(commandName),
+		ansi.Bold("resticprofile"), profile, ansi.Bold(commandName),
 	)
 }
 
 func displayOwnCommands(output io.Writer, request commandRequest) {
-	out, closer := displayWriter(output, request.flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	for _, command := range request.ownCommands.commands {
@@ -87,7 +76,7 @@ func displayOwnCommands(output io.Writer, request commandRequest) {
 }
 
 func displayOwnCommandHelp(output io.Writer, commandName string, request commandRequest) {
-	out, closer := displayWriter(output, request.flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	var command *ownCommand
@@ -131,7 +120,7 @@ func displayOwnCommandHelp(output io.Writer, commandName string, request command
 }
 
 func displayCommonUsageHelp(output io.Writer, request commandRequest) {
-	out, closer := displayWriter(output, request.flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	out("resticprofile is a configuration profiles manager for backup profiles and ")
@@ -141,21 +130,21 @@ func displayCommonUsageHelp(output io.Writer, request commandRequest) {
 	out("\t%s [restic flags]\n", getCommonUsageHelpLine("restic-command", true))
 	out("\t%s [command specific flags]\n", getCommonUsageHelpLine("resticprofile-command", true))
 	out("\n")
-	out(ansiBold("resticprofile flags:\n"))
+	out(ansi.Bold("resticprofile flags:\n"))
 	out(request.flags.usagesHelp)
 	out("\n\n")
-	out(ansiBold("resticprofile own commands:\n"))
+	out(ansi.Bold("resticprofile own commands:\n"))
 	displayOwnCommands(out(), request)
 	out("\n")
 
 	out("%s at %s\n",
-		ansiBold("Documentation available"),
-		ansiBold(ansiCyan("https://creativeprojects.github.io/resticprofile/")))
+		ansi.Bold("Documentation available"),
+		ansi.Bold(ansi.Cyan("https://creativeprojects.github.io/resticprofile/")))
 	out("\n")
 }
 
 func displayResticHelp(output io.Writer, configuration *config.Config, flags commandLineFlags, command string) {
-	out, closer := displayWriter(output, flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	// try to load the config
@@ -196,7 +185,7 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 	}
 
 	if configuration != nil {
-		out("\nFlags applied by resticprofile (configuration \"%s\"):\n\n", ansiBold(configuration.GetConfigFile()))
+		out("\nFlags applied by resticprofile (configuration \"%s\"):\n\n", ansi.Bold(configuration.GetConfigFile()))
 
 		if profileNames := configuration.GetProfileNames(); len(profileNames) > 0 {
 			profiles := configuration.GetProfiles()
@@ -210,14 +199,14 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 			)
 
 			for _, name := range profileNames {
-				out("\tprofile \"%s\":", ansiBold(name))
+				out("\tprofile \"%s\":", ansi.Bold(name))
 				profile := profiles[name]
 				cmdFlags := config.GetNonConfidentialArgs(profile, profile.GetCommandFlags(command))
 				for _, flag := range cmdFlags.GetAll() {
 					if strings.HasPrefix(flag, "-") {
 						out("\n\t\t")
 					}
-					out("%s\t", ansiCyan(unescaper.Replace(flag)))
+					out("%s\t", ansi.Cyan(unescaper.Replace(flag)))
 				}
 				out("\n")
 			}
@@ -230,7 +219,7 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 func displayHelpCommand(output io.Writer, request commandRequest) error {
 	flags := request.flags
 
-	out, closer := displayWriter(output, request.flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	if flags.log == "" {
@@ -259,10 +248,10 @@ func displayHelpCommand(output io.Writer, request commandRequest) error {
 }
 
 func displayVersion(output io.Writer, request commandRequest) error {
-	out, closer := displayWriter(output, request.flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
-	out("resticprofile version %s commit %s\n", ansiBold(version), ansiYellow(commit))
+	out("resticprofile version %s commit %s\n", ansi.Bold(version), ansi.Yellow(commit))
 
 	// allow for the general verbose flag, or specified after the command
 	if request.flags.verbose || (len(request.args) > 0 && (request.args[0] == "-v" || request.args[0] == "--verbose")) {
@@ -282,7 +271,7 @@ func displayVersion(output io.Writer, request commandRequest) error {
 		out("\t%s:\n", "go modules")
 		bi, _ := debug.ReadBuildInfo()
 		for _, dep := range bi.Deps {
-			out("\t\t%s\t%s\n", ansiCyan(dep.Path), dep.Version)
+			out("\t\t%s\t%s\n", ansi.Cyan(dep.Path), dep.Version)
 		}
 		out("\n")
 	}
@@ -296,7 +285,7 @@ func displayProfilesCommand(output io.Writer, request commandRequest) error {
 }
 
 func displayProfiles(output io.Writer, configuration *config.Config, flags commandLineFlags) {
-	out, closer := displayWriter(output, flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	profiles := configuration.GetProfiles()
@@ -304,14 +293,14 @@ func displayProfiles(output io.Writer, configuration *config.Config, flags comma
 	if len(profiles) == 0 {
 		out("\nThere's no available profile in the configuration\n")
 	} else {
-		out("\n%s (name, sections, description):\n", ansiBold("Profiles available"))
+		out("\n%s (name, sections, description):\n", ansi.Bold("Profiles available"))
 		for _, name := range keys {
 			sections := profiles[name].DefinedCommands()
 			sort.Strings(sections)
 			if len(sections) == 0 {
 				out("\t%s:\t(n/a)\t%s\n", name, profiles[name].Description)
 			} else {
-				out("\t%s:\t(%s)\t%s\n", name, ansiCyan(strings.Join(sections, ", ")), profiles[name].Description)
+				out("\t%s:\t(%s)\t%s\n", name, ansi.Cyan(strings.Join(sections, ", ")), profiles[name].Description)
 			}
 		}
 	}
@@ -319,109 +308,16 @@ func displayProfiles(output io.Writer, configuration *config.Config, flags comma
 }
 
 func displayGroups(output io.Writer, configuration *config.Config, flags commandLineFlags) {
-	out, closer := displayWriter(output, flags)
+	out, closer := displayWriter(output)
 	defer closer()
 
 	groups := configuration.GetProfileGroups()
 	if len(groups) == 0 {
 		return
 	}
-	out("%s (name, profiles, description):\n", ansiBold("Groups available"))
+	out("%s (name, profiles, description):\n", ansi.Bold("Groups available"))
 	for name, groupList := range groups {
-		out("\t%s:\t[%s]\t%s\n", name, ansiCyan(strings.Join(groupList.Profiles, ", ")), groupList.Description)
+		out("\t%s:\t[%s]\t%s\n", name, ansi.Cyan(strings.Join(groupList.Profiles, ", ")), groupList.Description)
 	}
 	out("\n")
-}
-
-// lineLengthWriter limits the max line length, adding line breaks ('\n') as needed.
-// the writer detects the right most column (consecutive whitespace) and aligns content if possible.
-type lineLengthWriter struct {
-	writer                                            io.Writer
-	tokens                                            []byte
-	maxLineLength, lastWhite, breakLength, lineLength int
-	ansiLength, lastWhiteAnsiLength                   int
-}
-
-func newLineLengthWriter(writer io.Writer, maxLineLength int) *lineLengthWriter {
-	return &lineLengthWriter{writer: writer, maxLineLength: maxLineLength}
-}
-
-func (l *lineLengthWriter) Write(p []byte) (n int, err error) {
-	written := 0
-	inAnsi := false
-	offset := l.lineLength
-	lineLength := func() int { return l.lineLength - l.ansiLength }
-
-	if len(l.tokens) == 0 {
-		l.tokens = []byte{' ', '\n'}
-	}
-
-	for i := 0; i < len(p); i++ {
-		l.lineLength++
-		ws := p[i] == l.tokens[0] // ' '
-		br := p[i] == l.tokens[1] // '\n'
-
-		// don't count ansi control sequences
-		if inAnsi = inAnsi || p[i] == 0x1b; inAnsi {
-			inAnsi = p[i] != 'm'
-			l.ansiLength++
-			continue
-		}
-
-		if !br && lineLength() > l.maxLineLength && l.lastWhite-offset > 0 {
-			lastWhiteIndex := l.lastWhite - offset - 1
-			remainder := i - lastWhiteIndex
-
-			if written, err = l.writer.Write(p[:lastWhiteIndex]); err == nil {
-				p = p[lastWhiteIndex+1:]
-				i = remainder - 1
-				n += written + 1
-
-				_, _ = l.writer.Write(l.tokens[1:]) // write break (instead of WS at lastWhiteIndex)
-				for j := 0; j < l.breakLength; j++ {
-					_, _ = l.writer.Write(l.tokens[0:1]) // fill spaces for alignment
-				}
-
-				l.lineLength = l.breakLength + remainder
-				l.lastWhite = l.breakLength
-				offset = l.breakLength
-
-				l.ansiLength -= l.lastWhiteAnsiLength
-				l.lastWhiteAnsiLength = 0
-			} else {
-				return
-			}
-		}
-
-		if ws {
-			if l.lastWhite == l.lineLength-1 && lineLength() < l.maxLineLength*2/3 {
-				l.breakLength = lineLength()
-			}
-			l.lastWhite = l.lineLength
-			l.lastWhiteAnsiLength = l.ansiLength
-
-		} else if br {
-			if written, err = l.writer.Write(p[:i+1]); err == nil {
-				p = p[i+1:]
-				i = -1
-				n += written
-
-				l.lineLength = 0
-				l.lastWhite = 0
-				l.breakLength = 0
-				offset = 0
-
-				l.ansiLength = 0
-				l.lastWhiteAnsiLength = 0
-			} else {
-				return
-			}
-		}
-	}
-
-	// write remainder
-	if written, err = l.writer.Write(p); err == nil {
-		n += written
-	}
-	return
 }
