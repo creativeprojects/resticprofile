@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/maps"
@@ -580,11 +581,13 @@ func TestPathAndTagInRetention(t *testing.T) {
 	cwd, err := filepath.Abs(".")
 	require.NoError(t, err)
 	examples := filepath.Join(cwd, "../examples")
+	hostname := "rt-test-host"
 	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
 	backupSource, err := filepath.Glob(sourcePattern)
 	require.Greater(t, len(backupSource), 5)
 	require.NoError(t, err)
 
+	backupHost := ""
 	backupTags := []string{"one", "two"}
 	flatBackupTags := func() []string { return []string{strings.Join(backupTags, ",")} }
 
@@ -594,6 +597,10 @@ func TestPathAndTagInRetention(t *testing.T) {
 			prefix = "profiles."
 		}
 
+		host := ""
+		if len(backupHost) > 0 {
+			host = `host = "` + backupHost + `"`
+		}
 		tag := ""
 		if len(backupTags) > 0 {
 			tag = `tag = ["` + strings.Join(backupTags, `", "`) + `"]`
@@ -606,6 +613,7 @@ func TestPathAndTagInRetention(t *testing.T) {
             base-dir = "` + filepath.ToSlash(baseDir) + `"
             [` + prefix + `profile.backup]
             ` + tag + `
+            ` + host + `
             source = ["` + sourcePattern + `"]
 
             [` + prefix + `profile.retention]
@@ -615,6 +623,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, profile)
 		profile.SetRootPath(examples) // ensure relative paths are converted to absolute paths
+		profile.SetHost(hostname)
 
 		return profile
 	}
@@ -623,12 +632,66 @@ func TestPathAndTagInRetention(t *testing.T) {
 		return testProfileWithBase(t, version, retention, "")
 	}
 
-	t.Run("Path", func(t *testing.T) {
-		pathFlag := func(t *testing.T, profile *Profile) interface{} {
+	flagGetter := func(flagName string) func(t *testing.T, profile *Profile) any {
+		return func(t *testing.T, profile *Profile) any {
 			flags := profile.GetRetentionFlags().ToMap()
 			assert.NotNil(t, flags)
-			return flags["path"]
+			return flags[flagName]
 		}
+	}
+
+	t.Run("AutoEnable", func(t *testing.T) {
+		retentionDisabled := func(t *testing.T, profile *Profile) {
+			assert.Nil(t, profile.Retention.BeforeBackup)
+			assert.Nil(t, profile.Retention.AfterBackup)
+		}
+		t.Run("EnableForAnyKeepInV2", func(t *testing.T) {
+			profile := testProfile(t, Version02, ``)
+			retentionDisabled(t, profile)
+			profile = testProfile(t, Version02, `keep-x = 1`)
+			assert.Nil(t, profile.Retention.BeforeBackup)
+			assert.Equal(t, bools.True(), profile.Retention.AfterBackup)
+		})
+		t.Run("NotEnabledInV1", func(t *testing.T) {
+			profile := testProfile(t, Version01, ``)
+			retentionDisabled(t, profile)
+			profile = testProfile(t, Version01, `keep-x = 1`)
+			retentionDisabled(t, profile)
+		})
+	})
+
+	t.Run("Host", func(t *testing.T) {
+		hostFlag := flagGetter(constants.ParameterHost)
+
+		t.Run("ImplicitCopyHostFromProfileInV2", func(t *testing.T) {
+			profile := testProfile(t, Version02, ``)
+			assert.Equal(t, []string{hostname}, hostFlag(t, profile))
+		})
+
+		t.Run("ImplicitCopyHostFromBackupInV2", func(t *testing.T) {
+			defer func() { backupHost = "" }()
+			backupHost = "custom-host-from-backup"
+
+			profile := testProfile(t, Version02, ``)
+			assert.Equal(t, []string{backupHost}, hostFlag(t, profile))
+		})
+
+		t.Run("NoImplicitCopyInV1", func(t *testing.T) {
+			profile := testProfile(t, Version01, ``)
+			assert.Nil(t, hostFlag(t, profile))
+		})
+
+		t.Run("ExplicitCopyHostInV1", func(t *testing.T) {
+			defer func() { backupHost = "" }()
+			backupHost = "custom-host-from-backup"
+
+			profile := testProfile(t, Version01, `host = true`)
+			assert.Equal(t, []string{hostname}, hostFlag(t, profile))
+		})
+	})
+
+	t.Run("Path", func(t *testing.T) {
+		pathFlag := flagGetter(constants.ParameterPath)
 
 		t.Run("ImplicitCopyPath", func(t *testing.T) {
 			profile := testProfile(t, Version01, ``)
@@ -681,11 +744,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 	})
 
 	t.Run("Tag", func(t *testing.T) {
-		tagFlag := func(t *testing.T, profile *Profile) interface{} {
-			flags := profile.GetRetentionFlags().ToMap()
-			assert.NotNil(t, flags)
-			return flags["tag"]
-		}
+		tagFlag := flagGetter(constants.ParameterTag)
 
 		t.Run("NoImplicitCopyTagInV1", func(t *testing.T) {
 			profile := testProfile(t, Version01, ``)

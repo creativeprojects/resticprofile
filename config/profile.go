@@ -179,7 +179,7 @@ type BackupSection struct {
 
 func (s *BackupSection) IsEmpty() bool { return s == nil }
 
-func (b *BackupSection) resolve(p *Profile) {
+func (b *BackupSection) resolve(profile *Profile) {
 	// Ensure UseStdin is set when Backup.StdinCommand is defined
 	if len(b.StdinCommand) > 0 {
 		b.UseStdin = true
@@ -188,7 +188,15 @@ func (b *BackupSection) resolve(p *Profile) {
 	if b.unresolvedSource == nil {
 		b.unresolvedSource = b.Source
 	}
-	b.Source = p.resolveSourcePath(b.SourceBase, b.unresolvedSource...)
+	b.Source = profile.resolveSourcePath(b.SourceBase, b.unresolvedSource...)
+
+	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
+	if profile.config != nil && profile.config.version >= Version02 {
+		// Ensure that the host is in sync between backup & retention by setting it if missing
+		if _, found := b.OtherFlags[constants.ParameterHost]; !found {
+			b.SetOtherFlag(constants.ParameterHost, true)
+		}
+	}
 }
 
 func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
@@ -213,16 +221,12 @@ func (r *RetentionSection) IsEmpty() bool { return r == nil }
 
 func (r *RetentionSection) resolve(profile *Profile) {
 	// Special cases of retention
-	if r.OtherFlags == nil {
-		r.OtherFlags = make(map[string]any)
-	}
-
-	isSet := func(of OtherFlags, name string) (found bool) { _, found = of.GetOtherFlags()[name]; return }
+	isSet := func(flags OtherFlags, name string) (found bool) { _, found = flags.GetOtherFlags()[name]; return }
 	hasBackup := !profile.Backup.IsEmpty()
 
 	// Copy "source" from "backup" as "path" if it hasn't been redefined
 	if hasBackup && !isSet(r, constants.ParameterPath) {
-		r.OtherFlags[constants.ParameterPath] = true
+		r.SetOtherFlag(constants.ParameterPath, true)
 	}
 
 	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
@@ -243,7 +247,7 @@ func (r *RetentionSection) resolve(profile *Profile) {
 			!isSet(r, constants.ParameterTag) &&
 			isSet(profile.Backup, constants.ParameterTag) {
 
-			r.OtherFlags[constants.ParameterTag] = true
+			r.SetOtherFlag(constants.ParameterTag, true)
 		}
 
 		// Copy "host" from "backup" if it was set and hasn't been redefined here
@@ -251,9 +255,9 @@ func (r *RetentionSection) resolve(profile *Profile) {
 		// https://github.com/restic/restic/blob/master/cmd/restic/cmd_backup.go#L48
 		if !isSet(r, constants.ParameterHost) {
 			if hasBackup && isSet(profile.Backup, constants.ParameterHost) {
-				r.OtherFlags[constants.ParameterHost] = profile.Backup.OtherFlags[constants.ParameterHost]
+				r.SetOtherFlag(constants.ParameterHost, profile.Backup.OtherFlags[constants.ParameterHost])
 			} else if !isSet(profile, constants.ParameterHost) {
-				r.OtherFlags[constants.ParameterHost] = true // resolved with os.Hostname()
+				r.SetOtherFlag(constants.ParameterHost, true) // resolved with os.Hostname()
 			}
 		}
 	}
@@ -453,7 +457,14 @@ type OtherFlagsSection struct {
 	OtherFlags map[string]any `mapstructure:",remain"`
 }
 
-func (o OtherFlagsSection) GetOtherFlags() map[string]any { return o.OtherFlags }
+func (o *OtherFlagsSection) GetOtherFlags() map[string]any { return o.OtherFlags }
+
+func (o *OtherFlagsSection) SetOtherFlag(name string, value any) {
+	if o.OtherFlags == nil {
+		o.OtherFlags = make(map[string]any)
+	}
+	o.OtherFlags[name] = value
+}
 
 // NewProfile instantiates a new blank profile
 func NewProfile(c *Config, name string) (p *Profile) {
