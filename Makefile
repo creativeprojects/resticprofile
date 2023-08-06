@@ -17,10 +17,13 @@ ifeq ($(GOBIN),)
 endif
 
 BINARY=resticprofile
-BINARY_DARWIN=$(BINARY)_darwin
-BINARY_LINUX=$(BINARY)_linux
+BINARY_DARWIN_AMD64=$(BINARY)_darwin
+BINARY_DARWIN_ARM64=$(BINARY)_darwin_arm64
+BINARY_LINUX_AMD64=$(BINARY)_linux
+BINARY_LINUX_ARM64=$(BINARY)_linux_arm64
 BINARY_PI=$(BINARY)_pi
-BINARY_WINDOWS=$(BINARY).exe
+BINARY_WINDOWS_AMD64=$(BINARY).exe
+BINARY_WINDOWS_ARM64=$(BINARY)_arm64.exe
 README=README.md
 
 TESTS=./...
@@ -56,29 +59,41 @@ TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
 all: prepare test build
-.PHONY: all download test test-ci build install build-mac build-linux build-windows build-all coverage clean ramdisk rest-server nightly toc generate-install syslog checkdoc
+.PHONY: test test-ci coverage
+.PHONY: download download-restic-key
+.PHONY: build build-mac build-linux build-pi build-windows build-no-selfupdate build-all
+.PHONY: generate-config-reference generate-jsonschema generate-install generate-restic
+.PHONY: all verify prepare install clean ramdisk rest-server nightly toc syslog checkdoc
 
-$(GOBIN)/eget:
-	@echo "[*] $@"
-	go install -v github.com/zyedidia/eget@latest
+verify:
+ifeq ($(wildcard $(GOPATH)/.),)
+	@echo "GOPATH not found, please check your go installation"
+	exit 1
+endif
 
-$(GOBIN)/goreleaser: $(GOBIN)/eget
+$(GOBIN)/eget: verify
 	@echo "[*] $@"
-	eget goreleaser/goreleaser --upgrade-only --to $(GOBIN)
+	GOBIN="$(GOBIN)" \
+	$(GOCMD) install -v github.com/zyedidia/eget@latest
 
-$(GOBIN)/github-markdown-toc.go: $(GOBIN)/eget
+$(GOBIN)/goreleaser: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	eget ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to $(GOBIN)
+	"$(GOBIN)/eget" goreleaser/goreleaser --upgrade-only --to $(GOBIN)
 
-.PHONY: prepare
-prepare: download
+$(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 	@echo "[*] $@"
+	"$(GOBIN)/eget" ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to $(GOBIN)
+
+prepare: verify download $(GOBIN)/eget
+	@echo "[*] $@"
+	GOBIN="$(GOBIN)" \
 	GOPATH="$(GOPATH)" \
  	$(GOCMD) generate ./...
 
-download:
+download: verify
 	@echo "[*] $@"
-	@$(GOMOD) download
+	GOPATH="$(GOPATH)" \
+	$(GOMOD) download
 
 download-restic-key:
 	@echo "[*] $@"
@@ -87,31 +102,44 @@ download-restic-key:
 
 install: prepare
 	@echo "[*] $@"
+	GOBIN="$(GOBIN)" \
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build: prepare
 	@echo "[*] $@"
+	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-no-selfupdate: prepare
 	@echo "[*] $@"
+	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -tags no_self_update -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-mac: prepare
 	@echo "[*] $@"
-	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	GOPATH="$(GOPATH)" \
+	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	GOPATH="$(GOPATH)" \
+	GOOS="darwin" GOARCH="arm64" $(GOBUILD) -o $(BINARY_DARWIN_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-linux: prepare
 	@echo "[*] $@"
-	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	GOPATH="$(GOPATH)" \
+	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	GOPATH="$(GOPATH)" \
+	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o $(BINARY_LINUX_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-pi: prepare
 	@echo "[*] $@"
+	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-windows: prepare
 	@echo "[*] $@"
-	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	GOPATH="$(GOPATH)" \
+	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
+	GOPATH="$(GOPATH)" \
+	GOOS="windows" GOARCH="arm64" $(GOBUILD) -o $(BINARY_WINDOWS_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-all: build-mac build-linux build-pi build-windows
 
@@ -132,7 +160,19 @@ coverage:
 clean:
 	@echo "[*] $@"
 	$(GOCLEAN)
-	rm -rf $(BINARY) $(BINARY_DARWIN) $(BINARY_LINUX) $(BINARY_PI) $(BINARY_WINDOWS) $(COVERAGE_FILE) restic_*_linux_amd64* ${BUILD}restic* dist/*
+	rm -rf $(BINARY) \
+	       $(BINARY_DARWIN_AMD64) \
+	       $(BINARY_DARWIN_ARM64) \
+	       $(BINARY_LINUX_AMD64) \
+	       $(BINARY_LINUX_ARM64) \
+	       $(BINARY_PI) \
+	       $(BINARY_WINDOWS_AMD64) \
+	       $(BINARY_WINDOWS_ARM64) \
+	       $(COVERAGE_FILE) \
+	       restic_*_linux_amd64* \
+	       ${BUILD}restic* \
+	       dist/*
+	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
 
 ramdisk: ${TMP_MOUNT}
@@ -238,4 +278,4 @@ syslog:
 		instantlinux/rsyslogd:latest
 
 checkdoc:
-	go run ./config/checkdoc -r docs/content
+	$(GOCMD) run ./config/checkdoc -r docs/content

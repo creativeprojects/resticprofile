@@ -9,8 +9,6 @@ import (
 )
 
 // Handler interface for the scheduling software available on the system
-//
-//go:generate mockery --name=Handler
 type Handler interface {
 	Init() error
 	Close()
