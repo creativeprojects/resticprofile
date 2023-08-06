@@ -44,7 +44,6 @@ type resticWrapper struct {
 	// States
 	startTime     time.Time
 	executionTime time.Duration
-	lockRetryTime time.Duration
 	doneTryUnlock bool
 }
 
@@ -382,7 +381,6 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 
 		if lockRetryTime > 0 && !r.containsArguments(args.GetAll(), lockRetryFlag) {
 			args.AddFlag(constants.ParameterRetryLock, fmt.Sprintf("%.0fm", lockRetryTime.Minutes()), shell.ArgConfigEscape)
-			r.lockRetryTime = lockRetryTime
 		}
 	}
 
@@ -391,11 +389,6 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	if filter != nil {
 		clog.Debugf("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
 		arguments, publicArguments = filter(arguments, true), filter(publicArguments, true)
-	}
-
-	// Clear retry lock time if it wasn't added (to calc remaining retry time correctly)
-	if !r.containsArguments(arguments, lockRetryFlag) {
-		r.lockRetryTime = 0
 	}
 
 	// Add restic command
@@ -526,11 +519,6 @@ func (r *resticWrapper) runCommand(command string) error {
 		summary, stderr, err := runShellCommand(rCommand)
 		r.executionTime += summary.Duration
 		r.summary(r.command, summary, stderr, err)
-
-		if summary.OutputAnalysis != nil && summary.OutputAnalysis.ContainsRemoteLockFailure() {
-			r.executionTime -= r.lockRetryTime
-		}
-		r.lockRetryTime = 0
 
 		if err != nil && !r.canSucceedAfterError(command, summary, err) {
 			if r.canRetryAfterError(command, summary, err) {
@@ -763,7 +751,16 @@ func (r *resticWrapper) canRetryAfterError(command string, summary monitor.Summa
 	output := summary.OutputAnalysis
 
 	if output != nil && output.ContainsRemoteLockFailure() {
-		clog.Debugf("repository lock failed when running '%s'", command)
+		// Do not count lock-wait time as normal execution time (to calc correct remaining lock-wait time)
+		if maxWait, ok := output.GetRemoteLockedMaxWait(); ok {
+			r.executionTime -= maxWait
+		} else {
+			r.executionTime -= summary.Duration
+		}
+		if r.executionTime < 0 {
+			r.executionTime = 0
+		}
+		clog.Debugf("repository lock failed when running '%s', counted execution time %s", command, r.executionTime)
 		retry, sleep = r.canRetryAfterRemoteLockFailure(output)
 	}
 
