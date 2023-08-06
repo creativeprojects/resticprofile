@@ -884,18 +884,18 @@ func TestCanUseResticLockRetry(t *testing.T) {
 
 	t.Run("SubtractsResticLockRetryAfter", func(t *testing.T) {
 		wrapper := getWrapper()
-		wrapper.maxWaitOnLock(10*time.Minute + 10*time.Second)
+		wrapper.maxWaitOnLock(10*time.Minute + 30*time.Second)
 		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
-		assert.Contains(t, command.args, "--retry-lock=8m")
+		assert.Contains(t, command.args, "--retry-lock=9m")
 	})
 
 	t.Run("SubtractsRemainingTime", func(t *testing.T) {
 		wrapper := getWrapper()
-		wrapper.maxWaitOnLock(10*time.Minute + 10*time.Second)
+		wrapper.maxWaitOnLock(10*time.Minute + 30*time.Second)
 		wrapper.executionTime = 3 * time.Minute
 		wrapper.startTime = wrapper.startTime.Add(-5 * time.Minute) // 2 minutes for locks, 3 minutes for execution
 		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
-		assert.Contains(t, command.args, "--retry-lock=6m")
+		assert.Contains(t, command.args, "--retry-lock=7m")
 	})
 
 	t.Run("10MinutesIsMax", func(t *testing.T) {
@@ -907,12 +907,12 @@ func TestCanUseResticLockRetry(t *testing.T) {
 
 	t.Run("1MinuteIsMin", func(t *testing.T) {
 		wrapper := getWrapper()
-		wrapper.maxWaitOnLock(3*time.Minute + 10*time.Second)
+		wrapper.maxWaitOnLock(2*time.Minute + 30*time.Second)
 		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
 		assert.Contains(t, command.args, "--retry-lock=1m")
 		assert.True(t, slices.ContainsFunc(command.args, argMatcher))
 
-		wrapper.maxWaitOnLock(3 * time.Minute)
+		wrapper.maxWaitOnLock(2 * time.Minute)
 		command = wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
 		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
 	})

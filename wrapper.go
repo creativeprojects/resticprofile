@@ -373,7 +373,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	lockRetryFlag := fmt.Sprintf("--%s", constants.ParameterRetryLock)
 	if enabled, lockRetryTime := r.remainingLockRetryTime(); enabled && filter != nil {
 		// limiting the retry handling in restic, we need to make sure we can retry internally so that unlock is called.
-		lockRetryTime -= 2 * r.global.ResticLockRetryAfter
+		lockRetryTime = lockRetryTime - r.global.ResticLockRetryAfter - constants.MinResticLockRetryDelay
 		if lockRetryTime > constants.MaxResticLockRetryTimeArgument {
 			lockRetryTime = constants.MaxResticLockRetryTimeArgument
 		}
