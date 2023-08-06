@@ -31,7 +31,7 @@ const (
 	MinResticLockRetryDelay        = 15 * time.Second
 	MaxResticLockRetryDelay        = 30 * time.Minute
 	MaxResticLockRetryTimeArgument = 10 * time.Minute
-	MinResticStaleLockAge          = 30 * time.Minute
+	MinResticStaleLockAge          = 15 * time.Minute
 )
 
 // Schedule lock mode config options

@@ -121,7 +121,7 @@ In some cases, resticprofile as well as restic may leave a lock behind if the pr
 
 For that matter, if you add the flag `force-inactive-lock` to your profile, resticprofile will detect and remove stale locks: 
 * **resticprofile locks**: Check for the presence of a process with the PID indicated in the lockfile. If it can't find any, it will try to delete the lock and continue the operation (locking again, running profile and so on...)
-* **restic locks**: Evaluate if a restic command failed on acquiring a lock. If the lock is older than `restic-stale-lock-age`, invoke `restic unlock` and retry the command that failed (can be disabled by setting `restic-stale-lock-age` to 0, default is 2h).
+* **restic locks**: Evaluate if a restic command failed on acquiring a lock. If the lock is older than `restic-stale-lock-age`, invoke `restic unlock` and retry the command that failed (can be disabled by setting `restic-stale-lock-age` to 0, default is 1h).
 
 {{< tabs groupId="config-with-json" >}}
 {{% tab name="toml" %}}
