@@ -22,6 +22,7 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"golang.org/x/exp/slices"
 )
@@ -162,7 +163,7 @@ func (r *resticWrapper) getBackupAction() func() error {
 		}
 
 		// Retention before
-		if err == nil && r.profile.Retention != nil && r.profile.Retention.BeforeBackup {
+		if err == nil && r.profile.Retention != nil && bools.IsTrue(r.profile.Retention.BeforeBackup) {
 			err = r.runRetention()
 		}
 
@@ -172,7 +173,7 @@ func (r *resticWrapper) getBackupAction() func() error {
 		}
 
 		// Retention after
-		if err == nil && r.profile.Retention != nil && r.profile.Retention.AfterBackup {
+		if err == nil && r.profile.Retention != nil && bools.IsTrue(r.profile.Retention.AfterBackup) {
 			err = r.runRetention()
 		}
 

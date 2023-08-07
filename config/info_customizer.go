@@ -72,18 +72,31 @@ func init() {
 			info.mayBool = true
 			info.examples = []string{"true", "false", fmt.Sprintf(`"%s"`, propertyName)}
 
-			if sectionName == constants.CommandBackup {
-				if propertyName != constants.ParameterHost {
-					info.examples = info.examples[1:] // remove "true" from examples of backup section
-					note = fmt.Sprintf(`Boolean true is unsupported in section "backup".`)
-				}
-			} else {
-				note = fmt.Sprintf(`Boolean true is replaced with the %ss from section "backup".`, propertyName)
-			}
+			suffixDefaultTrueV2 := fmt.Sprintf(` Defaults to true for config version 2 in "%s".`, sectionName)
 
 			if propertyName == constants.ParameterHost {
 				info.format = "hostname"
 				note = `Boolean true is replaced with the hostname of the system.`
+			} else {
+				note = fmt.Sprintf(`Boolean true is replaced with the %ss from section "backup".`, propertyName)
+			}
+
+			if sectionName == constants.CommandBackup {
+				if propertyName != constants.ParameterHost {
+					info.examples = info.examples[1:] // remove "true" from examples of backup section
+					note = fmt.Sprintf(`Boolean true is unsupported in section "backup".`)
+				} else {
+					note += suffixDefaultTrueV2
+				}
+			} else if sectionName == constants.SectionConfigurationRetention {
+				if propertyName == constants.ParameterHost {
+					note = `Boolean true is replaced with the hostname that applies in section "backup".`
+				}
+				if propertyName == constants.ParameterPath {
+					note += ` Defaults to true in "retention".`
+				} else {
+					note += suffixDefaultTrueV2
+				}
 			}
 
 			if note != "" {

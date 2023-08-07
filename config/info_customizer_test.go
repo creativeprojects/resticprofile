@@ -74,6 +74,12 @@ func TestHostTagPathProperty(t *testing.T) {
 	note := `Boolean true is replaced with the {{property}}s from section "backup".`
 	hostNote := `Boolean true is replaced with the hostname of the system.`
 	backupNote := `Boolean true is unsupported in section "backup".`
+	retentionHostNote := `Boolean true is replaced with the hostname that applies in section "backup".`
+	defaultSuffix := ` Defaults to true in "{{section}}".`
+	defaultSuffixV2 := ` Defaults to true for config version 2 in "{{section}}".`
+
+	backup := constants.CommandBackup
+	retention := constants.SectionConfigurationRetention
 
 	tests := []struct {
 		section, property, note, format string
@@ -83,14 +89,20 @@ func TestHostTagPathProperty(t *testing.T) {
 		{section: "any", property: constants.ParameterPath},
 		{section: "any", property: constants.ParameterTag},
 
-		{section: constants.CommandBackup, property: constants.ParameterHost, note: hostNote, format: "hostname"},
-		{section: constants.CommandBackup, property: constants.ParameterPath, note: backupNote, examples: []string{"false", `"{{property}}"`}},
-		{section: constants.CommandBackup, property: constants.ParameterTag, note: backupNote, examples: []string{"false", `"{{property}}"`}},
+		{section: retention, property: constants.ParameterHost, note: retentionHostNote + defaultSuffixV2, format: "hostname"},
+		{section: retention, property: constants.ParameterPath, note: note + defaultSuffix},
+		{section: retention, property: constants.ParameterTag, note: note + defaultSuffixV2},
+
+		{section: backup, property: constants.ParameterHost, note: hostNote + defaultSuffixV2, format: "hostname"},
+		{section: backup, property: constants.ParameterPath, note: backupNote, examples: []string{"false", `"{{property}}"`}},
+		{section: backup, property: constants.ParameterTag, note: backupNote, examples: []string{"false", `"{{property}}"`}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			propertyReplacer := func(s string) string {
-				return strings.ReplaceAll(s, "{{property}}", test.property)
+				s = strings.ReplaceAll(s, "{{property}}", test.property)
+				s = strings.ReplaceAll(s, "{{section}}", test.section)
+				return s
 			}
 			if test.examples == nil {
 				test.examples = examples
