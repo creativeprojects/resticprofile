@@ -361,9 +361,10 @@ JSON schema URLs for a specific *restic* version:
 * `.../config-2-restic-{MAJOR}-{MINOR}.json`
 
 Available URLs:
-{{ range $v := .KnownResticVersions }}
-  * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $v | replace "." "-" }}.json
-  * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $v | replace "." "-" }}.json
+{{ range $version := .KnownResticVersions }}
+  {{- $version = slice ($version | split ".") 0 2 | join "." }}
+  {{- "\n" }} * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $version | replace "." "-" }}.json
+  {{- "\n" }} * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $version | replace "." "-" }}.json
 {{- end }}
 
 {{ $layoutUpLink }}
