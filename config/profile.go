@@ -172,7 +172,10 @@ type BackupSection struct {
 	Exclude                          []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
 	Iexclude                         []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
 	ExcludeFile                      []string `mapstructure:"exclude-file" argument:"exclude-file"`
+	IexcludeFile                     []string `mapstructure:"iexclude-file" argument:"iexclude-file"`
 	FilesFrom                        []string `mapstructure:"files-from" argument:"files-from"`
+	FilesFromRaw                     []string `mapstructure:"files-from-raw" argument:"files-from-raw"`
+	FilesFromVerbatim                []string `mapstructure:"files-from-verbatim" argument:"files-from-verbatim"`
 	ExtendedStatus                   bool     `mapstructure:"extended-status" argument:"json"`
 	NoErrorOnWarning                 bool     `mapstructure:"no-error-on-warning" description:"Do not fail the backup when some files could not be read"`
 }
@@ -203,7 +206,10 @@ func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
 	s.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
 
 	s.ExcludeFile = fixPaths(s.ExcludeFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	s.IexcludeFile = fixPaths(s.IexcludeFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	s.FilesFrom = fixPaths(s.FilesFrom, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	s.FilesFromRaw = fixPaths(s.FilesFromRaw, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	s.FilesFromVerbatim = fixPaths(s.FilesFromVerbatim, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	s.Exclude = fixPaths(s.Exclude, expandEnv, expandUserHome)
 	s.Iexclude = fixPaths(s.Iexclude, expandEnv, expandUserHome)
 }
