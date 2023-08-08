@@ -322,7 +322,10 @@ lock = "lock"
 [` + prefix + `profile.backup]
 source = ["backup", "root"]
 exclude-file = "exclude"
+iexclude-file = "iexclude"
 files-from = "include"
+files-from-raw = "include-raw"
+files-from-verbatim = "include-verbatim"
 exclude = "exclude"
 iexclude = "iexclude"
 [` + prefix + `profile.copy]
@@ -355,7 +358,10 @@ from-password-file = "key"
 			filepath.Join(homeDir, "root"),
 		}, profile.GetBackupSource())
 		assert.ElementsMatch(t, []string{"/wd/exclude"}, profile.Backup.ExcludeFile)
+		assert.ElementsMatch(t, []string{"/wd/iexclude"}, profile.Backup.IexcludeFile)
 		assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
+		assert.ElementsMatch(t, []string{"/wd/include-raw"}, profile.Backup.FilesFromRaw)
+		assert.ElementsMatch(t, []string{"/wd/include-verbatim"}, profile.Backup.FilesFromVerbatim)
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
 		assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
