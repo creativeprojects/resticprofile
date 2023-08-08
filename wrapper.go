@@ -346,7 +346,9 @@ func (r *resticWrapper) getCommandArgumentsFilter(command string) argumentsFilte
 }
 
 func (r *resticWrapper) containsArguments(arguments []string, subset ...string) (found bool) {
-	found = len(r.validArgumentsFilter(subset)(arguments, true)) > 0
+	filter := r.validArgumentsFilter(subset)
+	argMatcher := func(arg string) bool { return strings.HasPrefix(arg, "-") }
+	found = slices.ContainsFunc(filter(arguments, true), argMatcher)
 	return
 }
 

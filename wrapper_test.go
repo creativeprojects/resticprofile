@@ -932,6 +932,24 @@ func TestCanUseResticLockRetry(t *testing.T) {
 		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
 		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
 	})
+
+	t.Run("NotOverwritingAlreadyProvided", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.moreArgs = []string{"--retry-lock", "25m"}
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Subset(t, command.args, wrapper.moreArgs)
+		assert.NotContains(t, command.args, "--retry-lock=10m")
+	})
+
+	t.Run("Regression-WorksWithExtraValues", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.moreArgs = []string{"/some/path", "some-other-option"}
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Subset(t, command.args, wrapper.moreArgs)
+		assert.Contains(t, command.args, "--retry-lock=10m")
+	})
 }
 
 func TestLocksAndLockWait(t *testing.T) {
