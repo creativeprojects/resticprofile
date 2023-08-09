@@ -111,8 +111,8 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 
 With this example of configuration for Linux:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -137,7 +137,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -161,7 +161,7 @@ test1:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "default" = {
@@ -188,7 +188,7 @@ test1:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

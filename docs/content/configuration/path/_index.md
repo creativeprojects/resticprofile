@@ -24,8 +24,8 @@ resticprofile is started from `/home/user/`, the individual paths are resolved t
 * **backup.source**: `/home/user/files`
 
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 # indentation is not needed but it makes it easier to read ;)
@@ -43,7 +43,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -60,7 +60,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -76,7 +76,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

@@ -1,20 +1,18 @@
 +++
-chapter = true
+archetype = "chapter"
 pre = "<b>2. </b>"
-title = "Configuration"
-weight = 10
+title = "Configuration file"
+weight = 2
 +++
 
-
-# Configuration file
 
 * A configuration is a set of _profiles_.
 * Each profile is in a new section that has the name of the profile.
 * Inside each profile, you can specify different flags for each command.
 * A command definition is in a subsection of the name of the command.
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 [profile_name]
@@ -24,7 +22,7 @@ weight = 10
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 profile_name:
@@ -34,7 +32,7 @@ profile_name:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 profile_name {
@@ -46,7 +44,7 @@ profile_name {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -72,13 +70,13 @@ There's **one exception**: the flag `--repo` is named `repository` in the config
 So let's say you normally use this simple command:
 
 ```shell
-$ restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
+restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
 ```
 
 For resticprofile to generate this command automatically for you, here's the configuration file:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 # indentation is not needed but it makes it easier to read ;)
@@ -95,7 +93,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -111,7 +109,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -126,7 +124,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -153,7 +151,7 @@ You may have noticed the `source` flag is accepting an array of values (inside b
 Now, assuming this configuration file is named `profiles.conf` in the current folder (it's the default config file name), you can simply run
 
 ```shell
-$ resticprofile backup
+resticprofile backup
 ```
 
 and resticprofile will do its magic and generate the command line for you.
@@ -161,7 +159,7 @@ and resticprofile will do its magic and generate the command line for you.
 If you have any doubt on what it's running, you can try a `--dry-run`:
 
 ```shell
-$ resticprofile --dry-run backup
+resticprofile --dry-run backup
 2022/05/18 17:14:07 profile 'default': starting 'backup'
 2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file password.txt --repo local:/backup --verbose /home
 2022/05/18 17:14:07 profile 'default': finished 'backup'

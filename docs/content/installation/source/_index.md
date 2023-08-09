@@ -13,9 +13,9 @@ You can download the source code and compile it, it's actually very easy! all yo
 
 To compile from sources:
 ```shell
-$ git clone https://github.com/creativeprojects/resticprofile.git
-$ cd resticprofile
-$ make build
+git clone https://github.com/creativeprojects/resticprofile.git
+cd resticprofile
+make build
 ```
 
 Your compiled binary (`resticprofile` or `resticprofile.exe`) is available in the current folder.
@@ -23,23 +23,23 @@ Your compiled binary (`resticprofile` or `resticprofile.exe`) is available in th
 To install the binary in your user path:
 
 ```shell
-$ make install
+make install
 ```
 
 To build all common platforms (`build-mac`, `build-linux`, `build-pi` & `build-windows`):
 
 ```shell
-$ make build-all
+make build-all
 ```
 
 Alternatively, a **go-only** build (without `GNU Make`) is accomplished with:
 
 ```shell
-$ git clone https://github.com/creativeprojects/resticprofile.git
-$ cd resticprofile
-$ go mod download
-$ go generate ./... 
-$ go build -o resticprofile .
+git clone https://github.com/creativeprojects/resticprofile.git
+cd resticprofile
+go mod download
+go generate ./... 
+go build -o resticprofile .
 ```
 
 

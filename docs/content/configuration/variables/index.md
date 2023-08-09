@@ -71,8 +71,8 @@ is 6 months and 14 days before now.
 
 You can use a combination of inheritance and variables in the resticprofile configuration file like so:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -122,7 +122,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 ---
@@ -180,7 +180,7 @@ src:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "generic" = {
@@ -229,7 +229,7 @@ src:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -366,8 +366,8 @@ profile:
 
 Here's an example of a configuration on Linux where I use a variable `$mountpoint` set to a USB drive mount point:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -391,7 +391,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -417,7 +417,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 global {
@@ -443,7 +443,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {{ $mountpoint := "/mnt/external" }}
@@ -487,8 +487,8 @@ If not specified differently, these variables resolve to the corresponding envir
 
 Backup current dir (`$PWD`) but prevent backup of `$HOME` where the repository is located:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -504,7 +504,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -520,7 +520,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -535,7 +535,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

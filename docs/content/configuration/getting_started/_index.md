@@ -62,8 +62,8 @@ In this example, we're going to call our profile `default`. You don't need to sp
 
 Create a file named `profiles` with the extension of your choice (.toml, .yaml, .hcl or .json)
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 #:schema {{< absolute "jsonschema/config-1.json" nohtml >}}
@@ -82,7 +82,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 # yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
@@ -100,7 +100,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -115,7 +115,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -230,8 +230,8 @@ Let's imagine you want to backup your files every day during your lunch break.
 Add a line in your configuration (in the **default -> backup** section) with an option called `schedule` and a value of `12:30`. Your configuration should now look like:
 
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 #:schema {{< absolute "jsonschema/config-1.json" nohtml >}}
@@ -251,7 +251,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 # yaml-language-server: $schema={{< absolute "jsonschema/config-1.json" nohtml >}}
@@ -270,7 +270,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -286,7 +286,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

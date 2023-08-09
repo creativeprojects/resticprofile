@@ -1,10 +1,8 @@
 +++
-chapter = true
+archetype = "chapter"
 pre = "<b>1. </b>"
 title = "Installation"
-weight = 5
+weight = 1
 +++
-
-# Installation
 
 {{% children  %}}

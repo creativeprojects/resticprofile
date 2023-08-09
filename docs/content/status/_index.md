@@ -1,12 +1,10 @@
 +++
-chapter = true
+archetype = "chapter"
 pre = "<b>5. </b>"
-title = "Status"
-weight = 30
+title = "Status file"
+weight = 5
 +++
 
-
-# Status file for easy monitoring
 
 If you need to escalate the result of your backup to a monitoring system, you can definitely use the `run-after` and `run-after-fail` scripting.
 
@@ -14,8 +12,8 @@ But sometimes we just need something simple that a monitoring system can regular
 
 In your profile, you simply need to add a new parameter, which is the location of your status file
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -25,7 +23,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -35,7 +33,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" {
@@ -44,7 +42,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -108,8 +106,8 @@ This is a technical limitation to ensure restic displays terminal output correct
 
 `extended-status` is **not set by default because it hides any output from restic**
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -124,7 +122,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -140,7 +138,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" = {
@@ -155,7 +153,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

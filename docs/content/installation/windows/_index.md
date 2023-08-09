@@ -11,8 +11,8 @@ weight: 12
 You can use a script if you're using bash in Windows (via WSL, git bash, etc.)
 
 ```shell
-$ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh
-$ ./install.sh
+curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh
+./install.sh
 ```
 It will create a `bin` directory under your current directory and place `resticprofile.exe` in it.
 

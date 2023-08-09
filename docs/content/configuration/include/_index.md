@@ -8,8 +8,8 @@ weight: 15
 The configuration may be split into multiple files by adding `includes = "glob-pattern"` to the main configuration file. 
 E.g. the following `profiles.conf` loads configurations from `conf.d` and `profiles.d`:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -24,7 +24,7 @@ includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -40,7 +40,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 
@@ -52,7 +52,7 @@ global {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -109,8 +109,8 @@ Configuration **merging** follows the logic:
 * Lists of values or lists of objects are considered properties not config structure and will be replaced
 
 
-{{< tabs groupId="include-merging-example" >}}
-{{% tab name="Final configuration" %}}
+{{< tabs groupid="include-merging-example" >}}
+{{% tab title="Final configuration" %}}
 
 ```yaml
 version: "1"
@@ -130,7 +130,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="profiles.yaml" %}}
+{{% tab title="profiles.yaml" %}}
 
 ```yaml
 version: "1"
@@ -150,7 +150,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="first.yaml" %}}
+{{% tab title="first.yaml" %}}
 
 ```yaml
 version: "1"
@@ -170,7 +170,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="second.yaml" %}}
+{{% tab title="second.yaml" %}}
 
 ```yaml
 version: "1"

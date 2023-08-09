@@ -1,3 +1,6 @@
+---
+archetype: "home"
+---
 
 # resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)

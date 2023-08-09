@@ -37,8 +37,8 @@ As an alternative to URLs, schemas can be generated locally with:
 
 To use a schema with **vscode**, begin your config files with: 
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 ``````toml
 #:schema {{< absolute "jsonschema/config-2.json" nohtml >}}
 
@@ -46,7 +46,7 @@ version = "2"
  
 ``````
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 ``````yaml
 # yaml-language-server: $schema={{< absolute "jsonschema/config-2.json" nohtml >}}
 
@@ -54,7 +54,7 @@ version: "2"
  
 ``````
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 ``````json
 {
     "$schema": "{{< absolute "jsonschema/config-2.json" nohtml >}}",

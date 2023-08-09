@@ -7,7 +7,7 @@ publishdir = "../public/"
 
 # For search functionality
 [outputs]
-  home = [ "HTML", "RSS", "JSON"]
+  home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
 
 [params]
   # Change default color scheme with a variant one.

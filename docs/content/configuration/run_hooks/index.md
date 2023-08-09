@@ -14,8 +14,8 @@ resticprofile has 2 places where you can run commands around restic:
 
 Here's an example of all the external commands that you can run during the execution of a profile:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -36,7 +36,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -56,7 +56,7 @@ documents:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 documents {
@@ -76,7 +76,7 @@ documents {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -203,8 +203,8 @@ flowchart TB
 
 In addition to hooks around profile and command execution, resticprofile allows to monitor the standard error stream of the current running command and trigger a custom hook when an output error line matches a regular expression pattern.
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -219,7 +219,7 @@ min-matches = 5
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -232,7 +232,7 @@ default:
       min-matches: 5
 ```
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -245,7 +245,7 @@ default {
 }
 ```
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -279,8 +279,8 @@ The `run` command inherits the environment of the monitored command on a pattern
 
 The following example shows how this could have been used with restic to address `check` failures caused by over usage of `/tmp/` (restic fixed this problem in 0.14.0):
 
-{{< tabs groupId="config-without-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-without-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -297,7 +297,7 @@ run = "cat - | cut -d : -f 2 - | grep -E 'mkdir /tmp[^ \\.]+$' | sed 's/mkdir/mk
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"

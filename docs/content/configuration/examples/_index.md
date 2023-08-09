@@ -8,8 +8,8 @@ weight: 5
 
 Here's a simple configuration file using a Microsoft Azure backend. You will notice that the `env` section lets you define environment variables:
 
-{{< tabs groupId="config-with-hcl" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-hcl" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -31,7 +31,7 @@ version = "1"
     source = [ "/", "/var" ]
 ```
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -57,7 +57,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -87,8 +87,8 @@ default {
 
 Here's a more complex configuration file showing profile inheritance and two backup profiles using the same repository:
 
-{{< tabs groupId="config-with-hcl" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-hcl" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -213,7 +213,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -347,7 +347,7 @@ src:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 global {
@@ -428,8 +428,8 @@ self {
 ## Configuration example for Windows
 
 
-{{< tabs groupId="config-with-hcl" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-hcl" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -463,7 +463,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -499,7 +499,7 @@ test:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 global {
@@ -535,8 +535,8 @@ test {
 
 Simple example sending a file via stdin
 
-{{< tabs groupId="config-with-hcl" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-hcl" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -561,7 +561,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -586,7 +586,7 @@ mysql:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 # sending stream through stdin
