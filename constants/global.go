@@ -28,9 +28,10 @@ var (
 
 // Limits for restic lock handling (stale locks and retry on lock failure)
 const (
-	MinResticLockRetryTime = 15 * time.Second
-	MaxResticLockRetryTime = 30 * time.Minute
-	MinResticStaleLockAge  = 1 * time.Hour
+	MinResticLockRetryDelay        = 15 * time.Second
+	MaxResticLockRetryDelay        = 30 * time.Minute
+	MaxResticLockRetryTimeArgument = 10 * time.Minute
+	MinResticStaleLockAge          = 15 * time.Minute
 )
 
 // Schedule lock mode config options

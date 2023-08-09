@@ -19,7 +19,7 @@ type Global struct {
 	ResticVersion        string        // not configurable at the moment. To be set after ResticBinary is known.
 	FilterResticFlags    bool          `mapstructure:"restic-arguments-filter" default:"true" description:"Remove unknown flags instead of passing all configured flags to restic"`
 	ResticLockRetryAfter time.Duration `mapstructure:"restic-lock-retry-after" default:"1m" description:"Time to wait before trying to get a lock on a restic repositoey - see https://creativeprojects.github.io/resticprofile/usage/locks/"`
-	ResticStaleLockAge   time.Duration `mapstructure:"restic-stale-lock-age" default:"2h" description:"The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/"`
+	ResticStaleLockAge   time.Duration `mapstructure:"restic-stale-lock-age" default:"1h" description:"The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/"`
 	ShellBinary          []string      `mapstructure:"shell" default:"auto" examples:"sh;bash;pwsh;powershell;cmd" description:"The shell that is used to run commands (default is OS specific)"`
 	MinMemory            uint64        `mapstructure:"min-memory" default:"100" description:"Minimum available memory (in MB) required to run any commands - see https://creativeprojects.github.io/resticprofile/usage/memory/"`
 	Scheduler            string        `mapstructure:"scheduler" description:"Leave blank for the default scheduler or use \"crond\" to select cron on supported operating systems"`

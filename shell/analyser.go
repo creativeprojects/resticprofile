@@ -36,9 +36,10 @@ type OutputAnalyser struct {
 }
 
 var outputAnalyserPatterns = map[string]*regexp.Regexp{
-	"lock-failure,who":   regexp.MustCompile("unable to create lock.+already locked.+?by (.+)$"),
-	"lock-failure,age":   regexp.MustCompile("lock was created at.+\\(([^()]+)\\s+ago\\)"),
-	"lock-failure,stale": regexp.MustCompile("the\\W+unlock\\W+command can be used to remove stale locks"),
+	"lock-failure,who":    regexp.MustCompile("unable to create lock.+already locked.+?by (.+)$"),
+	"lock-failure,age":    regexp.MustCompile("lock was created at.+\\(([^()]+)\\s+ago\\)"),
+	"lock-failure,stale":  regexp.MustCompile("the\\W+unlock\\W+command can be used to remove stale locks"),
+	"lock-retry,max-wait": regexp.MustCompile("repo already locked, waiting up to (\\S+) for the lock"),
 }
 
 func NewOutputAnalyser() *OutputAnalyser {
@@ -99,7 +100,7 @@ func (a *OutputAnalyser) SetCallback(name, pattern string, minCount, maxCalls in
 	return nil
 }
 
-func (a OutputAnalyser) invokeCallback(name, line string) (err error) {
+func (a *OutputAnalyser) invokeCallback(name, line string) (err error) {
 	count, hasCount := a.counts[name]
 	cb, hasCallback := a.callbacks[name]
 
@@ -124,7 +125,7 @@ func (a OutputAnalyser) invokeCallback(name, line string) (err error) {
 	return
 }
 
-func (a OutputAnalyser) ContainsRemoteLockFailure() bool {
+func (a *OutputAnalyser) ContainsRemoteLockFailure() bool {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -134,7 +135,7 @@ func (a OutputAnalyser) ContainsRemoteLockFailure() bool {
 	return false
 }
 
-func (a OutputAnalyser) GetRemoteLockedSince() (time.Duration, bool) {
+func (a *OutputAnalyser) GetRemoteLockedSince() (time.Duration, bool) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -149,7 +150,22 @@ func (a OutputAnalyser) GetRemoteLockedSince() (time.Duration, bool) {
 	return 0, false
 }
 
-func (a OutputAnalyser) GetRemoteLockedBy() (string, bool) {
+func (a *OutputAnalyser) GetRemoteLockedMaxWait() (time.Duration, bool) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	if m, ok := a.matches["lock-retry,max-wait"]; ok && len(m) > 1 {
+		if maxWait, err := time.ParseDuration(m[1]); err == nil {
+			return maxWait.Truncate(time.Millisecond), true
+		} else {
+			clog.Debugf("failed parsing restic retry-lock max wait. Cause %s", err.Error())
+		}
+	}
+
+	return 0, false
+}
+
+func (a *OutputAnalyser) GetRemoteLockedBy() (string, bool) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -160,11 +176,11 @@ func (a OutputAnalyser) GetRemoteLockedBy() (string, bool) {
 	return "", false
 }
 
-func (a OutputAnalyser) AnalyseStringLines(output string) error {
+func (a *OutputAnalyser) AnalyseStringLines(output string) error {
 	return a.AnalyseLines(strings.NewReader(output))
 }
 
-func (a OutputAnalyser) AnalyseLines(output io.Reader) (err error) {
+func (a *OutputAnalyser) AnalyseLines(output io.Reader) (err error) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -183,7 +199,7 @@ func (a OutputAnalyser) AnalyseLines(output io.Reader) (err error) {
 	return
 }
 
-func (a OutputAnalyser) analyseLine(line string) (err error) {
+func (a *OutputAnalyser) analyseLine(line string) (err error) {
 	for _, pattern := range a.patterns {
 		match := pattern.expression.FindStringSubmatch(line)
 		if match != nil {

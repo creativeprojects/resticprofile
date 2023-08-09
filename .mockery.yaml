@@ -17,3 +17,7 @@ packages:
   github.com/creativeprojects/resticprofile/schedule:
     interfaces:
       Handler:
+
+  github.com/creativeprojects/resticprofile/monitor:
+    interfaces:
+      OutputAnalysis:

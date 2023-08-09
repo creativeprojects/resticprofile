@@ -346,6 +346,13 @@ func (r *resticWrapper) getCommandArgumentsFilter(command string) argumentsFilte
 	return nil
 }
 
+func (r *resticWrapper) containsArguments(arguments []string, subset ...string) (found bool) {
+	filter := r.validArgumentsFilter(subset)
+	argMatcher := func(arg string) bool { return strings.HasPrefix(arg, "-") }
+	found = slices.ContainsFunc(filter(arguments, true), argMatcher)
+	return
+}
+
 func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowExtraValues bool) shellCommandDefinition {
 	// Create local instance to allow modification
 	args = args.Clone()
@@ -363,6 +370,20 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Special case for backup command
 	if command == constants.CommandBackup {
 		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
+	}
+
+	// Add retry-lock (supported from restic 0.16, depends on filter being enabled)
+	if lockRetryTime, enabled := r.remainingLockRetryTime(); enabled && filter != nil {
+		// limiting the retry handling in restic, we need to make sure we can retry internally so that unlock is called.
+		lockRetryTime = lockRetryTime - r.global.ResticLockRetryAfter - constants.MinResticLockRetryDelay
+		if lockRetryTime > constants.MaxResticLockRetryTimeArgument {
+			lockRetryTime = constants.MaxResticLockRetryTimeArgument
+		}
+		lockRetryTime = lockRetryTime.Truncate(time.Minute)
+
+		if lockRetryTime > 0 && !r.containsArguments(args.GetAll(), fmt.Sprintf("--%s", constants.ParameterRetryLock)) {
+			args.AddFlag(constants.ParameterRetryLock, fmt.Sprintf("%.0fm", lockRetryTime.Minutes()), shell.ArgConfigEscape)
+		}
 	}
 
 	// Build arguments and publicArguments (for logging)
@@ -732,7 +753,16 @@ func (r *resticWrapper) canRetryAfterError(command string, summary monitor.Summa
 	output := summary.OutputAnalysis
 
 	if output != nil && output.ContainsRemoteLockFailure() {
-		clog.Debugf("repository lock failed when running '%s'", command)
+		// Do not count lock-wait time as normal execution time (to calc correct remaining lock-wait time)
+		if maxWait, ok := output.GetRemoteLockedMaxWait(); ok {
+			r.executionTime -= maxWait
+		} else {
+			r.executionTime -= summary.Duration
+		}
+		if r.executionTime < 0 {
+			r.executionTime = 0
+		}
+		clog.Debugf("repository lock failed when running '%s', counted execution time %s", command, r.executionTime.Truncate(time.Second))
 		retry, sleep = r.canRetryAfterRemoteLockFailure(output)
 	}
 
@@ -788,28 +818,26 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output monitor.OutputAnal
 	}
 
 	// Check if we have time left to wait on a non-stale lock
-	retryDelay := r.global.ResticLockRetryAfter
-
-	if r.lockWait != nil && retryDelay > 0 {
-		elapsedTime := time.Since(r.startTime)
-		availableTime := *r.lockWait - elapsedTime + r.executionTime
-
-		if retryDelay < constants.MinResticLockRetryTime {
-			retryDelay = constants.MinResticLockRetryTime
-		} else if retryDelay > constants.MaxResticLockRetryTime {
-			retryDelay = constants.MaxResticLockRetryTime
+	if remainingTime, enabled := r.remainingLockRetryTime(); enabled && remainingTime > 0 {
+		retryDelay := r.global.ResticLockRetryAfter
+		if retryDelay < constants.MinResticLockRetryDelay {
+			retryDelay = constants.MinResticLockRetryDelay
+		} else if retryDelay > constants.MaxResticLockRetryDelay {
+			retryDelay = constants.MaxResticLockRetryDelay
 		}
 
-		if retryDelay > availableTime {
-			retryDelay = availableTime
+		if retryDelay > remainingTime {
+			retryDelay = remainingTime
 		}
 
-		if retryDelay >= constants.MinResticLockRetryTime {
+		if retryDelay >= constants.MinResticLockRetryDelay {
 			lockName := r.profile.Repository.String()
 			if lockedBy, ok := output.GetRemoteLockedBy(); ok {
 				lockName = fmt.Sprintf("%s locked by %s", lockName, lockedBy)
 			}
-			logLockWait(lockName, r.startTime, time.Unix(0, 0), *r.lockWait)
+			if r.lockWait != nil {
+				logLockWait(lockName, r.startTime, time.Unix(0, 0), r.executionTime, *r.lockWait)
+			}
 
 			return true, retryDelay
 		}
@@ -817,6 +845,18 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output monitor.OutputAnal
 	}
 
 	return false, 0
+}
+
+func (r *resticWrapper) remainingLockRetryTime() (remaining time.Duration, enabled bool) {
+	enabled = r.global.ResticLockRetryAfter > 0 && r.lockWait != nil
+	if enabled {
+		elapsedTime := time.Since(r.startTime)
+		remaining = *r.lockWait - elapsedTime + r.executionTime
+	}
+	if remaining < 0 {
+		remaining = 0
+	}
+	return
 }
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk
@@ -873,7 +913,7 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 			}
 			if time.Since(start) < *lockWait {
 				lockName := fmt.Sprintf("%s locked by %s", lockFile, locker)
-				lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, *lockWait)
+				lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, 0, *lockWait)
 
 				sleep := 3 * time.Second
 				if sleep > *lockWait {
@@ -894,15 +934,16 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, run func(setP
 
 const logLockWaitEvery = 5 * time.Minute
 
-func logLockWait(lockName string, started, lastLogged time.Time, maxLockWait time.Duration) time.Time {
+func logLockWait(lockName string, started, lastLogged time.Time, executed, maxLockWait time.Duration) time.Time {
 	now := time.Now()
 	lastLog := now.Sub(lastLogged)
 	elapsed := now.Sub(started).Truncate(time.Second)
+	waited := (elapsed - executed).Truncate(time.Second)
 	remaining := (maxLockWait - elapsed).Truncate(time.Second)
 
 	if lastLog > logLockWaitEvery {
 		if elapsed > logLockWaitEvery {
-			clog.Infof("lock wait (remaining %s / elapsed %s): %s", remaining, elapsed, strings.TrimSpace(lockName))
+			clog.Infof("lock wait (remaining %s / waited %s / elapsed %s): %s", remaining, waited, elapsed, strings.TrimSpace(lockName))
 		} else {
 			clog.Infof("lock wait (remaining %s): %s", remaining, strings.TrimSpace(lockName))
 		}

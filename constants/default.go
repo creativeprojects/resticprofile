@@ -9,7 +9,7 @@ const (
 	DefaultCommand              = "snapshots"
 	DefaultFilterResticFlags    = true
 	DefaultResticLockRetryAfter = 60 * time.Second
-	DefaultResticStaleLockAge   = 2 * time.Hour
+	DefaultResticStaleLockAge   = 1 * time.Hour
 	DefaultTheme                = "light"
 	DefaultIONiceFlag           = false
 	DefaultIONiceClass          = 2

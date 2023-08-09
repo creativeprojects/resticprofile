@@ -10,6 +10,7 @@ import (
 )
 
 const ResticLockFailureOutput = `
+repo already locked, waiting up to 2m1s115.3ms for the lock
 unable to create lock in backend: repository is already locked by PID 27153 on app-server-01 by root (UID 0, GID 0)
 lock was created at 2021-04-17 19:00:16 (1s727.5ms ago)
 storage ID 870530a4
@@ -32,6 +33,12 @@ func TestRemoteLockFailure(t *testing.T) {
 		name, ok := analysis.GetRemoteLockedBy()
 		assert.Equal(t, true, ok)
 		assert.Equal(t, "PID 27153 on app-server-01 by root (UID 0, GID 0)", name)
+	})
+
+	t.Run("GetRemoteLockedMaxWait", func(t *testing.T) {
+		wait, ok := analysis.GetRemoteLockedMaxWait()
+		assert.Equal(t, true, ok)
+		assert.Equal(t, 2*time.Minute+time.Second+(115*time.Millisecond), wait)
 	})
 }
 

@@ -19,6 +19,7 @@ const (
 	ParameterVerbose         = "verbose"
 	ParameterDescription     = "description"
 	ParameterVersion         = "version"
+	ParameterRetryLock       = "retry-lock"
 	ParameterRepository      = "repo"
 	ParameterRepositoryFile  = "repository-file"
 	ParameterPasswordFile    = "password-file"

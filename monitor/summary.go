@@ -26,6 +26,10 @@ type OutputAnalysis interface {
 	// If no remote lock is held or the time cannot be determined, the second parameter is false.
 	GetRemoteLockedSince() (time.Duration, bool)
 
+	// GetRemoteLockedMaxWait returns the max time duration that restic waited for the lock to acquire.
+	// If no remote lock is held or the time cannot be determined, the second parameter is false.
+	GetRemoteLockedMaxWait() (time.Duration, bool)
+
 	// GetRemoteLockedBy returns who locked the remote lock, if available.
 	GetRemoteLockedBy() (string, bool)
 }

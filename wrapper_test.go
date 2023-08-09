@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -18,16 +19,18 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/monitor"
+	"github.com/creativeprojects/resticprofile/monitor/mocks"
 	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/restic"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -765,26 +768,11 @@ func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
 	assert.EqualError(t, err, "backup on profile 'name': stream error callback: echo pass failed to register (: error parsing regexp: missing closing ): `(`")
 }
 
-type mockOutputAnalysis struct {
-	monitor.OutputAnalysis
-	lockWho      string
-	lockDuration time.Duration
-}
-
-func (m *mockOutputAnalysis) ContainsRemoteLockFailure() bool {
-	return m.lockWho != ""
-}
-
-func (m *mockOutputAnalysis) GetRemoteLockedSince() (time.Duration, bool) {
-	return m.lockDuration, m.lockDuration > 0
-}
-
-func (m *mockOutputAnalysis) GetRemoteLockedBy() (string, bool) {
-	return m.lockWho, len(m.lockWho) > 1
-}
-
 func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
-	mockOutput := &mockOutputAnalysis{lockWho: "TestCanRetryAfterRemoteStaleLockFailure"}
+	lockedSince := time.Duration(0)
+	mockOutput := mocks.NewOutputAnalysis(t)
+	mockOutput.EXPECT().ContainsRemoteLockFailure().Return(true)
+	mockOutput.EXPECT().GetRemoteLockedSince().RunAndReturn(func() (time.Duration, bool) { return lockedSince, lockedSince > 0 })
 
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Repository = config.NewConfidentialValue("my-repo")
@@ -799,18 +787,18 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 	assert.False(t, retry)
 
 	// Ignores stale lock when disabled
-	mockOutput.lockDuration = constants.MinResticStaleLockAge
+	lockedSince = constants.MinResticStaleLockAge
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// Ignores non-stale lock
-	mockOutput.lockDuration = constants.MinResticStaleLockAge - time.Nanosecond
+	lockedSince = constants.MinResticStaleLockAge - time.Nanosecond
 	wrapper.global.ResticStaleLockAge = time.Millisecond
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// Unlocks stale lock
-	mockOutput.lockDuration = constants.MinResticStaleLockAge
+	lockedSince = constants.MinResticStaleLockAge
 	assert.False(t, wrapper.doneTryUnlock)
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
@@ -833,7 +821,11 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 }
 
 func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
-	mockOutput := &mockOutputAnalysis{}
+	lockFailure := false
+	mockOutput := mocks.NewOutputAnalysis(t)
+	mockOutput.EXPECT().ContainsRemoteLockFailure().RunAndReturn(func() bool { return lockFailure })
+	mockOutput.EXPECT().GetRemoteLockedBy().Return("TestCanRetryAfterRemoteLockFailure", true)
+	mockOutput.EXPECT().GetRemoteLockedSince().Return(5*time.Minute, true)
 
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Repository = config.NewConfidentialValue("my-repo")
@@ -847,33 +839,117 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.False(t, retry)
 
 	// No retry when lockWait is nil
-	mockOutput.lockWho = "TestCanRetryAfterRemoteLockFailure"
+	lockFailure = true
 	assert.True(t, mockOutput.ContainsRemoteLockFailure())
 	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// No retry when disabled
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
 	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// No retry when no time left
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime - time.Nanosecond)
-	wrapper.global.ResticLockRetryAfter = constants.MinResticLockRetryTime // enable remote lock retry
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay - time.Nanosecond)
+	wrapper.global.ResticLockRetryAfter = constants.MinResticLockRetryDelay // enable remote lock retry
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
 	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryAfter)
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryTime + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
-	assert.Equal(t, constants.MinResticLockRetryTime, sleep)
+	assert.Equal(t, constants.MinResticLockRetryDelay, sleep)
 
-	wrapper.maxWaitOnLock(constants.MaxResticLockRetryTime + 50*time.Millisecond)
-	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryTime
+	wrapper.maxWaitOnLock(constants.MaxResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryDelay
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
-	assert.Equal(t, constants.MaxResticLockRetryTime, sleep)
+	assert.Equal(t, constants.MaxResticLockRetryDelay, sleep)
+}
+
+func TestCanUseResticLockRetry(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Repository = config.NewConfidentialValue("my-repo")
+	emptyArgs := shell.NewArgs()
+	argMatcher := regexp.MustCompile(".*retry-lock.*").MatchString
+
+	getWrapper := func() *resticWrapper {
+		wrapper := newResticWrapper(nil, "restic", true, profile, constants.CommandBackup, nil, nil)
+		wrapper.startTime = time.Now()
+		wrapper.global.ResticLockRetryAfter = 1 * time.Minute
+		wrapper.global.ResticVersion = "0.16"
+		return wrapper
+	}
+
+	t.Run("SubtractsResticLockRetryAfter", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(10*time.Minute + 30*time.Second)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=9m")
+	})
+
+	t.Run("SubtractsRemainingTime", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(10*time.Minute + 30*time.Second)
+		wrapper.executionTime = 3 * time.Minute
+		wrapper.startTime = wrapper.startTime.Add(-5 * time.Minute) // 2 minutes for locks, 3 minutes for execution
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=7m")
+	})
+
+	t.Run("10MinutesIsMax", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(10 * constants.MaxResticLockRetryTimeArgument)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=10m")
+	})
+
+	t.Run("1MinuteIsMin", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.maxWaitOnLock(2*time.Minute + 30*time.Second)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Contains(t, command.args, "--retry-lock=1m")
+		assert.True(t, slices.ContainsFunc(command.args, argMatcher))
+
+		wrapper.maxWaitOnLock(2 * time.Minute)
+		command = wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
+	})
+
+	t.Run("NotAddedInRestic15", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.global.ResticVersion = "0.15"
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
+	})
+
+	t.Run("NotAddedWithoutFilter", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.global.FilterResticFlags = false
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.False(t, slices.ContainsFunc(command.args, argMatcher))
+	})
+
+	t.Run("NotOverwritingAlreadyProvided", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.moreArgs = []string{"--retry-lock", "25m"}
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Subset(t, command.args, wrapper.moreArgs)
+		assert.NotContains(t, command.args, "--retry-lock=10m")
+	})
+
+	t.Run("Regression-WorksWithExtraValues", func(t *testing.T) {
+		wrapper := getWrapper()
+		wrapper.moreArgs = []string{"/some/path", "some-other-option"}
+		wrapper.maxWaitOnLock(30 * time.Minute)
+		command := wrapper.prepareCommand(constants.CommandBackup, emptyArgs, true)
+		assert.Subset(t, command.args, wrapper.moreArgs)
+		assert.Contains(t, command.args, "--retry-lock=10m")
+	})
 }
 
 func TestLocksAndLockWait(t *testing.T) {
