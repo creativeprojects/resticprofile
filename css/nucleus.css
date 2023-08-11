@@ -55,10 +55,6 @@ a {
   background: transparent;
   text-decoration: none; }
 
-a:active,
-a:hover {
-  outline: 0; }
-
 abbr[title] {
   border-bottom: 1px dotted; }
 
@@ -81,6 +77,9 @@ sup {
 
 sub {
   bottom: -0.25em; }
+
+iframe {
+  border: 0; }
 
 img {
   border: 0;

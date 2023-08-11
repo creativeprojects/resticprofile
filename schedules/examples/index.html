@@ -1,286 +1,271 @@
-<!doctype html><html lang=en dir=ltr><head><meta charset=utf-8><meta name=viewport content="height=device-height,width=device-width,initial-scale=1,minimum-scale=1"><meta name=generator content="Hugo 0.111.3"><meta name=generator content="Relearn 5.12.6"><meta name=description content><title>Schedule Examples :: resticprofile</title><link href=https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1683384149 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1683384149 rel=stylesheet></noscript><link href=https://creativeprojects.github.io/resticprofile/css/nucleus.css?1683384149 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1683384149 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1683384149 rel=stylesheet></noscript><link href=https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1683384149 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/fonts.css?1683384149 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://creativeprojects.github.io/resticprofile/css/fonts.css?1683384149 rel=stylesheet></noscript><link href=https://creativeprojects.github.io/resticprofile/css/theme.css?1683384149 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1683384149 rel=stylesheet id=variant-style><link href=https://creativeprojects.github.io/resticprofile/css/variant.css?1683384149 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/print.css?1683384149 rel=stylesheet media=print><link href=https://creativeprojects.github.io/resticprofile/css/ie.css?1683384149 rel=stylesheet><script src=https://creativeprojects.github.io/resticprofile/js/url.js?1683384149></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/variant.js?1683384149></script>
-<script>window.index_json_url="https://creativeprojects.github.io/resticprofile/index.json";var root_url="https://creativeprojects.github.io/resticprofile/",baseUriFull,baseUri=root_url.replace(/\/$/,"");window.T_Copy_to_clipboard="Copy to clipboard",window.T_Copied_to_clipboard="Copied to clipboard!",window.T_Copy_link_to_clipboard="Copy link to clipboard",window.T_Link_copied_to_clipboard="Copied link to clipboard!",window.T_No_results_found="No results found for \u0022{0}\u0022",window.T_N_results_found="{1} results found for \u0022{0}\u0022",baseUriFull="https://creativeprojects.github.io/resticprofile/",window.variants&&variants.init(["relearn-light","relearn-dark"])</script></head><body class="mobile-support html" data-url=https://creativeprojects.github.io/resticprofile/schedules/examples/index.html><div id=body class=default-animation><div id=sidebar-overlay></div><div id=toc-overlay></div><nav id=topbar class=highlightable><div><div class=navigation><a class="nav nav-next topbar-link" href=https://creativeprojects.github.io/resticprofile/schedules/systemd/index.html title="Systemd (&#129106;)"><i class="fas fa-chevron-right fa-fw"></i></a></div><div class=navigation><a class="nav nav-prev topbar-link" href=https://creativeprojects.github.io/resticprofile/schedules/commands/index.html title="Schedule Commands (&#129104;)"><i class="fas fa-chevron-left fa-fw"></i></a></div><div id=breadcrumbs><span id=sidebar-toggle-span><a href=# id=sidebar-toggle class=topbar-link title='Menu (CTRL+ALT+n)'><i class="fas fa-bars fa-fw"></i></a></span>
-<span id=toc-menu title='Table of Contents (CTRL+ALT+t)'><i class="fas fa-list-alt fa-fw"></i></span><ol class=links itemscope itemtype=http://schema.org/BreadcrumbList><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><a itemprop=item href=https://creativeprojects.github.io/resticprofile/index.html><span itemprop=name>resticprofile</span></a><meta itemprop=position content="1">></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><a itemprop=item href=https://creativeprojects.github.io/resticprofile/schedules/index.html><span itemprop=name>Schedules</span></a><meta itemprop=position content="2">></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><span itemprop=name>Schedule Examples</span><meta itemprop=position content="3"></li></ol></div><div class="default-animation progress"><div class=toc-wrapper><nav id=TableOfContents><ul><li><ul><li><a href=#examples-of-scheduling-commands-under-windows>Examples of scheduling commands under Windows</a></li><li><a href=#examples-of-scheduling-commands-under-linux>Examples of scheduling commands under Linux</a></li><li><a href=#examples-of-scheduling-commands-under-macos>Examples of scheduling commands under macOS</a></li></ul></li></ul></nav></div></div></div></nav><main id=body-inner class="highlightable default" tabindex=-1><div class=flex-block-wrapper><div id=head-tags></div><article class=default><h1 id=schedule-examples>Schedule Examples</h1><h3 id=examples-of-scheduling-commands-under-windows>Examples of scheduling commands under Windows</h3><p>If you create a task with <code>user</code> permission under Windows, you will need to enter your password to validate the task. It&rsquo;s a requirement of the task scheduler. I&rsquo;m inviting you to review the code to make sure I&rsquo;m not emailing your password to myself. Seriously you shouldn&rsquo;t trust anyone.</p><p>Example of the <code>schedule</code> command under Windows (with git bash):</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>$ resticprofile -c examples/windows.yaml -n self schedule
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 1/2
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: Mon..Fri *:00,15,30,45
-</span></span><span style=display:flex><span>Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
-</span></span><span style=display:flex><span>    Next elapse: Wed Jul <span style=color:#ae81ff>22</span> 21:30:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Wed Jul <span style=color:#ae81ff>22</span> 20:30:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 1m52s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 2/2
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: Sat,Sun 0,12:00
-</span></span><span style=display:flex><span>Normalized form: Sat,Sun *-*-* 00,12:00:00
-</span></span><span style=display:flex><span>    Next elapse: Sat Jul <span style=color:#ae81ff>25</span> 00:00:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Fri Jul <span style=color:#ae81ff>24</span> 23:00:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 50h31m52s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Creating task <span style=color:#66d9ef>for</span> user Creative Projects
-</span></span><span style=display:flex><span>Task Scheduler requires your Windows password to validate the task: 
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>2020/07/22 21:28:15 scheduled job self/backup created
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing retention schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: sun 3:30
-</span></span><span style=display:flex><span>Normalized form: Sun *-*-* 03:30:00
-</span></span><span style=display:flex><span>    Next elapse: Sun Jul <span style=color:#ae81ff>26</span> 03:30:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Sun Jul <span style=color:#ae81ff>26</span> 02:30:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 78h1m44s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>2020/07/22 21:28:22 scheduled job self/retention created
-</span></span></code></pre></div><p>To see the status of the triggers, you can use the <code>status</code> command:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>$ resticprofile -c examples/windows.yaml -n self status
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 1/2
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: Mon..Fri *:00,15,30,45
-</span></span><span style=display:flex><span>Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
-</span></span><span style=display:flex><span>    Next elapse: Wed Jul <span style=color:#ae81ff>22</span> 21:30:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Wed Jul <span style=color:#ae81ff>22</span> 20:30:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 14s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 2/2
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: Sat,Sun 0,12:*
-</span></span><span style=display:flex><span>Normalized form: Sat,Sun *-*-* 00,12:*:00
-</span></span><span style=display:flex><span>    Next elapse: Sat Jul <span style=color:#ae81ff>25</span> 00:00:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Fri Jul <span style=color:#ae81ff>24</span> 23:00:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 50h29m46s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>           Task: <span style=color:#ae81ff>\r</span>esticprofile backup<span style=color:#ae81ff>\s</span>elf backup
-</span></span><span style=display:flex><span>           User: Creative Projects
-</span></span><span style=display:flex><span>    Working Dir: D:<span style=color:#ae81ff>\S</span>ource<span style=color:#ae81ff>\r</span>esticprofile
-</span></span><span style=display:flex><span>           Exec: D:<span style=color:#ae81ff>\S</span>ource<span style=color:#ae81ff>\r</span>esticprofile<span style=color:#ae81ff>\r</span>esticprofile.exe --no-ansi --config examples/windows.yaml --name self backup
-</span></span><span style=display:flex><span>        Enabled: true
-</span></span><span style=display:flex><span>          State: ready
-</span></span><span style=display:flex><span>    Missed runs: <span style=color:#ae81ff>0</span>
-</span></span><span style=display:flex><span>  Last Run Time: 2020-07-22 21:30:00 +0000 UTC
-</span></span><span style=display:flex><span>    Last Result: <span style=color:#ae81ff>0</span>
-</span></span><span style=display:flex><span>  Next Run Time: 2020-07-22 21:45:00 +0000 UTC
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing retention schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: sun 3:30
-</span></span><span style=display:flex><span>Normalized form: Sun *-*-* 03:30:00
-</span></span><span style=display:flex><span>    Next elapse: Sun Jul <span style=color:#ae81ff>26</span> 03:30:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Sun Jul <span style=color:#ae81ff>26</span> 02:30:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 77h59m46s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>           Task: <span style=color:#ae81ff>\r</span>esticprofile backup<span style=color:#ae81ff>\s</span>elf retention
-</span></span><span style=display:flex><span>           User: Creative Projects
-</span></span><span style=display:flex><span>    Working Dir: D:<span style=color:#ae81ff>\S</span>ource<span style=color:#ae81ff>\r</span>esticprofile
-</span></span><span style=display:flex><span>           Exec: D:<span style=color:#ae81ff>\S</span>ource<span style=color:#ae81ff>\r</span>esticprofile<span style=color:#ae81ff>\r</span>esticprofile.exe --no-ansi --config examples/windows.yaml --name self forget
-</span></span><span style=display:flex><span>        Enabled: true
-</span></span><span style=display:flex><span>          State: ready
-</span></span><span style=display:flex><span>    Missed runs: <span style=color:#ae81ff>0</span>
-</span></span><span style=display:flex><span>  Last Run Time: 1999-11-30 00:00:00 +0000 UTC
-</span></span><span style=display:flex><span>    Last Result: <span style=color:#ae81ff>267011</span>
-</span></span><span style=display:flex><span>  Next Run Time: 2020-07-26 03:30:00 +0000 UTC
-</span></span></code></pre></div><p>To remove the schedule, use the <code>unschedule</code> command:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>$ resticprofile -c examples/windows.yaml -n self unschedule
-</span></span><span style=display:flex><span>2020/07/22 21:34:51 scheduled job self/backup removed
-</span></span><span style=display:flex><span>2020/07/22 21:34:51 scheduled job self/retention removed
-</span></span></code></pre></div><h3 id=examples-of-scheduling-commands-under-linux>Examples of scheduling commands under Linux</h3><p>With this example of configuration for Linux:</p><div class=tab-panel data-tab-group=config-with-json><div class=tab-nav><button data-tab-item=toml class="tab-nav-button active" onclick='switchTab("config-with-json","toml")'>
-<span>toml</span></button>
-<button data-tab-item=yaml class=tab-nav-button onclick='switchTab("config-with-json","yaml")'>
-<span>yaml</span></button>
-<button data-tab-item=hcl class=tab-nav-button onclick='switchTab("config-with-json","hcl")'>
-<span>hcl</span></button>
-<button data-tab-item=json class=tab-nav-button onclick='switchTab("config-with-json","json")'>
-<span>json</span></button></div><div class=tab-content><div data-tab-item=toml class="tab-content-text active"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span><span style=color:#a6e22e>version</span> = <span style=color:#e6db74>&#34;1&#34;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>[<span style=color:#a6e22e>default</span>]
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>password-file</span> = <span style=color:#e6db74>&#34;key&#34;</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>repository</span> = <span style=color:#e6db74>&#34;/tmp/backup&#34;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>[<span style=color:#a6e22e>test1</span>]
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>inherit</span> = <span style=color:#e6db74>&#34;default&#34;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>test1</span>.<span style=color:#a6e22e>backup</span>]
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>source</span> = <span style=color:#e6db74>&#34;./&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>schedule</span> = <span style=color:#e6db74>&#34;*:00,15,30,45&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>schedule-permission</span> = <span style=color:#e6db74>&#34;user&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>schedule-lock-wait</span> = <span style=color:#e6db74>&#34;15m&#34;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>test1</span>.<span style=color:#a6e22e>check</span>]
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>schedule</span> = <span style=color:#e6db74>&#34;*-*-1&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>schedule-permission</span> = <span style=color:#e6db74>&#34;user&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>schedule-lock-wait</span> = <span style=color:#e6db74>&#34;15m&#34;</span>
-</span></span></code></pre></div></div><div data-tab-item=yaml class=tab-content-text><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#34;1&#34;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#f92672>default</span>:
-</span></span><span style=display:flex><span>  <span style=color:#f92672>password-file</span>: <span style=color:#ae81ff>key</span>
-</span></span><span style=display:flex><span>  <span style=color:#f92672>repository</span>: <span style=color:#ae81ff>/tmp/backup</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#f92672>test1</span>:
-</span></span><span style=display:flex><span>  <span style=color:#f92672>inherit</span>: <span style=color:#ae81ff>default</span>
-</span></span><span style=display:flex><span>  <span style=color:#f92672>backup</span>:
-</span></span><span style=display:flex><span>    <span style=color:#f92672>source</span>: <span style=color:#ae81ff>./</span>
-</span></span><span style=display:flex><span>    <span style=color:#f92672>schedule</span>: <span style=color:#e6db74>&#34;*:00,15,30,45&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
-</span></span><span style=display:flex><span>    <span style=color:#f92672>schedule-lock-wait</span>: <span style=color:#ae81ff>15m</span>
-</span></span><span style=display:flex><span>  <span style=color:#f92672>check</span>:
-</span></span><span style=display:flex><span>    <span style=color:#f92672>schedule</span>: <span style=color:#e6db74>&#34;*-*-1&#34;</span>
-</span></span><span style=display:flex><span>    <span style=color:#f92672>schedule-permission</span>: <span style=color:#ae81ff>user</span>
-</span></span><span style=display:flex><span>    <span style=color:#f92672>schedule-lock-wait</span>: <span style=color:#ae81ff>15m</span>
-</span></span></code></pre></div></div><div data-tab-item=hcl class=tab-content-text><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-hcl data-lang=hcl><span style=display:flex><span><span style=color:#e6db74>&#34;default&#34;</span> <span style=color:#f92672>=</span> {
-</span></span><span style=display:flex><span>  &#34;password-file&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;key&#34;</span>
-</span></span><span style=display:flex><span>  &#34;repository&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;/tmp/backup&#34;</span>
-</span></span><span style=display:flex><span>}
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#e6db74>&#34;test1&#34;</span> <span style=color:#f92672>=</span> {
-</span></span><span style=display:flex><span>  &#34;inherit&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;default&#34;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  &#34;backup&#34; <span style=color:#f92672>=</span> {
-</span></span><span style=display:flex><span>    &#34;source&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;./&#34;</span>
-</span></span><span style=display:flex><span>    &#34;schedule&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;*:00,15,30,45&#34;</span>
-</span></span><span style=display:flex><span>    &#34;schedule-permission&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;user&#34;</span>
-</span></span><span style=display:flex><span>    &#34;schedule-lock-wait&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;15m&#34;</span>
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  &#34;check&#34; <span style=color:#f92672>=</span> {
-</span></span><span style=display:flex><span>    &#34;schedule&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;*-*-1&#34;</span>
-</span></span><span style=display:flex><span>    &#34;schedule-permission&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;user&#34;</span>
-</span></span><span style=display:flex><span>    &#34;schedule-lock-wait&#34; <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;15m&#34;</span>
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div></div><div data-tab-item=json class=tab-content-text><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;version&#34;</span>: <span style=color:#e6db74>&#34;1&#34;</span>,
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;default&#34;</span>: {
-</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;password-file&#34;</span>: <span style=color:#e6db74>&#34;key&#34;</span>,
-</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;repository&#34;</span>: <span style=color:#e6db74>&#34;/tmp/backup&#34;</span>
-</span></span><span style=display:flex><span>  },
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;test1&#34;</span>: {
-</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;inherit&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>,
-</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;backup&#34;</span>: {
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;source&#34;</span>: <span style=color:#e6db74>&#34;./&#34;</span>,
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule&#34;</span>: <span style=color:#e6db74>&#34;*:00,15,30,45&#34;</span>,
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule-permission&#34;</span>: <span style=color:#e6db74>&#34;user&#34;</span>,
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule-lock-wait&#34;</span>: <span style=color:#e6db74>&#34;15m&#34;</span>
-</span></span><span style=display:flex><span>    },
-</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;check&#34;</span>: {
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule&#34;</span>: <span style=color:#e6db74>&#34;*-*-1&#34;</span>,
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule-permission&#34;</span>: <span style=color:#e6db74>&#34;user&#34;</span>,
-</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;schedule-lock-wait&#34;</span>: <span style=color:#e6db74>&#34;15m&#34;</span>
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div></div></div></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>$ resticprofile -c examples/linux.yaml -n test1 schedule
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: *:00,15,30,45
-</span></span><span style=display:flex><span>Normalized form: *-*-* *:00,15,30,45:00
-</span></span><span style=display:flex><span>    Next elapse: Thu 2020-07-23 17:15:00 BST
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Thu 2020-07-23 16:15:00 UTC
-</span></span><span style=display:flex><span>       From now: 6min left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.service
-</span></span><span style=display:flex><span>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer
-</span></span><span style=display:flex><span>Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer.
-</span></span><span style=display:flex><span>2020/07/23 17:08:51 scheduled job test1/backup created
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing check schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: *-*-1
-</span></span><span style=display:flex><span>Normalized form: *-*-01 00:00:00
-</span></span><span style=display:flex><span>    Next elapse: Sat 2020-08-01 00:00:00 BST
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Fri 2020-07-31 23:00:00 UTC
-</span></span><span style=display:flex><span>       From now: <span style=color:#ae81ff>1</span> weeks <span style=color:#ae81ff>1</span> days left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.service
-</span></span><span style=display:flex><span>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer
-</span></span><span style=display:flex><span>Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer.
-</span></span><span style=display:flex><span>2020/07/23 17:08:51 scheduled job test1/check created
-</span></span></code></pre></div><p>The <code>status</code> command shows a combination of <code>journalctl</code> displaying errors (only) in the last month and <code>systemctl status</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>$ resticprofile -c examples/linux.yaml -n test1 status
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: *:00,15,30,45
-</span></span><span style=display:flex><span>Normalized form: *-*-* *:00,15,30,45:00
-</span></span><span style=display:flex><span>    Next elapse: Tue 2020-07-28 15:15:00 BST
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Tue 2020-07-28 14:15:00 UTC
-</span></span><span style=display:flex><span>       From now: 4min 44s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Recent log <span style=color:#f92672>(</span>&gt;<span style=color:#f92672>=</span> warning in the last month<span style=color:#f92672>)</span>
-</span></span><span style=display:flex><span><span style=color:#f92672>==========================================</span>
-</span></span><span style=display:flex><span>-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
-</span></span><span style=display:flex><span>Jul <span style=color:#ae81ff>27</span> 20:48:01 Desktop76 systemd<span style=color:#f92672>[</span>2986<span style=color:#f92672>]</span>: Failed to start resticprofile backup <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml.
-</span></span><span style=display:flex><span>Jul <span style=color:#ae81ff>27</span> 21:00:55 Desktop76 systemd<span style=color:#f92672>[</span>2986<span style=color:#f92672>]</span>: Failed to start resticprofile backup <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml.
-</span></span><span style=display:flex><span>Jul <span style=color:#ae81ff>27</span> 21:15:34 Desktop76 systemd<span style=color:#f92672>[</span>2986<span style=color:#f92672>]</span>: Failed to start resticprofile backup <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml.
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Systemd timer status
-</span></span><span style=display:flex><span><span style=color:#f92672>=====================</span>
-</span></span><span style=display:flex><span>● resticprofile-backup@profile-test1.timer - backup timer <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml
-</span></span><span style=display:flex><span>   Loaded: loaded <span style=color:#f92672>(</span>/home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer; enabled; vendor preset: enabled<span style=color:#f92672>)</span>
-</span></span><span style=display:flex><span>   Active: active <span style=color:#f92672>(</span>waiting<span style=color:#f92672>)</span> since Tue 2020-07-28 15:10:06 BST; 8s ago
-</span></span><span style=display:flex><span>  Trigger: Tue 2020-07-28 15:15:00 BST; 4min 44s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Jul <span style=color:#ae81ff>28</span> 15:10:06 Desktop76 systemd<span style=color:#f92672>[</span>2951<span style=color:#f92672>]</span>: Started backup timer <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml.
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing check schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: *-*-1
-</span></span><span style=display:flex><span>Normalized form: *-*-01 00:00:00
-</span></span><span style=display:flex><span>    Next elapse: Sat 2020-08-01 00:00:00 BST
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Fri 2020-07-31 23:00:00 UTC
-</span></span><span style=display:flex><span>       From now: <span style=color:#ae81ff>3</span> days left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Recent log <span style=color:#f92672>(</span>&gt;<span style=color:#f92672>=</span> warning in the last month<span style=color:#f92672>)</span>
-</span></span><span style=display:flex><span><span style=color:#f92672>==========================================</span>
-</span></span><span style=display:flex><span>-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
-</span></span><span style=display:flex><span>Jul <span style=color:#ae81ff>27</span> 19:39:59 Desktop76 systemd<span style=color:#f92672>[</span>2986<span style=color:#f92672>]</span>: Failed to start resticprofile check <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml.
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Systemd timer status
-</span></span><span style=display:flex><span><span style=color:#f92672>=====================</span>
-</span></span><span style=display:flex><span>● resticprofile-check@profile-test1.timer - check timer <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml
-</span></span><span style=display:flex><span>   Loaded: loaded <span style=color:#f92672>(</span>/home/user/.config/systemd/user/resticprofile-check@profile-test1.timer; enabled; vendor preset: enabled<span style=color:#f92672>)</span>
-</span></span><span style=display:flex><span>   Active: active <span style=color:#f92672>(</span>waiting<span style=color:#f92672>)</span> since Tue 2020-07-28 15:10:07 BST; 7s ago
-</span></span><span style=display:flex><span>  Trigger: Sat 2020-08-01 00:00:00 BST; <span style=color:#ae81ff>3</span> days left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Jul <span style=color:#ae81ff>28</span> 15:10:07 Desktop76 systemd<span style=color:#f92672>[</span>2951<span style=color:#f92672>]</span>: Started check timer <span style=color:#66d9ef>for</span> profile test1 in examples/linux.yaml.
-</span></span></code></pre></div><p>And <code>unschedule</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>$ resticprofile -c examples/linux.yaml -n test1 unschedule
-</span></span><span style=display:flex><span>Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer.
-</span></span><span style=display:flex><span>2020/07/23 17:13:42 scheduled job test1/backup removed
-</span></span><span style=display:flex><span>Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer.
-</span></span><span style=display:flex><span>2020/07/23 17:13:42 scheduled job test1/check removed
-</span></span></code></pre></div><h3 id=examples-of-scheduling-commands-under-macos>Examples of scheduling commands under macOS</h3><p>macOS has a very tight protection system when running scheduled tasks (also called agents).</p><p>Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task, which consists on a few popup windows (you can disable this behavior by adding the flag <code>--no-start</code> after the schedule command).</p><p>Here&rsquo;s an example of scheduling a backup to Azure (which needs network access):</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>% resticprofile -v -c examples/private/azure.yaml -n self schedule
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Analyzing backup schedule 1/1
-</span></span><span style=display:flex><span><span style=color:#f92672>=================================</span>
-</span></span><span style=display:flex><span>  Original form: *:0,15,30,45:00
-</span></span><span style=display:flex><span>Normalized form: *-*-* *:00,15,30,45:00
-</span></span><span style=display:flex><span>    Next elapse: Tue Jul <span style=color:#ae81ff>28</span> 23:00:00 BST <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       <span style=color:#f92672>(</span>in UTC<span style=color:#f92672>)</span>: Tue Jul <span style=color:#ae81ff>28</span> 22:00:00 UTC <span style=color:#ae81ff>2020</span>
-</span></span><span style=display:flex><span>       From now: 2m34s left
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>By default, a macOS agent access is restricted. If you leave it to start in the background it<span style=color:#960050;background-color:#1e0010>&#39;</span>s likely to fail.
-</span></span><span style=display:flex><span>You have to start it manually the first time to accept the requests <span style=color:#66d9ef>for</span> access:
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>% launchctl start local.resticprofile.self.backup
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Do you want to start it now? <span style=color:#f92672>(</span>Y/n<span style=color:#f92672>)</span>:
-</span></span><span style=display:flex><span>2020/07/28 22:57:26 scheduled job self/backup created
-</span></span></code></pre></div><p>Right after you started the profile, you should get some popup asking you to grant access to various files/folders/network.</p><p>If you backup your files to an external repository on a network, you should get this popup window:</p><p><a href=#image-1a14029e6c35ff663a01617a07aaea6b class=lightbox-link><img src=https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png alt="&amp;ldquo;resticprofile&amp;rdquo; would like to access files on a network volume" style=height:auto;width:auto loading=lazy></a>
-<a href=javascript:history.back(); class=lightbox id=image-1a14029e6c35ff663a01617a07aaea6b><img src=https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png alt="&amp;ldquo;resticprofile&amp;rdquo; would like to access files on a network volume" class=lightbox-image loading=lazy></a></p><p><strong>Note:</strong>
-If you prefer not being asked, you can add the <code>--no-start</code> flag like so:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>% resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
-</span></span></code></pre></div><footer class=footline></footer></article></div></main></div><aside id=sidebar class=default-animation><div id=header-wrapper class=default-animation><div id=header class=default-animation><style>a#logo{color:#282828;color:var(--MENU-SECTIONS-BG-color);font-family:work sans,helvetica,tahoma,geneva,arial,sans-serif;font-size:30px;font-weight:300;margin-top:-13px;text-transform:uppercase;white-space:nowrap}a#logo:hover{color:#282828;color:var(--MENU-SECTIONS-BG-color)}@media only all and (max-width:59.938em){a#logo{font-size:25px;margin-top:-3px}}</style><a id=logo href=https://creativeprojects.github.io/resticprofile/>Resticprofile</a></div><div class="searchbox default-animation"><i class="fas fa-search" title="Search (CTRL+ALT+f)"></i>
+<!doctype html><html lang=en dir=ltr><head><meta charset=utf-8><meta name=viewport content="height=device-height,width=device-width,initial-scale=1,minimum-scale=1"><meta name=generator content="Hugo 0.117.0"><meta name=generator content="Relearn 5.18.0"><meta name=description content><title>Schedule Examples :: resticprofile</title><link href=https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1691789941 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://creativeprojects.github.io/resticprofile/css/fontawesome-all.min.css?1691789941 rel=stylesheet></noscript><link href=https://creativeprojects.github.io/resticprofile/css/nucleus.css?1691789941 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1691789941 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://creativeprojects.github.io/resticprofile/css/auto-complete.css?1691789941 rel=stylesheet></noscript><link href=https://creativeprojects.github.io/resticprofile/css/perfect-scrollbar.min.css?1691789941 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/fonts.css?1691789941 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://creativeprojects.github.io/resticprofile/css/fonts.css?1691789941 rel=stylesheet></noscript><link href=https://creativeprojects.github.io/resticprofile/css/theme.css?1691789941 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/theme-relearn-light.css?1691789941 rel=stylesheet id=variant-style><link href=https://creativeprojects.github.io/resticprofile/css/variant.css?1691789941 rel=stylesheet><link href=https://creativeprojects.github.io/resticprofile/css/print.css?1691789941 rel=stylesheet media=print><link href=https://creativeprojects.github.io/resticprofile/css/ie.css?1691789941 rel=stylesheet><script src=https://creativeprojects.github.io/resticprofile/js/url.js?1691789941></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/variant.js?1691789941></script>
+<script>window.index_js_url="https://creativeprojects.github.io/resticprofile/index.search.js";var root_url="https://creativeprojects.github.io/resticprofile/",baseUriFull,baseUri=root_url.replace(/\/$/,"");window.T_Copy_to_clipboard="Copy to clipboard",window.T_Copied_to_clipboard="Copied to clipboard!",window.T_Copy_link_to_clipboard="Copy link to clipboard",window.T_Link_copied_to_clipboard="Copied link to clipboard!",window.T_No_results_found="No results found for \"{0}\"",window.T_N_results_found="{1} results found for \"{0}\"",baseUriFull="https://creativeprojects.github.io/resticprofile/",window.variants&&variants.init(["relearn-light","relearn-dark"])</script></head><body class="mobile-support html" data-url=https://creativeprojects.github.io/resticprofile/schedules/examples/index.html><div id=body class=default-animation><div id=sidebar-overlay></div><div id=toc-overlay></div><nav id=topbar class=highlightable><div><div class=navigation><a class="nav nav-next topbar-link" href=https://creativeprojects.github.io/resticprofile/schedules/systemd/index.html title="Systemd (&#129106;)"><i class="fas fa-chevron-right fa-fw"></i></a></div><div class=navigation><a class="nav nav-prev topbar-link" href=https://creativeprojects.github.io/resticprofile/schedules/commands/index.html title="Schedule Commands (&#129104;)"><i class="fas fa-chevron-left fa-fw"></i></a></div><div id=breadcrumbs><span id=sidebar-toggle-span><a href=# id=sidebar-toggle class=topbar-link title='Menu (CTRL+ALT+n)'><i class="fas fa-bars fa-fw"></i></a></span>
+<span id=toc-menu title='Table of Contents (CTRL+ALT+t)'><i class="fas fa-list-alt fa-fw"></i></span><ol class=links itemscope itemtype=http://schema.org/BreadcrumbList><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><a itemprop=item href=https://creativeprojects.github.io/resticprofile/index.html><span itemprop=name>resticprofile</span></a><meta itemprop=position content="1">></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><a itemprop=item href=https://creativeprojects.github.io/resticprofile/schedules/index.html><span itemprop=name>Schedules</span></a><meta itemprop=position content="2">></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><span itemprop=name>Schedule Examples</span><meta itemprop=position content="3"></li></ol></div><div class="default-animation progress"><div class=toc-wrapper><nav id=TableOfContents><ul><li><ul><li><a href=#examples-of-scheduling-commands-under-windows>Examples of scheduling commands under Windows</a></li><li><a href=#examples-of-scheduling-commands-under-linux>Examples of scheduling commands under Linux</a></li><li><a href=#examples-of-scheduling-commands-under-macos>Examples of scheduling commands under macOS</a></li></ul></li></ul></nav></div></div></div></nav><main id=body-inner class="highlightable default" tabindex=-1><div class=flex-block-wrapper><article class=default><header class=headline></header><h1 id=schedule-examples>Schedule Examples</h1><h3 id=examples-of-scheduling-commands-under-windows>Examples of scheduling commands under Windows</h3><div class="box notices cstyle note"><div class=box-label><i class="fa-fw fas fa-exclamation-circle"></i> Note</div><div class=box-content><p>If you create a task with <code>user</code> permission under Windows, you will need to enter your password to validate the task.</p><p>It&rsquo;s a requirement of the task scheduler. I&rsquo;m inviting you to review the code to make sure I&rsquo;m not emailing your password to myself. Seriously you shouldn&rsquo;t trust anyone.</p></div></div><p>Example of the <code>schedule</code> command under Windows (with git bash):</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ resticprofile -c examples/windows.yaml -n self schedule
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 1/2
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: Mon..Fri *:00,15,30,45
+</span></span><span class=line><span class=cl>Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
+</span></span><span class=line><span class=cl>    Next elapse: Wed Jul <span class=m>22</span> 21:30:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Wed Jul <span class=m>22</span> 20:30:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 1m52s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 2/2
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: Sat,Sun 0,12:00
+</span></span><span class=line><span class=cl>Normalized form: Sat,Sun *-*-* 00,12:00:00
+</span></span><span class=line><span class=cl>    Next elapse: Sat Jul <span class=m>25</span> 00:00:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Fri Jul <span class=m>24</span> 23:00:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 50h31m52s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Creating task <span class=k>for</span> user Creative Projects
+</span></span><span class=line><span class=cl>Task Scheduler requires your Windows password to validate the task: 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2020/07/22 21:28:15 scheduled job self/backup created
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing retention schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: sun 3:30
+</span></span><span class=line><span class=cl>Normalized form: Sun *-*-* 03:30:00
+</span></span><span class=line><span class=cl>    Next elapse: Sun Jul <span class=m>26</span> 03:30:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Sun Jul <span class=m>26</span> 02:30:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 78h1m44s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2020/07/22 21:28:22 scheduled job self/retention created</span></span></code></pre></div><p>To see the status of the triggers, you can use the <code>status</code> command:</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ resticprofile -c examples/windows.yaml -n self status
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 1/2
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: Mon..Fri *:00,15,30,45
+</span></span><span class=line><span class=cl>Normalized form: Mon..Fri *-*-* *:00,15,30,45:00
+</span></span><span class=line><span class=cl>    Next elapse: Wed Jul <span class=m>22</span> 21:30:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Wed Jul <span class=m>22</span> 20:30:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 14s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 2/2
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: Sat,Sun 0,12:*
+</span></span><span class=line><span class=cl>Normalized form: Sat,Sun *-*-* 00,12:*:00
+</span></span><span class=line><span class=cl>    Next elapse: Sat Jul <span class=m>25</span> 00:00:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Fri Jul <span class=m>24</span> 23:00:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 50h29m46s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>           Task: <span class=se>\r</span>esticprofile backup<span class=se>\s</span>elf backup
+</span></span><span class=line><span class=cl>           User: Creative Projects
+</span></span><span class=line><span class=cl>    Working Dir: D:<span class=se>\S</span>ource<span class=se>\r</span>esticprofile
+</span></span><span class=line><span class=cl>           Exec: D:<span class=se>\S</span>ource<span class=se>\r</span>esticprofile<span class=se>\r</span>esticprofile.exe --no-ansi --config examples/windows.yaml --name self backup
+</span></span><span class=line><span class=cl>        Enabled: <span class=nb>true</span>
+</span></span><span class=line><span class=cl>          State: ready
+</span></span><span class=line><span class=cl>    Missed runs: <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Last Run Time: 2020-07-22 21:30:00 +0000 UTC
+</span></span><span class=line><span class=cl>    Last Result: <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Next Run Time: 2020-07-22 21:45:00 +0000 UTC
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing retention schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: sun 3:30
+</span></span><span class=line><span class=cl>Normalized form: Sun *-*-* 03:30:00
+</span></span><span class=line><span class=cl>    Next elapse: Sun Jul <span class=m>26</span> 03:30:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Sun Jul <span class=m>26</span> 02:30:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 77h59m46s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>           Task: <span class=se>\r</span>esticprofile backup<span class=se>\s</span>elf retention
+</span></span><span class=line><span class=cl>           User: Creative Projects
+</span></span><span class=line><span class=cl>    Working Dir: D:<span class=se>\S</span>ource<span class=se>\r</span>esticprofile
+</span></span><span class=line><span class=cl>           Exec: D:<span class=se>\S</span>ource<span class=se>\r</span>esticprofile<span class=se>\r</span>esticprofile.exe --no-ansi --config examples/windows.yaml --name self forget
+</span></span><span class=line><span class=cl>        Enabled: <span class=nb>true</span>
+</span></span><span class=line><span class=cl>          State: ready
+</span></span><span class=line><span class=cl>    Missed runs: <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Last Run Time: 1999-11-30 00:00:00 +0000 UTC
+</span></span><span class=line><span class=cl>    Last Result: <span class=m>267011</span>
+</span></span><span class=line><span class=cl>  Next Run Time: 2020-07-26 03:30:00 +0000 UTC</span></span></code></pre></div><p>To remove the schedule, use the <code>unschedule</code> command:</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ resticprofile -c examples/windows.yaml -n self unschedule
+</span></span><span class=line><span class=cl>2020/07/22 21:34:51 scheduled job self/backup removed
+</span></span><span class=line><span class=cl>2020/07/22 21:34:51 scheduled job self/retention removed</span></span></code></pre></div><h3 id=examples-of-scheduling-commands-under-linux>Examples of scheduling commands under Linux</h3><p>With this example of configuration for Linux:</p><div class=tab-panel data-tab-group=config-with-json><div class=tab-nav><div class=tab-nav-title>&#8203;</div><button data-tab-item=toml class="tab-nav-button tab-panel-style cstyle initial active" onclick='switchTab("config-with-json","toml")'><div><div class=tab-nav-hidden>toml</div><div class=tab-nav-text>toml</div></div></button>
+<button data-tab-item=yaml class="tab-nav-button tab-panel-style cstyle initial" onclick='switchTab("config-with-json","yaml")'><div><div class=tab-nav-hidden>yaml</div><div class=tab-nav-text>yaml</div></div></button>
+<button data-tab-item=hcl class="tab-nav-button tab-panel-style cstyle initial" onclick='switchTab("config-with-json","hcl")'><div><div class=tab-nav-hidden>hcl</div><div class=tab-nav-text>hcl</div></div></button>
+<button data-tab-item=json class="tab-nav-button tab-panel-style cstyle initial" onclick='switchTab("config-with-json","json")'><div><div class=tab-nav-hidden>json</div><div class=tab-nav-text>json</div></div></button></div><div class=tab-content-container><div data-tab-item=toml class="tab-content tab-panel-style cstyle initial active"><div class=tab-content-text><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=nx>version</span> <span class=p>=</span> <span class=s2>&#34;1&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>[</span><span class=nx>default</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>  <span class=nx>password-file</span> <span class=p>=</span> <span class=s2>&#34;key&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>repository</span> <span class=p>=</span> <span class=s2>&#34;/tmp/backup&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>[</span><span class=nx>test1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>  <span class=nx>inherit</span> <span class=p>=</span> <span class=s2>&#34;default&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=p>[</span><span class=nx>test1</span><span class=p>.</span><span class=nx>backup</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>    <span class=nx>source</span> <span class=p>=</span> <span class=s2>&#34;./&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>schedule</span> <span class=p>=</span> <span class=s2>&#34;*:00,15,30,45&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>schedule-permission</span> <span class=p>=</span> <span class=s2>&#34;user&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>schedule-lock-wait</span> <span class=p>=</span> <span class=s2>&#34;15m&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=p>[</span><span class=nx>test1</span><span class=p>.</span><span class=nx>check</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>    <span class=nx>schedule</span> <span class=p>=</span> <span class=s2>&#34;*-*-1&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>schedule-permission</span> <span class=p>=</span> <span class=s2>&#34;user&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>schedule-lock-wait</span> <span class=p>=</span> <span class=s2>&#34;15m&#34;</span></span></span></code></pre></div></div></div><div data-tab-item=yaml class="tab-content tab-panel-style cstyle initial"><div class=tab-content-text><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>version</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;1&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>default</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>password-file</span><span class=p>:</span><span class=w> </span><span class=l>key</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>repository</span><span class=p>:</span><span class=w> </span><span class=l>/tmp/backup</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>test1</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>inherit</span><span class=p>:</span><span class=w> </span><span class=l>default</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>backup</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>source</span><span class=p>:</span><span class=w> </span><span class=l>./</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>schedule</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;*:00,15,30,45&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>schedule-permission</span><span class=p>:</span><span class=w> </span><span class=l>user</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>schedule-lock-wait</span><span class=p>:</span><span class=w> </span><span class=l>15m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>check</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>schedule</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;*-*-1&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>schedule-permission</span><span class=p>:</span><span class=w> </span><span class=l>user</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>schedule-lock-wait</span><span class=p>:</span><span class=w> </span><span class=l>15m</span></span></span></code></pre></div></div></div><div data-tab-item=hcl class="tab-content tab-panel-style cstyle initial"><div class=tab-content-text><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-hcl data-lang=hcl><span class=line><span class=cl><span class=s2>&#34;default&#34;</span> <span class=o>=</span> {
+</span></span><span class=line><span class=cl><span class=n>  &#34;password-file&#34;</span> <span class=o>=</span> <span class=s2>&#34;key&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>  &#34;repository&#34;</span> <span class=o>=</span> <span class=s2>&#34;/tmp/backup&#34;</span>
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s2>&#34;test1&#34;</span> <span class=o>=</span> {
+</span></span><span class=line><span class=cl><span class=n>  &#34;inherit&#34;</span> <span class=o>=</span> <span class=s2>&#34;default&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>  &#34;backup&#34;</span> <span class=o>=</span> {
+</span></span><span class=line><span class=cl><span class=n>    &#34;source&#34;</span> <span class=o>=</span> <span class=s2>&#34;./&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>    &#34;schedule&#34;</span> <span class=o>=</span> <span class=s2>&#34;*:00,15,30,45&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>    &#34;schedule-permission&#34;</span> <span class=o>=</span> <span class=s2>&#34;user&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>    &#34;schedule-lock-wait&#34;</span> <span class=o>=</span> <span class=s2>&#34;15m&#34;</span>
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>  &#34;check&#34;</span> <span class=o>=</span> {
+</span></span><span class=line><span class=cl><span class=n>    &#34;schedule&#34;</span> <span class=o>=</span> <span class=s2>&#34;*-*-1&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>    &#34;schedule-permission&#34;</span> <span class=o>=</span> <span class=s2>&#34;user&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>    &#34;schedule-lock-wait&#34;</span> <span class=o>=</span> <span class=s2>&#34;15m&#34;</span>
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>}</span></span></code></pre></div></div></div><div data-tab-item=json class="tab-content tab-panel-style cstyle initial"><div class=tab-content-text><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;version&#34;</span><span class=p>:</span> <span class=s2>&#34;1&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;default&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;password-file&#34;</span><span class=p>:</span> <span class=s2>&#34;key&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;repository&#34;</span><span class=p>:</span> <span class=s2>&#34;/tmp/backup&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;test1&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;inherit&#34;</span><span class=p>:</span> <span class=s2>&#34;default&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;backup&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;source&#34;</span><span class=p>:</span> <span class=s2>&#34;./&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;schedule&#34;</span><span class=p>:</span> <span class=s2>&#34;*:00,15,30,45&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;schedule-permission&#34;</span><span class=p>:</span> <span class=s2>&#34;user&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;schedule-lock-wait&#34;</span><span class=p>:</span> <span class=s2>&#34;15m&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;check&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;schedule&#34;</span><span class=p>:</span> <span class=s2>&#34;*-*-1&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;schedule-permission&#34;</span><span class=p>:</span> <span class=s2>&#34;user&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;schedule-lock-wait&#34;</span><span class=p>:</span> <span class=s2>&#34;15m&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div></div></div></div></div><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ resticprofile -c examples/linux.yaml -n test1 schedule
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: *:00,15,30,45
+</span></span><span class=line><span class=cl>Normalized form: *-*-* *:00,15,30,45:00
+</span></span><span class=line><span class=cl>    Next elapse: Thu 2020-07-23 17:15:00 BST
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Thu 2020-07-23 16:15:00 UTC
+</span></span><span class=line><span class=cl>       From now: 6min left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.service
+</span></span><span class=line><span class=cl>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer
+</span></span><span class=line><span class=cl>Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer.
+</span></span><span class=line><span class=cl>2020/07/23 17:08:51 scheduled job test1/backup created
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing check schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: *-*-1
+</span></span><span class=line><span class=cl>Normalized form: *-*-01 00:00:00
+</span></span><span class=line><span class=cl>    Next elapse: Sat 2020-08-01 00:00:00 BST
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Fri 2020-07-31 23:00:00 UTC
+</span></span><span class=line><span class=cl>       From now: <span class=m>1</span> weeks <span class=m>1</span> days left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.service
+</span></span><span class=line><span class=cl>2020/07/23 17:08:51 writing /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer
+</span></span><span class=line><span class=cl>Created symlink /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer → /home/user/.config/systemd/user/resticprofile-check@profile-test1.timer.
+</span></span><span class=line><span class=cl>2020/07/23 17:08:51 scheduled job test1/check created</span></span></code></pre></div><p>The <code>status</code> command shows a combination of <code>journalctl</code> displaying errors (only) in the last month and <code>systemctl status</code>:</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ resticprofile -c examples/linux.yaml -n test1 status
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: *:00,15,30,45
+</span></span><span class=line><span class=cl>Normalized form: *-*-* *:00,15,30,45:00
+</span></span><span class=line><span class=cl>    Next elapse: Tue 2020-07-28 15:15:00 BST
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Tue 2020-07-28 14:15:00 UTC
+</span></span><span class=line><span class=cl>       From now: 4min 44s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Recent log <span class=o>(</span>&gt;<span class=o>=</span> warning in the last month<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>==========================================</span>
+</span></span><span class=line><span class=cl>-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
+</span></span><span class=line><span class=cl>Jul <span class=m>27</span> 20:48:01 Desktop76 systemd<span class=o>[</span>2986<span class=o>]</span>: Failed to start resticprofile backup <span class=k>for</span> profile test1 in examples/linux.yaml.
+</span></span><span class=line><span class=cl>Jul <span class=m>27</span> 21:00:55 Desktop76 systemd<span class=o>[</span>2986<span class=o>]</span>: Failed to start resticprofile backup <span class=k>for</span> profile test1 in examples/linux.yaml.
+</span></span><span class=line><span class=cl>Jul <span class=m>27</span> 21:15:34 Desktop76 systemd<span class=o>[</span>2986<span class=o>]</span>: Failed to start resticprofile backup <span class=k>for</span> profile test1 in examples/linux.yaml.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Systemd timer <span class=nv>status</span>
+</span></span><span class=line><span class=cl><span class=o>=====================</span>
+</span></span><span class=line><span class=cl>● resticprofile-backup@profile-test1.timer - backup timer <span class=k>for</span> profile test1 in examples/linux.yaml
+</span></span><span class=line><span class=cl>   Loaded: loaded <span class=o>(</span>/home/user/.config/systemd/user/resticprofile-backup@profile-test1.timer<span class=p>;</span> enabled<span class=p>;</span> vendor preset: enabled<span class=o>)</span>
+</span></span><span class=line><span class=cl>   Active: active <span class=o>(</span>waiting<span class=o>)</span> since Tue 2020-07-28 15:10:06 BST<span class=p>;</span> 8s ago
+</span></span><span class=line><span class=cl>  Trigger: Tue 2020-07-28 15:15:00 BST<span class=p>;</span> 4min 44s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Jul <span class=m>28</span> 15:10:06 Desktop76 systemd<span class=o>[</span>2951<span class=o>]</span>: Started backup timer <span class=k>for</span> profile test1 in examples/linux.yaml.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing check schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: *-*-1
+</span></span><span class=line><span class=cl>Normalized form: *-*-01 00:00:00
+</span></span><span class=line><span class=cl>    Next elapse: Sat 2020-08-01 00:00:00 BST
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Fri 2020-07-31 23:00:00 UTC
+</span></span><span class=line><span class=cl>       From now: <span class=m>3</span> days left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Recent log <span class=o>(</span>&gt;<span class=o>=</span> warning in the last month<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>==========================================</span>
+</span></span><span class=line><span class=cl>-- Logs begin at Wed 2020-06-17 11:09:19 BST, end at Tue 2020-07-28 15:10:10 BST. --
+</span></span><span class=line><span class=cl>Jul <span class=m>27</span> 19:39:59 Desktop76 systemd<span class=o>[</span>2986<span class=o>]</span>: Failed to start resticprofile check <span class=k>for</span> profile test1 in examples/linux.yaml.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Systemd timer <span class=nv>status</span>
+</span></span><span class=line><span class=cl><span class=o>=====================</span>
+</span></span><span class=line><span class=cl>● resticprofile-check@profile-test1.timer - check timer <span class=k>for</span> profile test1 in examples/linux.yaml
+</span></span><span class=line><span class=cl>   Loaded: loaded <span class=o>(</span>/home/user/.config/systemd/user/resticprofile-check@profile-test1.timer<span class=p>;</span> enabled<span class=p>;</span> vendor preset: enabled<span class=o>)</span>
+</span></span><span class=line><span class=cl>   Active: active <span class=o>(</span>waiting<span class=o>)</span> since Tue 2020-07-28 15:10:07 BST<span class=p>;</span> 7s ago
+</span></span><span class=line><span class=cl>  Trigger: Sat 2020-08-01 00:00:00 BST<span class=p>;</span> <span class=m>3</span> days left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Jul <span class=m>28</span> 15:10:07 Desktop76 systemd<span class=o>[</span>2951<span class=o>]</span>: Started check timer <span class=k>for</span> profile test1 in examples/linux.yaml.</span></span></code></pre></div><p>And <code>unschedule</code>:</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ resticprofile -c examples/linux.yaml -n test1 unschedule
+</span></span><span class=line><span class=cl>Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-backup@profile-test1.timer.
+</span></span><span class=line><span class=cl>2020/07/23 17:13:42 scheduled job test1/backup removed
+</span></span><span class=line><span class=cl>Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@profile-test1.timer.
+</span></span><span class=line><span class=cl>2020/07/23 17:13:42 scheduled job test1/check removed</span></span></code></pre></div><h3 id=examples-of-scheduling-commands-under-macos>Examples of scheduling commands under macOS</h3><p>macOS has a very tight protection system when running scheduled tasks (also called agents).</p><p>Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task, which consists on a few popup windows (you can disable this behavior by adding the flag <code>--no-start</code> after the schedule command).</p><p>Here&rsquo;s an example of scheduling a backup to Azure (which needs network access):</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>% resticprofile -v -c examples/private/azure.yaml -n self schedule
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Analyzing backup schedule 1/1
+</span></span><span class=line><span class=cl><span class=o>=================================</span>
+</span></span><span class=line><span class=cl>  Original form: *:0,15,30,45:00
+</span></span><span class=line><span class=cl>Normalized form: *-*-* *:00,15,30,45:00
+</span></span><span class=line><span class=cl>    Next elapse: Tue Jul <span class=m>28</span> 23:00:00 BST <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       <span class=o>(</span>in UTC<span class=o>)</span>: Tue Jul <span class=m>28</span> 22:00:00 UTC <span class=m>2020</span>
+</span></span><span class=line><span class=cl>       From now: 2m34s left
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>By default, a macOS agent access is restricted. If you leave it to start in the background it<span class=err>&#39;</span>s likely to fail.
+</span></span><span class=line><span class=cl>You have to start it manually the first <span class=nb>time</span> to accept the requests <span class=k>for</span> access:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>% launchctl start local.resticprofile.self.backup
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Do you want to start it now? <span class=o>(</span>Y/n<span class=o>)</span>:
+</span></span><span class=line><span class=cl>2020/07/28 22:57:26 scheduled job self/backup created</span></span></code></pre></div><p>Right after you started the profile, you should get some popup asking you to grant access to various files/folders/network.</p><p>If you backup your files to an external repository on a network, you should get this popup window:</p><p><a href=#image-4e1de869bebb67d0b83b8dedd02f40fc class=lightbox-link><img src=https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png alt="&amp;ldquo;resticprofile&amp;rdquo; would like to access files on a network volume" style=height:auto;width:auto loading=lazy></a>
+<a href=javascript:history.back(); class=lightbox id=image-4e1de869bebb67d0b83b8dedd02f40fc><img src=https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png alt="&amp;ldquo;resticprofile&amp;rdquo; would like to access files on a network volume" class=lightbox-image loading=lazy></a></p><p><strong>Note:</strong>
+If you prefer not being asked, you can add the <code>--no-start</code> flag like so:</p><div class="wrap-code highlight"><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>% resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start</span></span></code></pre></div><footer class=footline></footer></article></div></main></div><aside id=sidebar class=default-animation><div id=header-wrapper class=default-animation><div id=header class=default-animation><style>a#logo{color:#282828;color:var(--MENU-SECTIONS-BG-color);font-family:work sans,helvetica,tahoma,geneva,arial,sans-serif;font-size:30px;font-weight:300;margin-top:-13px;text-transform:uppercase;white-space:nowrap}a#logo:hover{color:#282828;color:var(--MENU-SECTIONS-BG-color)}@media only all and (max-width:59.938em){a#logo{font-size:25px;margin-top:-3px}}</style><a id=logo href=https://creativeprojects.github.io/resticprofile/>Resticprofile</a></div><form action=https://creativeprojects.github.io/resticprofile/search.html method=get><div class="searchbox default-animation"><button class=search-detail type=submit title="Search (CTRL+ALT+f)"><i class="fas fa-search"></i></button>
 <label class=a11y-only for=search-by>Search</label>
 <input data-search-input id=search-by name=search-by class=search-by type=search placeholder=Search...>
-<span data-search-clear><i class="fas fa-times"></i></span></div><script>var contentLangs=["en"]</script><script src=https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.min.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.stemmer.support.min.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.multi.min.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.en.min.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/search.js?1683384149 defer></script></div><div id=homelinks class=default-animation><ul><li><a class=padding href=https://creativeprojects.github.io/resticprofile/index.html><i class="fas fa-home"></i> Home</a></li></ul></div><div id=content-wrapper class=highlightable><ul class="topics enlarge morespace collapsible-menu"><li data-nav-id=/installation/index.html><input type=checkbox id=section-07cca5796d23f5bae96340e1eaa52bc5 aria-controls=subsections-07cca5796d23f5bae96340e1eaa52bc5><label for=section-07cca5796d23f5bae96340e1eaa52bc5><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Installation</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/index.html><b>1. </b>Installation</a><ul id=subsections-07cca5796d23f5bae96340e1eaa52bc5 class="morespace collapsible-menu"><li data-nav-id=/installation/linux/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/linux/index.html>Linux</a></li><li data-nav-id=/installation/macosx/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/macosx/index.html>mac OS X</a></li><li data-nav-id=/installation/windows/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/windows/index.html>Windows</a></li><li data-nav-id=/installation/ansible/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/ansible/index.html>Ansible</a></li><li data-nav-id=/installation/source/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/source/index.html>Source</a></li><li data-nav-id=/installation/upgrade/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/upgrade/index.html>Upgrade</a></li><li data-nav-id=/installation/docker/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/docker/index.html>Docker</a></li><li data-nav-id=/installation/shell/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/shell/index.html>Shell Completion</a></li></ul></li><li data-nav-id=/configuration/index.html><input type=checkbox id=section-632bb56b075027697eb90eb7e3d29a12 aria-controls=subsections-632bb56b075027697eb90eb7e3d29a12><label for=section-632bb56b075027697eb90eb7e3d29a12><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Configuration</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/index.html><b>2. </b>Configuration</a><ul id=subsections-632bb56b075027697eb90eb7e3d29a12 class="morespace collapsible-menu"><li data-nav-id=/configuration/getting_started/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html>Getting Started</a></li><li data-nav-id=/configuration/examples/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/examples/index.html>Examples</a></li><li data-nav-id=/configuration/path/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/path/index.html>Path</a></li><li data-nav-id=/configuration/include/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/include/index.html>Include</a></li><li data-nav-id=/configuration/inheritance/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/inheritance/index.html>Inheritance</a></li><li data-nav-id=/configuration/copy/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/copy/index.html>Copy command</a></li><li data-nav-id=/configuration/run_hooks/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/run_hooks/index.html>Command Hooks</a></li><li data-nav-id=/configuration/http_hooks/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/http_hooks/index.html>HTTP Hooks</a></li><li data-nav-id=/configuration/variables/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/variables/index.html>Variables</a></li><li data-nav-id=/configuration/templates/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/templates/index.html>Templates</a></li><li data-nav-id=/configuration/warnings/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/warnings/index.html>Warnings</a></li><li data-nav-id=/configuration/sleep/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/sleep/index.html>Preventing system sleep</a></li><li data-nav-id=/configuration/logs/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/logs/index.html>Logs</a></li><li data-nav-id=/configuration/reference/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/reference/index.html>Reference</a></li><li data-nav-id=/configuration/jsonschema/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/jsonschema/index.html>JSON schema</a></li><li data-nav-id=/configuration/v2/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/v2/index.html>Configuration v2 proposal</a></li></ul></li><li data-nav-id=/usage/index.html><input type=checkbox id=section-03639a5661feed360d88d7c5ddbc54ac aria-controls=subsections-03639a5661feed360d88d7c5ddbc54ac><label for=section-03639a5661feed360d88d7c5ddbc54ac><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Usage</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/index.html><b>3. </b>Usage</a><ul id=subsections-03639a5661feed360d88d7c5ddbc54ac class="morespace collapsible-menu"><li data-nav-id=/usage/version/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/version/index.html>Version</a></li><li data-nav-id=/usage/keyfile/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/keyfile/index.html>Generate a Keyfile</a></li><li data-nav-id=/usage/memory/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/memory/index.html>Memory</a></li><li data-nav-id=/usage/locks/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/locks/index.html>Locks</a></li></ul></li><li data-nav-id=/schedules/index.html class=parent><input type=checkbox id=section-87baf7cbc6382c50c9c5ba4cd8fe677c aria-controls=subsections-87baf7cbc6382c50c9c5ba4cd8fe677c checked><label for=section-87baf7cbc6382c50c9c5ba4cd8fe677c><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Schedules</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/index.html><b>4. </b>Schedules</a><ul id=subsections-87baf7cbc6382c50c9c5ba4cd8fe677c class="morespace collapsible-menu"><li data-nav-id=/schedules/configuration/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/configuration/index.html>Schedule Configuration</a></li><li data-nav-id=/schedules/commands/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/commands/index.html>Schedule Commands</a></li><li data-nav-id=/schedules/examples/index.html class=active><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/examples/index.html>Schedule Examples</a></li><li data-nav-id=/schedules/systemd/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/systemd/index.html>Systemd</a></li><li data-nav-id=/schedules/launchd/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/launchd/index.html>Launchd</a></li></ul></li><li data-nav-id=/status/index.html><input type=checkbox id=section-b59a464d04a72be2d6c2f9673b1d306d aria-controls=subsections-b59a464d04a72be2d6c2f9673b1d306d><label for=section-b59a464d04a72be2d6c2f9673b1d306d><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Status</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/status/index.html><b>5. </b>Status</a><ul id=subsections-b59a464d04a72be2d6c2f9673b1d306d class="morespace collapsible-menu"><li data-nav-id=/status/prometheus/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/status/prometheus/index.html>Prometheus</a></li></ul></li><li data-nav-id=/contributions/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/contributions/index.html><b>6. </b>Contributions</a></li></ul><div id=shortcuts><div class="nav-title padding">More</div><ul class=space><li><a class=padding href=https://creativeprojects.github.io/resticprofile/tags/index.html><i class='fas fa-tags'></i> Tags</a></li><li><a class=padding href=https://github.com/creativeprojects/resticprofile/><i class='fab fa-fw fa-github'></i> GitHub repo</a></li><li><a class=padding href=https://restic.readthedocs.io/><i class='fas fa-fw fa-bookmark'></i> Restic Documentation</a></li></ul></div><div class="padding footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div><hr class="padding default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"><div id=prefooter class="footerLangSwitch footerVariantSwitch footerVisitedLinks showVariantSwitch"><ul><li id=select-language-container class=footerLangSwitch><div class="padding select-container"><i class="fas fa-language fa-fw"></i>
-<span>&nbsp;</span><div class=select-style><label class=a11y-only for=select-language>Language</label>
-<select id=select-language onchange="location=baseUri+this.value"></select></div><div class=select-clear></div></div></li><li id=select-variant-container class="footerVariantSwitch showVariantSwitch"><div class="padding select-container"><i class="fas fa-paint-brush fa-fw"></i>
-<span>&nbsp;</span><div class=select-style><label class=a11y-only for=select-variant>Theme</label>
-<select id=select-variant onchange=window.variants&&variants.changeVariant(this.value)><option id=relearn-light value=relearn-light selected>Relearn Light</option><option id=relearn-dark value=relearn-dark>Relearn Dark</option></select></div><div class=select-clear></div></div><script>window.variants&&variants.markSelectedVariant()</script></li><li class=footerVisitedLinks><button class=padding onclick=clearHistory()><i class="fas fa-history fa-fw"></i><span>&nbsp;</span>Clear History</button></li></ul></div><div id=footer class="footerFooter showFooter"><style>#footer{font-size:13px;height:100px;margin-left:auto;margin-right:auto;padding:2rem 1rem;text-align:center;min-width:230px;max-width:300px}#footer p{margin:0}</style><a class=github-button href=https://github.com/creativeprojects/resticprofile data-size=large data-show-count=true aria-label="Star creativeprojects/resticprofile on GitHub">Star</a><p>Built with <a href=https://github.com/McShelby/hugo-theme-relearn><i class="fas fa-heart"></i></a> by <a href=https://gohugo.io/>Hugo</a></p><script async defer src=https://buttons.github.io/buttons.js></script></div></div></aside><script src=https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1683384149 defer></script>
-<script src=https://creativeprojects.github.io/resticprofile/js/theme.js?1683384149 defer></script></body></html>
+<button class=search-clear type=button data-search-clear title="Clear search"><i class="fas fa-times" title="Clear search"></i></button></div></form><script>var contentLangs=["en"]</script><script src=https://creativeprojects.github.io/resticprofile/js/auto-complete.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.min.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.stemmer.support.min.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.multi.min.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/lunr/lunr.en.min.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/search.js?1691789941 defer></script></div><div id=homelinks class=default-animation><ul><li><a class=padding href=https://creativeprojects.github.io/resticprofile/index.html><i class="fas fa-home"></i> Home</a></li></ul></div><div id=content-wrapper class=highlightable><ul class="topics enlarge morespace collapsible-menu"><li data-nav-id=/installation/index.html><input type=checkbox id=section-07cca5796d23f5bae96340e1eaa52bc5 aria-controls=subsections-07cca5796d23f5bae96340e1eaa52bc5><label for=section-07cca5796d23f5bae96340e1eaa52bc5><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Installation</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/index.html><b>1. </b>Installation</a><ul id=subsections-07cca5796d23f5bae96340e1eaa52bc5 class="morespace collapsible-menu"><li data-nav-id=/installation/linux/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/linux/index.html>Linux</a></li><li data-nav-id=/installation/macosx/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/macosx/index.html>mac OS X</a></li><li data-nav-id=/installation/windows/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/windows/index.html>Windows</a></li><li data-nav-id=/installation/ansible/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/ansible/index.html>Ansible</a></li><li data-nav-id=/installation/source/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/source/index.html>Source</a></li><li data-nav-id=/installation/upgrade/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/upgrade/index.html>Upgrade</a></li><li data-nav-id=/installation/docker/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/docker/index.html>Docker</a></li><li data-nav-id=/installation/shell/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/installation/shell/index.html>Shell Completion</a></li></ul></li><li data-nav-id=/configuration/index.html><input type=checkbox id=section-632bb56b075027697eb90eb7e3d29a12 aria-controls=subsections-632bb56b075027697eb90eb7e3d29a12><label for=section-632bb56b075027697eb90eb7e3d29a12><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Configuration file</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/index.html><b>2. </b>Configuration file</a><ul id=subsections-632bb56b075027697eb90eb7e3d29a12 class="morespace collapsible-menu"><li data-nav-id=/configuration/getting_started/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html>Getting Started</a></li><li data-nav-id=/configuration/examples/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/examples/index.html>Examples</a></li><li data-nav-id=/configuration/path/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/path/index.html>Path</a></li><li data-nav-id=/configuration/include/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/include/index.html>Includes</a></li><li data-nav-id=/configuration/inheritance/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/inheritance/index.html>Inheritance</a></li><li data-nav-id=/configuration/copy/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/copy/index.html>Copy command</a></li><li data-nav-id=/configuration/run_hooks/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/run_hooks/index.html>Command Hooks</a></li><li data-nav-id=/configuration/http_hooks/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/http_hooks/index.html>HTTP Hooks</a></li><li data-nav-id=/configuration/templates/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/templates/index.html>Templates</a></li><li data-nav-id=/configuration/variables/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/variables/index.html>Variables</a></li><li data-nav-id=/configuration/warnings/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/warnings/index.html>Warnings</a></li><li data-nav-id=/configuration/sleep/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/sleep/index.html>Preventing system sleep</a></li><li data-nav-id=/configuration/logs/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/logs/index.html>Logs</a></li><li data-nav-id=/configuration/reference/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/reference/index.html>Reference</a></li><li data-nav-id=/configuration/jsonschema/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/jsonschema/index.html>JSON schema</a></li><li data-nav-id=/configuration/v2/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/configuration/v2/index.html>Configuration v2 proposal</a></li></ul></li><li data-nav-id=/usage/index.html><input type=checkbox id=section-03639a5661feed360d88d7c5ddbc54ac aria-controls=subsections-03639a5661feed360d88d7c5ddbc54ac><label for=section-03639a5661feed360d88d7c5ddbc54ac><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Using resticprofile</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/index.html><b>3. </b>Using resticprofile</a><ul id=subsections-03639a5661feed360d88d7c5ddbc54ac class="morespace collapsible-menu"><li data-nav-id=/usage/version/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/version/index.html>Version</a></li><li data-nav-id=/usage/keyfile/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/keyfile/index.html>Generate a Keyfile</a></li><li data-nav-id=/usage/memory/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/memory/index.html>Memory</a></li><li data-nav-id=/usage/locks/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/usage/locks/index.html>Locks</a></li></ul></li><li data-nav-id=/schedules/index.html class=parent><input type=checkbox id=section-87baf7cbc6382c50c9c5ba4cd8fe677c aria-controls=subsections-87baf7cbc6382c50c9c5ba4cd8fe677c checked><label for=section-87baf7cbc6382c50c9c5ba4cd8fe677c><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Schedules</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/index.html><b>4. </b>Schedules</a><ul id=subsections-87baf7cbc6382c50c9c5ba4cd8fe677c class="morespace collapsible-menu"><li data-nav-id=/schedules/configuration/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/configuration/index.html>Schedule Configuration</a></li><li data-nav-id=/schedules/commands/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/commands/index.html>Schedule Commands</a></li><li data-nav-id=/schedules/examples/index.html class=active><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/examples/index.html>Schedule Examples</a></li><li data-nav-id=/schedules/systemd/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/systemd/index.html>Systemd</a></li><li data-nav-id=/schedules/launchd/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/schedules/launchd/index.html>Launchd</a></li></ul></li><li data-nav-id=/status/index.html><input type=checkbox id=section-b59a464d04a72be2d6c2f9673b1d306d aria-controls=subsections-b59a464d04a72be2d6c2f9673b1d306d><label for=section-b59a464d04a72be2d6c2f9673b1d306d><i class="fas fa-chevron-down"></i><i class="fas fa-chevron-right"></i><span class=a11y-only>Submenu Status file</span></label><a class=padding href=https://creativeprojects.github.io/resticprofile/status/index.html><b>5. </b>Status file</a><ul id=subsections-b59a464d04a72be2d6c2f9673b1d306d class="morespace collapsible-menu"><li data-nav-id=/status/prometheus/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/status/prometheus/index.html>Prometheus</a></li></ul></li><li data-nav-id=/contributions/index.html><a class=padding href=https://creativeprojects.github.io/resticprofile/contributions/index.html><b>6. </b>Contributions</a></li></ul><div id=shortcuts><div class="nav-title padding">More</div><ul class=space><li><a class=padding href=https://creativeprojects.github.io/resticprofile/tags/index.html><i class='fas fa-tags'></i> Tags</a></li><li><a class=padding href=https://github.com/creativeprojects/resticprofile/><i class='fab fa-fw fa-github'></i> GitHub repo</a></li><li><a class=padding href=https://restic.readthedocs.io/><i class='fas fa-fw fa-bookmark'></i> Restic Documentation</a></li></ul></div><div class="padding footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"></div><hr class="padding default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVariantSwitch showFooter"><div id=prefooter class="footerLangSwitch footerVariantSwitch footerVisitedLinks showVariantSwitch"><ul><li id=select-language-container class=footerLangSwitch><div class="padding menu-control"><i class="fas fa-language fa-fw"></i>
+<span>&nbsp;</span><div class=control-style><label class=a11y-only for=select-language>Language</label>
+<select id=select-language onchange="location=baseUri+this.value"></select></div><div class=clear></div></div></li><li id=select-variant-container class="footerVariantSwitch showVariantSwitch"><div class="padding menu-control"><i class="fas fa-paint-brush fa-fw"></i>
+<span>&nbsp;</span><div class=control-style><label class=a11y-only for=select-variant>Theme</label>
+<select id=select-variant onchange=window.variants&&variants.changeVariant(this.value)><option id=relearn-light value=relearn-light selected>Relearn Light</option><option id=relearn-dark value=relearn-dark>Relearn Dark</option></select></div><div class=clear></div></div><script>window.variants&&variants.markSelectedVariant()</script></li><li class=footerVisitedLinks><div class="padding menu-control"><i class="fas fa-history fa-fw"></i>
+<span>&nbsp;</span><div class=control-style><button onclick=clearHistory()>Clear History</button></div><div class=clear></div></div></li></ul></div><div id=footer class="footerFooter showFooter"><style>#footer{font-size:13px;height:100px;margin-left:auto;margin-right:auto;padding:2rem 1rem;text-align:center;min-width:230px;max-width:300px}#footer p{margin:0}</style><a class=github-button href=https://github.com/creativeprojects/resticprofile data-size=large data-show-count=true aria-label="Star creativeprojects/resticprofile on GitHub">Star</a><p>Built with <a href=https://github.com/McShelby/hugo-theme-relearn><i class="fas fa-heart"></i></a> by <a href=https://gohugo.io/>Hugo</a></p><script async defer src=https://buttons.github.io/buttons.js></script></div></div></aside><script src=https://creativeprojects.github.io/resticprofile/js/clipboard.min.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/perfect-scrollbar.min.js?1691789941 defer></script>
+<script src=https://creativeprojects.github.io/resticprofile/js/theme.js?1691789941 defer></script></body></html>

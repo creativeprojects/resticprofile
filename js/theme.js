@@ -9,9 +9,11 @@ if( isIE ){
 else{
     document.querySelector( 'body' ).classList.add( 'mobile-support' );
 }
+
 var isPrint = document.querySelector( 'body' ).classList.contains( 'print' );
 
 var isRtl = document.querySelector( 'html' ).getAttribute( 'dir' ) == 'rtl';
+var lang = document.querySelector( 'html' ).getAttribute( 'lang' );
 var dir_padding_start = 'padding-left';
 var dir_padding_end = 'padding-right';
 var dir_key_start = 37;
@@ -28,10 +30,6 @@ if( isRtl && !isIE ){
 var touchsupport = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
 
 var formelements = 'button, datalist, fieldset, input, label, legend, meter, optgroup, option, output, progress, select, textarea';
-
-// rapidoc: #280 disable broad document syntax highlightning
-window.Prism = window.Prism || {};
-Prism.manual = true;
 
 // PerfectScrollbar
 var psc;
@@ -66,6 +64,27 @@ function adjustContentWidth(){
         end = Math.max( 0, start - scrollbarSize );
     }
     elc.style[ dir_padding_end ] = '' + end + 'px';
+}
+
+function fixCodeTabs(){
+    /* if only a single code block is contained in the tab and no style was selected, treat it like style=code */
+    var codeTabContents = Array.from( document.querySelectorAll( '.tab-content.tab-panel-style' ) ).filter( function( tabContent ){
+        return tabContent.querySelector( '*:scope > .tab-content-text > div.highlight:only-child, *:scope > .tab-content-text > pre.pre-code:only-child');
+    });
+
+    codeTabContents.forEach( function( tabContent ){
+        var tabId = tabContent.dataset.tabItem;
+        var tabPanel = tabContent.parentNode.parentNode;
+        var tabButton = tabPanel.querySelector( '.tab-nav-button.tab-panel-style[data-tab-item="'+tabId+'"]' );
+        if( tabContent.classList.contains( 'initial' ) ){
+            tabButton.classList.remove( 'initial' );
+            tabButton.classList.add( 'code' );
+            tabContent.classList.remove( 'initial' );
+            tabContent.classList.add( 'code' );
+        }
+        // mark code blocks for FF without :has()
+        tabContent.classList.add( 'codify' );
+    });
 }
 
 function switchTab(tabGroup, tabId) {
@@ -140,21 +159,27 @@ function initMermaid( update, attrs ) {
     };
 
     var parseGraph = function( graph ){
-        var d = /^\s*(%%\s*\{\s*\w+\s*:([^%]*?)%%\s*\n?)/g;
+        // See https://github.com/mermaid-js/mermaid/blob/9a080bb975b03b2b1d4ef6b7927d09e6b6b62760/packages/mermaid/src/diagram-api/frontmatter.ts#L10
+        // for reference on the regex originally taken from jekyll
+        var YAML=1;
+        var INIT=2;
+        var GRAPH=3;
+        var d = /^(?:\s*[\n\r])*(-{3}\s*[\n\r](?:.*?)[\n\r]-{3}(?:\s*[\n\r]+)+)?(?:\s*(?:%%\s*\{\s*\w+\s*:([^%]*?)%%\s*[\n\r]?))?(.*)$/s
         var m = d.exec( graph );
+        var yaml = '';
         var dir = {};
         var content = graph;
-        if( m && m.length == 3 ){
-            dir = JSON.parse( '{ "dummy": ' + m[2] ).dummy;
-            content = graph.substring( d.lastIndex );
+        if( m && m.length == 4 ){
+            yaml = m[YAML] ? m[YAML] : yaml;
+            dir = m[INIT] ? JSON.parse( '{ "init": ' + m[INIT] ).init : dir;
+            content = m[GRAPH] ? m[GRAPH] : content;
         }
-        content = content.trim();
-        return { dir: dir, content: content };
+        var ret = { yaml: yaml, dir: dir, content: content.trim() }
+        return ret;
     };
 
     var serializeGraph = function( graph ){
-        var s = '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n';
-        s += graph.content;
+        var s = graph.yaml + '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n' + graph.content;
         return s;
     };
 
@@ -261,7 +286,11 @@ function initMermaid( update, attrs ) {
     }
 }
 
-function initSwagger( update, attrs ){
+function initOpenapi( update, attrs ){
+    if( isIE ){
+        return;
+    }
+
     var state = this;
     if( update && !state.is_initialized ){
         return;
@@ -273,34 +302,157 @@ function initSwagger( update, attrs ){
     if( !state.is_initialized ){
         state.is_initialized = true;
         window.addEventListener( 'beforeprint', function(){
-            initSwagger( true, {
-                'bg-color': variants.getColorValue( 'PRINT-MAIN-BG-color' ),
-                'mono-font': variants.getColorValue( 'PRINT-CODE-font' ),
-                'primary-color': variants.getColorValue( 'PRINT-TAG-BG-color' ),
-                'regular-font': variants.getColorValue( 'PRINT-MAIN-font' ),
-                'text-color': variants.getColorValue( 'PRINT-MAIN-TEXT-color' ),
-                'theme': variants.getColorValue( 'PRINT-SWAGGER-theme' ),
-            });
+            initOpenapi( true, { isPrintPreview: true } );
         }.bind( this ) );
         window.addEventListener( 'afterprint', function(){
-            initSwagger( true );
+            initOpenapi( true, { isPrintPreview: false } );
         }.bind( this ) );
     }
 
     attrs = attrs || {
-        'bg-color': variants.getColorValue( 'MAIN-BG-color' ),
-        'mono-font': variants.getColorValue( 'CODE-font' ),
-        'primary-color': variants.getColorValue( 'TAG-BG-color' ),
-        'regular-font': variants.getColorValue( 'MAIN-font' ),
-        'text-color': variants.getColorValue( 'MAIN-TEXT-color' ),
-        'theme': variants.getColorValue( 'SWAGGER-theme' ),
+        isPrintPreview: false
     };
-    document.querySelectorAll( 'rapi-doc' ).forEach( function( e ){
-        Object.keys( attrs ).forEach( function( key ){
-            /* this doesn't work for FF 102, maybe related to custom elements? */
-            e.setAttribute( key, attrs[key] );
-        });
-    });
+
+    function addFunctionToResizeEvent(){
+
+    }
+    function getFirstAncestorByClass(){
+
+    }
+    function renderOpenAPI(oc) {
+        var buster = window.themeUseOpenapi.assetsBuster ? '?' + window.themeUseOpenapi.assetsBuster : '';
+        var print = isPrint || attrs.isPrintPreview ? "PRINT-" : "";
+		var theme = print ? `${baseUri}/css/theme-relearn-light.css` : document.querySelector( '#variant-style' ).attributes.href.value
+        var swagger_theme = variants.getColorValue( print + 'OPENAPI-theme' );
+        var swagger_code_theme = variants.getColorValue( print + 'OPENAPI-CODE-theme' );
+
+        const openapiId = 'relearn-swagger-ui';
+        const openapiIframeId = openapiId + "-iframe";
+        const openapiIframe = document.getElementById(openapiIframeId);
+        if (openapiIframe) {
+            openapiIframe.remove();
+        }
+        const openapiErrorId = openapiId + '-error';
+        const openapiError = document.getElementById(openapiErrorId);
+        if (openapiError) {
+            openapiError.remove();
+        }
+        const oi = document.createElement('iframe');
+        oi.id = openapiIframeId;
+        oi.classList.toggle('sc-openapi-iframe', true);
+        oi.srcdoc =
+            '<!doctype html>' +
+            '<html lang="' + lang + '" dir="' + (isRtl ? 'rtl' : 'ltr') + '">' +
+                '<head>' +
+                    '<link rel="stylesheet" href="' + window.themeUseOpenapi.css + '">' +
+                    '<link rel="stylesheet" href="' + theme + '">' +
+                    '<link rel="stylesheet" href="' + baseUri + '/css/swagger.css' + buster + '">' +
+                    '<link rel="stylesheet" href="' + baseUri + '/css/swagger-' + swagger_theme + '.css' + buster + '">' +
+                '</head>' +
+                '<body>' +
+                    '<a class="relearn-expander" href="" onclick="return relearn_collapse_all()">Collapse all</a>' +
+                    '<a class="relearn-expander" href="" onclick="return relearn_expand_all()">Expand all</a>' +
+                    '<div id="relearn-swagger-ui"></div>' +
+                    '<script>' +
+                        'function relearn_expand_all(){' +
+                            'document.querySelectorAll( ".opblock-summary-control[aria-expanded=false]" ).forEach( btn => btn.click() );' +
+                            'document.querySelectorAll( ".model-container > .model-box > button[aria-expanded=false]" ).forEach( btn => btn.click() );' +
+                            'return false;' +
+                        '}' +
+                        'function relearn_collapse_all(){' +
+                            'document.querySelectorAll( ".opblock-summary-control[aria-expanded=true]" ).forEach( btn => btn.click() );' +
+                            'document.querySelectorAll( ".model-container > .model-box > .model-box > .model > span > button[aria-expanded=true]" ).forEach( btn => btn.click() );' +
+                            'return false;' +
+                        '}' +
+                    '</script>' +
+                '</body>' +
+            '</html>';
+        oi.height = '100%';
+        oi.width = '100%';
+        oi.onload = function(){
+            const openapiWrapper = getFirstAncestorByClass(oc, 'sc-openapi-wrapper');
+            const openapiPromise = new Promise( function(resolve){ resolve() });
+            openapiPromise
+                .then( function(){
+                    SwaggerUIBundle({
+                        defaultModelsExpandDepth: 2,
+                        defaultModelExpandDepth: 2,
+                        docExpansion: isPrint || attrs.isPrintPreview ? 'full' : 'list',
+                        domNode: oi.contentWindow.document.getElementById(openapiId),
+                        filter: !( isPrint || attrs.isPrintPreview ),
+                        layout: 'BaseLayout',
+                        onComplete: function(){
+                            if( isPrint || attrs.isPrintPreview ){
+                                oi.contentWindow.document.querySelectorAll( '.model-container > .model-box > button[aria-expanded=false]' ).forEach( function(btn){ btn.click() });
+                                setOpenAPIHeight(oi);
+                            }
+                        },
+                        plugins: [
+                            SwaggerUIBundle.plugins.DownloadUrl
+                        ],
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset,
+                        ],
+                        syntaxHighlight: {
+                            activated: true,
+                            theme: swagger_code_theme,
+                        },
+                        url: oc.getAttribute('openapi-url'),
+                        validatorUrl: 'none',
+                    });
+                })
+                .then( function(){
+                    let observerCallback = function () {
+                        setOpenAPIHeight(oi);
+                    };
+                    let observer = new MutationObserver(observerCallback);
+                    observer.observe(oi.contentWindow.document.documentElement, {
+                        childList: true,
+                        subtree: true,
+                    });
+                })
+                .then( function(){
+                    if (openapiWrapper) {
+                        openapiWrapper.classList.toggle('is-loading', false);
+                    }
+                    setOpenAPIHeight(oi);
+                })
+                .catch( function(error){
+                    const ed = document.createElement('div');
+                    ed.classList.add('sc-alert', 'sc-alert-error');
+                    ed.innerHTML = error;
+                    ed.id = openapiErrorId;
+                    while (oc.lastChild) {
+                        oc.removeChild(oc.lastChild);
+                    }
+                    if (openapiWrapper) {
+                        openapiWrapper.classList.toggle('is-loading', false);
+                        openapiWrapper.insertAdjacentElement('afterbegin', ed);
+                    }
+                });
+        };
+        oc.appendChild(oi);
+    }
+    function setOpenAPIHeight(oi) {
+        // add empirical offset if in print preview (GC 103)
+        oi.style.height =
+            (oi.contentWindow.document.documentElement.getBoundingClientRect().height + (attrs.isPrintPreview ? 200 : 0) )+
+            'px';
+    }
+    function resizeOpenAPI() {
+        let divi = document.getElementsByClassName('sc-openapi-iframe');
+        for (let i = 0; i < divi.length; i++) {
+            setOpenAPIHeight(divi[i]);
+        }
+    };
+    let divo = document.getElementsByClassName('sc-openapi-container');
+    for (let i = 0; i < divo.length; i++) {
+        renderOpenAPI(divo[i]);
+    }
+    if (divo.length) {
+        addFunctionToResizeEvent(resizeOpenAPI);
+    }
 }
 
 function initAnchorClipboard(){
@@ -332,6 +484,19 @@ function initAnchorClipboard(){
 }
 
 function initCodeClipboard(){
+    function getCodeText( node ){
+        // if highlight shortcode is used in inline lineno mode, remove lineno nodes before generating text, otherwise it doesn't hurt
+        var code = node.cloneNode( true );
+        Array.from( code.querySelectorAll( '*:scope > span > span:first-child:not(:last-child)' ) ).forEach( function( lineno ){
+            lineno.remove();
+        });
+        var text = code.textContent;
+        // remove a trailing line break, this may most likely
+        // come from the browser / Hugo transformation
+        text = text.replace( /\n$/, '' );
+        return text;
+    }
+
     function fallbackMessage( action ){
         var actionMsg = '';
         var actionKey = (action === 'cut' ? 'X' : 'C');
@@ -347,39 +512,41 @@ function initCodeClipboard(){
         return actionMsg;
     }
 
-	var codeElements = document.querySelectorAll( 'code' );
+    var codeElements = document.querySelectorAll( 'code' );
 	for( var i = 0; i < codeElements.length; i++ ){
         var code = codeElements[i];
-        var text = code.textContent;
+        var text = getCodeText( code );
         var inPre = code.parentNode.tagName.toLowerCase() == 'pre';
+        var inTable = inPre &&
+           code.parentNode.parentNode.tagName.toLowerCase() == 'td';
+        // avoid copy-to-clipboard for highlight shortcode in table lineno mode
+        var isFirstLineCell = inTable &&
+            code.parentNode.parentNode.parentNode.querySelector( 'td:first-child > pre > code' ) == code;
 
-        if( inPre || text.length > 5 ){
+        if( !isFirstLineCell && ( inPre || text.length > 5 ) ){
             var clip = new ClipboardJS( '.copy-to-clipboard-button', {
                 text: function( trigger ){
-                    var text = trigger.previousElementSibling && trigger.previousElementSibling.matches( 'code' ) && trigger.previousElementSibling.textContent;
-                    // remove a trailing line break, this may most likely
-                    // come from the browser / Hugo transformation
-                    text = text.replace( /\n$/, '' );
-                    // removes leading $ signs from text in an assumption
-                    // that this has to be the unix prompt marker - weird
-                    return text.replace( /^\$\s/gm, '' );
+                    if( !trigger.previousElementSibling ){
+                        return '';
+                    }
+                    return trigger.previousElementSibling.dataset.code || '';
                 }
             });
 
             clip.on( 'success', function( e ){
                 e.clearSelection();
-                var inPre = e.trigger.parentNode.tagName.toLowerCase() == 'pre';
+                var doBeside = e.trigger.parentNode.tagName.toLowerCase() == 'pre' || (e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'table' );
                 e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
-                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isRtl?'e':'w')) );
             });
 
             clip.on( 'error', function( e ){
-                var inPre = e.trigger.parentNode.tagName.toLowerCase() == 'pre';
+                var doBeside = e.trigger.parentNode.tagName.toLowerCase() == 'pre' || (e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'table' );
                 e.trigger.setAttribute( 'aria-label', fallbackMessage(e.action) );
-                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isRtl?'e':'w')) );
                 var f = function(){
                     e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
-                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
+                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isRtl?'e':'w')) );
                     document.removeEventListener( 'copy', f );
                 };
                 document.addEventListener( 'copy', f );
@@ -406,7 +573,33 @@ function initCodeClipboard(){
                 this.removeAttribute( 'aria-label' );
                 this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
             });
-            code.parentNode.insertBefore( button, code.nextSibling );
+            if( inTable ){
+                var table = code.parentNode.parentNode.parentNode.parentNode.parentNode;
+                table.dataset[ 'code' ] = text;
+                table.parentNode.insertBefore( button, table.nextSibling );
+            }
+            else if( inPre ){
+                var pre = code.parentNode;
+                pre.dataset[ 'code' ] = text;
+                var p = pre.parentNode;
+                // indented code blocks are missing the div
+                while( p != document && ( p.tagName.toLowerCase() != 'div' || !p.classList.contains( 'highlight' ) ) ){
+                    p = p.parentNode;
+                }
+                if( p == document ){
+                    var clone = pre.cloneNode( true );
+                    var div = document.createElement( 'div' );
+                    div.classList.add( 'highlight' );
+                    div.appendChild( clone );
+                    pre.parentNode.replaceChild( div, pre );
+                    pre = clone;
+                }
+                pre.parentNode.insertBefore( button, pre.nextSibling );
+            }
+            else{
+                code.dataset[ 'code' ] = text;
+                code.parentNode.insertBefore( button, code.nextSibling );
+            }
         }
     }
 }
@@ -1122,11 +1315,12 @@ function initSearch() {
 ready( function(){
     initArrowNav();
     initMermaid();
-    initSwagger();
+    initOpenapi();
     initMenuScrollbar();
     initToc();
     initAnchorClipboard();
     initCodeClipboard();
+    fixCodeTabs();
     restoreTabSelections();
     initSwipeHandler();
     initHistory();
@@ -1153,12 +1347,11 @@ if( window.themeUseMermaid ){
     useMermaid( window.themeUseMermaid );
 }
 
-function useSwagger( config ){
-    if( config.theme && variants ){
-        var write_style = variants.findLoadedStylesheet( 'variant-style' );
-        write_style.setProperty( '--CONFIG-SWAGGER-theme', config.theme );
+function useOpenapi( config ){
+    if( config.css && config.css.startsWith( '/' ) ){
+        config.css = baseUri + config.css;
     }
 }
-if( window.themeUseSwagger ){
-    useSwagger( window.themeUseSwagger );
+if( window.themeUseOpenapi ){
+    useOpenapi( window.themeUseOpenapi );
 }

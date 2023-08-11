@@ -209,6 +209,39 @@
         }
       ]
     },
+    "id-17337fdd5259db938b8743c3552e8878": {
+      "title": "path...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "path"
+      ],
+      "items": {
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "path"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-173faf928989dfcf2c60b82f2368260d": {
       "type": "object",
       "additionalProperties": true,
@@ -333,6 +366,33 @@
         }
       ]
     },
+    "id-366bc37fbc920b9db2020ae49b716c6b": {
+      "title": "restic-stale-lock-age",
+      "description": "The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "default": "1h",
+          "type": "string",
+          "minLength": 2,
+          "pattern": "^(\\d+(h|m|s|ms))+$"
+        }
+      ]
+    },
+    "id-3680b978edcaeed00fffff21f6470093": {
+      "title": "schedule-capture-environment...",
+      "default": "RESTIC_*",
+      "type": "array",
+      "items": {
+        "default": "RESTIC_*",
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-3c27b31752706b7884ad2ef8f72d05fc": {
       "title": "host...",
       "type": "array",
@@ -366,29 +426,6 @@
       },
       "minItems": 0,
       "uniqueItems": false
-    },
-    "id-3faacb884a0c14a705c3e9b11776919e": {
-      "title": "host",
-      "description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system.",
-      "oneOf": [
-        {
-          "type": "boolean",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        {
-          "type": "string",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "minLength": 0,
-          "format": "hostname"
-        }
-      ]
     },
     "id-4013793fd7a5aaa3895d07967107b88f": {
       "title": "send-before",
@@ -457,6 +494,18 @@
       "minItems": 0,
       "uniqueItems": false
     },
+    "id-53767a30fc77f3330d1a369be63db148": {
+      "title": "schedule-capture-environment...",
+      "deprecated": true,
+      "type": "array",
+      "items": {
+        "deprecated": true,
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-60738906214cb52a74eafacdd10b4ca5": {
       "title": "path",
       "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
@@ -496,6 +545,38 @@
       },
       "minItems": 0,
       "uniqueItems": false
+    },
+    "id-654756fabcdbea48a17af3e334b174fa": {
+      "title": "host",
+      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-e086c1ba1c26403064afda18d971c2a7"
+        }
+      ]
     },
     "id-66398b0321ca42460ad64975faddbb0d": {
       "type": "object",
@@ -1087,6 +1168,29 @@
         }
       ]
     },
+    "id-6c961a5e7bc2bf9ec9e2c3a9874621c5": {
+      "title": "host",
+      "description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system. Defaults to true for config version 2 in \"backup\".",
+      "oneOf": [
+        {
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
+        }
+      ]
+    },
     "id-73ddecc00270b21ad3fb847e79607e50": {
       "title": "tag",
       "description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given.\nBoolean true is replaced with the tags from section \"backup\".",
@@ -1150,21 +1254,6 @@
       },
       "minItems": 0,
       "uniqueItems": false
-    },
-    "id-7777d59ca183f5cf099786948c8e401f": {
-      "title": "restic-stale-lock-age",
-      "description": "The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/",
-      "oneOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "default": "2h",
-          "type": "string",
-          "minLength": 2,
-          "pattern": "^(\\d+(h|m|s|ms))+$"
-        }
-      ]
     },
     "id-77f32871d9030623776477728c9f69ab": {
       "title": "host",
@@ -1261,26 +1350,6 @@
       },
       "minItems": 0,
       "uniqueItems": false
-    },
-    "id-891baec6cac655d7f1420ac69fc9dd78": {
-      "title": "cacert",
-      "description": "file to load root certificates from (default: use system certificates)",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "cacert...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
     },
     "id-898088268e693f43f6a185b7c972ff67": {
       "title": "schedule...",
@@ -1423,6 +1492,39 @@
         }
       ]
     },
+    "id-9f9f3ec835e790da2b62f66ce5e9b1be": {
+      "title": "tag...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "tag"
+      ],
+      "items": {
+        "title": "tag",
+        "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "tag"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-9fc99e529e5753db5850c6ad0fe6e769": {
       "title": "exclude",
       "description": "exclude a pattern",
@@ -1511,6 +1613,20 @@
       "minItems": 0,
       "uniqueItems": false
     },
+    "id-ac1347149103e4aba75340d690c7d011": {
+      "title": "schedule-capture-environment",
+      "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+      "anyOf": [
+        {
+          "default": "RESTIC_*",
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "$ref": "#/$defs/id-3680b978edcaeed00fffff21f6470093"
+        }
+      ]
+    },
     "id-acb498fa195eeb35ab1f2a90dbd477af": {
       "title": "stream-error",
       "description": "Run shell command(s) when a pattern matches the stderr of restic",
@@ -1532,6 +1648,26 @@
         },
         {
           "$ref": "#/$defs/id-6ad91d98e2c5c24e874fcf5efa4caa82"
+        }
+      ]
+    },
+    "id-bdebeefb786b97126bbaf65dcffdb112": {
+      "title": "cacert",
+      "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "cacert...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
         }
       ]
     },
@@ -1712,6 +1848,54 @@
         }
       ]
     },
+    "id-dd293c47346951998deea16fba697fb8": {
+      "title": "schedule-capture-environment",
+      "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\") [deprecated]",
+      "anyOf": [
+        {
+          "deprecated": true,
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "$ref": "#/$defs/id-53767a30fc77f3330d1a369be63db148"
+        }
+      ]
+    },
+    "id-e086c1ba1c26403064afda18d971c2a7": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-e2999546540d65af97ec47b7bdf58f0e": {
       "title": "schedule",
       "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format) [deprecated]",
@@ -1851,6 +2035,37 @@
         }
       ]
     },
+    "id-eeb8a98cfbdda89f5344c19ef0ca1ef7": {
+      "title": "tag",
+      "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
+      "anyOf": [
+        {
+          "title": "tag",
+          "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "tag"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-9f9f3ec835e790da2b62f66ce5e9b1be"
+        }
+      ]
+    },
     "id-ef4cd05741e7f69941250f6f7121853f": {
       "title": "run-finally",
       "description": "Run shell command(s) always, after all other commands",
@@ -1899,6 +2114,37 @@
         },
         {
           "$ref": "#/$defs/id-03e384aa3a47fd3d36794a3d9f5c8801"
+        }
+      ]
+    },
+    "id-f625336b5c591d83dd124775402a56e7": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-17337fdd5259db938b8743c3552e8878"
         }
       ]
     },
@@ -1978,6 +2224,9 @@
             "prune",
             "rebuild-index",
             "recover",
+            "repair",
+            "repair-index",
+            "repair-snapshots",
             "restore",
             "rewrite",
             "self-update",
@@ -2074,7 +2323,7 @@
           "$ref": "#/$defs/id-a16527be5936132a86753c781818f0c7"
         },
         "restic-stale-lock-age": {
-          "$ref": "#/$defs/id-7777d59ca183f5cf099786948c8e401f"
+          "$ref": "#/$defs/id-366bc37fbc920b9db2020ae49b716c6b"
         },
         "scheduler": {
           "title": "scheduler",
@@ -2220,7 +2469,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...exclude": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
@@ -2252,6 +2501,9 @@
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
                 },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
                 },
@@ -2274,16 +2526,16 @@
                   "$ref": "#/$defs/id-0859ea60b2fdecb8f8f9e6ce02ccc7e2"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -2370,7 +2622,7 @@
                   "type": "boolean"
                 },
                 "host": {
-                  "$ref": "#/$defs/id-3faacb884a0c14a705c3e9b11776919e"
+                  "$ref": "#/$defs/id-6c961a5e7bc2bf9ec9e2c3a9874621c5"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -2422,7 +2674,7 @@
                 },
                 "parent": {
                   "title": "parent",
-                  "description": "use this parent snapshot (default: last snapshot in the repository that has the same target files/directories, and is not newer than the snapshot time)",
+                  "description": "use this parent snapshot (default: latest snapshot in the group determined by --group-by and not newer than the timestamp determined by --time)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -2499,6 +2751,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -2609,6 +2873,18 @@
                 "source": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
                 },
+                "source-base": {
+                  "title": "source-base",
+                  "description": "The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)",
+                  "type": "string",
+                  "examples": [
+                    "/",
+                    "$PWD",
+                    "C:\\",
+                    "%cd%"
+                  ],
+                  "minLength": 0
+                },
                 "source...": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
                 },
@@ -2662,7 +2938,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -2679,9 +2955,15 @@
                 }
               }
             },
+            "base-dir": {
+              "title": "base-dir",
+              "description": "Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead",
+              "type": "string",
+              "minLength": 0
+            },
             "cacert": {
               "title": "cacert",
-              "description": "file to load root certificates from (default: use system certificates)",
+              "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
               "type": "string",
               "minLength": 0
             },
@@ -2692,7 +2974,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -2710,16 +2992,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -2737,8 +3019,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -2864,7 +3146,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -2889,7 +3171,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -2907,16 +3189,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -2929,8 +3211,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -3045,7 +3327,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3064,13 +3346,16 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
@@ -3085,16 +3370,16 @@
                   "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -3192,6 +3477,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -3301,7 +3598,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3313,7 +3610,7 @@
                 },
                 "with-cache": {
                   "title": "with-cache",
-                  "description": "use the cache",
+                  "description": "use existing cache, only read uncached data from repository",
                   "type": "boolean"
                 }
               }
@@ -3336,7 +3633,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -3354,16 +3651,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -3376,8 +3673,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -3497,7 +3794,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3516,7 +3813,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -3543,16 +3840,16 @@
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -3563,6 +3860,11 @@
                 "cleanup-cache": {
                   "title": "cleanup-cache",
                   "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "host": {
@@ -3576,11 +3878,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -3717,7 +4014,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3751,7 +4048,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -3786,16 +4083,16 @@
                   "type": "boolean"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4004,7 +4301,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4033,7 +4330,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -4049,6 +4346,9 @@
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
@@ -4066,16 +4366,16 @@
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4098,6 +4398,11 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -4117,29 +4422,24 @@
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "keep-daily": {
                   "title": "keep-daily",
-                  "description": "keep the last n daily snapshots",
+                  "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
                   "type": "integer"
                 },
                 "keep-hourly": {
                   "title": "keep-hourly",
-                  "description": "keep the last n hourly snapshots",
+                  "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
                   "type": "integer"
                 },
                 "keep-last": {
                   "title": "keep-last",
-                  "description": "keep the last n snapshots",
+                  "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
                   "type": "integer"
                 },
                 "keep-monthly": {
                   "title": "keep-monthly",
-                  "description": "keep the last n monthly snapshots",
+                  "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
                   "type": "integer"
                 },
                 "keep-tag": {
@@ -4156,7 +4456,7 @@
                 },
                 "keep-weekly": {
                   "title": "keep-weekly",
-                  "description": "keep the last n weekly snapshots",
+                  "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
                   "type": "integer"
                 },
                 "keep-within": {
@@ -4167,7 +4467,7 @@
                 },
                 "keep-yearly": {
                   "title": "keep-yearly",
-                  "description": "keep the last n yearly snapshots",
+                  "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
                   "type": "integer"
                 },
                 "key-hint": {
@@ -4250,6 +4550,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -4371,7 +4683,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4396,22 +4708,22 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4424,8 +4736,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -4492,7 +4804,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4516,7 +4828,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -4534,16 +4846,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4678,7 +4990,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4713,7 +5025,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -4731,16 +5043,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4753,8 +5065,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -4869,7 +5181,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4894,7 +5206,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -4921,16 +5233,16 @@
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4941,6 +5253,11 @@
                 "cleanup-cache": {
                   "title": "cleanup-cache",
                   "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "host": {
@@ -4954,11 +5271,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -5105,7 +5417,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5124,7 +5436,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -5142,16 +5454,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5164,14 +5476,14 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "force": {
                   "title": "force",
                   "description": "apply a migration a second time",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5285,7 +5597,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5304,7 +5616,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -5342,16 +5654,16 @@
                   "type": "boolean"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5362,6 +5674,11 @@
                 "cleanup-cache": {
                   "title": "cleanup-cache",
                   "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "host": {
@@ -5375,11 +5692,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -5533,7 +5845,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5620,13 +5932,16 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
@@ -5641,16 +5956,16 @@
                   "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5731,6 +6046,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -5840,7 +6167,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5864,7 +6191,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -5882,16 +6209,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5904,8 +6231,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -6020,7 +6347,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6039,7 +6366,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -6057,16 +6384,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6079,8 +6406,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -6195,7 +6522,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6225,7 +6552,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...exclude": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
@@ -6258,16 +6585,16 @@
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6462,7 +6789,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6486,10 +6813,10 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "...keep-tag": {
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
@@ -6498,17 +6825,20 @@
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
                 },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
                 "...tag": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "after-backup": {
                   "title": "after-backup",
-                  "description": "Apply retention after the backup command succeeded",
+                  "description": "Apply retention after the backup command succeeded. Defaults to true if any \"keep-*\" flag is set and \"before-backup\" is unset",
                   "type": "boolean"
                 },
                 "before-backup": {
@@ -6517,16 +6847,16 @@
                   "type": "boolean"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6549,6 +6879,11 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -6557,40 +6892,35 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
-                  "description": "keep the last n daily snapshots",
+                  "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
                   "type": "integer"
                 },
                 "keep-hourly": {
                   "title": "keep-hourly",
-                  "description": "keep the last n hourly snapshots",
+                  "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
                   "type": "integer"
                 },
                 "keep-last": {
                   "title": "keep-last",
-                  "description": "keep the last n snapshots",
+                  "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
                   "type": "integer"
                 },
                 "keep-monthly": {
                   "title": "keep-monthly",
-                  "description": "keep the last n monthly snapshots",
+                  "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
                   "type": "integer"
                 },
                 "keep-tag": {
@@ -6607,7 +6937,7 @@
                 },
                 "keep-weekly": {
                   "title": "keep-weekly",
-                  "description": "keep the last n weekly snapshots",
+                  "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
                   "type": "integer"
                 },
                 "keep-within": {
@@ -6618,7 +6948,7 @@
                 },
                 "keep-yearly": {
                   "title": "keep-yearly",
-                  "description": "keep the last n yearly snapshots",
+                  "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
                   "type": "integer"
                 },
                 "key-hint": {
@@ -6672,16 +7002,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "prune": {
                   "title": "prune",
@@ -6701,6 +7031,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -6762,20 +7104,20 @@
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
                 },
                 "tag": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tag...": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tag__APPEND": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tag__PREPEND": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6842,7 +7184,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -6869,16 +7211,16 @@
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6896,6 +7238,11 @@
                   "description": "use compact output format",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -6907,11 +7254,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7054,7 +7396,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7073,7 +7415,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -7094,16 +7436,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -7114,6 +7456,11 @@
                 "cleanup-cache": {
                   "title": "cleanup-cache",
                   "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "host": {
@@ -7127,11 +7474,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7251,7 +7593,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7291,7 +7633,7 @@
                   "$ref": "#/$defs/id-db71520355d2a9baae090ca906a4bd4f"
                 },
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -7336,16 +7678,16 @@
                   "$ref": "#/$defs/id-db71520355d2a9baae090ca906a4bd4f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -7356,6 +7698,11 @@
                 "cleanup-cache": {
                   "title": "cleanup-cache",
                   "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "host": {
@@ -7369,11 +7716,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7534,7 +7876,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7548,7 +7890,7 @@
             },
             "tls-client-cert": {
               "title": "tls-client-cert",
-              "description": "path to a file containing PEM encoded TLS client certificate and private key",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
               "type": "string",
               "minLength": 0
             },
@@ -7559,7 +7901,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -7577,16 +7919,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -7599,8 +7941,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -7720,7 +8062,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },

@@ -2,6 +2,37 @@
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "/resticprofile/jsonschema/config-2.json",
   "$defs": {
+    "id-02bde6bb35ebd256e80fa0276e2c1c2e": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-a793598d3a991b52440abecb4ef45618"
+        }
+      ]
+    },
     "id-03550d33226c03f7e7c8a6a6fc971333": {
       "title": "snapshot",
       "description": "snapshot id to search in",
@@ -209,6 +240,39 @@
         }
       ]
     },
+    "id-17337fdd5259db938b8743c3552e8878": {
+      "title": "path...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "path"
+      ],
+      "items": {
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "path"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-173faf928989dfcf2c60b82f2368260d": {
       "type": "object",
       "additionalProperties": true,
@@ -404,6 +468,33 @@
         }
       ]
     },
+    "id-366bc37fbc920b9db2020ae49b716c6b": {
+      "title": "restic-stale-lock-age",
+      "description": "The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "default": "1h",
+          "type": "string",
+          "minLength": 2,
+          "pattern": "^(\\d+(h|m|s|ms))+$"
+        }
+      ]
+    },
+    "id-3680b978edcaeed00fffff21f6470093": {
+      "title": "schedule-capture-environment...",
+      "default": "RESTIC_*",
+      "type": "array",
+      "items": {
+        "default": "RESTIC_*",
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-3c27b31752706b7884ad2ef8f72d05fc": {
       "title": "host...",
       "type": "array",
@@ -455,29 +546,6 @@
           },
           "minItems": 0,
           "uniqueItems": false
-        }
-      ]
-    },
-    "id-3faacb884a0c14a705c3e9b11776919e": {
-      "title": "host",
-      "description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system.",
-      "oneOf": [
-        {
-          "type": "boolean",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        {
-          "type": "string",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "minLength": 0,
-          "format": "hostname"
         }
       ]
     },
@@ -543,6 +611,18 @@
           "powershell",
           "cmd"
         ],
+        "minLength": 0
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-53767a30fc77f3330d1a369be63db148": {
+      "title": "schedule-capture-environment...",
+      "deprecated": true,
+      "type": "array",
+      "items": {
+        "deprecated": true,
+        "type": "string",
         "minLength": 0
       },
       "minItems": 0,
@@ -657,6 +737,37 @@
       "minItems": 0,
       "uniqueItems": false
     },
+    "id-5ea59c8a3698c9f849086ff3968f5bde": {
+      "title": "tag",
+      "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". [restic \u003e= 0.16.0]",
+      "anyOf": [
+        {
+          "title": "tag",
+          "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". [restic \u003e= 0.16.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "tag"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-db95ff431e47ecdb4f6936dec7f0ff62"
+        }
+      ]
+    },
     "id-60610b8cc3424c27d741f1341bbab768": {
       "title": "host",
       "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
@@ -728,6 +839,38 @@
       },
       "minItems": 0,
       "uniqueItems": false
+    },
+    "id-654756fabcdbea48a17af3e334b174fa": {
+      "title": "host",
+      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-e086c1ba1c26403064afda18d971c2a7"
+        }
+      ]
     },
     "id-66398b0321ca42460ad64975faddbb0d": {
       "type": "object",
@@ -1351,6 +1494,29 @@
         }
       ]
     },
+    "id-6c961a5e7bc2bf9ec9e2c3a9874621c5": {
+      "title": "host",
+      "description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system. Defaults to true for config version 2 in \"backup\".",
+      "oneOf": [
+        {
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
+        }
+      ]
+    },
     "id-73ddecc00270b21ad3fb847e79607e50": {
       "title": "tag",
       "description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given.\nBoolean true is replaced with the tags from section \"backup\".",
@@ -1414,21 +1580,6 @@
       },
       "minItems": 0,
       "uniqueItems": false
-    },
-    "id-7777d59ca183f5cf099786948c8e401f": {
-      "title": "restic-stale-lock-age",
-      "description": "The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/",
-      "oneOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "default": "2h",
-          "type": "string",
-          "minLength": 2,
-          "pattern": "^(\\d+(h|m|s|ms))+$"
-        }
-      ]
     },
     "id-77f32871d9030623776477728c9f69ab": {
       "title": "host",
@@ -1579,26 +1730,6 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-891baec6cac655d7f1420ac69fc9dd78": {
-      "title": "cacert",
-      "description": "file to load root certificates from (default: use system certificates)",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "cacert...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-898088268e693f43f6a185b7c972ff67": {
       "title": "schedule...",
       "type": "array",
@@ -1660,6 +1791,38 @@
       },
       "minItems": 0,
       "uniqueItems": false
+    },
+    "id-8f7c57e978accc119ff69155a4f51994": {
+      "title": "host",
+      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-ed25fe80c138156966805dc394615936"
+        }
+      ]
     },
     "id-8fee4af1900e0d2f64f1ee66a27254ef": {
       "title": "tag",
@@ -1814,6 +1977,39 @@
         }
       ]
     },
+    "id-9f9f3ec835e790da2b62f66ce5e9b1be": {
+      "title": "tag...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "tag"
+      ],
+      "items": {
+        "title": "tag",
+        "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "tag"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-9fc99e529e5753db5850c6ad0fe6e769": {
       "title": "exclude",
       "description": "exclude a pattern",
@@ -1933,6 +2129,53 @@
         }
       ]
     },
+    "id-a793598d3a991b52440abecb4ef45618": {
+      "title": "path...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "path"
+      ],
+      "items": {
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "path"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-ac1347149103e4aba75340d690c7d011": {
+      "title": "schedule-capture-environment",
+      "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+      "anyOf": [
+        {
+          "default": "RESTIC_*",
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "$ref": "#/$defs/id-3680b978edcaeed00fffff21f6470093"
+        }
+      ]
+    },
     "id-acb498fa195eeb35ab1f2a90dbd477af": {
       "title": "stream-error",
       "description": "Run shell command(s) when a pattern matches the stderr of restic",
@@ -2036,6 +2279,26 @@
         },
         {
           "$ref": "#/$defs/id-5bfb7690d77d0226d2ffe0fe927a4981"
+        }
+      ]
+    },
+    "id-bdebeefb786b97126bbaf65dcffdb112": {
+      "title": "cacert",
+      "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "cacert...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
         }
       ]
     },
@@ -2290,6 +2553,87 @@
         }
       ]
     },
+    "id-db95ff431e47ecdb4f6936dec7f0ff62": {
+      "title": "tag...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "tag"
+      ],
+      "items": {
+        "title": "tag",
+        "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". [restic \u003e= 0.16.0]",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "tag"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-dd293c47346951998deea16fba697fb8": {
+      "title": "schedule-capture-environment",
+      "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\") [deprecated]",
+      "anyOf": [
+        {
+          "deprecated": true,
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "$ref": "#/$defs/id-53767a30fc77f3330d1a369be63db148"
+        }
+      ]
+    },
+    "id-e086c1ba1c26403064afda18d971c2a7": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-e2999546540d65af97ec47b7bdf58f0e": {
       "title": "schedule",
       "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format) [deprecated]",
@@ -2437,6 +2781,40 @@
         }
       ]
     },
+    "id-ed25fe80c138156966805dc394615936": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-ed55b285d65fc7caf2a37fb501d8048d": {
       "title": "schedule",
       "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
@@ -2446,6 +2824,37 @@
         },
         {
           "$ref": "#/$defs/id-898088268e693f43f6a185b7c972ff67"
+        }
+      ]
+    },
+    "id-eeb8a98cfbdda89f5344c19ef0ca1ef7": {
+      "title": "tag",
+      "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
+      "anyOf": [
+        {
+          "title": "tag",
+          "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "tag"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-9f9f3ec835e790da2b62f66ce5e9b1be"
         }
       ]
     },
@@ -2533,6 +2942,37 @@
         }
       ]
     },
+    "id-f625336b5c591d83dd124775402a56e7": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-17337fdd5259db938b8743c3552e8878"
+        }
+      ]
+    },
     "id-f7bc4372460aefc0a1ecf448de19d0c8": {
       "title": "schedule-lock-wait",
       "description": "Set the maximum time to wait for acquiring locks when running on schedule",
@@ -2609,6 +3049,9 @@
             "prune",
             "rebuild-index",
             "recover",
+            "repair",
+            "repair-index",
+            "repair-snapshots",
             "restore",
             "rewrite",
             "self-update",
@@ -2705,7 +3148,7 @@
           "$ref": "#/$defs/id-a16527be5936132a86753c781818f0c7"
         },
         "restic-stale-lock-age": {
-          "$ref": "#/$defs/id-7777d59ca183f5cf099786948c8e401f"
+          "$ref": "#/$defs/id-366bc37fbc920b9db2020ae49b716c6b"
         },
         "scheduler": {
           "title": "scheduler",
@@ -2851,7 +3294,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...exclude": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
@@ -2895,6 +3338,9 @@
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
                 },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
                 },
@@ -2917,16 +3363,16 @@
                   "$ref": "#/$defs/id-0859ea60b2fdecb8f8f9e6ce02ccc7e2"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -2951,7 +3397,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3053,8 +3499,15 @@
                   "description": "force re-reading the target files/directories (overrides the \"parent\" flag)",
                   "type": "boolean"
                 },
+                "group-by": {
+                  "title": "group-by",
+                  "default": "host,paths",
+                  "description": "group snapshots by host, paths and/or tags, separated by comma (disable grouping with '') [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "host": {
-                  "$ref": "#/$defs/id-3faacb884a0c14a705c3e9b11776919e"
+                  "$ref": "#/$defs/id-6c961a5e7bc2bf9ec9e2c3a9874621c5"
                 },
                 "iexclude": {
                   "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
@@ -3155,7 +3608,7 @@
                 },
                 "parent": {
                   "title": "parent",
-                  "description": "use this parent snapshot (default: last snapshot in the repository that has the same target files/directories, and is not newer than the snapshot time)",
+                  "description": "use this parent snapshot (default: latest snapshot in the group determined by --group-by and not newer than the timestamp determined by --time)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3190,6 +3643,12 @@
                 "repository-file": {
                   "title": "repository-file",
                   "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3243,6 +3702,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -3353,6 +3824,18 @@
                 "source": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
                 },
+                "source-base": {
+                  "title": "source-base",
+                  "description": "The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)",
+                  "type": "string",
+                  "examples": [
+                    "/",
+                    "$PWD",
+                    "C:\\",
+                    "%cd%"
+                  ],
+                  "minLength": 0
+                },
                 "source...": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
                 },
@@ -3406,7 +3889,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3428,9 +3911,15 @@
                 }
               }
             },
+            "base-dir": {
+              "title": "base-dir",
+              "description": "Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead",
+              "type": "string",
+              "minLength": 0
+            },
             "cacert": {
               "title": "cacert",
-              "description": "file to load root certificates from (default: use system certificates)",
+              "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
               "type": "string",
               "minLength": 0
             },
@@ -3441,7 +3930,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -3459,16 +3948,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -3488,7 +3977,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3585,6 +4074,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -3635,7 +4130,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3660,7 +4155,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -3678,16 +4173,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -3702,7 +4197,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3788,6 +4283,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -3838,7 +4339,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -3857,13 +4358,16 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
@@ -3878,16 +4382,16 @@
                   "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -3908,7 +4412,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4005,8 +4509,26 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -4116,7 +4638,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4128,7 +4650,7 @@
                 },
                 "with-cache": {
                   "title": "with-cache",
-                  "description": "use the cache",
+                  "description": "use existing cache, only read uncached data from repository",
                   "type": "boolean"
                 }
               }
@@ -4141,7 +4663,7 @@
             "compression": {
               "title": "compression",
               "default": "auto",
-              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
             },
@@ -4152,7 +4674,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
@@ -4178,6 +4700,9 @@
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
                 },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
                 },
@@ -4194,16 +4719,16 @@
                   "$ref": "#/$defs/id-bac728d70d7f809711e6c27ea7825da9"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4218,7 +4743,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4410,6 +4935,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -4460,6 +4991,18 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -4581,7 +5124,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4606,7 +5149,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -4624,16 +5167,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4648,18 +5191,18 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -4739,6 +5282,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -4789,7 +5338,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -4808,7 +5357,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -4842,16 +5391,16 @@
                   "minLength": 0
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -4866,9 +5415,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -4885,11 +5439,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -4976,6 +5525,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -5038,7 +5593,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5072,7 +5627,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -5107,16 +5662,16 @@
                   "type": "boolean"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5131,7 +5686,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5146,6 +5701,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "human-readable": {
+                  "title": "human-readable",
+                  "description": "print sizes in human readable format [restic \u003e= 0.16.0]",
+                  "type": "boolean"
                 },
                 "ignore-case": {
                   "title": "ignore-case",
@@ -5268,6 +5828,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -5347,7 +5913,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5376,7 +5942,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -5392,6 +5958,9 @@
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
@@ -5409,16 +5978,16 @@
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5438,7 +6007,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5478,22 +6047,22 @@
                 },
                 "keep-daily": {
                   "title": "keep-daily",
-                  "description": "keep the last n daily snapshots",
+                  "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
                   "type": "integer"
                 },
                 "keep-hourly": {
                   "title": "keep-hourly",
-                  "description": "keep the last n hourly snapshots",
+                  "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
                   "type": "integer"
                 },
                 "keep-last": {
                   "title": "keep-last",
-                  "description": "keep the last n snapshots",
+                  "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
                   "type": "integer"
                 },
                 "keep-monthly": {
                   "title": "keep-monthly",
-                  "description": "keep the last n monthly snapshots",
+                  "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
                   "type": "integer"
                 },
                 "keep-tag": {
@@ -5510,7 +6079,7 @@
                 },
                 "keep-weekly": {
                   "title": "keep-weekly",
-                  "description": "keep the last n weekly snapshots",
+                  "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
                   "type": "integer"
                 },
                 "keep-within": {
@@ -5551,7 +6120,7 @@
                 },
                 "keep-yearly": {
                   "title": "keep-yearly",
-                  "description": "keep the last n yearly snapshots",
+                  "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
                   "type": "integer"
                 },
                 "key-hint": {
@@ -5671,8 +6240,26 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -5794,7 +6381,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -5819,22 +6406,22 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -5849,7 +6436,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6012,9 +6599,15 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6043,7 +6636,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -6061,16 +6654,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6085,9 +6678,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
@@ -6095,11 +6693,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6180,6 +6773,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -6230,7 +6829,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6271,7 +6870,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -6289,16 +6888,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6313,7 +6912,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6399,6 +6998,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -6449,7 +7054,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6474,7 +7079,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -6501,16 +7106,16 @@
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6525,9 +7130,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -6541,14 +7151,14 @@
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
+                "human-readable": {
+                  "title": "human-readable",
+                  "description": "print sizes in human readable format [restic \u003e= 0.16.0]",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6645,6 +7255,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -6707,7 +7323,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6726,7 +7342,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -6744,16 +7360,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6768,9 +7384,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "force": {
                   "title": "force",
@@ -6780,11 +7401,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6859,6 +7475,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -6909,7 +7531,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -6928,7 +7550,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -6969,16 +7591,16 @@
                   "type": "boolean"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -6993,9 +7615,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -7012,11 +7639,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7125,6 +7747,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -7201,7 +7829,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7293,13 +7921,16 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
                   "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
@@ -7314,16 +7945,16 @@
                   "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -7338,7 +7969,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7347,14 +7978,14 @@
                   "description": "do not modify the repository, just print what would be done [restic \u003e= 0.12.0]",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7457,8 +8088,26 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -7568,7 +8217,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7598,7 +8247,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -7616,16 +8265,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -7640,18 +8289,18 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7731,6 +8380,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -7781,7 +8436,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7800,7 +8455,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -7818,16 +8473,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -7842,7 +8497,210 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
+                "insecure-tls": {
+                  "title": "insecure-tls",
+                  "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "key-hint": {
+                  "title": "key-hint",
+                  "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "limit-download": {
+                  "title": "limit-download",
+                  "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "limit-upload": {
+                  "title": "limit-upload",
+                  "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "no-cache": {
+                  "title": "no-cache",
+                  "description": "do not use a local cache",
+                  "type": "boolean"
+                },
+                "no-lock": {
+                  "title": "no-lock",
+                  "description": "do not lock the repository, this allows some operations on read-only repositories",
+                  "type": "boolean"
+                },
+                "option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option...": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__APPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__PREPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "pack-size": {
+                  "title": "pack-size",
+                  "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+                  "type": "integer"
+                },
+                "password-command": {
+                  "title": "password-command",
+                  "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "password-file": {
+                  "title": "password-file",
+                  "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "quiet": {
+                  "title": "quiet",
+                  "description": "do not output comprehensive progress report",
+                  "type": "boolean"
+                },
+                "repo": {
+                  "title": "repo",
+                  "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "repository-file": {
+                  "title": "repository-file",
+                  "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "tls-client-cert": {
+                  "title": "tls-client-cert",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "use": {
+                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                },
+                "verbose": {
+                  "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+                }
+              }
+            },
+            "repair": {
+              "title": "repair",
+              "description": "Repair the repository",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "...cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "...option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert...": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__APPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__PREPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cache-dir": {
+                  "title": "cache-dir",
+                  "description": "set the cache directory\u0026. (default: use system default cache directory)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "cleanup-cache": {
+                  "title": "cleanup-cache",
+                  "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "compression": {
+                  "title": "compression",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7928,6 +8786,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -7978,7 +8842,473 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "use": {
+                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                },
+                "verbose": {
+                  "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+                }
+              }
+            },
+            "repair-index": {
+              "title": "repair-index",
+              "description": "The \"repair index\" command creates a new index based on the pack files in the\nrepository.",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "...cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "...option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert...": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__APPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__PREPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cache-dir": {
+                  "title": "cache-dir",
+                  "description": "set the cache directory\u0026. (default: use system default cache directory)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "cleanup-cache": {
+                  "title": "cleanup-cache",
+                  "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "compression": {
+                  "title": "compression",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
+                "insecure-tls": {
+                  "title": "insecure-tls",
+                  "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "key-hint": {
+                  "title": "key-hint",
+                  "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "limit-download": {
+                  "title": "limit-download",
+                  "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "limit-upload": {
+                  "title": "limit-upload",
+                  "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "no-cache": {
+                  "title": "no-cache",
+                  "description": "do not use a local cache",
+                  "type": "boolean"
+                },
+                "no-lock": {
+                  "title": "no-lock",
+                  "description": "do not lock the repository, this allows some operations on read-only repositories",
+                  "type": "boolean"
+                },
+                "option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option...": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__APPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__PREPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "pack-size": {
+                  "title": "pack-size",
+                  "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+                  "type": "integer"
+                },
+                "password-command": {
+                  "title": "password-command",
+                  "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "password-file": {
+                  "title": "password-file",
+                  "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "quiet": {
+                  "title": "quiet",
+                  "description": "do not output comprehensive progress report",
+                  "type": "boolean"
+                },
+                "read-all-packs": {
+                  "title": "read-all-packs",
+                  "description": "read all pack files to generate new index from scratch [restic \u003e= 0.16.0]",
+                  "type": "boolean"
+                },
+                "repo": {
+                  "title": "repo",
+                  "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "repository-file": {
+                  "title": "repository-file",
+                  "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "tls-client-cert": {
+                  "title": "tls-client-cert",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "use": {
+                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                },
+                "verbose": {
+                  "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+                }
+              }
+            },
+            "repair-snapshots": {
+              "title": "repair-snapshots",
+              "description": "The \"repair snapshots\" command repairs broken snapshots. It scans the given\nsnapshots and generates new ones with damaged directories and file contents\nremoved. If the broken snapshots are deleted, a prune run will be able to\nclean up the repository.\n\nThe command depends on a correct index, thus make sure to run \"repair index\"\nfirst!",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "...cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "...host": {
+                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                },
+                "...option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "...path": {
+                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...tag": {
+                  "$ref": "#/$defs/id-5ea59c8a3698c9f849086ff3968f5bde"
+                },
+                "cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert...": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__APPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__PREPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cache-dir": {
+                  "title": "cache-dir",
+                  "description": "set the cache directory\u0026. (default: use system default cache directory)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "cleanup-cache": {
+                  "title": "cleanup-cache",
+                  "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "compression": {
+                  "title": "compression",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "dry-run": {
+                  "title": "dry-run",
+                  "description": "do not do anything, just print what would be done [restic \u003e= 0.16.0]",
+                  "type": "boolean"
+                },
+                "forget": {
+                  "title": "forget",
+                  "description": "remove original snapshots after creating new ones [restic \u003e= 0.16.0]",
+                  "type": "boolean"
+                },
+                "host": {
+                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                },
+                "host...": {
+                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                },
+                "host__APPEND": {
+                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                },
+                "host__PREPEND": {
+                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                },
+                "insecure-tls": {
+                  "title": "insecure-tls",
+                  "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
+                "key-hint": {
+                  "title": "key-hint",
+                  "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "limit-download": {
+                  "title": "limit-download",
+                  "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "limit-upload": {
+                  "title": "limit-upload",
+                  "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "no-cache": {
+                  "title": "no-cache",
+                  "description": "do not use a local cache",
+                  "type": "boolean"
+                },
+                "no-lock": {
+                  "title": "no-lock",
+                  "description": "do not lock the repository, this allows some operations on read-only repositories",
+                  "type": "boolean"
+                },
+                "option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option...": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__APPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__PREPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "pack-size": {
+                  "title": "pack-size",
+                  "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+                  "type": "integer"
+                },
+                "password-command": {
+                  "title": "password-command",
+                  "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "password-file": {
+                  "title": "password-file",
+                  "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "path": {
+                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                },
+                "path...": {
+                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                },
+                "path__APPEND": {
+                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                },
+                "path__PREPEND": {
+                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                },
+                "quiet": {
+                  "title": "quiet",
+                  "description": "do not output comprehensive progress report",
+                  "type": "boolean"
+                },
+                "repo": {
+                  "title": "repo",
+                  "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "repository-file": {
+                  "title": "repository-file",
+                  "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "tag": {
+                  "$ref": "#/$defs/id-5ea59c8a3698c9f849086ff3968f5bde"
+                },
+                "tag...": {
+                  "$ref": "#/$defs/id-5ea59c8a3698c9f849086ff3968f5bde"
+                },
+                "tag__APPEND": {
+                  "$ref": "#/$defs/id-5ea59c8a3698c9f849086ff3968f5bde"
+                },
+                "tag__PREPEND": {
+                  "$ref": "#/$defs/id-5ea59c8a3698c9f849086ff3968f5bde"
+                },
+                "tls-client-cert": {
+                  "title": "tls-client-cert",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8009,7 +9339,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...exclude": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
@@ -8048,16 +9378,16 @@
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -8072,7 +9402,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8087,6 +9417,11 @@
                 },
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
@@ -8139,11 +9474,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8227,6 +9557,12 @@
                 "repository-file": {
                   "title": "repository-file",
                   "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8303,7 +9639,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8327,10 +9663,10 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "...keep-tag": {
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
@@ -8339,17 +9675,20 @@
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "...schedule": {
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
                 },
+                "...schedule-capture-environment": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
                 "...tag": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "after-backup": {
                   "title": "after-backup",
-                  "description": "Apply retention after the backup command succeeded",
+                  "description": "Apply retention after the backup command succeeded. Defaults to true if any \"keep-*\" flag is set and \"before-backup\" is unset",
                   "type": "boolean"
                 },
                 "before-backup": {
@@ -8358,16 +9697,16 @@
                   "type": "boolean"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -8387,7 +9726,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8404,16 +9743,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -8427,22 +9766,22 @@
                 },
                 "keep-daily": {
                   "title": "keep-daily",
-                  "description": "keep the last n daily snapshots",
+                  "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
                   "type": "integer"
                 },
                 "keep-hourly": {
                   "title": "keep-hourly",
-                  "description": "keep the last n hourly snapshots",
+                  "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
                   "type": "integer"
                 },
                 "keep-last": {
                   "title": "keep-last",
-                  "description": "keep the last n snapshots",
+                  "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
                   "type": "integer"
                 },
                 "keep-monthly": {
                   "title": "keep-monthly",
-                  "description": "keep the last n monthly snapshots",
+                  "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
                   "type": "integer"
                 },
                 "keep-tag": {
@@ -8459,7 +9798,7 @@
                 },
                 "keep-weekly": {
                   "title": "keep-weekly",
-                  "description": "keep the last n weekly snapshots",
+                  "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
                   "type": "integer"
                 },
                 "keep-within": {
@@ -8500,7 +9839,7 @@
                 },
                 "keep-yearly": {
                   "title": "keep-yearly",
-                  "description": "keep the last n yearly snapshots",
+                  "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
                   "type": "integer"
                 },
                 "key-hint": {
@@ -8572,16 +9911,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
                 },
                 "prune": {
                   "title": "prune",
@@ -8620,8 +9959,26 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "schedule": {
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
+                },
+                "schedule-capture-environment": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-capture-environment...": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-capture-environment__APPEND": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-capture-environment__PREPEND": {
+                  "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -8683,20 +10040,20 @@
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
                 },
                 "tag": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tag...": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tag__APPEND": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tag__PREPEND": {
-                  "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
+                  "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8708,6 +10065,13 @@
                 }
               }
             },
+            "retry-lock": {
+              "title": "retry-lock",
+              "default": "0s",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
             "rewrite": {
               "title": "rewrite",
               "description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.",
@@ -8715,7 +10079,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...exclude": {
                   "$ref": "#/$defs/id-783b5260d9a5f4eba741f6448d3a73a0"
@@ -8754,16 +10118,16 @@
                   "$ref": "#/$defs/id-211783b4c728b6fc5c2c329f3010e694"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -8778,7 +10142,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8810,6 +10174,11 @@
                 },
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-783b5260d9a5f4eba741f6448d3a73a0"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "forget": {
                   "title": "forget",
@@ -8855,11 +10224,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8946,6 +10310,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -9008,7 +10378,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -9075,7 +10445,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -9102,16 +10472,16 @@
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -9131,9 +10501,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "group-by": {
                   "title": "group-by",
@@ -9156,11 +10531,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9258,6 +10628,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -9320,7 +10696,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -9339,7 +10715,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -9366,16 +10742,16 @@
                   "$ref": "#/$defs/id-bac728d70d7f809711e6c27ea7825da9"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -9390,9 +10766,14 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -9409,11 +10790,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9507,6 +10883,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -9569,7 +10951,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -9609,7 +10991,7 @@
                   "$ref": "#/$defs/id-db71520355d2a9baae090ca906a4bd4f"
                 },
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -9654,16 +11036,16 @@
                   "$ref": "#/$defs/id-db71520355d2a9baae090ca906a4bd4f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -9678,14 +11060,9 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
-                },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
@@ -9702,6 +11079,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9800,6 +11182,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -9874,7 +11262,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },
@@ -9888,7 +11276,7 @@
             },
             "tls-client-cert": {
               "title": "tls-client-cert",
-              "description": "path to a file containing PEM encoded TLS client certificate and private key",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
               "type": "string",
               "minLength": 0
             },
@@ -9899,7 +11287,7 @@
               "additionalProperties": false,
               "properties": {
                 "...cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
@@ -9917,16 +11305,16 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "cacert": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert...": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__APPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-891baec6cac655d7f1420ac69fc9dd78"
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "cache-dir": {
                   "title": "cache-dir",
@@ -9941,7 +11329,7 @@
                 },
                 "compression": {
                   "title": "compression",
-                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) [restic \u003e= 0.14.0]",
+                  "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -10032,6 +11420,12 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "retry-lock": {
+                  "title": "retry-lock",
+                  "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
                 "run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
                 },
@@ -10082,7 +11476,7 @@
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
                   "type": "string",
                   "minLength": 0
                 },

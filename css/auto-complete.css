@@ -2,10 +2,10 @@
     text-align: start;
     color-scheme: only light; /* set browser scrollbar color */
     cursor: default;
-    border: 1px solid #ccc;
+    border: 1px solid rgba( 204, 204, 204, 1 );
     border-top: 0;
-    background: #fff;
-    box-shadow: -1px 1px 3px rgba(0,0,0,.1);
+    background: rgba( 255, 255, 255, 1 );
+    box-shadow: -1px 1px 3px rgba( 0, 0, 0, .1 );
 
     /* core styles should not be changed */
     position: absolute;
@@ -25,17 +25,17 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #282828;
+    color: rgba( 40, 40, 40, 1 );
 }
 
 .autocomplete-suggestion b {
     font-weight: normal;
-    color: #1f8dd6;
+    color: rgba( 31, 141, 214, 1 );
 }
 
 .autocomplete-suggestion.selected {
-    background: #282828;
-    color: #fff;
+    background: rgba( 40, 40, 40, 1 );
+    color: rgba( 255, 255, 255, 1 );
 }
 
 .autocomplete-suggestion:hover,
@@ -47,8 +47,8 @@
 #searchresults .autocomplete-suggestion:hover > .context,
 #searchresults .autocomplete-suggestion:focus > .context,
 #searchresults .autocomplete-suggestion:active > .context {
-    background: #383838;
-    color: #fff;
+    background: rgba( 56, 56, 56, 1 );
+    color: rgba( 255, 255, 255, 1 );
 }
 
 .autocomplete-suggestion > .context {
