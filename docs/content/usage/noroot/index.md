@@ -2,7 +2,7 @@
 title: "No root backup on Linux"
 date: 2022-05-16T20:26:09+01:00
 weight: 25
-hidden: true # setcap doesn't seem to work on my VM :-/
+hidden: true # for this to work we might need https://pkg.go.dev/kernel.org/pub/linux/libs/security/libcap/cap
 ---
 
 {{%notice info %}}
@@ -46,7 +46,7 @@ Finally we can use **setcap** to add an extended attribute to the binaries. On e
 
 ```shell
 setcap cap_dac_read_search=+ep ~restic/bin/restic
-setcap cap_dac_read_search=+ep ~restic/bin/resticprofile
+setcap cap_dac_read_search=pie ~restic/bin/resticprofile
 ```
 
 {{%notice warning %}}

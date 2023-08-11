@@ -11,9 +11,9 @@ You can redirect the logs to a local file, a temporary file or a syslog server.
 ## Destination
 
 The log destination syntax is a such:
-* `filename` => redirects all the logs to the local file called **filename**
-* `temp:filename` => redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
-* `tcp://syslog_server:514` or `udp://syslog_server:514` => redirects all the logs to the **syslog** server.
+* `filename` {{% icon icon="arrow-right" %}} redirects all the logs to the local file called **filename**
+* `temp:filename` {{% icon icon="arrow-right" %}} redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
+* `tcp://syslog_server:514` or `udp://syslog_server:514` {{% icon icon="arrow-right" %}} redirects all the logs to the **syslog** server.
 
 {{% notice tip %}}
 If the location cannot be opened, **resticprofile** will default to send the logs to the console.
