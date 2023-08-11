@@ -42,8 +42,8 @@ The configuration is the same for each of these 4 types of hooks:
 
 ### Example sending monitoring information to healthchecks.io:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -103,7 +103,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -157,7 +157,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" {
@@ -220,7 +220,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -311,6 +311,9 @@ Here's the flow of HTTP hooks:
 
 ```mermaid
 graph TD
+  LOCK(set resticprofile lock)
+  UNLOCK(delete resticprofile lock)
+  LOCK --> SB
   SB('send-before') --> RUN
   RUN(run restic command, or group of commands)
   RUN -->|Success| SA
@@ -318,7 +321,13 @@ graph TD
   SA('send-after') --> SF
   SAF('send-after-fail') --> SF
   SF('send-finally')
+  SF --> UNLOCK
 ```
+
+{{% notice style="warning" title="resticprofile lock" %}}
+The local resticprofile lock is surrounding the whole process. It means that the `run-after-fail` target is not called if the lock cannot be obtained. This is a limitation of the current implementation. 
+{{% /notice %}}
+
 
 ### body-template
 
@@ -353,8 +362,8 @@ The field `exitCode` will be blank if no error occured.
 And here's an example of a configuration using a body template:
 
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -376,7 +385,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -398,7 +407,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" {
@@ -420,7 +429,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -447,7 +456,7 @@ profile:
 {{% /tab %}}
 {{% /tabs %}}
 
-### CA certificates
+### Self-signed certificates
 
 If your monitoring system is using self-signed certificates, you can import them in resticprofile (and you don't need to rely on the `skip-tls-verification` flag)
 
@@ -467,8 +476,8 @@ The format is like:
 ### global configuration example
 
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -480,7 +489,7 @@ version = "1"
 
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -493,7 +502,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 
@@ -504,7 +513,7 @@ global {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

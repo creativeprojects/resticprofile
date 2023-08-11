@@ -10,9 +10,9 @@ weight: 105
 resticprofile has the ability to create systemd timer and service files.
 systemd can be used in place of cron to schedule backups.
 
-User systemd units are created under the user's systemd profile (~/.config/systemd/user).
+User systemd units are created under the user's systemd profile (`~/.config/systemd/user`).
 
-System units are created in /etc/systemd/system
+System units are created in `/etc/systemd/system`
 
 ## systemd calendars
 
@@ -24,7 +24,8 @@ Testing systemd calendars can be done with the systemd-analyze application.
 systemd-analyze will display when the next trigger will happen:
 
 ```shell
-$ systemd-analyze calendar 'daily'
+systemd-analyze calendar 'daily'
+
   Original form: daily
 Normalized form: *-*-* 00:00:00
     Next elapse: Sat 2020-04-18 00:00:00 CDT
@@ -49,8 +50,8 @@ Since version 0.16.0, you now can describe your own templates if you need to add
 
 The format used is a [go template](https://pkg.go.dev/text/template) and you need to specify your own unit and/or timer file in the global section of the configuration (it will apply to all your profiles):
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 [global]
@@ -59,7 +60,7 @@ The format used is a [go template](https://pkg.go.dev/text/template) and you nee
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 ---
@@ -69,7 +70,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "global" = {
@@ -79,7 +80,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

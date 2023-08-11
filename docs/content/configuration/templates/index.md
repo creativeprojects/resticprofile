@@ -1,7 +1,7 @@
 ---
 title: "Templates"
 date: 2022-05-16T20:04:35+01:00
-weight: 26
+weight: 25
 ---
 
 
@@ -30,8 +30,8 @@ Note the **dot** after the name: it's used to pass the variables to the template
 
 Here's a working example:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 #
@@ -132,7 +132,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 
 ```yaml
@@ -224,7 +224,7 @@ azure-mysql:
 
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 #
@@ -318,7 +318,7 @@ azure-mysql:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {{ define "backup_root" }}

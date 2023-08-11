@@ -6,7 +6,11 @@ weight: 30
 
 ### Examples of scheduling commands under Windows
 
-If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
+{{% notice note %}}
+If you create a task with `user` permission under Windows, you will need to enter your password to validate the task.
+
+It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
+{{% /notice %}}
 
 Example of the `schedule` command under Windows (with git bash):
 
@@ -111,8 +115,8 @@ $ resticprofile -c examples/windows.yaml -n self unschedule
 
 With this example of configuration for Linux:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -137,7 +141,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -161,7 +165,7 @@ test1:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "default" = {
@@ -188,7 +192,7 @@ test1:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

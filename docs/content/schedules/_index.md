@@ -1,14 +1,12 @@
 +++
-chapter = true
+archetype = "chapter"
 pre = "<b>4. </b>"
 title = "Schedules"
-weight = 20
+weight = 4
 +++
 
 
-# Scheduled backups
-
-resticprofile is capable of managing scheduled backups for you using:
+resticprofile is capable of managing scheduled backups for you. Under the hood it's using:
 - **launchd** on macOS X
 - **Task Scheduler** on Windows
 - **systemd** where available (Linux and other BSDs)
@@ -16,8 +14,8 @@ resticprofile is capable of managing scheduled backups for you using:
 
 On unixes (except macOS) resticprofile is using **systemd** by default. **crond** can be used instead if configured in `global` `scheduler` parameter:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 [global]
@@ -25,7 +23,7 @@ On unixes (except macOS) resticprofile is using **systemd** by default. **crond*
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 ---
@@ -34,7 +32,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "global" = {
@@ -43,7 +41,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -68,9 +66,10 @@ These 5 profile sections are accepting a schedule configuration:
 - prune (version 0.11.0)
 - copy (version 0.16.0)
 
-which mean you can schedule `backup`, `forget`, `prune`, `check` and `copy` independently (I recommend to use a local `lock` in this case).
+which mean you can schedule `backup`, `forget`, `prune`, `check` and `copy` independently (I recommend using a [local lock]({{< ref "/usage/locks" >}}) in this case).
 
 ## retention schedule is deprecated
-**Important**:
-starting from version 0.11.0 the schedule of the `retention` section is **deprecated**: Use the `forget` section instead.
+Starting from version 0.11.0, directly scheduling the `retention` section is **deprecated**: Use the `forget` section for direct schedule instead.
+
+The retention section is designed to be associated with a `backup` section, not to be scheduled independently.
 

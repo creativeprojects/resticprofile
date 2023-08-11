@@ -1,11 +1,10 @@
 +++
-chapter = true
+archetype = "chapter"
 pre = "<b>6. </b>"
 title = "Contributions"
-weight = 40
+weight = 6
 +++
 
-# Contributions
 
 Please share your resticprofile recipes, fancy configuration files, or tips and tricks.
 

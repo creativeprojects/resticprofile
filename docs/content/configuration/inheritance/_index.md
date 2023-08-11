@@ -5,7 +5,7 @@ weight: 16
 ---
 
 {{% notice style="tip" %}}
-You can use `resticprofile [<profile-name>.]show` to see the effect inheritance on a profile
+You can use `resticprofile [<profile-name>.]show` (or `resticprofile [--name <profile-name>] show`) to see the effect inheritance has on a profile
 {{% /notice %}}
 
 ## Profile Inheritance
@@ -21,8 +21,8 @@ Profile configuration merging follows the same logic as [configuration merging](
 * There is no default inheritance. If `inherit` is not set, no inheritance applies
 
 
-{{< tabs groupId="profile-inheritance-example" >}}
-{{% tab name="Profile 'base' (yaml)" %}}
+{{< tabs groupid="profile-inheritance-example" >}}
+{{% tab title="Profile 'base' (yaml)" %}}
 
 ```yaml
 version: "1"
@@ -50,7 +50,7 @@ base:
 ```
 
 {{% /tab %}}
-{{% tab name="Profile 'backup-homes' (yaml)" %}}
+{{% tab title="Profile 'backup-homes' (yaml)" %}}
 
 <!-- checkdoc-ignore -->
 ```yaml
@@ -78,7 +78,7 @@ backup-homes:
 ```
 
 {{% /tab %}}
-{{% tab name="... after applying 'inherit'" %}}
+{{% tab title="... after applying 'inherit'" %}}
 
 ```yaml
 version: "1"
@@ -138,8 +138,8 @@ Assuming the parent profile declares the list property `<list-property>`:
 * `<list-property>...` or `<list-property>__APPEND` appends to the list property
 * `...<list-property>` or `<list-property>__PREPEND` prepends to the list property
 
-{{< tabs groupId="config-with-inheritance-list-append" >}}
-{{% tab name="yaml" %}}
+{{< tabs groupid="config-with-inheritance-list-append" >}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: 2
@@ -160,7 +160,7 @@ profiles:
 ```
 
 {{% /tab %}}
-{{% tab name="toml" %}}
+{{% tab title="toml" %}}
 
 ```toml
 version = 2
@@ -196,8 +196,8 @@ Configuration values inside a mixin may be parametrized with variables following
 
 Unlike configuration [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}), mixins create parsed configuration structure not config markup that requires parsing. This allows mixins to be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{< ref "/configuration/include/#configuration-merging" >}}).
 
-{{< tabs groupId="config-with-mixins" >}}
-{{% tab name="yaml" %}}
+{{< tabs groupid="config-with-mixins" >}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: 2
@@ -213,7 +213,7 @@ profiles:
 ```
 
 {{% /tab %}}
-{{% tab name="yaml (with vars)" %}}
+{{% tab title="yaml (with vars)" %}}
 
 ```yaml
 version: 2
@@ -238,7 +238,7 @@ profiles:
 ```
 
 {{% /tab %}}
-{{% tab name="toml" %}}
+{{% tab title="toml" %}}
 
 ```toml
 version = 2
@@ -252,7 +252,7 @@ use = "name-of-mixin"
 ```
 
 {{% /tab %}}
-{{% tab name="toml (with vars)" %}}
+{{% tab title="toml (with vars)" %}}
 
 ```toml
 version = 2
@@ -304,8 +304,8 @@ List properties that have been inherited from a parent can be modified (append/p
 
 #### Mixin Example
 
-{{< tabs groupId="config-with-mixins-examples" >}}
-{{% tab name="yaml" %}}
+{{< tabs groupid="config-with-mixins-examples" >}}
+{{% tab title="yaml" %}}
 
 ```yaml
 # file format version 2
@@ -360,7 +360,7 @@ profiles:
 ```
 
 {{% /tab %}}
-{{% tab name="toml" %}}
+{{% tab title="toml" %}}
 
 ```toml
 # file format version 2
@@ -424,8 +424,8 @@ Resticprofile applies a filter (see `global.restic-arguments-filter`) to decide 
 
 For example, a flag like `insecure-tls` can be set at profile level and will be used whenever restic is started with this profile. Most supported flags can be set in this way at profile level, see [reference]({{< ref "/configuration/reference" >}}) for details.
 
-{{< tabs groupId="config-with-common-flags-in-profile" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-common-flags-in-profile" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -438,7 +438,7 @@ source = "/"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -451,7 +451,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 default {
@@ -464,7 +464,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -485,12 +485,12 @@ default {
 Resulting in the following restic commandline:
 
 ```
-> resticprofile --dry-run backup
+resticprofile --dry-run backup
 ...
 dry-run: /usr/local/bin/restic backup --insecure-tls --repo rest:https://backup-host/my-repo /
 
 
-> resticprofile --dry-run prune
+resticprofile --dry-run prune
 ...
 dry-run: /usr/local/bin/restic prune --insecure-tls --repo rest:https://backup-host/my-repo
 ```

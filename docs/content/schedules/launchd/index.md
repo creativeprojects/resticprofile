@@ -22,7 +22,7 @@ For this to happen, you need to start the agent or daemon from a console window 
 If your profile is a backup profile called `remote`, the command to run manually is:
 
 ```shell
-% launchctl start local.resticprofile.remote.backup
+launchctl start local.resticprofile.remote.backup
 ```
 
 Once you grant the permission, the background agents/daemon will be able to run normally.

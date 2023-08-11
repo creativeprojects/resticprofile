@@ -13,9 +13,9 @@ All internal commands either operate on the profile selected by `--name`, on the
 
 Examples:
 ```shell
-$ resticprofile --name profile schedule 
-$ resticprofile --name group schedule 
-$ resticprofile schedule --all 
+resticprofile --name profile schedule 
+resticprofile --name group schedule 
+resticprofile schedule --all 
 ```
 
 Please note, schedules are always independent of each other no matter whether they have been created with `--all`, by group or from a single profile.
@@ -38,4 +38,4 @@ Remove all the schedules defined on the selected profile or profiles.
 
 Print the status on all the installed schedules of the selected profile or profiles. 
 
-The display of the `status` command will be OS dependant. Please see the examples below on which output you can expect from it.
+The display of the `status` command will be OS dependant. Please refer to the [examples]({{< ref "/schedules/examples" >}}) on which output you can expect from it.

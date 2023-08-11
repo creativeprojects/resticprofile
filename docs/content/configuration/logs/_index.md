@@ -11,9 +11,9 @@ You can redirect the logs to a local file, a temporary file or a syslog server.
 ## Destination
 
 The log destination syntax is a such:
-* `filename` => redirects all the logs to the local file called **filename**
-* `temp:filename` => redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
-* `tcp://syslog_server:514` or `udp://syslog_server:514` => redirects all the logs to the **syslog** server.
+* `filename` {{% icon icon="arrow-right" %}} redirects all the logs to the local file called **filename**
+* `temp:filename` {{% icon icon="arrow-right" %}} redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
+* `tcp://syslog_server:514` or `udp://syslog_server:514` {{% icon icon="arrow-right" %}} redirects all the logs to the **syslog** server.
 
 {{% notice tip %}}
 If the location cannot be opened, **resticprofile** will default to send the logs to the console.
@@ -32,8 +32,8 @@ resticprofile --log backup.log backup
 You can keep the logs displayed on the console when you run **resticprofile** commands manually, but send the logs somewhere else when **resticprofile** is started from a schedule.
 
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -46,7 +46,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -59,7 +59,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" "backup" {
@@ -70,7 +70,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -90,10 +90,12 @@ profile:
 
 ## Send logs to a temporary file
 
+This can be done by using the [template]({{< ref "/configuration/templates" >}}) function `tempFile`.
+
 This is to cover a special case when you want to upload the logs one by one to a remote location in a `run-finally` or a `run-after-fail` target.
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -109,7 +111,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -126,7 +128,7 @@ backup_current:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" "backup" {
@@ -140,7 +142,7 @@ backup_current:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {

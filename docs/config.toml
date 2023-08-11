@@ -7,7 +7,7 @@ publishdir = "../public/"
 
 # For search functionality
 [outputs]
-  home = [ "HTML", "RSS", "JSON"]
+  home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
 
 [params]
   # Change default color scheme with a variant one.
@@ -30,3 +30,22 @@ publishdir = "../public/"
   identifier = "resticdoc"
   url = "https://restic.readthedocs.io/"
   weight = 30
+
+[markup]
+  [markup.highlight]
+    # line numbers in a table layout will shift if code is wrapping, so better
+    # use inline; besides that visually both layouts have the same look and behavior
+    lineNumbersInTable = false
+
+    # if `guessSyntax = true`, there will be no unstyled code even if no language
+    # was given BUT Mermaid and Math codefences will not work anymore! So this is a
+    # mandatory setting for your site if you want to use Mermaid or Math codefences
+    guessSyntax = false
+
+    # the shipped variants come with their own modified chroma syntax highlightning
+    # style which is imported in theme-relearn-light.css, theme-relearn-dark.css, etc.;
+    # if you want to use a predefined style instead:
+    # - remove `noClasses` or set `noClasses = true`
+    # - set `style` to a predefined style name
+    noClasses = false
+    # style = "tango"

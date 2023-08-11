@@ -264,7 +264,7 @@ generate-config-reference: build
 	LAYOUT_NOTICE_END="{{% /notice %}}" \
 	LAYOUT_HINT_START="{{% notice hint %}}" \
 	LAYOUT_HINT_END="{{% /notice %}}" \
-	LAYOUT_UPLINK="[go to top](#topbar)" \
+	LAYOUT_UPLINK="[go to top](#reference)" \
 	$(abspath $(BINARY)) generate --config-reference > $(CONFIG_REFERENCE_DIR)/index.md
 
 syslog:

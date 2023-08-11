@@ -1,5 +1,5 @@
 ---
-title: "Include"
+title: "Includes"
 date: 2022-05-02T20:00:00+02:00
 tags: ["v0.18.0"]
 weight: 15
@@ -8,8 +8,8 @@ weight: 15
 The configuration may be split into multiple files by adding `includes = "glob-pattern"` to the main configuration file. 
 E.g. the following `profiles.conf` loads configurations from `conf.d` and `profiles.d`:
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -24,7 +24,7 @@ includes = ["conf.d/*.conf", "profiles.d/*.yaml", "profiles.d/*.toml"]
 
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 ```yaml
 version: "1"
@@ -40,7 +40,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 
@@ -52,7 +52,7 @@ global {
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
@@ -75,9 +75,11 @@ global {
 Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
 The HCL format is special in that it cannot be mixed with other formats.
 
-Included files cannot include nested files. Specifying `includes` inside an included file has no effect.
-
 Within included files, the current [configuration path]({{< ref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" >}}) is not changed. Path resolution remains relative to the path of the main configuration file.
+
+{{% notice style="note" %}}
+Included files cannot include nested files. Specifying `includes` inside an included file has no effect.
+{{% /notice %}}
 
 ## Configuration Merging
 
@@ -109,28 +111,8 @@ Configuration **merging** follows the logic:
 * Lists of values or lists of objects are considered properties not config structure and will be replaced
 
 
-{{< tabs groupId="include-merging-example" >}}
-{{% tab name="Final configuration" %}}
-
-```yaml
-version: "1"
-
-includes:
-  - first.yaml
-  - second.yaml
-
-default:
-  initialize: true
-  backup:
-     exclude:
-        - .*
-     source:
-        - /etc
-        - /opt
-```
-
-{{% /tab %}}
-{{% tab name="profiles.yaml" %}}
+{{< tabs groupid="include-merging-example" >}}
+{{% tab title="profiles.yaml" %}}
 
 ```yaml
 version: "1"
@@ -142,6 +124,8 @@ includes:
 default:
    
   backup:
+
+
     source:
         - /usr
 
@@ -150,7 +134,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="first.yaml" %}}
+{{% tab title="first.yaml" %}}
 
 ```yaml
 version: "1"
@@ -162,6 +146,8 @@ version: "1"
 default:
   initialize: false
   backup:
+
+
     source:
         - /etc
         - /opt
@@ -170,7 +156,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% tab name="second.yaml" %}}
+{{% tab title="second.yaml" %}}
 
 ```yaml
 version: "1"
@@ -190,7 +176,31 @@ default:
 ```
 
 {{% /tab %}}
+{{% tab title="Final configuration" %}}
+
+```yaml
+version: "1"
+
+includes:
+  - first.yaml
+  - second.yaml
+
+default:
+  initialize: true
+  backup:
+    exclude:
+      - .*
+    source:
+      - /etc
+      - /opt
+```
+
+{{% /tab %}}
 {{% /tabs %}}
+
+{{% notice style="tip" %}}
+You can use `resticprofile [<profile-name>.]show` (or `resticprofile [--name <profile-name>] show`) to see the resulting configuration after merging.
+{{% /notice %}}
 
 
 {{% notice style="note" %}}

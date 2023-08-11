@@ -11,10 +11,10 @@ But the version 0.13.0 introduced a parameter to avoid this behaviour and consid
 
 A restic warning occurs when it cannot read some files, but a snapshot was successfully created.
 
-### Let me introduce no-error-on-warning
+### no-error-on-warning
 
-{{< tabs groupId="config-with-json" >}}
-{{% tab name="toml" %}}
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
 
 ```toml
 version = "1"
@@ -27,7 +27,7 @@ version = "1"
 ```
 
 {{% /tab %}}
-{{% tab name="yaml" %}}
+{{% tab title="yaml" %}}
 
 
 ```yaml
@@ -39,7 +39,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="hcl" %}}
+{{% tab title="hcl" %}}
 
 ```hcl
 "profile" = {
@@ -51,7 +51,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% tab name="json" %}}
+{{% tab title="json" %}}
 
 ```json
 {
