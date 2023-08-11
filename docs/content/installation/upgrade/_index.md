@@ -12,6 +12,7 @@ resticprofile self-update
 
 {{% notice style="note" %}}
 The `self-update` command is not available when installed via homebrew.
+You should use `brew upgrade resticprofile` instead.
 {{% /notice %}}
 
 

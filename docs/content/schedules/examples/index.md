@@ -6,7 +6,11 @@ weight: 30
 
 ### Examples of scheduling commands under Windows
 
-If you create a task with `user` permission under Windows, you will need to enter your password to validate the task. It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
+{{% notice note %}}
+If you create a task with `user` permission under Windows, you will need to enter your password to validate the task.
+
+It's a requirement of the task scheduler. I'm inviting you to review the code to make sure I'm not emailing your password to myself. Seriously you shouldn't trust anyone.
+{{% /notice %}}
 
 Example of the `schedule` command under Windows (with git bash):
 

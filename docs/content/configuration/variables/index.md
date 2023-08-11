@@ -1,15 +1,19 @@
 ---
 title: "Variables"
 date: 2022-05-16T20:04:35+01:00
-weight: 25
+weight: 26
 ---
 
 ## Variable expansion in configuration file
 
-You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where
-specific bits will be replaced by a variable.
+You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where specific bits can be replaced by a variable.
 
-## Pre-defined variables
+### There are two kinds of variables:
+- **template variables**: These variables are fixed once the full configuration file is loaded: [includes]({{< ref "configuration/include" >}}) are loaded, and [inheritance]({{< ref "/configuration/inheritance" >}}) is resolved. These variables are replaced by their value **before** the configuration is parsed.
+- **runtime variables**: These variables are replaced by their value **after** the configuration is parsed. In other words: these variables are replaced by their value just before the command is executed.
+
+## Template variables
+### Pre-defined variables
 
 The syntax for using a pre-defined variable is:
 
@@ -67,7 +71,7 @@ The variable `.Now` also allows to derive a relative `Time`. For example `{{ (.N
 is 6 months and 14 days before now.
 
 
-### Example
+#### Example
 
 You can use a combination of inheritance and variables in the resticprofile configuration file like so:
 
@@ -348,7 +352,7 @@ Now you can reuse the same generic configuration in another profile.
 You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be
 checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
 
-## Hand-made variables
+### Hand-made variables
 
 But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and
 assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
@@ -362,7 +366,7 @@ profile:
   tag: "{{ $name }}"
 ```
 
-### Example
+#### Example
 
 Here's an example of a configuration on Linux where I use a variable `$mountpoint` set to a USB drive mount point:
 
@@ -474,7 +478,7 @@ default {
 {{% /tabs %}}
 
 
-## Variable expansion in configuration **values**
+## Runtime variable expansion
 
 Variable expansion as described in the previous section using the `{{ .Var }}` syntax refers to [template variables]({{< ref "/configuration/templates" >}}) that are expanded prior to parsing the configuration file. 
 This means they must be used carefully to create correct config markup, but they are also very flexible.

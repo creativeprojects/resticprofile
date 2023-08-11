@@ -69,6 +69,7 @@ These 5 profile sections are accepting a schedule configuration:
 which mean you can schedule `backup`, `forget`, `prune`, `check` and `copy` independently (I recommend using a [local lock]({{< ref "/usage/locks" >}}) in this case).
 
 ## retention schedule is deprecated
-**Important**:
-starting from version 0.11.0 the schedule of the `retention` section is **deprecated**: Use the `forget` section instead.
+Starting from version 0.11.0, directly scheduling the `retention` section is **deprecated**: Use the `forget` section for direct schedule instead.
+
+The retention section is designed to be associated with a `backup` section, not to be scheduled independently.
 

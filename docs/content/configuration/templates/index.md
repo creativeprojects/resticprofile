@@ -1,7 +1,7 @@
 ---
 title: "Templates"
 date: 2022-05-16T20:04:35+01:00
-weight: 26
+weight: 25
 ---
 
 

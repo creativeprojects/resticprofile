@@ -9,7 +9,7 @@ tags = ["v0.17.0"]
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
 
-See all snapshots of your `[default]` profile:
+See all snapshots of your `default` profile:
 
 ```shell
 resticprofile

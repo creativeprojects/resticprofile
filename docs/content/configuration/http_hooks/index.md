@@ -311,6 +311,9 @@ Here's the flow of HTTP hooks:
 
 ```mermaid
 graph TD
+  LOCK(set resticprofile lock)
+  UNLOCK(delete resticprofile lock)
+  LOCK --> SB
   SB('send-before') --> RUN
   RUN(run restic command, or group of commands)
   RUN -->|Success| SA
@@ -318,7 +321,13 @@ graph TD
   SA('send-after') --> SF
   SAF('send-after-fail') --> SF
   SF('send-finally')
+  SF --> UNLOCK
 ```
+
+{{% notice style="warning" title="resticprofile lock" %}}
+The local resticprofile lock is surrounding the whole process. It means that the `run-after-fail` target is not called if the lock cannot be obtained. This is a limitation of the current implementation. 
+{{% /notice %}}
+
 
 ### body-template
 
@@ -447,7 +456,7 @@ profile:
 {{% /tab %}}
 {{% /tabs %}}
 
-### CA certificates
+### Self-signed certificates
 
 If your monitoring system is using self-signed certificates, you can import them in resticprofile (and you don't need to rely on the `skip-tls-verification` flag)
 

@@ -1,5 +1,5 @@
 ---
-title: "Include"
+title: "Includes"
 date: 2022-05-02T20:00:00+02:00
 tags: ["v0.18.0"]
 weight: 15
@@ -75,9 +75,11 @@ global {
 Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
 The HCL format is special in that it cannot be mixed with other formats.
 
-Included files cannot include nested files. Specifying `includes` inside an included file has no effect.
-
 Within included files, the current [configuration path]({{< ref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" >}}) is not changed. Path resolution remains relative to the path of the main configuration file.
+
+{{% notice style="note" %}}
+Included files cannot include nested files. Specifying `includes` inside an included file has no effect.
+{{% /notice %}}
 
 ## Configuration Merging
 
@@ -110,26 +112,6 @@ Configuration **merging** follows the logic:
 
 
 {{< tabs groupid="include-merging-example" >}}
-{{% tab title="Final configuration" %}}
-
-```yaml
-version: "1"
-
-includes:
-  - first.yaml
-  - second.yaml
-
-default:
-  initialize: true
-  backup:
-     exclude:
-        - .*
-     source:
-        - /etc
-        - /opt
-```
-
-{{% /tab %}}
 {{% tab title="profiles.yaml" %}}
 
 ```yaml
@@ -142,6 +124,8 @@ includes:
 default:
    
   backup:
+
+
     source:
         - /usr
 
@@ -162,6 +146,8 @@ version: "1"
 default:
   initialize: false
   backup:
+
+
     source:
         - /etc
         - /opt
@@ -190,7 +176,31 @@ default:
 ```
 
 {{% /tab %}}
+{{% tab title="Final configuration" %}}
+
+```yaml
+version: "1"
+
+includes:
+  - first.yaml
+  - second.yaml
+
+default:
+  initialize: true
+  backup:
+    exclude:
+      - .*
+    source:
+      - /etc
+      - /opt
+```
+
+{{% /tab %}}
 {{% /tabs %}}
+
+{{% notice style="tip" %}}
+You can use `resticprofile [<profile-name>.]show` (or `resticprofile [--name <profile-name>] show`) to see the resulting configuration after merging.
+{{% /notice %}}
 
 
 {{% notice style="note" %}}

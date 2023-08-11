@@ -152,6 +152,8 @@ Maybe it's easier to understand with a flow diagram:
 
 ```mermaid
 flowchart TB
+    LOCK(set resticprofile lock)
+    UNLOCK(delete resticprofile lock)
     PRB('run-before' from profile)
     PRA('run-after' from profile)
 
@@ -173,6 +175,7 @@ flowchart TB
         BRF --> PRF
     end
 
+    LOCK --> PRB
     PRB -->|Error| PFAIL
     PRB -->|Success| BRB
 
@@ -191,12 +194,16 @@ flowchart TB
     PRA -->|Error| PFAIL
     PRA -->|Success| Finally
     PFAIL --> Finally
+    Finally --> UNLOCK
 
     style Backup fill:#9990,stroke:#9990
     style Failure fill:#9990,stroke:#9990
     style Finally fill:#9991,stroke:#9994,stroke-width:4px
 ```
 
+{{% notice style="warning" title="resticprofile lock" %}}
+The local resticprofile lock is surrounding the whole process. It means that the `run-after-fail` target is not called if the lock cannot be obtained. This is a limitation of the current implementation. 
+{{% /notice %}}
 
 
 ## Run commands on stream errors

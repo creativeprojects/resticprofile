@@ -10,9 +10,9 @@ weight: 105
 resticprofile has the ability to create systemd timer and service files.
 systemd can be used in place of cron to schedule backups.
 
-User systemd units are created under the user's systemd profile (~/.config/systemd/user).
+User systemd units are created under the user's systemd profile (`~/.config/systemd/user`).
 
-System units are created in /etc/systemd/system
+System units are created in `/etc/systemd/system`
 
 ## systemd calendars
 
@@ -24,7 +24,8 @@ Testing systemd calendars can be done with the systemd-analyze application.
 systemd-analyze will display when the next trigger will happen:
 
 ```shell
-$ systemd-analyze calendar 'daily'
+systemd-analyze calendar 'daily'
+
   Original form: daily
 Normalized form: *-*-* 00:00:00
     Next elapse: Sat 2020-04-18 00:00:00 CDT

@@ -5,7 +5,7 @@ weight: 16
 ---
 
 {{% notice style="tip" %}}
-You can use `resticprofile [<profile-name>.]show` to see the effect inheritance has on a profile
+You can use `resticprofile [<profile-name>.]show` (or `resticprofile [--name <profile-name>] show`) to see the effect inheritance has on a profile
 {{% /notice %}}
 
 ## Profile Inheritance
