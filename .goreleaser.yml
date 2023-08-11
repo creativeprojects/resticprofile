@@ -160,7 +160,7 @@ brews:
     ids:
       - targz_no_self_update
     goarm: "6"
-    tap:
+    repository:
       owner: creativeprojects
       name: "homebrew-tap"
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
