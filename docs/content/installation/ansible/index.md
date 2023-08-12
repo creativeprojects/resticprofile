@@ -25,7 +25,15 @@ The playbook is installing (or upgrading):
 * password files that can be encrypted using ansible vault. These files are located in `./resticprofile/{{ inventory_hostname }}/keys/*`: they will be decrypted and saved to `/root/resticprofile/`.
 * other files (like files needed for `--exclude-file`, `--files-from` or anything else you need) from `./resticprofile/{{ inventory_hostname }}/copy/*` to `/root/resticprofile/`
 
-### Requirement
+{{% notice style="warning" %}}
+The playbook needs the python package `github3`, which in turn needs a whole bunch of package including `cryptography`, which in turn needs the `libssl-dev` package (on debian) and a `rust` compiler.
+
+I can tell you it takes forever to compile and install all this on a Raspberry Pi 3.
+
+Please note the installation of a rust compiler is not part of this playbook.
+{{% /notice %}}
+
+### Requirements
 
 Each target machine must have one variable named `arch` containing the resticprofile OS & Arch. You can see a list of all the available OS & Arch couples on the [releases page](https://github.com/creativeprojects/resticprofile/releases).
 
