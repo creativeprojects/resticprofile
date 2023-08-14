@@ -131,6 +131,29 @@ func main() {
 		}
 	}
 
+	clog.Infof("ignoreOnBattery: %+v", flags.ignoreOnBattery)
+
+	// check if we're running on battery
+	if flags.ignoreOnBattery > 0 && flags.ignoreOnBattery <= constants.BatteryFull {
+		battery, charge, err := IsRunningOnBattery()
+		if err != nil {
+			clog.Errorf("cannot check if the computer is running on battery: %s", err)
+		}
+		if battery {
+			if flags.ignoreOnBattery == constants.BatteryFull {
+				clog.Warning("running on battery, leaving now")
+				exitCode = 3
+				return
+			}
+			if charge < flags.ignoreOnBattery {
+				clog.Warningf("running on battery (%d%%), leaving now", charge)
+				exitCode = 3
+				return
+			}
+			clog.Info("running on battery with enough charge (%d%%)", charge)
+		}
+	}
+
 	configFile, err := filesearch.FindConfigurationFile(flags.config)
 	if err != nil {
 		clog.Error(err)

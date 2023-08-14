@@ -21,23 +21,25 @@ const (
 
 // ScheduleConfig contains all information to schedule a profile command
 type ScheduleConfig struct {
-	Title            string
-	SubTitle         string
-	Schedules        []string
-	Permission       string
-	WorkingDirectory string
-	Command          string
-	Arguments        []string
-	Environment      []string
-	JobDescription   string
-	TimerDescription string
-	Priority         string
-	Log              string
-	LockMode         string
-	LockWait         time.Duration
-	ConfigFile       string
-	Flags            map[string]string
-	RemoveOnly       bool
+	Title                   string
+	SubTitle                string
+	Schedules               []string
+	Permission              string
+	WorkingDirectory        string
+	Command                 string
+	Arguments               []string
+	Environment             []string
+	JobDescription          string
+	TimerDescription        string
+	Priority                string
+	Log                     string
+	LockMode                string
+	LockWait                time.Duration
+	ConfigFile              string
+	Flags                   map[string]string
+	RemoveOnly              bool
+	IgnoreOnBattery         bool
+	IgnoreOnBatteryLessThan int
 }
 
 // NewRemoveOnlyConfig creates a job config that may be used to call Job.Remove() on a scheduled job

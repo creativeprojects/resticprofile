@@ -95,7 +95,7 @@ func TestCompleter(t *testing.T) {
 
 					completions := completer.completeFlagSetValue(flag, "")
 					flagType := flag.Value.Type()
-					if flagType == "bool" || flagType == "duration" {
+					if flagType == "duration" || flag.NoOptDefVal != "" {
 						assert.Empty(t, completions, "Flag --%s", flag.Name)
 					} else {
 						assert.NotEmpty(t, completions, "Flag --%s", flag.Name)
