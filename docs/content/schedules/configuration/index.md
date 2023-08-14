@@ -173,6 +173,16 @@ Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
 
 The `schedule` can be a string or an array of string (to allow for multiple schedules)
 
+### schedule-ignore-on-battery
+
+If set to `true` the schedule won't start if the system is running on battery (even if the charge is still at 100%)
+
+### schedule-ignore-on-battery-less-than
+
+If set to a number, the schedule won't start if the system is running on battery and the charge (in %) is less or equal than the number specified.
+
+## Example 
+
 Here's an example of a scheduling configuration:
 
 {{< tabs groupid="config-with-json" >}}

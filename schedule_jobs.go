@@ -48,11 +48,11 @@ func scheduleJobs(handler schedule.Handler, profileName string, configs []*confi
 		} else if scheduleConfig.GetLockMode() == config.ScheduleLockModeIgnore {
 			args = append(args, "--no-lock")
 		}
-		if scheduleConfig.IgnoreOnBattery {
-			args = append(args, "--ignore-on-battery")
-		}
+
 		if scheduleConfig.IgnoreOnBatteryLessThan > 0 && scheduleConfig.IgnoreOnBatteryLessThan <= 100 {
-			args = append(args, fmt.Sprintf("--ignore-on-battery-less-than=%d", scheduleConfig.IgnoreOnBatteryLessThan))
+			args = append(args, fmt.Sprintf("--ignore-on-battery=%d", scheduleConfig.IgnoreOnBatteryLessThan))
+		} else if scheduleConfig.IgnoreOnBattery {
+			args = append(args, "--ignore-on-battery")
 		}
 
 		args = append(args, getResticCommand(scheduleConfig.SubTitle))
