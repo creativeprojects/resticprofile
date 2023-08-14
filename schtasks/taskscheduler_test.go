@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -139,10 +140,15 @@ func TestCreationOfTasks(t *testing.T) {
 	// some tests are using the 1st day of the month as a reference,
 	// but this cause issues when we're running the tests on the first day of the month.
 	// typically the test will only generate entries at a time after the time we run the test
-	// anyway, let's generate a day that is not today
+	// for that matter let's generate a day that is not today
 	dayOfTheMonth := "1"
 	if time.Now().Day() == 1 {
 		dayOfTheMonth = "2"
+	}
+	// same issue with tests on mondays
+	fixedDay := "Monday"
+	if time.Now().Weekday() == time.Monday {
+		fixedDay = "Tuesday"
 	}
 	everyDay := ""
 	for day := 1; day <= 31; day++ {
@@ -212,14 +218,14 @@ func TestCreationOfTasks(t *testing.T) {
 		},
 		{
 			"every hour on mondays",
-			[]string{"mon *-*-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + ` />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
 			"every minute on mondays",
-			[]string{"mon *-*-* *:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00</StartBoundary>\s*(<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>)?\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + ` />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
