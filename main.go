@@ -131,8 +131,6 @@ func main() {
 		}
 	}
 
-	clog.Infof("ignoreOnBattery: %+v", flags.ignoreOnBattery)
-
 	// check if we're running on battery
 	if flags.ignoreOnBattery > 0 && flags.ignoreOnBattery <= constants.BatteryFull {
 		battery, charge, err := IsRunningOnBattery()
