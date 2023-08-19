@@ -148,7 +148,7 @@ func main() {
 				exitCode = 3
 				return
 			}
-			clog.Info("running on battery with enough charge (%d%%)", charge)
+			clog.Infof("running on battery with enough charge (%d%%)", charge)
 		}
 	}
 
