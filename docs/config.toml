@@ -20,6 +20,11 @@ publishdir = "../public/"
   weight = 10
 
 [[menu.shortcuts]]
+  name = "<i class='fas fa-list'></i> Categories"
+  url = "/categories"
+  weight = 15
+
+[[menu.shortcuts]]
   name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
   identifier = "ds"
   url = "https://github.com/creativeprojects/resticprofile/"
