@@ -286,13 +286,15 @@ func (s *SectionWithScheduleAndMonitoring) IsEmpty() bool { return s == nil }
 
 // ScheduleBaseSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleBaseSection struct {
-	Schedule           []string      `mapstructure:"schedule" show:"noshow" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Set the times at which the scheduled command is run (times are specified in systemd timer format)"`
-	SchedulePermission string        `mapstructure:"schedule-permission" show:"noshow" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
-	ScheduleLog        string        `mapstructure:"schedule-log" show:"noshow" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
-	SchedulePriority   string        `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
-	ScheduleLockMode   string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
-	ScheduleLockWait   time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
-	ScheduleEnvCapture []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
+	Schedule                        []string      `mapstructure:"schedule" show:"noshow" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Set the times at which the scheduled command is run (times are specified in systemd timer format)"`
+	SchedulePermission              string        `mapstructure:"schedule-permission" show:"noshow" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	ScheduleLog                     string        `mapstructure:"schedule-log" show:"noshow" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
+	SchedulePriority                string        `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
+	ScheduleLockMode                string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	ScheduleLockWait                time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+	ScheduleEnvCapture              []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
+	ScheduleIgnoreOnBattery         bool          `mapstructure:"schedule-ignore-on-battery" default:"false" description:"Don't schedule the start of this profile when running on battery"`
+	ScheduleIgnoreOnBatteryLessThan int           `mapstructure:"schedule-ignore-on-battery-less-than" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
@@ -828,16 +830,18 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 			}
 
 			config := &ScheduleConfig{
-				Title:       p.Name,
-				SubTitle:    name,
-				Schedules:   s.Schedule,
-				Permission:  s.SchedulePermission,
-				Environment: env.Values(),
-				Log:         s.ScheduleLog,
-				LockMode:    s.ScheduleLockMode,
-				LockWait:    s.ScheduleLockWait,
-				Priority:    s.SchedulePriority,
-				ConfigFile:  p.config.configFile,
+				Title:                   p.Name,
+				SubTitle:                name,
+				Schedules:               s.Schedule,
+				Permission:              s.SchedulePermission,
+				Environment:             env.Values(),
+				Log:                     s.ScheduleLog,
+				LockMode:                s.ScheduleLockMode,
+				LockWait:                s.ScheduleLockWait,
+				Priority:                s.SchedulePriority,
+				ConfigFile:              p.config.configFile,
+				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
+				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
 			}
 
 			if len(config.Log) > 0 {

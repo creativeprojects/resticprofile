@@ -19,4 +19,5 @@ const (
 	DefaultQuietFlag            = false
 	DefaultMinMemory            = 100
 	DefaultSenderTimeout        = 30 * time.Second
+	BatteryFull                 = 100
 )

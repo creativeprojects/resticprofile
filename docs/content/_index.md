@@ -34,6 +34,7 @@ With resticprofile:
 * **[new for v0.18.0]** Send resticprofile logs to a syslog server
 * **[new for v0.19.0]** Preventing your system from idle sleeping
 * **[new for v0.21.0]** See the help from both restic and resticprofile via the `help` command or `-h` flag
+* **[new for v0.24.0]** Don't schedule a job when the system is running on battery
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0

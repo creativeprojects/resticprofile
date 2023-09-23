@@ -9,6 +9,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.13.0
 	github.com/creativeprojects/go-selfupdate v1.1.1
+	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.15.0
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/mattn/go-colorable v0.1.13

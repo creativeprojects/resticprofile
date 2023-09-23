@@ -10,6 +10,7 @@ global:
     # restic-binary: ~/fake_restic
     # legacy-arguments: true
     group-continue-on-error: true
+    restic-lock-retry-after: "1m"
 
 groups:
     full-backup:
@@ -24,7 +25,7 @@ default:
     cleanup-cache: true
     password-file: key
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
-    lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
+    # lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
     copy:
         initialize: true
         initialize-copy-chunker-params: true
@@ -104,7 +105,7 @@ self:
 
     backup:
         extended-status: false
-        check-before: false
+        check-before: true
         no-error-on-warning: true
         source: "{{ .CurrentDir }}"
         exclude:
@@ -117,10 +118,12 @@ self:
         - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"
         - "echo restic stderr = ${RESTIC_STDERR}"
     check:
+        read-data: true
         schedule:
             - "*:15"
     retention:
         after-backup: true
+        keep-last: 30
     forget:
         schedule: "weekly"
         schedule-priority: standard
