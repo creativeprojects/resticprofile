@@ -61,7 +61,9 @@ func (h *HandlerSystemd) Init() error {
 }
 
 // Close does nothing with systemd
-func (h *HandlerSystemd) Close() {}
+func (h *HandlerSystemd) Close() {
+	// nothing to do
+}
 
 // ParseSchedules always returns nil on systemd
 func (h *HandlerSystemd) ParseSchedules(schedules []string) ([]*calendar.Event, error) {

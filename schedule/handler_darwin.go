@@ -86,7 +86,9 @@ func (h *HandlerLaunchd) Init() error {
 }
 
 // Close does nothing with launchd
-func (h *HandlerLaunchd) Close() {}
+func (h *HandlerLaunchd) Close() {
+	// nothing to do
+}
 
 func (h *HandlerLaunchd) ParseSchedules(schedules []string) ([]*calendar.Event, error) {
 	return parseSchedules(schedules)
@@ -101,6 +103,7 @@ func (h *HandlerLaunchd) DisplaySchedules(command string, schedules []string) er
 	return nil
 }
 
+// DisplayStatus does nothing with launchd
 func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 	return nil
 }

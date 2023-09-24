@@ -199,7 +199,9 @@ func checkConfiguration(filename, configType string, lineNum int) bool {
 func setupTempDir() func() {
 	if tempDir != "" {
 		_ = os.MkdirAll(tempDir, 0700)
-		return func() {}
+		return func() {
+			// nothing to do
+		}
 	}
 	tempDir, _ = os.MkdirTemp("", "checkdoc*")
 	return func() {

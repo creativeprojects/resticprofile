@@ -373,7 +373,9 @@ func openProfile(c *config.Config, profileName string) (profile *config.Profile,
 	}
 
 	if cleanup == nil {
-		cleanup = func() {}
+		cleanup = func() {
+			// nothing to do
+		}
 	}
 	return
 }

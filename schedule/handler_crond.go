@@ -32,7 +32,9 @@ func (h *HandlerCrond) Init() error {
 }
 
 // Close does nothing with crond
-func (h *HandlerCrond) Close() {}
+func (h *HandlerCrond) Close() {
+	// nothing to do
+}
 
 func (h *HandlerCrond) ParseSchedules(schedules []string) ([]*calendar.Event, error) {
 	return parseSchedules(schedules)
@@ -42,12 +44,12 @@ func (h *HandlerCrond) DisplayParsedSchedules(command string, events []*calendar
 	displayParsedSchedules(command, events)
 }
 
-// DisplaySchedules does nothing with launchd
+// DisplaySchedules does nothing with crond
 func (h *HandlerCrond) DisplaySchedules(command string, schedules []string) error {
 	return nil
 }
 
-// DisplayStatus does nothing with launchd
+// DisplayStatus does nothing with crond
 func (h *HandlerCrond) DisplayStatus(profileName string) error {
 	return nil
 }
