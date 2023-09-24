@@ -655,9 +655,6 @@ func TestBackupWithError(t *testing.T) {
 }
 
 func TestBackupWithResticLockFailureRetried(t *testing.T) {
-	// if testing.Short() {
-	// 	t.Skip("skipping test in short mode.")
-	// }
 	lockWait := constants.MinResticLockRetryDelay + time.Second
 	lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
 		"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
@@ -704,7 +701,7 @@ func TestBackupWithResticLockFailureCancelled(t *testing.T) {
 	wrapper.lockWait = &lockWait
 	wrapper.startTime = time.Now()
 
-	timer := time.AfterFunc(2*time.Second, func() {
+	timer := time.AfterFunc(1*time.Second, func() {
 		sigChan <- os.Interrupt
 	})
 	defer timer.Stop()
