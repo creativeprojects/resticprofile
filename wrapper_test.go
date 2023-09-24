@@ -19,6 +19,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/monitor/mocks"
 	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/platform"
@@ -653,6 +654,65 @@ func TestBackupWithError(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestBackupWithResticLockFailureRetried(t *testing.T) {
+	// if testing.Short() {
+	// 	t.Skip("skipping test in short mode.")
+	// }
+	lockWait := constants.MinResticLockRetryDelay + time.Second
+	lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
+		"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
+		"storage ID c8a44e77" + platform.LineSeparator +
+		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
+	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureRetried.txt")
+	err := os.WriteFile(tempfile, []byte(lockMessage), 0644)
+	require.NoError(t, err)
+	defer os.Remove(tempfile)
+
+	sigChan := make(chan os.Signal, 1)
+	global := &config.Global{
+		ResticLockRetryAfter: lockWait,
+	}
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	wrapper := newResticWrapper(global, mockBinary, false, profile, "", []string{"--stderr", "@" + tempfile, "--exit", "1"}, sigChan)
+	wrapper.lockWait = &lockWait
+	wrapper.startTime = time.Now()
+
+	err = wrapper.runCommand("backup")
+	assert.Error(t, err)
+	assert.NotErrorIs(t, err, errInterrupt)
+}
+
+func TestBackupWithResticLockFailureCancelled(t *testing.T) {
+	lockWait := constants.MinResticLockRetryDelay + time.Second
+	lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
+		"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
+		"storage ID c8a44e77" + platform.LineSeparator +
+		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
+	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureCancelled.txt")
+	err := os.WriteFile(tempfile, []byte(lockMessage), 0644)
+	require.NoError(t, err)
+	defer os.Remove(tempfile)
+
+	sigChan := make(chan os.Signal, 1)
+	global := &config.Global{
+		ResticLockRetryAfter: lockWait,
+	}
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	wrapper := newResticWrapper(global, mockBinary, false, profile, "", []string{"--stderr", "@" + tempfile, "--exit", "1"}, sigChan)
+	wrapper.lockWait = &lockWait
+	wrapper.startTime = time.Now()
+
+	timer := time.AfterFunc(2*time.Second, func() {
+		sigChan <- os.Interrupt
+	})
+	defer timer.Stop()
+
+	err = wrapper.runCommand("backup")
+	assert.ErrorIs(t, err, errInterrupt)
+}
+
 func TestBackupWithNoConfiguration(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper(nil, mockBinary, false, profile, "", []string{"--exit", "1"}, nil)
@@ -766,6 +826,15 @@ func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
 
 	err := wrapper.runProfile()
 	assert.EqualError(t, err, "backup on profile 'name': stream error callback: echo pass failed to register (: error parsing regexp: missing closing ): `(`")
+}
+
+func TestCanRetryAfterErrorDontFailWhenNoOutputAnalysis(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	wrapper := newResticWrapper(nil, mockBinary, false, profile, "backup", nil, nil)
+	summary := monitor.Summary{}
+	retry, err := wrapper.canRetryAfterError("backup", summary)
+	assert.False(t, retry)
+	assert.NoError(t, err)
 }
 
 func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {

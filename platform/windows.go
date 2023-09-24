@@ -2,6 +2,8 @@
 
 package platform
 
+const LineSeparator = "\r\n"
+
 func IsDarwin() bool {
 	return false
 }

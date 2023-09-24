@@ -3,7 +3,6 @@ package lock
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"strconv"
@@ -73,7 +72,7 @@ func (l *Lock) Release() {
 
 // Who owns the lock?
 func (l *Lock) Who() (string, error) {
-	buffer, err := ioutil.ReadFile(l.Lockfile)
+	buffer, err := os.ReadFile(l.Lockfile)
 	if err != nil {
 		return "", err
 	}
@@ -99,7 +98,7 @@ func (l *Lock) HasLocked() bool {
 
 // LastPID returns the last PID written into the lock file.
 func (l *Lock) LastPID() (int32, error) {
-	buffer, err := ioutil.ReadFile(l.Lockfile)
+	buffer, err := os.ReadFile(l.Lockfile)
 	if err != nil {
 		return 0, err
 	}
