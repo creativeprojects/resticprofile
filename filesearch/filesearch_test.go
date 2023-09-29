@@ -2,7 +2,7 @@ package filesearch
 
 import (
 	"fmt"
-	"io/fs"
+	iofs "io/fs"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -13,9 +13,15 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(t *testing.M) {
+	fs = afero.NewMemMapFs()
+	os.Exit(t.Run())
+}
 
 // Quick test to see the default xdg config on the build agents
 //
@@ -200,10 +206,10 @@ func TestFindConfigurationFile(t *testing.T) {
 		var err error
 		// Install empty config file
 		if location.realPath != "" {
-			err = os.MkdirAll(location.realPath, 0700)
+			err = fs.MkdirAll(location.realPath, 0700)
 			require.NoError(t, err)
 		}
-		file, err := os.Create(filepath.Join(location.realPath, location.realFile))
+		file, err := fs.Create(filepath.Join(location.realPath, location.realFile))
 		require.NoError(t, err)
 		file.Close()
 
@@ -215,9 +221,9 @@ func TestFindConfigurationFile(t *testing.T) {
 
 		// Clears up the test file
 		if location.realPath == "" || !location.deletePathAfter {
-			err = os.Remove(filepath.Join(location.realPath, location.realFile))
+			err = fs.Remove(filepath.Join(location.realPath, location.realFile))
 		} else {
-			err = os.RemoveAll(location.realPath)
+			err = fs.RemoveAll(location.realPath)
 		}
 		require.NoError(t, err)
 	}
@@ -247,11 +253,11 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	tempFile, err := os.CreateTemp(home, "TestFindResticBinaryWithTilde")
+	tempFile, err := afero.TempFile(fs, home, "TestFindResticBinaryWithTilde")
 	require.NoError(t, err)
 	tempFile.Close()
 	defer func() {
-		os.Remove(tempFile.Name())
+		fs.Remove(tempFile.Name())
 	}()
 
 	search := filepath.Join("~", filepath.Base(tempFile.Name()))
@@ -302,8 +308,8 @@ func TestFindConfigurationIncludes(t *testing.T) {
 	}
 
 	for _, file := range files {
-		require.NoError(t, os.WriteFile(file, []byte{}, fs.ModePerm))
-		defer os.Remove(file) // defer stack is ok for cleanup
+		require.NoError(t, afero.WriteFile(fs, file, []byte{}, iofs.ModePerm))
+		defer fs.Remove(file) // defer stack is ok for cleanup
 	}
 
 	testData := []struct {

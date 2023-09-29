@@ -3,7 +3,7 @@ package filesearch
 import (
 	"errors"
 	"fmt"
-	"io/fs"
+	iofs "io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +13,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/spf13/afero"
 )
 
 var (
@@ -63,6 +64,12 @@ var (
 		".\\",
 	}
 )
+
+var fs afero.Fs
+
+func init() {
+	fs = afero.NewOsFs()
+}
 
 // FindConfigurationFile returns the path of the configuration file
 // If the file doesn't have an extension, it will search for all possible extensions
@@ -250,6 +257,6 @@ func getResticBinaryName() string {
 }
 
 func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || errors.Is(err, fs.ErrExist)
+	_, err := fs.Stat(filename)
+	return err == nil || errors.Is(err, iofs.ErrExist)
 }
