@@ -10,6 +10,7 @@ This feature is available for:
 - Linux with systemd ([logind](https://www.freedesktop.org/software/systemd/man/systemd-logind.service.html))
 
 There's a `global` parameter called `prevent-sleep` that you can set to `true`, and resticprofile will prevent your system from idle sleeping.
+Additionally, there is a `global` parameter `prevent-shutdown` which will also prevent your system from shutting down.
 
 Please note:
 - it will not prevent a sleep if the system is running on batteries

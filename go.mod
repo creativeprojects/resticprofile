@@ -11,6 +11,7 @@ require (
 	github.com/creativeprojects/go-selfupdate v1.1.1
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.15.0
+	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/mapstructure v1.5.0
@@ -42,7 +43,6 @@ require (
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230110061619-bbe2e5e100de // indirect

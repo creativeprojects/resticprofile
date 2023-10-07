@@ -11,18 +11,21 @@ import (
 )
 
 const (
-	inhibitWhat      = "sleep"
-	inhibitWhy       = "Backup and/or restic repository maintenance"
-	inhibitMode      = "block"
-	permissionDenied = "Permission denied"
+	inhibitWhatSleep    = "idle:sleep"
+	inhibitWhatShutdown = "idle:sleep:shutdown"
+	inhibitWhy          = "Backup and/or restic repository maintenance"
+	inhibitMode         = "block"
+	permissionDenied    = "Permission denied"
 )
 
 type Caffeinate struct {
 	conn *systemd.Conn
 	file *os.File
+
+	preventShutdown bool
 }
 
-func New() *Caffeinate {
+func New(preventShutdown bool) *Caffeinate {
 	return &Caffeinate{}
 }
 
@@ -31,6 +34,11 @@ func (c *Caffeinate) Start() error {
 
 	if c.file != nil {
 		return ErrAlreadyStarted
+	}
+
+	inhibitWhat := inhibitWhatSleep
+	if c.preventShutdown {
+		inhibitWhat = inhibitWhatShutdown
 	}
 
 	c.conn, err = systemd.New()

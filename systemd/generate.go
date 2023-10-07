@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	defaultPermission = 0644
+	defaultPermission = 0o644
 	systemdSystemDir  = "/etc/systemd/system/"
 
 	systemdUnitDefaultTmpl = `[Unit]
@@ -37,7 +37,8 @@ Environment="{{ . }}"
 
 	systemdTimerDefaultTmpl = `[Unit]
 Description={{ .TimerDescription }}
-
+{{ if .AfterNetworkOnline }}After=network-online.target
+{{ end }}
 [Timer]
 {{ range .OnCalendar -}}
 OnCalendar={{ . }}
@@ -59,37 +60,38 @@ const (
 	SystemUnit
 )
 
-var (
-	fs afero.Fs
-)
+var fs afero.Fs
 
 // templateInfo to create systemd unit
 type templateInfo struct {
 	templates.DefaultData
-	JobDescription   string
-	TimerDescription string
-	WorkingDirectory string
-	CommandLine      string
-	OnCalendar       []string
-	SystemdProfile   string
-	Nice             int
-	Environment      []string
+	JobDescription     string
+	TimerDescription   string
+	WorkingDirectory   string
+	CommandLine        string
+	OnCalendar         []string
+	SystemdProfile     string
+	Nice               int
+	Environment        []string
+	AfterNetworkOnline bool
 }
 
 // Config for generating systemd unit and timer files
 type Config struct {
-	CommandLine      string
-	Environment      []string
-	WorkingDirectory string
-	Title            string
-	SubTitle         string
-	JobDescription   string
-	TimerDescription string
-	Schedules        []string
-	UnitType         UnitType
-	Priority         string
-	UnitFile         string
-	TimerFile        string
+	CommandLine        string
+	Environment        []string
+	WorkingDirectory   string
+	Title              string
+	SubTitle           string
+	JobDescription     string
+	TimerDescription   string
+	Schedules          []string
+	UnitType           UnitType
+	Priority           string
+	UnitFile           string
+	TimerFile          string
+	DropInFiles        []string
+	AfterNetworkOnline bool
 }
 
 func init() {
@@ -126,15 +128,16 @@ func Generate(config Config) error {
 	}
 
 	info := templateInfo{
-		DefaultData:      templates.NewDefaultData(nil),
-		JobDescription:   config.JobDescription,
-		TimerDescription: config.TimerDescription,
-		WorkingDirectory: config.WorkingDirectory,
-		CommandLine:      config.CommandLine,
-		OnCalendar:       config.Schedules,
-		SystemdProfile:   systemdProfile,
-		Nice:             nice,
-		Environment:      environment,
+		DefaultData:        templates.NewDefaultData(nil),
+		JobDescription:     config.JobDescription,
+		TimerDescription:   config.TimerDescription,
+		WorkingDirectory:   config.WorkingDirectory,
+		CommandLine:        config.CommandLine,
+		OnCalendar:         config.Schedules,
+		AfterNetworkOnline: config.AfterNetworkOnline,
+		SystemdProfile:     systemdProfile,
+		Nice:               nice,
+		Environment:        environment,
 	}
 
 	var data bytes.Buffer
@@ -173,12 +176,23 @@ func Generate(config Config) error {
 	if err := afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
+
+	dropInDir := filepath.Join(systemdUserDir, GetServiceFileDropInDir(config.Title, config.SubTitle))
+	if err := CreateDropIns(dropInDir, config.DropInFiles); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // GetServiceFile returns the service file name for the profile
 func GetServiceFile(profileName, commandName string) string {
 	return fmt.Sprintf("resticprofile-%s@profile-%s.service", commandName, profileName)
+}
+
+// GetServiceDropInFile returns the service file drop-in dir name for the profile
+func GetServiceFileDropInDir(profileName, commandName string) string {
+	return fmt.Sprintf("resticprofile-%s@profile-%s.service.d", commandName, profileName)
 }
 
 // GetTimerFile returns the timer file name for the profile
@@ -194,7 +208,7 @@ func GetUserDir() (string, error) {
 	}
 
 	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
-	if err := fs.MkdirAll(systemdUserDir, 0700); err != nil {
+	if err := fs.MkdirAll(systemdUserDir, 0o700); err != nil {
 		return "", err
 	}
 	return systemdUserDir, nil

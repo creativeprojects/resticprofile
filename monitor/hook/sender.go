@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,6 +20,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util/templates"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type Sender struct {
@@ -34,8 +36,13 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 	}
 
 	// normal client
-	client := &http.Client{
-		Timeout: timeout,
+	client := retryablehttp.NewClient()
+	// client.HTTPClient.Timeout = timeout
+	client.RetryWaitMax = timeout
+	client.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+		f64 := float64(min) * math.Pow(2, float64(attemptNum-1))
+		wait := time.Duration(f64)
+		return wait
 	}
 
 	if len(certificates) > 0 {
@@ -43,20 +50,20 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 		transport.TLSClientConfig = &tls.Config{
 			RootCAs: getRootCAs(certificates),
 		}
-		client.Transport = transport
+		client.HTTPClient.Transport = transport
 	}
 
 	// another client for insecure requests
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	insecureClient := &http.Client{
-		Transport: transport,
-		Timeout:   timeout,
-	}
+	insecureClient := retryablehttp.NewClient()
+	// insecureClient.HTTPClient.Timeout = timeout
+	client.RetryWaitMax = timeout
+	insecureClient.HTTPClient.Transport = transport
 
 	return &Sender{
-		client:         client,
-		insecureClient: insecureClient,
+		client:         client.StandardClient(),
+		insecureClient: insecureClient.StandardClient(),
 		userAgent:      userAgent,
 		dryRun:         dryRun,
 	}

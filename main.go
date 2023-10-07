@@ -180,7 +180,7 @@ func main() {
 	var caffeinate *preventsleep.Caffeinate
 	if global.PreventSleep {
 		clog.Debug("preventing the system from sleeping")
-		caffeinate = preventsleep.New()
+		caffeinate = preventsleep.New(global.PreventShutdown)
 		err = caffeinate.Start()
 		if err != nil {
 			clog.Errorf("preventing system sleep: %s", err)

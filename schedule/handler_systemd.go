@@ -105,6 +105,11 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 		// user has sudoed already
 		unitType = systemd.SystemUnit
 	}
+
+	if unitType == systemd.UserUnit && job.AfterNetworkOnline {
+		return fmt.Errorf("after-network-online only available for \"system\" permission schedules")
+	}
+
 	err := systemd.Generate(systemd.Config{
 		CommandLine:      job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
 		Environment:      job.Environment,
@@ -118,6 +123,7 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 		Priority:         job.GetPriority(),
 		UnitFile:         h.config.UnitTemplate,
 		TimerFile:        h.config.TimerTemplate,
+		DropInFiles:      h.config.DropInFiles,
 	})
 	if err != nil {
 		return err
