@@ -16,6 +16,14 @@ curl -LO https://raw.githubusercontent.com/creativeprojects/resticprofile/master
 ```
 It will create a `bin` directory under your current directory and place `resticprofile.exe` in it.
 
+## Installation using scoop
+
+Resticprofile can be installed from [scoop](https://scoop.sh) main bucket:
+
+```powershell
+scoop install resticprofile
+```
+
 ## Manual installation (Windows)
 
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
