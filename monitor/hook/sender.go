@@ -34,22 +34,25 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 	}
 
 	// normal client
-	client := &http.Client{}
-	client.Timeout = timeout
+	client := &http.Client{
+		Timeout: timeout,
+	}
 
 	if len(certificates) > 0 {
 		transport := http.DefaultTransport.(*http.Transport).Clone()
 		transport.TLSClientConfig = &tls.Config{
 			RootCAs: getRootCAs(certificates),
 		}
+		client.Transport = transport
 	}
 
 	// another client for insecure requests
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	insecureClient := &http.Client{}
-	insecureClient.Timeout = timeout
-	insecureClient.Transport = transport
+	insecureClient := &http.Client{
+		Timeout:   timeout,
+		Transport: transport,
+	}
 
 	return &Sender{
 		client:         client,
@@ -85,6 +88,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		body = resolve(cfg.Body, ctx)
 		bodyReader = bytes.NewBufferString(body)
 	}
+
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return err
