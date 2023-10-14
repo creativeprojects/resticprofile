@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -20,7 +19,6 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util/templates"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 type Sender struct {
@@ -36,34 +34,26 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 	}
 
 	// normal client
-	client := retryablehttp.NewClient()
-	// client.HTTPClient.Timeout = timeout
-	client.RetryWaitMax = timeout
-	client.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
-		f64 := float64(min) * math.Pow(2, float64(attemptNum-1))
-		wait := time.Duration(f64)
-		return wait
-	}
+	client := &http.Client{}
+	client.Timeout = timeout
 
 	if len(certificates) > 0 {
 		transport := http.DefaultTransport.(*http.Transport).Clone()
 		transport.TLSClientConfig = &tls.Config{
 			RootCAs: getRootCAs(certificates),
 		}
-		client.HTTPClient.Transport = transport
 	}
 
 	// another client for insecure requests
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	insecureClient := retryablehttp.NewClient()
-	// insecureClient.HTTPClient.Timeout = timeout
-	client.RetryWaitMax = timeout
-	insecureClient.HTTPClient.Transport = transport
+	insecureClient := &http.Client{}
+	insecureClient.Timeout = timeout
+	insecureClient.Transport = transport
 
 	return &Sender{
-		client:         client.StandardClient(),
-		insecureClient: insecureClient.StandardClient(),
+		client:         client,
+		insecureClient: insecureClient,
 		userAgent:      userAgent,
 		dryRun:         dryRun,
 	}
@@ -95,7 +85,6 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		body = resolve(cfg.Body, ctx)
 		bodyReader = bytes.NewBufferString(body)
 	}
-
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return err
