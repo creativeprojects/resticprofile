@@ -203,6 +203,12 @@ func (h *HandlerSystemd) RemoveJob(job *config.ScheduleConfig, permission string
 		return nil
 	}
 
+	dropInDir := systemd.GetServiceFileDropInDir(job.Title, job.SubTitle)
+	err = os.RemoveAll(path.Join(systemdPath, dropInDir))
+	if err != nil {
+		return nil
+	}
+
 	return nil
 }
 
