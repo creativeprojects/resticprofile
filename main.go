@@ -178,9 +178,9 @@ func main() {
 
 	// prevent computer from sleeping
 	var caffeinate *preventsleep.Caffeinate
-	if global.PreventSleep || global.PreventShutdown {
+	if global.PreventSleep {
 		clog.Debug("preventing the system from sleeping")
-		caffeinate = preventsleep.New(global.PreventShutdown)
+		caffeinate = preventsleep.New()
 		err = caffeinate.Start()
 		if err != nil {
 			clog.Errorf("preventing system sleep: %s", err)

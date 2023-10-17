@@ -30,7 +30,6 @@ type Global struct {
 	SenderTimeout        time.Duration `mapstructure:"send-timeout" default:"30s" examples:"15s;30s;2m30s" description:"Timeout when sending messages to a webhook - see https://creativeprojects.github.io/resticprofile/configuration/http_hooks/"`
 	CACertificates       []string      `mapstructure:"ca-certificates" description:"Path to PEM encoded certificates to trust in addition to system certificates when resticprofile sends to a webhook - see https://creativeprojects.github.io/resticprofile/configuration/http_hooks/"`
 	PreventSleep         bool          `mapstructure:"prevent-sleep" default:"false" description:"Prevent the system from sleeping while running commands - see https://creativeprojects.github.io/resticprofile/configuration/sleep/"`
-	PreventShutdown      bool          `mapstructure:"prevent-sleep" default:"false" description:"Prevent the system from shutting down while running commands - see https://creativeprojects.github.io/resticprofile/configuration/sleep/"`
 	GroupContinueOnError bool          `mapstructure:"group-continue-on-error" default:"false" description:"Enable groups to continue with the next profile(s) instead of stopping at the first failure"`
 }
 
