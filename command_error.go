@@ -24,6 +24,10 @@ func (c *commandError) Error() string {
 	return c.err.Error()
 }
 
+func (c *commandError) Unwrap() error {
+	return c.err
+}
+
 func (c *commandError) Commandline() string {
 	args := ""
 	argsList := c.scd.publicArgs
