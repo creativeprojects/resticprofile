@@ -844,6 +844,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				ConfigFile:              p.config.configFile,
 				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
 				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
+				SystemdDropInFiles:      p.SystemdDropInFiles,
 			}
 
 			if len(config.Log) > 0 {

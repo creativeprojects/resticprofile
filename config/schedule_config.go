@@ -41,7 +41,7 @@ type ScheduleConfig struct {
 	IgnoreOnBattery         bool
 	IgnoreOnBatteryLessThan int
 	AfterNetworkOnline      bool
-	DropInFiles             []string
+	SystemdDropInFiles      []string
 }
 
 // NewRemoveOnlyConfig creates a job config that may be used to call Job.Remove() on a scheduled job
