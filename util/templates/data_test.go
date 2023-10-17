@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,13 +24,38 @@ func TestBinaryDir(t *testing.T) {
 func TestCurrentDir(t *testing.T) {
 	dir, err := os.Getwd()
 	require.NoError(t, err)
-	defer func(d string) { _ = os.Chdir(d) }(dir)
+	resetDir := func() { _ = os.Chdir(dir) }
+	defer resetDir()
 
-	require.NoError(t, os.Chdir(t.TempDir()))
-	currentDir, _ := os.Getwd()
+	t.Run("CurrentDir", func(t *testing.T) {
+		defer resetDir()
+		require.NoError(t, os.Chdir(t.TempDir()))
+		currentDir, _ := os.Getwd()
 
-	assert.Equal(t, filepath.ToSlash(dir), NewDefaultData(nil).StartupDir)
-	assert.Equal(t, filepath.ToSlash(currentDir), NewDefaultData(nil).CurrentDir)
+		assert.Equal(t, filepath.ToSlash(dir), NewDefaultData(nil).StartupDir)
+		assert.Equal(t, filepath.ToSlash(currentDir), NewDefaultData(nil).CurrentDir)
+	})
+
+	t.Run("getStartupDir", func(t *testing.T) {
+		defer resetDir()
+
+		defaultLogger := clog.GetDefaultLogger()
+		defer clog.SetDefaultLogger(defaultLogger)
+
+		dir := filepath.Join(t.TempDir(), "start-dir")
+		require.NoError(t, os.Mkdir(dir, 0700))
+		require.NoError(t, os.Chdir(dir))
+		dir, _ = os.Getwd()
+
+		mem := clog.NewMemoryHandler()
+		clog.SetDefaultLogger(clog.NewLogger(mem))
+
+		currentDir, logError := internalGetCurrentDir(".TestDir")
+		assert.Equal(t, filepath.ToSlash(dir), currentDir)
+		assert.Nil(t, logError)
+
+		// TODO: Test error in getwd()
+	})
 }
 
 func TestTempDir(t *testing.T) {

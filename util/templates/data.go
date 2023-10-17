@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -43,10 +44,14 @@ func NewDefaultData(env map[string]string) (data DefaultData) {
 		CurrentDir: startupDir,
 	}
 
-	if cwd, err := os.Getwd(); err == nil {
-		data.CurrentDir = filepath.ToSlash(cwd)
+	if logStartupDirError != nil {
+		logStartupDirError()
+	}
+
+	if dir, errorFunc := internalGetCurrentDir(".CurrentDir"); errorFunc == nil {
+		data.CurrentDir = dir
 	} else {
-		clog.Warning("failed retrieving pwd: %s", err.Error())
+		errorFunc()
 	}
 
 	if binary, err := os.Executable(); err == nil {
@@ -75,11 +80,16 @@ func NewDefaultData(env map[string]string) (data DefaultData) {
 	return data
 }
 
-var startupDir = (func() string {
+func internalGetCurrentDir(name string) (startupDir string, logError func()) {
 	if dir, err := os.Getwd(); err == nil {
-		return filepath.ToSlash(dir)
+		startupDir = filepath.ToSlash(dir)
 	} else {
-		clog.Warning("failed retrieving pwd: %s", err.Error())
-		return "."
+		startupDir = "."
+		logError = sync.OnceFunc(func() {
+			clog.Debugf("using %q as fallback for %s ; %s", startupDir, name, err.Error())
+		})
 	}
-})()
+	return
+}
+
+var startupDir, logStartupDirError = internalGetCurrentDir(".StartupDir")
