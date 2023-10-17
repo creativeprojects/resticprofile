@@ -95,6 +95,7 @@ type Profile struct {
 	PrometheusPush          string                            `mapstructure:"prometheus-push" format:"uri" description:"URL of the prometheus push gateway to send the summary of the last restic command result to"`
 	PrometheusPushJob       string                            `mapstructure:"prometheus-push-job" description:"Prometheus push gateway job name. $command placeholder is replaced with restic command"`
 	PrometheusLabels        map[string]string                 `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
+	SystemdDropInFiles      []string                          `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process"`
 	Init                    *InitSection                      `mapstructure:"init"`
 	Backup                  *BackupSection                    `mapstructure:"backup"`
@@ -588,6 +589,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 	p.CacheDir = fixPath(p.CacheDir, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.CACert = fixPath(p.CACert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	p.SystemdDropInFiles = fixPaths(p.SystemdDropInFiles, expandEnv, absolutePrefix(rootPath))
 
 	// Forward to sections accepting paths
 	for _, s := range GetSectionsWith[relativePath](p) {
