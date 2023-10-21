@@ -296,6 +296,7 @@ type ScheduleBaseSection struct {
 	ScheduleEnvCapture              []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
 	ScheduleIgnoreOnBattery         bool          `mapstructure:"schedule-ignore-on-battery" default:"false" description:"Don't schedule the start of this profile when running on battery"`
 	ScheduleIgnoreOnBatteryLessThan int           `mapstructure:"schedule-ignore-on-battery-less-than" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
+	ScheduleAfterNetworkOnline      bool          `mapstructure:"schedule-after-network-online" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
@@ -844,6 +845,7 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				ConfigFile:              p.config.configFile,
 				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
 				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
+				AfterNetworkOnline:      s.ScheduleAfterNetworkOnline,
 				SystemdDropInFiles:      p.SystemdDropInFiles,
 			}
 
