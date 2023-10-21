@@ -45,7 +45,6 @@ type SchedulerSystemd struct {
 	Fs            afero.Fs
 	UnitTemplate  string
 	TimerTemplate string
-	DropInFiles   []string
 }
 
 func (s SchedulerSystemd) Type() string {

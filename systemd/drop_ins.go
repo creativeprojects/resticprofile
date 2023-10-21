@@ -50,16 +50,17 @@ func CreateDropIns(dir string, files []string) error {
 		}
 	}
 
-	for _, dropInFile := range files {
+	for _, dropInFilePath := range files {
+		dropInFileBase := filepath.Base(dropInFilePath)
 		// change the extension to prepend `.resticprofile`
 		// to signify it wasn't created outside of resticprofile, i.e. we own it
-		origExt := filepath.Ext(dropInFile)
-		dropInFileOwned := fmt.Sprintf("%s.resticprofile%s", strings.TrimSuffix(dropInFile, origExt), origExt)
+		origExt := filepath.Ext(dropInFileBase)
+		dropInFileOwned := fmt.Sprintf("%s.resticprofile%s", strings.TrimSuffix(dropInFileBase, origExt), origExt)
 		dst, err := fs.Create(filepath.Join(dir, dropInFileOwned))
 		if err != nil {
 			return err
 		}
-		src, err := fs.Open(dropInFile)
+		src, err := fs.Open(dropInFilePath)
 		if err != nil {
 			return err
 		}
