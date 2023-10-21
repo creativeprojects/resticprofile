@@ -25,6 +25,7 @@ const (
 	systemctlStatus  = "status"
 	systemctlReload  = "daemon-reload"
 	flagUserUnit     = "--user"
+	flagNoPager      = "--no-pager"
 
 	// https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
 	codeStatusNotRunning   = 3
@@ -225,7 +226,7 @@ var (
 // getSystemdStatus displays the status of all the timers installed on that profile
 func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error) {
 	timerName := fmt.Sprintf("resticprofile-*@profile-%s.timer", profile)
-	args := []string{"list-timers", "--all", "--no-pager", timerName}
+	args := []string{"list-timers", "--all", flagNoPager, timerName}
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
@@ -246,6 +247,7 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
+	args = append(args, flagNoPager)
 	args = append(args, command, timerName)
 
 	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
@@ -270,7 +272,7 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	fmt.Print("Recent log (>= warning in the last month)\n==========================================\n")
 	timerName = strings.TrimSuffix(timerName, ".timer")
-	args := []string{"--since", "1 month ago", "--no-pager", "--priority", "warning", "--unit", timerName}
+	args := []string{"--since", "1 month ago", flagNoPager, "--priority", "warning", "--unit", timerName}
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
