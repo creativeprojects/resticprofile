@@ -16,14 +16,19 @@ var (
 	ownedDropInRegex = regexp.MustCompile(".resticprofile.conf$")
 )
 
+func getOwnedName(basename string) string {
+	ext := filepath.Ext(basename)
+	return fmt.Sprintf("%s.resticprofile%s", strings.TrimSuffix(basename, ext), ext)
+}
+
 func CreateDropIns(dir string, files []string) error {
 	if err := fs.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 
-	fileBasenames := make(map[string]struct{})
+	fileBasenamesOwned := make(map[string]struct{})
 	for _, file := range files {
-		fileBasenames[filepath.Base(file)] = struct{}{}
+		fileBasenamesOwned[getOwnedName(filepath.Base(file))] = struct{}{}
 	}
 
 	d, err := fs.Open(dir)
@@ -41,10 +46,11 @@ func CreateDropIns(dir string, files []string) error {
 			continue
 		}
 		createdByUs := ownedDropInRegex.MatchString(f.Name())
-		_, notOrphaned := fileBasenames[f.Name()]
+		_, notOrphaned := fileBasenamesOwned[f.Name()]
 		if createdByUs && !notOrphaned {
-			clog.Infof("deleting orphaned drop-in file %v", f.Name())
-			if err := fs.Remove(filepath.Join(dir, f.Name())); err != nil {
+			orphanPath := filepath.Join(dir, f.Name())
+			clog.Infof("deleting orphaned drop-in file %v", orphanPath)
+			if err := fs.Remove(orphanPath); err != nil {
 				return err
 			}
 		}
@@ -54,9 +60,9 @@ func CreateDropIns(dir string, files []string) error {
 		dropInFileBase := filepath.Base(dropInFilePath)
 		// change the extension to prepend `.resticprofile`
 		// to signify it wasn't created outside of resticprofile, i.e. we own it
-		origExt := filepath.Ext(dropInFileBase)
-		dropInFileOwned := fmt.Sprintf("%s.resticprofile%s", strings.TrimSuffix(dropInFileBase, origExt), origExt)
-		dst, err := fs.Create(filepath.Join(dir, dropInFileOwned))
+		dropInFileOwned := getOwnedName(dropInFileBase)
+		dstPath := filepath.Join(dir, dropInFileOwned)
+		dst, err := fs.Create(dstPath)
 		if err != nil {
 			return err
 		}
@@ -64,6 +70,7 @@ func CreateDropIns(dir string, files []string) error {
 		if err != nil {
 			return err
 		}
+		clog.Infof("writing %v", dstPath)
 		if _, err := io.Copy(dst, src); err != nil {
 			return err
 		}
