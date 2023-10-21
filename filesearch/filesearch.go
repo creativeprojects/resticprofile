@@ -149,7 +149,7 @@ func FindConfigurationIncludes(configFile string, includes []string) ([]string, 
 		if fileExists(include) {
 			addFile(include)
 		} else {
-			if matches, err := filepath.Glob(include); err == nil && matches != nil {
+			if matches, err := afero.Glob(fs, include); err == nil && matches != nil {
 				sort.Strings(matches)
 				for _, match := range matches {
 					addFile(match)
