@@ -45,7 +45,7 @@ jobs:
       - name: Build
         run: |
           cd docs
-          BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
+          echo "BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)" >> $GITHUB_ENV
           sed -i 's@https://creativeprojects.github.io/resticprofile/@https://${BRANCH_NAME}.resticprofile.pages.dev/@g' config.toml
           hugo --minify
 
