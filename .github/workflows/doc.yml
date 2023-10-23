@@ -44,3 +44,12 @@ jobs:
 
       - name: Build
         run: cd docs && hugo --minify
+
+      - name: Publish
+        uses: cloudflare/pages-action@1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: 'resticprofile'
+          directory: 'public'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
