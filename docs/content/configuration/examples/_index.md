@@ -81,7 +81,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ## Configuration with inheritance
 
@@ -423,7 +423,7 @@ self {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ## Configuration example for Windows
 
@@ -529,7 +529,7 @@ test {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ## Use stdin in configuration
 
@@ -613,5 +613,5 @@ mysql {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 

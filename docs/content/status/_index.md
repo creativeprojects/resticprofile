@@ -54,7 +54,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 Here's an example of a generated file, where you can see that the last `check` failed, whereas the last `backup` succeeded:
@@ -172,4 +172,4 @@ profile:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}

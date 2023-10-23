@@ -92,7 +92,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 Here are the defaults if you don't specify your own (which I recommend to use as a starting point for your own templates)
 

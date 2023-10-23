@@ -63,7 +63,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 You will note that the secondary repository doesn't need to have a `2` behind its flags (`repository2`, `password-file2`, etc.). It's because the flags are well separated in the configuration and there's no ambiguity.
 
@@ -127,4 +127,4 @@ profile {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}

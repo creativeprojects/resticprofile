@@ -69,7 +69,7 @@ global {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
@@ -196,7 +196,7 @@ default:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 {{% notice style="tip" %}}
 You can use `resticprofile [<profile-name>.]show` (or `resticprofile [--name <profile-name>] show`) to see the resulting configuration after merging.

@@ -78,7 +78,7 @@ root:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 {{% notice style="note" %}}
 Please note you need to set `extended-status` to `true` if you want all the available metrics. See [Extended status]({{< ref "/status/#-extended-status" >}}) for more information.
@@ -223,7 +223,7 @@ root:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 which will add the `host` label to all your metrics.
