@@ -86,7 +86,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ## Send logs to a temporary file
 
@@ -161,4 +161,4 @@ backup_current:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}

@@ -35,13 +35,28 @@ jobs:
           hugo-version: 'latest'
           extended: true
 
-      - name: Build
-        run: cd docs && hugo --minify
+      - name: Build for GitHub Pages
+        run: cd docs && hugo --minify --baseURL https://creativeprojects.github.io/resticprofile/
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         # if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-docs
           publish_dir: ./public
+
+      - name: Build for pages.dev
+        run: |
+          cd docs
+          sed -i "s/canonifyURLs = true/canonifyURLs = false/g" config.toml
+          hugo --minify --baseURL https://resticprofile.creativeprojects.tech/
+
+      - name: Publish to pages.dev
+        uses: cloudflare/pages-action@1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: 'resticprofile'
+          directory: 'public'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

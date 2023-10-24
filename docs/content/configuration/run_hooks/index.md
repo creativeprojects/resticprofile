@@ -98,7 +98,7 @@ documents {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 `run-before`, `run-after`, `run-after-fail` and `run-finally` can be a string, or an array of strings if you need to run more than one command
 
@@ -270,7 +270,7 @@ default {
 }
 ```
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 The config structure `stream-error` can be defined multiple times within a profile and consists of the following properties:
 - `pattern`: a regular expression pattern matched against every line of stderr.
@@ -318,4 +318,4 @@ default:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}

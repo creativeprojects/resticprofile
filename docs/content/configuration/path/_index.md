@@ -96,7 +96,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 {{% notice hint %}}
 Set `base-dir` to an absolute path to resolve `files` and `local:backup` relative to it.

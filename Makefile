@@ -267,6 +267,10 @@ generate-config-reference: build
 	LAYOUT_UPLINK="[go to top](#reference)" \
 	$(abspath $(BINARY)) generate --config-reference > $(CONFIG_REFERENCE_DIR)/index.md
 
+documentation: generate-jsonschema generate-config-reference
+	@echo "[*] $@"
+	cd docs && hugo --minify
+
 syslog:
 	@echo "[*] $@"
 	docker run -d \
@@ -276,6 +280,20 @@ syslog:
 		-p 5514:514/tcp \
 		-v $(CURRENT_DIR)/examples/rsyslogd.conf:/etc/rsyslog.d/listen.conf \
 		instantlinux/rsyslogd:latest
+
+syslog-ng:
+	@echo "[*] $@"
+	docker run -d \
+		--name=syslog-ng \
+		--rm \
+		-e PUID=1000 \
+		-e PGID=1000 \
+		-e TZ=Etc/UTC \
+		-p 5514:5514/udp \
+		-p 5514:6601/tcp \
+		-v $(CURRENT_DIR)/examples/syslog-ng:/config \
+		-v $(CURRENT_DIR)/log:/var/log \
+		lscr.io/linuxserver/syslog-ng:latest
 
 checkdoc:
 	$(GOCMD) run ./config/checkdoc -r docs/content

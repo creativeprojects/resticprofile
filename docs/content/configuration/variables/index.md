@@ -295,7 +295,7 @@ src:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 This is obviously not a real world example, but it shows many of the possibilities you can do with variable expansion.
 
@@ -475,7 +475,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 ## Runtime variable expansion
@@ -555,7 +555,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 {{% notice style="hint" %}}
 Use `$$` to escape a single `$` in configuration values that support variable expansion. E.g. on Windows you might want to exclude `$RECYCLE.BIN`. Specify it as: `exclude = ["$$RECYCLE.BIN"]`.

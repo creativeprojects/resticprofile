@@ -57,7 +57,7 @@ profile_name {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 All the restic flags can be defined in a section. For most of them you just need to remove the two dashes in front.
 
@@ -143,7 +143,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 You may have noticed the `source` flag is accepting an array of values (inside brackets in TOML, list of values in YAML)

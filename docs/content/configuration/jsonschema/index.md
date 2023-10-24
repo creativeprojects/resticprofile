@@ -62,7 +62,7 @@ version: "2"
 }
 ``````
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 {{% notice style="hint" %}}
 YAML & TOML validation with JSON schema is not supported out of the box. Additional extensions are required.

@@ -105,7 +105,7 @@ backup-homes:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 {{% notice style="note" %}}
@@ -138,7 +138,7 @@ Assuming the parent profile declares the list property `<list-property>`:
 * `<list-property>...` or `<list-property>__APPEND` appends to the list property
 * `...<list-property>` or `<list-property>__PREPEND` prepends to the list property
 
-{{< tabs groupid="config-with-inheritance-list-append" >}}
+{{< tabs groupid="config-without-json" >}}
 {{% tab title="yaml" %}}
 
 ```yaml
@@ -177,7 +177,7 @@ source = '/myrepo'
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 In the examples above, the final value of `exclude` in `derived-profile` is `['.*', '~*', '.git']`.
 
@@ -272,7 +272,7 @@ use = { name = "name-of-mixin", WHAT = "Mixin" }
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 #### Named Mixin Declaration
 
@@ -304,7 +304,7 @@ List properties that have been inherited from a parent can be modified (append/p
 
 #### Mixin Example
 
-{{< tabs groupid="config-with-mixins-examples" >}}
+{{< tabs groupid="config-without-json" >}}
 {{% tab title="yaml" %}}
 
 ```yaml
@@ -413,7 +413,7 @@ version = 2
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 ## Common Flags
@@ -480,7 +480,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 Resulting in the following restic commandline:
 

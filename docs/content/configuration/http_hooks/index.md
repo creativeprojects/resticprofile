@@ -288,7 +288,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 A few environment variables will be available to construct the url and the body:
@@ -454,7 +454,7 @@ profile:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ### Self-signed certificates
 
@@ -528,4 +528,4 @@ global {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
