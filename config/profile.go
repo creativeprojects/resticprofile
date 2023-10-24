@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -19,7 +20,6 @@ import (
 	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 // resticVersion14 is the semver of restic 0.14 (the version where several flag names were changed)

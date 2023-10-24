@@ -9,13 +9,13 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/spf13/afero"
-	"golang.org/x/exp/slices"
 )
 
 const (

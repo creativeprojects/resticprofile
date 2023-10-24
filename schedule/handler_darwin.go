@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -19,7 +20,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/spf13/afero"
-	"golang.org/x/exp/slices"
 	"howett.net/plist"
 )
 

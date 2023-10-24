@@ -1,6 +1,6 @@
 package collect
 
-import "golang.org/x/exp/slices"
+import "slices"
 
 // All collects all items from input that satisfy the condition
 // Empty or nil input returns nil output

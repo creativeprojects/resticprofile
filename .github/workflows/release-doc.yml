@@ -60,3 +60,4 @@ jobs:
           projectName: 'resticprofile'
           directory: 'public'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main

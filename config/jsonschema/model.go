@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/util"
-	"golang.org/x/exp/slices"
 )
 
 const (

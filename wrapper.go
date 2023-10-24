@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,7 +24,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/collect"
-	"golang.org/x/exp/slices"
 )
 
 type resticWrapper struct {
