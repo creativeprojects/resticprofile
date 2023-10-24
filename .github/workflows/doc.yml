@@ -45,6 +45,7 @@ jobs:
       - name: Build
         run: |
           cd docs
+          sed -i "s/canonifyURLs = true/canonifyURLs = false/g" config.toml
           export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
           hugo --minify --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
