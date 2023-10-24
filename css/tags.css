@@ -5,7 +5,7 @@
     margin-top:1rem;
 }
 
-#body .tags a.tag-link {
+#R-body .tags a.tag-link {
     border-bottom-right-radius: 3px;
     border-top-right-radius: 3px;
     box-shadow: 0 1px 2px rgba( 0, 0, 0, .2 );
@@ -19,7 +19,7 @@
     position: relative;
 }
 
-#body .tags a.tag-link:before {
+#R-body .tags a.tag-link:before {
     border-color: transparent;
     border-style: solid;
     border-width: 1em 1em 1em 0;
@@ -31,7 +31,7 @@
     width: 0;
 }
 
-#body .tags a.tag-link:after {
+#R-body .tags a.tag-link:after {
     border-radius: 100%;
     content: "";
     left: 1px;
@@ -41,6 +41,6 @@
     width: 5px;
 }
 
-#body .tags a.tag-link:hover:after {
+#R-body .tags a.tag-link:hover:after {
     width: 5px;
 }

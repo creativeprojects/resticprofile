@@ -7,89 +7,104 @@ need a way to calculate them ourself */
 :root {
     --dpr: 1;
     --bpx: 1;
+    --bpx1: 1;
 }
 @media (min-resolution: 105dpi) {
     :root {
         --dpr: 1.1;
         --bpx: 1.1;
+        --bpx1: calc(1/1.1);
     }
 }
 @media (min-resolution: 115dpi) {
     :root {
         --dpr: 1.2;
         --bpx: 1.2;
+        --bpx1: calc(1/1.2);
     }
 }
 @media (min-resolution: 120dpi) {
     :root {
         --dpr: 1.25;
         --bpx: 1.25;
+        --bpx1: calc(1/1.25);
     }
 }
 @media (min-resolution: 128dpi) {
     :root {
         --dpr: 1.333;
         --bpx: 1.333;
+        --bpx1: calc(1/1.333);
     }
 }
 @media (min-resolution: 144dpi) {
     :root {
         --dpr: 1.5;
         --bpx: 1.5;
+        --bpx1: calc(1/1.5);
     }
 }
 @media (min-resolution: 160dpi) {
     :root {
         --dpr: 1.666;
         --bpx: 1.666;
+        --bpx1: calc(1/1.666);
     }
 }
 @media (min-resolution: 168dpi) {
     :root {
         --dpr: 1.75;
         --bpx: 1.75;
+        --bpx1: calc(1/1.75);
     }
 }
 @media (min-resolution: 192dpi) {
     :root {
         --dpr: 2;
         --bpx: 1;
+        --bpx1: 1;
     }
 }
 @media (min-resolution: 240dpi) {
     :root {
         --dpr: 2.5;
         --bpx: 1.25;
+        --bpx1: calc(1/1.25);
     }
 }
 @media (min-resolution: 288dpi) {
     :root {
         --dpr: 3;
         --bpx: 1;
+        --bpx1: 1;
     }
 }
 @media (min-resolution: 384dpi) {
     :root {
         --dpr: 4;
         --bpx: 1;
+        --bpx1: 1;
     }
 }
 @media (min-resolution: 480dpi) {
     :root {
         --dpr: 5;
         --bpx: 1.25;
+        --bpx1: calc(1/1.25);
     }
 }
 @media (min-resolution: 576dpi) {
     :root {
         --dpr: 6;
         --bpx: 1.5;
+        --bpx1: calc(1/1.5);
     }
 }
 @media (min-resolution: 768dpi) {
     :root {
         --dpr: 8;
         --bpx: 1;
+        --bpx1: 1;
     }
 }
 
@@ -134,7 +149,7 @@ dd {
     transition: all 0.35s ease;
 }
 
-#sidebar {
+#R-sidebar {
     display: flex;
     flex-basis: auto;
     flex-direction: column;
@@ -151,18 +166,21 @@ dd {
     width: 18.75rem;
 }
 
-#sidebar a{
+#R-sidebar a{
     text-decoration: none;
 }
 
-#header-wrapper {
-    border-bottom-style: solid;
-    border-bottom-width: 4px;
+#R-header-wrapper {
     text-align: center;
     padding: 1rem;
     position: relative;
 }
-#header a {
+#R-header {
+    border-block-end: 1px solid transparent;
+    position: relative;
+    z-index: 1;
+}
+#R-header a {
     display: inline-block;
 }
 
@@ -198,12 +216,12 @@ dd {
     position: absolute;
 }
 
-#sidebar .searchbox > :first-child,
-#sidebar .searchbox > :last-child{
+#R-sidebar .searchbox > :first-child,
+#R-sidebar .searchbox > :last-child{
     opacity: .65;
 }
 
-#sidebar .searchbox button:hover {
+#R-sidebar .searchbox button:hover {
     opacity: 1;
 }
 
@@ -225,7 +243,7 @@ dd {
     opacity: .45;
 }
 
-#content-wrapper {
+#R-content-wrapper {
     --ps-rail-hover-color: rgba( 176, 176, 176, .25 );
     display: flex;
     flex-direction: column;
@@ -235,25 +253,46 @@ dd {
     z-index: 100;
 }
 
-#sidebar .padding {
+#R-sidebar .padding {
     padding: 0 1rem;
 }
 
-#sidebar ul {
+.footerFooter {
+    font-size: .8125rem;
+    padding-top: 2rem;
+    padding-bottom: .75rem;
+    text-align: center;
+}
+
+.footerFooter > * {
+    margin: 0 auto;
+}
+
+#R-footer > hr:first-child {
+    margin-top: 0;
+}
+
+/* increase specifity to override following #R-content-wrapper hr style */
+#R-footer > hr:nth-child(n) {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#R-sidebar ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-#sidebar ul li {
+#R-sidebar ul li {
     padding: 0;
 }
 
-#sidebar ul li.visited + span {
+#R-sidebar ul li.visited + span {
     margin-inline-end: 1rem;
 }
 
-#sidebar ul li .read-icon {
+#R-sidebar ul li .read-icon {
     display: none;
     font-size: .8125rem;
     inset-inline-end: 1rem;
@@ -262,11 +301,11 @@ dd {
     position: absolute;
 }
 
-#sidebar ul li.visited > a .read-icon {
+#R-sidebar ul li.visited > a .read-icon {
     display: inline;
 }
 
-#sidebar .nav-title {
+#R-sidebar .nav-title {
     font-size: 2rem;
     font-weight: 200;
     letter-spacing: -.02175em;
@@ -277,17 +316,17 @@ dd {
     text-transform: uppercase;
 }
 
-#sidebar .footermargin {
-    margin-top: auto;
+#R-sidebar .footermargin {
+    flex-grow: 1;
 }
 
-#sidebar hr {
+#R-content-wrapper hr {
     border-bottom-style: solid;
     border-bottom-width: 1px;
     margin: 1.5rem 1rem 1rem 1rem;
 }
 
-#body {
+#R-body {
     display: flex;
     flex-basis: 100%;
     flex-direction: column;
@@ -304,39 +343,40 @@ dd {
     z-index: 70;
 }
 
-#body img:not(.lightbox-image),
-#body img.center,
-#body .video-container {
+#R-body img,
+#R-body .video-container {
     display: block;
-    margin: 1.5rem auto;
+    margin-left: auto;
+    margin-right: auto;
     text-align: center;
 }
 
-#body img.left {
+#R-body img:not(.lightbox-image).left {
     margin-left: 0;
 }
 
-#body img.right {
+#R-body img:not(.lightbox-image).right {
     margin-right: 0;
 }
 
-#body img.border,
-#body .video-container.border {
-    border: 2px solid rgba( 134, 134, 134, .125 );
+#R-body img:not(.lightbox-image).border,
+#R-body .video-container.border {
+    background-clip: padding-box;
+    border: 1px solid rgba( 134, 134, 134, .333 );
 }
 
-#body img.shadow,
-#body .video-container.shadow {
+#R-body img:not(.lightbox-image).shadow,
+#R-body .video-container.shadow {
     box-shadow: 0 10px 30px rgba( 176, 176, 176, .666 );
 }
 
-#body img.inline {
+#R-body img:not(.lightbox-image).inline {
     display: inline !important;
     margin: 0 !important;
     vertical-align: bottom;
 }
 
-#body-inner {
+#R-body-inner {
     display: flex;
     flex: auto;
     flex-direction: column;
@@ -345,25 +385,25 @@ dd {
     position: relative; /* PS */
 }
 @media screen and (max-width: 60rem) {
-    #body-inner {
+    #R-body-inner {
         padding: 0 2rem 1rem 2rem;
     }
 }
 @media screen and (max-width: 48rem) {
-    #body-inner {
+    #R-body-inner {
         padding: 0 1.25rem .375rem 1.25rem;
     }
 }
 
-.links a:hover,
-.links a:active,
-.links a:focus,
-.links a:hover *,
-.links a:active *,
-.links a:focus *,
-.toc-wrapper a:hover,
-.toc-wrapper a:active,
-.toc-wrapper a:focus,
+.topbar-breadcrumbs a:hover,
+.topbar-breadcrumbs a:active,
+.topbar-breadcrumbs a:focus,
+.topbar-breadcrumbs a:hover *,
+.topbar-breadcrumbs a:active *,
+.topbar-breadcrumbs a:focus *,
+.topbar-content a:hover,
+.topbar-content a:active,
+.topbar-content a:focus,
 article a:hover,
 article a:active,
 article a:focus {
@@ -371,58 +411,58 @@ article a:focus {
     text-decoration: underline;
 }
 
-#body-inner:focus-visible{
+#R-body-inner:focus-visible{
     /* remove focus indicator for programatically set focus */
     outline: none;
 }
 
-#body h1 + hr {
+#R-body h1 + hr {
     margin-bottom: 2rem;
     margin-top: -1rem;
 }
 
-#body .flex-block-wrapper {
+#R-body .flex-block-wrapper {
     margin-left: auto;
     margin-right: auto;
     max-width: calc( 81.25rem - 18.75rem - 2 * 3.25rem );
     width: 100%;
 }
-body:not(.print) #body .narrow .flex-block-wrapper {
+body:not(.print) #R-body .narrow .flex-block-wrapper {
     max-width: calc( 81.25rem - 18.75rem - 2 * 9.75rem );
 }
 
 /* we limit width if we have large screens */
-@media screen and ( min-width: 81.25rem ){ /* #sidebar/width + ./max-width */
-    #body .flex-block-wrapper {
+@media screen and ( min-width: 81.25rem ){ /* #R-sidebar/width + ./max-width */
+    #R-body .flex-block-wrapper {
         width: calc( 81.25rem - 18.75rem - 2 * 3.25rem );
     }
-    body:not(.print) #body .narrow .flex-block-wrapper {
+    body:not(.print) #R-body .narrow .flex-block-wrapper {
         width: calc( 81.25rem - 18.75rem - 2 * 9.75rem );
     }
 }
 
-body:not(.print) #body-inner.narrow {
+body:not(.print) #R-body-inner.narrow {
     padding: 2rem 9.75rem;
 }
 @media screen and (max-width: 60rem) {
-    body:not(.print) #body-inner.narrow {
+    body:not(.print) #R-body-inner.narrow {
         padding: 1rem 6.5rem;
     }
 }
 @media screen and (max-width: 48rem) {
-    body:not(.print) #body-inner.narrow {
+    body:not(.print) #R-body-inner.narrow {
         padding: .375rem 3.25rem;
     }
 }
 
-#body-inner div.article-subheading,
-#body-inner .chapter.deprecated h3:first-of-type {
+#R-body-inner div.article-subheading,
+#R-body-inner .chapter.deprecated h3:first-of-type {
     font-weight: 200;
     margin-top: 0;
     text-align: center;
 }
 
-body:not(.print) #body-inner.narrow p {
+body:not(.print) #R-body-inner.narrow p {
     font-size: 1.2rem;
     text-align: justify;
 }
@@ -443,17 +483,17 @@ h1 {
     text-transform: uppercase;
 }
 
-body:not(.print) #body-inner.narrow h1 {
+body:not(.print) #R-body-inner.narrow h1 {
     border-bottom: 4px solid rgba( 134, 134, 134, .125 );
     font-size: 3.5rem;
 }
 @media only screen and (min-width: 48rem) and (max-width: 60rem) {
-    body:not(.print) #body-inner.narrow h1 {
+    body:not(.print) #R-body-inner.narrow h1 {
         font-size: 2.8rem;
     }
 }
 @media only screen and (max-width: 48rem) {
-    body:not(.print) #body-inner.narrow h1 {
+    body:not(.print) #R-body-inner.narrow h1 {
         font-size: 2.5rem;
     }
 }
@@ -545,34 +585,40 @@ div.box > .box-content {
     padding-right: 1rem;
 }
 
-#body table th > :first-child,
-#body table th > :first-child :first-child,
-#body table td > :first-child,
-#body table td > :first-child :first-child,
-#body div.box > .box-content > :first-child,
-#body div.box > .box-content > :first-child :first-child,
-#body div.expand > .expand-content-text > :first-child,
-#body div.expand > .expand-content-text > :first-child :first-child,
-#body div.tab-content > .tab-content-text > :first-child,
-#body div.tab-content > .tab-content-text > :first-child :first-child {
+p:empty {
+    /* in case of image render hook, Hugo may generate empty <p>s that we want to ignore */
+    display: none;
+}
+
+/* in case of image render hook, Hugo may generate empty <p>s that we want to ignore aswell, so a simple :first-child or :last-child is not enough */
+#R-body table th > :nth-child(1 of :not(:empty)),
+#R-body table th > :nth-child(1 of :not(:empty)) :nth-child(1 of :not(:empty)),
+#R-body table td > :nth-child(1 of :not(:empty)),
+#R-body table td > :nth-child(1 of :not(:empty)) :nth-child(1 of :not(:empty)),
+#R-body div.box > .box-content > :nth-child(1 of :not(:empty)),
+#R-body div.box > .box-content > :nth-child(1 of :not(:empty)) :nth-child(1 of :not(:empty)),
+#R-body div.expand > .expand-content-text > :nth-child(1 of :not(:empty)),
+#R-body div.expand > .expand-content-text > :nth-child(1 of :not(:empty)) :nth-child(1 of :not(:empty)),
+#R-body div.tab-content > .tab-content-text > :nth-child(1 of :not(:empty)),
+#R-body div.tab-content > .tab-content-text > :nth-child(1 of :not(:empty)) :nth-child(1 of :not(:empty)) {
     margin-top: 0;
 }
 
-#body table th > :last-child,
-#body table th > :last-child :last-child,
-#body table th > div.highlight:last-child pre,
-#body table td > :last-child,
-#body table td > :last-child :last-child,
-#body table td > div:last-child pre,
-#body div.box > .box-content > :last-child,
-#body div.box > .box-content > :last-child :last-child,
-#body div.box > .box-content > div:last-child pre,
-#body div.expand > .expand-content-text > :last-child,
-#body div.expand > .expand-content-text > :last-child :last-child,
-#body div.expand > .expand-content-text > div:last-child pre,
-#body div.tab-content > .tab-content-text > :last-child,
-#body div.tab-content > .tab-content-text > :last-child :last-child,
-#body div.tab-content > .tab-content-text > div:last-child pre {
+#R-body table th > :nth-last-child(1 of :not(:empty)),
+#R-body table th > :nth-last-child(1 of :not(:empty)) :nth-last-child(1 of :not(:empty)),
+#R-body table th > div.highlight:last-child pre:not(.mermaid),
+#R-body table td > :nth-last-child(1 of :not(:empty)),
+#R-body table td > :nth-last-child(1 of :not(:empty)) :nth-last-child(1 of :not(:empty)),
+#R-body table td > div:last-child pre:not(.mermaid),
+#R-body div.box > .box-content > :nth-last-child(1 of :not(:empty)),
+#R-body div.box > .box-content > :nth-last-child(1 of :not(:empty)) :nth-last-child(1 of :not(:empty)),
+#R-body div.box > .box-content > div:last-child pre:not(.mermaid),
+#R-body div.expand > .expand-content-text > :nth-last-child(1 of :not(:empty)),
+#R-body div.expand > .expand-content-text > :nth-last-child(1 of :not(:empty)) :nth-last-child(1 of :not(:empty)),
+#R-body div.expand > .expand-content-text > div:last-child pre:not(.mermaid),
+#R-body div.tab-content > .tab-content-text > :nth-last-child(1 of :not(:empty)),
+#R-body div.tab-content > .tab-content-text > :nth-last-child(1 of :not(:empty)) :nth-last-child(1 of :not(:empty)),
+#R-body div.tab-content > .tab-content-text > div:last-child pre:not(.mermaid) {
     margin-bottom: 0;
 }
 
@@ -608,19 +654,19 @@ div.attachments .box-content {
     padding-top: 0;
 }
 
-#body-inner .children h2,
-#body-inner .children h3,
-#body-inner .children h4,
-#body-inner .children h5,
-#body-inner .children h6 {
+#R-body-inner .children h2,
+#R-body-inner .children h3,
+#R-body-inner .children h4,
+#R-body-inner .children h5,
+#R-body-inner .children h6 {
     margin-bottom: 0;
     margin-top: 1rem;
 }
-#body-inner ul.children-h2,
-#body-inner ul.children-h3,
-#body-inner ul.children-h4,
-#body-inner ul.children-h5,
-#body-inner ul.children-h6 {
+#R-body-inner ul.children-h2,
+#R-body-inner ul.children-h3,
+#R-body-inner ul.children-h4,
+#R-body-inner ul.children-h5,
+#R-body-inner ul.children-h6 {
     /* if we display children with style=h2 but without a containerstyle
     a ul will be used for structuring; we remove default indention for uls
     in this case */
@@ -629,7 +675,7 @@ div.attachments .box-content {
 
 code,
 kbd,
-pre,
+pre:not(.mermaid),
 samp {
     font-size: .934375rem;
     vertical-align: baseline;
@@ -657,7 +703,7 @@ code.copy-to-clipboard-code {
     border-inline-end-width: 0;
 }
 
-pre {
+pre:not(.mermaid) {
     border-radius: 2px;
     border-style: solid;
     border-width: 1px;
@@ -668,14 +714,14 @@ pre {
     position: relative;
 }
 
-/* pre:has( code ), */
+/* pre:not(.mermaid):has( code ), */
 /* the :has() operator isn't available in FF yet, so we patch this by JS */
-pre.pre-code {
+pre:not(.mermaid).pre-code {
     direction: ltr;
     text-align: left;
 }
 
-pre code {
+pre:not(.mermaid) code {
     background-color: inherit;
     border: 0;
     color: inherit;
@@ -703,10 +749,10 @@ div.highlight > div table{
 div.highlight > div td{
     border-width: 0;
 }
-#body div.highlight > div a {
+#R-body div.highlight > div a {
     line-height: inherit;
 }
-#body div.highlight > div a:after {
+#R-body div.highlight > div a:after {
     display: none;
 }
 /* disable selection for lineno cells */
@@ -722,33 +768,33 @@ div.highlight > div table{
     display: block;
     overflow: auto;
 }
-div.highlight:not(.wrap-code) pre{
+div.highlight:not(.wrap-code) pre:not(.mermaid){
     overflow: auto;
 }
-div.highlight:not(.wrap-code) pre code{
+div.highlight:not(.wrap-code) pre:not(.mermaid) code{
     white-space: pre;
 }
-div.highlight.wrap-code pre code{
+div.highlight.wrap-code pre:not(.mermaid) code{
     white-space: pre-wrap;
 }
 /* remove border from row cells if highlight shortcode was used in table lineno mode */
-div.highlight > div td > pre {
+div.highlight > div td > pre:not(.mermaid) {
     border-radius: 0;
     border-width: 0;
 }
 /* in case of table lineno mode we want to move each row closer together - besides the edges
 this usually applies only to wrapfix tables but it doesn't hurt for non-wrapfix tables too */
-div.highlight > div tr:not(:first-child) pre{
+div.highlight > div tr:not(:first-child) pre:not(.mermaid){
     padding-top: 0;
 }
-div.highlight > div tr:not(:last-child) pre{
+div.highlight > div tr:not(:last-child) pre:not(.mermaid){
     padding-bottom: 0;
 }
 /* in case of table lineno mode we want to move each columns closer together on the inside */
-div.highlight > div td:first-child:not(:last-child) pre{
+div.highlight > div td:first-child:not(:last-child) pre:not(.mermaid){
     padding-right: 0;
 }
-div.highlight > div td:not(:first-child):last-child pre{
+div.highlight > div td:not(:first-child):last-child pre:not(.mermaid){
     padding-left: 0;
 }
 
@@ -756,7 +802,7 @@ hr {
     border-bottom: 4px solid rgba( 134, 134, 134, .125 );
 }
 
-#body-inner pre {
+#R-body-inner pre:not(.mermaid) {
     white-space: pre-wrap;
 }
 
@@ -779,6 +825,9 @@ thead td {
 td {
     border: 1px solid rgba( 134, 134, 134, .333 );
     padding: 0.5rem;
+}
+tbody > tr:nth-child(even) > td {
+    background-color: rgba( 134, 134, 134, .045 );
 }
 
 .tooltipped {
@@ -923,110 +972,102 @@ td {
     top: 50%;
 }
 
-#sidebar .highlightable {
-    padding: 1rem 0 1rem;
-    position: relative;
-}
-
-#topbar {
+#R-topbar {
     min-height: 3rem;
     position: relative;
     z-index: 170;
 }
 
-#topbar > div {
+#R-topbar > .topbar-wrapper {
+    align-items: center;
     background-color: rgba( 134, 134, 134, .066 );
+    display: flex;
+    flex-basis: 100%;
+    flex-direction: row;
     height: 100%;
 }
 
-.navigation,
-#top-print-link,
-#top-github-link {
-    display: block;
-    float: right;
-}
-html[dir="rtl"] .navigation,
-html[dir="rtl"] #top-print-link,
-html[dir="rtl"] #top-github-link {
-    float: left;
-}
-
-.nav,
-.print-link,
-.github-link {
-    border-inline-start: thin solid rgba( 134, 134, 134, .333 );
-    padding-left: 1rem;
-    padding-right: 1rem;
-}
-html[dir="rtl"] .nav i {
-    transform: scaleX(-1);
-}
-span.nav i{
-    color: rgba( 134, 134, 134, .333 );
-}
-
-.navigation,
-#top-print-link,
-#top-github-link {
+.topbar-button {
+    display: inline-block;
     position: relative;
-    top: 50%;
-    transform: translateY(-50%);
 }
-
-#toc-menu{
-    cursor: pointer;
-}
-#toc-menu,
-#sidebar-toggle-span {
-    border-inline-end: thin solid rgba( 134, 134, 134, .333 );
-    padding-left: 1rem;
-    padding-right: 1rem;
-}
-
-#body #breadcrumbs {
-    float: left;
-    height: auto;
-    line-height: 1.4;
-    margin-bottom: 0;
-    overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
-    top: 50%;
-    transform: translateY(-50%);
-    white-space: nowrap;
-    width: calc(100% - 5*3.25rem);
-}
-html[dir="rtl"] #body #breadcrumbs {
-    float: right;
-}
-@media screen and (max-width: 48rem) {
-    #body #breadcrumbs {
-        text-overflow: unset;
-    }
-}
-
-#sidebar-toggle-span {
+.topbar-button:not([data-origin]) {
     display: none;
 }
-.progress {
-    inset-inline-start: 1rem;
-    top: 1rem;
+
+.topbar-button > .topbar-control {
+    display: inline-block;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
-@media screen and (max-width: 48rem) {
-    .mobile-support #sidebar-toggle-span {
-        display: inline;
-    }
-    .progress {
-        inset-inline-start: 4.25rem;
-    }
+.topbar-wrapper > .topbar-area-start > .topbar-button > .topbar-control {
+    border-inline-end: 1px solid rgba( 134, 134, 134, .333 );
+}
+.topbar-wrapper > .topbar-area-end > .topbar-button > .topbar-control {
+    border-inline-start: 1px solid rgba( 134, 134, 134, .333 );
 }
 
-#body #breadcrumbs .links {
-    display: inline;
-    padding: 0 .75rem;
+.topbar-button > button:disabled i,
+.topbar-button > span i {
+    color: rgba( 134, 134, 134, .333 );
+}
+.topbar-button button{
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: transparent;
+}
+
+.topbar-sidebar-divider {
+    border-inline-start-style: solid;
+    border-inline-start-width: 1px;
+    margin-inline-end: -1px;
+    width: 1px;
+}
+.topbar-sidebar-divider::after {
+    content: "\00a0";
+}
+
+.topbar-wrapper > .topbar-area-start {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+}
+.topbar-wrapper > .topbar-area-end {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+}
+.topbar-wrapper > .topbar-hidden {
+    display: none;
+}
+
+html[dir="rtl"] .topbar-button-prev i,
+html[dir="rtl"] .topbar-button-next i {
+    transform: scaleX(-1);
+}
+
+.topbar-content {
+    top: .75rem;
+}
+.topbar-wrapper > .topbar-area-start .topbar-content {
+    inset-inline-start: 1.5rem;
+}
+.topbar-wrapper > .topbar-area-end .topbar-content {
+    inset-inline-end: 1.5rem;
+}
+.topbar-content .topbar-content{
+    /* we don't allow flyouts in flyouts; come on, don't get funny... */
+    display: none;
+}
+
+.topbar-breadcrumbs {
+    flex-grow: 1;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0 1rem;
 }
 @media screen and (max-width: 48rem) {
-    #body #breadcrumbs .links {
+    .topbar-breadcrumbs {
         /* we just hide the breadcrumbs instead of display: none;
         this makes sure that the breadcrumbs are still usable for
         accessability */
@@ -1034,31 +1075,34 @@ html[dir="rtl"] #body #breadcrumbs {
     }
 }
 
-#body #breadcrumbs .links * {
-    display: inline-block;
-    padding: 0;
+.breadcrumbs {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    white-space: nowrap;
 }
 
-#body #breadcrumbs .links meta {
+.breadcrumbs meta {
     display: none;
 }
 
-#body #breadcrumbs .links li:last-of-type {
-    cursor: text;
+.breadcrumbs li {
+    display: inline-block;
 }
 
-#body a[aria-disabled="true"] {
+#R-body a[aria-disabled="true"] {
     pointer-events: none;
     text-decoration: none;
 }
 
 @media screen and (max-width: 60rem) {
-    #sidebar {
+    #R-sidebar {
         min-width: 14.375rem;
         max-width: 14.375rem;
         width: 14.375rem;
     }
-    #body {
+    #R-body {
         margin-inline-start: 14.375rem;
         min-width: calc( 100% - 14.375rem);
         max-width: calc( 100% - 14.375rem);
@@ -1067,35 +1111,36 @@ html[dir="rtl"] #body #breadcrumbs {
 }
 @media screen and (max-width: 48rem) {
     /* we don't support sidebar flyout in mobile */
-    .mobile-support #sidebar {
+    .mobile-support #R-sidebar {
         inset-inline-start: -14.375rem;
     }
     .mobile-support #navshow{
         display: inline;
     }
-    .mobile-support #body {
+    .mobile-support #R-body {
         min-width: 100%;
         max-width: 100%;
         width: 100%;
     }
-    .mobile-support #body {
+    .mobile-support #R-body {
         margin-inline-start: 0;
     }
     .mobile-support.sidebar-flyout {
         overflow: hidden;
     }
-    .mobile-support.sidebar-flyout #sidebar {
+    .mobile-support.sidebar-flyout #R-sidebar {
         inset-inline-start: 0;
         z-index: 90;
     }
-    .mobile-support.sidebar-flyout #body {
+    .mobile-support.sidebar-flyout #R-body {
         margin-inline-start: 14.375rem;
         overflow: hidden;
     }
-    .mobile-support.sidebar-flyout #sidebar-overlay{
+    .mobile-support.sidebar-flyout #R-body-overlay{
         background-color: rgba( 134, 134, 134, .5 );
         bottom: 0;
         cursor: pointer;
+        height: 100vh;
         left: 0;
         position: absolute;
         right: 0;
@@ -1125,7 +1170,6 @@ span > .copy-to-clipboard-button {
 
 .copy-to-clipboard-button > i {
     font-size: .859625rem;
-    font-weight: 500;
 }
 
 /* only show copy to clipboard on hover for code blocks if configured */
@@ -1140,15 +1184,15 @@ div.highlight:hover .copy-to-clipboard-button {
 }
 
 div.highlight > div table + .copy-to-clipboard-button > i,
-div.highlight pre + .copy-to-clipboard-button > i,
+div.highlight pre:not(.mermaid) + .copy-to-clipboard-button > i,
 .copy-to-clipboard-code + .copy-to-clipboard-button > i {
     padding-left: 5px;
     padding-right: 5px;
 }
 
 div.highlight > div table + .copy-to-clipboard-button,
-div.highlight pre + .copy-to-clipboard-button,
-pre > .copy-to-clipboard-button {
+div.highlight pre:not(.mermaid) + .copy-to-clipboard-button,
+pre:not(.mermaid) > .copy-to-clipboard-button {
     background-color: rgba( 160, 160, 160, .2 );
     border-radius: 2px;
     border-style: solid;
@@ -1169,10 +1213,16 @@ pre > .copy-to-clipboard-button {
     border-inline-end-width: 1px;
 }
 
-#homelinks {
+#R-homelinks {
+    padding: 0;
+}
+#R-homelinks ul {
+    margin: .5rem 0;
+}
+#R-homelinks hr {
     border-bottom-style: solid;
-    border-bottom-width: 4px;
-    padding: .5rem 0;
+    border-bottom-width: 1px;
+    margin: 0 1rem 3px 1rem;
 }
 
 option {
@@ -1245,7 +1295,7 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     transform: scaleX(-1);
 }
 
-#body footer.footline{
+#R-body footer.footline{
     margin-top: 2rem;
 }
 
@@ -1263,18 +1313,55 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     margin-top: 1.7rem;
 }
 
-.mermaid > svg {
+.mermaid {
     border: 1px solid transparent;
+    /* don't use display: none, as this will cause no renderinge by Mermaid */
+    visibility: hidden;
+    padding: .5rem .5rem 0 .5rem;
+}
+.mermaid.mermaid-render {
+    display: inline;
+    visibility: visible;
+}
+.mermaid.mermaid-render.zoom {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+}
+.mermaid.zoom:hover {
+    border-color: rgba( 134, 134, 134, .333 );
+}
+
+.mermaid > svg {
     /* remove inline height from generated diagram */
     height: initial !important;
 }
-
 .mermaid.zoom > svg {
     cursor: pointer;
 }
 
-.mermaid.zoom > svg:hover {
-    border-color: rgba( 134, 134, 134, .333 );
+.svg-reset-button {
+    background-color: rgba( 160, 160, 160, .2 );
+    border-radius: 2px;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    display: none;
+    font-size: .934375rem;
+    line-height: 1.15;
+    padding: 5px 3px;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+}
+.mermaid:hover .svg-reset-button {
+    display: block;
+}
+
+.svg-reset-button > i {
+    font-size: .859625rem;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .mermaid-code {
@@ -1310,17 +1397,17 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
 
 /* Table of contents */
 
-.toc-flyout #toc-overlay{
+.topbar-flyout #R-main-overlay{
     bottom: 0;
     cursor: pointer;
     left: 0;
     position: absolute;
     right: 0;
-    top: 0;
+    top: 3rem;
     z-index: 160;
 }
 
-.progress {
+.topbar-content {
     border: 0 solid rgba( 134, 134, 134, .166 );
     box-shadow: 1px 2px 5px 1px rgba( 134, 134, 134, .2 );
     height: 0;
@@ -1331,33 +1418,57 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     z-index: 180;
 }
 
-.toc-flyout .progress {
+.topbar-button.topbar-flyout .topbar-content {
     border-width: 1px;
     height: auto;
     opacity: 1;
     width: auto;
 }
 
-.progress .toc-wrapper {
+.topbar-content .topbar-content-wrapper {
     background-color: rgba( 134, 134, 134, .066 );
 }
 
-.progress ul {
+.topbar-content-wrapper {
+    --ps-rail-hover-color: rgba( 176, 176, 176, .25 );
+    max-height: 90vh;
+    overflow: hidden;
+    padding: .5rem 1rem;
+    position: relative; /* PS */
+}
+
+.topbar-content .topbar-button .topbar-control {
+    border-width: 0;
+    padding: 0;
+}
+.topbar-content .topbar-button .topbar-control {
+    border-width: 0;
+    padding: .5rem 0;
+}
+
+#TableOfContents,
+.TableOfContents {
+    font-size: .8125rem;
+}
+#TableOfContents ul,
+.TableOfContents ul {
     list-style: none;
     margin: 0;
     padding: 0 1rem;
 }
 
-#TableOfContents {
-    --ps-rail-hover-color: rgba( 176, 176, 176, .25 );
-    font-size: .8125rem !important;
-    max-height: 90vh;
-    overflow: hidden;
-    padding: 1rem .375rem !important;
-    position: relative; /* PS */
+#TableOfContents > ul,
+.TableOfContents > ul {
+    padding: 0;
 }
 
-#TableOfContents > ul > li > a {
+#TableOfContents li,
+.TableOfContents li {
+    white-space: nowrap;
+}
+
+#TableOfContents > ul > li > a,
+.TableOfContents > ul > li > a {
     font-weight: 500;
 }
 
@@ -1406,7 +1517,7 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     content: "\200b"
 }
 
-#body #body-inner .btn > *.highlight:after {
+#R-body #R-body-inner .btn > *.highlight:after {
     background-color: transparent;
 }
 
@@ -1449,21 +1560,21 @@ h6 a {
     font-weight: inherit;
 }
 
-#body h1 + h2,
-#body h1 + h3,
-#body h1 + h4,
-#body h1 + h5,
-#body h1 + h6,
-#body h2 + h3,
-#body h2 + h4,
-#body h2 + h5,
-#body h2 + h6,
-#body h3 + h4,
-#body h3 + h5,
-#body h3 + h6,
-#body h4 + h5,
-#body h4 + h6,
-#body h5 + h6 {
+#R-body h1 + h2,
+#R-body h1 + h3,
+#R-body h1 + h4,
+#R-body h1 + h5,
+#R-body h1 + h6,
+#R-body h2 + h3,
+#R-body h2 + h4,
+#R-body h2 + h5,
+#R-body h2 + h6,
+#R-body h3 + h4,
+#R-body h3 + h5,
+#R-body h3 + h6,
+#R-body h4 + h5,
+#R-body h4 + h6,
+#R-body h5 + h6 {
     margin-top: 1rem;
 }
 
@@ -1539,13 +1650,7 @@ html[dir="rtl"] .menu-control span {
 .showVariantSwitch,
 .showVisitedLinks,
 .showFooter {
-    display: initial;
-}
-
-@media screen and (max-width: 48rem) {
-    #breadcrumbs .links {
-        display: none;
-    }
+    display: block;
 }
 
 /* clears the 'X' from Chrome's search input */
@@ -1553,6 +1658,15 @@ input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration { display: none; }
+
+@supports selector(.math:has(> mjx-container)){
+    .math{
+        visibility: hidden;
+    }
+    .math:has(> mjx-container){
+        visibility: visible;
+    }
+}
 
 .math.align-left > mjx-container{
     text-align: left !important;
@@ -1612,22 +1726,16 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 }
 */
 
-.mermaid-container .align-right > *  {
-    display: block;
-    margin-left: auto;
-    margin-right: 0;
+.mermaid-container.align-right  {
+    text-align: right;
 }
 
-.mermaid-container .align-center > *  {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+.mermaid-container.align-center  {
+    text-align: center;
 }
 
-.mermaid-container .align-left > * {
-    display: block;
-    margin-left: 0;
-    margin-right: auto;
+.mermaid-container.align-left {
+    text-align: left;
 }
 
 .searchform {
@@ -1659,22 +1767,33 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     height: 1.5rem;
 }
 
-#searchresults a.autocomplete-suggestion {
+#R-searchresults a.autocomplete-suggestion {
     display: block;
     font-size: 1.3rem;
     font-weight: 500;
     line-height: 1.5rem;
     padding: 1rem;
+    text-decoration: none;
 }
 
-#searchresults a.autocomplete-suggestion:after {
+#R-searchresults a.autocomplete-suggestion:after {
     height: 0;
 }
 
-#searchresults .autocomplete-suggestion > .context {
+#R-searchresults .autocomplete-suggestion > .breadcrumbs {
+    font-size: .9rem;
+    font-weight: 400;
+    margin-top: .167em;
+    padding-left: .2em;
+    padding-right: .2em;
+}
+
+#R-searchresults .autocomplete-suggestion > .context {
     font-size: 1rem;
     font-weight: 300;
-    margin-top: .66rem;
+    margin-top: .66em;
+    padding-left: .1em;
+    padding-right: .1em;
 }
 
 .badge {
@@ -1757,7 +1876,7 @@ article ul > li > input[type="checkbox"]:checked::before {
 }
 
 /* CSS Lightbox https://codepen.io/gschier/pen/kyRXVx */
-.lightbox {
+.lightbox-back {
     align-items: center;
     background: rgba( 0, 0, 0, .8 );
     bottom: 0;
@@ -1772,11 +1891,11 @@ article ul > li > input[type="checkbox"]:checked::before {
     z-index: 1999;
 }
 
-.lightbox:target {
+.lightbox-back:target {
     display: flex;
 }
 
-.lightbox img {
+.lightbox-back img {
     max-height: 95%;
     max-width: 95%;
     overflow: auto;
@@ -1785,51 +1904,51 @@ article ul > li > input[type="checkbox"]:checked::before {
 
 /* basic menu list styles (non-collapsible) */
 
-#sidebar ul > li > a {
+#R-sidebar ul > li > :is( a, span ) {
     display: block;
     position: relative;
 }
 
-#sidebar ul.space > li > * {
+#R-sidebar ul.space > li > * {
     padding-bottom: .125rem;
     padding-top: .125rem;
 }
-#sidebar ul.space > li > ul {
+#R-sidebar ul.space > li > ul {
     padding-bottom: 0;
     padding-top: 0;
 }
 
-#sidebar ul.morespace > li > * {
+#R-sidebar ul.morespace > li > * {
     padding-bottom: .25rem;
     padding-top: .25rem;
 }
-#sidebar ul.morespace > li > ul {
+#R-sidebar ul.morespace > li > ul {
     padding-bottom: 0;
     padding-top: 0;
 }
 
-#sidebar ul.enlarge > li > a {
+#R-sidebar ul.enlarge > li > :is( a, span ) {
     font-size: 1.1rem;
     line-height: 2rem;
 }
-#sidebar ul.enlarge > li > a > .read-icon {
+#R-sidebar ul.enlarge > li > a > .read-icon {
     margin-top: .5rem;
 }
-#sidebar ul.enlarge > li > ul > li:last-child {
+#R-sidebar ul.enlarge > li > ul > li:last-child {
     padding-bottom: 1rem;
 }
 
-#sidebar ul ul {
+#R-sidebar ul ul {
     padding-inline-start: 1rem;
 }
 
 /* collapsible menu style overrides */
 
-#sidebar ul.collapsible-menu > li {
+#R-sidebar ul.collapsible-menu > li {
     position: relative;
 }
 
-#sidebar ul.collapsible-menu > li > input {
+#R-sidebar ul.collapsible-menu > li > input {
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
@@ -1841,11 +1960,11 @@ article ul > li > input[type="checkbox"]:checked::before {
     width: 1rem;
     z-index: 1;
 }
-#sidebar ul.collapsible-menu.enlarge > li > input {
+#R-sidebar ul.collapsible-menu.enlarge > li > input {
     margin-top: .9rem;
 }
 
-#sidebar ul.collapsible-menu > li > label {
+#R-sidebar ul.collapsible-menu > li > label {
     cursor: pointer;
     display: inline-block;
     inset-inline-start: 0;
@@ -1855,12 +1974,12 @@ article ul > li > input[type="checkbox"]:checked::before {
     width: 1rem;
     z-index: 2;
 }
-#sidebar ul.collapsible-menu.enlarge > li > label {
+#R-sidebar ul.collapsible-menu.enlarge > li > label {
     font-size: 1.1rem;
     line-height: 2rem;
 }
 
-#sidebar ul.collapsible-menu > li > label:after {
+#R-sidebar ul.collapsible-menu > li > label:after {
     content: "";
     display: block;
     height: 1px;
@@ -1868,61 +1987,61 @@ article ul > li > input[type="checkbox"]:checked::before {
     width: 0%;
 }
 
-#sidebar ul.collapsible-menu > li > label:hover:after {
+#R-sidebar ul.collapsible-menu > li > label:hover:after {
     width: 100%;
 }
 
-#sidebar ul.collapsible-menu > li > label > .fas {
+#R-sidebar ul.collapsible-menu > li > label > .fas {
     font-size: .8rem;
     width: .6rem;
 }
 
-#sidebar ul.collapsible-menu > li > a {
+#R-sidebar ul.collapsible-menu > li > :is( a, span ) {
     display: inline-block;
     width: 100%;
 }
 
 /* menu states for not(.collapsible-menu) */
 
-#sidebar ul ul {
+#R-sidebar ul ul {
     display: none;
 }
 
-#sidebar ul > li.parent > ul,
-#sidebar ul > li.active > ul,
-#sidebar ul > li.alwaysopen > ul {
+#R-sidebar ul > li.parent > ul,
+#R-sidebar ul > li.active > ul,
+#R-sidebar ul > li.alwaysopen > ul {
     display: block;
 }
 
 /* closed menu */
 
-#sidebar ul.collapsible-menu > li > input + label ~ ul {
+#R-sidebar ul.collapsible-menu > li > input + label ~ ul {
     display: none;
 }
 
-#sidebar ul.collapsible-menu > li > input + label > .fa-chevron-down {
+#R-sidebar ul.collapsible-menu > li > input + label > .fa-chevron-down {
     display: none;
 }
-#sidebar ul.collapsible-menu > li > input + label > .fa-chevron-right {
+#R-sidebar ul.collapsible-menu > li > input + label > .fa-chevron-right {
     display: inline-block;
 }
 
 /* open menu  */
 
-#sidebar ul.collapsible-menu > li > input:checked + label ~ ul {
+#R-sidebar ul.collapsible-menu > li > input:checked + label ~ ul {
 	display: block;
 }
 
-#sidebar ul.collapsible-menu > li > input:checked + label > .fa-chevron-down {
+#R-sidebar ul.collapsible-menu > li > input:checked + label > .fa-chevron-down {
     display: inline-block;
 }
-#sidebar ul.collapsible-menu > li > input:checked + label > .fa-chevron-right {
+#R-sidebar ul.collapsible-menu > li > input:checked + label > .fa-chevron-right {
     display: none;
 }
 
 /* adjust menu for RTL reading direction */
 
-html[dir="rtl"] #sidebar ul.collapsible-menu > li > label > i.fa-chevron-right {
+html[dir="rtl"] #R-sidebar ul.collapsible-menu > li > label > i.fa-chevron-right {
     transform: scaleX(-1);
 }
 
@@ -1935,17 +2054,17 @@ html[dir="rtl"] #sidebar ul.collapsible-menu > li > label > i.fa-chevron-right {
     }
 }
 
-#body .tab-panel{
+#R-body .tab-panel{
     margin-bottom: 1.5rem;
     margin-top: 1.5rem;
 }
 
-#body .tab-nav{
+#R-body .tab-nav{
     display: flex;
     flex-wrap: wrap;
 }
 
-#body .tab-nav-title{
+#R-body .tab-nav-title{
     font-size: .9rem;
     font-weight: 400;
     line-height: 1.42857143;
@@ -1953,7 +2072,7 @@ html[dir="rtl"] #sidebar ul.collapsible-menu > li > label > i.fa-chevron-right {
     margin-inline-start: .6rem;
 }
 
-#body .tab-nav-button{
+#R-body .tab-nav-button{
     -webkit-appearance: none;
     appearance: none;
     background-color: transparent;
@@ -1965,41 +2084,31 @@ html[dir="rtl"] #sidebar ul.collapsible-menu > li > label > i.fa-chevron-right {
     margin-inline-start: .6rem;
 }
 
-#body .tab-nav-button.active{
+#R-body .tab-nav-button.active{
     border-radius: 2px 2px 0 0;
     cursor: default;
 }
 
-#body .tab-nav-button > *{
-    position: relative;
-}
-
-#body .tab-nav-button.active > *{
-    border-radius: 1px 1px 0 0;
-}
-
-#body .tab-nav-button > * > *{
+#R-body .tab-nav-button > .tab-nav-text{
     border-bottom-style: solid;
     border-bottom-width: .2rem;
+    display: block;
     padding: .2rem .6rem 0 .6rem;
 }
-
-#body .tab-nav-button.active > * > *{
+/* https://stackoverflow.com/a/46452396 */
+#R-body .tab-nav-button.active > .tab-nav-text{
     border-bottom-color: transparent;
-    font-weight: 500;
+    border-radius: 1px 1px 0 0;
+    text-shadow: -0.06ex 0 0 currentColor, 0.06ex 0 0 currentColor;
+}
+@supports (-webkit-text-stroke-width: 0.04ex){
+    #R-body .tab-nav-button.active > .tab-nav-text{
+        text-shadow: -0.03ex 0 0 currentColor, 0.03ex 0 0 currentColor;
+        -webkit-text-stroke-width: 0.04ex;
+    }
 }
 
-#body .tab-nav-button > * > .tab-nav-hidden{
-    font-weight: 500;
-    visibility: hidden;
-}
-
-#body .tab-nav-button > * > .tab-nav-text{
-    position: absolute;
-    top: 0;
-}
-
-#body .tab-content{
+#R-body .tab-content{
     border-style: solid;
     border-width: 1px;
     display: none;
@@ -2009,25 +2118,74 @@ html[dir="rtl"] #sidebar ul.collapsible-menu > li > label > i.fa-chevron-right {
     z-index: 10;
 }
 
-#body .tab-content.active{
+#R-body .tab-content.active{
     display: block;
 }
 
-#body .tab-content-text{
+#R-body .tab-content-text{
     padding: 1rem;
 }
 
 /* remove margin if only a single code block is contained in the tab (FF without :has using .codify style) */
-#body .tab-content.codify > .tab-content-text{
+#R-body .tab-content.codify > .tab-content-text{
     padding: 0;
 }
-#body .tab-content-text:has(> div.highlight:only-child){
+#R-body .tab-content-text:has(> div.highlight:only-child){
     padding: 0;
 }
 
 /* remove border from code block if single in tab */
-#body .tab-content-text > div.highlight:only-child > div,
-#body .tab-content-text > div.highlight:only-child pre,
-#body .tab-content-text > pre.pre-code:only-child{
+#R-body .tab-content-text > div.highlight:only-child > div,
+#R-body .tab-content-text > div.highlight:only-child pre:not(.mermaid),
+#R-body .tab-content-text > pre:not(.mermaid).pre-code:only-child{
     border-width: 0;
+}
+
+/* bordering the menu and topbar */
+
+#R-topbar {
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
+
+#R-header-topbar {
+    border-bottom-color: transparent;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-inline-end-style: solid;
+    border-inline-end-width: 1px;
+    height: 3rem;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+}
+
+#R-header-wrapper,
+#R-homelinks,
+#R-content-wrapper > * {
+    border-inline-end-style: solid;
+    border-inline-end-width: 1px;
+}
+
+#topics > ul {
+    margin-top: 1rem;
+}
+
+#R-sidebar ul.collapsible-menu li.active > a{
+    border-style: solid;
+    border-width: 1px;
+    padding-bottom: calc( .25rem - var(--bpx1)*1px);
+    padding-left: calc( 1rem - var(--bpx1)*1px);
+    padding-right: calc( 1rem - var(--bpx1)*1px);
+    padding-top: calc( .25rem - var(--bpx1)*1px);
+    width: calc(100% + var(--bpx1)*1px);
+}
+
+#R-menu-footer {
+    padding-bottom: 1rem;
+}
+
+#R-topics {
+    padding-top: 1rem;
 }

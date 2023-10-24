@@ -64,7 +64,7 @@ var variants = {
 
 	markSelectedVariant: function(){
 		var variant = this.getVariant();
-		var select = document.querySelector( '#select-variant' );
+		var select = document.querySelector( '#R-select-variant' );
 		if( !select ){
 			return;
 		}
@@ -75,8 +75,7 @@ var variants = {
 		var interval_id = setInterval( function(){
 			if( this.isVariantLoaded() ){
 				clearInterval( interval_id );
-				initMermaid( true );
-				initOpenapi( true );
+				updateTheme({ variant: variant });
 			}
 		}.bind( this ), 25 );
 		// remove selection, because if some uses an arrow navigation"
@@ -103,7 +102,7 @@ var variants = {
 		if( !variantbase ){
 			return;
 		}
-		var select = document.querySelector( '#select-variant' );
+		var select = document.querySelector( '#R-select-variant' );
 		if( !select ){
 			return;
 		}
@@ -147,12 +146,12 @@ var variants = {
 		// temp styles to document
 		var head = document.querySelector( 'head' );
 		var style = document.createElement( 'style' );
-		style.id = 'custom-variant-style';
+		style.id = 'R-custom-variant-style';
 		style.appendChild( document.createTextNode( stylesheet ) );
 		head.appendChild( style );
 
 		var interval_id = setInterval( function(){
-			if( this.findLoadedStylesheet( 'variant-style' ) ){
+			if( this.findLoadedStylesheet( 'R-variant-style' ) ){
 				clearInterval( interval_id );
 				// save the styles to the current variant stylesheet
 				this.variantvariables.forEach( function( e ){
@@ -184,7 +183,7 @@ var variants = {
 	},
 
 	switchStylesheet: function( variant, without_check ){
-		var link = document.querySelector( '#variant-style' );
+		var link = document.querySelector( '#R-variant-style' );
 		if( !link ){
 			return;
 		}
@@ -194,7 +193,7 @@ var variants = {
 
 		// Chrome needs a new element to trigger the load callback again
 		var new_link = document.createElement( 'link' );
-		new_link.id = 'variant-style';
+		new_link.id = 'R-variant-style';
 		new_link.rel = 'stylesheet';
 		new_link.onload = this.onLoadStylesheet;
 		new_link.setAttribute( 'href', new_path );
@@ -359,8 +358,8 @@ var variants = {
 			return;
 		}
 
-		var read_style = this.findLoadedStylesheet( 'custom-variant-style' );
-		var write_style = this.findLoadedStylesheet( 'variant-style' );
+		var read_style = this.findLoadedStylesheet( 'R-custom-variant-style' );
+		var write_style = this.findLoadedStylesheet( 'R-variant-style' );
 		if( !read_style ){
 			read_style = write_style;
 		}
@@ -420,8 +419,8 @@ var variants = {
 	},
 
 	generateStylesheet: function(){
-		var read_style = this.findLoadedStylesheet( 'custom-variant-style' );
-		var write_style = this.findLoadedStylesheet( 'variant-style' );
+		var read_style = this.findLoadedStylesheet( 'R-custom-variant-style' );
+		var write_style = this.findLoadedStylesheet( 'R-variant-style' );
 		if( !read_style ){
 			read_style = write_style;
 		}
@@ -436,10 +435,10 @@ var variants = {
 	},
 
 	styleGraphGroup: function( selector, colorvar ){
-		this.adjustCSSRules( '#body svg '+selector+' > rect', 'color: var(--INTERNAL-'+colorvar+'); fill: var(--INTERNAL-'+colorvar+'); stroke: #80808080;' );
-		this.adjustCSSRules( '#body svg '+selector+' > .label .nodeLabel', 'color: var(--INTERNAL-'+colorvar+'); fill: var(--INTERNAL-'+colorvar+'); stroke: #80808080;' );
-		this.adjustCSSRules( '#body svg '+selector+' > .cluster-label .nodeLabel', 'color: var(--INTERNAL-'+colorvar+'); fill: var(--INTERNAL-'+colorvar+'); stroke: #80808080;' );
-		this.adjustCSSRules( '#body svg '+selector+' .nodeLabel', 'filter: grayscale(1) invert(1) contrast(10000);' );
+		this.adjustCSSRules( '#R-body svg '+selector+' > rect', 'color: var(--INTERNAL-'+colorvar+'); fill: var(--INTERNAL-'+colorvar+'); stroke: #80808080;' );
+		this.adjustCSSRules( '#R-body svg '+selector+' > .label .nodeLabel', 'color: var(--INTERNAL-'+colorvar+'); fill: var(--INTERNAL-'+colorvar+'); stroke: #80808080;' );
+		this.adjustCSSRules( '#R-body svg '+selector+' > .cluster-label .nodeLabel', 'color: var(--INTERNAL-'+colorvar+'); fill: var(--INTERNAL-'+colorvar+'); stroke: #80808080;' );
+		this.adjustCSSRules( '#R-body svg '+selector+' .nodeLabel', 'filter: grayscale(1) invert(1) contrast(10000);' );
 	},
 
 	styleGraph: function(){
@@ -540,6 +539,7 @@ var variants = {
 		{ name: 'SECONDARY-color',                       group: 'content',       fallback: 'MAIN-LINK-color',             tooltip: 'brand secondary color', },
 		{ name: 'ACCENT-color',                          group: 'content',        default: '#ffff00',                     tooltip: 'brand accent color, used for search highlights', },
 
+		{ name: 'MAIN-TOPBAR-BORDER-color',              group: 'content',        default: 'transparent',                 tooltip: 'border color between topbar and content', },
 		{ name: 'MAIN-LINK-color',                       group: 'content',       fallback: 'SECONDARY-color',             tooltip: 'link color of content', },
 		{ name: 'MAIN-LINK-HOVER-color',                 group: 'content',       fallback: 'MAIN-LINK-color',             tooltip: 'hoverd link color of content', },
 		{ name: 'MAIN-BG-color',                         group: 'content',        default: '#ffffff',                     tooltip: 'background color of content', },
@@ -578,10 +578,14 @@ var variants = {
 		{ name: 'BROWSER-theme',                         group: '3rd party',      default: 'light',                       tooltip: 'name of the theme for browser scrollbars of the main section', },
 		{ name: 'MERMAID-theme',                         group: '3rd party',      default: 'default',                     tooltip: 'name of the default Mermaid theme for this variant, can be overridden in config.toml', },
 		{ name: 'OPENAPI-theme',                         group: '3rd party',      default: 'light',                       tooltip: 'name of the default OpenAPI theme for this variant, can be overridden in config.toml', },
-		{ name: 'OPENAPI-CODE-theme',                    group: '3rd party',      default: 'obsidian',                    tooltip: 'name of the default OpenAPI coee theme for this variant, can be overridden in config.toml', },
+		{ name: 'OPENAPI-CODE-theme',                    group: '3rd party',      default: 'obsidian',                    tooltip: 'name of the default OpenAPI code theme for this variant, can be overridden in config.toml', },
 
+		{ name: 'MENU-BORDER-color',                     group: 'header',         default: 'transparent',                 tooltip: 'border color between menu and content', },
+		{ name: 'MENU-TOPBAR-BORDER-color',              group: 'header',        fallback: 'MENU-HEADER-BG-color',        tooltip: 'border color of vertical line between menu and topbar', },
+		{ name: 'MENU-TOPBAR-SEPARATOR-color',           group: 'header',         default: 'transparent',                 tooltip: 'separator color of vertical line between menu and topbar', },
 		{ name: 'MENU-HEADER-BG-color',                  group: 'header',        fallback: 'PRIMARY-color',               tooltip: 'background color of menu header', },
-		{ name: 'MENU-HEADER-BORDER-color',              group: 'header',        fallback: 'MENU-HEADER-BG-color',        tooltip: 'separator color of menu header', },
+		{ name: 'MENU-HEADER-BORDER-color',              group: 'header',        fallback: 'MENU-HEADER-BG-color',        tooltip: 'border color between menu header and menu', },
+		{ name: 'MENU-HEADER-SEPARATOR-color',           group: 'header',        fallback: 'MENU-HEADER-BORDER-color',    tooltip: 'separator color between menu header and menu', },
 		{ name: 'MENU-HOME-LINK-color',                  group: 'header',         default: '#323232',                     tooltip: 'home button color if configured', },
 		{ name: 'MENU-HOME-LINK-HOVER-color',            group: 'header',         default: '#808080',                     tooltip: 'hoverd home button color if configured', },
 		{ name: 'MENU-SEARCH-color',                     group: 'header',         default: '#e0e0e0',                     tooltip: 'text and icon color of search box', },
@@ -594,7 +598,8 @@ var variants = {
 		{ name: 'MENU-SECTIONS-LINK-HOVER-color',        group: 'sections',      fallback: 'MENU-SECTIONS-LINK-color',    tooltip: 'hoverd link color of menu topics', },
 		{ name: 'MENU-SECTION-ACTIVE-CATEGORY-color',    group: 'sections',       default: '#444444',                     tooltip: 'text color of the displayed menu topic', },
 		{ name: 'MENU-SECTION-ACTIVE-CATEGORY-BG-color', group: 'sections',      fallback: 'MAIN-BG-color',               tooltip: 'background color of the displayed menu topic', },
-		{ name: 'MENU-SECTION-HR-color',                 group: 'sections',       default: '#606060',                     tooltip: 'separator color of menu footer', },
+		{ name: 'MENU-SECTION-ACTIVE-CATEGORY-BORDER-color', group: 'sections',   default: 'transparent',                 tooltip: 'border color between the displayed menu topic and the content', },
+		{ name: 'MENU-SECTION-SEPARATOR-color',          group: 'sections',       default: '#606060',                     tooltip: 'separator color between menu sections and menu footer', },
 		{ name: 'MENU-VISITED-color',                    group: 'sections',      fallback: 'SECONDARY-color',             tooltip: 'icon color of visited menu topics if configured', },
 
 		{ name: 'BOX-CAPTION-color',                     group: 'colored boxes',  default: 'rgba( 255, 255, 255, 1 )',    tooltip: 'text color of colored box titles', },

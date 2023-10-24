@@ -27,9 +27,10 @@
     --BROWSER-theme: light; /* name of the theme for browser scrollbars of the main section */
     --MERMAID-theme: default; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
     --OPENAPI-theme: light; /* name of the default OpenAPI theme for this variant, can be overridden in config.toml */
-    --OPENAPI-CODE-theme: obsidian; /* name of the default OpenAPI code theme for this variant, can be overridden in config.toml */
+    --OPENAPI-CODE-theme: idea; /* name of the default OpenAPI code theme for this variant, can be overridden in config.toml */
 
     --MENU-HEADER-BG-color: rgba( 0, 0, 0, 0 ); /* background color of menu header */
+    --MENU-HEADER-SEPARATOR-color: rgba( 96, 96, 96, 1 ); /* separator color between menu header and menu */
 
     --MENU-HOME-LINK-color: rgba( 64, 64, 64, 1 ); /* home button color if configured */
     --MENU-HOME-LINK-HOVER-color: rgba( 0, 0, 0, 1 ); /* hovered home button color if configured */
@@ -39,21 +40,21 @@
     --MENU-SEARCH-BORDER-color: transparent; /* border color of search box */
 
     --MENU-SECTIONS-BG-color: rgba( 131, 201, 50, 1 ); /* background of the menu; this is NOT just a color value but can be a complete CSS background definition including gradients, etc. */
-    --MENU-SECTIONS-ACTIVE-BG-color: rgba( 0, 0, 0, .05 ); /* background color of the active menu section */
+    --MENU-SECTIONS-ACTIVE-BG-color: transparent; /* background color of the active menu section */
     --MENU-SECTIONS-LINK-color: rgba( 50, 50, 50, 1 ); /* link color of menu topics */
     --MENU-SECTIONS-LINK-HOVER-color: rgba( 255, 255, 255, 1 ); /* hovered link color of menu topics */
     --MENU-SECTION-ACTIVE-CATEGORY-color: rgba( 50, 50, 50, 1 ); /* text color of the displayed menu topic */
-    --MENU-SECTION-HR-color: rgba( 96, 96, 96, 1 ); /* separator color of menu footer */
+    --MENU-SECTION-SEPARATOR-color: rgba( 96, 96, 96, 1 ); /* separator color between menu sections and menu footer */
 
     --BOX-CAPTION-color: rgba( 255, 255, 255, 1 ); /* text color of colored box titles */
     --BOX-BG-color: rgba( 255, 255, 255, .833 ); /* background color of colored boxes */
     --BOX-TEXT-color: rgba( 16, 16, 16, 1 ); /* text color of colored box content */
 }
 
-body a#logo,
-body a#logo:hover,
-body #logo svg,
-body #logo svg * {
+body a#R-logo,
+body a#R-logo:hover,
+body #R-logo svg,
+body #R-logo svg * {
     color: var(--MENU-SEARCH-color);
     fill: var(--MENU-SEARCH-color) !important;
 }

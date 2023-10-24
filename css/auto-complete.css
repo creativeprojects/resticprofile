@@ -44,11 +44,18 @@
 .autocomplete-suggestion:hover > .context,
 .autocomplete-suggestion:focus > .context,
 .autocomplete-suggestion:active > .context,
-#searchresults .autocomplete-suggestion:hover > .context,
-#searchresults .autocomplete-suggestion:focus > .context,
-#searchresults .autocomplete-suggestion:active > .context {
+#R-searchresults .autocomplete-suggestion:hover > .context,
+#R-searchresults .autocomplete-suggestion:focus > .context,
+#R-searchresults .autocomplete-suggestion:active > .context {
     background: rgba( 56, 56, 56, 1 );
     color: rgba( 255, 255, 255, 1 );
+}
+
+.autocomplete-suggestion > .breadcrumbs {
+    font-size: .7869em;
+    margin-inline-start: 1em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .autocomplete-suggestion > .context {

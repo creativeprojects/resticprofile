@@ -40,7 +40,7 @@
     --MENU-SECTIONS-LINK-HOVER-color: rgba( 255, 255, 255, 1 ); /* hovered link color of menu topics */
     --MENU-SECTIONS-ACTIVE-BG-color: rgba( 50, 50, 50, 1 ); /* background color of the active menu section */
     --MENU-SECTION-ACTIVE-CATEGORY-color: rgba( 130, 229, 80, 1 ); /* text color of the displayed menu topic */
-    --MENU-SECTION-HR-color: rgba( 96, 96, 96, 1 ); /* separator color of menu footer */
+    --MENU-SECTION-SEPARATOR-color: rgba( 96, 96, 96, 1 ); /* separator color between menu sections and menu footer */
 
     --MENU-VISITED-color: rgba( 72, 106, 201, 1 ); /* icon color of visited menu topics if configured */
 

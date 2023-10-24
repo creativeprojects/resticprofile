@@ -3102,6 +3102,16 @@
                 "schedule-capture-environment__PREPEND": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
+                "schedule-ignore-on-battery": {
+                  "title": "schedule-ignore-on-battery",
+                  "description": "Don't schedule the start of this profile when running on battery",
+                  "type": "boolean"
+                },
+                "schedule-ignore-on-battery-less-than": {
+                  "title": "schedule-ignore-on-battery-less-than",
+                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+                  "type": "integer"
+                },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
                   "default": "default",
@@ -3357,8 +3367,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -3549,8 +3559,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -3828,6 +3838,16 @@
                 "schedule-capture-environment__PREPEND": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
+                "schedule-ignore-on-battery": {
+                  "title": "schedule-ignore-on-battery",
+                  "description": "Don't schedule the start of this profile when running on battery",
+                  "type": "boolean"
+                },
+                "schedule-ignore-on-battery-less-than": {
+                  "title": "schedule-ignore-on-battery-less-than",
+                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+                  "type": "integer"
+                },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
                   "default": "default",
@@ -4032,11 +4052,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
                 },
@@ -4058,6 +4073,11 @@
                   "title": "initialize-copy-chunker-params",
                   "default": true,
                   "description": "Copy chunker parameters when initializing the secondary repository",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -4235,6 +4255,16 @@
                 },
                 "schedule-capture-environment__PREPEND": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-ignore-on-battery": {
+                  "title": "schedule-ignore-on-battery",
+                  "description": "Don't schedule the start of this profile when running on battery",
+                  "type": "boolean"
+                },
+                "schedule-ignore-on-battery-less-than": {
+                  "title": "schedule-ignore-on-battery-less-than",
+                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+                  "type": "integer"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -4421,8 +4451,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -4853,11 +4883,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -4873,6 +4898,11 @@
                 "ignore-case": {
                   "title": "ignore-case",
                   "description": "ignore case for pattern",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5146,11 +5176,6 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -5169,6 +5194,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -5310,6 +5340,16 @@
                 },
                 "schedule-capture-environment__PREPEND": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
+                },
+                "schedule-ignore-on-battery": {
+                  "title": "schedule-ignore-on-battery",
+                  "description": "Don't schedule the start of this profile when running on battery",
+                  "type": "boolean"
+                },
+                "schedule-ignore-on-battery-less-than": {
+                  "title": "schedule-ignore-on-battery-less-than",
+                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+                  "type": "integer"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -6045,11 +6085,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -6061,6 +6096,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -6266,14 +6306,14 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "force": {
                   "title": "force",
                   "description": "apply a migration a second time",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6843,6 +6883,16 @@
                 "schedule-capture-environment__PREPEND": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
+                "schedule-ignore-on-battery": {
+                  "title": "schedule-ignore-on-battery",
+                  "description": "Don't schedule the start of this profile when running on battery",
+                  "type": "boolean"
+                },
+                "schedule-ignore-on-battery-less-than": {
+                  "title": "schedule-ignore-on-battery-less-than",
+                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+                  "type": "integer"
+                },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
                   "default": "default",
@@ -7015,8 +7065,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -7190,8 +7240,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -7409,11 +7459,6 @@
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -7461,6 +7506,11 @@
                 },
                 "include__PREPEND": {
                   "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7857,6 +7907,18 @@
                 },
                 "schedule-capture-environment__PREPEND": {
                   "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
+                },
+                "schedule-ignore-on-battery": {
+                  "title": "schedule-ignore-on-battery",
+                  "deprecated": true,
+                  "description": "Don't schedule the start of this profile when running on battery [deprecated]",
+                  "type": "boolean"
+                },
+                "schedule-ignore-on-battery-less-than": {
+                  "title": "schedule-ignore-on-battery-less-than",
+                  "deprecated": true,
+                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value [deprecated]",
+                  "type": "integer"
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -8284,11 +8346,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -8300,6 +8357,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -8550,11 +8612,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -8566,6 +8623,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",

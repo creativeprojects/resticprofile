@@ -94,7 +94,7 @@ figure {
 hr {
   height: 0; }
 
-pre {
+pre:not(.mermaid) {
   overflow: auto; }
 
 button,
@@ -193,7 +193,7 @@ cite {
   cite:before {
     content: "\2014 \0020"; }
 
-pre {
+pre:not(.mermaid) {
   margin: 1.5rem 0;
   padding: 0.938rem; }
 

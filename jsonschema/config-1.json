@@ -2615,6 +2615,16 @@
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
             },
+            "schedule-ignore-on-battery": {
+              "title": "schedule-ignore-on-battery",
+              "description": "Don't schedule the start of this profile when running on battery",
+              "type": "boolean"
+            },
+            "schedule-ignore-on-battery-less-than": {
+              "title": "schedule-ignore-on-battery-less-than",
+              "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+              "type": "integer"
+            },
             "schedule-lock-mode": {
               "title": "schedule-lock-mode",
               "default": "default",
@@ -2924,14 +2934,14 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3058,14 +3068,14 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3153,6 +3163,16 @@
             },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+            },
+            "schedule-ignore-on-battery": {
+              "title": "schedule-ignore-on-battery",
+              "description": "Don't schedule the start of this profile when running on battery",
+              "type": "boolean"
+            },
+            "schedule-ignore-on-battery-less-than": {
+              "title": "schedule-ignore-on-battery-less-than",
+              "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+              "type": "integer"
             },
             "schedule-lock-mode": {
               "title": "schedule-lock-mode",
@@ -3287,8 +3307,8 @@
               "type": "string",
               "minLength": 0
             },
-            "from-repository": {
-              "title": "from-repository",
+            "from-repo": {
+              "title": "from-repo",
               "description": "source repository to copy snapshots from (default: $RESTIC_FROM_REPOSITORY) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
@@ -3453,6 +3473,16 @@
             },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+            },
+            "schedule-ignore-on-battery": {
+              "title": "schedule-ignore-on-battery",
+              "description": "Don't schedule the start of this profile when running on battery",
+              "type": "boolean"
+            },
+            "schedule-ignore-on-battery-less-than": {
+              "title": "schedule-ignore-on-battery-less-than",
+              "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+              "type": "integer"
             },
             "schedule-lock-mode": {
               "title": "schedule-lock-mode",
@@ -4050,6 +4080,11 @@
               "description": "do not delete anything, just print what would be done",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "group-by": {
               "title": "group-by",
               "default": "host,paths",
@@ -4063,11 +4098,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -4249,6 +4279,16 @@
             },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+            },
+            "schedule-ignore-on-battery": {
+              "title": "schedule-ignore-on-battery",
+              "description": "Don't schedule the start of this profile when running on battery",
+              "type": "boolean"
+            },
+            "schedule-ignore-on-battery-less-than": {
+              "title": "schedule-ignore-on-battery-less-than",
+              "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+              "type": "integer"
             },
             "schedule-lock-mode": {
               "title": "schedule-lock-mode",
@@ -5149,17 +5189,17 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "host": {
               "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5490,6 +5530,16 @@
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
             },
+            "schedule-ignore-on-battery": {
+              "title": "schedule-ignore-on-battery",
+              "description": "Don't schedule the start of this profile when running on battery",
+              "type": "boolean"
+            },
+            "schedule-ignore-on-battery-less-than": {
+              "title": "schedule-ignore-on-battery-less-than",
+              "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
+              "type": "integer"
+            },
             "schedule-lock-mode": {
               "title": "schedule-lock-mode",
               "default": "default",
@@ -5599,14 +5649,14 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -6465,6 +6515,11 @@
               "description": "do not delete anything, just print what would be done",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "group-by": {
               "title": "group-by",
               "default": "host,paths",
@@ -6478,11 +6533,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -6664,6 +6714,18 @@
             },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-e9dcb0415621db931adaa34883b6880b"
+            },
+            "schedule-ignore-on-battery": {
+              "title": "schedule-ignore-on-battery",
+              "deprecated": true,
+              "description": "Don't schedule the start of this profile when running on battery [deprecated]",
+              "type": "boolean"
+            },
+            "schedule-ignore-on-battery-less-than": {
+              "title": "schedule-ignore-on-battery-less-than",
+              "deprecated": true,
+              "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value [deprecated]",
+              "type": "integer"
             },
             "schedule-lock-mode": {
               "title": "schedule-lock-mode",
@@ -7092,17 +7154,17 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "host": {
               "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {

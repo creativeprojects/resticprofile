@@ -5,6 +5,7 @@
     --INTERNAL-SECONDARY-color: var(--SECONDARY-color, var(--MAIN-LINK-color, rgba( 72, 106, 201, 1 ))); /* not --INTERNAL-MAIN-LINK-color */
     --INTERNAL-ACCENT-color: var(--ACCENT-color, rgba( 255, 255, 0, 1 ));
 
+    --INTERNAL-MAIN-TOPBAR-BORDER-color: var(--MAIN-TOPBAR-BORDER-color, transparent);
     --INTERNAL-MAIN-LINK-color: var(--MAIN-LINK-color, var(--SECONDARY-color, rgba( 72, 106, 201, 1 ))); /* not --INTERNAL-SECONDARY-color */
     --INTERNAL-MAIN-LINK-HOVER-color: var(--MAIN-LINK-HOVER-color, var(--INTERNAL-MAIN-LINK-color));
     --INTERNAL-MAIN-BG-color: var(--MAIN-BG-color, rgba( 255, 255, 255, 1 ));
@@ -46,8 +47,12 @@
 
     --INTERNAL-TAG-BG-color: var(--TAG-BG-color, var(--INTERNAL-PRIMARY-color));
 
+    --INTERNAL-MENU-BORDER-color: var(--MENU-BORDER-color, transparent);
+    --INTERNAL-MENU-TOPBAR-BORDER-color: var(--MENU-TOPBAR-BORDER-color, var(--INTERNAL-MENU-HEADER-BG-color));
+    --INTERNAL-MENU-TOPBAR-SEPARATOR-color: var(--MENU-TOPBAR-SEPARATOR-color, transparent);
     --INTERNAL-MENU-HEADER-BG-color: var(--MENU-HEADER-BG-color, var(--PRIMARY-color, rgba( 0, 0, 0, 0 ))); /* not --INTERNAL-PRIMARY-color */
     --INTERNAL-MENU-HEADER-BORDER-color: var(--MENU-HEADER-BORDER-color, var(--INTERNAL-MENU-HEADER-BG-color));
+    --INTERNAL-MENU-HEADER-SEPARATOR-color: var(--MENU-HEADER-SEPARATOR-color, var(--INTERNAL-MENU-HEADER-BORDER-color));
 
     --INTERNAL-MENU-HOME-LINK-color: var(--MENU-HOME-LINK-color, rgba( 50, 50, 50, 1 ));
     --INTERNAL-MENU-HOME-LINK-HOVER-color: var(--MENU-HOME-LINK-HOVER-color, var(--MENU-HOME-LINK-HOVERED-color, rgba( 128, 128, 128, 1 )));
@@ -62,9 +67,10 @@
     --INTERNAL-MENU-SECTIONS-LINK-HOVER-color: var(--MENU-SECTIONS-LINK-HOVER-color, var(--INTERNAL-MENU-SECTIONS-LINK-color));
     --INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color: var(--MENU-SECTION-ACTIVE-CATEGORY-color, rgba( 68, 68, 68, 1 ));
     --INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BG-color: var(--MENU-SECTION-ACTIVE-CATEGORY-BG-color, var(--INTERNAL-MAIN-BG-color));
+    --INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BORDER-color: var(--MENU-SECTION-ACTIVE-CATEGORY-BORDER-color, transparent);
 
     --INTERNAL-MENU-VISITED-color: var(--MENU-VISITED-color, var(--INTERNAL-SECONDARY-color));
-    --INTERNAL-MENU-SECTION-HR-color: var(--MENU-SECTION-HR-color, rgba( 96, 96, 96, 1 ));
+    --INTERNAL-MENU-SECTION-SEPARATOR-color: var(--MENU-SECTION-SEPARATOR-color, var(--MENU-SECTION-HR-color, rgba( 96, 96, 96, 1 )));
 
     --INTERNAL-BOX-CAPTION-color: var(--BOX-CAPTION-color, rgba( 255, 255, 255, 1 ));
     --INTERNAL-BOX-BG-color: var(--BOX-BG-color, rgba( 255, 255, 255, .833 ));
@@ -102,5 +108,5 @@
     --INTERNAL-PRINT-MAIN-TEXT-color: var(--PRINT-MAIN-TEXT-color, rgba( 16, 16, 16, 1 ));
     --INTERNAL-PRINT-MERMAID-theme: var(--PRINT-MERMAID-theme, default);
     --INTERNAL-PRINT-OPENAPI-theme: var(--PRINT-OPENAPI-theme, var(--PRINT-SWAGGER-theme, light));
-    --INTERNAL-PRINT-OPENAPI-CODE-theme: var(--PRINT-OPENAPI-CODE-theme, obsidian);
+    --INTERNAL-PRINT-OPENAPI-CODE-theme: var(--PRINT-OPENAPI-CODE-theme, idea);
 }

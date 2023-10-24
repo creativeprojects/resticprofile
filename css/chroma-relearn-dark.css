@@ -2,7 +2,7 @@
 /* Background */ .bg { color: #f8f8f2; background-color: #2b2b2b; }
 /* PreWrapper */ .chroma { color: #f8f8f2; background-color: #2b2b2b; }
 /* Other */ .chroma .x {  }
-/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* Error */ .chroma .err { color: #cc66cc; }
 /* CodeLine */ .chroma .cl {  }
 /* LineLink */ .chroma .lnlinks { outline: none; text-decoration: none; color: inherit }
 /* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }

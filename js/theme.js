@@ -34,8 +34,12 @@ var formelements = 'button, datalist, fieldset, input, label, legend, meter, opt
 // PerfectScrollbar
 var psc;
 var psm;
-var pst;
-var elc = document.querySelector('#body-inner');
+var pst = new Map();
+var elc = document.querySelector('#R-body-inner');
+
+function regexEscape( s ){
+    return s.replace( /[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&' );
+}
 
 function documentFocus(){
     elc.focus();
@@ -69,7 +73,7 @@ function adjustContentWidth(){
 function fixCodeTabs(){
     /* if only a single code block is contained in the tab and no style was selected, treat it like style=code */
     var codeTabContents = Array.from( document.querySelectorAll( '.tab-content.tab-panel-style' ) ).filter( function( tabContent ){
-        return tabContent.querySelector( '*:scope > .tab-content-text > div.highlight:only-child, *:scope > .tab-content-text > pre.pre-code:only-child');
+        return tabContent.querySelector( '*:scope > .tab-content-text > div.highlight:only-child, *:scope > .tab-content-text > pre:not(.mermaid).pre-code:only-child');
     });
 
     codeTabContents.forEach( function( tabContent ){
@@ -115,6 +119,8 @@ function switchTab(tabGroup, tabId) {
     targetTabItems && targetTabItems.forEach( function( e ){ e.classList.add( 'active' ); });
 
     if(isButtonEvent){
+      initMermaid( true );
+
       // reset screen to the same position relative to clicked button to prevent page jump
       var yposButtonDiff = event.target.getBoundingClientRect().top - yposButton;
       window.scrollTo(window.scrollX, window.scrollY+yposButtonDiff);
@@ -149,6 +155,9 @@ function restoreTabSelections() {
 }
 
 function initMermaid( update, attrs ) {
+    var doBeside = true;
+    var isImageRtl = false;
+
     // we are either in update or initialization mode;
     // during initialization, we want to edit the DOM;
     // during update we only want to execute if something changed
@@ -164,13 +173,13 @@ function initMermaid( update, attrs ) {
         var YAML=1;
         var INIT=2;
         var GRAPH=3;
-        var d = /^(?:\s*[\n\r])*(-{3}\s*[\n\r](?:.*?)[\n\r]-{3}(?:\s*[\n\r]+)+)?(?:\s*(?:%%\s*\{\s*\w+\s*:([^%]*?)%%\s*[\n\r]?))?(.*)$/s
+        var d = /^(?:\s*[\n\r])*(?:-{3}(\s*[\n\r](?:.*?)[\n\r])-{3}(?:\s*[\n\r]+)+)?(?:\s*(?:%%\s*\{\s*\w+\s*:([^%]*?)%%\s*[\n\r]?))?(.*)$/s
         var m = d.exec( graph );
-        var yaml = '';
+        var yaml = {};
         var dir = {};
         var content = graph;
         if( m && m.length == 4 ){
-            yaml = m[YAML] ? m[YAML] : yaml;
+            yaml = m[YAML] ? jsyaml.load( m[YAML] ) : yaml;
             dir = m[INIT] ? JSON.parse( '{ "init": ' + m[INIT] ).init : dir;
             content = m[GRAPH] ? m[GRAPH] : content;
         }
@@ -179,8 +188,15 @@ function initMermaid( update, attrs ) {
     };
 
     var serializeGraph = function( graph ){
-        var s = graph.yaml + '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n' + graph.content;
-        return s;
+        var yamlPart = '';
+        if( Object.keys( graph.yaml ).length ){
+            yamlPart = '---\n' + jsyaml.dump( graph.yaml ) + '---\n';
+        }
+        var dirPart = '';
+        if( Object.keys( graph.dir ).length ){
+            dirPart = '%%{init: ' + JSON.stringify( graph.dir ) + '}%%\n';
+        }
+        return yamlPart + dirPart + graph.content;
     };
 
     var init_func = function( attrs ){
@@ -189,18 +205,36 @@ function initMermaid( update, attrs ) {
         document.querySelectorAll('.mermaid').forEach( function( element ){
             var parse = parseGraph( decodeHTML( element.innerHTML ) );
 
+            if( parse.yaml.theme ){
+                parse.yaml.relearn_user_theme = true;
+            }
             if( parse.dir.theme ){
                 parse.dir.relearn_user_theme = true;
             }
-            if( !parse.dir.relearn_user_theme ){
-                parse.dir.theme = theme;
+            if( !parse.yaml.relearn_user_theme && !parse.dir.relearn_user_theme ){
+                parse.yaml.theme = theme;
             }
             is_initialized = true;
 
             var graph = serializeGraph( parse );
             element.innerHTML = graph;
+            if( element.offsetParent !== null ){
+                element.classList.add( 'mermaid-render' );
+            }
             var new_element = document.createElement( 'div' );
             new_element.classList.add( 'mermaid-container' );
+            if( element.classList.contains( 'align-right' ) ){
+                new_element.classList.add( 'align-right' );
+                element.classList.remove( 'align-right' );
+            }
+            if( element.classList.contains( 'align-center' ) ){
+                new_element.classList.add( 'align-center' );
+                element.classList.remove( 'align-center' );
+            }
+            if( element.classList.contains( 'align-left' ) ){
+                new_element.classList.add( 'align-left' );
+                element.classList.remove( 'align-left' );
+            }
             new_element.innerHTML = '<div class="mermaid-code">' + graph + '</div>' + element.outerHTML;
             element.parentNode.replaceChild( new_element, element );
         });
@@ -215,15 +249,24 @@ function initMermaid( update, attrs ) {
             var code = e.querySelector( '.mermaid-code' );
             var parse = parseGraph( decodeHTML( code.innerHTML ) );
 
-            if( parse.dir.relearn_user_theme ){
-                return;
+            if( element.classList.contains( 'mermaid-render' ) ){
+                if( parse.yaml.relearn_user_theme || parse.dir.relearn_user_theme ){
+                    return;
+                }
+                if( parse.yaml.theme == theme || parse.dir.theme == theme ){
+                    return;
+                }
             }
-            if( parse.dir.theme == theme ){
+            if( element.offsetParent !== null ){
+                element.classList.add( 'mermaid-render' );
+            }
+            else{
+                element.classList.remove( 'mermaid-render' );
                 return;
             }
             is_initialized = true;
 
-            parse.dir.theme = theme;
+            parse.yaml.theme = theme;
             var graph = serializeGraph( parse );
             element.removeAttribute('data-processed');
             element.innerHTML = graph;
@@ -266,18 +309,42 @@ function initMermaid( update, attrs ) {
     }
     var is_initialized = ( update ? update_func( attrs ) : init_func( attrs ) );
     if( is_initialized ){
-        mermaid.init();
-        // zoom for Mermaid
-        // https://github.com/mermaid-js/mermaid/issues/1860#issuecomment-1345440607
-        var svgs = d3.selectAll( '.mermaid.zoom svg' );
-        svgs.each( function(){
-            var svg = d3.select( this );
-            svg.html( '<g>' + svg.html() + '</g>' );
-            var inner = svg.select( 'g' );
-            var zoom = d3.zoom().on( 'zoom', function( e ){
-                inner.attr( 'transform', e.transform);
-            });
-            svg.call( zoom );
+        mermaid.initialize( Object.assign( { "securityLevel": "antiscript", "startOnLoad": false }, window.relearn.mermaidConfig, { theme: attrs.theme } ) );
+        mermaid.run({
+            postRenderCallback: function( id ){
+                // zoom for Mermaid
+                // https://github.com/mermaid-js/mermaid/issues/1860#issuecomment-1345440607
+                var svgs = d3.selectAll( 'body:not(.print) .mermaid.zoom > #' + id );
+                svgs.each( function(){
+                    var svg = d3.select( this );
+                    svg.html( '<g>' + svg.html() + '</g>' );
+                    var inner = svg.select( 'g' );
+                    var zoom = d3.zoom().on( 'zoom', function( e ){
+                        inner.attr( 'transform', e.transform );
+                    });
+                    svg.call( zoom );
+                    var parent = this.parentElement;
+                    // we need to copy the maxWidth, otherwise our reset button will not align in the upper right
+                    parent.style.maxWidth = this.style.maxWidth || this.getAttribute( 'width' );
+                    // if no unit is given for the width
+                    parent.style.maxWidth = parent.style.maxWidth || 'calc( ' + this.getAttribute( 'width' ) + 'px + 1rem )';
+                    parent.insertAdjacentHTML( 'beforeend', '<span class="svg-reset-button" title="' + window.T_Reset_view + '"><i class="fas fa-undo-alt"></i></span>' );
+                    var button = parent.querySelector( '.svg-reset-button' );
+                    button.addEventListener( 'click', function( event ){
+                        inner.transition()
+                            .duration( 350 )
+                            .call( zoom.transform, d3.zoomIdentity );
+                        this.setAttribute( 'aria-label', window.T_View_reset );
+                        this.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isImageRtl?'e':'w')) );
+                    });
+                    button.addEventListener( 'mouseleave', function() {
+                        this.removeAttribute( 'aria-label' );
+                        this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
+                    });
+                });
+            },
+            querySelector: '.mermaid.mermaid-render',
+            suppressErrors: true
         });
     }
     if( update && search && search.length ){
@@ -322,7 +389,7 @@ function initOpenapi( update, attrs ){
     function renderOpenAPI(oc) {
         var buster = window.themeUseOpenapi.assetsBuster ? '?' + window.themeUseOpenapi.assetsBuster : '';
         var print = isPrint || attrs.isPrintPreview ? "PRINT-" : "";
-		var theme = print ? `${baseUri}/css/theme-relearn-light.css` : document.querySelector( '#variant-style' ).attributes.href.value
+		var theme = print ? `${baseUri}/css/theme-relearn-light.css` : document.querySelector( '#R-variant-style' ).attributes.href.value
         var swagger_theme = variants.getColorValue( print + 'OPENAPI-theme' );
         var swagger_code_theme = variants.getColorValue( print + 'OPENAPI-CODE-theme' );
 
@@ -398,7 +465,7 @@ function initOpenapi( update, attrs ){
                             activated: true,
                             theme: swagger_code_theme,
                         },
-                        url: oc.getAttribute('openapi-url'),
+                        url: oc.dataset.openapiUrl,
                         validatorUrl: 'none',
                     });
                 })
@@ -518,7 +585,7 @@ function initCodeClipboard(){
         var text = getCodeText( code );
         var inPre = code.parentNode.tagName.toLowerCase() == 'pre';
         var inTable = inPre &&
-           code.parentNode.parentNode.tagName.toLowerCase() == 'td';
+            code.parentNode.parentNode.tagName.toLowerCase() == 'td';
         // avoid copy-to-clipboard for highlight shortcode in table lineno mode
         var isFirstLineCell = inTable &&
             code.parentNode.parentNode.parentNode.querySelector( 'td:first-child > pre > code' ) == code;
@@ -535,18 +602,22 @@ function initCodeClipboard(){
 
             clip.on( 'success', function( e ){
                 e.clearSelection();
-                var doBeside = e.trigger.parentNode.tagName.toLowerCase() == 'pre' || (e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'table' );
+                var inPre = e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'pre';
+                var isCodeRtl = !inPre ? isRtl : false;
+                var doBeside = inPre || (e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'table' );
                 e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
-                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isRtl?'e':'w')) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isCodeRtl?'e':'w')) );
             });
 
             clip.on( 'error', function( e ){
-                var doBeside = e.trigger.parentNode.tagName.toLowerCase() == 'pre' || (e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'table' );
+                var inPre = e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'pre';
+                var isCodeRtl = !inPre ? isRtl : false;
+                var doBeside = inPre || (e.trigger.previousElementSibling && e.trigger.previousElementSibling.tagName.toLowerCase() == 'table' );
                 e.trigger.setAttribute( 'aria-label', fallbackMessage(e.action) );
-                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isRtl?'e':'w')) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isCodeRtl?'e':'w')) );
                 var f = function(){
                     e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
-                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isRtl?'e':'w')) );
+                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (doBeside ? 'w' : 's'+(isCodeRtl?'e':'w')) );
                     document.removeEventListener( 'copy', f );
                 };
                 document.addEventListener( 'copy', f );
@@ -568,7 +639,7 @@ function initCodeClipboard(){
             var button = document.createElement( 'span' );
             button.classList.add( 'copy-to-clipboard-button' );
             button.setAttribute( 'title', window.T_Copy_to_clipboard );
-            button.innerHTML = '<i class="fas fa-copy"></i>';
+            button.innerHTML = '<i class="far fa-copy"></i>';
             button.addEventListener( 'mouseleave', function() {
                 this.removeAttribute( 'aria-label' );
                 this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
@@ -610,15 +681,15 @@ function initArrowNav(){
     }
 
     // button navigation
-    var prev = document.querySelector( 'a.nav-prev' );
+    var prev = document.querySelector( '.topbar-button-prev a' );
     prev && prev.addEventListener( 'click', navPrev );
-    var next = document.querySelector( 'a.nav-next' );
+    var next = document.querySelector( '.topbar-button-next a' );
     next && next.addEventListener( 'click', navNext );
 
     // keyboard navigation
     // avoid prev/next navigation if we are not at the start/end of the
     // horizontal area
-    var el = document.querySelector('#body-inner');
+    var el = document.querySelector('#R-body-inner');
     var scrollStart = 0;
     var scrollEnd = 0;
     document.addEventListener('keydown', function(event){
@@ -674,8 +745,8 @@ function initMenuScrollbar(){
         return;
     }
 
-    var elm = document.querySelector('#content-wrapper');
-    var elt = document.querySelector('#TableOfContents');
+    var elm = document.querySelector('#R-content-wrapper');
+    var elt = document.querySelector('.topbar-button.topbar-flyout .topbar-content-wrapper');
 
     var autofocus = true;
     document.addEventListener('keydown', function(event){
@@ -703,16 +774,17 @@ function initMenuScrollbar(){
             // if we are showing the sidebar as a flyout we
             // want to scroll the content-wrapper, otherwise we want
             // to scroll the body
-            var nt = document.querySelector('body').matches('.toc-flyout');
+            var nt = document.querySelector('body').matches('.topbar-flyout');
             var nm = document.querySelector('body').matches('.sidebar-flyout');
             if( nt ){
-                pst && pst.scrollbarY.focus();
+                var psb = pst.get( document.querySelector('.topbar-button.topbar-flyout') );
+                psb && psb.scrollbarY.focus();
             }
             else if( nm ){
                 psm && psm.scrollbarY.focus();
             }
             else{
-                document.querySelector('#body-inner').focus();
+                document.querySelector('#R-body-inner').focus();
                 psc && psc.scrollbarY.focus();
             }
         }
@@ -720,9 +792,17 @@ function initMenuScrollbar(){
     // scrollbars will install their own keyboard handlers
     // that need to be executed inbetween our own handlers
     // PSC removed for #242 #243 #244
-    // psc = elc && new PerfectScrollbar('#body-inner');
-    psm = elm && new PerfectScrollbar('#content-wrapper');
-    pst = elt && new PerfectScrollbar('#TableOfContents');
+    // psc = elc && new PerfectScrollbar('#R-body-inner');
+    psm = elm && new PerfectScrollbar('#R-content-wrapper');
+    document.querySelectorAll('.topbar-button .topbar-content-wrapper').forEach( function( e ){
+        var button = getTopbarButtonParent( e );
+        if( !button ){
+            return;
+        }
+        pst.set( button, new PerfectScrollbar( e ) );
+        e.addEventListener( 'click', toggleTopbarFlyoutEvent );
+    });
+
     document.addEventListener('keydown', function(){
         // if we facked initial scrolling, we want to
         // remove the focus to not leave visual markers on
@@ -730,27 +810,33 @@ function initMenuScrollbar(){
         if( autofocus ){
             psc && psc.scrollbarY.blur();
             psm && psm.scrollbarY.blur();
-            pst && pst.scrollbarY.blur();
+            pst.forEach( function( psb ){
+                psb.scrollbarY.blur();
+            });
             autofocus = false;
         }
     });
     // on resize, we have to redraw the scrollbars to let new height
     // affect their size
     window.addEventListener('resize', function(){
-        pst && setTimeout( function(){ pst.update(); }, 10 );
+        pst.forEach( function( psb ){
+            setTimeout( function(){ psb.update(); }, 10 );
+        });
         psm && setTimeout( function(){ psm.update(); }, 10 );
         psc && setTimeout( function(){ psc.update(); }, 10 );
     });
     // now that we may have collapsible menus, we need to call a resize
     // for the menu scrollbar if sections are expanded/collapsed
-    document.querySelectorAll('#sidebar .collapsible-menu input').forEach( function(e){
+    document.querySelectorAll('#R-sidebar .collapsible-menu input').forEach( function(e){
         e.addEventListener('change', function(){
             psm && setTimeout( function(){ psm.update(); }, 10 );
         });
     });
     // bugfix for PS in RTL mode: the initial scrollbar position is off;
     // calling update() once, fixes this
-    pst && setTimeout( function(){ pst.update(); }, 10 );
+    pst.forEach( function( psb ){
+        setTimeout( function(){ psb.update(); }, 10 );
+    });
     psm && setTimeout( function(){ psm.update(); }, 10 );
     psc && setTimeout( function(){ psc.update(); }, 10 );
 
@@ -766,27 +852,9 @@ function imageEscapeHandler( event ){
     }
 }
 
-function sidebarEscapeHandler( event ){
-    if( event.key == "Escape" ){
-        var b = document.querySelector( 'body' );
-        b.classList.remove( 'sidebar-flyout' );
-        document.removeEventListener( 'keydown', sidebarEscapeHandler );
-        documentFocus();
-    }
-}
-
-function tocEscapeHandler( event ){
-    if( event.key == "Escape" ){
-        var b = document.querySelector( 'body' );
-        b.classList.remove( 'toc-flyout' );
-        document.removeEventListener( 'keydown', tocEscapeHandler );
-        documentFocus();
-    }
-}
-
-function sidebarShortcutHandler( event ){
+function navShortcutHandler( event ){
     if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 78 /* n */ ){
-        showNav();
+        toggleNav();
     }
 }
 
@@ -798,7 +866,7 @@ function searchShortcutHandler( event ){
 
 function tocShortcutHandler( event ){
     if( !event.shiftKey && event.altKey && event.ctrlKey && !event.metaKey && event.which == 84 /* t */ ){
-        showToc();
+        toggleToc();
     }
 }
 
@@ -815,83 +883,155 @@ function printShortcutHandler( event ){
 }
 
 function showSearch(){
-    var s = document.querySelector( '#search-by' );
+    var s = document.querySelector( '#R-search-by' );
     if( !s ){
         return;
     }
     var b = document.querySelector( 'body' );
     if( s == document.activeElement ){
         if( b.classList.contains( 'sidebar-flyout' ) ){
-            showNav();
+            closeNav();
         }
         documentFocus();
     } else {
         if( !b.classList.contains( 'sidebar-flyout' ) ){
-            showNav();
+            openNav();
         }
         s.focus();
     }
 }
 
-function showNav(){
-    if( !document.querySelector( '#sidebar-overlay' ) ){
-        // we may not have a flyout
-        return;
-    }
+function openNav(){
+    closeSomeTopbarButtonFlyout();
     var b = document.querySelector( 'body' );
-    b.classList.toggle( 'sidebar-flyout' );
-    if( b.classList.contains( 'sidebar-flyout' ) ){
-        b.classList.remove( 'toc-flyout' );
-        document.removeEventListener( 'keydown', tocEscapeHandler );
-        document.addEventListener( 'keydown', sidebarEscapeHandler );
-    }
-    else{
-        document.removeEventListener( 'keydown', sidebarEscapeHandler );
-        documentFocus();
+    b.classList.add( 'sidebar-flyout' );
+    psm && setTimeout( function(){ psm.update(); }, 10 );
+    psm && psm.scrollbarY.focus();
+    var a = document.querySelector( '#R-sidebar a' )
+    if( a ){
+        a.focus();
     }
 }
 
-function showToc(){
-    var t = document.querySelector( '#toc-menu' );
-    if( !t ){
-        // we may not have a toc
-        return;
-    }
+function closeNav(){
     var b = document.querySelector( 'body' );
-    b.classList.toggle( 'toc-flyout' );
-    if( b.classList.contains( 'toc-flyout' ) ){
-        pst && setTimeout( function(){ pst.update(); }, 10 );
-        pst && pst.scrollbarY.focus();
-        document.querySelector( '.toc-wrapper ul a' ).focus();
-        document.addEventListener( 'keydown', tocEscapeHandler );
+    b.classList.remove( 'sidebar-flyout' );
+    documentFocus();
+}
+
+function toggleNav(){
+    var b = document.querySelector( 'body' );
+    if( b.classList.contains( 'sidebar-flyout' ) ){
+        closeNav();
     }
     else{
-        document.removeEventListener( 'keydown', tocEscapeHandler );
-        documentFocus();
+        openNav();
     }
+}
+
+function navEscapeHandler( event ){
+    if( event.key == "Escape" ){
+        closeNav();
+    }
+}
+
+function getTopbarButtonParent( e ){
+    var button = e;
+    while( button && !button.classList.contains( 'topbar-button' ) ){
+        button = button.parentElement;
+    }
+    return button;
+}
+
+function openTopbarButtonFlyout( button ){
+    closeNav();
+    var body = document.querySelector( 'body' );
+    button.classList.add( 'topbar-flyout' );
+    body.classList.add( 'topbar-flyout' );
+    var psb = pst.get( button );
+    psb && setTimeout( function(){ psb.update(); }, 10 );
+    psb && psb.scrollbarY.focus();
+    var a = button.querySelector( '.topbar-content-wrapper a' );
+    if( a ){
+        a.focus();
+    }
+}
+
+function closeTopbarButtonFlyout( button ){
+    var body = document.querySelector( 'body' );
+    button.classList.remove( 'topbar-flyout' );
+    body.classList.remove( 'topbar-flyout' );
+    documentFocus();
+}
+
+function closeSomeTopbarButtonFlyout(){
+    var someButton = document.querySelector( '.topbar-button.topbar-flyout' );
+    if( someButton ){
+        closeTopbarButtonFlyout( someButton );
+    };
+    return someButton
+}
+
+function toggleTopbarButtonFlyout( button ){
+    var someButton = closeSomeTopbarButtonFlyout();
+    if( button && button != someButton ){
+        openTopbarButtonFlyout( button );
+    }
+}
+
+function toggleTopbarFlyout( e ){
+    var button = getTopbarButtonParent( e );
+    if( !button ){
+        return;
+    }
+    toggleTopbarButtonFlyout( button );
+}
+
+function toggleTopbarFlyoutEvent( event ){
+    if( event.target.classList.contains( 'topbar-content' )
+        || event.target.classList.contains( 'topbar-content-wrapper' )
+        || event.target.classList.contains( 'ps__rail-x' )
+        || event.target.classList.contains( 'ps__rail-y' )
+        || event.target.classList.contains( 'ps__thumb-x' )
+        || event.target.classList.contains( 'ps__thumb-y' )
+        ){
+        // the scrollbar was used, don't close flyout
+        return;
+    }
+    toggleTopbarFlyout( event.target )
+}
+
+function topbarFlyoutEscapeHandler( event ){
+    if( event.key == "Escape" ){
+        closeSomeTopbarButtonFlyout();
+    }
+}
+
+function toggleToc(){
+    toggleTopbarButtonFlyout( document.querySelector( '.topbar-button-toc' ) );
 }
 
 function showEdit(){
-    var l = document.querySelector( '#top-github-link a' );
+    var l = document.querySelector( '.topbar-button-edit a' );
     if( l ){
         l.click();
     }
 }
 
 function showPrint(){
-    var l = document.querySelector( '#top-print-link a' );
+    var l = document.querySelector( '.topbar-button-print a' );
     if( l ){
         l.click();
     }
 }
 
 function navPrev(){
-    var e = document.querySelector( 'a.nav-prev' );
+    var e = document.querySelector( '.topbar-button-prev a' );
     location.href = e && e.getAttribute( 'href' );
 };
 
 function navNext(){
-    var e = document.querySelector( 'a.nav-next' );
+    var e = document.querySelector( '.topbar-button-next a' );
     location.href = e && e.getAttribute( 'href' );
 };
 
@@ -901,20 +1041,20 @@ function initToc(){
     }
 
     document.addEventListener( 'keydown', editShortcutHandler );
+    document.addEventListener( 'keydown', navShortcutHandler );
     document.addEventListener( 'keydown', printShortcutHandler );
-    document.addEventListener( 'keydown', sidebarShortcutHandler );
     document.addEventListener( 'keydown', searchShortcutHandler );
     document.addEventListener( 'keydown', tocShortcutHandler );
+    document.addEventListener( 'keydown', navEscapeHandler );
+    document.addEventListener( 'keydown', topbarFlyoutEscapeHandler );
 
-    document.querySelector( '#sidebar-overlay' ).addEventListener( 'click', showNav );
-    document.querySelector( '#sidebar-toggle' ).addEventListener( 'click', showNav );
-    document.querySelector( '#toc-overlay' ).addEventListener( 'click', showToc );
-    var t = document.querySelector( '#toc-menu' );
-    var p = document.querySelector( '.progress' );
-    if( t && p ){
-        // we may not have a toc
-        t.addEventListener( 'click', showToc );
-        p.addEventListener( 'click', showToc );
+    var b = document.querySelector( '#R-body-overlay' );
+    if( b ){
+        b.addEventListener( 'click', closeNav );
+    }
+    var m = document.querySelector( '#R-main-overlay' );
+    if( m ){
+        m.addEventListener( 'click', closeSomeTopbarButtonFlyout );
     }
 
     // finally give initial focus to allow keyboard scrolling in FF
@@ -945,10 +1085,7 @@ function initSwipeHandler(){
             else if( diffx > 30 ){
                 startx = null;
                 starty = null;
-                var b = document.querySelector( 'body' );
-                b.classList.remove( 'sidebar-flyout' );
-                document.removeEventListener( 'keydown', sidebarEscapeHandler );
-                documentFocus();
+                closeNav();
             }
         }
         return false;
@@ -959,19 +1096,24 @@ function initSwipeHandler(){
         return false;
     };
 
-    document.querySelector( '#sidebar-overlay' ).addEventListener("touchstart", handleStartX, false);
-    document.querySelector( '#sidebar' ).addEventListener("touchstart", handleStartX, false);
-    document.querySelectorAll( '#sidebar *' ).forEach( function(e){ e.addEventListener("touchstart", handleStartX); }, false);
-    document.querySelector( '#sidebar-overlay' ).addEventListener("touchmove", handleMoveX, false);
-    document.querySelector( '#sidebar' ).addEventListener("touchmove", handleMoveX, false);
-    document.querySelectorAll( '#sidebar *' ).forEach( function(e){ e.addEventListener("touchmove", handleMoveX); }, false);
-    document.querySelector( '#sidebar-overlay' ).addEventListener("touchend", handleEndX, false);
-    document.querySelector( '#sidebar' ).addEventListener("touchend", handleEndX, false);
-    document.querySelectorAll( '#sidebar *' ).forEach( function(e){ e.addEventListener("touchend", handleEndX); }, false);
+    var s = document.querySelector( '#R-body-overlay' );
+    s && s.addEventListener("touchstart", handleStartX, false);
+    document.querySelector( '#R-sidebar' ).addEventListener("touchstart", handleStartX, false);
+    document.querySelectorAll( '#R-sidebar *' ).forEach( function(e){ e.addEventListener("touchstart", handleStartX); }, false);
+    s && s.addEventListener("touchmove", handleMoveX, false);
+    document.querySelector( '#R-sidebar' ).addEventListener("touchmove", handleMoveX, false);
+    document.querySelectorAll( '#R-sidebar *' ).forEach( function(e){ e.addEventListener("touchmove", handleMoveX); }, false);
+    s && s.addEventListener("touchend", handleEndX, false);
+    document.querySelector( '#R-sidebar' ).addEventListener("touchend", handleEndX, false);
+    document.querySelectorAll( '#R-sidebar *' ).forEach( function(e){ e.addEventListener("touchend", handleEndX); }, false);
 }
 
 function initImage(){
-    document.querySelectorAll( '.lightbox' ).forEach( function(e){ e.addEventListener("keydown", imageEscapeHandler); }, false);
+    document.querySelectorAll( '.lightbox-back' ).forEach( function(e){ e.addEventListener( 'keydown', imageEscapeHandler ); });
+}
+
+function initExpand(){
+    document.querySelectorAll( '.expand > input' ).forEach( function(e){ e.addEventListener( 'change', initMermaid.bind( null, true, null ) ); });
 }
 
 function clearHistory() {
@@ -1021,7 +1163,7 @@ function initScrollPositionSaver(){
 function scrollToPositions() {
     // show active menu entry
     window.setTimeout( function(){
-        var e = document.querySelector( '#sidebar li.active a' );
+        var e = document.querySelector( '#R-sidebar li.active a' );
         if( e && e.scrollIntoView ){
             e.scrollIntoView({
                 block: 'center',
@@ -1048,6 +1190,7 @@ function scrollToPositions() {
 
     var search = sessionStorage.getItem( baseUriFull+'search-value' );
     if( search && search.length ){
+        search = regexEscape( search );
         var found = elementContains( search, elc );
         var searchedElem = found.length && found[ 0 ];
         if( searchedElem ){
@@ -1077,12 +1220,7 @@ function scrollToPositions() {
 
 function mark() {
 	// mark some additional stuff as searchable
-	var topbarLinks = document.querySelectorAll( '#topbar a:not(.topbar-link):not(.btn)' );
-	for( var i = 0; i < topbarLinks.length; i++ ){
-		topbarLinks[i].classList.add( 'highlight' );
-	}
-
-	var bodyInnerLinks = document.querySelectorAll( '#body-inner a:not(.lightbox-link):not(.btn):not(.lightbox)' );
+	var bodyInnerLinks = document.querySelectorAll( '#R-body-inner a:not(.lightbox-link):not(.btn):not(.lightbox-back)' );
 	for( var i = 0; i < bodyInnerLinks.length; i++ ){
 		bodyInnerLinks[i].classList.add( 'highlight' );
 	}
@@ -1135,7 +1273,7 @@ function highlight( es, words, options ){
         return word != '';
     });
     words = words.map( function( word, i ){
-        return word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+        return regexEscape( word );
     });
     if( words.length == 0 ){ return this; }
 
@@ -1312,33 +1450,29 @@ function initSearch() {
     window.relearn.runInitialSearch && window.relearn.runInitialSearch();
 }
 
-ready( function(){
-    initArrowNav();
-    initMermaid();
-    initOpenapi();
-    initMenuScrollbar();
-    initToc();
-    initAnchorClipboard();
-    initCodeClipboard();
-    fixCodeTabs();
-    restoreTabSelections();
-    initSwipeHandler();
-    initHistory();
-    initSearch();
-    initImage();
-    initScrollPositionSaver();
-    scrollToPositions();
-});
+function updateTheme( detail ){
+    if( window.relearn.lastVariant == detail.variant ){
+        return;
+    }
+    window.relearn.lastVariant = detail.variant;
+
+    initMermaid( true );
+    initOpenapi( true );
+    document.dispatchEvent( new CustomEvent( 'themeVariantLoaded', {
+        detail: detail
+    }));
+}
 
 function useMermaid( config ){
     if( !Object.assign ){
         // We don't support Mermaid for IE11 anyways, so bail out early
         return;
     }
+    window.relearn.mermaidConfig = config;
     if (typeof mermaid != 'undefined' && typeof mermaid.mermaidAPI != 'undefined') {
-        mermaid.initialize( Object.assign( { "securityLevel": "antiscript", "startOnLoad": false     }, config ) );
+        mermaid.initialize( Object.assign( { "securityLevel": "antiscript", "startOnLoad": false }, config ) );
         if( config.theme && variants ){
-            var write_style = variants.findLoadedStylesheet( 'variant-style' );
+            var write_style = variants.findLoadedStylesheet( 'R-variant-style' );
             write_style.setProperty( '--CONFIG-MERMAID-theme', config.theme );
         }
     }
@@ -1355,3 +1489,164 @@ function useOpenapi( config ){
 if( window.themeUseOpenapi ){
     useOpenapi( window.themeUseOpenapi );
 }
+
+ready( function(){
+    initArrowNav();
+    initMermaid();
+    initOpenapi();
+    initMenuScrollbar();
+    initToc();
+    initAnchorClipboard();
+    initCodeClipboard();
+    fixCodeTabs();
+    restoreTabSelections();
+    initSwipeHandler();
+    initHistory();
+    initSearch();
+    initImage();
+    initExpand();
+    initScrollPositionSaver();
+    scrollToPositions();
+});
+
+(function(){
+    var body = document.querySelector( 'body' );
+    var topbar = document.querySelector( '#R-topbar' );
+    function addTopbarButtonInfos(){
+        // initially add some management infos to buttons and areas
+        var areas = body.querySelectorAll( '.topbar-area' );
+        areas.forEach( function( area ){
+            area.dataset.area = 'area-' + area.dataset.area;
+            var buttons = area.querySelectorAll( ':scope > .topbar-button' );
+            buttons.forEach( function( button ){
+                button.dataset.origin = area.dataset.area;
+                button.dataset.action = 'show';
+                var placeholder = document.createElement( 'div' );
+                placeholder.classList.add( 'topbar-placeholder' );
+                placeholder.dataset.action = 'show';
+                button.insertAdjacentElement( 'afterend', placeholder );
+            });
+            var placeholder = document.createElement( 'div' );
+            area.insertAdjacentElement( 'beforeend', placeholder );
+            var hidden = document.createElement( 'div' );
+            hidden.classList.add( 'topbar-hidden' );
+            hidden.dataset.area = area.dataset.area;
+            var hplaceholder = document.createElement( 'div' );
+            hidden.insertAdjacentElement( 'beforeend', hplaceholder );
+            area.insertAdjacentElement( 'afterend', hidden );
+        });
+    }
+    function moveAreaTopbarButtons( width ){
+        topbar.querySelectorAll( '.topbar-hidden .topbar-button' ).forEach( function( button ){
+            // move hidden to origins area
+            var placeholder = button.parentNode.parentNode.querySelector( ':scope > .topbar-area .topbar-placeholder[data-action="hide"]' );
+            placeholder.dataset.action = 'show';
+            button.dataset.action = 'show';
+            placeholder.insertAdjacentElement( 'beforebegin', button );
+        });
+        topbar.querySelectorAll( '.topbar-area .topbar-button' ).forEach( function( button ){
+            var current_area = button.dataset.action;
+            var origin_area = button.dataset.origin;
+            if( current_area != 'show' && origin_area != current_area ){
+                // move moved to origins area
+                var placeholder = topbar.querySelector( '.topbar-area[data-area="' + origin_area + '"] > .topbar-placeholder[data-action="' + current_area + '"]' );
+                placeholder.dataset.action = 'show';
+                button.dataset.action = 'show';
+                placeholder.insertAdjacentElement( 'beforebegin', button );
+            }
+        });
+        Array.from( topbar.querySelectorAll( '.topbar-area .topbar-button' ) ).reverse().forEach( function( button ){
+            var parent = button.parentElement;
+            var current_area = parent.dataset.area;
+            var action = button.dataset[ 'width' + width.toUpperCase() ];
+            if( action == 'show' ){
+            }
+            else if( action == 'hide' ){
+                // move to origins hidden
+                var hidden = button.parentNode.parentNode.querySelector( ':scope > .topbar-hidden > *' );
+                var placeholder = button.nextSibling;
+                placeholder.dataset.action = action;
+                button.dataset.action = action;
+                hidden.insertAdjacentElement( 'beforebegin', button );
+            }
+            else if( action != current_area ){
+                // move to action area
+                var dest = button.parentNode.parentNode.querySelector( '.topbar-area[data-area="' + action + '"] > *' );
+                if( dest ){
+                    var placeholder = button.nextSibling;
+                    placeholder.dataset.action = action;
+                    button.dataset.action = action;
+                    dest.insertAdjacentElement( 'beforebegin', button );
+                }
+            }
+        });
+    }
+    function moveTopbarButtons(){
+        var isS = body.classList.contains( 'width-s' );
+        var isM = body.classList.contains( 'width-m' );
+        var isL = body.classList.contains( 'width-l' );
+        // move buttons once, width has a distinct value
+        if( isS && !isM && !isL ){
+            moveAreaTopbarButtons( 's' )
+        }
+        else if( !isS && isM && !isL ){
+            moveAreaTopbarButtons( 'm' )
+        }
+        else if( !isS && !isM && isL ){
+            moveAreaTopbarButtons( 'l' )
+        }
+    }
+    function adjustEmptyTopbarContents(){
+        var buttons = Array.from( document.querySelectorAll( '.topbar-button > .topbar-content > .topbar-content-wrapper' ) );
+        // we have to reverse order to make sure to handle innermost areas first
+        buttons.reverse().forEach( function( wrapper ){
+            var button = getTopbarButtonParent( wrapper );
+            if( button ){
+                var isEmpty = true;
+                var area = wrapper.querySelector( ':scope > .topbar-area');
+                if( area ){
+                    // if it's an area, we have to check each contained button
+                    // manually for its display property
+                    var areabuttons = area.querySelectorAll( ':scope > .topbar-button' );
+                    isEmpty = true;
+                    areabuttons.forEach( function( ab ){
+                        if( ab.style.display != 'none' ){
+                            isEmpty = false;
+                        }
+                    })
+                }
+                else{
+                    var clone = wrapper.cloneNode( true );
+                    var irrelevant = clone.querySelectorAll( "div.ps__rail-x, div.ps__rail-y" );
+                    irrelevant.forEach(function( e ) {
+                        e.parentNode.removeChild( e );
+                    });
+                    isEmpty = !clone.innerHTML.trim();
+                }
+                button.querySelector( 'button' ).disabled = isEmpty;
+                button.style.display = isEmpty && button.dataset.contentEmpty == 'hide' ? 'none' : 'inline-block';
+            }
+        })
+    }
+    function setWidthS(e){ body.classList[ e.matches ? "add" : "remove" ]( 'width-s' ); }
+    function setWidthM(e){ body.classList[ e.matches ? "add" : "remove" ]( 'width-m' ); }
+    function setWidthL(e){ body.classList[ e.matches ? "add" : "remove" ]( 'width-l' ); }
+    function onWidthChange( setWidth, e ){
+        setWidth( e );
+        moveTopbarButtons();
+        adjustEmptyTopbarContents();
+    }
+    var mqs = window.matchMedia( 'only screen and (max-width: 48rem)' );
+    mqs.addEventListener( 'change', onWidthChange.bind( null, setWidthS ) );
+    var mqm = window.matchMedia( 'only screen and (min-width: 48rem) and (max-width: 60rem)' );
+    mqm.addEventListener( 'change', onWidthChange.bind( null, setWidthM ) );
+    var mql = window.matchMedia( 'only screen and (min-width: 60rem)' );
+    mql.addEventListener( 'change', onWidthChange.bind( null, setWidthL ) );
+
+    addTopbarButtonInfos();
+    setWidthS( mqs );
+    setWidthM( mqm );
+    setWidthL( mql );
+    moveTopbarButtons();
+    adjustEmptyTopbarContents();
+})();

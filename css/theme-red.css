@@ -40,7 +40,7 @@
     --MENU-SECTION-ACTIVE-CATEGORY-BG-color: rgba( 255, 255, 255, 1 ); /* Color of background for the active category (only) */
 
     --MENU-VISITED-color: rgba( 243, 28, 28, 1 ); /* Color of 'page visited' icons in menu */
-    --MENU-SECTION-HR-color: rgba( 43, 32, 32, 1 ); /* Color of <hr> separator in menu */
+    --MENU-SECTION-SEPARATOR-color: rgba( 43, 32, 32, 1 ); /* Color of <hr> separator in menu */
 
     /* base styling for boxes */
     --BOX-CAPTION-color: rgba( 255, 255, 255, 1 ); /* color of the title text */

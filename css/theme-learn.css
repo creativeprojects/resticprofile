@@ -40,7 +40,7 @@
     --MENU-SECTION-ACTIVE-CATEGORY-BG-color: rgba( 255, 255, 255, 1 ); /* Color of background for the active category (only) */
 
     --MENU-VISITED-color: rgba( 0, 189, 243, 1 ); /* Color of 'page visited' icons in menu */
-    --MENU-SECTION-HR-color: rgba( 42, 35, 47, 1 ); /* Color of <hr> separator in menu */
+    --MENU-SECTION-SEPARATOR-color: rgba( 42, 35, 47, 1 ); /* Color of <hr> separator in menu */
 
     /* base styling for boxes */
     --BOX-CAPTION-color: rgba( 255, 255, 255, 1 ); /* color of the title text */
@@ -48,10 +48,10 @@
     --BOX-TEXT-color: rgba( 16, 16, 16, 1 ); /* fixed color of the content text */
 }
 
-body a#logo,
-body a#logo:hover,
-body #logo svg,
-body #logo svg * {
+body a#R-logo,
+body a#R-logo:hover,
+body #R-logo svg,
+body #R-logo svg * {
     color: var(--INTERNAL-MENU-SEARCH-color);
     fill: var(--INTERNAL-MENU-SEARCH-color) !important;
 }
