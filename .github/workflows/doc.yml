@@ -46,10 +46,9 @@ jobs:
         run: |
           cd docs
           export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
-          sed -i "s@https://creativeprojects.github.io/resticprofile/@https://${BRANCH_NAME}.resticprofile.pages.dev/@g" config.toml
-          hugo --minify
+          hugo --minify --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
-      - name: Publish
+      - name: Publish to pages.dev
         uses: cloudflare/pages-action@1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
