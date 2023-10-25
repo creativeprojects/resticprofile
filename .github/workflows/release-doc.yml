@@ -36,7 +36,7 @@ jobs:
           extended: true
 
       - name: Build for GitHub Pages
-        run: cd docs && hugo --minify --baseURL https://creativeprojects.github.io/resticprofile/
+        run: cd docs && hugo --minify --enableGitInfo --baseURL https://creativeprojects.github.io/resticprofile/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -50,7 +50,7 @@ jobs:
         run: |
           cd docs
           sed -i "s/canonifyURLs = true/canonifyURLs = false/g" config.toml
-          hugo --minify --baseURL https://resticprofile.creativeprojects.tech/
+          hugo --minify --enableGitInfo --baseURL https://resticprofile.creativeprojects.tech/
 
       - name: Publish to pages.dev
         uses: cloudflare/pages-action@1
