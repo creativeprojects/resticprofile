@@ -23,14 +23,44 @@ of the generated services, without modifying the service templates. For example:
 
 ```toml
 [root]
-inherit = "default"
-systemd-drop-in-files = "drop-in-test.conf"
+systemd-drop-in-files = ["99-drop-in-example.conf"]
 
   [root.backup]
   schedule = "hourly"
   schedule-permission = "system"
   schedule-lock-wait = "45m"
   schedule-after-network-online = true
+```
+
+Where `99-drop-in-example.conf` is in the same directory as `profiles.toml` and with the contents
+
+```
+Environment=RCLONE_CONFIG=%d/rclone.conf
+SetCredentialEncrypted=restic-repo-password: \
+        Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAABl6ctIWEqgRC4yHbgAAAAA8umMn \
+        +6KYd8tAL58jUmtf/5wckDcxQSeuo+xd9OzN5XG7QW0iBIRRGCuWvvuAAiHEAKSk9MR8p \
+        EDSaSm
+SetCredentialEncrypted=rclone.conf: \
+        Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAAC+vNhJYedv5QmyDHYAAAAAimeli \
+        +Oo+URGN47SUBf7Jm1n3gdu22+Sd/eL7CjzpYQvHAMOCY8xz9hp9kW9/DstWHTfdsHJo7 \
+        thOpk4IbSSazCPwEr39VVQONLxzpRlY22LkQKLoGAVD4Yifk+U5aJJ4FlRW/VGpPoef2S \
+        rGvQzqQI7kNX+v7EPXj4B0tSUeBBJJCEu4mgajZNAhwHtbw==
+```
+
+Generated with the following, see [systemd credentials docs](https://systemd.io/CREDENTIALS/)
+for more details. This could allow, for example,
+using a TPM-backed encrypted password, outside of the
+resticprofile config itself
+
+```shell
+systemd-ask-password -n | sudo systemd-creds encrypt --name=restic-repo-password -p - -
+sudo systemd-creds encrypt --name=rclone.conf -p - - <<EOF
+[restic-example]
+type = smb
+host = example
+user = restic
+pass = $(systemd-ask-password -n "smb restic user password" | rclone obscure -)
+EOF
 ```
 
 ## systemd calendars
