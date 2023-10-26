@@ -408,7 +408,7 @@ azure-mysql:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 ## Debugging your template and variable expansion

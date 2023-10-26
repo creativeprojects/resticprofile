@@ -108,7 +108,7 @@ src:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 For this profile, a lock will be set using the file `/tmp/resticprofile-profile-src.lock` for the duration of the profile: *check*, *backup* and *retention* (via the forget command)
@@ -182,7 +182,7 @@ src:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ## Lock wait
 
@@ -258,7 +258,7 @@ global:
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 
 If restic lock management is not desired, it can be disabled by setting both values to **0**.

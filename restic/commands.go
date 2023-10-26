@@ -9,13 +9,13 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/util/collect"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -480,10 +480,10 @@ func knownVersionsFrom(commands map[string]*command) (versions []string) {
 	fixedWidth := func(s string) string {
 		return fmt.Sprintf("%6s", s)
 	}
-	slices.SortFunc(versions, func(a, b string) bool {
+	slices.SortFunc(versions, func(a, b string) int {
 		as := collect.From(strings.Split(a, "."), fixedWidth)
 		bs := collect.From(strings.Split(b, "."), fixedWidth)
-		return slices.Compare(as, bs) > 0
+		return -slices.Compare(as, bs)
 	})
 	versions = slices.Compact(versions)
 	return

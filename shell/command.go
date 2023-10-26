@@ -9,13 +9,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/util/collect"
-	"golang.org/x/exp/slices"
 )
 
 const (

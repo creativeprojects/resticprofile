@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,7 +24,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/creativeprojects/resticprofile/win"
-	"golang.org/x/exp/slices"
 )
 
 var (

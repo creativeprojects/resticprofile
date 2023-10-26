@@ -135,7 +135,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 ## Generate a secure password
 
@@ -307,7 +307,7 @@ default {
 ```
 
 {{% /tab %}}
-{{% /tabs %}}
+{{< /tabs >}}
 
 **resticprofile** can [schedule]({{< ref "/schedules" >}}) work on macOS, Windows, most Unixes and Linux distributions: it is simply adding an entry in the default scheduler of your platform.
 

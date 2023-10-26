@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
-	"golang.org/x/exp/maps"
 )
 
 // TemplateFuncs declares a few standard functions to simplify working with templates

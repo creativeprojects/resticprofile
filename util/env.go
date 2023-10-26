@@ -1,10 +1,10 @@
 package util
 
 import (
-	"golang.org/x/exp/maps"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/platform"
+	"golang.org/x/exp/maps"
 )
 
 // Environment manages a set of environment variables

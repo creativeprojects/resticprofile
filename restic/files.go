@@ -6,9 +6,8 @@ import (
 	"io"
 	"io/fs"
 	"path"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 const (

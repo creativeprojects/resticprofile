@@ -43,4 +43,18 @@ jobs:
           extended: true
 
       - name: Build
-        run: cd docs && hugo --minify
+        run: |
+          cd docs
+          sed -i "s/canonifyURLs = true/canonifyURLs = false/g" config.toml
+          export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
+          hugo --minify --enableGitInfo --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
+
+      - name: Publish to pages.dev
+        uses: cloudflare/pages-action@1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: 'resticprofile'
+          directory: 'public'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}

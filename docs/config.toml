@@ -13,6 +13,7 @@ publishdir = "../public/"
   # Change default color scheme with a variant one.
   themeVariant = [ "relearn-light", "relearn-dark" ]
   collapsibleMenu = true
+  externalLinkTarget = "_blank"
 
 [[menu.shortcuts]]
   name = "<i class='fas fa-tags'></i> Tags"

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/spf13/pflag"
-	"golang.org/x/exp/slices"
 )
 
 type commandLineFlags struct {

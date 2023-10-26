@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -10,7 +11,6 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/util"
-	"golang.org/x/exp/slices"
 )
 
 var (
