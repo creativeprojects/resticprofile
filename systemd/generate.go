@@ -24,7 +24,8 @@ const (
 
 	systemdUnitDefaultTmpl = `[Unit]
 Description={{ .JobDescription }}
-
+{{ if .AfterNetworkOnline }}After=network-online.target
+{{ end }}
 [Service]
 Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
@@ -37,8 +38,7 @@ Environment="{{ . }}"
 
 	systemdTimerDefaultTmpl = `[Unit]
 Description={{ .TimerDescription }}
-{{ if .AfterNetworkOnline }}After=network-online.target
-{{ end }}
+
 [Timer]
 {{ range .OnCalendar -}}
 OnCalendar={{ . }}

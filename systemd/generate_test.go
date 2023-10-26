@@ -40,21 +40,23 @@ func TestGenerateSystemUnit(t *testing.T) {
 	requireFileExists(t, timerFile)
 }
 
-func TestGenerateSystemUnitTimerAfterNetworkOnline(t *testing.T) {
-	const expectedTimer = `[Unit]
-Description=timer description
+func TestGenerateSystemUnitServiceAfterNetworkOnline(t *testing.T) {
+	const expectedService = `[Unit]
+Description=job description
 After=network-online.target
 
-[Timer]
-OnCalendar=daily
-Unit=resticprofile-backup@profile-name.service
-Persistent=true
-
-[Install]
-WantedBy=timers.target
+[Service]
+Type=notify
+WorkingDirectory=workdir
+ExecStart=commandLine
+Nice=5
+Environment="HOME=%s"
 `
 
 	fs = afero.NewMemMapFs()
+
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
 
 	systemdDir := GetSystemDir()
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
@@ -63,7 +65,7 @@ WantedBy=timers.target
 	assertNoFileExists(t, serviceFile)
 	assertNoFileExists(t, timerFile)
 
-	err := Generate(Config{
+	err = Generate(Config{
 		CommandLine:        "commandLine",
 		WorkingDirectory:   "workdir",
 		Title:              "name",
@@ -79,9 +81,9 @@ WantedBy=timers.target
 	requireFileExists(t, serviceFile)
 	requireFileExists(t, timerFile)
 
-	timer, err := afero.ReadFile(fs, timerFile)
+	service, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
-	assert.Equal(t, expectedTimer, string(timer))
+	assert.Equal(t, fmt.Sprintf(expectedService, home), string(service))
 }
 
 func TestGenerateUserUnit(t *testing.T) {

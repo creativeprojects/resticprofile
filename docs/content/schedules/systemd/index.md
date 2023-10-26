@@ -126,6 +126,8 @@ Here are the defaults if you don't specify your own (which I recommend to use as
 ```ini
 [Unit]
 Description={{ .JobDescription }}
+{{ if .AfterNetworkOnline }}After=network-online.target
+{{ end }}
 
 [Service]
 Type=notify
