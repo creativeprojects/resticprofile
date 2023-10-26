@@ -14,6 +14,25 @@ User systemd units are created under the user's systemd profile (`~/.config/syst
 
 System units are created in `/etc/systemd/system`
 
+## systemd drop-in files
+
+It is possible to automatically populate `*.conf.d`
+[drop-in files](https://www.freedesktop.org/software/systemd/man/latest/systemd-system.conf.html#main-conf)
+for profiles, which allows easy overriding
+of the generated services, without modifying the service templates. For example:
+
+```toml
+[root]
+inherit = "default"
+systemd-drop-in-files = "drop-in-test.conf"
+
+  [root.backup]
+  schedule = "hourly"
+  schedule-permission = "system"
+  schedule-lock-wait = "45m"
+  schedule-after-network-online = true
+```
+
 ## systemd calendars
 
 resticprofile uses systemd
@@ -41,6 +60,12 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 - run `systemctl daemon-reload` (only if `schedule-permission` is set to `system`)
 - run `systemctl enable`
 - run `systemctl start`
+
+## Run after the network is up
+
+Specifying the profile option `schedule-after-network-online: true` means that the scheduled services will wait
+for a network connection before running.
+This is done via an [After=network-online.target](https://systemd.io/NETWORK_ONLINE/) entry in the service.
 
 ## How to change the default systemd unit and timer file using a template
 
