@@ -35,6 +35,7 @@ systemd-drop-in-files = ["99-drop-in-example.conf"]
 Where `99-drop-in-example.conf` is in the same directory as `profiles.toml` and with the contents
 
 ```
+[Service]
 Environment=RCLONE_CONFIG=%d/rclone.conf
 SetCredentialEncrypted=restic-repo-password: \
         Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAABl6ctIWEqgRC4yHbgAAAAA8umMn \
