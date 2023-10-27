@@ -50,6 +50,7 @@ jobs:
           hugo --minify --enableGitInfo --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
       - name: Publish to pages.dev
+        continue-on-error: true # secrets are not set for PRs from forks
         uses: cloudflare/pages-action@1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
