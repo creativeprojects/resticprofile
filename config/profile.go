@@ -95,6 +95,7 @@ type Profile struct {
 	PrometheusPush          string                            `mapstructure:"prometheus-push" format:"uri" description:"URL of the prometheus push gateway to send the summary of the last restic command result to"`
 	PrometheusPushJob       string                            `mapstructure:"prometheus-push-job" description:"Prometheus push gateway job name. $command placeholder is replaced with restic command"`
 	PrometheusLabels        map[string]string                 `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
+	SystemdDropInFiles      []string                          `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process"`
 	Init                    *InitSection                      `mapstructure:"init"`
 	Backup                  *BackupSection                    `mapstructure:"backup"`
@@ -295,6 +296,7 @@ type ScheduleBaseSection struct {
 	ScheduleEnvCapture              []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
 	ScheduleIgnoreOnBattery         bool          `mapstructure:"schedule-ignore-on-battery" default:"false" description:"Don't schedule the start of this profile when running on battery"`
 	ScheduleIgnoreOnBatteryLessThan int           `mapstructure:"schedule-ignore-on-battery-less-than" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
+	ScheduleAfterNetworkOnline      bool          `mapstructure:"schedule-after-network-online" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
@@ -588,6 +590,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 	p.CacheDir = fixPath(p.CacheDir, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.CACert = fixPath(p.CACert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	p.SystemdDropInFiles = fixPaths(p.SystemdDropInFiles, expandEnv, absolutePrefix(rootPath))
 
 	// Forward to sections accepting paths
 	for _, s := range GetSectionsWith[relativePath](p) {
@@ -842,6 +845,8 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				ConfigFile:              p.config.configFile,
 				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
 				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
+				AfterNetworkOnline:      s.ScheduleAfterNetworkOnline,
+				SystemdDropInFiles:      p.SystemdDropInFiles,
 			}
 
 			if len(config.Log) > 0 {

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	inhibitWhat      = "sleep"
+	inhibitWhat      = "idle:sleep"
 	inhibitWhy       = "Backup and/or restic repository maintenance"
 	inhibitMode      = "block"
 	permissionDenied = "Permission denied"

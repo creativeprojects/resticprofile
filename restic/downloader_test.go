@@ -24,6 +24,7 @@ func TestDownloadBinary(t *testing.T) {
 	}
 
 	for _, version := range versions {
+		version := version
 		t.Run(version, func(t *testing.T) {
 			t.Parallel()
 			executable := path.Join(temp, fmt.Sprintf("restic-%s", version))

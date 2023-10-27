@@ -40,6 +40,52 @@ func TestGenerateSystemUnit(t *testing.T) {
 	requireFileExists(t, timerFile)
 }
 
+func TestGenerateSystemUnitServiceAfterNetworkOnline(t *testing.T) {
+	const expectedService = `[Unit]
+Description=job description
+After=network-online.target
+
+[Service]
+Type=notify
+WorkingDirectory=workdir
+ExecStart=commandLine
+Nice=5
+Environment="HOME=%s"
+`
+
+	fs = afero.NewMemMapFs()
+
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+
+	systemdDir := GetSystemDir()
+	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
+	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
+
+	assertNoFileExists(t, serviceFile)
+	assertNoFileExists(t, timerFile)
+
+	err = Generate(Config{
+		CommandLine:        "commandLine",
+		WorkingDirectory:   "workdir",
+		Title:              "name",
+		SubTitle:           "backup",
+		JobDescription:     "job description",
+		TimerDescription:   "timer description",
+		Schedules:          []string{"daily"},
+		UnitType:           SystemUnit,
+		Priority:           "low",
+		AfterNetworkOnline: true,
+	})
+	require.NoError(t, err)
+	requireFileExists(t, serviceFile)
+	requireFileExists(t, timerFile)
+
+	service, err := afero.ReadFile(fs, serviceFile)
+	require.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf(expectedService, home), string(service))
+}
+
 func TestGenerateUserUnit(t *testing.T) {
 	const expectedService = `[Unit]
 Description=job description
@@ -249,6 +295,101 @@ func TestGenerateFromUserDefinedTemplates(t *testing.T) {
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
 	requireFileExists(t, timerFile)
+}
+
+func TestGenerateWithDropInFile(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	dropInFileContents := []byte(`
+[Service]
+Environment=foo=bar
+`)
+
+	err := afero.WriteFile(fs, "99-example.conf", dropInFileContents, 0o600)
+	require.NoError(t, err)
+
+	systemdDir := GetSystemDir()
+	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
+	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
+	dropInFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/99-example.resticprofile.conf")
+
+	assertNoFileExists(t, serviceFile)
+	assertNoFileExists(t, timerFile)
+	assertNoFileExists(t, dropInFile)
+
+	err = Generate(Config{
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		DropInFiles:      []string{"99-example.conf"},
+	})
+	require.NoError(t, err)
+	requireFileExists(t, serviceFile)
+	requireFileExists(t, timerFile)
+	requireFileExists(t, dropInFile)
+
+	dropIn, err := afero.ReadFile(fs, dropInFile)
+	require.NoError(t, err)
+	assert.Equal(t, dropInFileContents, dropIn)
+}
+
+func TestGenerateCleansUpOrphanDropIns(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	dropInFileContents := []byte(`
+[Service]
+Environment=foo=bar
+`)
+
+	err := afero.WriteFile(fs, "99-example.conf", dropInFileContents, 0o600)
+	require.NoError(t, err)
+
+	systemdDir := GetSystemDir()
+
+	orphanFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/88-orphan.resticprofile.conf")
+	err = afero.WriteFile(fs, orphanFile, []byte{}, 0o600)
+	require.NoError(t, err)
+
+	externallyCreatedFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/77-external.conf")
+	err = afero.WriteFile(fs, externallyCreatedFile, []byte{}, 0o600)
+	require.NoError(t, err)
+
+	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
+	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
+	dropInFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/99-example.resticprofile.conf")
+
+	assertNoFileExists(t, serviceFile)
+	assertNoFileExists(t, timerFile)
+	assertNoFileExists(t, dropInFile)
+
+	err = Generate(Config{
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         SystemUnit,
+		Priority:         "low",
+		DropInFiles:      []string{"99-example.conf"},
+	})
+	require.NoError(t, err)
+	requireFileExists(t, serviceFile)
+	requireFileExists(t, timerFile)
+	requireFileExists(t, dropInFile)
+	assertNoFileExists(t, orphanFile)
+	requireFileExists(t, externallyCreatedFile)
+
+	dropIn, err := afero.ReadFile(fs, dropInFile)
+	require.NoError(t, err)
+	assert.Equal(t, dropInFileContents, dropIn)
 }
 
 func TestGetUserDirOnReadOnlyFs(t *testing.T) {

@@ -106,19 +106,26 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 		// user has sudoed already
 		unitType = systemd.SystemUnit
 	}
+
+	if unitType == systemd.UserUnit && job.AfterNetworkOnline {
+		return fmt.Errorf("after-network-online only available for \"system\" permission schedules")
+	}
+
 	err := systemd.Generate(systemd.Config{
-		CommandLine:      job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
-		Environment:      job.Environment,
-		WorkingDirectory: job.WorkingDirectory,
-		Title:            job.Title,
-		SubTitle:         job.SubTitle,
-		JobDescription:   job.JobDescription,
-		TimerDescription: job.TimerDescription,
-		Schedules:        job.Schedules,
-		UnitType:         unitType,
-		Priority:         job.GetPriority(),
-		UnitFile:         h.config.UnitTemplate,
-		TimerFile:        h.config.TimerTemplate,
+		CommandLine:        job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
+		Environment:        job.Environment,
+		WorkingDirectory:   job.WorkingDirectory,
+		Title:              job.Title,
+		SubTitle:           job.SubTitle,
+		JobDescription:     job.JobDescription,
+		TimerDescription:   job.TimerDescription,
+		Schedules:          job.Schedules,
+		UnitType:           unitType,
+		Priority:           job.GetPriority(),
+		UnitFile:           h.config.UnitTemplate,
+		TimerFile:          h.config.TimerTemplate,
+		AfterNetworkOnline: job.AfterNetworkOnline,
+		DropInFiles:        job.SystemdDropInFiles,
 	})
 	if err != nil {
 		return err
@@ -194,6 +201,12 @@ func (h *HandlerSystemd) RemoveJob(job *config.ScheduleConfig, permission string
 
 	serviceFile := systemd.GetServiceFile(job.Title, job.SubTitle)
 	err = os.Remove(path.Join(systemdPath, serviceFile))
+	if err != nil {
+		return nil
+	}
+
+	dropInDir := systemd.GetServiceFileDropInDir(job.Title, job.SubTitle)
+	err = os.RemoveAll(path.Join(systemdPath, dropInDir))
 	if err != nil {
 		return nil
 	}

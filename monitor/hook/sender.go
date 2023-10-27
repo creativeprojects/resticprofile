@@ -50,8 +50,8 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	insecureClient := &http.Client{
-		Transport: transport,
 		Timeout:   timeout,
+		Transport: transport,
 	}
 
 	return &Sender{

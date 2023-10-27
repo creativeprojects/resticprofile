@@ -29,6 +29,8 @@ version = "1"
     one-file-system = true
     tag = [ "root" ]
     source = [ "/", "/var" ]
+    schedule = "daily"
+    schedule-after-network-online = true
 ```
 {{% /tab %}}
 {{% tab title="yaml" %}}
@@ -54,6 +56,8 @@ default:
     source:
       - "/"
       - "/var"
+    schedule: "daily"
+    schedule-after-network-online: true
 ```
 
 {{% /tab %}}
