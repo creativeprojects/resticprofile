@@ -540,14 +540,49 @@ func TestResolveGlobSourcesInBackup(t *testing.T) {
 source = "` + sourcePattern + `"
 `
 	profile, err := getProfile("toml", testConfig, "profile", "./examples")
-	profile.ResolveConfiguration()
 	require.NoError(t, err)
 	assert.NotNil(t, profile)
+	profile.ResolveConfiguration()
 
 	sources, err := filepath.Glob(sourcePattern)
 	require.NoError(t, err)
 	assert.Greater(t, len(sources), 5)
 	assert.Equal(t, sources, profile.Backup.Source)
+}
+
+func TestResolveSourcesWithFlagPrefixInBackup(t *testing.T) {
+	backupSource := func(t *testing.T, source string) []string {
+		testConfig := `
+			[profile.backup]
+			source = "` + source + `"
+		`
+		cwd, err := os.Getwd()
+		require.NoError(t, err)
+		defer func() { _ = os.Chdir(cwd) }()
+
+		dir, _ := filepath.Abs(t.TempDir())
+		require.NoError(t, os.Chdir(dir))
+		{
+			f, _ := os.Create("-my-file")
+			_ = f.Close()
+		}
+
+		profile, err := getProfile("toml", testConfig, "profile", "./examples")
+		require.NoError(t, err)
+		assert.NotNil(t, profile)
+		profile.ResolveConfiguration()
+		return profile.Backup.Source
+	}
+
+	expected := []string{"." + string(filepath.Separator) + "-my-file"}
+
+	t.Run("FixedPath", func(t *testing.T) {
+		assert.Equal(t, expected, backupSource(t, "-my-file"))
+	})
+
+	t.Run("GlobPath", func(t *testing.T) {
+		assert.Equal(t, expected, backupSource(t, "-*"))
+	})
 }
 
 func TestResolveSourcesAgainstBase(t *testing.T) {
@@ -558,9 +593,9 @@ func TestResolveSourcesAgainstBase(t *testing.T) {
 			source = "` + filepath.ToSlash(source) + `"
 		`
 		profile, err := getProfile("toml", config, "profile", "./examples")
-		profile.ResolveConfiguration()
 		require.NoError(t, err)
 		assert.NotNil(t, profile)
+		profile.ResolveConfiguration()
 		return profile.Backup.Source
 	}
 
