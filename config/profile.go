@@ -633,9 +633,17 @@ func (p *Profile) resolveSourcePath(sourceBase string, sourcePaths ...string) []
 		applyBaseDir = absolutePrefix(p.BaseDir)
 	}
 
+	// prefix paths starting with "-" with a "./" to distinguish a source path from a flag
+	maskPathsWithFlagPrefix := func(file string) string {
+		if strings.HasPrefix(file, "-") {
+			return "." + string(filepath.Separator) + file
+		}
+		return file
+	}
+
 	sourcePaths = fixPaths(sourcePaths, expandEnv, expandUserHome, applySourceBase, applyBaseDir)
 	sourcePaths = resolveGlob(sourcePaths)
-	sourcePaths = fixPaths(sourcePaths, filepath.ToSlash, filepath.FromSlash)
+	sourcePaths = fixPaths(sourcePaths, maskPathsWithFlagPrefix, filepath.ToSlash, filepath.FromSlash)
 	return sourcePaths
 }
 
