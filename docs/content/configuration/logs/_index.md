@@ -11,6 +11,7 @@ You can redirect the logs to a local file, a temporary file or a syslog server.
 ## Destination
 
 The log destination syntax is a such:
+* `-` {{% icon icon="arrow-right" %}} redirects all the logs to the console / stdout (is the default log destination)
 * `filename` {{% icon icon="arrow-right" %}} redirects all the logs to the local file called **filename**
 * `temp:filename` {{% icon icon="arrow-right" %}} redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
 * `tcp://syslog_server:514` or `udp://syslog_server:514` {{% icon icon="arrow-right" %}} redirects all the logs to the **syslog** server.
@@ -18,6 +19,54 @@ The log destination syntax is a such:
 {{% notice tip %}}
 If the location cannot be opened, **resticprofile** will default to send the logs to the console.
 {{% /notice %}}
+
+## Default
+
+You can adjust the default log destination in the `global` section:
+
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
+
+```toml
+version = "1"
+
+[global]
+log = "resticprofile.log"
+```
+
+{{% /tab %}}
+{{% tab title="yaml" %}}
+
+```yaml
+version: "1"
+
+global:
+  log: "resticprofile.log"
+```
+
+{{% /tab %}}
+{{% tab title="hcl" %}}
+
+```hcl
+"global" {
+  "log" = "resticprofile.log"
+}
+```
+
+{{% /tab %}}
+{{% tab title="json" %}}
+
+```json
+{
+  "version": "1",
+  "global": {
+    "log": "resticprofile.log"
+  }
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Command line
 

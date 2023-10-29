@@ -158,15 +158,6 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 	out, closer := displayWriter(output, flags)
 	defer closer()
 
-	// try to load the config
-	if configuration == nil {
-		if file, err := filesearch.FindConfigurationFile(flags.config); err == nil {
-			if configuration, err = config.LoadFile(file, flags.format); err != nil {
-				configuration = nil
-			}
-		}
-	}
-
 	resticBinary := ""
 	if configuration != nil {
 		if section, err := configuration.GetGlobalSection(); err == nil {

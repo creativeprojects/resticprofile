@@ -23,6 +23,7 @@ type Global struct {
 	ShellBinary          []string      `mapstructure:"shell" default:"auto" examples:"sh;bash;pwsh;powershell;cmd" description:"The shell that is used to run commands (default is OS specific)"`
 	MinMemory            uint64        `mapstructure:"min-memory" default:"100" description:"Minimum available memory (in MB) required to run any commands - see https://creativeprojects.github.io/resticprofile/usage/memory/"`
 	Scheduler            string        `mapstructure:"scheduler" description:"Leave blank for the default scheduler or use \"crond\" to select cron on supported operating systems"`
+	Log                  string        `mapstructure:"log" default:"" description:"Sets the default log destination to be used if not specified in '--log' or 'schedule-log' - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
 	LegacyArguments      bool          `mapstructure:"legacy-arguments" default:"false" deprecated:"0.20.0" description:"Legacy, broken arguments mode of resticprofile before version 0.15"`
 	SystemdUnitTemplate  string        `mapstructure:"systemd-unit-template" default:"" description:"File containing the go template to generate a systemd unit - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	SystemdTimerTemplate string        `mapstructure:"systemd-timer-template" default:"" description:"File containing the go template to generate a systemd timer - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
