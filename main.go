@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -75,42 +76,41 @@ func main() {
 	}
 
 	// help
-	if flags.help || flagErr == pflag.ErrHelp {
+	if flags.help || errors.Is(flagErr, pflag.ErrHelp) {
 		_ = displayHelpCommand(os.Stdout, commandRequest{ownCommands: ownCommands, flags: flags, args: args})
 		return
 	}
 
-	// setting up the logger - we can start logging right after
-	if flags.isChild {
-		// use a remote logger
-		client := remote.NewClient(flags.parentPort)
-		setupRemoteLogger(flags, client)
+	// logger setup logic - is delayed until config was loaded (or attempted)
+	setupLogging := func(global *config.Global) (logCloser func()) {
+		logCloser = func() {}
 
-		// also redirect the terminal through the client
-		term.SetAllOutput(term.NewRemoteTerm(client))
-
-		// If this is running in elevated mode we'll need to send a finished signal
 		if flags.isChild {
-			defer func(port int) {
-				client := remote.NewClient(port)
-				client.Done()
-			}(flags.parentPort)
-		}
+			// use a remote logger
+			client := remote.NewClient(flags.parentPort)
+			logCloser = func() { _ = client.Done() }
+			setupRemoteLogger(flags, client)
 
-	} else if flags.log != "" {
-		handle, err := setupTargetLogger(flags)
-		if err != nil {
-			// back to a console logger
-			setupConsoleLogger(flags)
-			clog.Errorf("cannot open log target: %s", err)
+			// also redirect the terminal through the client
+			term.SetAllOutput(term.NewRemoteTerm(client))
 		} else {
-			// close the log file at the end
-			defer handle.Close()
+			if flags.log == "" && global != nil {
+				flags.log = global.Log
+			}
+			if flags.log != "" && flags.log != "-" {
+				if closer, err := setupTargetLogger(flags); err == nil {
+					logCloser = func() { _ = closer.Close() }
+				} else {
+					// fallback to a console logger
+					setupConsoleLogger(flags)
+					clog.Errorf("cannot open log target: %s", err)
+				}
+			} else {
+				// use the console logger
+				setupConsoleLogger(flags)
+			}
 		}
-
-	} else {
-		// Use the console logger
-		setupConsoleLogger(flags)
+		return
 	}
 
 	// keep this one last if possible (so it will be first at the end)
@@ -118,10 +118,13 @@ func main() {
 
 	banner()
 
-	// resticprofile own commands (configuration file NOT loaded)
+	// resticprofile own commands (configuration file may NOT be loaded)
 	if len(flags.resticArgs) > 0 {
 		if ownCommands.Exists(flags.resticArgs[0], false) {
-			err = ownCommands.Run(nil, flags.resticArgs[0], flags, flags.resticArgs[1:])
+			// try to load the config and setup logging for own command
+			configuration, global, _ := loadConfig(flags, true)
+			defer setupLogging(global)()
+			err = ownCommands.Run(configuration, flags.resticArgs[0], flags, flags.resticArgs[1:])
 			if err != nil {
 				clog.Error(err)
 				exitCode = 1
@@ -129,6 +132,15 @@ func main() {
 			}
 			return
 		}
+	}
+
+	// Load the mandatory configuration and setup logging (before returning on error)
+	c, global, err := loadConfig(flags, false)
+	defer setupLogging(global)()
+	if err != nil {
+		clog.Error(err)
+		exitCode = 1
+		return
 	}
 
 	// check if we're running on battery
@@ -150,30 +162,6 @@ func main() {
 			}
 			clog.Infof("running on battery with enough charge (%d%%)", charge)
 		}
-	}
-
-	configFile, err := filesearch.FindConfigurationFile(flags.config)
-	if err != nil {
-		clog.Error(err)
-		exitCode = 1
-		return
-	}
-	if configFile != flags.config {
-		clog.Infof("using configuration file: %s", configFile)
-	}
-
-	c, err := config.LoadFile(configFile, flags.format)
-	if err != nil {
-		clog.Errorf("cannot load configuration file: %v", err)
-		exitCode = 1
-		return
-	}
-
-	global, err := c.GetGlobalSection()
-	if err != nil {
-		clog.Errorf("cannot load global configuration: %v", err)
-		exitCode = 1
-		return
 	}
 
 	// prevent computer from sleeping
@@ -307,6 +295,25 @@ func main() {
 
 func banner() {
 	clog.Debugf("resticprofile %s compiled with %s", version, runtime.Version())
+}
+
+func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
+	var configFile string
+	if configFile, err = filesearch.FindConfigurationFile(flags.config); err == nil {
+		if configFile != flags.config && !silent {
+			clog.Infof("using configuration file: %s", configFile)
+		}
+
+		if cfg, err = config.LoadFile(configFile, flags.format); err == nil {
+			global, err = cfg.GetGlobalSection()
+			if err != nil {
+				err = fmt.Errorf("cannot load global configuration: %w", err)
+			}
+		} else {
+			err = fmt.Errorf("cannot load configuration file: %w", err)
+		}
+	}
+	return
 }
 
 func setPriority(nice int, class string) error {
