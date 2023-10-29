@@ -10,9 +10,9 @@ Once installed, you can easily upgrade resticprofile to the latest release using
 resticprofile self-update
 ```
 
-{{% notice style="note" %}}
-The `self-update` command is not available when installed via homebrew.
-You should use `brew upgrade resticprofile` instead.
+{{% notice style="note" title="Package Managers" %}}
+The `self-update` command is not available when installed via a package manager (homebrew, scoop).
+You should use the upgrade built in the package manager instead.
 {{% /notice %}}
 
 

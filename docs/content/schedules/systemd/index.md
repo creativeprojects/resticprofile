@@ -1,7 +1,7 @@
 ---
 title: "Systemd"
-date: 2022-05-16T20:11:58+01:00
 weight: 105
+tags: ["v0.25.0"]
 ---
 
 
@@ -13,56 +13,6 @@ systemd can be used in place of cron to schedule backups.
 User systemd units are created under the user's systemd profile (`~/.config/systemd/user`).
 
 System units are created in `/etc/systemd/system`
-
-## systemd drop-in files
-
-It is possible to automatically populate `*.conf.d`
-[drop-in files](https://www.freedesktop.org/software/systemd/man/latest/systemd-system.conf.html#main-conf)
-for profiles, which allows easy overriding
-of the generated services, without modifying the service templates. For example:
-
-```toml
-[root]
-systemd-drop-in-files = ["99-drop-in-example.conf"]
-
-  [root.backup]
-  schedule = "hourly"
-  schedule-permission = "system"
-  schedule-lock-wait = "45m"
-  schedule-after-network-online = true
-```
-
-Where `99-drop-in-example.conf` is in the same directory as `profiles.toml` and with the contents
-
-```
-[Service]
-Environment=RCLONE_CONFIG=%d/rclone.conf
-SetCredentialEncrypted=restic-repo-password: \
-        Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAABl6ctIWEqgRC4yHbgAAAAA8umMn \
-        +6KYd8tAL58jUmtf/5wckDcxQSeuo+xd9OzN5XG7QW0iBIRRGCuWvvuAAiHEAKSk9MR8p \
-        EDSaSm
-SetCredentialEncrypted=rclone.conf: \
-        Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAAC+vNhJYedv5QmyDHYAAAAAimeli \
-        +Oo+URGN47SUBf7Jm1n3gdu22+Sd/eL7CjzpYQvHAMOCY8xz9hp9kW9/DstWHTfdsHJo7 \
-        thOpk4IbSSazCPwEr39VVQONLxzpRlY22LkQKLoGAVD4Yifk+U5aJJ4FlRW/VGpPoef2S \
-        rGvQzqQI7kNX+v7EPXj4B0tSUeBBJJCEu4mgajZNAhwHtbw==
-```
-
-Generated with the following, see [systemd credentials docs](https://systemd.io/CREDENTIALS/)
-for more details. This could allow, for example,
-using a TPM-backed encrypted password, outside of the
-resticprofile config itself
-
-```shell
-systemd-ask-password -n | sudo systemd-creds encrypt --name=restic-repo-password -p - -
-sudo systemd-creds encrypt --name=rclone.conf -p - - <<EOF
-[restic-example]
-type = smb
-host = example
-user = restic
-pass = $(systemd-ask-password -n "smb restic user password" | rclone obscure -)
-EOF
-```
 
 ## systemd calendars
 
@@ -97,6 +47,116 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 Specifying the profile option `schedule-after-network-online: true` means that the scheduled services will wait
 for a network connection before running.
 This is done via an [After=network-online.target](https://systemd.io/NETWORK_ONLINE/) entry in the service.
+
+## systemd drop-in files
+
+It is possible to automatically populate `*.conf.d`
+[drop-in files](https://www.freedesktop.org/software/systemd/man/latest/systemd-system.conf.html#main-conf)
+for profiles, which allows easy overriding
+of the generated services, without modifying the service templates. For example:
+
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
+```toml
+version = "1"
+
+[root]
+  systemd-drop-in-files = ["99-drop-in-example.conf"]
+
+  [root.backup]
+    schedule = "hourly"
+    schedule-permission = "system"
+    schedule-lock-wait = "45m"
+    schedule-after-network-online = true
+```
+{{% /tab %}}
+{{% tab title="yaml" %}}
+
+```yaml
+---
+version: 1
+
+root:
+  systemd-drop-in-files:
+    - "99-drop-in-example.conf"
+
+  backup:
+    schedule: hourly
+    schedule-permission: system
+    schedule-lock-wait: 45m
+    schedule-after-network-online: true
+```
+
+{{% /tab %}}
+{{% tab title="hcl" %}}
+
+```hcl
+"version" = "1"
+
+"root" = {
+  "systemd-drop-in-files" = ["99-drop-in-example.conf"]
+  "backup" = {
+    "schedule" = "hourly"
+    "schedule-permission" = "system"
+    "schedule-lock-wait" = "45m"
+    "schedule-after-network-online" = true
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab title="json" %}}
+
+```json
+{
+  "version": "1",
+  "root": {
+    "systemd-drop-in-files": ["99-drop-in-example.conf"],
+    "backup": {
+      "schedule": "hourly",
+      "schedule-permission": "system",
+      "schedule-lock-wait": "45m",
+      "schedule-after-network-online": true
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+
+Where `99-drop-in-example.conf` is in the same directory as `profiles.toml` and with the contents
+
+```conf
+[Service]
+Environment=RCLONE_CONFIG=%d/rclone.conf
+SetCredentialEncrypted=restic-repo-password: \
+        Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAABl6ctIWEqgRC4yHbgAAAAA8umMn \
+        +6KYd8tAL58jUmtf/5wckDcxQSeuo+xd9OzN5XG7QW0iBIRRGCuWvvuAAiHEAKSk9MR8p \
+        EDSaSm
+SetCredentialEncrypted=rclone.conf: \
+        Whxqht+dQJax1aZeCGLxmiAAAAABAAAADAAAABAAAAC+vNhJYedv5QmyDHYAAAAAimeli \
+        +Oo+URGN47SUBf7Jm1n3gdu22+Sd/eL7CjzpYQvHAMOCY8xz9hp9kW9/DstWHTfdsHJo7 \
+        thOpk4IbSSazCPwEr39VVQONLxzpRlY22LkQKLoGAVD4Yifk+U5aJJ4FlRW/VGpPoef2S \
+        rGvQzqQI7kNX+v7EPXj4B0tSUeBBJJCEu4mgajZNAhwHtbw==
+```
+
+Generated with the following, see [systemd credentials docs](https://systemd.io/CREDENTIALS/)
+for more details. This could allow, for example,
+using a TPM-backed encrypted password, outside of the
+resticprofile config itself
+
+```shell
+systemd-ask-password -n | sudo systemd-creds encrypt --name=restic-repo-password -p - -
+sudo systemd-creds encrypt --name=rclone.conf -p - - <<EOF
+[restic-example]
+type = smb
+host = example
+user = restic
+pass = $(systemd-ask-password -n "smb restic user password" | rclone obscure -)
+EOF
+```
 
 ## How to change the default systemd unit and timer file using a template
 
