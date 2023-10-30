@@ -24,7 +24,7 @@ Resticprofile can be installed from [scoop](https://scoop.sh) main bucket:
 scoop install resticprofile
 ```
 
-## Manual installation (Windows)
+## Manual installation
 
 - Download the package corresponding to your system and CPU from the [release page](https://github.com/creativeprojects/resticprofile/releases)
 - Once downloaded you need to open the archive and copy the binary file `resticprofile` (or `resticprofile.exe`) in your PATH.

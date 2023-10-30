@@ -365,6 +365,9 @@ profile:
   # put the content of the variable here
   tag: "{{ $name }}"
 ```
+{{% notice style="note" %}}
+Variables are only valid in the file they are declared in. They cannot be shared in files loaded via `include`.
+{{% /notice %}}
 
 #### Example
 
