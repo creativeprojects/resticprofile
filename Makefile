@@ -171,6 +171,7 @@ clean:
 	       $(COVERAGE_FILE) \
 	       restic_*_linux_amd64* \
 	       ${BUILD}restic* \
+	       ${BUILD}rclone* \
 	       dist/*
 	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
