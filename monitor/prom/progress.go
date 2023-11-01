@@ -71,7 +71,7 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 			}
 			return ""
 		})
-		err := p.metrics.Push(p.profile.PrometheusPush, jobName)
+		err := p.metrics.Push(p.profile.PrometheusPush, p.profile.PrometheusPushFormat, jobName)
 		if err != nil {
 			// not important enough to throw an error here
 			clog.Warningf("pushing prometheus metrics to %q: %v", p.profile.PrometheusPush, err)

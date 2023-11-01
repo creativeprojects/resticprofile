@@ -94,6 +94,7 @@ type Profile struct {
 	PrometheusSaveToFile    string                            `mapstructure:"prometheus-save-to-file" description:"Path to the prometheus metrics file to update with a summary of the last restic command result"`
 	PrometheusPush          string                            `mapstructure:"prometheus-push" format:"uri" description:"URL of the prometheus push gateway to send the summary of the last restic command result to"`
 	PrometheusPushJob       string                            `mapstructure:"prometheus-push-job" description:"Prometheus push gateway job name. $command placeholder is replaced with restic command"`
+	PrometheusPushFormat    string                            `mapstructure:"prometheus-push-format" default:"protobuf" enum:"protobuf;text" description:"Prometheus push gateway request format"`
 	PrometheusLabels        map[string]string                 `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
 	SystemdDropInFiles      []string                          `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process"`
@@ -482,6 +483,7 @@ func NewProfile(c *Config, name string) (p *Profile) {
 		Name:          name,
 		config:        c,
 		OtherSections: make(map[string]*GenericSection),
+		PrometheusPushFormat: constants.DefaultPrometheusPushFormat,
 	}
 
 	// create dynamic sections defined in any known restic version
