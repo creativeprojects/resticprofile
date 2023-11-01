@@ -36,9 +36,7 @@ func TestFileHandlerWithTemporaryDirMarker(t *testing.T) {
 	logFile := filepath.Join(util.MustGetTempDir(), "sub", "file.log")
 	assert.NoFileExists(t, logFile)
 
-	handler, _, err := getFileHandler(commandLineFlags{
-		log: filepath.Join(constants.TemporaryDirMarker, "sub", "file.log"),
-	})
+	handler, _, err := getFileHandler(filepath.Join(constants.TemporaryDirMarker, "sub", "file.log"))
 	require.NoError(t, err)
 	assert.FileExists(t, logFile)
 
@@ -49,7 +47,7 @@ func TestFileHandlerWithTemporaryDirMarker(t *testing.T) {
 
 func TestFileHandler(t *testing.T) {
 	logFile := filepath.Join(t.TempDir(), "file.log")
-	handler, writer, err := getFileHandler(commandLineFlags{log: logFile})
+	handler, writer, err := getFileHandler(logFile)
 	require.NoError(t, err)
 	defer handler.Close()
 
@@ -97,3 +95,22 @@ func TestFileHandler(t *testing.T) {
 		}
 	}
 }
+
+// FIXME: writing into a closed handler shouldn't panic
+//
+// func TestCloseFileHandler(t *testing.T) {
+// 	logFile := filepath.Join(t.TempDir(), "file.log")
+// 	handler, writer, err := getFileHandler(logFile)
+// 	require.NoError(t, err)
+// 	assert.NotNil(t, handler)
+// 	assert.NotNil(t, writer)
+// 	defer handler.Close()
+
+// 	log := func(line string) {
+// 		assert.NoError(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: line}))
+// 	}
+
+// 	log("log-line-1")
+// 	handler.Close()
+// 	log("log-line-2")
+// }

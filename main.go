@@ -54,7 +54,13 @@ func main() {
 	_, flags, flagErr := loadFlags(args)
 	if flagErr != nil && flagErr != pflag.ErrHelp {
 		fmt.Println(flagErr)
-		_ = displayHelpCommand(os.Stdout, commandRequest{ownCommands: ownCommands, flags: flags, args: args})
+		_ = displayHelpCommand(os.Stdout, commandContext{
+			ownCommands: ownCommands,
+			context: &Context{
+				flags:     flags,
+				arguments: args,
+			},
+		})
 		exitCode = 2
 		return
 	}
@@ -77,7 +83,13 @@ func main() {
 
 	// help
 	if flags.help || errors.Is(flagErr, pflag.ErrHelp) {
-		_ = displayHelpCommand(os.Stdout, commandRequest{ownCommands: ownCommands, flags: flags, args: args})
+		_ = displayHelpCommand(os.Stdout, commandContext{
+			ownCommands: ownCommands,
+			context: &Context{
+				flags:     flags,
+				arguments: args,
+			},
+		})
 		return
 	}
 
@@ -94,11 +106,13 @@ func main() {
 			// also redirect the terminal through the client
 			term.SetAllOutput(term.NewRemoteTerm(client))
 		} else {
-			if flags.log == "" && global != nil {
-				flags.log = global.Log
+			// command line flag supersedes global configuration
+			logTarget := flags.log
+			if logTarget == "" && global != nil {
+				logTarget = global.Log
 			}
-			if flags.log != "" && flags.log != "-" {
-				if closer, err := setupTargetLogger(flags); err == nil {
+			if logTarget != "" && logTarget != "-" {
+				if closer, err := setupTargetLogger(flags, logTarget); err == nil {
 					logCloser = func() { _ = closer.Close() }
 				} else {
 					// fallback to a console logger
@@ -118,16 +132,29 @@ func main() {
 
 	banner()
 
-	// resticprofile own commands (configuration file may NOT be loaded)
+	// resticprofile own commands (configuration file may not be loaded)
 	if len(flags.resticArgs) > 0 {
 		if ownCommands.Exists(flags.resticArgs[0], false) {
+			ctx := &Context{
+				flags:         flags,
+				resticCommand: flags.resticArgs[0],
+				arguments:     flags.resticArgs[1:],
+			}
 			// try to load the config and setup logging for own command
-			configuration, global, _ := loadConfig(flags, true)
+			configuration, global, err := loadConfig(flags, true)
+			if err == nil {
+				ctx.config = configuration
+				ctx.global = global
+			}
 			defer setupLogging(global)()
-			err = ownCommands.Run(configuration, flags.resticArgs[0], flags, flags.resticArgs[1:])
+			err = ownCommands.Run(ctx)
 			if err != nil {
 				clog.Error(err)
 				exitCode = 1
+				var ownCommandError *ownCommandError
+				if errors.As(err, &ownCommandError) {
+					exitCode = ownCommandError.ExitCode()
+				}
 				return
 			}
 			return
@@ -144,24 +171,9 @@ func main() {
 	}
 
 	// check if we're running on battery
-	if flags.ignoreOnBattery > 0 && flags.ignoreOnBattery <= constants.BatteryFull {
-		battery, charge, err := IsRunningOnBattery()
-		if err != nil {
-			clog.Errorf("cannot check if the computer is running on battery: %s", err)
-		}
-		if battery {
-			if flags.ignoreOnBattery == constants.BatteryFull {
-				clog.Warning("running on battery, leaving now")
-				exitCode = 3
-				return
-			}
-			if charge < flags.ignoreOnBattery {
-				clog.Warningf("running on battery (%d%%), leaving now", charge)
-				exitCode = 3
-				return
-			}
-			clog.Infof("running on battery with enough charge (%d%%)", charge)
-		}
+	if shouldStopOnBattery(flags.ignoreOnBattery) {
+		exitCode = 3
+		return
 	}
 
 	// prevent computer from sleeping
@@ -208,9 +220,9 @@ func main() {
 		}
 	}
 
-	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
+	resticBinary, err := detectResticBinary(global)
 	if err != nil {
-		clog.Error("cannot find restic: ", err)
+		clog.Error(err)
 		clog.Warning("you can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
 		exitCode = 1
 		return
@@ -226,68 +238,49 @@ func main() {
 
 	// resticprofile own commands (with configuration file)
 	if ownCommands.Exists(resticCommand, true) {
-		err = ownCommands.Run(c, resticCommand, flags, resticArguments)
+		ctx := &Context{
+			flags:         flags,
+			global:        global,
+			config:        c,
+			resticBinary:  resticBinary,
+			resticCommand: resticCommand,
+			arguments:     resticArguments,
+		}
+		err = ownCommands.Run(ctx)
 		if err != nil {
 			clog.Error(err)
 			exitCode = 1
+			var ownCommandError *ownCommandError
+			if errors.As(err, &ownCommandError) {
+				exitCode = ownCommandError.ExitCode()
+			}
 			return
 		}
 		return
 	}
 
-	// detect restic version
-	if len(global.ResticVersion) == 0 {
-		if global.ResticVersion, err = restic.GetVersion(resticBinary); err != nil {
-			clog.Warningf("assuming restic is at latest known version ; %s", err.Error())
-			global.ResticVersion = restic.AnyVersion
-		}
+	// it wasn't an internal command so we run a profile
+	ctx := &Context{
+		flags:         flags,
+		global:        global,
+		config:        c,
+		resticBinary:  resticBinary,
+		resticCommand: resticCommand,
+		arguments:     resticArguments,
+		profileName:   flags.name,
+		group:         "",
+		scheduleName:  "",
+		profile:       nil,
+		schedule:      nil,
+		sigChan:       nil,
 	}
-	clog.Debugf("restic %s", global.ResticVersion)
-
-	if c.HasProfile(flags.name) {
-		// if running as a systemd timer
-		notifyStart()
-		defer notifyStop()
-
-		// Single profile run
-		err = runProfile(c, global, flags, flags.name, resticBinary, resticArguments, resticCommand, "")
-		if err != nil {
-			clog.Error(err)
-			exitCode = 1
-			return
+	err = startProfileOrGroup(ctx)
+	if err != nil {
+		clog.Error(err)
+		if errors.Is(err, ErrProfileNotFound) {
+			displayProfiles(os.Stdout, c, flags)
+			displayGroups(os.Stdout, c, flags)
 		}
-
-	} else if c.HasProfileGroup(flags.name) {
-		// Group run
-		group, err := c.GetProfileGroup(flags.name)
-		if err != nil {
-			clog.Errorf("cannot load group '%s': %v", flags.name, err)
-		}
-		if group != nil && len(group.Profiles) > 0 {
-			// if running as a systemd timer
-			notifyStart()
-			defer notifyStop()
-
-			for i, profileName := range group.Profiles {
-				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group.Profiles), profileName, flags.name)
-				err = runProfile(c, global, flags, profileName, resticBinary, resticArguments, resticCommand, flags.name)
-				if err != nil {
-					clog.Error(err)
-					if global.GroupContinueOnError && bools.IsTrueOrUndefined(group.ContinueOnError) ||
-						bools.IsTrue(group.ContinueOnError) {
-						// keep going to the next profile
-						continue
-					}
-					exitCode = 1
-					return
-				}
-			}
-		}
-
-	} else {
-		clog.Errorf("profile or group not found '%s'", flags.name)
-		displayProfiles(os.Stdout, c, flags)
-		displayGroups(os.Stdout, c, flags)
 		exitCode = 1
 		return
 	}
@@ -335,6 +328,95 @@ func setPriority(nice int, class string) error {
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func shouldStopOnBattery(batteryLimit int) bool {
+	if batteryLimit > 0 && batteryLimit <= constants.BatteryFull {
+		battery, charge, err := IsRunningOnBattery()
+		if err != nil {
+			clog.Errorf("cannot check if the computer is running on battery: %s", err)
+		}
+		if battery {
+			if batteryLimit == constants.BatteryFull {
+				clog.Warning("running on battery, leaving now")
+				return true
+			}
+			if charge < batteryLimit {
+				clog.Warningf("running on battery (%d%%), leaving now", charge)
+				return true
+			}
+			clog.Infof("running on battery with enough charge (%d%%)", charge)
+		}
+	}
+	return false
+}
+
+func detectResticBinary(global *config.Global) (string, error) {
+	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
+	if err != nil {
+		return "", fmt.Errorf("cannot find restic: %w", err)
+	}
+	// detect restic version
+	if len(global.ResticVersion) == 0 {
+		if global.ResticVersion, err = restic.GetVersion(resticBinary); err != nil {
+			clog.Warningf("assuming restic is at latest known version ; %s", err.Error())
+			global.ResticVersion = restic.AnyVersion
+		}
+	}
+	if len(global.ResticVersion) > 0 {
+		clog.Debugf("using restic %s", global.ResticVersion)
+	}
+	return resticBinary, nil
+}
+
+func startProfileOrGroup(ctx *Context) error {
+	if ctx.config.HasProfile(ctx.profileName) {
+		// if running as a systemd timer
+		notifyStart()
+		defer notifyStop()
+
+		// Single profile run
+		err := runProfile(ctx)
+		if err != nil {
+			return err
+		}
+
+	} else if ctx.config.HasProfileGroup(ctx.profileName) {
+		// Group run
+		group, err := ctx.config.GetProfileGroup(ctx.profileName)
+		if err != nil {
+			clog.Errorf("cannot load group '%s': %v", ctx.profileName, err)
+		}
+		if group != nil && len(group.Profiles) > 0 {
+			// if running as a systemd timer
+			notifyStart()
+			defer notifyStop()
+
+			groupName := ctx.profileName
+
+			for i, profileName := range group.Profiles {
+				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group.Profiles), profileName, groupName)
+				singleProfileCtx := ctx.NewProfileContext()
+				singleProfileCtx.profileName = profileName
+				singleProfileCtx.group = groupName
+				err = runProfile(ctx)
+				if err != nil {
+					if ctx.global.GroupContinueOnError && bools.IsTrueOrUndefined(group.ContinueOnError) ||
+						bools.IsTrue(group.ContinueOnError) {
+						// keep going to the next profile
+						clog.Error(err)
+						continue
+					}
+					// fail otherwise
+					return err
+				}
+			}
+		}
+
+	} else {
+		return fmt.Errorf("%w: %q", ErrProfileNotFound, ctx.profileName)
 	}
 	return nil
 }
@@ -387,35 +469,27 @@ func openProfile(c *config.Config, profileName string) (profile *config.Profile,
 	return
 }
 
-func runProfile(
-	c *config.Config,
-	global *config.Global,
-	flags commandLineFlags,
-	profileName string,
-	resticBinary string,
-	resticArguments []string,
-	resticCommand string,
-	group string,
-) error {
-	profile, cleanup, err := openProfile(c, profileName)
+func runProfile(ctx *Context) error {
+	profile, cleanup, err := openProfile(ctx.config, ctx.profileName)
 	defer cleanup()
 	if err != nil {
 		return err
 	}
+	ctx.profile = profile
 
 	displayProfileDeprecationNotices(profile)
-	c.DisplayConfigurationIssues()
+	ctx.config.DisplayConfigurationIssues()
 
 	// Send the quiet/verbose down to restic as well (override profile configuration)
-	if flags.quiet {
+	if ctx.flags.quiet {
 		profile.Quiet = true
 		profile.Verbose = constants.VerbosityNone
 	}
-	if flags.verbose {
+	if ctx.flags.verbose {
 		profile.Verbose = constants.VerbosityLevel1
 		profile.Quiet = false
 	}
-	if flags.veryVerbose {
+	if ctx.flags.veryVerbose {
 		profile.Verbose = constants.VerbosityLevel3
 		profile.Quiet = false
 	}
@@ -423,18 +497,18 @@ func runProfile(
 	// change log filter according to profile settings
 	if profile.Quiet {
 		changeLevelFilter(clog.LevelWarning)
-	} else if profile.Verbose > constants.VerbosityNone && !flags.veryVerbose {
+	} else if profile.Verbose > constants.VerbosityNone && !ctx.flags.veryVerbose {
 		changeLevelFilter(clog.LevelDebug)
 	}
 
 	// use the broken arguments escaping (before v0.15.0)
-	if global.LegacyArguments {
+	if ctx.global.LegacyArguments {
 		profile.SetLegacyArg(true)
 	}
 
 	// tell the profile what version of restic is in use
-	if e := profile.SetResticVersion(global.ResticVersion); e != nil {
-		clog.Warningf("restic version %q is no valid semver: %s", global.ResticVersion, e.Error())
+	if e := profile.SetResticVersion(ctx.global.ResticVersion); e != nil {
+		clog.Warningf("restic version %q is no valid semver: %s", ctx.global.ResticVersion, e.Error())
 	}
 
 	// Specific case for the "host" flag where an empty value should be replaced by the hostname
@@ -451,20 +525,13 @@ func runProfile(
 	// remove signal catch before leaving
 	defer signal.Stop(sigChan)
 
-	wrapper := newResticWrapper(
-		global,
-		resticBinary,
-		flags.dryRun,
-		profile,
-		resticCommand,
-		resticArguments,
-		sigChan,
-	)
+	ctx.sigChan = sigChan
+	wrapper := newResticWrapper(ctx)
 
-	if flags.noLock {
+	if ctx.flags.noLock {
 		wrapper.ignoreLock()
-	} else if flags.lockWait > 0 {
-		wrapper.maxWaitOnLock(flags.lockWait)
+	} else if ctx.flags.lockWait > 0 {
+		wrapper.maxWaitOnLock(ctx.flags.lockWait)
 	}
 
 	// add progress receivers if necessary
@@ -472,7 +539,7 @@ func runProfile(
 		wrapper.addProgress(status.NewProgress(profile, status.NewStatus(profile.StatusFile)))
 	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
-		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(group, version, profile.PrometheusLabels)))
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(ctx.group, version, profile.PrometheusLabels)))
 	}
 
 	err = wrapper.runProfile()
@@ -488,12 +555,13 @@ func randomBool() bool {
 }
 
 func free() uint64 {
+	const oneMB = 1048576
 	mem, err := memory.Get()
 	if err != nil {
 		clog.Info("OS memory information not available")
 		return 0
 	}
-	avail := (mem.Total - mem.Used) / 1048576
+	avail := (mem.Total - mem.Used) / oneMB
 	clog.Debugf("memory available: %vMB", avail)
 	return avail
 }
