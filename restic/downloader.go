@@ -62,7 +62,7 @@ func GetVersion(executable string) (string, error) {
 		if match := versionCommandPattern.FindSubmatch(output); match != nil {
 			return string(match[1]), nil
 		}
-		return "", fmt.Errorf("restic returned no valid version: %s", string(output))
+		return "", fmt.Errorf("restic returned no valid version: %s", strings.TrimSpace(string(output)))
 	} else {
 		return "", err
 	}

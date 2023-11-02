@@ -27,13 +27,11 @@ type commandLineFlags struct {
 	noAnsi          bool
 	theme           string
 	resticArgs      []string
-	selfUpdate      bool
 	wait            bool
 	isChild         bool
 	parentPort      int
 	noPriority      bool
 	ignoreOnBattery int
-	run             string
 	usagesHelp      string
 }
 
@@ -51,19 +49,15 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
 	flagset.StringVarP(&flags.log, "log", "l", "", "logs to a target instead of the console")
-
 	flagset.BoolVar(&flags.dryRun, "dry-run", false, "display the restic commands instead of running them")
-
 	flagset.BoolVar(&flags.noLock, "no-lock", false, "skip profile lock file")
 	flagset.DurationVar(&flags.lockWait, "lock-wait", 0, "wait up to duration to acquire a lock (syntax \"1h5m30s\")")
-
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
-	flagset.BoolVar(&flags.noPriority, "no-prio", false, "don't set any priority on load: used when started from a service that has already set the priority")
+	flagset.BoolVar(&flags.noPriority, "no-prio", false, "don't change the process priority: used when started from a service that has already set the priority")
+	flagset.BoolVarP(&flags.wait, "wait", "w", false, "wait at the end until the user presses the enter key")
 	flagset.IntVar(&flags.ignoreOnBattery, "ignore-on-battery", 0, "don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value")
 	flagset.Lookup("ignore-on-battery").NoOptDefVal = "100" // 0 is flag not set, 100 is for a flag with no value (meaning just battery discharge)
-
-	flagset.BoolVarP(&flags.wait, "wait", "w", false, "wait at the end until the user presses the enter key")
 
 	if platform.IsWindows() {
 		// flag for internal use only
@@ -80,8 +74,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	width, _ := term.OsStdoutTerminalSize()
 	flags.usagesHelp = flagset.FlagUsagesWrapped(width)
 
-	err := flagset.Parse(args)
-	if err != nil {
+	if err := flagset.Parse(args); err != nil {
 		return flagset, flags, err
 	}
 
@@ -90,7 +83,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	// if there are no further arguments, no further parsing is needed
 	if len(flags.resticArgs) == 0 {
-		return flagset, flags, err
+		return flagset, flags, nil
 	}
 
 	// handle explicit help request in command args (works with restic and own commands)

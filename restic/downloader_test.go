@@ -11,6 +11,7 @@ import (
 )
 
 func TestDownloadBinary(t *testing.T) {
+	t.Parallel()
 	if testing.Short() {
 		t.Skip()
 	}
@@ -41,6 +42,11 @@ func TestDownloadBinary(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNoVersion(t *testing.T) {
+	_, err := GetVersion("echo")
+	assert.Error(t, err)
 }
 
 func TestSourceChecksRepo(t *testing.T) {
