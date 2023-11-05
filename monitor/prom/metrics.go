@@ -7,6 +7,7 @@ import (
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/prometheus/common/expfmt"
 )
 
 const namespace = "resticprofile"
@@ -85,8 +86,17 @@ func (p *Metrics) SaveTo(filename string) error {
 	return prometheus.WriteToTextfile(filename, p.registry)
 }
 
-func (p *Metrics) Push(url, jobName string) error {
+func (p *Metrics) Push(url, format string, jobName string) error {
+	var expFmt expfmt.Format
+
+	if format == "protobuf" {
+		expFmt = expfmt.FmtProtoDelim
+	} else {
+		expFmt = expfmt.FmtText
+	}
+
 	return push.New(url, jobName).
+		Format(expFmt).
 		Gatherer(p.registry).
 		Add()
 }

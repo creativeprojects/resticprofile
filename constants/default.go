@@ -19,6 +19,7 @@ const (
 	DefaultQuietFlag            = false
 	DefaultMinMemory            = 100
 	DefaultSenderTimeout        = 30 * time.Second
+	DefaultPrometheusPushFormat = "text"
 	BatteryFull                 = 100
 	LocalLockRetryDelay         = 5 * time.Second
 )

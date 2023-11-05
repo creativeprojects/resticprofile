@@ -135,6 +135,8 @@ Prometheus Pushgateway uses the job label as a grouping key. All metrics with th
 
 If you need more control over the job label, you can use the `prometheus-push-job` property. This property can contain the `$command` placeholder, which is replaced with the name of the executed command.
 
+Additionally, the request format can be specified with `prometheus-push-format`. The default is `text`, but it can also be set to `protobuf` (see [compatibility with Prometheus](https://prometheus.io/docs/instrumenting/exposition_formats/#exposition-formats)).
+
 ## User defined labels
 
 You can add your own prometheus labels. Please note they will be applied to **all** the metrics.
@@ -227,5 +229,3 @@ root:
 
 
 which will add the `host` label to all your metrics.
-
-
