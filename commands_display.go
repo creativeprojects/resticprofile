@@ -73,11 +73,11 @@ func getCommonUsageHelpLine(commandName string, withProfile bool) string {
 	)
 }
 
-func displayOwnCommands(output io.Writer, request commandContext) {
-	out, closer := displayWriter(output, request.context.flags)
+func displayOwnCommands(output io.Writer, ctx commandContext) {
+	out, closer := displayWriter(output, ctx.flags)
 	defer closer()
 
-	for _, command := range request.ownCommands.commands {
+	for _, command := range ctx.ownCommands.commands {
 		if command.hide {
 			continue
 		}
@@ -86,12 +86,12 @@ func displayOwnCommands(output io.Writer, request commandContext) {
 	}
 }
 
-func displayOwnCommandHelp(output io.Writer, commandName string, request commandContext) {
-	out, closer := displayWriter(output, request.context.flags)
+func displayOwnCommandHelp(output io.Writer, commandName string, ctx commandContext) {
+	out, closer := displayWriter(output, ctx.flags)
 	defer closer()
 
 	var command *ownCommand
-	for _, c := range request.ownCommands.commands {
+	for _, c := range ctx.ownCommands.commands {
 		if c.name == commandName {
 			command = &c
 			break
@@ -130,8 +130,8 @@ func displayOwnCommandHelp(output io.Writer, commandName string, request command
 	}
 }
 
-func displayCommonUsageHelp(output io.Writer, request commandContext) {
-	out, closer := displayWriter(output, request.context.flags)
+func displayCommonUsageHelp(output io.Writer, ctx commandContext) {
+	out, closer := displayWriter(output, ctx.flags)
 	defer closer()
 
 	out("resticprofile is a configuration profiles manager for backup profiles and ")
@@ -142,10 +142,10 @@ func displayCommonUsageHelp(output io.Writer, request commandContext) {
 	out("\t%s [command specific flags]\n", getCommonUsageHelpLine("resticprofile-command", true))
 	out("\n")
 	out(ansiBold("resticprofile flags:\n"))
-	out(request.context.flags.usagesHelp)
+	out(ctx.flags.usagesHelp)
 	out("\n\n")
 	out(ansiBold("resticprofile own commands:\n"))
-	displayOwnCommands(out(), request)
+	displayOwnCommands(out(), ctx)
 	out("\n")
 
 	out("%s at %s\n",
@@ -218,10 +218,10 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 	}
 }
 
-func displayHelpCommand(output io.Writer, request commandContext) error {
-	flags := request.context.flags
+func displayHelpCommand(output io.Writer, ctx commandContext) error {
+	flags := ctx.flags
 
-	out, closer := displayWriter(output, request.context.flags)
+	out, closer := displayWriter(output, ctx.flags)
 	defer closer()
 
 	if flags.log == "" {
@@ -237,26 +237,27 @@ func displayHelpCommand(output io.Writer, request commandContext) error {
 	}
 
 	if helpForCommand == nil {
-		displayCommonUsageHelp(out("\n"), request)
+		displayCommonUsageHelp(out("\n"), ctx)
 
-	} else if request.ownCommands.Exists(*helpForCommand, true) || request.ownCommands.Exists(*helpForCommand, false) {
-		displayOwnCommandHelp(out("\n"), *helpForCommand, request)
+	} else if ctx.ownCommands.Exists(*helpForCommand, true) || ctx.ownCommands.Exists(*helpForCommand, false) {
+		displayOwnCommandHelp(out("\n"), *helpForCommand, ctx)
 
 	} else {
-		displayResticHelp(out(), request.context.config, flags, *helpForCommand)
+		displayResticHelp(out(), ctx.config, flags, *helpForCommand)
 	}
 
 	return nil
 }
 
-func displayVersion(output io.Writer, request commandContext) error {
-	out, closer := displayWriter(output, request.context.flags)
+func displayVersion(output io.Writer, ctx commandContext) error {
+	out, closer := displayWriter(output, ctx.flags)
 	defer closer()
 
 	out("resticprofile version %s commit %s\n", ansiBold(version), ansiYellow(commit))
 
 	// allow for the general verbose flag, or specified after the command
-	if request.context.flags.verbose || (len(request.context.arguments) > 0 && (request.context.arguments[0] == "-v" || request.context.arguments[0] == "--verbose")) {
+	arguments := ctx.request.arguments
+	if ctx.flags.verbose || (len(arguments) > 0 && (arguments[0] == "-v" || arguments[0] == "--verbose")) {
 		out("\n")
 		out("\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
 		out("\t%s:\t%s\n", "os", runtime.GOOS)
@@ -280,9 +281,9 @@ func displayVersion(output io.Writer, request commandContext) error {
 	return nil
 }
 
-func displayProfilesCommand(output io.Writer, request commandContext) error {
-	displayProfiles(output, request.context.config, request.context.flags)
-	displayGroups(output, request.context.config, request.context.flags)
+func displayProfilesCommand(output io.Writer, ctx commandContext) error {
+	displayProfiles(output, ctx.config, ctx.flags)
+	displayGroups(output, ctx.config, ctx.flags)
 	return nil
 }
 

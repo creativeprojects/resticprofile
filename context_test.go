@@ -7,12 +7,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCloningContextLeavesProfileAndScheduleBehind(t *testing.T) {
-	ctx := Context{
+func TestContextWithProfile(t *testing.T) {
+	ctx := &Context{
+		request: Request{
+			command:  "test",
+			profile:  "test",
+			group:    "test",
+			schedule: "test",
+		},
 		profile:  &config.Profile{},
 		schedule: &config.Schedule{},
 	}
-	newCtx := ctx.NewProfileContext()
-	assert.Nil(t, newCtx.profile)
-	assert.Nil(t, newCtx.schedule)
+	ctx = ctx.WithProfile("test2")
+	assert.Equal(t, "test2", ctx.request.profile)
+	assert.NotEmpty(t, ctx.request.command)
+
+	assert.Empty(t, ctx.request.group)
+	assert.Empty(t, ctx.request.schedule)
+
+	assert.Nil(t, ctx.profile)
+	assert.Nil(t, ctx.schedule)
 }

@@ -56,9 +56,11 @@ func main() {
 		fmt.Println(flagErr)
 		_ = displayHelpCommand(os.Stdout, commandContext{
 			ownCommands: ownCommands,
-			context: &Context{
-				flags:     flags,
-				arguments: args,
+			Context: Context{
+				flags: flags,
+				request: Request{
+					arguments: args,
+				},
 			},
 		})
 		exitCode = 2
@@ -85,9 +87,11 @@ func main() {
 	if flags.help || errors.Is(flagErr, pflag.ErrHelp) {
 		_ = displayHelpCommand(os.Stdout, commandContext{
 			ownCommands: ownCommands,
-			context: &Context{
-				flags:     flags,
-				arguments: args,
+			Context: Context{
+				flags: flags,
+				request: Request{
+					arguments: args,
+				},
 			},
 		})
 		return
@@ -136,9 +140,11 @@ func main() {
 	if len(flags.resticArgs) > 0 {
 		if ownCommands.Exists(flags.resticArgs[0], false) {
 			ctx := &Context{
-				flags:         flags,
-				resticCommand: flags.resticArgs[0],
-				arguments:     flags.resticArgs[1:],
+				flags: flags,
+				request: Request{
+					command:   flags.resticArgs[0],
+					arguments: flags.resticArgs[1:],
+				},
 			}
 			// try to load the config and setup logging for own command
 			configuration, global, err := loadConfig(flags, true)
@@ -162,8 +168,9 @@ func main() {
 	}
 
 	// Load the mandatory configuration and setup logging (before returning on error)
-	c, global, err := loadConfig(flags, false)
-	defer setupLogging(global)()
+	ctx, err := loadContext(flags, false)
+	closeLogger := setupLogging(ctx.global)
+	defer closeLogger()
 	if err != nil {
 		clog.Error(err)
 		exitCode = 1
@@ -178,7 +185,7 @@ func main() {
 
 	// prevent computer from sleeping
 	var caffeinate *preventsleep.Caffeinate
-	if global.PreventSleep {
+	if ctx.global.PreventSleep {
 		clog.Debug("preventing the system from sleeping")
 		caffeinate = preventsleep.New()
 		err = caffeinate.Start()
@@ -197,55 +204,40 @@ func main() {
 	}()
 
 	// Check memory pressure
-	if global.MinMemory > 0 {
+	if ctx.global.MinMemory > 0 {
 		avail := free()
-		if avail > 0 && avail < global.MinMemory {
-			clog.Errorf("available memory is < %v MB (option 'min-memory' in the 'global' section)", global.MinMemory)
+		if avail > 0 && avail < ctx.global.MinMemory {
+			clog.Errorf("available memory is < %v MB (option 'min-memory' in the 'global' section)", ctx.global.MinMemory)
 			exitCode = 1
 			return
 		}
 	}
 
 	if !flags.noPriority {
-		err = setPriority(global.Nice, global.Priority)
+		err = setPriority(ctx.global.Nice, ctx.global.Priority)
 		if err != nil {
 			clog.Warning(err)
 		}
 
-		if global.IONice {
-			err = priority.SetIONice(global.IONiceClass, global.IONiceLevel)
+		if ctx.global.IONice {
+			err = priority.SetIONice(ctx.global.IONiceClass, ctx.global.IONiceLevel)
 			if err != nil {
 				clog.Warning(err)
 			}
 		}
 	}
 
-	resticBinary, err := detectResticBinary(global)
+	resticBinary, err := detectResticBinary(ctx.global)
 	if err != nil {
 		clog.Error(err)
 		clog.Warning("you can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
 		exitCode = 1
 		return
 	}
-
-	// The remaining arguments are going to be sent to the restic command line
-	resticArguments := flags.resticArgs
-	resticCommand := global.DefaultCommand
-	if len(resticArguments) > 0 {
-		resticCommand = resticArguments[0]
-		resticArguments = resticArguments[1:]
-	}
+	ctx = ctx.WithBinary(resticBinary)
 
 	// resticprofile own commands (with configuration file)
-	if ownCommands.Exists(resticCommand, true) {
-		ctx := &Context{
-			flags:         flags,
-			global:        global,
-			config:        c,
-			resticBinary:  resticBinary,
-			resticCommand: resticCommand,
-			arguments:     resticArguments,
-		}
+	if ownCommands.Exists(ctx.request.command, true) {
 		err = ownCommands.Run(ctx)
 		if err != nil {
 			clog.Error(err)
@@ -260,26 +252,12 @@ func main() {
 	}
 
 	// it wasn't an internal command so we run a profile
-	ctx := &Context{
-		flags:         flags,
-		global:        global,
-		config:        c,
-		resticBinary:  resticBinary,
-		resticCommand: resticCommand,
-		arguments:     resticArguments,
-		profileName:   flags.name,
-		group:         "",
-		scheduleName:  "",
-		profile:       nil,
-		schedule:      nil,
-		sigChan:       nil,
-	}
 	err = startProfileOrGroup(ctx)
 	if err != nil {
 		clog.Error(err)
 		if errors.Is(err, ErrProfileNotFound) {
-			displayProfiles(os.Stdout, c, flags)
-			displayGroups(os.Stdout, c, flags)
+			displayProfiles(os.Stdout, ctx.config, flags)
+			displayGroups(os.Stdout, ctx.config, flags)
 		}
 		exitCode = 1
 		return
@@ -307,6 +285,47 @@ func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global
 		}
 	}
 	return
+}
+
+func loadContext(flags commandLineFlags, silent bool) (*Context, error) {
+	cfg, global, err := loadConfig(flags, silent)
+	if err != nil {
+		return nil, err
+	}
+	// The remaining arguments are going to be sent to the restic command line
+	command := global.DefaultCommand
+	resticArguments := flags.resticArgs
+	if len(resticArguments) > 0 {
+		command = resticArguments[0]
+		resticArguments = resticArguments[1:]
+	}
+
+	ctx := &Context{
+		request: Request{
+			command:   command,
+			arguments: resticArguments,
+			profile:   flags.name,
+			group:     "",
+			schedule:  "",
+		},
+		flags:     flags,
+		global:    global,
+		config:    cfg,
+		binary:    "",
+		command:   "",
+		profile:   nil,
+		schedule:  nil,
+		sigChan:   nil,
+		logTarget: global.Log, // default to global (which can be empty)
+	}
+	if ownCommands.Exists(command, true) {
+		ownCommands.Pre(ctx)
+	}
+	// command line flag supersedes any configuration
+	if flags.log != "" {
+		ctx.logTarget = flags.log
+	}
+	return ctx, nil
 }
 
 func setPriority(nice int, class string) error {
@@ -372,7 +391,7 @@ func detectResticBinary(global *config.Global) (string, error) {
 }
 
 func startProfileOrGroup(ctx *Context) error {
-	if ctx.config.HasProfile(ctx.profileName) {
+	if ctx.config.HasProfile(ctx.request.profile) {
 		// if running as a systemd timer
 		notifyStart()
 		defer notifyStop()
@@ -383,24 +402,23 @@ func startProfileOrGroup(ctx *Context) error {
 			return err
 		}
 
-	} else if ctx.config.HasProfileGroup(ctx.profileName) {
+	} else if ctx.config.HasProfileGroup(ctx.request.profile) {
 		// Group run
-		group, err := ctx.config.GetProfileGroup(ctx.profileName)
+		group, err := ctx.config.GetProfileGroup(ctx.request.profile)
 		if err != nil {
-			clog.Errorf("cannot load group '%s': %v", ctx.profileName, err)
+			clog.Errorf("cannot load group '%s': %v", ctx.request.profile, err)
 		}
 		if group != nil && len(group.Profiles) > 0 {
 			// if running as a systemd timer
 			notifyStart()
 			defer notifyStop()
 
-			groupName := ctx.profileName
+			// profile name is the group name
+			groupName := ctx.request.profile
 
 			for i, profileName := range group.Profiles {
 				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group.Profiles), profileName, groupName)
-				singleProfileCtx := ctx.NewProfileContext()
-				singleProfileCtx.profileName = profileName
-				singleProfileCtx.group = groupName
+				ctx = ctx.WithProfile(profileName).WithGroup(groupName)
 				err = runProfile(ctx)
 				if err != nil {
 					if ctx.global.GroupContinueOnError && bools.IsTrueOrUndefined(group.ContinueOnError) ||
@@ -416,7 +434,7 @@ func startProfileOrGroup(ctx *Context) error {
 		}
 
 	} else {
-		return fmt.Errorf("%w: %q", ErrProfileNotFound, ctx.profileName)
+		return fmt.Errorf("%w: %q", ErrProfileNotFound, ctx.request.profile)
 	}
 	return nil
 }
@@ -470,7 +488,7 @@ func openProfile(c *config.Config, profileName string) (profile *config.Profile,
 }
 
 func runProfile(ctx *Context) error {
-	profile, cleanup, err := openProfile(ctx.config, ctx.profileName)
+	profile, cleanup, err := openProfile(ctx.config, ctx.request.profile)
 	defer cleanup()
 	if err != nil {
 		return err
@@ -539,7 +557,7 @@ func runProfile(ctx *Context) error {
 		wrapper.addProgress(status.NewProgress(profile, status.NewStatus(profile.StatusFile)))
 	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
-		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(ctx.group, version, profile.PrometheusLabels)))
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(ctx.request.group, version, profile.PrometheusLabels)))
 	}
 
 	err = wrapper.runProfile()

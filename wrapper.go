@@ -52,7 +52,7 @@ func newResticWrapper(ctx *Context) *resticWrapper {
 		ctx.global = config.NewGlobal()
 	}
 
-	resticDryRun := slices.ContainsFunc(ctx.arguments, collect.In("--dry-run", "-n"))
+	resticDryRun := slices.ContainsFunc(ctx.request.arguments, collect.In("--dry-run", "-n"))
 
 	return &resticWrapper{
 		ctx:      ctx,
@@ -61,8 +61,8 @@ func newResticWrapper(ctx *Context) *resticWrapper {
 		lockWait: nil,
 		profile:  ctx.profile,
 		global:   ctx.global,
-		command:  ctx.resticCommand,
-		moreArgs: ctx.arguments,
+		command:  ctx.command,
+		moreArgs: ctx.request.arguments,
 		sigChan:  ctx.sigChan,
 		stdin:    os.Stdin,
 		progress: make([]monitor.Receiver, 0),
@@ -330,7 +330,7 @@ func (r *resticWrapper) getShell() (shell []string) {
 func (r *resticWrapper) getCommandArgumentsFilter(command string) argumentsFilter {
 	binaryIsRestic := strings.EqualFold(
 		"restic",
-		strings.TrimSuffix(filepath.Base(r.ctx.resticBinary), filepath.Ext(r.ctx.resticBinary)),
+		strings.TrimSuffix(filepath.Base(r.ctx.binary), filepath.Ext(r.ctx.binary)),
 	)
 	if binaryIsRestic && (r.global == nil || r.global.FilterResticFlags) {
 		if validArgs := r.validResticArgumentsList(command); len(validArgs) > 0 {
@@ -396,8 +396,8 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	env := append(os.Environ(), r.getEnvironment()...)
 	env = append(env, r.getProfileEnvironment()...)
 
-	clog.Debugf("starting command: %s %s", r.ctx.resticBinary, strings.Join(publicArguments, " "))
-	rCommand := newShellCommand(r.ctx.resticBinary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
+	clog.Debugf("starting command: %s %s", r.ctx.binary, strings.Join(publicArguments, " "))
+	rCommand := newShellCommand(r.ctx.binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()

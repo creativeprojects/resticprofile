@@ -190,10 +190,10 @@ func TestFilteredArgumentsRegression(t *testing.T) {
 			profile, err := cfg.GetProfile("default")
 			require.NoError(t, err)
 			wrapper := newResticWrapper(&Context{
-				flags:         commandLineFlags{dryRun: true},
-				resticBinary:  "restic",
-				profile:       profile,
-				resticCommand: "test",
+				flags:   commandLineFlags{dryRun: true},
+				binary:  "restic",
+				profile: profile,
+				command: "test",
 			})
 
 			for command, commandline := range test.expected {
@@ -209,9 +209,9 @@ func TestFilteredArgumentsRegression(t *testing.T) {
 func TestGetEmptyEnvironment(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  "restic",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "restic",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	env := wrapper.getEnvironment()
@@ -225,9 +225,9 @@ func TestGetSingleEnvironment(t *testing.T) {
 	}
 	profile.ResolveConfiguration()
 	ctx := &Context{
-		resticBinary:  "restic",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "restic",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	env := wrapper.getEnvironment()
@@ -242,9 +242,9 @@ func TestGetMultipleEnvironment(t *testing.T) {
 	}
 	profile.ResolveConfiguration()
 	ctx := &Context{
-		resticBinary:  "restic",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "restic",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	env := wrapper.getEnvironment()
@@ -257,9 +257,9 @@ func TestPreProfileScriptFail(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -270,9 +270,9 @@ func TestPostProfileScriptFail(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfter = []string{"exit 1"} // this should both work on unix shell and windows batch
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -282,9 +282,9 @@ func TestPostProfileScriptFail(t *testing.T) {
 func TestRunEchoProfile(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -297,9 +297,9 @@ func TestPostProfileAfterFail(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfter = []string{"echo failed > " + testFile}
 	ctx := &Context{
-		resticBinary:  "exit",
-		profile:       profile,
-		resticCommand: "1",
+		binary:  "exit",
+		profile: profile,
+		command: "1",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -314,9 +314,9 @@ func TestPostFailProfile(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo failed > " + testFile}
 	ctx := &Context{
-		resticBinary:  "exit",
-		profile:       profile,
-		resticCommand: "1",
+		binary:  "exit",
+		profile: profile,
+		command: "1",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -347,9 +347,9 @@ func TestFinallyProfile(t *testing.T) {
 	t.Run("backup-before-profile", func(t *testing.T) {
 		newProfile()
 		ctx := &Context{
-			resticBinary:  "echo",
-			profile:       profile,
-			resticCommand: "backup",
+			binary:  "echo",
+			profile: profile,
+			command: "backup",
 		}
 		wrapper := newResticWrapper(ctx)
 		err := wrapper.runProfile()
@@ -361,9 +361,9 @@ func TestFinallyProfile(t *testing.T) {
 		newProfile()
 		profile.RunFinally = nil
 		ctx := &Context{
-			resticBinary:  "echo",
-			profile:       profile,
-			resticCommand: "backup",
+			binary:  "echo",
+			profile: profile,
+			command: "backup",
 		}
 		wrapper := newResticWrapper(ctx)
 		err := wrapper.runProfile()
@@ -374,9 +374,9 @@ func TestFinallyProfile(t *testing.T) {
 	t.Run("on-error", func(t *testing.T) {
 		newProfile()
 		ctx := &Context{
-			resticBinary:  "exit",
-			profile:       profile,
-			resticCommand: "1",
+			binary:  "exit",
+			profile: profile,
+			command: "1",
 		}
 		wrapper := newResticWrapper(ctx)
 		err := wrapper.runProfile()
@@ -389,9 +389,9 @@ func Example_runProfile() {
 	term.SetOutput(os.Stdout)
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	wrapper.runProfile()
@@ -403,9 +403,9 @@ func TestRunRedirectOutputOfEchoProfile(t *testing.T) {
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -418,10 +418,10 @@ func TestDryRun(t *testing.T) {
 	term.SetOutput(buffer)
 	profile := config.NewProfile(nil, "name")
 	wrapper := newResticWrapper(&Context{
-		flags:         commandLineFlags{dryRun: true},
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		flags:   commandLineFlags{dryRun: true},
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	})
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
@@ -435,9 +435,9 @@ func TestEnvProfileName(t *testing.T) {
 	profile.RunBefore = []string{"echo profile name = $PROFILE_NAME"}
 
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -452,9 +452,9 @@ func TestEnvProfileCommand(t *testing.T) {
 	profile.RunBefore = []string{"echo profile command = $PROFILE_COMMAND"}
 
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test-command",
+		binary:  "echo",
+		profile: profile,
+		command: "test-command",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -469,9 +469,9 @@ func TestEnvError(t *testing.T) {
 	profile.RunAfterFail = []string{"echo error: $ERROR_MESSAGE"}
 
 	ctx := &Context{
-		resticBinary:  "exit",
-		profile:       profile,
-		resticCommand: "1",
+		binary:  "exit",
+		profile: profile,
+		command: "1",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -486,9 +486,9 @@ func TestEnvErrorCommandLine(t *testing.T) {
 	profile.RunAfterFail = []string{"echo cmd: $ERROR_COMMANDLINE"}
 
 	ctx := &Context{
-		resticBinary:  "exit",
-		profile:       profile,
-		resticCommand: "1",
+		binary:  "exit",
+		profile: profile,
+		command: "1",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -503,9 +503,9 @@ func TestEnvErrorExitCode(t *testing.T) {
 	profile.RunAfterFail = []string{"echo exit-code: $ERROR_EXIT_CODE"}
 
 	ctx := &Context{
-		resticBinary:  "exit",
-		profile:       profile,
-		resticCommand: "5",
+		binary:  "exit",
+		profile: profile,
+		command: "5",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -520,10 +520,10 @@ func TestEnvStderr(t *testing.T) {
 	profile.RunAfterFail = []string{"echo stderr: $ERROR_STDERR"}
 
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "command",
-		arguments:     []string{"--stderr", "error_message", "--exit", "1"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "command",
+		request: Request{arguments: []string{"--stderr", "error_message", "--exit", "1"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -536,9 +536,9 @@ func TestRunProfileWithSetPIDCallback(t *testing.T) {
 	profile.Lock = filepath.Join(os.TempDir(), fmt.Sprintf("%s%d%d.tmp", "TestRunProfileWithSetPIDCallback", time.Now().UnixNano(), os.Getpid()))
 	t.Logf("lockfile = %s", profile.Lock)
 	ctx := &Context{
-		resticBinary:  "echo",
-		profile:       profile,
-		resticCommand: "test",
+		binary:  "echo",
+		profile: profile,
+		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
@@ -548,9 +548,9 @@ func TestRunProfileWithSetPIDCallback(t *testing.T) {
 func TestInitializeNoError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runInitialize()
@@ -560,10 +560,10 @@ func TestInitializeNoError(t *testing.T) {
 func TestInitializeWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "10"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "10"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runInitialize()
@@ -574,9 +574,9 @@ func TestInitializeCopyNoError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: bools.False()}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runInitializeCopy()
@@ -587,10 +587,10 @@ func TestInitializeCopyWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: bools.False()}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "10"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "10"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runInitializeCopy()
@@ -600,9 +600,9 @@ func TestInitializeCopyWithError(t *testing.T) {
 func TestCheckNoError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCheck()
@@ -612,10 +612,10 @@ func TestCheckNoError(t *testing.T) {
 func TestCheckWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "10"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "10"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCheck()
@@ -625,9 +625,9 @@ func TestCheckWithError(t *testing.T) {
 func TestRetentionNoError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runRetention()
@@ -637,10 +637,10 @@ func TestRetentionNoError(t *testing.T) {
 func TestRetentionWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "10"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "10"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runRetention()
@@ -667,10 +667,10 @@ func TestBackupWithStreamSource(t *testing.T) {
 		profile.Backup = &config.BackupSection{}
 		signals := make(chan os.Signal, 1)
 		ctx := &Context{
-			resticBinary:  mockBinary,
-			profile:       profile,
-			resticCommand: "stdin-test",
-			sigChan:       signals,
+			binary:  mockBinary,
+			profile: profile,
+			command: "stdin-test",
+			sigChan: signals,
 		}
 		wrapper = newResticWrapper(ctx)
 		return
@@ -803,9 +803,9 @@ func TestBackupWithSuccess(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCommand("backup")
@@ -816,10 +816,10 @@ func TestBackupWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "1"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "1"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCommand("backup")
@@ -844,12 +844,12 @@ func TestBackupWithResticLockFailureRetried(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
-		global:        global,
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--stderr", "@" + tempfile, "--exit", "1"},
-		sigChan:       sigChan,
+		global:  global,
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--stderr", "@" + tempfile, "--exit", "1"}},
+		sigChan: sigChan,
 	}
 	wrapper := newResticWrapper(ctx)
 	wrapper.lockWait = &lockWait
@@ -878,12 +878,12 @@ func TestBackupWithResticLockFailureCancelled(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
-		global:        global,
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--stderr", "@" + tempfile, "--exit", "1"},
-		sigChan:       sigChan,
+		global:  global,
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--stderr", "@" + tempfile, "--exit", "1"}},
+		sigChan: sigChan,
 	}
 	wrapper := newResticWrapper(ctx)
 	wrapper.lockWait = &lockWait
@@ -901,10 +901,10 @@ func TestBackupWithResticLockFailureCancelled(t *testing.T) {
 func TestBackupWithNoConfiguration(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "1"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "1"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCommand("backup")
@@ -915,10 +915,10 @@ func TestBackupWithNoConfigurationButStatusFile(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.StatusFile = "status.json"
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "1"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "1"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	wrapper.addProgress(status.NewProgress(profile, status.NewStatus("status.json")))
@@ -930,10 +930,10 @@ func TestBackupWithWarningAsError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "3"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "3"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCommand("backup")
@@ -944,10 +944,10 @@ func TestBackupWithSupressedWarnings(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{NoErrorOnWarning: true}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "",
-		arguments:     []string{"--exit", "3"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+		request: Request{arguments: []string{"--exit", "3"}},
 	}
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCommand("backup")
@@ -976,9 +976,9 @@ func TestRunShellCommands(t *testing.T) {
 		t.Run(fmt.Sprintf("run-before '%s'", command), func(t *testing.T) {
 			section.RunBefore = []string{"exit 2"}
 			ctx := &Context{
-				resticBinary:  mockBinary,
-				profile:       profile,
-				resticCommand: command,
+				binary:  mockBinary,
+				profile: profile,
+				command: command,
 			}
 			wrapper := newResticWrapper(ctx)
 			err := wrapper.runProfile()
@@ -994,9 +994,9 @@ func TestRunShellCommands(t *testing.T) {
 		t.Run(fmt.Sprintf("run-after '%s'", command), func(t *testing.T) {
 			section.RunAfter = []string{"exit 2"}
 			ctx := &Context{
-				resticBinary:  mockBinary,
-				profile:       profile,
-				resticCommand: command,
+				binary:  mockBinary,
+				profile: profile,
+				command: command,
 			}
 			wrapper := newResticWrapper(ctx)
 			err := wrapper.runProfile()
@@ -1021,10 +1021,10 @@ func TestRunStreamErrorHandler(t *testing.T) {
 	profile.Backup = &config.BackupSection{}
 	profile.StreamError = []config.StreamErrorSection{{Pattern: ".+error-line.+", Run: errorCommand}}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "backup",
-		arguments:     []string{"--stderr", "--error-line--"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "backup",
+		request: Request{arguments: []string{"--stderr", "--error-line--"}},
 	}
 	wrapper := newResticWrapper(ctx)
 
@@ -1038,10 +1038,10 @@ func TestRunStreamErrorHandlerDoesNotBreakCommand(t *testing.T) {
 	profile.Backup = &config.BackupSection{}
 	profile.StreamError = []config.StreamErrorSection{{Pattern: ".+error-line.+", Run: "exit 1"}}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "backup",
-		arguments:     []string{"--stderr", "--error-line--"},
+		binary:  mockBinary,
+		profile: profile,
+		command: "backup",
+		request: Request{arguments: []string{"--stderr", "--error-line--"}},
 	}
 	wrapper := newResticWrapper(ctx)
 
@@ -1054,10 +1054,10 @@ func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
 	profile.Backup = &config.BackupSection{}
 	profile.StreamError = []config.StreamErrorSection{{Pattern: "(", Run: "echo pass"}}
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "backup",
-		arguments:     []string{},
+		binary:  mockBinary,
+		profile: profile,
+		command: "backup",
+		request: Request{arguments: []string{}},
 	}
 	wrapper := newResticWrapper(ctx)
 
@@ -1068,9 +1068,9 @@ func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
 func TestCanRetryAfterErrorDontFailWhenNoOutputAnalysis(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "name")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "backup",
+		binary:  mockBinary,
+		profile: profile,
+		command: "backup",
 	}
 	wrapper := newResticWrapper(ctx)
 	summary := monitor.Summary{}
@@ -1089,9 +1089,9 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 	profile.Repository = config.NewConfidentialValue("my-repo")
 	profile.ForceLock = true
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "backup",
+		binary:  mockBinary,
+		profile: profile,
+		command: "backup",
 	}
 	wrapper := newResticWrapper(ctx)
 	wrapper.startTime = time.Now()
@@ -1146,9 +1146,9 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Repository = config.NewConfidentialValue("my-repo")
 	ctx := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: "backup",
+		binary:  mockBinary,
+		profile: profile,
+		command: "backup",
 	}
 	wrapper := newResticWrapper(ctx)
 	wrapper.startTime = time.Now()
@@ -1197,10 +1197,10 @@ func TestCanUseResticLockRetry(t *testing.T) {
 
 	getWrapper := func() *resticWrapper {
 		wrapper := newResticWrapper(&Context{
-			flags:         commandLineFlags{dryRun: true},
-			resticBinary:  "restic",
-			profile:       profile,
-			resticCommand: constants.CommandBackup,
+			flags:   commandLineFlags{dryRun: true},
+			binary:  "restic",
+			profile: profile,
+			command: constants.CommandBackup,
 		})
 		wrapper.startTime = time.Now()
 		wrapper.global.ResticLockRetryAfter = 1 * time.Minute
@@ -1286,20 +1286,20 @@ func TestLocksAndLockWait(t *testing.T) {
 	term.SetOutput(os.Stdout)
 
 	ctx1 := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: constants.CommandBackup,
-		arguments:     []string{"--sleep", "1500"},
+		binary:  mockBinary,
+		profile: profile,
+		command: constants.CommandBackup,
+		request: Request{arguments: []string{"--sleep", "1500"}},
 	}
 	ctx2 := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: constants.CommandBackup,
+		binary:  mockBinary,
+		profile: profile,
+		command: constants.CommandBackup,
 	}
 	ctx3 := &Context{
-		resticBinary:  mockBinary,
-		profile:       profile,
-		resticCommand: constants.CommandBackup,
+		binary:  mockBinary,
+		profile: profile,
+		command: constants.CommandBackup,
 	}
 	w1 := newResticWrapper(ctx1)
 	w2 := newResticWrapper(ctx2)
@@ -1355,9 +1355,9 @@ func TestLocksAndLockWait(t *testing.T) {
 func TestGetContext(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "TestCommand",
+		binary:  "",
+		profile: profile,
+		command: "TestCommand",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1373,9 +1373,9 @@ func TestGetContext(t *testing.T) {
 func TestGetContextWithError(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "TestCommand",
+		binary:  "",
+		profile: profile,
+		command: "TestCommand",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1391,9 +1391,9 @@ func TestGetContextWithError(t *testing.T) {
 func TestGetErrorContext(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "",
+		binary:  "",
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1407,9 +1407,9 @@ func TestGetErrorContext(t *testing.T) {
 func TestGetErrorContextWithStandardError(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "",
+		binary:  "",
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1423,9 +1423,9 @@ func TestGetErrorContextWithStandardError(t *testing.T) {
 func TestGetErrorContextWithCommandError(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "",
+		binary:  "",
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1445,9 +1445,9 @@ func TestGetErrorContextWithCommandError(t *testing.T) {
 func TestGetProfileEnvironment(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "TestCommand",
+		binary:  "",
+		profile: profile,
+		command: "TestCommand",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1459,9 +1459,9 @@ func TestGetProfileEnvironment(t *testing.T) {
 func TestGetFailEnvironmentNoError(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "",
+		binary:  "",
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1473,9 +1473,9 @@ func TestGetFailEnvironmentNoError(t *testing.T) {
 func TestGetFailEnvironmentWithStandardError(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "",
+		binary:  "",
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1487,9 +1487,9 @@ func TestGetFailEnvironmentWithStandardError(t *testing.T) {
 func TestGetFailEnvironmentWithCommandError(t *testing.T) {
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
-		resticBinary:  "",
-		profile:       profile,
-		resticCommand: "",
+		binary:  "",
+		profile: profile,
+		command: "",
 	}
 	wrapper := newResticWrapper(ctx)
 	require.NotNil(t, wrapper)
@@ -1570,11 +1570,11 @@ func TestRunInitCopyCommand(t *testing.T) {
 			defer clog.SetDefaultLogger(defaultLogger)
 
 			wrapper := newResticWrapper(&Context{
-				flags:         commandLineFlags{dryRun: true},
-				global:        config.NewGlobal(),
-				resticBinary:  "test",
-				profile:       testCase.profile,
-				resticCommand: "copy",
+				flags:   commandLineFlags{dryRun: true},
+				global:  config.NewGlobal(),
+				binary:  "test",
+				profile: testCase.profile,
+				command: "copy",
 			})
 			// 1. run init command with copy profile
 			err := wrapper.runInitializeCopy()

@@ -138,11 +138,13 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NotNil(t, profile)
 
 					ctx := &Context{
-						resticBinary:  echoBinary,
-						profileName:   fixture.profileName,
-						profile:       profile,
-						resticCommand: fixture.commandName,
-						arguments:     fixture.cmdlineArgs,
+						request: Request{
+							profile:   fixture.profileName,
+							arguments: fixture.cmdlineArgs,
+						},
+						binary:  echoBinary,
+						profile: profile,
+						command: fixture.commandName,
 					}
 					wrapper := newResticWrapper(ctx)
 					buffer := &bytes.Buffer{}
@@ -178,11 +180,13 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					profile.SetLegacyArg(true)
 
 					ctx := &Context{
-						resticBinary:  echoBinary,
-						profileName:   fixture.profileName,
-						profile:       profile,
-						resticCommand: fixture.commandName,
-						arguments:     fixture.cmdlineArgs,
+						request: Request{
+							profile:   fixture.profileName,
+							arguments: fixture.cmdlineArgs,
+						},
+						binary:  echoBinary,
+						profile: profile,
+						command: fixture.commandName,
 					}
 					wrapper := newResticWrapper(ctx)
 					buffer := &bytes.Buffer{}

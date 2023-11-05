@@ -60,13 +60,13 @@ func thirdCommand(_ io.Writer, _ commandContext) error {
 
 func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
-	displayOwnCommands(buffer, commandContext{ownCommands: fakeCommands(), context: &Context{}})
+	displayOwnCommands(buffer, commandContext{ownCommands: fakeCommands()})
 	assert.Equal(t, "  first   first first\n  second  second second\n", buffer.String())
 }
 
 func TestDisplayOwnCommand(t *testing.T) {
 	buffer := &strings.Builder{}
-	displayOwnCommandHelp(buffer, "second", commandContext{ownCommands: fakeCommands(), context: &Context{}})
+	displayOwnCommandHelp(buffer, "second", commandContext{ownCommands: fakeCommands()})
 	assert.Equal(t, `Purpose: second second
 
 Usage:
@@ -87,10 +87,10 @@ func TestIsOwnCommand(t *testing.T) {
 }
 
 func TestRunOwnCommand(t *testing.T) {
-	assert.EqualError(t, fakeCommands().Run(&Context{resticCommand: "first"}), "first")
-	assert.EqualError(t, fakeCommands().Run(&Context{resticCommand: "second"}), "second")
-	assert.EqualError(t, fakeCommands().Run(&Context{resticCommand: "third"}), "third")
-	assert.EqualError(t, fakeCommands().Run(&Context{resticCommand: "another one"}), "command not found: another one")
+	assert.EqualError(t, fakeCommands().Run(&Context{request: Request{command: "first"}}), "first")
+	assert.EqualError(t, fakeCommands().Run(&Context{request: Request{command: "second"}}), "second")
+	assert.EqualError(t, fakeCommands().Run(&Context{request: Request{command: "third"}}), "third")
+	assert.EqualError(t, fakeCommands().Run(&Context{request: Request{command: "another one"}}), "command not found: another one")
 }
 
 func TestPanicCommand(t *testing.T) {
@@ -101,7 +101,7 @@ func TestPanicCommand(t *testing.T) {
 
 func TestRandomKeyOfInvalidSize(t *testing.T) {
 	assert.Error(t, randomKey(os.Stdout, commandContext{
-		context: &Context{
+		Context: Context{
 			flags: commandLineFlags{resticArgs: []string{"restic", "size"}},
 		},
 	}))
@@ -109,7 +109,7 @@ func TestRandomKeyOfInvalidSize(t *testing.T) {
 
 func TestRandomKeyOfZeroSize(t *testing.T) {
 	assert.Error(t, randomKey(os.Stdout, commandContext{
-		context: &Context{
+		Context: Context{
 			flags: commandLineFlags{resticArgs: []string{"restic", "0"}},
 		},
 	}))
@@ -117,7 +117,7 @@ func TestRandomKeyOfZeroSize(t *testing.T) {
 
 func TestRandomKey(t *testing.T) {
 	// doesn't look like much, but it's testing the random generator is not throwing an error
-	assert.NoError(t, randomKey(os.Stdout, commandContext{context: &Context{}}))
+	assert.NoError(t, randomKey(os.Stdout, commandContext{}))
 }
 
 func TestRemovableSchedules(t *testing.T) {
@@ -271,7 +271,10 @@ func TestCompleteCall(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(strings.Join(test.args, " "), func(t *testing.T) {
 			buffer := &strings.Builder{}
-			assert.Nil(t, completeCommand(buffer, commandContext{ownCommands: ownCommands, context: &Context{arguments: test.args}}))
+			assert.Nil(t, completeCommand(buffer, commandContext{
+				ownCommands: ownCommands,
+				Context:     Context{request: Request{arguments: test.args}},
+			}))
 			assert.Equal(t, test.expected, buffer.String())
 		})
 	}
@@ -280,23 +283,28 @@ func TestCompleteCall(t *testing.T) {
 func TestGenerateCommand(t *testing.T) {
 	buffer := &strings.Builder{}
 
+	contextWithArguments := func(args []string) commandContext {
+		t.Helper()
+		return commandContext{Context: Context{request: Request{arguments: args}}} //nolint:exhaustivestruct
+	}
+
 	t.Run("--bash-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--bash-completion"}}}))
+		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--bash-completion"})))
 		assert.Equal(t, strings.TrimSpace(bashCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, bashCompletionScript, "#!/usr/bin/env bash")
 	})
 
 	t.Run("--zsh-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--zsh-completion"}}}))
+		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--zsh-completion"})))
 		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
 	})
 
 	t.Run("--config-reference", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--config-reference"}}}))
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--config-reference"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "| **ionice-class** |")
 		assert.Contains(t, ref, "| **check-after** |")
@@ -305,7 +313,7 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--json-schema"}}}))
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "\"profiles\":")
 		assert.Contains(t, ref, "/jsonschema/config-2.json")
@@ -313,21 +321,21 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema v1", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--json-schema", "v1"}}}))
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "v1"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1.json")
 	})
 
 	t.Run("--json-schema --version 0.13 v1", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--json-schema", "--version", "0.13", "v1"}}}))
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "--version", "0.13", "v1"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1-restic-0-13.json")
 	})
 
 	t.Run("--random-key", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, commandContext{context: &Context{arguments: []string{"--random-key", "512"}}}))
+		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--random-key", "512"})))
 		assert.Equal(t, 684, len(strings.TrimSpace(buffer.String())))
 	})
 
@@ -336,7 +344,7 @@ func TestGenerateCommand(t *testing.T) {
 		opts := []string{"", "invalid", "--unknown"}
 		for _, option := range opts {
 			buffer.Reset()
-			err := generateCommand(buffer, commandContext{context: &Context{arguments: []string{option}}})
+			err := generateCommand(buffer, contextWithArguments([]string{option}))
 			assert.EqualError(t, err, fmt.Sprintf("nothing to generate for: %s", option))
 			assert.Equal(t, 0, buffer.Len())
 		}
