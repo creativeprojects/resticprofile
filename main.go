@@ -98,7 +98,7 @@ func main() {
 	}
 
 	// logger setup logic - is delayed until config was loaded (or attempted)
-	setupLogging := func(global *config.Global) (logCloser func()) {
+	setupLogging := func(ctx *Context) (logCloser func()) {
 		logCloser = func() {}
 
 		if flags.isChild {
@@ -110,10 +110,9 @@ func main() {
 			// also redirect the terminal through the client
 			term.SetAllOutput(term.NewRemoteTerm(client))
 		} else {
-			// command line flag supersedes global configuration
-			logTarget := flags.log
-			if logTarget == "" && global != nil {
-				logTarget = global.Log
+			logTarget := ""
+			if ctx != nil {
+				logTarget = ctx.logTarget
 			}
 			if logTarget != "" && logTarget != "-" {
 				if closer, err := setupTargetLogger(flags, logTarget); err == nil {
@@ -152,7 +151,8 @@ func main() {
 				ctx.config = configuration
 				ctx.global = global
 			}
-			defer setupLogging(global)()
+			closeLogger := setupLogging(ctx)
+			defer closeLogger()
 			err = ownCommands.Run(ctx)
 			if err != nil {
 				clog.Error(err)
@@ -169,7 +169,7 @@ func main() {
 
 	// Load the mandatory configuration and setup logging (before returning on error)
 	ctx, err := loadContext(flags, false)
-	closeLogger := setupLogging(ctx.global)
+	closeLogger := setupLogging(ctx)
 	defer closeLogger()
 	if err != nil {
 		clog.Error(err)
@@ -251,6 +251,9 @@ func main() {
 		return
 	}
 
+	// since it's not a resticprofile command, it's a restic command
+	ctx = ctx.WithCommand(ctx.request.command)
+
 	// it wasn't an internal command so we run a profile
 	err = startProfileOrGroup(ctx)
 	if err != nil {
@@ -287,6 +290,7 @@ func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global
 	return
 }
 
+// loadContext loads the configuration and creates a context.
 func loadContext(flags commandLineFlags, silent bool) (*Context, error) {
 	cfg, global, err := loadConfig(flags, silent)
 	if err != nil {
@@ -318,8 +322,12 @@ func loadContext(flags commandLineFlags, silent bool) (*Context, error) {
 		sigChan:   nil,
 		logTarget: global.Log, // default to global (which can be empty)
 	}
+	// own commands can check the context before running
 	if ownCommands.Exists(command, true) {
-		ownCommands.Pre(ctx)
+		err = ownCommands.Pre(ctx)
+		if err != nil {
+			return ctx, err
+		}
 	}
 	// command line flag supersedes any configuration
 	if flags.log != "" {
