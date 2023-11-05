@@ -30,6 +30,13 @@ type Context struct {
 	logTarget string           // where to send the log output
 }
 
+// WithConfig sets the configuration and global values. It doesn't create a new context.
+func (c *Context) WithConfig(cfg *config.Config, global *config.Global) *Context {
+	c.config = cfg
+	c.global = global
+	return c
+}
+
 // WithBinary sets the restic binary to use. It doesn't create a new context.
 func (c *Context) WithBinary(resticBinary string) *Context {
 	c.binary = resticBinary

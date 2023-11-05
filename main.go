@@ -146,10 +146,9 @@ func main() {
 				},
 			}
 			// try to load the config and setup logging for own command
-			configuration, global, err := loadConfig(flags, true)
+			cfg, global, err := loadConfig(flags, true)
 			if err == nil {
-				ctx.config = configuration
-				ctx.global = global
+				ctx = ctx.WithConfig(cfg, global)
 			}
 			closeLogger := setupLogging(ctx)
 			defer closeLogger()
@@ -167,7 +166,7 @@ func main() {
 		}
 	}
 
-	// Load the mandatory configuration and setup logging (before returning on error)
+	// Load the now mandatory configuration and setup logging (before returning an error)
 	ctx, err := loadContext(flags, false)
 	closeLogger := setupLogging(ctx)
 	defer closeLogger()

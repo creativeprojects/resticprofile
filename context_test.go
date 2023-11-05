@@ -7,6 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestContextWithConfig(t *testing.T) {
+	ctx := &Context{
+		config: nil,
+		global: nil,
+	}
+	ctx = ctx.WithConfig(&config.Config{}, &config.Global{})
+	assert.NotNil(t, ctx.config)
+	assert.NotNil(t, ctx.global)
+}
+
 func TestContextWithBinary(t *testing.T) {
 	ctx := &Context{
 		binary: "test",
