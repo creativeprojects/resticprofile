@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/mattn/go-colorable"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 var (
@@ -28,8 +28,7 @@ func AskYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
 	if !strings.HasSuffix(message, "?") {
 		message += "?"
 	}
-	question := ""
-	input := ""
+	var question, input string
 	if defaultAnswer {
 		question = "(Y/n)"
 		input = "y"
@@ -59,13 +58,13 @@ func AskYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
 // ReadPassword reads a password without echoing it to the terminal.
 func ReadPassword() (string, error) {
 	stdin := int(os.Stdin.Fd())
-	if !terminal.IsTerminal(stdin) {
+	if !term.IsTerminal(stdin) {
 		return ReadLine()
 	}
-	line, err := terminal.ReadPassword(stdin)
+	line, err := term.ReadPassword(stdin)
 	_, _ = fmt.Fprintln(os.Stderr)
 	if err != nil {
-		return "", fmt.Errorf("failed to read password: %v", err)
+		return "", fmt.Errorf("failed to read password: %w", err)
 	}
 	return string(line), nil
 }
@@ -75,7 +74,7 @@ func ReadLine() (string, error) {
 	buf := bufio.NewReader(os.Stdin)
 	line, err := buf.ReadString('\n')
 	if err != nil {
-		return "", fmt.Errorf("failed to read line: %v", err)
+		return "", fmt.Errorf("failed to read line: %w", err)
 	}
 	return strings.TrimSpace(line), nil
 }
@@ -83,14 +82,14 @@ func ReadLine() (string, error) {
 // OsStdoutIsTerminal returns true as os.Stdout is a terminal session
 func OsStdoutIsTerminal() bool {
 	fd := int(os.Stdout.Fd())
-	return terminal.IsTerminal(fd)
+	return term.IsTerminal(fd)
 }
 
 // OsStdoutIsTerminal returns true as os.Stdout is a terminal session
 func OsStdoutTerminalSize() (width, height int) {
 	fd := int(os.Stdout.Fd())
 	var err error
-	width, height, err = terminal.GetSize(fd)
+	width, height, err = term.GetSize(fd)
 	if err != nil {
 		width, height = 0, 0
 	}
