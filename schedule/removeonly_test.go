@@ -39,7 +39,7 @@ func TestDetectRemoveOnlyConfig(t *testing.T) {
 
 func TestRemoveOnlyJob(t *testing.T) {
 	profile := "non-existent"
-	scheduler := NewScheduler(NewHandler(&SchedulerDefaultOS{}), profile)
+	scheduler := NewScheduler(NewHandler(SchedulerDefaultOS{}), profile)
 	defer scheduler.Close()
 
 	job := scheduler.NewJob(NewRemoveOnlyConfig(profile, "check"))

@@ -1,6 +1,8 @@
 package schedule
 
 import (
+	"strings"
+
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
@@ -15,7 +17,7 @@ type SchedulerConfig interface {
 type SchedulerDefaultOS struct{}
 
 func (s SchedulerDefaultOS) Type() string {
-	return ""
+	return constants.SchedulerOSDefault
 }
 
 type SchedulerWindows struct{}
@@ -33,7 +35,8 @@ func (s SchedulerLaunchd) Type() string {
 }
 
 type SchedulerCrond struct {
-	Fs afero.Fs
+	Fs          afero.Fs
+	CrontabFile string
 }
 
 func (s SchedulerCrond) Type() string {
@@ -51,9 +54,12 @@ func (s SchedulerSystemd) Type() string {
 }
 
 func NewSchedulerConfig(global *config.Global) SchedulerConfig {
-	switch global.Scheduler {
+	scheduler := strings.SplitN(strings.TrimSpace(global.Scheduler), ":", 2) // scheduler: resource
+	switch scheduler[0] {
 	case constants.SchedulerCrond:
 		return SchedulerCrond{}
+	case constants.SchedulerCrontab:
+		return SchedulerCrond{CrontabFile: strings.TrimSpace(scheduler[1])}
 	case constants.SchedulerLaunchd:
 		return SchedulerLaunchd{}
 	case constants.SchedulerSystemd:

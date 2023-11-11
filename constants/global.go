@@ -8,10 +8,12 @@ import (
 
 // Scheduler type
 const (
-	SchedulerLaunchd = "launchd"
-	SchedulerWindows = "taskscheduler"
-	SchedulerSystemd = "systemd"
-	SchedulerCrond   = "crond"
+	SchedulerLaunchd   = "launchd"
+	SchedulerWindows   = "taskscheduler"
+	SchedulerSystemd   = "systemd"
+	SchedulerCrond     = "crond"
+	SchedulerCrontab   = "crontab"
+	SchedulerOSDefault = ""
 )
 
 var (

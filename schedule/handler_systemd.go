@@ -295,3 +295,14 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	fmt.Println("")
 	return err
 }
+
+// init registers HandlerSystemd
+func init() {
+	AddHandlerProvider(func(config SchedulerConfig) (hr Handler) {
+		if config.Type() == constants.SchedulerSystemd ||
+			config.Type() == constants.SchedulerOSDefault {
+			hr = NewHandlerSystemd(config)
+		}
+		return
+	})
+}

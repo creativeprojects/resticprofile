@@ -15,13 +15,6 @@ type HandlerWindows struct {
 	config SchedulerConfig
 }
 
-// NewHandler creates a new handler for windows task manager
-func NewHandler(config SchedulerConfig) *HandlerWindows {
-	return &HandlerWindows{
-		config: config,
-	}
-}
-
 // Init a connection to the task scheduler
 func (h *HandlerWindows) Init() error {
 	return schtasks.Connect()
@@ -98,4 +91,17 @@ func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 		return err
 	}
 	return nil
+}
+
+// init registers HandlerWindows
+func init() {
+	AddHandlerProvider(func(config SchedulerConfig) (hr Handler) {
+		if config.Type() == constants.SchedulerWindows ||
+			config.Type() == constants.SchedulerOSDefault {
+			hr = &HandlerWindows{
+				config: config,
+			}
+		}
+		return
+	})
 }

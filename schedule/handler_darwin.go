@@ -70,13 +70,6 @@ type HandlerLaunchd struct {
 	fs     afero.Fs
 }
 
-func NewHandler(config SchedulerConfig) *HandlerLaunchd {
-	return &HandlerLaunchd{
-		config: config,
-		fs:     afero.NewOsFs(),
-	}
-}
-
 // Init verifies launchd is available on this system
 func (h *HandlerLaunchd) Init() error {
 	return lookupBinary("launchd", launchdBin)
@@ -409,4 +402,18 @@ func parseStatus(status string) map[string]string {
 		}
 	}
 	return output
+}
+
+// init registers HandlerLaunchd
+func init() {
+	AddHandlerProvider(func(config SchedulerConfig) (hr Handler) {
+		if config.Type() == constants.SchedulerLaunchd ||
+			config.Type() == constants.SchedulerOSDefault {
+			hr = &HandlerLaunchd{
+				config: config,
+				fs:     afero.NewOsFs(),
+			}
+		}
+		return
+	})
 }

@@ -1,14 +1,8 @@
-//go:build !darwin && !windows
-// +build !darwin,!windows
-
 package crond
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 )
@@ -19,12 +13,9 @@ const (
 )
 
 type Crontab struct {
-	entries []Entry
+	file, charset string
+	entries       []Entry
 }
-
-var (
-	crontabBinary = "crontab"
-)
 
 func NewCrontab(entries []Entry) *Crontab {
 	return &Crontab{
@@ -32,11 +23,16 @@ func NewCrontab(entries []Entry) *Crontab {
 	}
 }
 
+// SetFile toggles whether to read & write a crontab file instead of using CrontabBinary
+func (c *Crontab) SetFile(file string) {
+	c.file = file
+}
+
 // Update crontab entries:
 //
-// # If addEntries is set to true, it will delete and add all new entries
+// - If addEntries is set to true, it will delete and add all new entries
 //
-// # If addEntries is set to false, it will only delete the matching entries
+// - If addEntries is set to false, it will only delete the matching entries
 //
 // Return values are the number of entries deleted, and an error if any
 func (c *Crontab) Update(source string, addEntries bool, w io.StringWriter) (int, error) {
@@ -117,19 +113,12 @@ func (c *Crontab) Generate(w io.StringWriter) error {
 	return nil
 }
 
-func (c *Crontab) LoadCurrent() (string, error) {
-	buffer := &strings.Builder{}
-	cmd := exec.Command(crontabBinary, "-l")
-	cmd.Stdout = buffer
-	cmd.Stderr = buffer
-	err := cmd.Run()
-	if err != nil && strings.HasPrefix(buffer.String(), "no crontab for ") {
-		// it's ok to be empty
-		return "", nil
-	} else if err != nil {
-		return "", fmt.Errorf("%w: %s", err, buffer.String())
+func (c *Crontab) LoadCurrent() (content string, err error) {
+	content, c.charset, err = loadCrontab(c.file)
+	if err == nil {
+		content = cleanupCrontab(content)
 	}
-	return cleanupCrontab(buffer.String()), nil
+	return
 }
 
 func (c *Crontab) Rewrite() error {
@@ -137,20 +126,14 @@ func (c *Crontab) Rewrite() error {
 	if err != nil {
 		return err
 	}
-	input := &bytes.Buffer{}
-	_, err = c.Update(crontab, true, input)
+
+	buffer := new(strings.Builder)
+	_, err = c.Update(crontab, true, buffer)
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(crontabBinary, "-")
-	cmd.Stdin = input
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
+	return saveCrontab(c.file, buffer.String(), c.charset)
 }
 
 func (c *Crontab) Remove() (int, error) {
@@ -158,20 +141,13 @@ func (c *Crontab) Remove() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	buffer := &bytes.Buffer{}
-	num, err := c.Update(crontab, false, buffer)
-	if err != nil {
-		return num, err
-	}
 
-	cmd := exec.Command(crontabBinary, "-")
-	cmd.Stdin = buffer
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return num, err
+	buffer := new(strings.Builder)
+	num, err := c.Update(crontab, false, buffer)
+	if err == nil {
+		err = saveCrontab(c.file, buffer.String(), c.charset)
 	}
-	return num, nil
+	return num, err
 }
 
 func cleanupCrontab(crontab string) string {
@@ -182,7 +158,9 @@ func cleanupCrontab(crontab string) string {
 }
 
 // extractOwnSection returns before our section, inside, and after if found.
+//
 // - It is not returning both start and end markers.
+//
 // - If not found, it returns the file content in the first string
 func extractOwnSection(crontab string) (string, string, string, bool) {
 	start := strings.Index(crontab, startMarker)

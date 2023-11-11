@@ -1,11 +1,9 @@
-//go:build !darwin && !windows
-// +build !darwin,!windows
-
 package crond
 
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -156,14 +154,41 @@ func TestRemoveCrontab(t *testing.T) {
 	assert.Equal(t, "something\n"+startMarker+endMarker, buffer.String())
 }
 
+func TestLoadCurrentFromFile(t *testing.T) {
+	file, err := filepath.Abs(filepath.Join(t.TempDir(), "crontab"))
+	defer func() {
+		CrontabBinary = DefaultCrontabBinary
+		_ = os.Remove(file)
+	}()
+
+	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
+		event.Minute.MustAddValue(1)
+		event.Hour.MustAddValue(1)
+	}), "", "", "", "resticprofile backup", "")})
+
+	CrontabBinary = ""
+	assert.ErrorContains(t, crontab.Rewrite(), "no contrab file was specified")
+
+	crontab.SetFile(file)
+
+	assert.NoFileExists(t, file)
+	assert.NoError(t, crontab.Rewrite())
+	assert.FileExists(t, file)
+
+	result, err := crontab.LoadCurrent()
+	assert.NoError(t, err)
+	assert.Contains(t, result, "01 01 * * *\tresticprofile backup")
+}
+
 func TestLoadCurrent(t *testing.T) {
 	defer func() {
+		CrontabBinary = DefaultCrontabBinary
 		_ = os.Remove("./crontab")
 	}()
 	cmd := exec.Command("go", "build", "-o", "crontab", "./stdin")
 	err := cmd.Run()
 	require.NoError(t, err)
-	crontabBinary = "./crontab"
+	CrontabBinary = "./crontab"
 
 	crontab := NewCrontab(nil)
 	assert.NotNil(t, crontab)
