@@ -137,15 +137,16 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NoError(t, err)
 					require.NotNil(t, profile)
 
-					wrapper := newResticWrapper(
-						nil,
-						echoBinary,
-						false,
-						profile,
-						fixture.commandName,
-						fixture.cmdlineArgs,
-						nil,
-					)
+					ctx := &Context{
+						request: Request{
+							profile:   fixture.profileName,
+							arguments: fixture.cmdlineArgs,
+						},
+						binary:  echoBinary,
+						profile: profile,
+						command: fixture.commandName,
+					}
+					wrapper := newResticWrapper(ctx)
 					buffer := &bytes.Buffer{}
 					// setting the output via the package global setter could lead to some issues
 					// when some tests are running in parallel. I should fix that at some point :-/
@@ -178,15 +179,16 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 
 					profile.SetLegacyArg(true)
 
-					wrapper := newResticWrapper(
-						nil,
-						echoBinary,
-						false,
-						profile,
-						fixture.commandName,
-						fixture.cmdlineArgs,
-						nil,
-					)
+					ctx := &Context{
+						request: Request{
+							profile:   fixture.profileName,
+							arguments: fixture.cmdlineArgs,
+						},
+						binary:  echoBinary,
+						profile: profile,
+						command: fixture.commandName,
+					}
+					wrapper := newResticWrapper(ctx)
 					buffer := &bytes.Buffer{}
 					// setting the output via the package global setter could lead to some issues
 					// when some tests are running in parallel. I should fix that at some point :-/

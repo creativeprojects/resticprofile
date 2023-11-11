@@ -32,12 +32,12 @@ func init() {
 	config.ExcludeProfileSection(def.name)
 }
 
-func selfUpdate(_ io.Writer, request commandRequest) error {
-	quiet := request.flags.quiet
-	if !quiet && len(request.args) > 0 && (request.args[0] == "-q" || request.args[0] == "--quiet") {
+func selfUpdate(_ io.Writer, ctx commandContext) error {
+	quiet := ctx.flags.quiet
+	if !quiet && len(ctx.request.arguments) > 0 && (ctx.request.arguments[0] == "-q" || ctx.request.arguments[0] == "--quiet") {
 		quiet = true
 	}
-	err := confirmAndSelfUpdate(quiet, request.flags.verbose, version, true)
+	err := confirmAndSelfUpdate(quiet, ctx.flags.verbose, version, true)
 	if err != nil {
 		return err
 	}

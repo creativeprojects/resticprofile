@@ -147,12 +147,12 @@ func getOwnCommands() []ownCommand {
 	}
 }
 
-func panicCommand(_ io.Writer, _ commandRequest) error {
+func panicCommand(_ io.Writer, _ commandContext) error {
 	panic("you asked for it")
 }
 
-func completeCommand(output io.Writer, request commandRequest) error {
-	args := request.args
+func completeCommand(output io.Writer, ctx commandContext) error {
+	args := ctx.request.arguments
 	requester := "unknown"
 	requesterVersion := 0
 
@@ -178,7 +178,7 @@ func completeCommand(output io.Writer, request commandRequest) error {
 		return nil
 	}
 
-	completions := NewCompleter(request.ownCommands.All(), DefaultFlagsLoader).Complete(args)
+	completions := NewCompleter(ctx.ownCommands.All(), DefaultFlagsLoader).Complete(args)
 	if len(completions) > 0 {
 		for _, completion := range completions {
 			fmt.Fprintln(output, completion)
@@ -193,8 +193,8 @@ var bashCompletionScript string
 //go:embed contrib/completion/zsh-completion.sh
 var zshCompletionScript string
 
-func generateCommand(output io.Writer, request commandRequest) (err error) {
-	args := request.args
+func generateCommand(output io.Writer, ctx commandContext) (err error) {
+	args := ctx.request.arguments
 	// enforce no-log
 	logger := clog.GetDefaultLogger()
 	handler := logger.GetHandler()
@@ -207,8 +207,8 @@ func generateCommand(output io.Writer, request commandRequest) (err error) {
 	} else if slices.Contains(args, "--json-schema") {
 		err = generateJsonSchema(output, args[slices.Index(args, "--json-schema")+1:])
 	} else if slices.Contains(args, "--random-key") {
-		request.flags.resticArgs = args[slices.Index(args, "--random-key"):]
-		err = randomKey(output, request)
+		ctx.flags.resticArgs = args[slices.Index(args, "--random-key"):]
+		err = randomKey(output, ctx)
 	} else if slices.Contains(args, "--zsh-completion") {
 		_, err = fmt.Fprintln(output, zshCompletionScript)
 	} else {
@@ -278,9 +278,9 @@ func sortedProfileKeys(data map[string]*config.Profile) []string {
 	return keys
 }
 
-func showProfile(output io.Writer, request commandRequest) error {
-	c := request.config
-	flags := request.flags
+func showProfile(output io.Writer, ctx commandContext) error {
+	c := ctx.config
+	flags := ctx.flags
 
 	// Load global section
 	global, err := c.GetGlobalSection()
@@ -340,9 +340,9 @@ func showSchedules(output io.Writer, schedulesConfig []*config.ScheduleConfig) {
 }
 
 // randomKey simply display a base64'd random key to the console
-func randomKey(output io.Writer, request commandRequest) error {
+func randomKey(output io.Writer, ctx commandContext) error {
 	var err error
-	flags := request.flags
+	flags := ctx.flags
 	size := uint64(1024)
 	// flags.resticArgs contain the command and the rest of the command line
 	if len(flags.resticArgs) > 1 {
@@ -398,10 +398,10 @@ func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlag
 }
 
 // createSchedule accepts one argument from the commandline: --no-start
-func createSchedule(_ io.Writer, request commandRequest) error {
-	c := request.config
-	flags := request.flags
-	args := request.args
+func createSchedule(_ io.Writer, ctx commandContext) error {
+	c := ctx.config
+	flags := ctx.flags
+	args := ctx.request.arguments
 
 	defer c.DisplayConfigurationIssues()
 
@@ -453,10 +453,10 @@ func createSchedule(_ io.Writer, request commandRequest) error {
 	return nil
 }
 
-func removeSchedule(_ io.Writer, request commandRequest) error {
-	c := request.config
-	flags := request.flags
-	args := request.args
+func removeSchedule(_ io.Writer, ctx commandContext) error {
+	c := ctx.config
+	flags := ctx.flags
+	args := ctx.request.arguments
 
 	// Unschedule all jobs of all selected profiles
 	for _, profileName := range selectProfiles(c, flags, args) {
@@ -476,10 +476,10 @@ func removeSchedule(_ io.Writer, request commandRequest) error {
 	return nil
 }
 
-func statusSchedule(w io.Writer, request commandRequest) error {
-	c := request.config
-	flags := request.flags
-	args := request.args
+func statusSchedule(w io.Writer, ctx commandContext) error {
+	c := ctx.config
+	flags := ctx.flags
+	args := ctx.request.arguments
 
 	defer c.DisplayConfigurationIssues()
 
@@ -572,9 +572,9 @@ func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedul
 	return scheduler, profile, schedules, nil
 }
 
-func testElevationCommand(_ io.Writer, request commandRequest) error {
-	if request.flags.isChild {
-		client := remote.NewClient(request.flags.parentPort)
+func testElevationCommand(_ io.Writer, ctx commandContext) error {
+	if ctx.flags.isChild {
+		client := remote.NewClient(ctx.flags.parentPort)
 		term.Print("first line", "\n")
 		term.Println("second", "one")
 		term.Printf("value = %d\n", 11)
@@ -585,7 +585,7 @@ func testElevationCommand(_ io.Writer, request commandRequest) error {
 		return nil
 	}
 
-	return elevated(request.flags)
+	return elevated(ctx.flags)
 }
 
 func retryElevated(err error, flags commandLineFlags) error {

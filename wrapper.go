@@ -27,19 +27,19 @@ import (
 )
 
 type resticWrapper struct {
-	resticBinary string
-	dryRun       bool
-	noLock       bool
-	lockWait     *time.Duration
-	profile      *config.Profile
-	global       *config.Global
-	command      string
-	moreArgs     []string
-	sigChan      chan os.Signal
-	setPID       func(pid int)
-	stdin        io.ReadCloser
-	progress     []monitor.Receiver
-	sender       *hook.Sender
+	ctx      *Context
+	dryRun   bool // resticprofile dry-run (not restic dry-run via flags added on the command line)
+	noLock   bool
+	lockWait *time.Duration
+	profile  *config.Profile
+	global   *config.Global
+	command  string
+	moreArgs []string
+	sigChan  chan os.Signal
+	setPID   func(pid int)
+	stdin    io.ReadCloser
+	progress []monitor.Receiver
+	sender   *hook.Sender
 
 	// States
 	startTime     time.Time
@@ -47,34 +47,31 @@ type resticWrapper struct {
 	doneTryUnlock bool
 }
 
-func newResticWrapper(
-	global *config.Global,
-	resticBinary string,
-	dryRun bool,
-	profile *config.Profile,
-	command string,
-	moreArgs []string,
-	c chan os.Signal,
-) *resticWrapper {
-	if global == nil {
-		global = config.NewGlobal()
+func newResticWrapper(ctx *Context) *resticWrapper {
+	if ctx.global == nil {
+		ctx.global = config.NewGlobal()
 	}
 
-	senderDryRun := dryRun || slices.ContainsFunc(moreArgs, collect.In("--dry-run", "-n"))
+	resticDryRun := slices.ContainsFunc(ctx.request.arguments, collect.In("--dry-run", "-n"))
 
 	return &resticWrapper{
-		resticBinary:  resticBinary,
-		dryRun:        dryRun,
-		noLock:        false,
-		lockWait:      nil,
-		profile:       profile,
-		global:        global,
-		command:       command,
-		moreArgs:      moreArgs,
-		sigChan:       c,
-		stdin:         os.Stdin,
-		progress:      make([]monitor.Receiver, 0),
-		sender:        hook.NewSender(global.CACertificates, "resticprofile/"+version, global.SenderTimeout, senderDryRun),
+		ctx:      ctx,
+		dryRun:   ctx.flags.dryRun,
+		noLock:   false,
+		lockWait: nil,
+		profile:  ctx.profile,
+		global:   ctx.global,
+		command:  ctx.command,
+		moreArgs: ctx.request.arguments,
+		sigChan:  ctx.sigChan,
+		stdin:    os.Stdin,
+		progress: make([]monitor.Receiver, 0),
+		sender: hook.NewSender(
+			ctx.global.CACertificates,
+			"resticprofile/"+version,
+			ctx.global.SenderTimeout,
+			ctx.flags.dryRun || resticDryRun,
+		),
 		startTime:     time.Unix(0, 0),
 		executionTime: 0,
 		doneTryUnlock: false,
@@ -333,7 +330,7 @@ func (r *resticWrapper) getShell() (shell []string) {
 func (r *resticWrapper) getCommandArgumentsFilter(command string) argumentsFilter {
 	binaryIsRestic := strings.EqualFold(
 		"restic",
-		strings.TrimSuffix(filepath.Base(r.resticBinary), filepath.Ext(r.resticBinary)),
+		strings.TrimSuffix(filepath.Base(r.ctx.binary), filepath.Ext(r.ctx.binary)),
 	)
 	if binaryIsRestic && (r.global == nil || r.global.FilterResticFlags) {
 		if validArgs := r.validResticArgumentsList(command); len(validArgs) > 0 {
@@ -399,8 +396,8 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	env := append(os.Environ(), r.getEnvironment()...)
 	env = append(env, r.getProfileEnvironment()...)
 
-	clog.Debugf("starting command: %s %s", r.resticBinary, strings.Join(publicArguments, " "))
-	rCommand := newShellCommand(r.resticBinary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
+	clog.Debugf("starting command: %s %s", r.ctx.binary, strings.Join(publicArguments, " "))
+	rCommand := newShellCommand(r.ctx.binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()

@@ -40,17 +40,17 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, logTarget string) (io.Closer, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
 		err     error
 	)
-	scheme, hostPort, isURL := dial.GetAddr(flags.log)
+	scheme, hostPort, isURL := dial.GetAddr(logTarget)
 	if isURL {
-		handler, err = getSyslogHandler(flags, scheme, hostPort)
+		handler, err = getSyslogHandler(scheme, hostPort)
 	} else {
-		handler, file, err = getFileHandler(flags)
+		handler, file, err = getFileHandler(logTarget)
 	}
 	if err != nil {
 		return nil, err
@@ -68,15 +68,15 @@ func setupTargetLogger(flags commandLineFlags) (io.Closer, error) {
 	return handler, nil
 }
 
-func getFileHandler(flags commandLineFlags) (*clog.StandardLogHandler, io.Writer, error) {
-	if strings.HasPrefix(flags.log, constants.TemporaryDirMarker) {
+func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error) {
+	if strings.HasPrefix(logfile, constants.TemporaryDirMarker) {
 		if tempDir, err := util.TempDir(); err == nil {
-			flags.log = flags.log[len(constants.TemporaryDirMarker):]
-			if len(flags.log) > 0 && os.IsPathSeparator(flags.log[0]) {
-				flags.log = flags.log[1:]
+			logfile = logfile[len(constants.TemporaryDirMarker):]
+			if len(logfile) > 0 && os.IsPathSeparator(logfile[0]) {
+				logfile = logfile[1:]
 			}
-			flags.log = filepath.Join(tempDir, flags.log)
-			_ = os.MkdirAll(filepath.Dir(flags.log), 0755)
+			logfile = filepath.Join(tempDir, logfile)
+			_ = os.MkdirAll(filepath.Dir(logfile), 0755)
 		}
 	}
 
@@ -95,7 +95,7 @@ func getFileHandler(flags commandLineFlags) (*clog.StandardLogHandler, io.Writer
 		}
 	}
 
-	writer, err := newDeferredFileWriter(flags.log, keepOpen, appender)
+	writer, err := newDeferredFileWriter(logfile, keepOpen, appender)
 	if err != nil {
 		return nil, nil, err
 	}

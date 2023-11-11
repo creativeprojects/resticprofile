@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -294,4 +295,16 @@ https://creativeprojects.github.io/resticprofile/
 			})
 		}
 	}
+}
+
+func TestDisplayVersionVerbose1(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	displayVersion(buffer, commandContext{Context: Context{flags: commandLineFlags{verbose: true}}})
+	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
+}
+
+func TestDisplayVersionVerbose2(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	displayVersion(buffer, commandContext{Context: Context{request: Request{arguments: []string{"-v"}}}})
+	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
 }

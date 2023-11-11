@@ -48,7 +48,7 @@ func (l *Syslog) Close() error {
 
 var _ LogCloser = &Syslog{}
 
-func getSyslogHandler(flags commandLineFlags, scheme, hostPort string) (*Syslog, error) {
+func getSyslogHandler(scheme, hostPort string) (*Syslog, error) {
 	writer, err := syslog.Dial(scheme, hostPort, syslog.LOG_USER|syslog.LOG_NOTICE, constants.ApplicationName)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open syslog logger: %w", err)
