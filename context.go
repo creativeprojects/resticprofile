@@ -30,50 +30,48 @@ type Context struct {
 	logTarget string           // where to send the log output
 }
 
-// WithConfig sets the configuration and global values. It doesn't create a new context.
+// WithConfig sets the configuration and global values. A new copy of the context is returned.
 func (c *Context) WithConfig(cfg *config.Config, global *config.Global) *Context {
-	c.config = cfg
-	c.global = global
-	return c
+	newContext := c.clone()
+	newContext.config = cfg
+	newContext.global = global
+	return newContext
 }
 
-// WithBinary sets the restic binary to use. It doesn't create a new context.
+// WithBinary sets the restic binary to use. A new copy of the context is returned.
 func (c *Context) WithBinary(resticBinary string) *Context {
-	c.binary = resticBinary
-	return c
+	newContext := c.clone()
+	newContext.binary = resticBinary
+	return newContext
 }
 
-// WithCommand sets the restic command. It doesn't create a new context.
+// WithCommand sets the restic command. A new copy of the context is returned.
 func (c *Context) WithCommand(resticCommand string) *Context {
-	c.command = resticCommand
-	return c
+	newContext := c.clone()
+	newContext.command = resticCommand
+	return newContext
 }
 
-// WithGroup sets the configuration group. It doesn't create a new context.
+// WithGroup sets the configuration group. A new copy of the context is returned.
 func (c *Context) WithGroup(group string) *Context {
-	c.request.group = group
-	return c
+	newContext := c.clone()
+	newContext.request.group = group
+	return newContext
 }
 
-// WithProfile sets the profile name. A new copy of the context is created.
+// WithProfile sets the profile name. A new copy of the context is returned.
 // Profile and schedule information are not copied over.
 func (c *Context) WithProfile(profileName string) *Context {
-	return &Context{
-		request: Request{
-			command:   c.request.command,
-			arguments: c.request.arguments,
-			profile:   profileName,
-			group:     "",
-			schedule:  "",
-		},
-		flags:     c.flags,
-		global:    c.global,
-		config:    c.config,
-		binary:    c.binary,
-		command:   c.command,
-		profile:   nil,
-		schedule:  nil,
-		sigChan:   c.sigChan,
-		logTarget: c.logTarget, // the logTarget might change in case of a scheduled context :-/
-	}
+	newContext := c.clone()
+	newContext.request.profile = profileName
+	newContext.request.group = ""
+	newContext.request.schedule = ""
+	newContext.profile = nil
+	newContext.schedule = nil
+	return newContext
+}
+
+func (c *Context) clone() *Context {
+	clone := *c
+	return &clone
 }

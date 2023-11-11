@@ -7,6 +7,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestContextClone(t *testing.T) {
+	ctx := &Context{
+		config: &config.Config{},
+		global: &config.Global{},
+		binary: "test",
+	}
+	clone := ctx.clone()
+	assert.False(t, ctx == clone) // different pointers
+	assert.Equal(t, ctx, clone)   // same values
+}
+
 func TestContextWithConfig(t *testing.T) {
 	ctx := &Context{
 		config: nil,
