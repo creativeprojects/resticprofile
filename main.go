@@ -533,11 +533,12 @@ func runProfile(ctx *Context) error {
 		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, ctx.request.group, version, profile.PrometheusLabels)))
 	}
 
-	err = wrapper.runProfile()
-	if err != nil {
-		return err
+	if accept := commandFilter(profile, global); accept(resticCommand) {
+		err = wrapper.runProfile()
+	} else {
+		err = fmt.Errorf("profile %q does not allow running %q", profile.Name, resticCommand)
 	}
-	return nil
+	return err
 }
 
 func loadScheduledProfile(ctx *Context) error {

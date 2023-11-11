@@ -7,6 +7,7 @@ const (
 	DefaultConfigurationFile    = "profiles"
 	DefaultProfileName          = "default"
 	DefaultCommand              = "snapshots"
+	DefaultBaseProfile          = "__*"
 	DefaultFilterResticFlags    = true
 	DefaultResticLockRetryAfter = 60 * time.Second
 	DefaultResticStaleLockAge   = 1 * time.Hour

@@ -22,6 +22,7 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/creativeprojects/resticprofile/win"
 )
@@ -706,4 +707,47 @@ func elevated(flags commandLineFlags) error {
 	<-done
 
 	return nil
+}
+
+func commandFilter(profile *config.Profile, global *config.Global) func(command string) bool {
+	var baseProfile, allowed, denied util.MultiPatternMatcher
+
+	if global == nil || global.BaseProfiles == nil {
+		baseProfile = util.GlobMultiMatcher(constants.DefaultBaseProfile)
+	} else {
+		baseProfile = util.GlobMultiMatcher(global.BaseProfiles...)
+	}
+
+	if profile != nil {
+		if match, _ := baseProfile(profile.Name); match {
+			allowed = util.GlobMultiMatcher()
+			denied = util.GlobMultiMatcher("*")
+		} else {
+			if len(profile.AllowedCommands) == 1 && profile.AllowedCommands[0] == "" {
+				profile.AllowedCommands = nil
+			}
+			allowed = util.GlobMultiMatcher(profile.AllowedCommands...)
+			denied = util.GlobMultiMatcher(profile.DeniedCommands...)
+		}
+	}
+
+	if allowed != nil && denied != nil {
+		return func(command string) bool {
+			if match, pattern := allowed(command); match {
+				if pattern != command {
+					if match, pattern = denied(command); match && pattern == command {
+						return false // allowed by wildcard and denied by direct match
+					}
+				}
+				return true
+			}
+			if match, _ := denied(command); match {
+				return false
+			}
+			// default true if no allowed commands are set
+			return len(profile.AllowedCommands) == 0
+		}
+	}
+
+	return func(command string) bool { return true }
 }

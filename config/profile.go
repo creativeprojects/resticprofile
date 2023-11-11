@@ -73,6 +73,8 @@ type Profile struct {
 	resticVersion           *semver.Version
 	Name                    string
 	Description             string                            `mapstructure:"description" description:"Describes the profile"`
+	AllowedCommands         []string                          `mapstructure:"allowed-commands" description:"A list of commands that may be started on this profile, defaults to empty (= all). Wildcards (glob expressions) are supported"`
+	DeniedCommands          []string                          `mapstructure:"denied-commands" description:"A list of commands that cannot be started on this profile, defaults to empty (= none). What was explicitly allowed cannot be denied"`
 	BaseDir                 string                            `mapstructure:"base-dir" description:"Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead"`
 	Quiet                   bool                              `mapstructure:"quiet" argument:"quiet"`
 	Verbose                 int                               `mapstructure:"verbose" argument:"verbose"`

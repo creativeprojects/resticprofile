@@ -272,6 +272,89 @@ func TestGenerateCommand(t *testing.T) {
 	})
 }
 
+func TestCommandFilter(t *testing.T) {
+	p, g := new(config.Profile), new(config.Global)
+
+	reset := func() { p.AllowedCommands, p.DeniedCommands, g.BaseProfiles = nil, nil, nil }
+
+	expect := func(t *testing.T, expected bool, command string) {
+		assert.Equal(t, expected, commandFilter(p, g)(command), "command %s", command)
+	}
+
+	t.Run("nil-tolerant", func(t *testing.T) {
+		assert.True(t, commandFilter(nil, nil)("backup"))
+	})
+
+	t.Run("default-base", func(t *testing.T) {
+		reset()
+		p.Name = "default"
+		assert.True(t, commandFilter(p, nil)("backup"))
+		expect(t, true, "backup")
+		p.Name = "__default"
+		assert.False(t, commandFilter(p, nil)("backup"))
+		expect(t, false, "backup")
+	})
+
+	t.Run("configured-base", func(t *testing.T) {
+		reset()
+		p.Name = "default"
+		g.BaseProfiles = []string{"*"}
+		expect(t, false, "backup")
+		g.BaseProfiles = []string{"default"}
+		expect(t, false, "backup")
+		p.Name = "other"
+		expect(t, true, "backup")
+	})
+
+	t.Run("default-all-allowed", func(t *testing.T) {
+		reset()
+		for run := 0; run < 3; run++ {
+			expect(t, true, "backup")
+			expect(t, true, "restore")
+			expect(t, true, "another")
+
+			switch run {
+			case 0:
+				p.AllowedCommands, p.DeniedCommands = []string{}, []string{}
+			case 1:
+				p.AllowedCommands, p.DeniedCommands = []string{""}, []string{""}
+			}
+		}
+	})
+
+	t.Run("allowed", func(t *testing.T) {
+		reset()
+		p.AllowedCommands = []string{"*"}
+		expect(t, true, "backup")
+		expect(t, true, "restore")
+		p.AllowedCommands = []string{"backup"}
+		expect(t, true, "backup")
+		expect(t, false, "restore")
+	})
+
+	t.Run("denied", func(t *testing.T) {
+		reset()
+		p.DeniedCommands = []string{"*"}
+		expect(t, false, "backup")
+		expect(t, false, "restore")
+		p.DeniedCommands = []string{"backup"}
+		expect(t, false, "backup")
+		expect(t, true, "restore")
+		expect(t, true, "another")
+	})
+
+	t.Run("allowed-is-not-denied", func(t *testing.T) {
+		reset()
+		p.AllowedCommands = []string{"backup", "restore", "repair*"}
+		p.DeniedCommands = []string{"backup", "repair-snapshot"}
+		expect(t, true, "backup")
+		expect(t, true, "restore")
+		expect(t, true, "repair-index")
+		expect(t, false, "repair-snapshot") // direct denied match, wildcard allowed results in denied
+		expect(t, false, "another")
+	})
+}
+
 func TestShowSchedules(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	schedules := []*config.Schedule{
