@@ -533,10 +533,10 @@ func runProfile(ctx *Context) error {
 		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, ctx.request.group, version, profile.PrometheusLabels)))
 	}
 
-	if accept := commandFilter(profile, global); accept(resticCommand) {
+	if accept := commandFilter(profile, ctx.global); accept(ctx.request.command) {
 		err = wrapper.runProfile()
 	} else {
-		err = fmt.Errorf("profile %q does not allow running %q", profile.Name, resticCommand)
+		err = fmt.Errorf("profile %q does not allow running %q", ctx.request.profile, ctx.request.command)
 	}
 	return err
 }
