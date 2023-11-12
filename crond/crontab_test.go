@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -182,13 +183,17 @@ func TestLoadCurrentFromFile(t *testing.T) {
 
 func TestLoadCurrent(t *testing.T) {
 	defer func() {
+		_ = os.Remove(CrontabBinary)
 		CrontabBinary = DefaultCrontabBinary
-		_ = os.Remove("./crontab")
 	}()
-	cmd := exec.Command("go", "build", "-o", "crontab", "./stdin")
-	err := cmd.Run()
-	require.NoError(t, err)
-	CrontabBinary = "./crontab"
+	if platform.IsWindows() {
+		CrontabBinary = "crontab.exe"
+	} else {
+		CrontabBinary = "./crontab"
+	}
+
+	cmd := exec.Command("go", "build", "-o", CrontabBinary, "./stdin")
+	require.NoError(t, cmd.Run())
 
 	crontab := NewCrontab(nil)
 	assert.NotNil(t, crontab)

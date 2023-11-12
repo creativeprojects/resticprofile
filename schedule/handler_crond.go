@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 )
