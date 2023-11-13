@@ -1591,3 +1591,31 @@ func TestRunInitCopyCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestCopyNoSnapshot(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Copy = &config.CopySection{}
+	ctx := &Context{
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+	}
+	wrapper := newResticWrapper(ctx)
+	args := shell.NewArgs()
+	cmd := wrapper.prepareCommand("copy", args, false)
+	assert.Equal(t, []string{"copy"}, cmd.args)
+}
+
+func TestCopySnapshot(t *testing.T) {
+	profile := config.NewProfile(&config.Config{}, "name")
+	profile.Copy = &config.CopySection{Snapshots: []string{"snapshot1", "snapshot2"}}
+	ctx := &Context{
+		binary:  mockBinary,
+		profile: profile,
+		command: "",
+	}
+	wrapper := newResticWrapper(ctx)
+	args := shell.NewArgs()
+	cmd := wrapper.prepareCommand("copy", args, false)
+	assert.Equal(t, []string{"copy", "snapshot1", "snapshot2"}, cmd.args)
+}

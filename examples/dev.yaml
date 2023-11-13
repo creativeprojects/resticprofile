@@ -129,6 +129,7 @@ self:
         schedule-priority: standard
     copy:
         initialize: true
+        snapshot: latest
         schedule:
             - "*:45"
     snapshots:

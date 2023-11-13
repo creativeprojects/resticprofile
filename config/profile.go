@@ -322,6 +322,7 @@ type CopySection struct {
 	PasswordFile                     string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
 	PasswordCommand                  string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
 	KeyHint                          string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
+	Snapshots                        []string          `mapstructure:"snapshot" description:"Snapshot IDs to copy (if empty, all snapshots are copied)"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
@@ -480,9 +481,9 @@ func (o *OtherFlagsSection) SetOtherFlag(name string, value any) {
 // NewProfile instantiates a new blank profile
 func NewProfile(c *Config, name string) (p *Profile) {
 	p = &Profile{
-		Name:          name,
-		config:        c,
-		OtherSections: make(map[string]*GenericSection),
+		Name:                 name,
+		config:               c,
+		OtherSections:        make(map[string]*GenericSection),
 		PrometheusPushFormat: constants.DefaultPrometheusPushFormat,
 	}
 
@@ -770,6 +771,14 @@ func (p *Profile) GetBackupSource() []string {
 		return nil
 	}
 	return p.Backup.Source
+}
+
+// GetCopySnapshotIDs returns the snapshot IDs to copy
+func (p *Profile) GetCopySnapshotIDs() []string {
+	if p.Copy == nil {
+		return nil
+	}
+	return p.Copy.Snapshots
 }
 
 // DefinedCommands returns all commands (also called sections) defined in the profile (backup, check, forget, etc.)
