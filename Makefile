@@ -297,4 +297,9 @@ syslog-ng:
 		lscr.io/linuxserver/syslog-ng:latest
 
 checkdoc:
+	@echo "[*] $@"
 	$(GOCMD) run ./config/checkdoc -r docs/content
+
+checklinks:
+	@echo "[*] $@"
+	muffet -b 8192 http://localhost:1313/resticprofile/
