@@ -205,6 +205,10 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission stri
 	if err != nil {
 		return "", err
 	}
+	if permission != constants.SchedulePermissionSystem {
+		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
+		_ = h.fs.MkdirAll(path.Dir(filename), 0o700)
+	}
 	file, err := h.fs.Create(filename)
 	if err != nil {
 		return "", err
