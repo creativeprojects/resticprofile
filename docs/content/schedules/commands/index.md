@@ -38,4 +38,4 @@ Remove all the schedules defined on the selected profile or profiles.
 
 Print the status on all the installed schedules of the selected profile or profiles. 
 
-The display of the `status` command will be OS dependant. Please refer to the [examples]({{< ref "/schedules/examples" >}}) on which output you can expect from it.
+The display of the `status` command will be OS dependant. Please refer to the [examples]({{% relref "/schedules/examples" %}}) on which output you can expect from it.

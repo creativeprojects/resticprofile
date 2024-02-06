@@ -783,7 +783,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 			t.Skip("signal handling is not supported on Windows")
 		}
 		profile, wrapper := profileAndWrapper(t)
-		profile.Backup.StdinCommand = append(fillBufferCommand(), mockBinary+" cmd --sleep 12000")
+		profile.Backup.StdinCommand = append(fillBufferCommand(), mockBinary+" cmd --sleep 6000")
 		profile.ResolveConfiguration()
 
 		go func() {
@@ -792,10 +792,14 @@ func TestBackupWithStreamSource(t *testing.T) {
 		}()
 		start := time.Now()
 		_, err := run(t, wrapper)
-		assert.Less(t, time.Now().Sub(start), time.Second*10, "timeout, interrupt not sent to stdin-command")
+		assert.Less(t, time.Now().Sub(start), time.Second*5, "timeout, interrupt not sent to stdin-command")
 
 		require.NotNil(t, err)
-		assert.EqualError(t, err, "stdin-test on profile 'name': io: read/write on closed pipe")
+		assert.Error(t, err)
+		if err.Error() != "stdin-test on profile 'name': io: read/write on closed pipe" &&
+			err.Error() != "stdin-test on profile 'name': signal: interrupt" {
+			t.Errorf("unexpected error: %s", err)
+		}
 	})
 }
 

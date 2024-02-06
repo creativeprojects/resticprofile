@@ -10,7 +10,7 @@ weight: 2
 
 In a nutshell, **resticprofile** provides a configuration file and a runner that will generate all the necessary calls to **restic**.
 
-Unless you're using the **resticprofile** [Docker image]({{< ref "/installation/docker" >}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
+Unless you're using the **resticprofile** [Docker image]({{% relref "/installation/docker" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
 
 ## Choose your favourite format
 
@@ -30,7 +30,7 @@ HCL can be interesting if you already use a tool from the Hashicorp stack otherw
 
 We're going to show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
 
-You can use any other editor that recognise the [JSON schema]({{< ref "/configuration/jsonschema" >}}). The same JSON schema can be used for JSON, TOML and YAML file formats.
+You can use any other editor that recognise the [JSON schema]({{% relref "/configuration/jsonschema" %}}). The same JSON schema can be used for JSON, TOML and YAML file formats.
 
 ### TOML
 
@@ -139,7 +139,7 @@ default {
 
 ## Generate a secure password
 
-**resticprofile** has a handy command that can generate a [cryptographically secure password file]({{< ref "/usage/keyfile" >}}) for you:
+**resticprofile** has a handy command that can generate a [cryptographically secure password file]({{% relref "/usage/keyfile" %}}) for you:
 
 ```shell
 resticprofile generate --random-key > password.txt
@@ -309,7 +309,7 @@ default {
 {{% /tab %}}
 {{< /tabs >}}
 
-**resticprofile** can [schedule]({{< ref "/schedules" >}}) work on macOS, Windows, most Unixes and Linux distributions: it is simply adding an entry in the default scheduler of your platform.
+**resticprofile** can [schedule]({{% relref "/schedules" %}}) work on macOS, Windows, most Unixes and Linux distributions: it is simply adding an entry in the default scheduler of your platform.
 
 To schedule the backup of the default profile, simply type the command:
 
@@ -372,4 +372,4 @@ Flags:
 
 ## Next
 
-Let's have a look at some [examples]({{< ref "/configuration/examples" >}})
+Let's have a look at some [examples]({{% relref "/configuration/examples" %}})
