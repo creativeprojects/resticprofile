@@ -75,7 +75,7 @@ global {
 Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
 The HCL format is special in that it cannot be mixed with other formats.
 
-Within included files, the current [configuration path]({{< ref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" >}}) is not changed. Path resolution remains relative to the path of the main configuration file.
+Within included files, the current [configuration path]({{% relref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" %}}) is not changed. Path resolution remains relative to the path of the main configuration file.
 
 {{% notice style="note" %}}
 Included files cannot include nested files. Specifying `includes` inside an included file has no effect.
@@ -83,7 +83,7 @@ Included files cannot include nested files. Specifying `includes` inside an incl
 
 ## Configuration Merging
 
-Loading a configuration file involves loading the physical file from disk and applying all [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}) prior to parsing the file in a supported format `hcl`, `json`, `toml` and `yaml`. This means [variables]({{< ref "/configuration/variables" >}}) and [templates]({{< ref "/configuration/templates" >}}) must create valid configuration markup that can be parsed or loading will fail.
+Loading a configuration file involves loading the physical file from disk and applying all [variables]({{% relref "/configuration/variables" %}}) and [templates]({{% relref "/configuration/templates" %}}) prior to parsing the file in a supported format `hcl`, `json`, `toml` and `yaml`. This means [variables]({{% relref "/configuration/variables" %}}) and [templates]({{% relref "/configuration/templates" %}}) must create valid configuration markup that can be parsed or loading will fail.
 
 Configuration files are loaded and applied in a fixed order:
 
@@ -91,7 +91,7 @@ Configuration files are loaded and applied in a fixed order:
 2. `includes` are iterated in declaration order:
    * Every item may be a single file path or glob expression
    * Glob expressions are resolved and iterated in alphabetical order
-   * All paths are resolved relative to [configuration path]({{< ref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" >}})
+   * All paths are resolved relative to [configuration path]({{% relref "/configuration/path/#how-paths-inside-the-configuration-are-resolved" %}})
 
 Configuration files are loaded in the following order when assuming `/etc/resticprofile/profiles.conf` with `includes = ["first.conf", "conf.d/*.conf", "last.conf"]`:
 ```

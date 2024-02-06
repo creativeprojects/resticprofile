@@ -15,21 +15,21 @@ With resticprofile:
 * You can run the forget command before or after a backup (in a section called *retention*)
 * You can check a repository before or after a backup
 * You can create groups of profiles that will run sequentially
-* You can run [shell commands]({{< ref "/configuration/run_hooks" >}}) before or after running a profile: useful if you need to mount and unmount your backup disk for example
-* You can run a [shell command]({{< ref "/configuration/run_hooks" >}}) if an error occurred (at any time)
+* You can run [shell commands]({{% relref "/configuration/run_hooks" %}}) before or after running a profile: useful if you need to mount and unmount your backup disk for example
+* You can run a [shell command]({{% relref "/configuration/run_hooks" %}}) if an error occurred (at any time)
 * You can send a backup stream via _stdin_
 * You can start restic at a lower or higher priority (Priority Class in Windows, *nice* in all unixes) and/or _ionice_ (only available on Linux)
-* It can check that you have [enough memory]({{< ref "/usage/memory" >}}) before starting a backup. (I've had some backups that literally killed a server with swap disabled)
-* You can generate cryptographically secure random keys to use as a restic [key file]({{< ref "/usage/keyfile" >}})
-* You can easily [schedule]({{< ref "/schedules" >}}) backups, retentions and checks (works for *systemd*, *crond*, *launchd* and *windows task scheduler*)
-* You can generate a simple [status file]({{< ref "/status" >}}) to send to some monitoring software and make sure your backups are running fine 
+* It can check that you have [enough memory]({{% relref "/usage/memory" %}}) before starting a backup. (I've had some backups that literally killed a server with swap disabled)
+* You can generate cryptographically secure random keys to use as a restic [key file]({{% relref "/usage/keyfile" %}})
+* You can easily [schedule]({{% relref "/schedules" %}}) backups, retentions and checks (works for *systemd*, *crond*, *launchd* and *windows task scheduler*)
+* You can generate a simple [status file]({{% relref "/status" %}}) to send to some monitoring software and make sure your backups are running fine 
 * You can use a template syntax in your configuration file
 * You can generate scheduled tasks using *crond*
-* Get backup statistics in your [status file]({{< ref "/status" >}})
-* Automatically clear up [stale locks]({{< ref "/usage/locks" >}})
-* Export a [prometheus]({{< ref "/status/prometheus" >}}) file after a backup, or send the report to a push gateway automatically
+* Get backup statistics in your [status file]({{% relref "/status" %}})
+* Automatically clear up [stale locks]({{% relref "/usage/locks" %}})
+* Export a [prometheus]({{% relref "/status/prometheus" %}}) file after a backup, or send the report to a push gateway automatically
 * **[new for v0.17.0]** Run shell commands in the background when non fatal errors are detected from restic
-* **[new for v0.18.0]** Send messages to [HTTP hooks]({{< ref "/configuration/http_hooks" >}}) before, after a successful or failed job (backup, forget, check, prune, copy)
+* **[new for v0.18.0]** Send messages to [HTTP hooks]({{% relref "/configuration/http_hooks" %}}) before, after a successful or failed job (backup, forget, check, prune, copy)
 * **[new for v0.18.0]** Automatically initialize the secondary repository using `copy-chunker-params` flag
 * **[new for v0.18.0]** Send resticprofile logs to a syslog server
 * **[new for v0.19.0]** Preventing your system from idle sleeping

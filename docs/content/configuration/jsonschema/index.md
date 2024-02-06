@@ -19,7 +19,7 @@ These universal schemas contain all flags and commands of all known *restic* ver
 may allow to set flags that are not supported by a particular *restic* version. Descriptions 
 and deprecation markers indicate what is supported and what should no longer be used.
 
-JSON schema URLs for a **specific** *restic* version (list of [available URLs]({{< ref "reference/#json-schema" >}})):
+JSON schema URLs for a **specific** *restic* version (list of [available URLs]({{% relref "reference/#json-schema" %}})):
 
 * `.../config-1-restic-{MAJOR}-{MINOR}.json`
 * `.../config-2-restic-{MAJOR}-{MINOR}.json`

@@ -9,7 +9,7 @@ weight: 26
 You might want to reuse the same configuration (or bits of it) on different environments. One way of doing it is to create a generic configuration where specific bits can be replaced by a variable.
 
 ### There are two kinds of variables:
-- **template variables**: These variables are fixed once the full configuration file is loaded: [includes]({{< ref "configuration/include" >}}) are loaded, and [inheritance]({{< ref "/configuration/inheritance" >}}) is resolved. These variables are replaced by their value **before** the configuration is parsed.
+- **template variables**: These variables are fixed once the full configuration file is loaded: [includes]({{% relref "configuration/include" %}}) are loaded, and [inheritance]({{% relref "/configuration/inheritance" %}}) is resolved. These variables are replaced by their value **before** the configuration is parsed.
 - **runtime variables**: These variables are replaced by their value **after** the configuration is parsed. In other words: these variables are replaced by their value just before the command is executed.
 
 ## Template variables
@@ -483,12 +483,12 @@ default {
 
 ## Runtime variable expansion
 
-Variable expansion as described in the previous section using the `{{ .Var }}` syntax refers to [template variables]({{< ref "/configuration/templates" >}}) that are expanded prior to parsing the configuration file. 
+Variable expansion as described in the previous section using the `{{ .Var }}` syntax refers to [template variables]({{% relref "/configuration/templates" %}}) that are expanded prior to parsing the configuration file. 
 This means they must be used carefully to create correct config markup, but they are also very flexible.
 
 There is also unix style variable expansion using the `${variable}` or `$variable` syntax on configuration **values** that expand after the config file was parsed. Values that take a file path or path expression and a few others support this expansion. 
 
-If not specified differently, these variables resolve to the corresponding environment variable or to an empty value if no such environment variable exists. Exceptions are [mixins]({{< ref "/configuration/inheritance#mixins" >}}) where `$variable` style is used for parametrisation and the profile [config flag]({{< ref "configuration/reference#section-profile" >}}) `prometheus-push-job`.
+If not specified differently, these variables resolve to the corresponding environment variable or to an empty value if no such environment variable exists. Exceptions are [mixins]({{% relref "/configuration/inheritance#mixins" %}}) where `$variable` style is used for parametrisation and the profile [config flag]({{% relref "configuration/reference#section-profile" %}}) `prometheus-push-job`.
 
 ### Example
 
