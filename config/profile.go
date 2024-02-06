@@ -222,7 +222,7 @@ type RetentionSection struct {
 	ScheduleBaseSection `mapstructure:",squash" deprecated:"0.11.0"`
 	OtherFlagsSection   `mapstructure:",squash"`
 	BeforeBackup        *bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
-	AfterBackup         *bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true if any \"keep-*\" flag is set and \"before-backup\" is unset"`
+	AfterBackup         *bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
@@ -480,9 +480,9 @@ func (o *OtherFlagsSection) SetOtherFlag(name string, value any) {
 // NewProfile instantiates a new blank profile
 func NewProfile(c *Config, name string) (p *Profile) {
 	p = &Profile{
-		Name:          name,
-		config:        c,
-		OtherSections: make(map[string]*GenericSection),
+		Name:                 name,
+		config:               c,
+		OtherSections:        make(map[string]*GenericSection),
 		PrometheusPushFormat: constants.DefaultPrometheusPushFormat,
 	}
 
