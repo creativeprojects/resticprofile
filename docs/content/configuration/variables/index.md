@@ -349,13 +349,17 @@ profile src:
 As you can see, the `src` profile inherited from the `generic` profile. The tags `{{ .Profile.Name }}` got replaced by the name of the current profile `src`.
 Now you can reuse the same generic configuration in another profile.
 
-You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be
-checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
+You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
 
 ### Hand-made variables
 
-But you can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and
-assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?). Here's an example:
+You can also define variables yourself. Hand-made variables starts with a `$` ([PHP](https://en.wikipedia.org/wiki/PHP) anyone?) and get declared and assigned with the `:=` operator ([Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)) anyone?).
+
+{{% notice style="info" %}}
+You can only use double quotes `"` to declare the string, single quotes `'` are not allowed. You can also use backticks to declare the string.
+{{% /notice %}}
+
+Here's an example:
 
 ```yaml
 # declare and assign a value to the variable
@@ -368,6 +372,34 @@ profile:
 {{% notice style="note" %}}
 Variables are only valid in the file they are declared in. They cannot be shared in files loaded via `include`.
 {{% /notice %}}
+
+Variables can be redefined using the `=` operator. The new value will be used from the point of redefinition to the end of the file.
+
+```yaml
+# declare and assign a value to the variable
+{{ $name := "something" }}
+
+# reassign a new value to the variable
+{{ $name = "something else" }}
+
+```
+
+#### Windows path inside a variable
+
+Windows path are using backslashes `\` and are interpreted as escape characters in the configuration file. To use a Windows path inside a variable, you have a few options:
+- you can escape the backslashes with another backslash.
+- you can use forward slashes `/` instead of backslashes. Windows is able to use forward slashes in paths.
+- you can use the backtick to declare the string instead of a double quote.
+
+For example:
+```yaml
+# double backslash
+{{ $path := "C:\\Users\\CP\\Documents" }}
+# forward slash
+{{ $path := "C:/Users/CP/Documents" }}
+# backticks
+{{ $path := `C:\Users\CP\Documents` }}
+```
 
 #### Example
 
