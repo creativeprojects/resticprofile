@@ -45,6 +45,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --clean --debug --config .goreleaser-docker-only.yml
+          args: release --clean --debug --snapshot --config .goreleaser-docker-only.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
