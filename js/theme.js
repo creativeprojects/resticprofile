@@ -316,22 +316,22 @@ function initMermaid( update, attrs ) {
                 // https://github.com/mermaid-js/mermaid/issues/1860#issuecomment-1345440607
                 var svgs = d3.selectAll( 'body:not(.print) .mermaid.zoom > #' + id );
                 svgs.each( function(){
-                    var svg = d3.select( this );
-                    svg.html( '<g>' + svg.html() + '</g>' );
-                    var inner = svg.select( 'g' );
-                    var zoom = d3.zoom().on( 'zoom', function( e ){
-                        inner.attr( 'transform', e.transform );
-                    });
-                    svg.call( zoom );
                     var parent = this.parentElement;
                     // we need to copy the maxWidth, otherwise our reset button will not align in the upper right
                     parent.style.maxWidth = this.style.maxWidth || this.getAttribute( 'width' );
                     // if no unit is given for the width
                     parent.style.maxWidth = parent.style.maxWidth || 'calc( ' + this.getAttribute( 'width' ) + 'px + 1rem )';
+                    var svg = d3.select( this );
+                    svg.html( '<g>' + svg.html() + '</g>' );
+                    var inner = svg.select( '*:scope > g' );
                     parent.insertAdjacentHTML( 'beforeend', '<span class="svg-reset-button" title="' + window.T_Reset_view + '"><i class="fas fa-undo-alt"></i></span>' );
                     var button = parent.querySelector( '.svg-reset-button' );
+                    var zoom = d3.zoom().on( 'zoom', function( e ){
+                        inner.attr( 'transform', e.transform );
+                        button.classList.add( "zoom" );
+                    });
                     button.addEventListener( 'click', function( event ){
-                        inner.transition()
+                        svg.transition()
                             .duration( 350 )
                             .call( zoom.transform, d3.zoomIdentity );
                         this.setAttribute( 'aria-label', window.T_View_reset );
@@ -339,8 +339,12 @@ function initMermaid( update, attrs ) {
                     });
                     button.addEventListener( 'mouseleave', function() {
                         this.removeAttribute( 'aria-label' );
-                        this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
+                        if( this.classList.contains( 'tooltipped' ) ){
+                            this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
+                            this.classList.remove( "zoom" );
+                        }
                     });
+                    svg.call( zoom );
                 });
             },
             querySelector: '.mermaid.mermaid-render',
@@ -1636,9 +1640,9 @@ ready( function(){
         moveTopbarButtons();
         adjustEmptyTopbarContents();
     }
-    var mqs = window.matchMedia( 'only screen and (max-width: 48rem)' );
+    var mqs = window.matchMedia( 'only screen and (max-width: 47.999rem)' );
     mqs.addEventListener( 'change', onWidthChange.bind( null, setWidthS ) );
-    var mqm = window.matchMedia( 'only screen and (min-width: 48rem) and (max-width: 60rem)' );
+    var mqm = window.matchMedia( 'only screen and (min-width: 48rem) and (max-width: 59.999rem)' );
     mqm.addEventListener( 'change', onWidthChange.bind( null, setWidthM ) );
     var mql = window.matchMedia( 'only screen and (min-width: 60rem)' );
     mql.addEventListener( 'change', onWidthChange.bind( null, setWidthL ) );

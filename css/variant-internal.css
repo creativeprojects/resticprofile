@@ -109,4 +109,7 @@
     --INTERNAL-PRINT-MERMAID-theme: var(--PRINT-MERMAID-theme, default);
     --INTERNAL-PRINT-OPENAPI-theme: var(--PRINT-OPENAPI-theme, var(--PRINT-SWAGGER-theme, light));
     --INTERNAL-PRINT-OPENAPI-CODE-theme: var(--PRINT-OPENAPI-CODE-theme, idea);
+
+    --INTERNAL-MENU-WIDTH-M: var(--MENU-WIDTH-M, 14.375rem);
+    --INTERNAL-MENU-WIDTH-L: var(--MENU-WIDTH-L, 18.75rem);
 }

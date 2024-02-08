@@ -256,7 +256,7 @@ table {
 .topbar-sidebar-divider {
     border-inline-start-color: var(--INTERNAL-MENU-TOPBAR-SEPARATOR-color);
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     .topbar-sidebar-divider {
         border-inline-start-color: transparent;
     }
@@ -372,17 +372,22 @@ pre:not(.mermaid) .copy-to-clipboard-button:hover {
     --VARIABLE-BOX-TEXT-color: var(--VARIABLE-BOX-CAPTION-color);
 }
 
-#R-body .tags a.tag-link {
-    background-color: var(--INTERNAL-TAG-BG-color);
-    color: var(--INTERNAL-MAIN-BG-color);
+#R-body .tags {
+    --VARIABLE-TAGS-color: var(--INTERNAL-MAIN-BG-color);
+    --VARIABLE-TAGS-BG-color: var(--VARIABLE-BOX-color);
 }
 
-#R-body .tags a.tag-link:before {
-    border-right-color: var(--INTERNAL-TAG-BG-color);
+#R-body .tags a.term-link {
+    background-color: var(--VARIABLE-TAGS-BG-color);
+    color: var(--VARIABLE-TAGS-color);
 }
 
-#R-body .tags a.tag-link:after {
-    background-color: var(--INTERNAL-MAIN-BG-color);
+#R-body .tags a.term-link:before {
+    border-right-color: var(--VARIABLE-TAGS-BG-color);
+}
+
+#R-body .tags a.term-link:after {
+    background-color: var(--VARIABLE-TAGS-color);
 }
 
 .badge > * {
@@ -404,7 +409,10 @@ article ul > li > input[type="checkbox"] {
 }
 
 #R-body .tab-nav-button {
-    color: var(--INTERNAL-MAIN-TEXT-color);
+    color: var(--INTERNAL-MAIN-LINK-color);
+}
+#R-body .tab-nav-button:not(.active):hover {
+    color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
 #R-body .tab-nav-button.active {
@@ -413,12 +421,14 @@ article ul > li > input[type="checkbox"] {
     color: var(--VARIABLE-BOX-TEXT-color);
 }
 
+#R-body .tab-nav-button > .tab-nav-text{
+    border-bottom-color: var(--VARIABLE-BOX-color);
+}
 #R-body .tab-nav-button.active > .tab-nav-text{
     background-color: var(--VARIABLE-BOX-BG-color);
 }
-
-#R-body .tab-nav-button > .tab-nav-text{
-    border-color: var(--VARIABLE-BOX-color);
+#R-body .tab-nav-button:not(.active) > .tab-nav-text:hover {
+    border-bottom-color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
 #R-body .tab-content{
@@ -467,7 +477,7 @@ article ul > li > input[type="checkbox"] {
 #R-header-topbar {
     border-inline-end-color: var(--INTERNAL-MENU-TOPBAR-BORDER-color);
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     .mobile-support #R-header-topbar {
         border-inline-end-color: var(--INTERNAL-MENU-BORDER-color);
     }

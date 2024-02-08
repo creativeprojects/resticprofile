@@ -39,7 +39,7 @@ pre:not(.mermaid) {
     /* we don't need the buttons while printing */
     display: none;
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     #R-body .topbar-breadcrumbs {
         visibility: visible;
     }
@@ -138,7 +138,7 @@ h1 + .footline{
 #R-body .topbar-sidebar-divider {
     border-width: 0;
 }
-.tags {
+.term-list {
     display: none;
 }
 mark {

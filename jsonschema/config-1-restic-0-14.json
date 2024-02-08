@@ -1846,6 +1846,26 @@
         }
       ]
     },
+    "id-efc256c6055c563ef627167bef02d66c": {
+      "title": "systemd-drop-in-files",
+      "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "systemd-drop-in-files...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-f4864ab83384783badd86acf60dbf8a8": {
       "title": "host",
       "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
@@ -2138,6 +2158,11 @@
             },
             "schedule": {
               "$ref": "#/$defs/id-b16f4fc02743e70d9c6aa8ec5a421884"
+            },
+            "schedule-after-network-online": {
+              "title": "schedule-after-network-online",
+              "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+              "type": "boolean"
             },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
@@ -2664,6 +2689,11 @@
             "schedule": {
               "$ref": "#/$defs/id-b16f4fc02743e70d9c6aa8ec5a421884"
             },
+            "schedule-after-network-online": {
+              "title": "schedule-after-network-online",
+              "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+              "type": "boolean"
+            },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
             },
@@ -2933,6 +2963,11 @@
             "schedule": {
               "$ref": "#/$defs/id-b16f4fc02743e70d9c6aa8ec5a421884"
             },
+            "schedule-after-network-online": {
+              "title": "schedule-after-network-online",
+              "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+              "type": "boolean"
+            },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
             },
@@ -3053,14 +3088,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3519,11 +3554,6 @@
               "description": "do not delete anything, just print what would be done",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "group-by": {
               "title": "group-by",
               "default": "host,paths",
@@ -3537,6 +3567,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -3710,6 +3745,11 @@
             "schedule": {
               "$ref": "#/$defs/id-b16f4fc02743e70d9c6aa8ec5a421884"
             },
+            "schedule-after-network-online": {
+              "title": "schedule-after-network-online",
+              "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+              "type": "boolean"
+            },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
             },
@@ -3835,11 +3875,6 @@
               "description": "copy chunker parameters from the secondary repository (useful with the copy command) [restic \u003e= 0.10.0]",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "from-key-hint": {
               "title": "from-key-hint",
               "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -3873,6 +3908,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3992,17 +4032,17 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "host": {
               "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -4718,6 +4758,17 @@
           "minLength": 0,
           "format": "uri"
         },
+        "prometheus-push-format": {
+          "title": "prometheus-push-format",
+          "default": "text",
+          "description": "Prometheus push gateway request format",
+          "type": "string",
+          "enum": [
+            "text",
+            "protobuf"
+          ],
+          "minLength": 0
+        },
         "prometheus-push-job": {
           "title": "prometheus-push-job",
           "description": "Prometheus push gateway job name. $command placeholder is replaced with restic command",
@@ -4761,14 +4812,14 @@
               "description": "do not modify the repository, just print what would be done [restic \u003e= 0.12.0]",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -4864,6 +4915,11 @@
             },
             "schedule": {
               "$ref": "#/$defs/id-b16f4fc02743e70d9c6aa8ec5a421884"
+            },
+            "schedule-after-network-online": {
+              "title": "schedule-after-network-online",
+              "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+              "type": "boolean"
             },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
@@ -4987,14 +5043,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5384,7 +5440,7 @@
           "properties": {
             "after-backup": {
               "title": "after-backup",
-              "description": "Apply retention after the backup command succeeded. Defaults to true if any \"keep-*\" flag is set and \"before-backup\" is unset",
+              "description": "Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset",
               "type": "boolean"
             },
             "before-backup": {
@@ -5613,6 +5669,12 @@
             "schedule": {
               "$ref": "#/$defs/id-cd40ee3ba744574250191b7ef55575f2"
             },
+            "schedule-after-network-online": {
+              "title": "schedule-after-network-online",
+              "deprecated": true,
+              "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\"). [deprecated]",
+              "type": "boolean"
+            },
             "schedule-capture-environment": {
               "$ref": "#/$defs/id-e9dcb0415621db931adaa34883b6880b"
             },
@@ -5735,11 +5797,6 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "group-by": {
               "title": "group-by",
               "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -5752,6 +5809,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5997,6 +6059,9 @@
         },
         "stream-error": {
           "$ref": "#/$defs/id-2d60f10a68497fa9d7d4f3312e7454b4"
+        },
+        "systemd-drop-in-files": {
+          "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
         },
         "tag": {
           "title": "tag",
@@ -6361,6 +6426,12 @@
           "deprecated": true,
           "description": "Legacy, broken arguments mode of resticprofile before version 0.15 [deprecated]",
           "type": "boolean"
+        },
+        "log": {
+          "title": "log",
+          "description": "Sets the default log destination to be used if not specified in '--log' or 'schedule-log' - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+          "type": "string",
+          "minLength": 0
         },
         "min-memory": {
           "title": "min-memory",

@@ -11,7 +11,6 @@
 /* LineNumbersTable */ .chroma .lnt { white-space: pre; -webkit-user-select: none; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
 /* LineNumbers */ .chroma .ln { white-space: pre; -webkit-user-select: none; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
 /* Line */ .chroma .line { display: flex; }
-f7f7f }
 /* Keyword */ .chroma .k { color: #ff6ac1 }
 /* KeywordConstant */ .chroma .kc { color: #ff6ac1 }
 /* KeywordDeclaration */ .chroma .kd { color: #ff5c57 }

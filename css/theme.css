@@ -160,10 +160,10 @@ dd {
     inset-inline-start: 0;
     line-height: 1.574;
     min-height: 100%;
-    min-width: 18.75rem;
-    max-width: 18.75rem;
     position: fixed;
-    width: 18.75rem;
+    min-width: var(--INTERNAL-MENU-WIDTH-L);
+    max-width: var(--INTERNAL-MENU-WIDTH-L);
+    width: var(--INTERNAL-MENU-WIDTH-L);
 }
 
 #R-sidebar a{
@@ -333,13 +333,13 @@ dd {
     flex-grow: 1;
     flex-shrink: 0;
     height: 100%;
-    margin-inline-start: 18.75rem;
+    margin-inline-start: var(--INTERNAL-MENU-WIDTH-L);
     min-height: 100%;
-    min-width: calc( 100% - 18.75rem);
-    max-width: calc( 100% - 18.75rem);
     overflow-wrap: break-word; /* avoid x-scrolling of body if it is to large to fit */
     position: relative; /* PS */
-    width: calc( 100% - 18.75rem);
+    min-width: calc( 100% - var(--INTERNAL-MENU-WIDTH-L) );
+    max-width: calc( 100% - var(--INTERNAL-MENU-WIDTH-L) );
+    width: calc( 100% - var(--INTERNAL-MENU-WIDTH-L) );
     z-index: 70;
 }
 
@@ -384,12 +384,12 @@ dd {
     padding: 0 3.25rem 4rem 3.25rem;
     position: relative; /* PS */
 }
-@media screen and (max-width: 60rem) {
+@media screen and (max-width: 59.999rem) {
     #R-body-inner {
         padding: 0 2rem 1rem 2rem;
     }
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     #R-body-inner {
         padding: 0 1.25rem .375rem 1.25rem;
     }
@@ -424,32 +424,31 @@ article a:focus {
 #R-body .flex-block-wrapper {
     margin-left: auto;
     margin-right: auto;
-    max-width: calc( 81.25rem - 18.75rem - 2 * 3.25rem );
+    max-width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 3.25rem );
     width: 100%;
 }
 body:not(.print) #R-body .narrow .flex-block-wrapper {
-    max-width: calc( 81.25rem - 18.75rem - 2 * 9.75rem );
+    max-width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 9.75rem );
 }
-
 /* we limit width if we have large screens */
 @media screen and ( min-width: 81.25rem ){ /* #R-sidebar/width + ./max-width */
     #R-body .flex-block-wrapper {
-        width: calc( 81.25rem - 18.75rem - 2 * 3.25rem );
+        width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 3.25rem );
     }
     body:not(.print) #R-body .narrow .flex-block-wrapper {
-        width: calc( 81.25rem - 18.75rem - 2 * 9.75rem );
+        width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 9.75rem );
     }
 }
 
 body:not(.print) #R-body-inner.narrow {
     padding: 2rem 9.75rem;
 }
-@media screen and (max-width: 60rem) {
+@media screen and (max-width: 59.999rem) {
     body:not(.print) #R-body-inner.narrow {
         padding: 1rem 6.5rem;
     }
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     body:not(.print) #R-body-inner.narrow {
         padding: .375rem 3.25rem;
     }
@@ -487,12 +486,12 @@ body:not(.print) #R-body-inner.narrow h1 {
     border-bottom: 4px solid rgba( 134, 134, 134, .125 );
     font-size: 3.5rem;
 }
-@media only screen and (min-width: 48rem) and (max-width: 60rem) {
+@media only screen and (min-width: 48rem) and (max-width: 59.999rem) {
     body:not(.print) #R-body-inner.narrow h1 {
         font-size: 2.8rem;
     }
 }
-@media only screen and (max-width: 48rem) {
+@media only screen and (max-width: 47.999rem) {
     body:not(.print) #R-body-inner.narrow h1 {
         font-size: 2.5rem;
     }
@@ -1066,7 +1065,7 @@ html[dir="rtl"] .topbar-button-next i {
     margin: 0;
     padding: 0 1rem;
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     .topbar-breadcrumbs {
         /* we just hide the breadcrumbs instead of display: none;
         this makes sure that the breadcrumbs are still usable for
@@ -1096,23 +1095,23 @@ html[dir="rtl"] .topbar-button-next i {
     text-decoration: none;
 }
 
-@media screen and (max-width: 60rem) {
+@media screen and (max-width: 59.999rem) {
     #R-sidebar {
-        min-width: 14.375rem;
-        max-width: 14.375rem;
-        width: 14.375rem;
+        min-width: var(--INTERNAL-MENU-WIDTH-M);
+        max-width: var(--INTERNAL-MENU-WIDTH-M);
+        width: var(--INTERNAL-MENU-WIDTH-M);
     }
     #R-body {
-        margin-inline-start: 14.375rem;
-        min-width: calc( 100% - 14.375rem);
-        max-width: calc( 100% - 14.375rem);
-        width: calc( 100% - 14.375rem);
+        margin-inline-start: var(--INTERNAL-MENU-WIDTH-M);
+        min-width: calc( 100% - var(--INTERNAL-MENU-WIDTH-M) );
+        max-width: calc( 100% - var(--INTERNAL-MENU-WIDTH-M) );
+        width: calc( 100% - var(--INTERNAL-MENU-WIDTH-M) );
     }
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 47.999rem) {
     /* we don't support sidebar flyout in mobile */
     .mobile-support #R-sidebar {
-        inset-inline-start: -14.375rem;
+        inset-inline-start: calc( -1 * var(--INTERNAL-MENU-WIDTH-M) );
     }
     .mobile-support #navshow{
         display: inline;
@@ -1133,7 +1132,7 @@ html[dir="rtl"] .topbar-button-next i {
         z-index: 90;
     }
     .mobile-support.sidebar-flyout #R-body {
-        margin-inline-start: 14.375rem;
+        margin-inline-start: var(--INTERNAL-MENU-WIDTH-M);
         overflow: hidden;
     }
     .mobile-support.sidebar-flyout #R-body-overlay{
@@ -1175,6 +1174,12 @@ span > .copy-to-clipboard-button {
 /* only show copy to clipboard on hover for code blocks if configured */
 div.highlight .copy-to-clipboard-button {
     display: none;
+}
+@media (any-hover: none) {
+    /* if there is at least one input device that does not support hover, we want to force the copy button */
+    div.highlight .copy-to-clipboard-button {
+        display: block;
+    }
 }
 div.highlight:hover .copy-to-clipboard-button {
     display: block;
@@ -1353,6 +1358,12 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     position: absolute;
     right: 4px;
     top: 4px;
+}
+@media (any-hover: none) {
+    /* if there is at least one input device that does not support hover, we want to force the reset button */
+    .svg-reset-button.zoom {
+        display: block;
+    }
 }
 .mermaid:hover .svg-reset-button {
     display: block;
@@ -1540,6 +1551,12 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     position: absolute;
     visibility: hidden;
 }
+@media (any-hover: none) {
+    /* if there is at least one input device that does not support hover, we want to force the copy button */
+    .anchor {
+        visibility: visible;
+    }
+}
 
 h2:hover .anchor,
 h3:hover .anchor,
@@ -1701,7 +1718,7 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     width: 1px;
 }
 
-/* filament style for making action visible on focus - not adepted yet
+/* filament style for making action visible on focus - not adapted yet
 .a11y-only:focus {
     position: fixed;
     height: auto;
@@ -2054,6 +2071,14 @@ html[dir="rtl"] #R-sidebar ul.collapsible-menu > li > label > i.fa-chevron-right
     }
 }
 
+.columnize > *{
+    break-inside: avoid-column;
+}
+
+.columnize .breadcrumbs{
+    font-size: .859625rem;
+}
+
 #R-body .tab-panel{
     margin-bottom: 1.5rem;
     margin-top: 1.5rem;
@@ -2091,7 +2116,7 @@ html[dir="rtl"] #R-sidebar ul.collapsible-menu > li > label > i.fa-chevron-right
 
 #R-body .tab-nav-button > .tab-nav-text{
     border-bottom-style: solid;
-    border-bottom-width: .2rem;
+    border-bottom-width: .15rem;
     display: block;
     padding: .2rem .6rem 0 .6rem;
 }
@@ -2188,4 +2213,17 @@ html[dir="rtl"] #R-sidebar ul.collapsible-menu > li > label > i.fa-chevron-right
 
 #R-topics {
     padding-top: 1rem;
+}
+
+.term-list ul,
+.term-list li {
+    list-style: none;
+    display: inline;
+    padding: 0;
+}
+.term-list i ~ ul > li:before{
+    content: " "
+}
+.term-list ul > li ~ li:before {
+    content: " | "
 }

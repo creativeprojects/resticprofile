@@ -2383,6 +2383,26 @@
         }
       ]
     },
+    "id-efc256c6055c563ef627167bef02d66c": {
+      "title": "systemd-drop-in-files",
+      "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "systemd-drop-in-files...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-f03b6a4d6bdca6c401677df8f592e453": {
       "title": "path",
       "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
@@ -2571,6 +2591,12 @@
           "description": "Legacy, broken arguments mode of resticprofile before version 0.15 [deprecated]",
           "type": "boolean"
         },
+        "log": {
+          "title": "log",
+          "description": "Sets the default log destination to be used if not specified in '--log' or 'schedule-log' - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+          "type": "string",
+          "minLength": 0
+        },
         "min-memory": {
           "title": "min-memory",
           "default": 100,
@@ -2758,6 +2784,9 @@
             },
             "...stream-error": {
               "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
+            },
+            "...systemd-drop-in-files": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
             },
             "backup": {
               "title": "backup",
@@ -3095,6 +3124,11 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-after-network-online": {
+                  "title": "schedule-after-network-online",
+                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "type": "boolean"
                 },
                 "schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -3850,6 +3884,11 @@
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
                 },
+                "schedule-after-network-online": {
+                  "title": "schedule-after-network-online",
+                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "type": "boolean"
+                },
                 "schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
@@ -4267,6 +4306,11 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-after-network-online": {
+                  "title": "schedule-after-network-online",
+                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "type": "boolean"
                 },
                 "schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -5377,6 +5421,11 @@
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
                 },
+                "schedule-after-network-online": {
+                  "title": "schedule-after-network-online",
+                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "type": "boolean"
+                },
                 "schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
@@ -6151,6 +6200,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -6162,11 +6216,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -6821,6 +6870,17 @@
               "minLength": 0,
               "format": "uri"
             },
+            "prometheus-push-format": {
+              "title": "prometheus-push-format",
+              "default": "text",
+              "description": "Prometheus push gateway request format",
+              "type": "string",
+              "enum": [
+                "text",
+                "protobuf"
+              ],
+              "minLength": 0
+            },
             "prometheus-push-job": {
               "title": "prometheus-push-job",
               "description": "Prometheus push gateway job name. $command placeholder is replaced with restic command",
@@ -6960,6 +7020,11 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                },
+                "schedule-after-network-online": {
+                  "title": "schedule-after-network-online",
+                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "type": "boolean"
                 },
                 "schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -7811,7 +7876,7 @@
                 },
                 "after-backup": {
                   "title": "after-backup",
-                  "description": "Apply retention after the backup command succeeded. Defaults to true if any \"keep-*\" flag is set and \"before-backup\" is unset",
+                  "description": "Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset",
                   "type": "boolean"
                 },
                 "before-backup": {
@@ -7852,11 +7917,6 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -7875,6 +7935,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -8010,6 +8075,12 @@
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
+                },
+                "schedule-after-network-online": {
+                  "title": "schedule-after-network-online",
+                  "deprecated": true,
+                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\"). [deprecated]",
+                  "type": "boolean"
                 },
                 "schedule-capture-environment": {
                   "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
@@ -8229,11 +8300,6 @@
                   "description": "use compact output format",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -8251,6 +8317,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -8662,6 +8733,18 @@
             "stream-error__PREPEND": {
               "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
             },
+            "systemd-drop-in-files": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "systemd-drop-in-files...": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "systemd-drop-in-files__APPEND": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "systemd-drop-in-files__PREPEND": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
             "tag": {
               "title": "tag",
               "description": "The \"tag\" command allows you to modify tags on exiting snapshots.\n\nYou can either set/replace the entire set of tags on a snapshot, or\nadd tags to/remove tags from the existing set.\n\nWhen no snapshot-ID is given, all snapshots matching the host, tag and path filter criteria are modified.",
@@ -8986,8 +9069,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
