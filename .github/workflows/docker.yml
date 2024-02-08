@@ -1,9 +1,8 @@
-name: goreleaser
+name: Rebuild docker image
 
 on:
-  push:
-    tags:
-      - 'v*'
+  schedule:
+    - cron: '32 6 * * 0'
 
 
 jobs:
@@ -12,9 +11,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Unshallow
-        run: git fetch --prune --unshallow
+      - name: Checkout latest tag
+        run: |
+          export LATEST_TAG=`git describe --tags --abbrev=0`
+          git checkout $LATEST_TAG
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -40,8 +44,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --clean --debug
+          args: release --clean --debug --config .goreleaser-docker-only.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
-
