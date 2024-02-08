@@ -1,8 +1,6 @@
 name: Rebuild docker image
 
 on:
-  pull_request:
-    branches: [ "master" ]
   schedule:
     - cron: '32 6 * * 0'
 
@@ -17,15 +15,16 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      # - name: Checkout latest tag
-      #   run: |
-      #     export LATEST_TAG=`git describe --tags --abbrev=0`
-      #     git checkout $LATEST_TAG
+      - name: Checkout latest tag
+        run: |
+          export LATEST_TAG=`git describe --tags --abbrev=0`
+          git checkout $LATEST_TAG
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: ~1.21
+          check-latest: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -45,6 +44,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --clean --debug --snapshot --config .goreleaser-docker-only.yml
+          args: release --clean --debug --config .goreleaser-docker-only.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
