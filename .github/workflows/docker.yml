@@ -17,10 +17,10 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Checkout latest tag
-        run: |
-          export LATEST_TAG=`git describe --tags --abbrev=0`
-          git checkout $LATEST_TAG
+      # - name: Checkout latest tag
+      #   run: |
+      #     export LATEST_TAG=`git describe --tags --abbrev=0`
+      #     git checkout $LATEST_TAG
 
       - name: Set up Go
         uses: actions/setup-go@v5
