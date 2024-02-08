@@ -98,7 +98,7 @@ archives:
     builds:
       - resticprofile_zip
     format: zip
-    
+
 checksum:
   name_template: 'checksums.txt'
 
