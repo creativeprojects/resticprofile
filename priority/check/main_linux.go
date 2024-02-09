@@ -1,4 +1,4 @@
-//+build linux
+//go:build linux
 
 package main
 
@@ -11,10 +11,8 @@ import (
 
 // This is only displaying the priority of the current process (for testing)
 func main() {
-
 	getPriority()
 	getIOPriority()
-
 }
 
 func getPriority() {

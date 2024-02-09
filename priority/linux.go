@@ -1,4 +1,4 @@
-//+build linux
+//go:build linux
 
 package priority
 
@@ -53,13 +53,13 @@ func SetNice(priority int) error {
 	// group variants of Setpriority etc to affect all of our threads in one go
 	err = unix.Setpgid(pid, 0)
 	if err != nil {
-		return fmt.Errorf("error setting process group: %v", err)
+		return fmt.Errorf("cannot set process group priority, restic will run with the default priority: %w", err)
 	}
 
 	clog.Debugf("setting process priority to %d", priority)
 	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
 	if err != nil {
-		return fmt.Errorf("error setting process priority: %v", err)
+		return fmt.Errorf("cannot set process priority, restic will run with the default priority: %w", err)
 	}
 	return nil
 }
