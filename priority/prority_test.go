@@ -2,7 +2,7 @@ package priority
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os/exec"
 	"runtime"
 	"testing"
@@ -77,11 +77,10 @@ func runChildProcess() (string, error) {
 	buffer := &bytes.Buffer{}
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return "", err
 	}
-	output, err := ioutil.ReadAll(buffer)
+	output, err := io.ReadAll(buffer)
 	if err != nil {
 		return "", err
 	}
