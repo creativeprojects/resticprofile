@@ -367,6 +367,10 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	if command == constants.CommandBackup {
 		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
 	}
+	// Special case for copy command
+	if command == constants.CommandCopy {
+		args.AddArgs(r.profile.GetCopySnapshotIDs(), shell.ArgConfigEscape)
+	}
 
 	// Add retry-lock (supported from restic 0.16, depends on filter being enabled)
 	if lockRetryTime, enabled := r.remainingLockRetryTime(); enabled && filter != nil {
