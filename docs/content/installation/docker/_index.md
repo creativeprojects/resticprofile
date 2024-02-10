@@ -45,6 +45,16 @@ Starting from version `0.18.0`, the resticprofile docker image is available in t
 
 Starting from version `0.18.0`, the resticprofile docker image also includes [rclone][1].
 
+### Release cycle on docker hub
+
+The docker image is uploaded automatically on docker hub when a new release is published on github.
+Also, the `latest` tag is updated to the latest release.
+
+Every week, the `latest` image is rebuilt to include the latest updates from restic, rclone and the base image (alpine).
+
+Another image is also updated after every commit on the main branch. It's tagged with `nightly`.
+Please be aware that this image might be unstable and should not be used in production.
+
 ## Scheduling with docker compose
 
 There's an example in the contribution section how to schedule backups in a long running container.

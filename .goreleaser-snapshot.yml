@@ -1,0 +1,66 @@
+project_name: resticprofile
+
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+    - eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
+    - eget rclone/rclone --upgrade-only --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
+    - eget restic/restic --upgrade-only --system=linux/amd64 --to=build/restic-amd64
+    - eget restic/restic --upgrade-only --system=linux/arm64 --to=build/restic-arm64
+
+builds:
+  - id: resticprofile_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: targz
+    builds:
+      - resticprofile_targz
+    format: tar.gz
+
+dockers:
+  - image_templates:
+      - "creativeprojects/resticprofile:nightly-amd64"
+    ids:
+      - resticprofile_targz
+    use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: build/Dockerfile
+    extra_files:
+      - build/restic-amd64
+      - build/rclone-amd64
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--build-arg=ARCH=amd64"
+  - image_templates:
+      - "creativeprojects/resticprofile:nightly-arm64v8"
+    ids:
+      - resticprofile_targz
+    use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: build/Dockerfile
+    extra_files:
+      - build/restic-arm64
+      - build/rclone-arm64
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
+      - "--build-arg=ARCH=arm64"
+
+docker_manifests:
+  - name_template: creativeprojects/resticprofile:nightly
+    image_templates:
+      - creativeprojects/resticprofile:nightly-amd64
+      - creativeprojects/resticprofile:nightly-arm64v8
+  - name_template: creativeprojects/resticprofile:latest
+    image_templates:
+      - creativeprojects/resticprofile:latest-amd64
+      - creativeprojects/resticprofile:latest-arm64v8
