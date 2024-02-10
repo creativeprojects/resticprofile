@@ -54,13 +54,3 @@ dockers:
     build_flag_templates:
       - "--platform=linux/arm64/v8"
       - "--build-arg=ARCH=arm64"
-
-docker_manifests:
-  - name_template: creativeprojects/resticprofile:nightly
-    image_templates:
-      - creativeprojects/resticprofile:nightly-amd64
-      - creativeprojects/resticprofile:nightly-arm64v8
-  - name_template: creativeprojects/resticprofile:latest
-    image_templates:
-      - creativeprojects/resticprofile:latest-amd64
-      - creativeprojects/resticprofile:latest-arm64v8

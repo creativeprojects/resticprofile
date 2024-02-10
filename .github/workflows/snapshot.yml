@@ -5,6 +5,8 @@ on:
     branches:
       - master
 
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   goreleaser:
@@ -43,3 +45,15 @@ jobs:
           args: release --clean --debug --snapshot --config .goreleaser-snapshot.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to DockerHub
+        run: |
+          docker push creativeprojects/resticprofile:nightly-arm64v8
+          docker push creativeprojects/resticprofile:nightly-amd64
+          docker manifest create "creativeprojects/resticprofile:nightly" \
+            --amend "creativeprojects/resticprofile:nightly-amd64" \
+            --amend "creativeprojects/resticprofile:nightly-arm64v8"
+          docker manifest inspect "creativeprojects/resticprofile:nightly"
+          docker manifest push "creativeprojects/resticprofile:nightly"
+
+        shell: bash
