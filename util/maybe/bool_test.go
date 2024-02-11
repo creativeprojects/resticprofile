@@ -101,3 +101,37 @@ func TestBoolDecoder(t *testing.T) {
 		})
 	}
 }
+
+func TestBoolJSON(t *testing.T) {
+	fixtures := []struct {
+		source   maybe.Bool
+		expected string
+	}{
+		{
+			source:   maybe.Bool{},
+			expected: "null",
+		},
+		{
+			source:   maybe.True(),
+			expected: "true",
+		},
+		{
+			source:   maybe.False(),
+			expected: "false",
+		},
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.source.String(), func(t *testing.T) {
+			// encode value into JSON
+			encoded, err := fixture.source.MarshalJSON()
+			assert.NoError(t, err)
+			assert.Equal(t, fixture.expected, string(encoded))
+
+			// decode value from JSON
+			decodedValue := maybe.Bool{}
+			err = decodedValue.UnmarshalJSON(encoded)
+			assert.NoError(t, err)
+			assert.Equal(t, fixture.source, decodedValue)
+		})
+	}
+}
