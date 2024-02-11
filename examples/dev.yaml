@@ -233,15 +233,6 @@ stdin-command:
 
     inherit: default
 
-dropbox:
-    initialize: false
-    inherit: default
-    backup:
-        extended-status: false
-        check-before: false
-        no-error-on-warning: true
-        source: "../../../../../Dropbox"
-
 escape:
     initialize: true
     inherit: default
@@ -323,3 +314,12 @@ tempfile:
         schedule-permission: user
         schedule-log: '{{ tempFile "backup.log" }}'
         run-finally: 'cp {{ tempFile "backup.log" }} ./backup{{ .Now.Format "2006-01-02T15-04-05" }}.log'
+
+empty-fields:
+    inherit: default
+    retention:
+        before-backup: true
+        after-backup: true
+        keep-tag: ""
+        group-by: ""
+        tag: ""
