@@ -1,5 +1,7 @@
 package maybe
 
+import "strconv"
+
 type Bool struct {
 	Optional[bool]
 }
@@ -10,6 +12,13 @@ func False() Bool {
 
 func True() Bool {
 	return Bool{Set(true)}
+}
+
+func (value Bool) String() string {
+	if !value.HasValue() {
+		return ""
+	}
+	return strconv.FormatBool(value.Value())
 }
 
 func (value Bool) IsTrue() bool {
