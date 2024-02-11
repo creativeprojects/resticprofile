@@ -1,6 +1,7 @@
 package maybe_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/util/maybe"
@@ -49,6 +50,54 @@ func TestMaybeBool(t *testing.T) {
 			assert.Equal(t, fixture.isFalseOrUndefined, fixture.source.IsFalseOrUndefined())
 			assert.Equal(t, fixture.isUndefined, fixture.source.IsUndefined())
 			assert.Equal(t, fixture.isTrueOrUndefined, fixture.source.IsTrueOrUndefined())
+		})
+	}
+}
+
+func TestBoolDecoder(t *testing.T) {
+	fixtures := []struct {
+		from     reflect.Type
+		to       reflect.Type
+		source   any
+		expected any
+	}{
+		{
+			from:     reflect.TypeOf(""),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   true,
+			expected: true, // same value returned as the "from" type in unexpected
+		},
+		{
+			from:     reflect.TypeOf(true),
+			to:       reflect.TypeOf(""),
+			source:   false,
+			expected: false, // same value returned as the "to" type in unexpected
+		},
+		{
+			from:     reflect.TypeOf(true),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   "",
+			expected: "", // same value returned as the original value in unexpected
+		},
+		{
+			from:     reflect.TypeOf(true),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   true,
+			expected: maybe.True(),
+		},
+		{
+			from:     reflect.TypeOf(true),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   false,
+			expected: maybe.False(),
+		},
+	}
+	for _, fixture := range fixtures {
+		t.Run("", func(t *testing.T) {
+			decoder := maybe.BoolDecoder()
+			decoded, err := decoder(fixture.from, fixture.to, fixture.source)
+			assert.NoError(t, err)
+			assert.Equal(t, fixture.expected, decoded)
 		})
 	}
 }
