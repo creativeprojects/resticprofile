@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -198,14 +199,9 @@ profile:
 }
 
 func TestBoolPointer(t *testing.T) {
-	boolPointer := func(value bool) *bool {
-		output := &value
-		return output
-	}
-
 	fixtures := []struct {
 		testTemplate
-		continueOnError *bool
+		continueOnError maybe.Bool
 	}{
 		{
 			testTemplate: testTemplate{
@@ -217,7 +213,7 @@ version = 2
 profiles = []
 `,
 			},
-			continueOnError: nil,
+			continueOnError: maybe.Bool{},
 		},
 		{
 			testTemplate: testTemplate{
@@ -229,7 +225,7 @@ groups:
     profiles: []
 `,
 			},
-			continueOnError: nil,
+			continueOnError: maybe.Bool{},
 		},
 		{
 			testTemplate: testTemplate{
@@ -245,7 +241,7 @@ groups:
 }
 `,
 			},
-			continueOnError: nil,
+			continueOnError: maybe.Bool{},
 		},
 		{
 			testTemplate: testTemplate{
@@ -258,7 +254,7 @@ profiles = []
 continue-on-error = true
 `,
 			},
-			continueOnError: boolPointer(true),
+			continueOnError: maybe.True(),
 		},
 		{
 			testTemplate: testTemplate{
@@ -271,7 +267,7 @@ groups:
   continue-on-error: true
 `,
 			},
-			continueOnError: boolPointer(true),
+			continueOnError: maybe.True(),
 		},
 		{
 			testTemplate: testTemplate{
@@ -288,7 +284,7 @@ groups:
 }
 `,
 			},
-			continueOnError: boolPointer(true),
+			continueOnError: maybe.True(),
 		},
 		{
 			testTemplate: testTemplate{
@@ -301,7 +297,7 @@ profiles = []
 continue-on-error = false
 `,
 			},
-			continueOnError: boolPointer(false),
+			continueOnError: maybe.False(),
 		},
 		{
 			testTemplate: testTemplate{
@@ -314,7 +310,7 @@ groups:
     continue-on-error: false
 `,
 			},
-			continueOnError: boolPointer(false),
+			continueOnError: maybe.False(),
 		},
 		{
 			testTemplate: testTemplate{
@@ -331,7 +327,7 @@ groups:
 }
 `,
 			},
-			continueOnError: boolPointer(false),
+			continueOnError: maybe.False(),
 		},
 	}
 

@@ -1,7 +1,6 @@
 package maybe_test
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/util/maybe"
@@ -44,7 +43,7 @@ func TestMaybeBool(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
-		t.Run(toString(fixture.source), func(t *testing.T) {
+		t.Run(fixture.source.String(), func(t *testing.T) {
 			assert.Equal(t, fixture.isTrue, fixture.source.IsTrue())
 			assert.Equal(t, fixture.isStrictlyFalse, fixture.source.IsStrictlyFalse())
 			assert.Equal(t, fixture.isFalseOrUndefined, fixture.source.IsFalseOrUndefined())
@@ -52,11 +51,4 @@ func TestMaybeBool(t *testing.T) {
 			assert.Equal(t, fixture.isTrueOrUndefined, fixture.source.IsTrueOrUndefined())
 		})
 	}
-}
-
-func toString(value maybe.Bool) string {
-	if !value.HasValue() {
-		return "<nil>"
-	}
-	return strconv.FormatBool(value.Value())
 }

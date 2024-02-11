@@ -28,7 +28,7 @@ default:
     # lock: "/Volumes/RAMDisk/resticprofile-{{ .Profile.Name }}.lock"
     copy:
         initialize: true
-        initialize-copy-chunker-params: true
+        # initialize-copy-chunker-params: true
         password-file: key
         repository: "/Volumes/RAMDisk/{{ .Profile.Name }}-copy"
 
@@ -318,7 +318,7 @@ tempfile:
 empty-fields:
     inherit: default
     retention:
-        before-backup: true
+        before-backup: false
         after-backup: true
         keep-tag: ""
         group-by: ""

@@ -1,6 +1,9 @@
 package maybe
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 type Bool struct {
 	Optional[bool]
@@ -38,5 +41,22 @@ func (value Bool) IsUndefined() bool {
 }
 
 func (value Bool) IsTrueOrUndefined() bool {
-	return !value.HasValue() || value.Value()
+	return !value.HasValue() || value.Value() == true
+}
+
+// BoolDecoder implements config parsing for maybe.Bool
+func BoolDecoder() func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+	boolValueType := reflect.TypeOf(Bool{})
+
+	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+		if from != reflect.TypeOf(true) || to != boolValueType {
+			return data, nil
+		}
+		boolValue, ok := data.(bool)
+		if !ok {
+			// it should never happen
+			return data, nil
+		}
+		return Bool{Set(boolValue)}, nil
+	}
 }

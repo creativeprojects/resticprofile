@@ -27,9 +27,8 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
-	"github.com/creativeprojects/resticprofile/util"
-	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -572,7 +571,7 @@ func TestInitializeWithError(t *testing.T) {
 
 func TestInitializeCopyNoError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
-	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: bools.False()}
+	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: maybe.False()}
 	ctx := &Context{
 		binary:  mockBinary,
 		profile: profile,
@@ -585,7 +584,7 @@ func TestInitializeCopyNoError(t *testing.T) {
 
 func TestInitializeCopyWithError(t *testing.T) {
 	profile := config.NewProfile(nil, "name")
-	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: bools.False()}
+	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: maybe.False()}
 	ctx := &Context{
 		binary:  mockBinary,
 		profile: profile,
@@ -1522,13 +1521,13 @@ func popUntilPrefix(prefix string, log *clog.MemoryHandler) (line string) {
 }
 
 func TestRunInitCopyCommand(t *testing.T) {
-	makeProfile := func(copyChunkerParams bool, resticVersion string) (p *config.Profile) {
+	makeProfile := func(copyChunkerParams maybe.Bool, resticVersion string) (p *config.Profile) {
 		p = &config.Profile{
 			Name:         "profile",
 			Repository:   config.NewConfidentialValue("repo_origin"),
 			PasswordFile: "password_origin",
 			Copy: &config.CopySection{
-				InitializeCopyChunkerParams: util.CopyRef(copyChunkerParams),
+				InitializeCopyChunkerParams: copyChunkerParams,
 				Repository:                  config.NewConfidentialValue("repo_copy"),
 				PasswordFile:                "password_copy",
 			},
@@ -1543,22 +1542,22 @@ func TestRunInitCopyCommand(t *testing.T) {
 		expectedCopy string
 	}{
 		{
-			profile:      makeProfile(true, "0.13"),
+			profile:      makeProfile(maybe.True(), "0.13"),
 			expectedInit: "dry-run: test init --copy-chunker-params --password-file=password_copy --password-file2=password_origin --repo=repo_copy --repo2=repo_origin",
 			expectedCopy: "dry-run: test copy --password-file=password_origin --password-file2=password_copy --repo=repo_origin --repo2=repo_copy",
 		},
 		{
-			profile:      makeProfile(false, "0.13"),
+			profile:      makeProfile(maybe.False(), "0.13"),
 			expectedInit: "dry-run: test init --password-file=password_copy --repo=repo_copy",
 			expectedCopy: "dry-run: test copy --password-file=password_origin --password-file2=password_copy --repo=repo_origin --repo2=repo_copy",
 		},
 		{
-			profile:      makeProfile(true, "0.14"),
+			profile:      makeProfile(maybe.True(), "0.14"),
 			expectedInit: "dry-run: test init --copy-chunker-params --from-password-file=password_origin --from-repo=repo_origin --password-file=password_copy --repo=repo_copy",
 			expectedCopy: "dry-run: test copy --from-password-file=password_origin --from-repo=repo_origin --password-file=password_copy --repo=repo_copy",
 		},
 		{
-			profile:      makeProfile(false, "0.14"),
+			profile:      makeProfile(maybe.False(), "0.14"),
 			expectedInit: "dry-run: test init --password-file=password_copy --repo=repo_copy",
 			expectedCopy: "dry-run: test copy --from-password-file=password_origin --from-repo=repo_origin --password-file=password_copy --repo=repo_copy",
 		},

@@ -17,7 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/util"
-	"github.com/creativeprojects/resticprofile/util/bools"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/exp/maps"
 )
@@ -221,8 +221,8 @@ func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
 type RetentionSection struct {
 	ScheduleBaseSection `mapstructure:",squash" deprecated:"0.11.0"`
 	OtherFlagsSection   `mapstructure:",squash"`
-	BeforeBackup        *bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
-	AfterBackup         *bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
+	BeforeBackup        maybe.Bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
+	AfterBackup         maybe.Bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
@@ -240,10 +240,10 @@ func (r *RetentionSection) resolve(profile *Profile) {
 	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
 	if profile.config != nil && profile.config.version >= Version02 {
 		// Auto-enable "after-backup" if nothing was specified explicitly and any "keep-" was configured
-		if bools.IsUndefined(r.AfterBackup) && bools.IsUndefined(r.BeforeBackup) {
+		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() {
 			for name, _ := range r.OtherFlags {
 				if strings.HasPrefix(name, "keep-") {
-					r.AfterBackup = bools.True()
+					r.AfterBackup = maybe.True()
 					break
 				}
 			}
@@ -316,7 +316,7 @@ type CopySection struct {
 	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
 	RunShellCommandsSection          `mapstructure:",squash"`
 	Initialize                       bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
-	InitializeCopyChunkerParams      *bool             `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
+	InitializeCopyChunkerParams      maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
 	Repository                       ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
 	RepositoryFile                   string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
 	PasswordFile                     string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
@@ -341,7 +341,7 @@ func (c *CopySection) setRootPath(p *Profile, rootPath string) {
 func (s *CopySection) getInitFlags(profile *Profile) *shell.Args {
 	var init *InitSection
 
-	if bools.IsTrueOrUndefined(s.InitializeCopyChunkerParams) {
+	if s.InitializeCopyChunkerParams.IsTrueOrUndefined() {
 		// Source repo for CopyChunkerParams
 		init = &InitSection{
 			CopyChunkerParams:   true,
