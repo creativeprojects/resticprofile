@@ -2,14 +2,16 @@ package config
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -167,6 +169,36 @@ func TestConfidentialProperty(t *testing.T) {
 				assert.False(t, info.CanBePropertySet())
 				assert.False(t, info.IsMultiType())
 			}
+		})
+	}
+}
+
+func TestMaybeBoolProperty(t *testing.T) {
+	var testType = struct {
+		Simple maybe.Bool `mapstructure:"simple"`
+	}{}
+
+	set := propertySetFromType(reflect.TypeOf(testType))
+
+	assert.ElementsMatch(t, []string{"simple"}, set.Properties())
+	for _, name := range set.Properties() {
+		t.Run(name+"/before", func(t *testing.T) {
+			info := set.PropertyInfo(name)
+			require.True(t, info.CanBePropertySet())
+			assert.Equal(t, "Bool", info.PropertySet().TypeName())
+			assert.False(t, info.CanBeBool())
+			assert.False(t, info.IsMultiType())
+		})
+	}
+
+	customizeProperties("any", set.properties)
+
+	for _, name := range set.Properties() {
+		t.Run(name, func(t *testing.T) {
+			info := set.PropertyInfo(name)
+			assert.True(t, info.CanBeBool())
+			assert.False(t, info.CanBePropertySet())
+			assert.False(t, info.IsMultiType())
 		})
 	}
 }
