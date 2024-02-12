@@ -34,7 +34,7 @@ func newDisplay(name string, w io.Writer) *Display {
 
 func (d *Display) addEntry(stack []string, key string, values []string) {
 	entry := Entry{
-		section: strings.Join(stack, "."),
+		section: strings.Join(stack, "."), // in theory we should only have zero or one level, but don't fail if we get more
 		key:     key,
 		keyOnly: false,
 		values:  values,
