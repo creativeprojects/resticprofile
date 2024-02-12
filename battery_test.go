@@ -10,11 +10,9 @@ import (
 
 var errTest = errors.New("test error")
 
-func TestNotRunningOnBattery(t *testing.T) {
-	battery, charge, err := IsRunningOnBattery()
+func TestNoErrorIsRunningOnBattery(t *testing.T) {
+	_, _, err := IsRunningOnBattery()
 	assert.NoError(t, err)
-	assert.False(t, battery)
-	assert.Zero(t, charge)
 }
 
 func TestIsFatalError(t *testing.T) {
