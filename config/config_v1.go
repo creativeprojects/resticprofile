@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
@@ -28,11 +29,13 @@ import (
 var (
 	configOptionV1 = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
+		maybe.BoolDecoder(),
 		confidentialValueDecoder(),
 	))
 
 	configOptionV1HCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
+		maybe.BoolDecoder(),
 		confidentialValueDecoder(),
 		sliceOfMapsToMapHookFunc(),
 	))
@@ -70,7 +73,7 @@ func (c *Config) loadGroupsV1() (err error) {
 					c.groups[groupName] = Group{
 						Description:     "",
 						Profiles:        group,
-						ContinueOnError: nil,
+						ContinueOnError: maybe.Bool{},
 					}
 				}
 			}

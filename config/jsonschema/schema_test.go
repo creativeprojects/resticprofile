@@ -1,3 +1,5 @@
+//go:build !ajv_test
+
 package jsonschema
 
 import (
@@ -67,7 +69,7 @@ func npmRunner(t *testing.T) npmRunnerFunc {
 var npm npmRunnerFunc
 
 func initNpmEnv(t *testing.T) {
-	if !testing.Short() && npm == nil {
+	if npm == nil {
 		npm = npmRunner(&testing.T{})
 		if npm(t, "list", "ajv") != nil {
 			t.Log("Installing AJV JSONSchema validator")
@@ -131,7 +133,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 		require.NoError(t, v.ReadInConfig())
 
 		v.SetConfigType("json")
-		filename = path.Join(t.TempDir(), fmt.Sprintf(path.Base(filename)+".json"))
+		filename = filepath.Join(t.TempDir(), fmt.Sprintf(filepath.Base(filename)+".json"))
 		require.NoError(t, v.WriteConfigAs(filename))
 		return filename
 	}

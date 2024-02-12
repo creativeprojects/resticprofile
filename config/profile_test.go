@@ -16,7 +16,6 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/util"
-	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/maps"
@@ -683,15 +682,15 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 	t.Run("AutoEnable", func(t *testing.T) {
 		retentionDisabled := func(t *testing.T, profile *Profile) {
-			assert.Nil(t, profile.Retention.BeforeBackup)
-			assert.Nil(t, profile.Retention.AfterBackup)
+			assert.False(t, profile.Retention.BeforeBackup.HasValue())
+			assert.False(t, profile.Retention.AfterBackup.HasValue())
 		}
 		t.Run("EnableForAnyKeepInV2", func(t *testing.T) {
 			profile := testProfile(t, Version02, ``)
 			retentionDisabled(t, profile)
 			profile = testProfile(t, Version02, `keep-x = 1`)
-			assert.Nil(t, profile.Retention.BeforeBackup)
-			assert.Equal(t, bools.True(), profile.Retention.AfterBackup)
+			assert.False(t, profile.Retention.BeforeBackup.HasValue())
+			assert.True(t, profile.Retention.AfterBackup.Value())
 		})
 		t.Run("NotEnabledInV1", func(t *testing.T) {
 			profile := testProfile(t, Version01, ``)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,6 +28,7 @@ type testObject struct {
 	AlsoHidden string                 `mapstructure:"use"`
 	Map        map[string]interface{} `mapstructure:",remain"`
 	RemainMap  map[string]interface{} `show:",remain"`
+	IsValid    maybe.Bool             `mapstructure:"valid"`
 }
 
 type testPerson struct {
@@ -133,6 +135,15 @@ func TestShowStruct(t *testing.T) {
 			output: " id: 11\n name:  test\n",
 		},
 		{
+			input: testObject{Map: map[string]interface{}{
+				"tag":      "", // special field should show empty string
+				"keep-tag": "", // special field should show empty string
+				"group-by": "", // special field should show empty string
+				"other":    "", // otherwise we don't show empty string
+			}},
+			output: " group-by:  \"\"\n keep-tag:  \"\"\n tag:    \"\"\n",
+		},
+		{
 			input:  testEmbedded{EmbeddedStruct{Value: true}, 1},
 			output: " value:   true\n inline:  1\n",
 		},
@@ -151,6 +162,18 @@ func TestShowStruct(t *testing.T) {
 		{
 			input:  testStringer{},
 			output: "",
+		},
+		{
+			input:  testObject{IsValid: maybe.Bool{}},
+			output: "", // display no value
+		},
+		{
+			input:  testObject{IsValid: maybe.False()},
+			output: " valid:  false\n",
+		},
+		{
+			input:  testObject{IsValid: maybe.True()},
+			output: " valid:  true\n",
 		},
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -28,6 +29,8 @@ func main() {
 	arguments := false
 	sleep := 0
 	flags := flag.NewFlagSet("mock", flag.ContinueOnError)
+	flags.Usage = func() {}
+	flags.SetOutput(io.Discard)
 	flags.StringVar(&stderr, "stderr", "", "send this message to stderr")
 	flags.StringVar(&stdoutFile, "stdout-file", "", "redirect stdout to a file")
 	flags.BoolVar(&stdin, "stdin", false, "read stdin and send to stdout")
@@ -36,7 +39,7 @@ func main() {
 	flags.IntVar(&sleep, "sleep", 0, "sleep timer in ms")
 
 	if err := flags.Parse(os.Args[2:]); err != nil {
-		if err == flag.ErrHelp {
+		if errors.Is(err, flag.ErrHelp) {
 			return
 		} else if !strings.Contains(err.Error(), "flag provided but not defined") {
 			os.Exit(1)

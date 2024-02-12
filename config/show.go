@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 
@@ -141,12 +142,12 @@ func showMap(stack []string, display *Display, valueOf reflect.Value) (err error
 
 func showKeyValue(stack []string, display *Display, key string, valueOf reflect.Value) (err error) {
 	if isNotShown(key, nil) {
-		return
+		return nil
 	}
 
 	value, isNil := util.UnpackValue(valueOf)
 	if isNil {
-		return
+		return nil
 	}
 
 	if value.Kind() == reflect.Struct && getStringer(value) == nil {
@@ -163,9 +164,12 @@ func showKeyValue(stack []string, display *Display, key string, valueOf reflect.
 				convert = append(convert, "true")
 			}
 			display.addEntry(stack, key, convert)
+		} else if slices.Contains(allowedEmptyValueArgs, key) {
+			// special case of an empty string that needs to be shown
+			display.addEntry(stack, key, []string{`""`})
 		}
 	}
-	return
+	return err
 }
 
 func isNotShown(name string, fieldType *reflect.StructField) (noShow bool) {

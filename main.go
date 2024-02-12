@@ -22,7 +22,6 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/term"
-	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/shutdown"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/spf13/pflag"
@@ -428,8 +427,7 @@ func startProfileOrGroup(ctx *Context) error {
 				ctx = ctx.WithProfile(profileName).WithGroup(groupName)
 				err = runProfile(ctx)
 				if err != nil {
-					if ctx.global.GroupContinueOnError && bools.IsTrueOrUndefined(group.ContinueOnError) ||
-						bools.IsTrue(group.ContinueOnError) {
+					if ctx.global.GroupContinueOnError && group.ContinueOnError.IsTrueOrUndefined() {
 						// keep going to the next profile
 						clog.Error(err)
 						continue

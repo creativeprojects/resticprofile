@@ -9,6 +9,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 )
 
 // resticDescriptionReplacements removes or replaces misleading documentation fragments from restic man pages
@@ -119,6 +120,17 @@ func init() {
 				} else {
 					basic.mayString = true
 				}
+			}
+		}
+	})
+
+	// Profile: special handling for maybe.Bool
+	maybeBoolType := reflect.TypeOf(maybe.Bool{})
+	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
+		if field := property.field(); field != nil {
+			if util.ElementType(field.Type).AssignableTo(maybeBoolType) {
+				basic := property.basic().resetTypeInfo()
+				basic.mayBool = true
 			}
 		}
 	})

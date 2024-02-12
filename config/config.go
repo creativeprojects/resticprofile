@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
@@ -42,6 +43,7 @@ type Config struct {
 var (
 	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
+		maybe.BoolDecoder(),
 		confidentialValueDecoder(),
 	))
 

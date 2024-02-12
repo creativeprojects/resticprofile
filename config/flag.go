@@ -14,12 +14,8 @@ import (
 )
 
 var (
-	emptyStringArray []string
-)
-
-func init() {
 	emptyStringArray = make([]string, 0)
-}
+)
 
 var allowedEmptyValueArgs = []string{
 	constants.ParameterKeepTag, // allows --keep-tag="" - means keep all with any assigned tag
@@ -68,8 +64,8 @@ func addArgsFromStruct(args *shell.Args, section any) {
 	}
 }
 
-func argAliasesFromStruct(section any) (aliases map[string]string) {
-	aliases = make(map[string]string)
+func argAliasesFromStruct(section any) map[string]string {
+	aliases := make(map[string]string)
 	if t := util.ElementType(reflect.TypeOf(section)); t.Kind() == reflect.Struct {
 		for i := 0; i < t.NumField(); i++ {
 			field := t.Field(i)

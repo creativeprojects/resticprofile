@@ -5,10 +5,16 @@ import (
 	"io"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/fatih/color"
 )
 
 const (
 	indent = "    " // 4 spaces
+)
+
+var (
+	ansiBold = color.New(color.Bold).SprintFunc()
 )
 
 // Display is a temporary struct to display a config object to the console
@@ -30,6 +36,7 @@ func (d *Display) addEntry(stack []string, key string, values []string) {
 	entry := Entry{
 		section: strings.Join(stack, "."), // in theory we should only have zero or one level, but don't fail if we get more
 		key:     key,
+		keyOnly: false,
 		values:  values,
 	}
 	d.entries = append(d.entries, entry)
@@ -41,9 +48,10 @@ func (d *Display) addKeyOnlyEntry(stack []string, key string) {
 }
 
 func (d *Display) Flush() {
-	tabWriter := tabwriter.NewWriter(d.writer, 0, 2, 2, ' ', 0)
+	const minWidth, tabWidth, padding = 0, 2, 2
+	tabWriter := tabwriter.NewWriter(d.writer, minWidth, tabWidth, padding, ' ', 0)
 	// title
-	fmt.Fprintf(tabWriter, "%s:\n", d.topLevel)
+	fmt.Fprintf(tabWriter, "%s:\n", ansiBold(d.topLevel))
 	section := ""
 	prefix := indent
 	for _, entry := range d.entries {
