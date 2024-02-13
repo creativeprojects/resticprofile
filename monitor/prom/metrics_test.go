@@ -29,3 +29,14 @@ func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
 	err := p.SaveTo("test_add_label.prom")
 	require.NoError(t, err)
 }
+
+func TestSaveBackupGroup(t *testing.T) {
+	p := NewMetrics("test", "group", "", nil)
+	p.BackupResults(StatusSuccess, monitor.Summary{
+		Duration:   time.Duration(11 * time.Second),
+		BytesAdded: 100,
+		BytesTotal: 1000,
+	})
+	err := p.SaveTo("test_group.prom")
+	require.NoError(t, err)
+}
