@@ -35,6 +35,9 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 	if p.profile.PrometheusPush == "" && p.profile.PrometheusSaveToFile == "" {
 		return
 	}
+	if command != constants.CommandBackup {
+		return
+	}
 	var status Status
 	switch {
 	case monitor.IsSuccess(result):
@@ -46,10 +49,7 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 	case monitor.IsError(result):
 		status = StatusFailed
 	}
-	if command != constants.CommandBackup {
-		return
-	}
-	p.metrics.BackupResults(p.profile.Name, status, summary)
+	p.metrics.BackupResults(status, summary)
 
 	if p.profile.PrometheusSaveToFile != "" {
 		err := p.metrics.SaveTo(p.profile.PrometheusSaveToFile)

@@ -8,38 +8,48 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/prometheus/common/expfmt"
+	"golang.org/x/exp/maps"
 )
 
-const namespace = "resticprofile"
-const backup = "backup"
-const groupLabel = "group"
-const profileLabel = "profile"
-const goVersionLabel = "goversion"
-const versionLabel = "version"
+const (
+	namespace      = "resticprofile"
+	backup         = "backup"
+	groupLabel     = "group"
+	profileLabel   = "profile"
+	goVersionLabel = "goversion"
+	versionLabel   = "version"
+)
 
 type Metrics struct {
-	group        string
-	configLabels map[string]string
-	registry     *prometheus.Registry
-	info         *prometheus.GaugeVec
-	backup       BackupMetrics
+	labels   prometheus.Labels
+	registry *prometheus.Registry
+	info     *prometheus.GaugeVec
+	backup   BackupMetrics
 }
 
-func NewMetrics(group, version string, configLabels map[string]string) *Metrics {
+func NewMetrics(profile, group, version string, configLabels map[string]string) *Metrics {
+	// default labels for all metrics
+	labels := prometheus.Labels{profileLabel: profile}
+	if group != "" {
+		labels[groupLabel] = group
+	}
+	labels = mergeLabels(labels, configLabels)
+	keys := maps.Keys(labels)
+
 	registry := prometheus.NewRegistry()
 	p := &Metrics{
-		group:        group,
-		configLabels: configLabels,
-		registry:     registry,
+		labels:   labels,
+		registry: registry,
 	}
 	p.info = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "build_info",
 		Help:      "resticprofile build information.",
-	}, mergeKeys([]string{goVersionLabel, versionLabel}, configLabels))
-	p.info.With(mergeLabels(prometheus.Labels{goVersionLabel: runtime.Version(), versionLabel: version}, configLabels)).Set(1)
+	}, append(keys, goVersionLabel, versionLabel))
+	// send the information about the build right away
+	p.info.With(mergeLabels(cloneLabels(labels), map[string]string{goVersionLabel: runtime.Version(), versionLabel: version})).Set(1)
 
-	p.backup = newBackupMetrics(group, configLabels)
+	p.backup = newBackupMetrics(keys)
 
 	registry.MustRegister(
 		p.info,
@@ -59,34 +69,29 @@ func NewMetrics(group, version string, configLabels map[string]string) *Metrics 
 	return p
 }
 
-func (p *Metrics) BackupResults(profile string, status Status, summary monitor.Summary) {
-	labels := prometheus.Labels{profileLabel: profile}
-	if p.group != "" {
-		labels[groupLabel] = p.group
-	}
-	labels = mergeLabels(labels, p.configLabels)
-	p.backup.duration.With(labels).Set(summary.Duration.Seconds())
+func (p *Metrics) BackupResults(status Status, summary monitor.Summary) {
+	p.backup.duration.With(p.labels).Set(summary.Duration.Seconds())
 
-	p.backup.filesNew.With(labels).Set(float64(summary.FilesNew))
-	p.backup.filesChanged.With(labels).Set(float64(summary.FilesChanged))
-	p.backup.filesUnmodified.With(labels).Set(float64(summary.FilesUnmodified))
+	p.backup.filesNew.With(p.labels).Set(float64(summary.FilesNew))
+	p.backup.filesChanged.With(p.labels).Set(float64(summary.FilesChanged))
+	p.backup.filesUnmodified.With(p.labels).Set(float64(summary.FilesUnmodified))
 
-	p.backup.dirNew.With(labels).Set(float64(summary.DirsNew))
-	p.backup.dirChanged.With(labels).Set(float64(summary.DirsChanged))
-	p.backup.dirUnmodified.With(labels).Set(float64(summary.DirsUnmodified))
+	p.backup.dirNew.With(p.labels).Set(float64(summary.DirsNew))
+	p.backup.dirChanged.With(p.labels).Set(float64(summary.DirsChanged))
+	p.backup.dirUnmodified.With(p.labels).Set(float64(summary.DirsUnmodified))
 
-	p.backup.filesTotal.With(labels).Set(float64(summary.FilesTotal))
-	p.backup.bytesAdded.With(labels).Set(float64(summary.BytesAdded))
-	p.backup.bytesTotal.With(labels).Set(float64(summary.BytesTotal))
-	p.backup.status.With(labels).Set(float64(status))
-	p.backup.time.With(labels).Set(float64(time.Now().Unix()))
+	p.backup.filesTotal.With(p.labels).Set(float64(summary.FilesTotal))
+	p.backup.bytesAdded.With(p.labels).Set(float64(summary.BytesAdded))
+	p.backup.bytesTotal.With(p.labels).Set(float64(summary.BytesTotal))
+	p.backup.status.With(p.labels).Set(float64(status))
+	p.backup.time.With(p.labels).Set(float64(time.Now().Unix()))
 }
 
 func (p *Metrics) SaveTo(filename string) error {
 	return prometheus.WriteToTextfile(filename, p.registry)
 }
 
-func (p *Metrics) Push(url, format string, jobName string) error {
+func (p *Metrics) Push(url, format, jobName string) error {
 	var expFmt expfmt.Format
 
 	if format == "protobuf" {
@@ -101,16 +106,17 @@ func (p *Metrics) Push(url, format string, jobName string) error {
 		Add()
 }
 
-func mergeKeys(keys []string, add map[string]string) []string {
-	for key := range add {
-		keys = append(keys, key)
-	}
-	return keys
-}
-
 func mergeLabels(labels prometheus.Labels, add map[string]string) prometheus.Labels {
 	for key, value := range add {
 		labels[key] = value
 	}
 	return labels
+}
+
+func cloneLabels(labels prometheus.Labels) prometheus.Labels {
+	clone := make(prometheus.Labels, len(labels))
+	for key, value := range labels {
+		clone[key] = value
+	}
+	return clone
 }
