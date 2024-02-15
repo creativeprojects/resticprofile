@@ -562,7 +562,7 @@ func runProfile(ctx *Context) error {
 		wrapper.addProgress(status.NewProgress(profile, status.NewStatus(profile.StatusFile)))
 	}
 	if profile.PrometheusPush != "" || profile.PrometheusSaveToFile != "" {
-		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(ctx.request.group, version, profile.PrometheusLabels)))
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, ctx.request.group, version, profile.PrometheusLabels)))
 	}
 
 	err = wrapper.runProfile()

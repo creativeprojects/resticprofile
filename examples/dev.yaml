@@ -163,10 +163,14 @@ prom:
         host: "{{ .Hostname }}"
     status-file: /Volumes/RAMDisk/status.json
     backup:
+        check-after: true
         extended-status: true
         no-error-on-warning: true
         source:
             - "{{ .CurrentDir }}"
+    retention:
+        after-backup: true
+        keep-last: 30
 
 system:
     initialize: true

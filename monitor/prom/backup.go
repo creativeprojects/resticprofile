@@ -27,15 +27,7 @@ type BackupMetrics struct {
 	time            *prometheus.GaugeVec
 }
 
-func newBackupMetrics(group string, configLabels map[string]string) BackupMetrics {
-	var labels []string
-	if group != "" {
-		labels = []string{groupLabel, profileLabel}
-	} else {
-		labels = []string{profileLabel}
-	}
-	labels = mergeKeys(labels, configLabels)
-
+func newBackupMetrics(labels []string) BackupMetrics {
 	backupMetrics := BackupMetrics{
 		duration: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
