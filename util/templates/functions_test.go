@@ -1,6 +1,11 @@
 package templates
 
 import (
+	"fmt"
+	"github.com/creativeprojects/resticprofile/platform"
+	"io/fs"
+	"math/rand"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -47,6 +52,7 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ tempDir }}`, expected: dir}, // constant results when repeated
 		{template: `{{ tempFile "test.txt" }}`, expected: file},
 		{template: `{{ tempFile "test.txt" }}`, expected: file}, // constant results when repeated
+		{template: `{{ env }}`, expected: TempFile(".env.none")},
 		{template: `{{ "a & b\n" | html }}`, expected: "a &amp; b\n"},
 		{template: `{{ "a & b\n" | urlquery }}`, expected: "a+%26+b%0A"},
 		{template: `{{ "a & b\n" | js }}`, expected: "a \\u0026 b\\u000A"},
@@ -81,5 +87,37 @@ func TestTemplateFuncs(t *testing.T) {
 		file := TempFile("tf.txt")
 		assert.Equal(t, expected, file)
 		assert.FileExists(t, file)
+	})
+
+	t.Run("envFileFunc", func(t *testing.T) {
+		profileKey := fmt.Sprintf("prof-%d", int(rand.Uint64()))
+		expectedFile := TempFile(fmt.Sprintf("%s.env", profileKey))
+
+		var received []string
+		receiveFunc := func(f string) { received = append(received, f) }
+		extras := EnvFileFunc(func() (string, func(string)) { return profileKey, receiveFunc })
+
+		tpl, err := New("test-template", extras).Parse(`{{ env }}`)
+		require.NoError(t, err)
+		require.NotNil(t, tpl)
+		assert.Nil(t, received)
+
+		for i := 0; i < 3; i++ {
+			received = nil
+			buffer.Reset()
+			err = tpl.Execute(buffer, nil)
+			assert.NoError(t, err)
+
+			assert.Equal(t, expectedFile, buffer.String())
+			assert.Equal(t, []string{expectedFile}, received)
+		}
+
+		stat, err := os.Stat(expectedFile)
+		require.NoError(t, err)
+		if platform.IsWindows() {
+			assert.Equal(t, fs.FileMode(0666), stat.Mode().Perm()) // adjust when go for Windows supports perms
+		} else {
+			assert.Equal(t, fs.FileMode(0600), stat.Mode().Perm())
+		}
 	})
 }
