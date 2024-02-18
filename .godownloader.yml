@@ -1,33 +1,77 @@
 project_name: resticprofile
 
 builds:
-  - id: resticprofile_targz
+  - id: darwin_targz
     env:
       - CGO_ENABLED=0
     goos:
       - darwin
+    goarch:
+      - amd64
+      - arm64
+  - id: freebsd_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
       - freebsd
+    goarch:
+      - "386"
+      - amd64
+      - arm
+    goarm:
+      - "6"
+      - "7"
+  - id: linux_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
       - linux
-      - windows
     goarch:
       - "386"
       - amd64
       - arm
       - arm64
+      - mips
+      - mips64
+      - mips64le
+      - mipsle
+      - ppc64
+      - ppc64le
+      - riscv64
+      - s390x
     goarm:
       - "6"
       - "7"
-    ignore:
-      - goos: darwin
-        goarch: "386"
-      - goos: darwin
-        goarch: arm
-      - goos: freebsd
-        goarch: arm64
-      - goos: windows
-        goarch: arm
-      - goos: windows
-        goarch: arm64
+  - id: netbsd_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - netbsd
+    goarch:
+      - amd64
+  - id: openbsd_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - openbsd
+    goarch:
+      - "386"
+      - amd64
+  - id: solaris_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - solaris
+    goarch:
+      - amd64
+  - id: windows_targz
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - "386"
+      - amd64
 
   - id: resticprofile_zip
     env:
@@ -42,27 +86,6 @@ builds:
     ignore:
       - goos: darwin
         goarch: "386"
+      - goos: windows
+        goarch: arm
 
-archives:
-  - id: targz
-    builds:
-    - resticprofile_targz
-    format: tar.gz
-
-  - id: zip
-    builds:
-    - resticprofile_zip
-    format: zip
-    
-checksum:
-  name_template: 'checksums.txt'
-
-snapshot:
-  name_template: "{{ .Tag }}-next"
-
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
