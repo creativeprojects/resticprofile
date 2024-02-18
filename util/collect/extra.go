@@ -39,3 +39,13 @@ func FromMap[M ~map[K1]V1, K1, K2 comparable, V1, V2 any](input M, mapper func(K
 	}
 	return
 }
+
+// KVMapper returns a mapper for FromMap that delegates to a separate key and value mapper func
+func KVMapper[K1, K2 comparable, V1, V2 any](kMapper func(K1) K2, vMapper func(V1) V2) func(K1, V1) (K2, V2, bool) {
+	return func(k K1, v V1) (K2, V2, bool) { return kMapper(k), vMapper(v), true }
+}
+
+// CopyMapper returns a copy of the input
+func CopyMapper[T any](input T) T {
+	return input
+}

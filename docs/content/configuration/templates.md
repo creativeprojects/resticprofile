@@ -600,9 +600,13 @@ resticprofile supports the following set of own functions in all templates:
 * `{{ with list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}` => ` A-B-C-D `
 * `{{ tempDir }}` => `/tmp/resticprofile.../t` - unique OS specific existing temporary directory
 * `{{ tempFile "filename" }}` => `/tmp/resticprofile.../t/filename` - unique OS specific existing temporary file
+* `{{ env }}` => `/tmp/resticprofile.../t/profile.env` - unique OS specific existing temporary file that is added to the current profile env-files list
 
 All `{{ temp* }}` functions guarantee that returned temporary directories and files are existing & writable. 
 When resticprofile ends, temporary directories and files are removed.
+
+The `{{ env }}` function is a special case of `{{ tempFile ... }}` returning a path to a file in dotenv file format that can be used in [shell commands]({{% relref "/configuration/run_hooks" %}}) to alter the environment. 
+The file is guaranteed to be accessible only by the user that started resticprofile, further it is automatically added to the `env-file` list of the current profile.
 
 The following functions can be used to encode data (e.g. when dealing with arbitrary input):
 

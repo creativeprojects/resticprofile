@@ -108,15 +108,7 @@ func ProcessConfidentialValues(profile *Profile) {
 	profile.Repository.hideSubmatches(urlConfidentialPart)
 
 	// Handle env variables
-	for name, value := range profile.Environment {
-		if hiddenEnvKeys.MatchString(name) {
-			value.hideValue()
-			profile.Environment[name] = value
-		} else if urlEnvKeys.MatchString(name) {
-			value.hideSubmatches(urlConfidentialPart)
-			profile.Environment[name] = value
-		}
-	}
+	ProcessConfidentialEnvironment(profile.Environment)
 
 	// Handle HTTP hooks
 	for _, sections := range GetSectionsWith[Monitoring](profile) {
@@ -131,6 +123,19 @@ func ProcessConfidentialValues(profile *Profile) {
 					}
 				}
 			}
+		}
+	}
+}
+
+// ProcessConfidentialEnvironment hides confidential parts inside the specified environment.
+func ProcessConfidentialEnvironment(env map[string]ConfidentialValue) {
+	for name, value := range env {
+		if hiddenEnvKeys.MatchString(name) {
+			value.hideValue()
+			env[name] = value
+		} else if urlEnvKeys.MatchString(name) {
+			value.hideSubmatches(urlConfidentialPart)
+			env[name] = value
 		}
 	}
 }

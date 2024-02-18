@@ -96,7 +96,8 @@ type Profile struct {
 	PrometheusPushFormat    string                            `mapstructure:"prometheus-push-format" default:"text" enum:"text;protobuf" description:"Prometheus push gateway request format"`
 	PrometheusLabels        map[string]string                 `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
 	SystemdDropInFiles      []string                          `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
-	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process"`
+	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process. Inline env variables take precedence over dotenv files declared with \"env-file\"."`
+	EnvironmentFiles        []string                          `mapstructure:"env-file" description:"Additional dotenv files to load and set as environment in any child process"`
 	Init                    *InitSection                      `mapstructure:"init"`
 	Backup                  *BackupSection                    `mapstructure:"backup"`
 	Retention               *RetentionSection                 `mapstructure:"retention" command:"forget"`
@@ -817,6 +818,31 @@ func (p *Profile) SchedulableCommands() (commands []string) {
 	return
 }
 
+func (p *Profile) GetEnvironment(withOs bool) (env *util.Environment) {
+	env = util.NewDefaultEnvironment()
+
+	// OS environment
+	if withOs {
+		env.SetValues(os.Environ()...)
+	}
+
+	// Profile environment files
+	for _, file := range p.EnvironmentFiles {
+		if ef, err := util.GetEnvironmentFile(file); err == nil {
+			ef.AddTo(env)
+		} else {
+			clog.Debugf("failed loading dotenv %s: %s", file, err.Error())
+		}
+	}
+
+	// Profile environment
+	for key, value := range p.Environment {
+		env.Put(key, value.Value())
+	}
+
+	return
+}
+
 // Schedules returns a slice of Schedule for all the commands that have a schedule configuration
 // Only v1 configuration have schedules inside the profile
 func (p *Profile) Schedules() []*Schedule {
@@ -826,16 +852,10 @@ func (p *Profile) Schedules() []*Schedule {
 
 	for name, section := range sections {
 		if s := section.GetSchedule(); len(s.Schedule) > 0 {
-			env := util.NewDefaultEnvironment()
+			var envValues []string
 
 			if len(s.ScheduleEnvCapture) > 0 {
-				// Capture OS env
-				env.SetValues(os.Environ()...)
-
-				// Capture profile env
-				for key, value := range p.Environment {
-					env.Put(key, value.Value())
-				}
+				env := p.GetEnvironment(true)
 
 				for index, key := range env.Names() {
 					matched := slices.ContainsFunc(s.ScheduleEnvCapture, func(pattern string) bool {
@@ -849,6 +869,8 @@ func (p *Profile) Schedules() []*Schedule {
 						env.Remove(key)
 					}
 				}
+
+				envValues = env.Values()
 			}
 
 			config := &Schedule{
@@ -861,7 +883,7 @@ func (p *Profile) Schedules() []*Schedule {
 				Priority:                s.SchedulePriority,
 				LockMode:                s.ScheduleLockMode,
 				LockWait:                s.ScheduleLockWait,
-				Environment:             env.Values(),
+				Environment:             envValues,
 				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
 				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
 				AfterNetworkOnline:      s.ScheduleAfterNetworkOnline,

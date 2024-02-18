@@ -666,12 +666,24 @@ func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, 
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration
-func (r *resticWrapper) getEnvironment() (env []string) {
-	// Note: variable names match the original case for OS variables. Custom vars are all uppercase.
-	for key, value := range r.profile.Environment {
-		clog.Debugf("setting up environment variable: %s=%s", key, value)
-		env = append(env, fmt.Sprintf("%s=%s", key, value.Value()))
-	}
+func (r *resticWrapper) getEnvironment() (values []string) {
+	// Note: variable names match the original case for OS variables. Vars embedded in the profile environment are all uppercase.
+	env := r.profile.GetEnvironment(false)
+	values = env.Values()
+
+	// Debug log with confidential filter
+	clog.Debug(func() string {
+		mapper := collect.KVMapper(collect.CopyMapper[string], config.NewConfidentialValue)
+		confidentialEnv := collect.FromMap(env.ValuesAsMap(), mapper)
+		config.ProcessConfidentialEnvironment(confidentialEnv)
+
+		out := &strings.Builder{}
+		out.WriteString("setting up environment variables:\n")
+		for name, value := range confidentialEnv {
+			_, _ = fmt.Fprintf(out, "%s=%s\n", name, value)
+		}
+		return out.String()
+	})
 	return
 }
 
