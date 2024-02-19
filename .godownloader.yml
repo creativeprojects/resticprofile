@@ -89,3 +89,5 @@ builds:
       - goos: windows
         goarch: arm
 
+checksum:
+   name_template: 'checksums.txt'
