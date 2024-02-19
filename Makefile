@@ -78,15 +78,15 @@ $(GOBIN)/eget: verify
 
 $(GOBIN)/goreleaser: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" goreleaser/goreleaser --upgrade-only --to $(GOBIN)
+	"$(GOBIN)/eget" goreleaser/goreleaser --upgrade-only --to '$(GOBIN)'
 
 $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to $(GOBIN)
+	"$(GOBIN)/eget" ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to '$(GOBIN)'
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to $(GOBIN)
+	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"
