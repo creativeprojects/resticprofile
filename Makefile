@@ -93,6 +93,7 @@ prepare_build: verify download
 
 prepare_test: verify download $(GOBIN)/mockery
 	@echo "[*] $@"
+	find . -path "*/mocks/*" -exec rm {} \;
 	"$(GOBIN)/mockery" --config .mockery.yaml
 
 download: verify

@@ -1,13 +1,6 @@
 /.idea
 /.vscode/*log
 
-# legacy python version
-/.pytest_cache
-/scripts/deploy.sh
-*.pyc
-/src/resticprofile.egg-info
-/**/.eggs
-
 .DS_Store
 /examples/private
 /build/restic*
@@ -21,8 +14,7 @@
 # test output
 /coverage.out
 
-# mocks & mock binaries
-mocks
+# mock binaries
 /mock
 /echo
 /lock/locktest
