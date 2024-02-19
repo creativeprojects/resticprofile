@@ -155,7 +155,6 @@ test: prepare_test
 test-ci: prepare_test
 	@echo "[*] $@"
 	$(GOTEST) -v -race -short -coverprofile='coverage.out' ./...
-	$(GOTEST) -v ./priority
 
 coverage:
 	@echo "[*] $@"
