@@ -4,12 +4,12 @@ global:
 
 default:
   password-file: key
-  repository: sftp:nas17:/tmp/backup
+  repository: "local:/restic_repo"
   initialize: true
   backup:
-    source: /
+    source: /source
     exclude-caches: true
     one-file-system: true
-    schedule: "*:00,05,10,15,30,45"
-    schedule-permission: system
+    schedule: "*:0,5,55"
+    schedule-permission: user
     check-before: true

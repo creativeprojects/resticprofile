@@ -5,13 +5,15 @@ services:
     image: creativeprojects/resticprofile:${RP_VERSION:-latest}
     container_name: backup_container
     hostname: backup_container
+    user: resticprofile:resticprofile
     entrypoint: '/bin/sh'
     command:
       - '-c'
       - 'resticprofile schedule --all && crond -f'
     volumes:
-      - ~/.ssh:/root/.ssh
-      - './profiles.yaml:/etc/resticprofile/profiles.yaml:ro'
-      - './key:/etc/resticprofile/key:ro'
+      - './profiles.yaml:/resticprofile/profiles.yaml:ro'
+      - './key:/resticprofile/key:ro'
+      - './:/source:ro'
+      - '/Volumes/RAMDisk:/restic_repo'
     environment:
       - TZ=Etc/UTC

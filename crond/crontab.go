@@ -1,4 +1,4 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
 
 package crond
 
@@ -33,9 +33,9 @@ func NewCrontab(entries []Entry) *Crontab {
 
 // Update crontab entries:
 //
-// If addEntries is set to true, it will delete and add all new entries
+// # If addEntries is set to true, it will delete and add all new entries
 //
-// If addEntries is set to false, it will only delete the matching entries
+// # If addEntries is set to false, it will only delete the matching entries
 //
 // Return values are the number of entries deleted, and an error if any
 func (c *Crontab) Update(source string, addEntries bool, w io.StringWriter) (int, error) {
@@ -122,13 +122,15 @@ func (c *Crontab) LoadCurrent() (string, error) {
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 	err := cmd.Run()
-	if err != nil && strings.HasPrefix(buffer.String(), "no crontab for ") {
+	result := strings.TrimSpace(buffer.String())
+	if err != nil && (strings.HasPrefix(result, "no crontab for ") ||
+		strings.HasSuffix(result, "No such file or directory")) { // different message on busybox
 		// it's ok to be empty
 		return "", nil
 	} else if err != nil {
-		return "", fmt.Errorf("%w: %s", err, buffer.String())
+		return "", fmt.Errorf("%w: %s", err, result)
 	}
-	return cleanupCrontab(buffer.String()), nil
+	return cleanupCrontab(result), nil
 }
 
 func (c *Crontab) Rewrite() error {
