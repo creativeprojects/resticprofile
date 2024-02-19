@@ -58,12 +58,12 @@ TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
-all: prepare test build
+all: prepare_test test build
 .PHONY: test test-ci coverage
 .PHONY: download download-restic-key
 .PHONY: build build-mac build-linux build-pi build-windows build-no-selfupdate build-all
 .PHONY: generate-config-reference generate-jsonschema generate-install generate-restic
-.PHONY: all verify prepare install clean ramdisk rest-server nightly toc syslog checkdoc
+.PHONY: all verify prepare_test prepare_build install clean ramdisk rest-server nightly toc syslog checkdoc
 
 verify:
 ifeq ($(wildcard $(GOPATH)/.),)
@@ -84,11 +84,16 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" ekalinin/github-markdown-toc.go --upgrade-only --file gh-md-toc --to $(GOBIN)
 
-prepare: verify download $(GOBIN)/eget
+$(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	GOBIN="$(GOBIN)" \
-	GOPATH="$(GOPATH)" \
- 	$(GOCMD) generate ./...
+	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to $(GOBIN)
+
+prepare_build: verify download
+	@echo "[*] $@"
+
+prepare_test: verify download $(GOBIN)/mockery
+	@echo "[*] $@"
+	"$(GOBIN)/mockery" --config .mockery.yaml
 
 download: verify
 	@echo "[*] $@"
@@ -100,41 +105,41 @@ download-restic-key:
 	KEY_FILE=$(abspath restic/gpg-key.asc)
 	curl https://restic.net/gpg-key-alex.asc > $(KEY_FILE)
 
-install: prepare
+install: prepare_build
 	@echo "[*] $@"
 	GOBIN="$(GOBIN)" \
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build: prepare
+build: prepare_build
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-no-selfupdate: prepare
+build-no-selfupdate: prepare_build
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -tags no_self_update -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-mac: prepare
+build-mac: prepare_build
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="arm64" $(GOBUILD) -o $(BINARY_DARWIN_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-linux: prepare
+build-linux: prepare_build
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o $(BINARY_LINUX_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-pi: prepare
+build-pi: prepare_build
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-windows: prepare
+build-windows: prepare_build
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
@@ -143,13 +148,13 @@ build-windows: prepare
 
 build-all: build-mac build-linux build-pi build-windows
 
-test: prepare
+test: prepare_test
 	@echo "[*] $@"
-	$(GOTEST) -v $(TESTS)
+	$(GOTEST) $(TESTS)
 
-test-ci: prepare
+test-ci: prepare_test
 	@echo "[*] $@"
-	$(GOTEST) -v -short ./...
+	$(GOTEST) -v -race -short -coverprofile='coverage.out' ./...
 	$(GOTEST) -v ./priority
 
 coverage:

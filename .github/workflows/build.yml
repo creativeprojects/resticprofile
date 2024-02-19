@@ -41,14 +41,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Build
-        run: make build
+      - name: Test
+        run: make test-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test
-        run: "go test -v -race -short -coverprofile='coverage.out' ./..."
-        shell: bash
+      - name: Build
+        run: make build
 
       - name: Code coverage with codecov
         uses: codecov/codecov-action@v4
