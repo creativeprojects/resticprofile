@@ -17,26 +17,47 @@ builds:
       - darwin
       - freebsd
       - linux
+      - netbsd
+      - openbsd
+      - solaris
       - windows
     goarch:
       - "386"
       - amd64
       - arm
       - arm64
+      - mips
+      - mips64
+      - mips64le
+      - mipsle
+      - ppc64
+      - ppc64le
+      - riscv64
+      - s390x
     goarm:
       - "6"
       - "7"
     ignore:
-      - goos: darwin
-        goarch: "386"
-      - goos: darwin
-        goarch: arm
       - goos: freebsd
         goarch: arm64
+      - goos: freebsd
+        goarch: riscv64
+      - goos: netbsd
+        goarch: "386"
+      - goos: netbsd
+        goarch: arm
+      - goos: netbsd
+        goarch: arm64
       - goos: windows
         goarch: arm
       - goos: windows
         goarch: arm64
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
+      - goos: openbsd
+        goarch: ppc64
 
   - id: resticprofile_zip
     env:
@@ -48,9 +69,6 @@ builds:
       - "386"
       - amd64
       - arm64
-    ignore:
-      - goos: darwin
-        goarch: "386"
 
   - id: resticprofile_no_self_update
     env:
@@ -86,17 +104,19 @@ archives:
   - id: targz
     builds:
       - resticprofile_targz
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format: tar.gz
 
   - id: targz_no_self_update
     builds:
       - resticprofile_no_self_update
-    name_template: '{{ .ProjectName }}_no_self_update_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    name_template: '{{ .ProjectName }}_no_self_update_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format: tar.gz
 
   - id: zip
     builds:
       - resticprofile_zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format: zip
 
 checksum:
@@ -126,6 +146,11 @@ dockers:
       - build/restic-amd64
       - build/rclone-amd64
     build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--platform=linux/amd64"
       - "--build-arg=ARCH=amd64"
   - image_templates:
@@ -141,6 +166,11 @@ dockers:
       - build/restic-arm64
       - build/rclone-arm64
     build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--platform=linux/arm64/v8"
       - "--build-arg=ARCH=arm64"
 

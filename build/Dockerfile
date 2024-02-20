@@ -1,6 +1,8 @@
 FROM alpine:latest
 
-LABEL maintainer Fred <fred@gcreativeprojects.tech>
+LABEL org.opencontainers.image.documentation="https://creativeprojects.github.io/resticprofile/"
+LABEL org.opencontainers.image.source="https://github.com/creativeprojects/resticprofile"
+
 
 ARG ARCH=amd64
 ENV TZ=Etc/UTC

@@ -38,6 +38,11 @@ dockers:
       - build/restic-amd64
       - build/rclone-amd64
     build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--platform=linux/amd64"
       - "--build-arg=ARCH=amd64"
   - image_templates:
@@ -52,5 +57,10 @@ dockers:
       - build/restic-arm64
       - build/rclone-arm64
     build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--platform=linux/arm64/v8"
       - "--build-arg=ARCH=arm64"
