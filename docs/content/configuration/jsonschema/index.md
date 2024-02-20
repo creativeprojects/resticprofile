@@ -70,6 +70,6 @@ YAML & TOML validation with JSON schema is not supported out of the box. Additio
 
 **Example**
 
-{{< figure src="/recordings/jsonschema-vsc.gif" >}}
+{{< figure src="jsonschema-vsc.gif" >}}
 
 **Extension**: `redhat.vscode-yaml`

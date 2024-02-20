@@ -10,7 +10,7 @@ weight: 2
 
 In a nutshell, **resticprofile** provides a configuration file and a runner that will generate all the necessary calls to **restic**.
 
-Unless you're using the **resticprofile** [Docker image]({{% relref "/installation/docker" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
+Unless you're using the **resticprofile** [Docker image]({{% relref "../../installation/docker/index.html" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
 
 ## Choose your favourite format
 

@@ -1,5 +1,6 @@
 baseURL = 'https://creativeprojects.github.io/resticprofile/'
-canonifyURLs = true
+# this is no longer needed
+# canonifyURLs = true
 languageCode = 'en-gb'
 title = 'resticprofile'
 theme = "hugo-theme-relearn"
@@ -11,7 +12,7 @@ publishdir = "../public/"
 
 [params]
   # Change default color scheme with a variant one.
-  themeVariant = [ "relearn-light", "relearn-dark" ]
+  themeVariant = [ "relearn-dark", "relearn-light"  ]
   collapsibleMenu = true
   externalLinkTarget = "_blank"
 
