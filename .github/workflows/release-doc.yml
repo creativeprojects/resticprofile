@@ -53,7 +53,7 @@ jobs:
           hugo --minify --enableGitInfo --baseURL https://resticprofile.creativeprojects.tech/
 
       - name: Publish to pages.dev
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}

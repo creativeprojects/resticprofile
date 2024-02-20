@@ -51,7 +51,7 @@ jobs:
 
       - name: Publish to pages.dev
         continue-on-error: true # secrets are not set for PRs from forks
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}

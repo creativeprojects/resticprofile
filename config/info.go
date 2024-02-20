@@ -614,11 +614,13 @@ func NewGlobalInfo() NamedPropertySet {
 
 // NewGroupInfo returns structural information on the "group" config v2 section
 func NewGroupInfo() NamedPropertySet {
-	return &namedPropertySet{
+	set := &namedPropertySet{
 		name:        constants.SectionConfigurationGroups,
 		description: "profile groups",
 		propertySet: propertySetFromType(infoTypes.group),
 	}
+	customizeProperties(constants.SectionConfigurationGroups, set.properties)
+	return set
 }
 
 // NewMixinsInfo returns structural information on the "mixins" config v2 section
