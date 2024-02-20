@@ -46,7 +46,7 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--platform=linux/amd64"
       - "--build-arg=ARCH=amd64"
-    skip_push: true # remove after Sunday
+
   - image_templates:
       - "creativeprojects/resticprofile:latest-arm64v8"
       - "creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
@@ -67,19 +67,17 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--platform=linux/arm64/v8"
       - "--build-arg=ARCH=arm64"
-    skip_push: true # remove after Sunday
 
 docker_manifests:
   - name_template: creativeprojects/resticprofile:{{ .RawVersion }}
     image_templates:
       - creativeprojects/resticprofile:{{ .RawVersion }}-amd64
       - creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
-    skip_push: true # remove after Sunday
+
   - name_template: creativeprojects/resticprofile:latest
     image_templates:
       - creativeprojects/resticprofile:latest-amd64
       - creativeprojects/resticprofile:latest-arm64v8
-    skip_push: true # remove after Sunday
 
 release:
   disable: true
