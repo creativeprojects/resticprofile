@@ -422,7 +422,7 @@ Profiles in resticprofile configure commandline options (flags) for restic comma
 
 Resticprofile applies a filter (see `global.restic-arguments-filter`) to decide which flags are supported in which restic commands and automatically removes unsupported flags when building commandline options.
 
-For example, a flag like `insecure-tls` can be set at profile level and will be used whenever restic is started with this profile. Most supported flags can be set in this way at profile level, see [reference]({{% relref "/configuration/reference" %}}) for details.
+For example, a flag like `insecure-tls` can be set at profile level and will be used whenever restic is started with this profile. Most supported flags can be set in this way at profile level, see [reference]({{% relref "reference" %}}) for details.
 
 {{< tabs groupid="config-with-common-flags-in-profile" >}}
 {{% tab title="toml" %}}
