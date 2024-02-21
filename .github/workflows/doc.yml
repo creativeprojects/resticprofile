@@ -52,7 +52,7 @@ jobs:
       - name: Check
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
-          url: https://${BRANCH_NAME}.resticprofile.pages.dev/
+          url: https://resticprofile.pages.dev/
           pages_path: ./public/
           cmd_params: '--buffer-size=8192 --max-connections=10 --color=always --skip-tls-verification --header="User-Agent:curl/7.54.0" --timeout=20'
 
