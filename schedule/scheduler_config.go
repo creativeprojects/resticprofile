@@ -1,10 +1,9 @@
 package schedule
 
 import (
-	"runtime"
-
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/spf13/afero"
 )
 
@@ -65,7 +64,7 @@ func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 	case constants.SchedulerWindows:
 		return SchedulerWindows{}
 	default:
-		if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
+		if !platform.IsDarwin() && !platform.IsWindows() {
 			return SchedulerSystemd{
 				UnitTemplate:  global.SystemdUnitTemplate,
 				TimerTemplate: global.SystemdTimerTemplate,

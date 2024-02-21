@@ -41,6 +41,7 @@ func init() {
 
 func getOwnCommands() []ownCommand {
 	return []ownCommand{
+		// commands that don't need loading the configuration
 		{
 			name:              "help",
 			description:       "display help (use resticprofile help [command])",
@@ -57,6 +58,29 @@ func getOwnCommands() []ownCommand {
 			flags:             map[string]string{"-v, --verbose": "display detailed version information"},
 		},
 		{
+			name:              "random-key",
+			description:       "generate a cryptographically secure random key to use as a restic keyfile",
+			action:            randomKey,
+			needConfiguration: false,
+			hide:              true, // replaced by the generate command
+		},
+		{
+			name:              "generate",
+			description:       "generate resources such as random key, bash/zsh completion scripts, etc.",
+			longDescription:   "The \"generate\" command is used to create various resources and print them to stdout",
+			action:            generateCommand,
+			needConfiguration: false,
+			hide:              false,
+			flags: map[string]string{
+				"--random-key [size]":                            "generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)",
+				"--config-reference [--version 0.15] [template]": "generate a config file reference from a go template (defaults to the built-in markdown template when omitted)",
+				"--json-schema [--version 0.15] [v1|v2]":         "generate a JSON schema that validates resticprofile configuration files in YAML or JSON format",
+				"--bash-completion":                              "generate a shell completion script for bash",
+				"--zsh-completion":                               "generate a shell completion script for zsh",
+			},
+		},
+		// commands that need the configuration
+		{
 			name:              "profiles",
 			description:       "display profile names from the configuration file",
 			longDescription:   "The \"profiles\" command prints brief information on all profiles and groups that are declared in the configuration file",
@@ -69,13 +93,6 @@ func getOwnCommands() []ownCommand {
 			longDescription:   "The \"show\" command prints the effective configuration of the selected profile.\n\nThe effective profile configuration is built by loading all includes, applying inheritance, mixins, templates and variables and parsing the result.",
 			action:            showProfile,
 			needConfiguration: true,
-		},
-		{
-			name:              "random-key",
-			description:       "generate a cryptographically secure random key to use as a restic keyfile",
-			action:            randomKey,
-			needConfiguration: false,
-			hide:              true,
 		},
 		{
 			name:              "schedule",
@@ -108,19 +125,15 @@ func getOwnCommands() []ownCommand {
 			flags:             map[string]string{"--all": "display the status of all scheduled jobs of all profiles"},
 		},
 		{
-			name:              "generate",
-			description:       "generate resources such as random key, bash/zsh completion scripts, etc.",
-			longDescription:   "The \"generate\" command is used to create various resources and print them to stdout",
-			action:            generateCommand,
-			needConfiguration: false,
+			name:              "run-schedule",
+			description:       "runs a scheduled job. This command should only be called by the scheduling service",
+			longDescription:   "The \"run-schedule\" command loads the scheduled job configuration from the name in parameter and runs the restic command with the arguments defined in the profile. The name in parameter is <command>@<profile-name> for the configuration file v1, and the schedule name for the configuration file v2+.",
+			pre:               preRunSchedule,
+			action:            runSchedule,
+			needConfiguration: true,
 			hide:              false,
-			flags: map[string]string{
-				"--random-key [size]":                            "generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)",
-				"--config-reference [--version 0.15] [template]": "generate a config file reference from a go template (defaults to the built-in markdown template when omitted)",
-				"--json-schema [--version 0.15] [v1|v2]":         "generate a JSON schema that validates resticprofile configuration files in YAML or JSON format",
-				"--bash-completion":                              "generate a shell completion script for bash",
-				"--zsh-completion":                               "generate a shell completion script for zsh",
-			},
+			hideInCompletion:  true,
+			noProfile:         true,
 		},
 		// hidden commands
 		{
@@ -328,10 +341,9 @@ func showProfile(output io.Writer, ctx commandContext) error {
 	return nil
 }
 
-func showSchedules(output io.Writer, schedulesConfig []*config.ScheduleConfig) {
-	for _, schedule := range schedulesConfig {
-		export := schedule.Export()
-		err := config.ShowStruct(output, export, "schedule "+export.Profiles[0]+"-"+export.Command)
+func showSchedules(output io.Writer, schedules []*config.Schedule) {
+	for _, schedule := range schedules {
+		err := config.ShowStruct(output, schedule, "schedule "+schedule.CommandName+"@"+schedule.Profiles[0])
 		if err != nil {
 			fmt.Fprintln(output, err)
 		}
@@ -408,7 +420,7 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 	type profileJobs struct {
 		scheduler schedule.SchedulerConfig
 		profile   string
-		jobs      []*config.ScheduleConfig
+		jobs      []*config.Schedule
 	}
 
 	allJobs := make([]profileJobs, 0, 1)
@@ -516,7 +528,7 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 	return nil
 }
 
-func statusScheduleProfile(scheduler schedule.SchedulerConfig, profile *config.Profile, schedules []*config.ScheduleConfig, flags commandLineFlags) error {
+func statusScheduleProfile(scheduler schedule.SchedulerConfig, profile *config.Profile, schedules []*config.Schedule, flags commandLineFlags) error {
 	displayProfileDeprecationNotices(profile)
 
 	err := statusJobs(schedule.NewHandler(scheduler), flags.name, schedules)
@@ -526,7 +538,7 @@ func statusScheduleProfile(scheduler schedule.SchedulerConfig, profile *config.P
 	return nil
 }
 
-func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.ScheduleConfig, error) {
+func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
 	global, err := c.GetGlobalSection()
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("cannot load global section: %w", err)
@@ -543,14 +555,14 @@ func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.Schedul
 	return schedule.NewSchedulerConfig(global), profile, profile.Schedules(), nil
 }
 
-func requireScheduleJobs(schedules []*config.ScheduleConfig, flags commandLineFlags) error {
+func requireScheduleJobs(schedules []*config.Schedule, flags commandLineFlags) error {
 	if len(schedules) == 0 {
 		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
 	}
 	return nil
 }
 
-func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.ScheduleConfig, error) {
+func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
 	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
 	if err != nil {
 		return nil, nil, nil, err
@@ -560,16 +572,86 @@ func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedul
 	for _, command := range profile.SchedulableCommands() {
 		declared := false
 		for _, s := range schedules {
-			if declared = s.SubTitle == command; declared {
+			if declared = s.CommandName == command; declared {
 				break
 			}
 		}
 		if !declared {
-			schedules = append(schedules, config.NewRemoveOnlyConfig(profile.Name, command))
+			schedules = append(schedules, config.NewEmptySchedule(profile.Name, command))
 		}
 	}
 
 	return scheduler, profile, schedules, nil
+}
+
+func preRunSchedule(ctx *Context) error {
+	if len(ctx.request.arguments) < 1 {
+		return errors.New("run-schedule command expects one argument: schedule name")
+	}
+	scheduleName := ctx.request.arguments[0]
+	// temporarily allow v2 configuration to run v1 schedules
+	// if ctx.config.GetVersion() < config.Version02
+	{
+		// schedule name is in the form "command@profile"
+		commandName, profileName, ok := strings.Cut(scheduleName, "@")
+		if !ok {
+			return errors.New("the expected format of the schedule name is <command>@<profile-name>")
+		}
+		ctx.request.profile = profileName
+		ctx.request.schedule = scheduleName
+		ctx.command = commandName
+		// remove the parameter from the arguments
+		ctx.request.arguments = ctx.request.arguments[1:]
+
+		// don't save the profile in the context now, it's only loaded but not prepared
+		profile, err := ctx.config.GetProfile(profileName)
+		if err != nil || profile == nil {
+			return fmt.Errorf("cannot load profile '%s': %w", profileName, err)
+		}
+		// get the list of all scheduled commands to find the current command
+		schedules := profile.Schedules()
+		for _, schedule := range schedules {
+			if schedule.CommandName == ctx.command {
+				ctx.schedule = schedule
+				prepareScheduledProfile(ctx)
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func prepareScheduledProfile(ctx *Context) {
+	clog.Debugf("preparing scheduled profile %q", ctx.request.schedule)
+	// log file
+	if len(ctx.schedule.Log) > 0 {
+		ctx.logTarget = ctx.schedule.Log
+	}
+	// battery
+	if ctx.schedule.IgnoreOnBatteryLessThan > 0 {
+		ctx.stopOnBattery = ctx.schedule.IgnoreOnBatteryLessThan
+	} else if ctx.schedule.IgnoreOnBattery {
+		ctx.stopOnBattery = 100
+	}
+	// lock
+	if ctx.schedule.GetLockWait() > 0 {
+		ctx.lockWait = ctx.schedule.LockWait
+	}
+	if ctx.schedule.GetLockMode() == config.ScheduleLockModeDefault {
+		if ctx.schedule.GetLockWait() > 0 {
+			ctx.lockWait = ctx.schedule.GetLockWait()
+		}
+	} else if ctx.schedule.GetLockMode() == config.ScheduleLockModeIgnore {
+		ctx.noLock = true
+	}
+}
+
+func runSchedule(_ io.Writer, cmdCtx commandContext) error {
+	err := startProfileOrGroup(&cmdCtx.Context)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func testElevationCommand(_ io.Writer, ctx commandContext) error {

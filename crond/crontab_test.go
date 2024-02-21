@@ -1,4 +1,5 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
+// +build !darwin,!windows
 
 package crond
 
@@ -63,18 +64,20 @@ func TestCleanCrontab(t *testing.T) {
 
 func TestDeleteLine(t *testing.T) {
 	testData := []struct {
-		source   string
-		expected bool
+		source      string
+		expectFound bool
 	}{
 		{"#\n#\n#\n# 00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup\n", false},
 		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup\n", true},
+		{"#\n#\n#\n# 00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", false},
+		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
 	}
 
 	for _, testRun := range testData {
 		t.Run("", func(t *testing.T) {
 			_, found, err := deleteLine(testRun.source, Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup"})
 			require.NoError(t, err)
-			assert.Equal(t, testRun.expected, found)
+			assert.Equal(t, testRun.expectFound, found)
 		})
 	}
 }

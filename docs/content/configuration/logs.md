@@ -137,6 +137,14 @@ profile:
 {{% /tab %}}
 {{< /tabs >}}
 
+## Priority on the log targets
+
+If specified in different places, here's the priority order for the log destination:
+1. `--log` flag on the command line
+2. `schedule-log` in the `profile` section
+3. `log` in the `global` section
+4. default to the console
+
 ## Send logs to a temporary file
 
 This can be done by using the [template]({{% relref "/configuration/templates" %}}) function `tempFile`.

@@ -114,9 +114,9 @@ func displayOwnCommandHelp(output io.Writer, commandName string, ctx commandCont
 		commandFlags = "[command specific flags]"
 	}
 	out("Usage:\n")
-	out("\t%s %s\n\n", getCommonUsageHelpLine(command.name, command.needConfiguration), commandFlags)
+	out("\t%s %s\n\n", getCommonUsageHelpLine(command.name, command.needConfiguration && !command.noProfile), commandFlags)
 
-	var flags []string
+	var flags = make([]string, 0, len(command.flags))
 	for f, _ := range command.flags {
 		flags = append(flags, f)
 	}

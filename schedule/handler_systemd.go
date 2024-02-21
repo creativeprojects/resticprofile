@@ -11,7 +11,6 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/creativeprojects/resticprofile/term"
@@ -100,7 +99,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the systemd unit and activating it
-func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
@@ -115,8 +114,8 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 		CommandLine:        job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
 		Environment:        job.Environment,
 		WorkingDirectory:   job.WorkingDirectory,
-		Title:              job.Title,
-		SubTitle:           job.SubTitle,
+		Title:              job.ProfileName,
+		SubTitle:           job.CommandName,
 		JobDescription:     job.JobDescription,
 		TimerDescription:   job.TimerDescription,
 		Schedules:          job.Schedules,
@@ -142,7 +141,7 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 		}
 	}
 
-	timerName := systemd.GetTimerFile(job.Title, job.SubTitle)
+	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 
 	// enable the job
 	err = runSystemctlCommand(timerName, systemctlEnable, unitType, false)
@@ -165,23 +164,23 @@ func (h *HandlerSystemd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 }
 
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
-func (h *HandlerSystemd) RemoveJob(job *config.ScheduleConfig, permission string) error {
+func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
 		unitType = systemd.SystemUnit
 	}
 	var err error
-	timerFile := systemd.GetTimerFile(job.Title, job.SubTitle)
+	timerFile := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 
 	// stop the job
-	err = runSystemctlCommand(timerFile, systemctlStop, unitType, job.RemoveOnly)
+	err = runSystemctlCommand(timerFile, systemctlStop, unitType, job.removeOnly)
 	if err != nil {
 		return err
 	}
 
 	// disable the job
-	err = runSystemctlCommand(timerFile, systemctlDisable, unitType, job.RemoveOnly)
+	err = runSystemctlCommand(timerFile, systemctlDisable, unitType, job.removeOnly)
 	if err != nil {
 		return err
 	}
@@ -199,13 +198,13 @@ func (h *HandlerSystemd) RemoveJob(job *config.ScheduleConfig, permission string
 		return nil
 	}
 
-	serviceFile := systemd.GetServiceFile(job.Title, job.SubTitle)
+	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	err = os.Remove(path.Join(systemdPath, serviceFile))
 	if err != nil {
 		return nil
 	}
 
-	dropInDir := systemd.GetServiceFileDropInDir(job.Title, job.SubTitle)
+	dropInDir := systemd.GetServiceFileDropInDir(job.ProfileName, job.CommandName)
 	err = os.RemoveAll(path.Join(systemdPath, dropInDir))
 	if err != nil {
 		return nil
@@ -215,8 +214,8 @@ func (h *HandlerSystemd) RemoveJob(job *config.ScheduleConfig, permission string
 }
 
 // DisplayJobStatus displays information of a systemd service/timer
-func (h *HandlerSystemd) DisplayJobStatus(job *config.ScheduleConfig) error {
-	timerName := systemd.GetTimerFile(job.Title, job.SubTitle)
+func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
+	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 	permission := getSchedulePermission(job.Permission)
 	if permission == constants.SchedulePermissionSystem {
 		err := runJournalCtlCommand(timerName, systemd.SystemUnit)

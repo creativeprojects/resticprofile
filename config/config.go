@@ -653,8 +653,7 @@ func (c *Config) getProfilePath(key string) string {
 }
 
 // GetSchedules loads all schedules from the configuration.
-// !!! Nothing is using this method yet !!!
-func (c *Config) GetSchedules() ([]*ScheduleConfig, error) {
+func (c *Config) GetSchedules() ([]*Schedule, error) {
 	if c.GetVersion() <= Version01 {
 		return c.getSchedulesV1()
 	}

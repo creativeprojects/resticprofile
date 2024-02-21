@@ -166,7 +166,7 @@ func main() {
 	}
 
 	// Load the now mandatory configuration and setup logging (before returning an error)
-	ctx, err := loadContext(flags, false)
+	ctx, err := loadContext(flags)
 	closeLogger := setupLogging(ctx)
 	defer closeLogger()
 	if err != nil {
@@ -176,7 +176,7 @@ func main() {
 	}
 
 	// check if we're running on battery
-	if shouldStopOnBattery(flags.ignoreOnBattery) {
+	if shouldStopOnBattery(ctx.stopOnBattery) {
 		exitCode = 3
 		return
 	}
@@ -289,49 +289,12 @@ func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global
 }
 
 // loadContext loads the configuration and creates a context.
-func loadContext(flags commandLineFlags, silent bool) (*Context, error) {
-	cfg, global, err := loadConfig(flags, silent)
+func loadContext(flags commandLineFlags) (*Context, error) {
+	cfg, global, err := loadConfig(flags, false)
 	if err != nil {
 		return nil, err
 	}
-	// The remaining arguments are going to be sent to the restic command line
-	command := global.DefaultCommand
-	resticArguments := flags.resticArgs
-	if len(resticArguments) > 0 {
-		command = resticArguments[0]
-		resticArguments = resticArguments[1:]
-	}
-
-	ctx := &Context{
-		request: Request{
-			command:   command,
-			arguments: resticArguments,
-			profile:   flags.name,
-			group:     "",
-			schedule:  "",
-		},
-		flags:     flags,
-		global:    global,
-		config:    cfg,
-		binary:    "",
-		command:   "",
-		profile:   nil,
-		schedule:  nil,
-		sigChan:   nil,
-		logTarget: global.Log, // default to global (which can be empty)
-	}
-	// own commands can check the context before running
-	if ownCommands.Exists(command, true) {
-		err = ownCommands.Pre(ctx)
-		if err != nil {
-			return ctx, err
-		}
-	}
-	// command line flag supersedes any configuration
-	if flags.log != "" {
-		ctx.logTarget = flags.log
-	}
-	return ctx, nil
+	return CreateContext(flags, global, cfg, ownCommands)
 }
 
 func setPriority(nice int, class string) error {
@@ -542,6 +505,11 @@ func runProfile(ctx *Context) error {
 	}
 	profile.SetHost(hostname)
 
+	if ctx.request.schedule != "" {
+		// this is a scheduled profile
+		loadScheduledProfile(ctx)
+	}
+
 	// Catch CTR-C keypress, or other signal sent by a service manager (systemd)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
@@ -551,10 +519,10 @@ func runProfile(ctx *Context) error {
 	ctx.sigChan = sigChan
 	wrapper := newResticWrapper(ctx)
 
-	if ctx.flags.noLock {
+	if ctx.noLock {
 		wrapper.ignoreLock()
-	} else if ctx.flags.lockWait > 0 {
-		wrapper.maxWaitOnLock(ctx.flags.lockWait)
+	} else if ctx.lockWait > 0 {
+		wrapper.maxWaitOnLock(ctx.lockWait)
 	}
 
 	// add progress receivers if necessary
@@ -568,6 +536,18 @@ func runProfile(ctx *Context) error {
 	err = wrapper.runProfile()
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func loadScheduledProfile(ctx *Context) error {
+	// get the list of all scheduled commands to find the current command
+	schedules := ctx.profile.Schedules()
+	for _, schedule := range schedules {
+		if schedule.CommandName == ctx.command {
+			ctx.schedule = schedule
+			break
+		}
 	}
 	return nil
 }

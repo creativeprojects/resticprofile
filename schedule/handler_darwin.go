@@ -8,15 +8,12 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
-	"slices"
 	"sort"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/dial"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/spf13/afero"
@@ -109,7 +106,7 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob creates a plist file and registers it with launchd
-func (h *HandlerLaunchd) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
 	filename, err := h.createPlistFile(h.getLaunchdJob(job, schedules), permission)
 	if err != nil {
 		if filename != "" {
@@ -129,7 +126,7 @@ func (h *HandlerLaunchd) CreateJob(job *config.ScheduleConfig, schedules []*cale
 
 	if _, noStart := job.GetFlag("no-start"); !noStart {
 		// ask the user if he wants to start the service now
-		name := getJobName(job.Title, job.SubTitle)
+		name := getJobName(job.ProfileName, job.CommandName)
 		message := `
 By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
 You have to start it manually the first time to accept the requests for access:
@@ -152,24 +149,12 @@ Do you want to start it now?`
 	return nil
 }
 
-func (h *HandlerLaunchd) getLaunchdJob(job *config.ScheduleConfig, schedules []*calendar.Event) *LaunchdJob {
-	name := getJobName(job.Title, job.SubTitle)
+func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *LaunchdJob {
+	name := getJobName(job.ProfileName, job.CommandName)
 	args := job.Arguments
-	logfile := job.Log
-
-	// if logfile is an url or in the volatile temp folder, we can't use it as a target for LaunchJob
-	if dial.IsURL(logfile) || strings.HasPrefix(logfile, constants.TemporaryDirMarker) {
-		logfile = ""
-	} else {
-		// removing the "--log" flag if we can use LaunchdJob's logging facility
-		logIndex := slices.Index(args, "--log")
-		if logIndex > -1 && len(args) >= logIndex+2 && args[logIndex+1] == logfile {
-			args = slices.Delete(args, logIndex, logIndex+2)
-		}
-	}
-	if logfile == "" {
-		logfile = name + ".log"
-	}
+	// we always set the log file in the job settings as a default
+	// if changed in the configuration via schedule-log the standard output will be empty anyway
+	logfile := name + ".log"
 
 	// Format schedule env, adding PATH if not yet provided by the schedule config
 	env := util.NewDefaultEnvironment(job.Environment...)
@@ -225,8 +210,8 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission stri
 }
 
 // RemoveJob stops and unloads the agent from launchd, then removes the configuration file
-func (h *HandlerLaunchd) RemoveJob(job *config.ScheduleConfig, permission string) error {
-	name := getJobName(job.Title, job.SubTitle)
+func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
+	name := getJobName(job.ProfileName, job.CommandName)
 	filename, err := getFilename(name, permission)
 	if err != nil {
 		return err
@@ -258,13 +243,13 @@ func (h *HandlerLaunchd) RemoveJob(job *config.ScheduleConfig, permission string
 	return nil
 }
 
-func (h *HandlerLaunchd) DisplayJobStatus(job *config.ScheduleConfig) error {
+func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	permission := getSchedulePermission(job.Permission)
 	ok := checkPermission(permission)
 	if !ok {
 		return permissionError("view")
 	}
-	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.Title, job.SubTitle))
+	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
 		return ErrorServiceNotFound

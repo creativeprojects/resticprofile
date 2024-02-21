@@ -6,12 +6,9 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -130,41 +127,6 @@ func TestHandlerInstanceLaunchd(t *testing.T) {
 	assert.NotNil(t, handler)
 }
 
-func TestLaunchdJobLog(t *testing.T) {
-	fixtures := []struct {
-		log      string
-		expected string
-		noLogArg bool
-	}{
-		{log: path.Join(constants.TemporaryDirMarker, "file"), expected: "local.resticprofile.profile.backup.log"},
-		{log: "", expected: "local.resticprofile.profile.backup.log", noLogArg: true},
-		{log: "udp://localhost:123", expected: "local.resticprofile.profile.backup.log"},
-		{log: "tcp://127.0.0.1:123", expected: "local.resticprofile.profile.backup.log"},
-		{log: "other file", expected: "other file", noLogArg: true},
-	}
-
-	for _, fixture := range fixtures {
-		t.Run(fixture.log, func(t *testing.T) {
-			handler := NewHandler(SchedulerLaunchd{})
-			args := []string{"--log", fixture.log}
-			cfg := &config.ScheduleConfig{
-				Title:     "profile",
-				SubTitle:  "backup",
-				Log:       fixture.log,
-				Command:   "resticprofile",
-				Arguments: args,
-			}
-			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
-			assert.Equal(t, fixture.expected, launchdJob.StandardOutPath)
-			if fixture.noLogArg {
-				assert.NotSubset(t, launchdJob.ProgramArguments, args)
-			} else {
-				assert.Subset(t, launchdJob.ProgramArguments, args)
-			}
-		})
-	}
-}
-
 func TestLaunchdJobPreservesEnv(t *testing.T) {
 	pathEnv := os.Getenv("PATH")
 	fixtures := []struct {
@@ -179,7 +141,7 @@ func TestLaunchdJobPreservesEnv(t *testing.T) {
 	for i, fixture := range fixtures {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			handler := NewHandler(SchedulerLaunchd{})
-			cfg := &config.ScheduleConfig{Title: "t", SubTitle: "s", Environment: fixture.environment}
+			cfg := &Config{ProfileName: "t", CommandName: "s", Environment: fixture.environment}
 			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
 			assert.Equal(t, fixture.expected, launchdJob.EnvironmentVariables)
 		})

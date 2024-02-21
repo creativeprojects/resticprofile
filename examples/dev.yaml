@@ -11,6 +11,7 @@ global:
     # legacy-arguments: true
     group-continue-on-error: true
     restic-lock-retry-after: "1m"
+    # log: "_global.txt"
 
 groups:
     full-backup:
@@ -113,6 +114,9 @@ self:
         schedule:
             - "*:00,30"
         schedule-permission: user
+        schedule-log: "_schedule-log.txt"
+        schedule-ignore-on-battery: true
+        schedule-after-network-online: true
 
     run-after-fail:
         - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"

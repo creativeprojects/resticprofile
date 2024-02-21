@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
 )
@@ -54,7 +53,7 @@ func (h *HandlerWindows) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the task scheduler job.
-func (h *HandlerWindows) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
 	// default permission will be system
 	perm := schtasks.SystemAccount
 	if permission == constants.SchedulePermissionUser {
@@ -62,7 +61,15 @@ func (h *HandlerWindows) CreateJob(job *config.ScheduleConfig, schedules []*cale
 	} else if permission == constants.SchedulePermissionUserLoggedOn || permission == constants.SchedulePermissionUserLoggedIn {
 		perm = schtasks.UserLoggedOnAccount
 	}
-	err := schtasks.Create(job, schedules, perm)
+	jobConfig := &schtasks.Config{
+		ProfileName:      job.ProfileName,
+		CommandName:      job.CommandName,
+		Command:          job.Command,
+		Arguments:        job.Arguments,
+		WorkingDirectory: job.WorkingDirectory,
+		JobDescription:   job.JobDescription,
+	}
+	err := schtasks.Create(jobConfig, schedules, perm)
 	if err != nil {
 		return err
 	}
@@ -70,8 +77,8 @@ func (h *HandlerWindows) CreateJob(job *config.ScheduleConfig, schedules []*cale
 }
 
 // RemoveJob is deleting the task scheduler job
-func (h *HandlerWindows) RemoveJob(job *config.ScheduleConfig, permission string) error {
-	err := schtasks.Delete(job.Title, job.SubTitle)
+func (h *HandlerWindows) RemoveJob(job *Config, permission string) error {
+	err := schtasks.Delete(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrorNotRegistered) {
 			return ErrorServiceNotFound
@@ -82,8 +89,8 @@ func (h *HandlerWindows) RemoveJob(job *config.ScheduleConfig, permission string
 }
 
 // DisplayStatus display some information about the task scheduler job
-func (h *HandlerWindows) DisplayJobStatus(job *config.ScheduleConfig) error {
-	err := schtasks.Status(job.Title, job.SubTitle)
+func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
+	err := schtasks.Status(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrorNotRegistered) {
 			return ErrorServiceNotFound

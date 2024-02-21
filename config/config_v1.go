@@ -122,12 +122,12 @@ func (c *Config) getProfileV1(profileKey string) (profile *Profile, err error) {
 }
 
 // getSchedulesV1 loads schedules from profiles
-func (c *Config) getSchedulesV1() ([]*ScheduleConfig, error) {
+func (c *Config) getSchedulesV1() ([]*Schedule, error) {
 	profiles := c.GetProfileNames()
 	if len(profiles) == 0 {
 		return nil, nil
 	}
-	schedules := []*ScheduleConfig{}
+	schedules := []*Schedule{}
 	for _, profileName := range profiles {
 		profile, err := c.GetProfile(profileName)
 		if err != nil {
