@@ -47,7 +47,7 @@ schedules:
 			require.NoError(t, err)
 			assert.NotEmpty(t, schedules)
 			assert.Equal(t, []string{"value"}, schedules["sname"].Profiles)
-			assert.Equal(t, []string{"daily"}, schedules["sname"].Schedule)
+			assert.Equal(t, []string{"daily"}, schedules["sname"].Schedules)
 		})
 	}
 }

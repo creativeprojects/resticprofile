@@ -928,7 +928,7 @@ func TestSchedules(t *testing.T) {
 			require.Len(t, config, 1)
 
 			schedule := config[0]
-			assert.Equal(t, command, schedule.SubTitle)
+			assert.Equal(t, command, schedule.CommandName)
 			assert.Equal(t, []string{"@hourly"}, schedule.Schedules)
 			assert.Equal(t, path.Join(constants.TemporaryDirMarker, "rp.log"), schedule.Log)
 			assert.Equal(t, map[string]string{

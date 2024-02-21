@@ -14,7 +14,6 @@ import (
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/rickb777/date/period"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -303,9 +302,9 @@ func TestCreationOfTasks(t *testing.T) {
 			defer Close()
 			assert.NoError(t, err)
 
-			scheduleConfig := &config.ScheduleConfig{
-				Title:            "test",
-				SubTitle:         strconv.Itoa(count),
+			scheduleConfig := &Config{
+				ProfileName:      "test",
+				CommandName:      strconv.Itoa(count),
 				Command:          "echo",
 				Arguments:        []string{"hello"},
 				WorkingDirectory: "C:\\",
@@ -322,9 +321,9 @@ func TestCreationOfTasks(t *testing.T) {
 			// user logged in doesn't need a password
 			err = createUserLoggedOnTask(scheduleConfig, schedules)
 			assert.NoError(t, err)
-			defer Delete(scheduleConfig.Title, scheduleConfig.SubTitle)
+			defer Delete(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 
-			taskName := getTaskPath(scheduleConfig.Title, scheduleConfig.SubTitle)
+			taskName := getTaskPath(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			buffer, err := exportTask(taskName)
 			assert.NoError(t, err)
 

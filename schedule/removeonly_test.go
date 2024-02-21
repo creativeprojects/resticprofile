@@ -3,16 +3,14 @@ package schedule
 import (
 	"testing"
 
-	"github.com/creativeprojects/resticprofile/config"
-
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewRemoveOnlyConfig(t *testing.T) {
-	cfg := config.NewRemoveOnlyConfig("profile", "command")
+	cfg := NewRemoveOnlyConfig("profile", "command")
 
-	assert.Equal(t, "profile", cfg.Title)
-	assert.Equal(t, "command", cfg.SubTitle)
+	assert.Equal(t, "profile", cfg.ProfileName)
+	assert.Equal(t, "command", cfg.CommandName)
 	assert.Equal(t, "", cfg.JobDescription)
 	assert.Equal(t, "", cfg.TimerDescription)
 	assert.Empty(t, cfg.Schedules)
@@ -22,7 +20,6 @@ func TestNewRemoveOnlyConfig(t *testing.T) {
 	assert.Empty(t, cfg.Arguments)
 	assert.Empty(t, cfg.Environment)
 	assert.Equal(t, "", cfg.Priority)
-	assert.Equal(t, "", cfg.Log)
 	assert.Equal(t, "", cfg.ConfigFile)
 	{
 		flag, found := cfg.GetFlag("")
@@ -32,12 +29,12 @@ func TestNewRemoveOnlyConfig(t *testing.T) {
 }
 
 func TestDetectRemoveOnlyConfig(t *testing.T) {
-	assertRemoveOnly := func(expected bool, config *config.ScheduleConfig) {
-		assert.Equal(t, expected, config.RemoveOnly)
+	assertRemoveOnly := func(expected bool, config *Config) {
+		assert.Equal(t, expected, config.removeOnly)
 	}
 
-	assertRemoveOnly(true, config.NewRemoveOnlyConfig("", ""))
-	assertRemoveOnly(false, &config.ScheduleConfig{})
+	assertRemoveOnly(true, NewRemoveOnlyConfig("", ""))
+	assertRemoveOnly(false, &Config{})
 }
 
 func TestRemoveOnlyJob(t *testing.T) {
@@ -45,7 +42,7 @@ func TestRemoveOnlyJob(t *testing.T) {
 	scheduler := NewScheduler(NewHandler(&SchedulerDefaultOS{}), profile)
 	defer scheduler.Close()
 
-	job := scheduler.NewJob(config.NewRemoveOnlyConfig(profile, "check"))
+	job := scheduler.NewJob(NewRemoveOnlyConfig(profile, "check"))
 
 	assert.Equal(t, ErrorJobCanBeRemovedOnly, job.Create())
 	assert.Equal(t, ErrorJobCanBeRemovedOnly, job.Status())

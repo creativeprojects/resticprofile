@@ -2,26 +2,15 @@ package schedule
 
 import (
 	"errors"
-
-	"github.com/creativeprojects/resticprofile/config"
 )
 
 //
-// Job: common code for all systems
+// Job: common code for all scheduling systems
 //
-
-// SchedulerJob interface
-type SchedulerJob interface {
-	Accessible() bool
-	Create() error
-	Remove() error
-	RemoveOnly() bool
-	Status() error
-}
 
 // Job scheduler
 type Job struct {
-	config  *config.ScheduleConfig
+	config  *Config
 	handler Handler
 }
 
@@ -51,9 +40,9 @@ func (j *Job) Create() error {
 	}
 
 	if len(schedules) > 0 {
-		j.handler.DisplayParsedSchedules(j.config.SubTitle, schedules)
+		j.handler.DisplayParsedSchedules(j.config.CommandName, schedules)
 	} else {
-		err := j.handler.DisplaySchedules(j.config.SubTitle, j.config.Schedules)
+		err := j.handler.DisplaySchedules(j.config.CommandName, j.config.Schedules)
 		if err != nil {
 			return err
 		}
@@ -85,7 +74,7 @@ func (j *Job) Remove() error {
 
 // RemoveOnly returns true if this job can be removed only
 func (j *Job) RemoveOnly() bool {
-	return j.config.RemoveOnly
+	return j.config.removeOnly
 }
 
 // Status of a job
@@ -100,10 +89,9 @@ func (j *Job) Status() error {
 	}
 
 	if len(schedules) > 0 {
-		j.handler.DisplayParsedSchedules(j.config.SubTitle, schedules)
+		j.handler.DisplayParsedSchedules(j.config.CommandName, schedules)
 	} else {
-		err := j.handler.DisplaySchedules(j.config.SubTitle, j.config.Schedules)
-		if err != nil {
+		if err := j.handler.DisplaySchedules(j.config.CommandName, j.config.Schedules); err != nil {
 			return err
 		}
 	}
@@ -114,6 +102,3 @@ func (j *Job) Status() error {
 	}
 	return nil
 }
-
-// Verify interface
-var _ SchedulerJob = &Job{}

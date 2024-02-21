@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,13 +20,13 @@ func TestCreateJobHappyPathSystemd(t *testing.T) {
 			counter |= 2
 			return nil
 		},
-		createJob: func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+		createJob: func(job *Config, schedules []*calendar.Event, permission string) error {
 			counter |= 4
 			return nil
 		},
 	}
 	job := Job{
-		config:  &config.ScheduleConfig{},
+		config:  &Config{},
 		handler: handler,
 	}
 	err := job.Create()
@@ -47,13 +46,13 @@ func TestCreateJobHappyPathOther(t *testing.T) {
 		displayParsedSchedules: func(command string, events []*calendar.Event) {
 			counter |= 2
 		},
-		createJob: func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+		createJob: func(job *Config, schedules []*calendar.Event, permission string) error {
 			counter |= 4
 			return nil
 		},
 	}
 	job := Job{
-		config:  &config.ScheduleConfig{},
+		config:  &Config{},
 		handler: handler,
 	}
 	err := job.Create()
@@ -72,7 +71,7 @@ func TestCreateJobSadPath1(t *testing.T) {
 		},
 	}
 	job := Job{
-		config:  &config.ScheduleConfig{},
+		config:  &Config{},
 		handler: handler,
 	}
 	err := job.Create()
@@ -95,7 +94,7 @@ func TestCreateJobSadPath2(t *testing.T) {
 		},
 	}
 	job := Job{
-		config:  &config.ScheduleConfig{},
+		config:  &Config{},
 		handler: handler,
 	}
 	err := job.Create()
@@ -116,13 +115,13 @@ func TestCreateJobSadPath3(t *testing.T) {
 			counter |= 2
 			return nil
 		},
-		createJob: func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+		createJob: func(job *Config, schedules []*calendar.Event, permission string) error {
 			counter |= 4
 			return errors.New("test!")
 		},
 	}
 	job := Job{
-		config:  &config.ScheduleConfig{},
+		config:  &Config{},
 		handler: handler,
 	}
 	err := job.Create()

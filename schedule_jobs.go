@@ -7,11 +7,10 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schedule"
 )
 
-func scheduleJobs(handler schedule.Handler, profileName string, configs []*config.ScheduleConfig) error {
+func scheduleJobs(handler schedule.Handler, profileName string, configs []*config.Schedule) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -28,55 +27,37 @@ func scheduleJobs(handler schedule.Handler, profileName string, configs []*confi
 	}
 	defer scheduler.Close()
 
-	for _, scheduleConfig := range configs {
+	for _, cfg := range configs {
+		scheduleConfig := scheduleToConfig(cfg)
+		scheduleName := scheduleConfig.CommandName + "@" + scheduleConfig.ProfileName
 		args := []string{
 			"--no-ansi",
 			"--config",
 			scheduleConfig.ConfigFile,
-			"--name",
-			scheduleConfig.Title,
+			"run-schedule",
+			scheduleName,
 		}
-
-		if scheduleConfig.Log != "" {
-			args = append(args, "--log", scheduleConfig.Log)
-		}
-
-		if scheduleConfig.GetLockMode() == config.ScheduleLockModeDefault {
-			if scheduleConfig.GetLockWait() > 0 {
-				args = append(args, "--lock-wait", scheduleConfig.GetLockWait().String())
-			}
-		} else if scheduleConfig.GetLockMode() == config.ScheduleLockModeIgnore {
-			args = append(args, "--no-lock")
-		}
-
-		if scheduleConfig.IgnoreOnBatteryLessThan > 0 && scheduleConfig.IgnoreOnBatteryLessThan <= 100 {
-			args = append(args, fmt.Sprintf("--ignore-on-battery=%d", scheduleConfig.IgnoreOnBatteryLessThan))
-		} else if scheduleConfig.IgnoreOnBattery {
-			args = append(args, "--ignore-on-battery")
-		}
-
-		args = append(args, getResticCommand(scheduleConfig.SubTitle))
 
 		scheduleConfig.SetCommand(wd, binary, args)
 		scheduleConfig.JobDescription =
-			fmt.Sprintf("resticprofile %s for profile %s in %s", scheduleConfig.SubTitle, scheduleConfig.Title, scheduleConfig.ConfigFile)
+			fmt.Sprintf("resticprofile %s for profile %s in %s", scheduleConfig.CommandName, scheduleConfig.ProfileName, scheduleConfig.ConfigFile)
 		scheduleConfig.TimerDescription =
-			fmt.Sprintf("%s timer for profile %s in %s", scheduleConfig.SubTitle, scheduleConfig.Title, scheduleConfig.ConfigFile)
+			fmt.Sprintf("%s timer for profile %s in %s", scheduleConfig.CommandName, scheduleConfig.ProfileName, scheduleConfig.ConfigFile)
 
 		job := scheduler.NewJob(scheduleConfig)
 		err = job.Create()
 		if err != nil {
 			return fmt.Errorf("error creating job %s/%s: %w",
-				scheduleConfig.Title,
-				scheduleConfig.SubTitle,
+				scheduleConfig.ProfileName,
+				scheduleConfig.CommandName,
 				err)
 		}
-		clog.Infof("scheduled job %s/%s created", scheduleConfig.Title, scheduleConfig.SubTitle)
+		clog.Infof("scheduled job %s/%s created", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 	}
 	return nil
 }
 
-func removeJobs(handler schedule.Handler, profileName string, configs []*config.ScheduleConfig) error {
+func removeJobs(handler schedule.Handler, profileName string, configs []*config.Schedule) error {
 	scheduler := schedule.NewScheduler(handler, profileName)
 	err := scheduler.Init()
 	if err != nil {
@@ -84,7 +65,8 @@ func removeJobs(handler schedule.Handler, profileName string, configs []*config.
 	}
 	defer scheduler.Close()
 
-	for _, scheduleConfig := range configs {
+	for _, cfg := range configs {
+		scheduleConfig := scheduleToConfig(cfg)
 		job := scheduler.NewJob(scheduleConfig)
 
 		// Skip over non-accessible, RemoveOnly jobs since they may not exist and must not causes errors
@@ -98,22 +80,22 @@ func removeJobs(handler schedule.Handler, profileName string, configs []*config.
 			if errors.Is(err, schedule.ErrorServiceNotFound) {
 				// Display a warning and keep going. Skip message for RemoveOnly jobs since they may not exist
 				if !job.RemoveOnly() {
-					clog.Warningf("service %s/%s not found", scheduleConfig.Title, scheduleConfig.SubTitle)
+					clog.Warningf("service %s/%s not found", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 				}
 				continue
 			}
 			return fmt.Errorf("error removing job %s/%s: %w",
-				scheduleConfig.Title,
-				scheduleConfig.SubTitle,
+				scheduleConfig.ProfileName,
+				scheduleConfig.CommandName,
 				err)
 		}
 
-		clog.Infof("scheduled job %s/%s removed", scheduleConfig.Title, scheduleConfig.SubTitle)
+		clog.Infof("scheduled job %s/%s removed", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 	}
 	return nil
 }
 
-func statusJobs(handler schedule.Handler, profileName string, configs []*config.ScheduleConfig) error {
+func statusJobs(handler schedule.Handler, profileName string, configs []*config.Schedule) error {
 	scheduler := schedule.NewScheduler(handler, profileName)
 	err := scheduler.Init()
 	if err != nil {
@@ -121,23 +103,24 @@ func statusJobs(handler schedule.Handler, profileName string, configs []*config.
 	}
 	defer scheduler.Close()
 
-	for _, scheduleConfig := range configs {
+	for _, cfg := range configs {
+		scheduleConfig := scheduleToConfig(cfg)
 		job := scheduler.NewJob(scheduleConfig)
 		err := job.Status()
 		if err != nil {
 			if errors.Is(err, schedule.ErrorServiceNotFound) {
 				// Display a warning and keep going
-				clog.Warningf("service %s/%s not found", scheduleConfig.Title, scheduleConfig.SubTitle)
+				clog.Warningf("service %s/%s not found", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 				continue
 			}
 			if errors.Is(err, schedule.ErrorServiceNotRunning) {
 				// Display a warning and keep going
-				clog.Warningf("service %s/%s is not running", scheduleConfig.Title, scheduleConfig.SubTitle)
+				clog.Warningf("service %s/%s is not running", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 				continue
 			}
 			return fmt.Errorf("error querying status of job %s/%s: %w",
-				scheduleConfig.Title,
-				scheduleConfig.SubTitle,
+				scheduleConfig.ProfileName,
+				scheduleConfig.CommandName,
 				err)
 		}
 	}
@@ -145,9 +128,26 @@ func statusJobs(handler schedule.Handler, profileName string, configs []*config.
 	return nil
 }
 
-func getResticCommand(profileCommand string) string {
-	if profileCommand == constants.SectionConfigurationRetention {
-		return constants.CommandForget
+func scheduleToConfig(sched *config.Schedule) *schedule.Config {
+	if len(sched.Schedules) == 0 {
+		// there's no schedule defined, so this record is for removal only
+		return schedule.NewRemoveOnlyConfig(sched.Profiles[0], sched.CommandName)
 	}
-	return profileCommand
+	return &schedule.Config{
+		ProfileName:             sched.Profiles[0],
+		CommandName:             sched.CommandName,
+		Schedules:               sched.Schedules,
+		Permission:              sched.Permission,
+		WorkingDirectory:        "",
+		Command:                 "",
+		Arguments:               []string{},
+		Environment:             sched.Environment,
+		JobDescription:          "",
+		TimerDescription:        "",
+		Priority:                sched.Priority,
+		ConfigFile:              sched.ConfigFile,
+		Flags:                   sched.Flags,
+		IgnoreOnBattery:         sched.IgnoreOnBattery,
+		IgnoreOnBatteryLessThan: sched.IgnoreOnBatteryLessThan,
+	}
 }

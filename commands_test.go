@@ -64,14 +64,14 @@ schedule = "daily"
 	declaredCount := 0
 
 	for _, jobConfig := range schedules {
-		scheduler := schedule.NewScheduler(schedule.NewHandler(schedule.SchedulerDefaultOS{}), jobConfig.Title)
+		scheduler := schedule.NewScheduler(schedule.NewHandler(schedule.SchedulerDefaultOS{}), jobConfig.Profiles[0])
 		defer func(s *schedule.Scheduler) { s.Close() }(scheduler) // Capture current ref to scheduler to be able to close it when function returns.
 
-		if jobConfig.SubTitle == "check" {
-			assert.False(t, scheduler.NewJob(jobConfig).RemoveOnly())
+		if jobConfig.CommandName == "check" {
+			assert.False(t, scheduler.NewJob(scheduleToConfig(jobConfig)).RemoveOnly())
 			declaredCount++
 		} else {
-			assert.True(t, scheduler.NewJob(jobConfig).RemoveOnly())
+			assert.True(t, scheduler.NewJob(scheduleToConfig(jobConfig)).RemoveOnly())
 		}
 	}
 
@@ -114,7 +114,7 @@ schedule = "daily"
 		assert.NotNil(t, profile)
 		assert.NotEmpty(t, schedules)
 		assert.Len(t, schedules, 1)
-		assert.Equal(t, "check", schedules[0].SubTitle)
+		assert.Equal(t, "check", schedules[0].CommandName)
 	}
 }
 
@@ -270,4 +270,161 @@ func TestGenerateCommand(t *testing.T) {
 			assert.Equal(t, 0, buffer.Len())
 		}
 	})
+}
+
+func TestShowSchedules(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	schedules := []*config.Schedule{
+		{
+			Profiles:    []string{"default"},
+			CommandName: "check",
+			Schedules:   []string{"weekly"},
+		},
+		{
+			Profiles:    []string{"default"},
+			CommandName: "backup",
+			Schedules:   []string{"daily"},
+		},
+	}
+	expected := strings.TrimSpace(`
+schedule check@default:
+    run:       check
+    profiles:  default
+    schedule:  weekly
+
+schedule backup@default:
+    run:       backup
+    profiles:  default
+    schedule:  daily
+
+`)
+	showSchedules(buffer, schedules)
+	assert.Equal(t, expected, strings.TrimSpace(buffer.String()))
+}
+
+func TestCreateScheduleWhenNoneAvailable(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = createSchedule(nil, commandContext{
+		Context: Context{
+			config: cfg,
+			flags: commandLineFlags{
+				name: "default",
+			},
+		},
+	})
+	assert.Error(t, err)
+}
+
+func TestCreateScheduleAll(t *testing.T) {
+	// loads an (almost) empty config
+	// note that a default (or specific) profile is needed to load all schedules:
+	// TODO: we should be able to load them all without a default profile
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = createSchedule(nil, commandContext{
+		Context: Context{
+			config: cfg,
+			flags: commandLineFlags{
+				name: "default",
+			},
+			request: Request{arguments: []string{"--all"}},
+		},
+	})
+	assert.NoError(t, err)
+}
+
+func TestPreRunScheduleNoScheduleName(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = preRunSchedule(&Context{
+		config: cfg,
+		flags: commandLineFlags{
+			name: "default",
+		},
+	})
+	assert.Error(t, err)
+	t.Log(err)
+}
+
+func TestPreRunScheduleWrongScheduleName(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = preRunSchedule(&Context{
+		request: Request{arguments: []string{"wrong"}},
+		config:  cfg,
+		flags: commandLineFlags{
+			name: "default",
+		},
+	})
+	assert.Error(t, err)
+	t.Log(err)
+}
+
+func TestPreRunScheduleProfileUnknown(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = preRunSchedule(&Context{
+		request: Request{arguments: []string{"backup@profile"}},
+		config:  cfg,
+	})
+	assert.ErrorIs(t, err, config.ErrNotFound)
+}
+
+func TestRunScheduleNoScheduleName(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = runSchedule(nil, commandContext{
+		Context: Context{
+			config: cfg,
+			flags: commandLineFlags{
+				name: "default",
+			},
+		},
+	})
+	assert.Error(t, err)
+	t.Log(err)
+}
+
+func TestRunScheduleWrongScheduleName(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = runSchedule(nil, commandContext{
+		Context: Context{
+			request: Request{arguments: []string{"wrong"}},
+			config:  cfg,
+			flags: commandLineFlags{
+				name: "default",
+			},
+		},
+	})
+	assert.Error(t, err)
+	t.Log(err)
+}
+
+func TestRunScheduleProfileUnknown(t *testing.T) {
+	// loads an (almost) empty config
+	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
+	assert.NoError(t, err)
+
+	err = runSchedule(nil, commandContext{
+		Context: Context{
+			request: Request{arguments: []string{"backup@profile"}},
+			config:  cfg,
+		},
+	})
+	assert.ErrorIs(t, err, ErrProfileNotFound)
 }

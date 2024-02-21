@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -295,9 +294,9 @@ type ScheduleBaseSection struct {
 	ScheduleLockMode                string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	ScheduleLockWait                time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
 	ScheduleEnvCapture              []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
-	ScheduleIgnoreOnBattery         bool          `mapstructure:"schedule-ignore-on-battery" default:"false" description:"Don't schedule the start of this profile when running on battery"`
-	ScheduleIgnoreOnBatteryLessThan int           `mapstructure:"schedule-ignore-on-battery-less-than" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
-	ScheduleAfterNetworkOnline      bool          `mapstructure:"schedule-after-network-online" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
+	ScheduleIgnoreOnBattery         bool          `mapstructure:"schedule-ignore-on-battery" show:"noshow" default:"false" description:"Don't schedule the start of this profile when running on battery"`
+	ScheduleIgnoreOnBatteryLessThan int           `mapstructure:"schedule-ignore-on-battery-less-than" show:"noshow" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
+	ScheduleAfterNetworkOnline      bool          `mapstructure:"schedule-after-network-online" show:"noshow" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
@@ -818,11 +817,12 @@ func (p *Profile) SchedulableCommands() (commands []string) {
 	return
 }
 
-// Schedules returns a slice of ScheduleConfig that satisfy the schedule.Config interface
-func (p *Profile) Schedules() []*ScheduleConfig {
+// Schedules returns a slice of Schedule for all the commands that have a schedule configuration
+// Only v1 configuration have schedules inside the profile
+func (p *Profile) Schedules() []*Schedule {
 	// All SectionWithSchedule (backup, check, prune, etc)
 	sections := GetSectionsWith[Scheduling](p)
-	configs := make([]*ScheduleConfig, 0, len(sections))
+	configs := make([]*Schedule, 0, len(sections))
 
 	for name, section := range sections {
 		if s := section.GetSchedule(); len(s.Schedule) > 0 {
@@ -851,28 +851,26 @@ func (p *Profile) Schedules() []*ScheduleConfig {
 				}
 			}
 
-			config := &ScheduleConfig{
-				Title:                   p.Name,
-				SubTitle:                name,
+			config := &Schedule{
+				CommandName:             name,
+				Group:                   "",
+				Profiles:                []string{p.Name},
 				Schedules:               s.Schedule,
 				Permission:              s.SchedulePermission,
-				Environment:             env.Values(),
 				Log:                     s.ScheduleLog,
+				Priority:                s.SchedulePriority,
 				LockMode:                s.ScheduleLockMode,
 				LockWait:                s.ScheduleLockWait,
-				Priority:                s.SchedulePriority,
-				ConfigFile:              p.config.configFile,
+				Environment:             env.Values(),
 				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
 				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
 				AfterNetworkOnline:      s.ScheduleAfterNetworkOnline,
 				SystemdDropInFiles:      p.SystemdDropInFiles,
+				ConfigFile:              p.config.configFile,
+				Flags:                   map[string]string{},
 			}
 
-			if len(config.Log) > 0 {
-				if tempDir, err := util.TempDir(); err == nil && strings.HasPrefix(config.Log, filepath.ToSlash(tempDir)) {
-					config.Log = path.Join(constants.TemporaryDirMarker, config.Log[len(tempDir):])
-				}
-			}
+			config.Init(p.config)
 
 			configs = append(configs, config)
 		}

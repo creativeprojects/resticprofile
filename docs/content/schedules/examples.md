@@ -356,5 +356,5 @@ If you backup your files to an external repository on a network, you should get 
 If you prefer not being asked, you can add the `--no-start` flag like so:
 
 ```shell
-% resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
+resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
 ```

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 )
 
 const (
@@ -19,9 +18,9 @@ type mockHandler struct {
 	displayParsedSchedules func(command string, events []*calendar.Event)
 	displaySchedules       func(command string, schedules []string) error
 	displayStatus          func(profileName string) error
-	createJob              func(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error
-	removeJob              func(job *config.ScheduleConfig, permission string) error
-	displayJobStatus       func(job *config.ScheduleConfig) error
+	createJob              func(job *Config, schedules []*calendar.Event, permission string) error
+	removeJob              func(job *Config, permission string) error
+	displayJobStatus       func(job *Config) error
 }
 
 func (h mockHandler) Init() error {
@@ -66,21 +65,21 @@ func (h mockHandler) DisplayStatus(profileName string) error {
 	return h.displayStatus(profileName)
 }
 
-func (h mockHandler) CreateJob(job *config.ScheduleConfig, schedules []*calendar.Event, permission string) error {
+func (h mockHandler) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
 	if h.createJob == nil {
 		h.t.Fatal(errorMethodNotRegistered)
 	}
 	return h.createJob(job, schedules, permission)
 }
 
-func (h mockHandler) RemoveJob(job *config.ScheduleConfig, permission string) error {
+func (h mockHandler) RemoveJob(job *Config, permission string) error {
 	if h.removeJob == nil {
 		h.t.Fatal(errorMethodNotRegistered)
 	}
 	return h.removeJob(job, permission)
 }
 
-func (h mockHandler) DisplayJobStatus(job *config.ScheduleConfig) error {
+func (h mockHandler) DisplayJobStatus(job *Config) error {
 	if h.displayJobStatus == nil {
 		h.t.Fatal(errorMethodNotRegistered)
 	}

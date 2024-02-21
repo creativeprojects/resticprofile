@@ -14,7 +14,6 @@ import (
 	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/rickb777/date/period"
@@ -85,7 +84,7 @@ func Close() {
 }
 
 // Create or update a task (if the name already exists in the Task Scheduler)
-func Create(config *config.ScheduleConfig, schedules []*calendar.Event, permission Permission) error {
+func Create(config *Config, schedules []*calendar.Event, permission Permission) error {
 	if !IsConnected() {
 		return ErrorNotConnected
 	}
@@ -100,8 +99,8 @@ func Create(config *config.ScheduleConfig, schedules []*calendar.Event, permissi
 }
 
 // createUserTask creates a new user task. Will update an existing task instead of overwritting
-func createUserTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title, config.SubTitle)
+func createUserTask(config *Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.ProfileName, config.CommandName)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err == nil {
 		// the task already exists
@@ -144,8 +143,8 @@ func createUserTask(config *config.ScheduleConfig, schedules []*calendar.Event) 
 }
 
 // updateUserTask updates an existing task
-func updateUserTask(task taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title, config.SubTitle)
+func updateUserTask(task taskmaster.RegisteredTask, config *Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.ProfileName, config.CommandName)
 
 	username, password, err := userCredentials()
 	if err != nil {
@@ -201,8 +200,8 @@ func userCredentials() (string, string, error) {
 }
 
 // createUserLoggedOnTask creates a new user task. Will update an existing task instead of overwritting
-func createUserLoggedOnTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title, config.SubTitle)
+func createUserLoggedOnTask(config *Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.ProfileName, config.CommandName)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err == nil {
 		// the task already exists
@@ -239,8 +238,8 @@ func createUserLoggedOnTask(config *config.ScheduleConfig, schedules []*calendar
 }
 
 // updateUserLoggedOnTask updates an existing task
-func updateUserLoggedOnTask(task taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title, config.SubTitle)
+func updateUserLoggedOnTask(task taskmaster.RegisteredTask, config *Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.ProfileName, config.CommandName)
 
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
@@ -269,8 +268,8 @@ func updateUserLoggedOnTask(task taskmaster.RegisteredTask, config *config.Sched
 }
 
 // createSystemTask creates a new system task. Will update an existing task instead of overwritting
-func createSystemTask(config *config.ScheduleConfig, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title, config.SubTitle)
+func createSystemTask(config *Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.ProfileName, config.CommandName)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err == nil {
 		// the task already exists
@@ -302,8 +301,8 @@ func createSystemTask(config *config.ScheduleConfig, schedules []*calendar.Event
 }
 
 // updateSystemTask updates an existing task
-func updateSystemTask(task taskmaster.RegisteredTask, config *config.ScheduleConfig, schedules []*calendar.Event) error {
-	taskName := getTaskPath(config.Title, config.SubTitle)
+func updateSystemTask(task taskmaster.RegisteredTask, config *Config, schedules []*calendar.Event) error {
+	taskName := getTaskPath(config.ProfileName, config.CommandName)
 
 	// clear up all actions and put ours back
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)

@@ -1,4 +1,5 @@
-//+build !darwin,!windows
+//go:build !darwin && !windows
+// +build !darwin,!windows
 
 package crond
 
@@ -33,9 +34,9 @@ func NewCrontab(entries []Entry) *Crontab {
 
 // Update crontab entries:
 //
-// If addEntries is set to true, it will delete and add all new entries
+// # If addEntries is set to true, it will delete and add all new entries
 //
-// If addEntries is set to false, it will only delete the matching entries
+// # If addEntries is set to false, it will only delete the matching entries
 //
 // Return values are the number of entries deleted, and an error if any
 func (c *Crontab) Update(source string, addEntries bool, w io.StringWriter) (int, error) {
@@ -197,11 +198,19 @@ func extractOwnSection(crontab string) (string, string, string, bool) {
 func deleteLine(crontab string, entry Entry) (string, bool, error) {
 	// should match a line like:
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
-	search := fmt.Sprintf(`(?m)^[^#][^\n]+resticprofile[^\n]+--config %s --name %s[^\n]* %s\n`,
-		regexp.QuoteMeta(entry.configFile),
+	// or a line like:
+	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile
+	legacy := fmt.Sprintf(`--name %s[^\n]* %s`,
 		regexp.QuoteMeta(entry.profileName),
 		regexp.QuoteMeta(entry.commandName),
 	)
+	runSchedule := fmt.Sprintf(`run-schedule %s@%s`,
+		regexp.QuoteMeta(entry.commandName),
+		regexp.QuoteMeta(entry.profileName),
+	)
+	search := fmt.Sprintf(`(?m)^[^#][^\n]+resticprofile[^\n]+--config %s (%s|%s)\n`,
+		regexp.QuoteMeta(entry.configFile), legacy, runSchedule)
+
 	pattern, err := regexp.Compile(search)
 	if err != nil {
 		return crontab, false, err
