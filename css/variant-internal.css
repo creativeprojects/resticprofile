@@ -30,15 +30,14 @@
     --INTERNAL-MAIN-TITLES-H5-font: var(--MAIN-TITLES-H5-font, var(--INTERNAL-MAIN-TITLES-H4-font));
     --INTERNAL-MAIN-TITLES-H6-font: var(--MAIN-TITLES-H6-font, var(--INTERNAL-MAIN-TITLES-H5-font));
 
-    --INTERNAL-CODE-BLOCK-color: var(--CODE-BLOCK-color, var(--MAIN-CODE-color, rgba( 0, 0, 0, 1 )));
-    --INTERNAL-CODE-BLOCK-BG-color: var(--CODE-BLOCK-BG-color, var(--MAIN-CODE-BG-color, rgba( 248, 248, 248, 1 )));
+    --INTERNAL-CODE-theme: var(--CODE-theme, relearn-light);
+    --INTERNAL-CODE-font: var(--CODE-font, "Consolas", menlo, monospace);
+    --INTERNAL-CODE-BLOCK-color: var(--CODE-BLOCK-color, var(--MAIN-CODE-color, rgba( 39, 40, 34, 1 )));
+    --INTERNAL-CODE-BLOCK-BG-color: var(--CODE-BLOCK-BG-color, var(--MAIN-CODE-BG-color, rgba( 250, 250, 250, 1 )));
     --INTERNAL-CODE-BLOCK-BORDER-color: var(--CODE-BLOCK-BORDER-color, var(--MAIN-CODE-BG-color, var(--INTERNAL-CODE-BLOCK-BG-color)));
-
     --INTERNAL-CODE-INLINE-color: var(--CODE-INLINE-color, rgba( 94, 94, 94, 1 ));
     --INTERNAL-CODE-INLINE-BG-color: var(--CODE-INLINE-BG-color, rgba( 255, 250, 233, 1 ));
     --INTERNAL-CODE-INLINE-BORDER-color: var(--CODE-INLINE-BORDER-color, rgba( 251, 240, 203, 1 ));
-
-    --INTERNAL-CODE-font: var(--CODE-font, "Consolas", menlo, monospace);
 
     --INTERNAL-BROWSER-theme: var(--BROWSER-theme, light);
     --INTERNAL-MERMAID-theme: var(--CONFIG-MERMAID-theme, var(--MERMAID-theme, var(--INTERNAL-PRINT-MERMAID-theme)));
@@ -110,6 +109,7 @@
     --INTERNAL-PRINT-OPENAPI-theme: var(--PRINT-OPENAPI-theme, var(--PRINT-SWAGGER-theme, light));
     --INTERNAL-PRINT-OPENAPI-CODE-theme: var(--PRINT-OPENAPI-CODE-theme, idea);
 
+    --INTERNAL-MENU-WIDTH-S: var(--MENU-WIDTH-S, 14.375rem);
     --INTERNAL-MENU-WIDTH-M: var(--MENU-WIDTH-M, 14.375rem);
     --INTERNAL-MENU-WIDTH-L: var(--MENU-WIDTH-L, 18.75rem);
 }

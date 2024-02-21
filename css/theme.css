@@ -309,7 +309,7 @@ dd {
     font-size: 2rem;
     font-weight: 200;
     letter-spacing: -.02175em;
-    line-height: 110% !important;
+    line-height: 110%;
     margin: 1.2rem 0 .8rem 0;
     padding-inline-start: 1rem;
     text-rendering: optimizeLegibility;
@@ -344,10 +344,13 @@ dd {
 }
 
 #R-body img,
+#R-body figure > figcaption > h4,
+#R-body figure > figcaption > p,
 #R-body .video-container {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    padding: 0;
     text-align: center;
 }
 
@@ -371,9 +374,28 @@ dd {
 }
 
 #R-body img:not(.lightbox-image).inline {
-    display: inline !important;
-    margin: 0 !important;
+    display: inline;
+    margin: 0;
     vertical-align: bottom;
+}
+
+#R-body figure > figcaption{
+    margin: 0;
+}
+
+#R-body figure > figcaption > h4{
+    font-size: 1.0rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+#R-body figure > figcaption > p{
+    font-size: .85rem;
+    font-weight: 300;
+    margin-top: .15rem;
+}
+#R-body figure > figcaption > h4 + p{
+    margin-top: 0;
 }
 
 #R-body-inner {
@@ -395,20 +417,44 @@ dd {
     }
 }
 
-.topbar-breadcrumbs a:hover,
-.topbar-breadcrumbs a:active,
-.topbar-breadcrumbs a:focus,
-.topbar-breadcrumbs a:hover *,
-.topbar-breadcrumbs a:active *,
-.topbar-breadcrumbs a:focus *,
+#R-topbar a:hover:empty,
+#R-topbar a:active:empty,
+#R-topbar a:focus:empty,
+#R-topbar a:hover :not(i),
+#R-topbar a:active :not(i),
+#R-topbar a:focus :not(i),
+#R-topbar button:hover :not(i),
+#R-topbar button:active :not(i),
+#R-topbar button:focus :not(i),
+#R-topbar .title:hover,
+#R-topbar .title:active,
+#R-topbar .title:focus,
 .topbar-content a:hover,
 .topbar-content a:active,
 .topbar-content a:focus,
 article a:hover,
 article a:active,
-article a:focus {
-    outline: none;
+article a:focus,
+article a:hover .copy-to-clipboard,
+article a:active .copy-to-clipboard,
+article a:focus .copy-to-clipboard {
     text-decoration: underline;
+}
+.topbar-content a:hover,
+.topbar-content a:active,
+.topbar-content a:focus,
+article a:hover,
+article a:active,
+article a:focus,
+article a:hover .copy-to-clipboard,
+article a:active .copy-to-clipboard,
+article a:focus .copy-to-clipboard {
+    outline: none;
+}
+article a:hover > img:only-child:empty,
+article a:active > img:only-child:empty,
+article a:focus > img:only-child:empty{
+    outline: auto;
 }
 
 #R-body-inner:focus-visible{
@@ -756,6 +802,8 @@ div.highlight > div td{
 }
 /* disable selection for lineno cells */
 div.highlight > div td:first-child:not(:last-child){
+    -ms-user-select: none;
+    -webkit-user-select: none;
     user-select: none;
 }
 /* increase code column to full width if highlight shortcode was used in table lineno mode  */
@@ -1061,7 +1109,6 @@ html[dir="rtl"] .topbar-button-next i {
 
 .topbar-breadcrumbs {
     flex-grow: 1;
-    line-height: 1.2;
     margin: 0;
     padding: 0 1rem;
 }
@@ -1111,7 +1158,10 @@ html[dir="rtl"] .topbar-button-next i {
 @media screen and (max-width: 47.999rem) {
     /* we don't support sidebar flyout in mobile */
     .mobile-support #R-sidebar {
-        inset-inline-start: calc( -1 * var(--INTERNAL-MENU-WIDTH-M) );
+        inset-inline-start: calc( -1 * var(--INTERNAL-MENU-WIDTH-S) );
+        min-width: var(--INTERNAL-MENU-WIDTH-S);
+        max-width: var(--INTERNAL-MENU-WIDTH-S);
+        width: var(--INTERNAL-MENU-WIDTH-S);
     }
     .mobile-support #navshow{
         display: inline;
@@ -1132,7 +1182,7 @@ html[dir="rtl"] .topbar-button-next i {
         z-index: 90;
     }
     .mobile-support.sidebar-flyout #R-body {
-        margin-inline-start: var(--INTERNAL-MENU-WIDTH-M);
+        margin-inline-start: var(--INTERNAL-MENU-WIDTH-S);
         overflow: hidden;
     }
     .mobile-support.sidebar-flyout #R-body-overlay{
@@ -1320,20 +1370,17 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
 
 .mermaid {
     border: 1px solid transparent;
+    display: inline-block;
+    padding: .5rem .5rem 0 .5rem;
+    position: relative;
     /* don't use display: none, as this will cause no renderinge by Mermaid */
     visibility: hidden;
-    padding: .5rem .5rem 0 .5rem;
-}
-.mermaid.mermaid-render {
-    display: inline;
-    visibility: visible;
-}
-.mermaid.mermaid-render.zoom {
-    display: inline-block;
-    position: relative;
     width: 100%;
 }
-.mermaid.zoom:hover {
+.mermaid.mermaid-render {
+    visibility: visible;
+}
+.mermaid.zoomable:hover {
     border-color: rgba( 134, 134, 134, .333 );
 }
 
@@ -1341,8 +1388,8 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     /* remove inline height from generated diagram */
     height: initial !important;
 }
-.mermaid.zoom > svg {
-    cursor: pointer;
+.mermaid.zoomable > svg {
+    cursor: grab;
 }
 
 .svg-reset-button {
@@ -1359,14 +1406,14 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     right: 4px;
     top: 4px;
 }
-@media (any-hover: none) {
-    /* if there is at least one input device that does not support hover, we want to force the reset button */
-    .svg-reset-button.zoom {
+.mermaid:hover .svg-reset-button.zoomed {
+    display: block;
+}
+@media (any-hover: some) {
+    /* if there is at least one input device that does not support hover, we want to force the reset button if zoomed */
+    .svg-reset-button.zoomed {
         display: block;
     }
-}
-.mermaid:hover .svg-reset-button {
-    display: block;
 }
 
 .svg-reset-button > i {
@@ -1425,6 +1472,7 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     opacity: 0;
     overflow: hidden;
     position: absolute;
+    visibility: hidden;
     width: 0;
     z-index: 180;
 }
@@ -1433,6 +1481,7 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     border-width: 1px;
     height: auto;
     opacity: 1;
+    visibility: visible;
     width: auto;
 }
 
@@ -1485,7 +1534,6 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
 
 .btn {
     border-radius: 4px;
-    cursor: pointer;
     display: inline-block;
     font-size: .9rem;
     font-weight: 500;
@@ -1496,7 +1544,11 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     -webkit-user-select: none;
     user-select: none;
 }
+.btn.interactive {
+    cursor: pointer;
+}
 
+.btn > span,
 .btn > a {
     display: block;
 }
@@ -1532,13 +1584,13 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     background-color: transparent;
 }
 
-.btn > *:focus {
+.btn.interactive > .btn-interactive:focus {
     outline: none;
 }
 
-.btn > *:hover,
-.btn > *:active,
-.btn > *:focus {
+.btn.interactive > *:hover,
+.btn.interactive > *:active,
+.btn.interactive > *:focus {
     text-decoration: none;
 }
 
@@ -1596,8 +1648,6 @@ h6 a {
 }
 
 .menu-control .control-style {
-    border: 0;
-    border-radius: 0;
     cursor: pointer;
     height: 1.574em;
     overflow: hidden;
@@ -1628,8 +1678,16 @@ html[dir="rtl"] .menu-control span {
 .menu-control button {
     -webkit-appearance: none;
     appearance: none;
+    outline: none;
     width: 100%;
 }
+.menu-control button:active,
+.menu-control button:focus,
+.menu-control select:active,
+.menu-control select:focus{
+    outline-style: auto;
+}
+
 .menu-control select {
     background-color: transparent;
     background-image: none;
@@ -1708,7 +1766,7 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 .a11y-only {
     /* idea taken from https://www.filamentgroup.com/lab/a11y-form-labels.html */
-    clip: rect(1px,1px,1px,1px);
+    clip-path: polygon(0 0, 1px 0, 1px 1px, 0 1px);
     overflow: hidden;
     position: absolute;
     height: 1px;

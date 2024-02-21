@@ -1,10 +1,3 @@
-/* here in this showcase we use our own modified chroma syntax highlightning style;
-   if you want to use a predefined style instead:
-   - remove `markup.highlight.noClasses` from your config.toml
-   - set `markup.highlight.style` to a predefined style name in your config.toml
-   - remove the following `@import` of the self-defined chroma stylesheet */
-@import "chroma-relearn-dark.css";
-
 :root {
     --PRIMARY-color: rgba( 125, 201, 3, 1 ); /* brand primary color */
     --SECONDARY-color: rgba( 108, 140, 227, 1 ); /* brand secondary color */
@@ -15,19 +8,18 @@
     --MAIN-BG-color: rgba( 32, 32, 32, 1 ); /* background color of content */
     --MAIN-TITLES-TEXT-color: rgba( 255, 255, 255, 1 ); /* text color of h2-h6 titles and transparent box titles */
 
-    /* adjusted to relearn-dark chroma style */
-    --CODE-BLOCK-color: rgba( 248, 248, 248, 1 ); /* fallback text color of block code; should be adjusted to your selected chroma style */
+    --CODE-theme: relearn-dark; /* name of the chroma stylesheet file */
+    --CODE-BLOCK-color: rgba( 248, 248, 242, 1 ); /* fallback text color of block code; should be adjusted to your selected chroma style */
     --CODE-BLOCK-BG-color: rgba( 43, 43, 43, 1 ); /* fallback background color of block code; should be adjusted to your selected chroma style */
     --CODE-BLOCK-BORDER-color: rgba( 71, 71, 71, 1 ); /* border color of block code */
-
     --CODE-INLINE-color: rgba( 130, 229, 80, 1 ); /* text color of inline code */
     --CODE-INLINE-BG-color: rgba( 45, 45, 45, 1 ); /* background color of inline code */
     --CODE-INLINE-BORDER-color: rgba( 70, 70, 70, 1 ); /* border color of inline code */
 
     --BROWSER-theme: dark; /* name of the theme for browser scrollbars of the main section */
-    --MERMAID-theme: dark; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
-    --OPENAPI-theme: dark; /* name of the default OpenAPI theme for this variant, can be overridden in config.toml */
-    --OPENAPI-CODE-theme: obsidian; /* name of the default OpenAPI code theme for this variant, can be overridden in config.toml */
+    --MERMAID-theme: dark; /* name of the default Mermaid theme for this variant, can be overridden in hugo.toml */
+    --OPENAPI-theme: dark; /* name of the default OpenAPI theme for this variant, can be overridden in hugo.toml */
+    --OPENAPI-CODE-theme: obsidian; /* name of the default OpenAPI code theme for this variant, can be overridden in hugo.toml */
 
     --MENU-HOME-LINK-color: rgba( 64, 64, 64, 1 ); /* home button color if configured */
     --MENU-HOME-LINK-HOVER-color: rgba( 0, 0, 0, 1 ); /* hovered home button color if configured */

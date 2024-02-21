@@ -114,7 +114,7 @@ function initLunrJson() {
     // this does not work if pages are served via
     // file:// protocol; this is only left for
     // backward compatiblity if the user did not
-    // define the SEARCH output format for the homepage
+    // define the `search` output format for the homepage
     if( window.index_json_url && !window.index_js_url ){
         xhr = new XMLHttpRequest;
         xhr.onreadystatechange = function(){

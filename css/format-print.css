@@ -1,4 +1,5 @@
 @import "theme-relearn-light.css";
+@import "chroma-relearn-light.css";
 
 #R-sidebar {
     display: none;
@@ -37,7 +38,8 @@ pre:not(.mermaid) {
 }
 #R-body .topbar-button {
     /* we don't need the buttons while printing */
-    display: none;
+    /* we need !important to turn off JS topbar button handling setting element styles */
+    display: none !important;
 }
 @media screen and (max-width: 47.999rem) {
     #R-body .topbar-breadcrumbs {
@@ -76,12 +78,8 @@ pre:not(.mermaid) {
 hr{
     border-bottom: 1px solid rgba( 221, 221, 221, 1 );
 }
-body,
-#R-body,
-#R-body-inner {
-    overflow: visible !important; /* turn off limitations for perfect scrollbar */
-}
 #R-body #R-body-inner {
+    overflow: visible; /* turn off limitations for perfect scrollbar */
     /* reset paddings for chapters in screen */
     padding: 0 3.25rem 4rem 3.25rem;
 }

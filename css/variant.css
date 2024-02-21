@@ -18,8 +18,14 @@ a,
 }
 
 a:hover,
+a:active,
+a:focus,
 .anchor:hover,
-.topbar-button button:hover {
+.anchor:active,
+.anchor:focus,
+.topbar-button button:hover,
+.topbar-button button:active,
+.topbar-button button:focus{
     color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
@@ -58,11 +64,6 @@ a:hover,
 #R-sidebar .menu-control:hover,
 #R-sidebar a:hover {
     color: var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
-}
-
-#R-sidebar .menu-control button,
-#R-sidebar .menu-control select{
-    outline-color: var(--INTERNAL-MENU-SECTIONS-LINK-HOVER-color);
 }
 
 #R-sidebar ul.enlarge > li.parent,
@@ -298,16 +299,16 @@ pre:not(.mermaid) .copy-to-clipboard-button:hover {
     color: var(--INTERNAL-CODE-BLOCK-BG-color);
 }
 
-.expand > input:active,
-.expand > input:focus {
-    outline-color: var(--INTERNAL-MAIN-TEXT-color);
-}
-
 .expand > label {
     color: var(--INTERNAL-MAIN-LINK-color);
 }
 
-.expand > label:hover {
+.expand > label:hover,
+.expand > label:active,
+.expand > label:focus,
+.expand > input:hover + label,
+.expand > input:active + label,
+.expand > input:focus + label{
     color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
@@ -350,9 +351,9 @@ pre:not(.mermaid) .copy-to-clipboard-button:hover {
     color: var(--VARIABLE-BOX-CAPTION-color);
 }
 
-.btn > *:hover,
-.btn > *:active,
-.btn > *:focus {
+.btn.interactive > *:hover,
+.btn.interactive > *:active,
+.btn.interactive > *:focus {
     background-color: var(--VARIABLE-BOX-BG-color);
     color: var(--VARIABLE-BOX-TEXT-color);
 }
@@ -361,9 +362,12 @@ pre:not(.mermaid) .copy-to-clipboard-button:hover {
     --VARIABLE-BOX-BG-color: var(--INTERNAL-BOX-BG-color);
 }
 
-.btn.cstyle.transparent:hover,
-.btn.cstyle.transparent:focus,
-.btn.cstyle.transparent:active {
+.btn.cstyle.interactive.transparent:hover,
+.btn.cstyle.interactive.transparent:focus,
+.btn.cstyle.interactive.transparent:active,
+.btn.cstyle.interactive.transparent:has(a:hover),
+.btn.cstyle.interactive.transparent:has(a:focus),
+.btn.cstyle.interactive.transparent:has(a:active) {
     background-color: var(--INTERNAL-BOX-NEUTRAL-color);
 }
 
@@ -411,7 +415,9 @@ article ul > li > input[type="checkbox"] {
 #R-body .tab-nav-button {
     color: var(--INTERNAL-MAIN-LINK-color);
 }
-#R-body .tab-nav-button:not(.active):hover {
+#R-body .tab-nav-button:not(.active):hover,
+#R-body .tab-nav-button:not(.active):active,
+#R-body .tab-nav-button:not(.active):focus {
     color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
@@ -427,7 +433,9 @@ article ul > li > input[type="checkbox"] {
 #R-body .tab-nav-button.active > .tab-nav-text{
     background-color: var(--VARIABLE-BOX-BG-color);
 }
-#R-body .tab-nav-button:not(.active) > .tab-nav-text:hover {
+#R-body .tab-nav-button:not(.active):hover > .tab-nav-text,
+#R-body .tab-nav-button:not(.active):active > .tab-nav-text,
+#R-body .tab-nav-button:not(.active):focus > .tab-nav-text {
     border-bottom-color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 

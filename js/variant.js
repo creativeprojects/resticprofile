@@ -1,18 +1,20 @@
+window.relearn = window.relearn || {};
+
 // we need to load this script in the html head to avoid flickering
 // on page load if the user has selected a non default variant
 
 // polyfill this rotten piece of sh...oftware
 if( typeof NodeList !== "undefined" && NodeList.prototype && !NodeList.prototype.forEach ){
-    NodeList.prototype.forEach = Array.prototype.forEach;
+	NodeList.prototype.forEach = Array.prototype.forEach;
 }
 
 if (!String.prototype.startsWith) {
-    Object.defineProperty(String.prototype, 'startsWith', {
-        value: function(search, rawPos) {
-            var pos = rawPos > 0 ? rawPos|0 : 0;
-            return this.substring(pos, pos + search.length) === search;
-        }
-    });
+	Object.defineProperty(String.prototype, 'startsWith', {
+		value: function(search, rawPos) {
+			var pos = rawPos > 0 ? rawPos|0 : 0;
+			return this.substring(pos, pos + search.length) === search;
+		}
+	});
 }
 
 "function"!=typeof Object.assign&&(Object.assign=function(n,t){"use strict";if(null==n)throw new TypeError("Cannot convert undefined or null to object");for(var r=Object(n),e=1;e<arguments.length;e++){var o=arguments[e];if(null!=o)for(var c in o)Object.prototype.hasOwnProperty.call(o,c)&&(r[c]=o[c])}return r});
@@ -40,7 +42,7 @@ var variants = {
 
 	init: function( variants ){
 		this.variants = variants;
-		var variant = window.localStorage.getItem( baseUriFull+'variant' ) || ( this.variants.length ? this.variants[0] : '' );
+		var variant = window.localStorage.getItem( window.relearn.baseUriFull+'variant' ) || ( this.variants.length ? this.variants[0] : '' );
 		this.changeVariant( variant );
 		document.addEventListener( 'readystatechange', function(){
 			if( document.readyState == 'interactive' ){
@@ -55,7 +57,7 @@ var variants = {
 
 	setVariant: function( variant ){
 		this.variant = variant;
-		window.localStorage.setItem( baseUriFull+'variant', variant );
+		window.localStorage.setItem( window.relearn.baseUriFull+'variant', variant );
 	},
 
 	isVariantLoaded: function(){
@@ -87,16 +89,17 @@ var variants = {
 	},
 
 	generateVariantPath: function( variant, old_path ){
-		var new_path = old_path.replace( /^(.*\/theme-).*?(\.css.*)$/, '$1' + variant + '$2' );
+		var mod = window.relearn.themeVariantModifier.replace( '.', '\\.' );
+		var new_path = old_path.replace( new RegExp(`^(.*\/theme-).*?(${mod}\.css.*)$`), '$1' + variant + '$2' );
 		return new_path;
 	},
 
 	addCustomVariantOption: function(){
-		var variantbase = window.localStorage.getItem( baseUriFull+'customvariantbase' );
+		var variantbase = window.localStorage.getItem( window.relearn.baseUriFull+'customvariantbase' );
 		if( this.variants.indexOf( variantbase ) < 0 ){
 			variantbase = '';
 		}
-		if( !window.localStorage.getItem( baseUriFull+'customvariant' ) ){
+		if( !window.localStorage.getItem( window.relearn.baseUriFull+'customvariant' ) ){
 			variantbase = '';
 		}
 		if( !variantbase ){
@@ -133,15 +136,15 @@ var variants = {
 
 	saveCustomVariant: function(){
 		if( this.getVariant() != this.customvariantname ){
-			window.localStorage.setItem( baseUriFull+'customvariantbase', this.getVariant() );
+			window.localStorage.setItem( window.relearn.baseUriFull+'customvariantbase', this.getVariant() );
 		}
-		window.localStorage.setItem( baseUriFull+'customvariant', this.generateStylesheet() );
+		window.localStorage.setItem( window.relearn.baseUriFull+'customvariant', this.generateStylesheet() );
 		this.setVariant( this.customvariantname );
 		this.markSelectedVariant();
 	},
 
 	loadCustomVariant: function(){
-		var stylesheet = window.localStorage.getItem( baseUriFull+'customvariant' );
+		var stylesheet = window.localStorage.getItem( window.relearn.baseUriFull+'customvariant' );
 
 		// temp styles to document
 		var head = document.querySelector( 'head' );
@@ -167,10 +170,10 @@ var variants = {
 	},
 
 	resetVariant: function(){
-		var variantbase = window.localStorage.getItem( baseUriFull+'customvariantbase' );
+		var variantbase = window.localStorage.getItem( window.relearn.baseUriFull+'customvariantbase' );
 		if( variantbase && confirm( 'You have made changes to your custom variant. Are you sure you want to reset all changes?' ) ){
-			window.localStorage.removeItem( baseUriFull+'customvariantbase' );
-			window.localStorage.removeItem( baseUriFull+'customvariant' );
+			window.localStorage.removeItem( window.relearn.baseUriFull+'customvariantbase' );
+			window.localStorage.removeItem( window.relearn.baseUriFull+'customvariant' );
 			this.removeCustomVariantOption();
 			if( this.getVariant() == this.customvariantname ){
 				this.changeVariant( variantbase );
@@ -202,11 +205,11 @@ var variants = {
 
 	changeVariant: function( variant ){
 		if( variant == this.customvariantname ){
-			var variantbase = window.localStorage.getItem( baseUriFull+'customvariantbase' );
+			var variantbase = window.localStorage.getItem( window.relearn.baseUriFull+'customvariantbase' );
 			if( this.variants.indexOf( variantbase ) < 0 ){
 				variant = '';
 			}
-			if( !window.localStorage.getItem( baseUriFull+'customvariant' ) ){
+			if( !window.localStorage.getItem( window.relearn.baseUriFull+'customvariant' ) ){
 				variant = '';
 			}
 			this.setVariant( variant );
@@ -252,54 +255,59 @@ var variants = {
 	},
 
 	getStylesheet: function(){
-		this.download( this.generateStylesheet(), 'text/css', 'theme-' + this.customvariantname + '.css' );
+		var style = this.generateStylesheet();
+		if( !style ){
+			alert( 'There is nothing to be generated as auto mode variants will be generated by Hugo' );
+			return;
+		}
+		this.download( style, 'text/css', 'theme-' + this.customvariantname + '.css' );
 	},
 
 	adjustCSSRules: function(selector, props, sheets) {
-    // get stylesheet(s)
-    if (!sheets) sheets = [].concat(Array.from(document.styleSheets));else if (sheets.sup) {
-      // sheets is a string
-      var absoluteURL = new URL(sheets, document.baseURI).href;
-      sheets = [].concat(document.styleSheets).filter(function (i) {
-        return i.href == absoluteURL;
-      });
-    } else sheets = [sheets]; // sheets is a stylesheet
-    // CSS (& HTML) reduce spaces in selector to one.
+	// get stylesheet(s)
+	if (!sheets) sheets = [].concat(Array.from(document.styleSheets));else if (sheets.sup) {
+	  // sheets is a string
+	  var absoluteURL = new URL(sheets, document.baseURI).href;
+	  sheets = [].concat(document.styleSheets).filter(function (i) {
+		return i.href == absoluteURL;
+	  });
+	} else sheets = [sheets]; // sheets is a stylesheet
+	// CSS (& HTML) reduce spaces in selector to one.
 
-    selector = selector.replace(/\s+/g, ' ');
+	selector = selector.replace(/\s+/g, ' ');
 
-    var findRule = function findRule(s) {
-      return [].concat(s.cssRules).reverse().find(function (i) {
-        return i.selectorText == selector;
-      });
-    };
+	var findRule = function findRule(s) {
+	  return [].concat(s.cssRules).reverse().find(function (i) {
+		return i.selectorText == selector;
+	  });
+	};
 
-    var rule = sheets.map(findRule).filter(function (i) {
-      return i;
-    }).pop();
-    var propsArr = props.sup ? props.split(/\s*;\s*/).map(function (i) {
-      return i.split(/\s*:\s*/);
-    }) // from string
-    : Object.entries(props); // from Object
+	var rule = sheets.map(findRule).filter(function (i) {
+	  return i;
+	}).pop();
+	var propsArr = props.sup ? props.split(/\s*;\s*/).map(function (i) {
+	  return i.split(/\s*:\s*/);
+	}) // from string
+	: Object.entries(props); // from Object
 
-    if (rule) {
-      for (var _iterator = _createForOfIteratorHelperLoose(propsArr), _step; !(_step = _iterator()).done;) {
-        var _rule$style;
-        var _step$value = _step.value,
-            prop = _step$value[0],
-            val = _step$value[1];
-        // rule.style[prop] = val; is against the spec, and does not support !important.
-        (_rule$style = rule.style).setProperty.apply(_rule$style, [prop].concat(val.split(/ *!(?=important)/)));
-      }
-    } else {
-      sheet = sheets.pop();
-      if (!props.sup) props = propsArr.reduce(function (str, _ref) {
-        var k = _ref[0],
-            v = _ref[1];
-        return str + "; " + k + ": " + v;
-      }, '');
-      sheet.insertRule(selector + " { " + props + " }", sheet.cssRules.length);
-    }
+	if (rule) {
+	  for (var _iterator = _createForOfIteratorHelperLoose(propsArr), _step; !(_step = _iterator()).done;) {
+		var _rule$style;
+		var _step$value = _step.value,
+			prop = _step$value[0],
+			val = _step$value[1];
+		// rule.style[prop] = val; is against the spec, and does not support !important.
+		(_rule$style = rule.style).setProperty.apply(_rule$style, [prop].concat(val.split(/ *!(?=important)/)));
+	  }
+	} else {
+	  sheet = sheets.pop();
+	  if (!props.sup) props = propsArr.reduce(function (str, _ref) {
+		var k = _ref[0],
+			v = _ref[1];
+		return str + "; " + k + ": " + v;
+	  }, '');
+	  sheet.insertRule(selector + " { " + props + " }", sheet.cssRules.length);
+	}
   },
 
 	normalizeColor: function( c ){
@@ -351,17 +359,17 @@ var variants = {
 
 	changeColor: function( c, without_prompt ){
 		var with_prompt = !(without_prompt || false);
-		if( this.getVariant() == 'auto' ){
-			if( with_prompt ){
-				alert( 'The Auto variant can not be changed. Please select the light/dark variant directly to make changes' );
-			}
-			return;
-		}
 
 		var read_style = this.findLoadedStylesheet( 'R-custom-variant-style' );
 		var write_style = this.findLoadedStylesheet( 'R-variant-style' );
 		if( !read_style ){
 			read_style = write_style;
+		}
+		if( !read_style ){
+			if( with_prompt ){
+				alert( 'An auto mode variant can not be changed. Please select its light/dark variant directly to make changes' );
+			}
+			return;
 		}
 
 		var e = this.findColor( c );
@@ -423,6 +431,9 @@ var variants = {
 		var write_style = this.findLoadedStylesheet( 'R-variant-style' );
 		if( !read_style ){
 			read_style = write_style;
+		}
+		if( !read_style ){
+			return;
 		}
 
 		var style =
@@ -565,20 +576,19 @@ var variants = {
 		{ name: 'MAIN-TITLES-H5-font',                   group: 'headings',      fallback: 'MAIN-TITLES-H4-font',         tooltip: 'text font of h5-h6 titles', },
 		{ name: 'MAIN-TITLES-H6-font',                   group: 'headings',      fallback: 'MAIN-TITLES-H5-font',         tooltip: 'text font of h6 titles', },
 
+		{ name: 'CODE-theme',                            group: 'code',           default: 'relearn-light',               tooltip: 'name of the chroma stylesheet file', },
+		{ name: 'CODE-font',                             group: 'code',           default: '"Consolas", menlo, monospace', tooltip: 'text font of code', },
 		{ name: 'CODE-BLOCK-color',                      group: 'code blocks',    default: '#000000',                     tooltip: 'fallback text color of block code; should be adjusted to your selected chroma style', },
 		{ name: 'CODE-BLOCK-BG-color',                   group: 'code blocks',    default: '#f8f8f8',                     tooltip: 'fallback background color of block code; should be adjusted to your selected chroma style', },
 		{ name: 'CODE-BLOCK-BORDER-color',               group: 'code blocks',   fallback: 'CODE-BLOCK-BG-color',         tooltip: 'border color of block code', },
-
 		{ name: 'CODE-INLINE-color',                     group: 'inline code',    default: '#5e5e5e',                     tooltip: 'text color of inline code', },
 		{ name: 'CODE-INLINE-BG-color',                  group: 'inline code',    default: '#fffae9',                     tooltip: 'background color of inline code', },
 		{ name: 'CODE-INLINE-BORDER-color',              group: 'inline code',    default: '#fbf0cb',                     tooltip: 'border color of inline code', },
 
-		{ name: 'CODE-font',                             group: 'code',           default: '"Consolas", menlo, monospace', tooltip: 'text font of code', },
-
 		{ name: 'BROWSER-theme',                         group: '3rd party',      default: 'light',                       tooltip: 'name of the theme for browser scrollbars of the main section', },
-		{ name: 'MERMAID-theme',                         group: '3rd party',      default: 'default',                     tooltip: 'name of the default Mermaid theme for this variant, can be overridden in config.toml', },
-		{ name: 'OPENAPI-theme',                         group: '3rd party',      default: 'light',                       tooltip: 'name of the default OpenAPI theme for this variant, can be overridden in config.toml', },
-		{ name: 'OPENAPI-CODE-theme',                    group: '3rd party',      default: 'obsidian',                    tooltip: 'name of the default OpenAPI code theme for this variant, can be overridden in config.toml', },
+		{ name: 'MERMAID-theme',                         group: '3rd party',      default: 'default',                     tooltip: 'name of the default Mermaid theme for this variant, can be overridden in hugo.toml', },
+		{ name: 'OPENAPI-theme',                         group: '3rd party',      default: 'light',                       tooltip: 'name of the default OpenAPI theme for this variant, can be overridden in hugo.toml', },
+		{ name: 'OPENAPI-CODE-theme',                    group: '3rd party',      default: 'obsidian',                    tooltip: 'name of the default OpenAPI code theme for this variant, can be overridden in hugo.toml', },
 
 		{ name: 'MENU-BORDER-color',                     group: 'header',         default: 'transparent',                 tooltip: 'border color between menu and content', },
 		{ name: 'MENU-TOPBAR-BORDER-color',              group: 'header',        fallback: 'MENU-HEADER-BG-color',        tooltip: 'border color of vertical line between menu and topbar', },

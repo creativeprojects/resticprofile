@@ -255,6 +255,8 @@ select {
 button,
 input[type="submit"] {
   cursor: pointer;
+  -ms-user-select: none;
+  -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
   border: inherit; }
