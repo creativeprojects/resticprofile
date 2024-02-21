@@ -40,11 +40,16 @@ jobs:
       - name: Build for GitHub Pages
         run: cd docs && hugo --minify --enableGitInfo --baseURL https://creativeprojects.github.io/resticprofile/
 
+      - name: Prepare for broken link check
+        run: |
+          mkdir -p /tmp/www
+          cp -r ./public /tmp/www/resticprofile
+
       - name: Check broken links
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
           url: https://creativeprojects.github.io/resticprofile/
-          pages_path: ./public/
+          pages_path: /tmp/www/
           cmd_params: '--exclude="(linux.die.net|stackoverflow.com)" --buffer-size=8192 --max-connections-per-host=5 --rate-limit=5 --timeout=20 --header="User-Agent:curl/7.54.0" --skip-tls-verification'
 
       - name: Deploy to GitHub Pages
