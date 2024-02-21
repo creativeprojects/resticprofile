@@ -307,4 +307,4 @@ checkdoc:
 
 checklinks:
 	@echo "[*] $@"
-	muffet -b 8192 http://localhost:1313/resticprofile/
+	muffet -b 8192 --exclude="(linux.die.net|stackoverflow.com)" http://localhost:1313/resticprofile/

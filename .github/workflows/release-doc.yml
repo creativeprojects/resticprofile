@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'
-  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -38,6 +38,18 @@ jobs:
       - name: Build for GitHub Pages
         run: cd docs && hugo --minify --enableGitInfo --baseURL https://creativeprojects.github.io/resticprofile/
 
+      - name: Prepare for broken link check
+        run: |
+          mkdir -p ./www
+          cp -r ./public ./www/resticprofile
+
+      - name: Check broken links
+        uses: ruzickap/action-my-broken-link-checker@v2
+        with:
+          url: https://creativeprojects.github.io/resticprofile/
+          pages_path: ./www/
+          cmd_params: '--exclude="(linux.die.net|stackoverflow.com)" --buffer-size=8192 --max-connections-per-host=5 --rate-limit=5 --timeout=20 --header="User-Agent:curl/7.54.0" --skip-tls-verification'
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         # if: github.ref == 'refs/heads/main'
@@ -53,7 +65,7 @@ jobs:
           hugo --minify --enableGitInfo --baseURL https://resticprofile.creativeprojects.tech/
 
       - name: Publish to pages.dev
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}

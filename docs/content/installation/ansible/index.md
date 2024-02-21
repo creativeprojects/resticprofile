@@ -8,12 +8,7 @@ weight: 15
 
 Installation using Ansible is not streamlined, but here's the playbook I'm using on my servers:
 
-<!-- {{%attachments title="Playbooks" color="green" pattern=".*"/%}} -->
-
-{{% notice style="secondary" title="Playbooks" icon="paperclip" %}}
-* [resticprofile.yml](files/resticprofile.yml)
-{{% /notice %}}
-
+{{% attachments style="info" title="Playbooks" icon="paperclip" sort="asc" /%}}
 
 This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.
 
@@ -25,12 +20,12 @@ The playbook is installing (or upgrading):
 * password files that can be encrypted using ansible vault. These files are located in `./resticprofile/{{ inventory_hostname }}/keys/*`: they will be decrypted and saved to `/root/resticprofile/`.
 * other files (like files needed for `--exclude-file`, `--files-from` or anything else you need) from `./resticprofile/{{ inventory_hostname }}/copy/*` to `/root/resticprofile/`
 
-{{% notice style="warning" %}}
-The playbook needs the python package `github3`, which in turn needs a whole bunch of package including `cryptography`, which in turn needs the `libssl-dev` package (on debian) and a `rust` compiler.
+{{% notice style="note" %}}
 
-I can tell you it takes forever to compile and install all this on a Raspberry Pi 3.
+This new version (21st Feb 2023) installs the `github3` python packages in a virtual environment. This seems to avoid having to compile the `cryptography` package, which is a huge time saver.
 
-Please note the installation of a rust compiler is not part of this playbook.
+Previously, the playbook wasn't running in a virtual environment. For that matter it needed a whole bunch of packages including `cryptography`, which in turn needed the `libssl-dev` package (on debian) and a `rust` compiler.
+
 {{% /notice %}}
 
 ### Requirements

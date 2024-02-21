@@ -1,4 +1,5 @@
 baseURL = 'https://creativeprojects.github.io/resticprofile/'
+# this is needed because the site is installed in a subdirectory
 canonifyURLs = true
 languageCode = 'en-gb'
 title = 'resticprofile'
@@ -11,7 +12,7 @@ publishdir = "../public/"
 
 [params]
   # Change default color scheme with a variant one.
-  themeVariant = [ "relearn-light", "relearn-dark" ]
+  themeVariant = [ "relearn-dark", "relearn-light"  ]
   collapsibleMenu = true
   externalLinkTarget = "_blank"
 

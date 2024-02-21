@@ -14,7 +14,7 @@ Profiles can inherit from a parent profile. This allows to define the general be
 
 When assuming profile "*backup-homes*" inherits from profile "*base*", then the effective configuration of "*backup-homes*" is built by merging the profile configuration of "*backup-homes*" into "*base*". 
 
-Profile configuration merging follows the same logic as [configuration merging]({{% relref "/configuration/include/#configuration-merging" %}}) in includes: 
+Profile configuration merging follows the same logic as [configuration merging]({{% relref "/configuration/include/index.html#configuration-merging" %}}) in includes: 
 * What defines in the parent profile is replaced by definitions from the derived profile
 * Configuration structure is merged, configuration properties are replaced
 * A profile declares that it inherits from a parent by setting the property `inherit` to the name of the parent profile
@@ -112,7 +112,7 @@ backup-homes:
 
 Configurations prior to **version 2**, treat lists as if they were configuration structure. Instead of replacing the parent with the derived list entirely, a derived list is **merged** into the parent list using **list-index** as key.
 
-This differs from how includes handle lists and may lead to unexpected results. In configuration file format **version 2** the behavior was changed to match that of [includes]({{% relref "/configuration/include/#configuration-merging" %}}) and extended with a deterministic way of pre- & appending to list properties.
+This differs from how includes handle lists and may lead to unexpected results. In configuration file format **version 2** the behavior was changed to match that of [includes]({{% relref "/configuration/include/index.html#configuration-merging" %}}) and extended with a deterministic way of pre- & appending to list properties.
 
 {{% /notice %}}
 
@@ -190,11 +190,11 @@ In the examples above, the final value of `exclude` in `derived-profile` is `['.
 Mixins offer an easy way to share pieces of configuration between profiles without forcing a hierarchy of inheritance. Mixins can be used at every level within the profile configuration, support parametrisation (`vars`) and similar to hierarchic inheritance, they can prepend or append to list properties in addition to setting or replacing properties.
 
 Mixins are declared in section `mixins` as named objects. The contents of these objects are merged into the profile configuration wherever a `use` property references (uses) the mixin. 
-Configuration merging is following the same logic as used in [inheritance](#profile-inheritance) and [includes]({{% relref "/configuration/include/#configuration-merging" %}}). When `use` references multiple mixins, the mixins apply in the order they are referenced and can override each other (mixins referenced later override what earlier mixins defined).
+Configuration merging is following the same logic as used in [inheritance](#profile-inheritance) and [includes]({{% relref "/configuration/include/index.html#configuration-merging" %}}). When `use` references multiple mixins, the mixins apply in the order they are referenced and can override each other (mixins referenced later override what earlier mixins defined).
 
 Configuration values inside a mixin may be parametrized with variables following the syntax `${variable}` or `$variable`. Defaults for variables can be defined inside the mixin with `default-vars` and `use` can specify variables before merging the mixin. In difference to configuration [variables]({{% relref "/configuration/variables" %}}) that expand prior to parsing, mixin variables expand when the mixin is merged and for this reason the syntax differs.
 
-Unlike configuration [variables]({{% relref "/configuration/variables" %}}) and [templates]({{% relref "/configuration/templates" %}}), mixins create parsed configuration structure not config markup that requires parsing. This allows mixins to be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{% relref "/configuration/include/#configuration-merging" %}}).
+Unlike configuration [variables]({{% relref "/configuration/variables" %}}) and [templates]({{% relref "/configuration/templates" %}}), mixins create parsed configuration structure not config markup that requires parsing. This allows mixins to be defined in one supported config format (`yaml`, `toml`, `json`) while being used in any other supported format when the configuration is split into multiple [includes]({{% relref "/configuration/include/index.html#configuration-merging" %}}).
 
 {{< tabs groupid="config-with-mixins" >}}
 {{% tab title="yaml" %}}
@@ -298,7 +298,7 @@ Every use object within the `use` list has the following structure:
 | `vars`: `<variable-name>`      | Set mixin variable `$<variable-name>`                             |
 | `<variable-name>`              | Set mixin variable `$<variable-name>` (short syntax)              |
 
-Mixins are applied to the configuration after processing all [includes]({{% relref "/configuration/include/" %}}) but prior to [profile inheritance](#profile-inheritance) which means the `use` properties are not inherited but the result of applying `use` is inherited instead. What is defined by a mixin in a parent profile can still be overridden by a definition in a derived profile, but derived profiles can not change which mixins apply to their parent.
+Mixins are applied to the configuration after processing all [includes]({{% relref "/configuration/include/index.html" %}}) but prior to [profile inheritance](#profile-inheritance) which means the `use` properties are not inherited but the result of applying `use` is inherited instead. What is defined by a mixin in a parent profile can still be overridden by a definition in a derived profile, but derived profiles can not change which mixins apply to their parent.
 
 List properties that have been inherited from a parent can be modified (append/prepend) and replaced by a mixin.
 
@@ -422,7 +422,7 @@ Profiles in resticprofile configure commandline options (flags) for restic comma
 
 Resticprofile applies a filter (see `global.restic-arguments-filter`) to decide which flags are supported in which restic commands and automatically removes unsupported flags when building commandline options.
 
-For example, a flag like `insecure-tls` can be set at profile level and will be used whenever restic is started with this profile. Most supported flags can be set in this way at profile level, see [reference]({{% relref "/configuration/reference" %}}) for details.
+For example, a flag like `insecure-tls` can be set at profile level and will be used whenever restic is started with this profile. Most supported flags can be set in this way at profile level, see [reference]({{% relref "reference" %}}) for details.
 
 {{< tabs groupid="config-with-common-flags-in-profile" >}}
 {{% tab title="toml" %}}

@@ -49,9 +49,16 @@ jobs:
           export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
           hugo --minify --enableGitInfo --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
+      - name: Check broken links
+        uses: ruzickap/action-my-broken-link-checker@v2
+        with:
+          url: https://resticprofile.pages.dev/
+          pages_path: ./public/
+          cmd_params: '--exclude="(linux.die.net|stackoverflow.com)" --buffer-size=8192 --max-connections=10 --color=always --skip-tls-verification --header="User-Agent:curl/7.54.0" --timeout=20'
+
       - name: Publish to pages.dev
         continue-on-error: true # secrets are not set for PRs from forks
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
