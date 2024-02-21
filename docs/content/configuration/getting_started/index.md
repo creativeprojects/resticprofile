@@ -10,7 +10,7 @@ weight: 2
 
 In a nutshell, **resticprofile** provides a configuration file and a runner that will generate all the necessary calls to **restic**.
 
-Unless you're using the **resticprofile** [Docker image]({{% relref "../../installation/docker/index.html" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
+Unless you're using the **resticprofile** [Docker image]({{% relref "/installation/docker/index.html" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
 
 ## Choose your favourite format
 
@@ -38,13 +38,13 @@ In Visual Studio Code, you need to install an extension that supports completion
 
 For example you can install the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension:
 
-![TOML extension](TOML.png)
+![TOML extension]({{< absolute "configuration/getting_started/TOML.png" nohtml >}})
 
 ### YAML
 
 Same for YAML: in Visual Studio Code you need to install an extension like the one [provided by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) to understand the shape of your configuration file.
 
-![YAML extension](YAML.png)
+![YAML extension]({{< absolute "configuration/getting_started/YAML.png" nohtml >}})
 
 ## Write your first configuration file
 

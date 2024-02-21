@@ -1,6 +1,6 @@
 baseURL = 'https://creativeprojects.github.io/resticprofile/'
-# this is no longer needed
-# canonifyURLs = true
+# this is needed because the site is installed in a subdirectory
+canonifyURLs = true
 languageCode = 'en-gb'
 title = 'resticprofile'
 theme = "hugo-theme-relearn"
