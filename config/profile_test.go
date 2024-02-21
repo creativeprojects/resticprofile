@@ -883,7 +883,7 @@ profile:
 	}
 }
 
-func TestSchedules(t *testing.T) {
+func TestSchedulesV1(t *testing.T) {
 	util.ClearTempDir()
 	defer util.ClearTempDir()
 	logFile := path.Join(filepath.ToSlash(util.MustGetTempDir()), "rp.log")

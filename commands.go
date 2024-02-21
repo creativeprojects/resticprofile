@@ -552,7 +552,13 @@ func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.Schedul
 		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
 	}
 
-	return schedule.NewSchedulerConfig(global), profile, profile.Schedules(), nil
+	schedules := profile.Schedules()
+	// schedulesConfig := make([]*config.ScheduleConfig, len(schedules))
+	// for index, schedule := range schedules {
+	// 	schedulesConfig[index] = schedule.GetScheduleConfig()
+	// }
+
+	return schedule.NewSchedulerConfig(global), profile, schedules, nil
 }
 
 func requireScheduleJobs(schedules []*config.Schedule, flags commandLineFlags) error {
@@ -585,13 +591,11 @@ func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedul
 }
 
 func preRunSchedule(ctx *Context) error {
-	if len(ctx.request.arguments) < 1 {
-		return errors.New("run-schedule command expects one argument: schedule name")
+	if len(ctx.request.arguments) != 1 {
+		return errors.New("run-schedule command expects one argument (only): schedule name")
 	}
 	scheduleName := ctx.request.arguments[0]
-	// temporarily allow v2 configuration to run v1 schedules
-	// if ctx.config.GetVersion() < config.Version02
-	{
+	if ctx.config.GetVersion() < config.Version02 {
 		// schedule name is in the form "command@profile"
 		commandName, profileName, ok := strings.Cut(scheduleName, "@")
 		if !ok {

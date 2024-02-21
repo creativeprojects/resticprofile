@@ -657,18 +657,30 @@ func (c *Config) GetSchedules() ([]*Schedule, error) {
 	if c.GetVersion() <= Version01 {
 		return c.getSchedulesV1()
 	}
-	return nil, nil
-}
 
-// GetScheduleSections returns a list of schedules
-func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error) {
-	c.requireMinVersion(Version02)
-
-	schedules = map[string]Schedule{}
+	schedules := make([]*Schedule, 0)
 
 	if section := c.viper.Sub(constants.SectionConfigurationSchedules); section != nil {
 		for sectionKey := range section.AllSettings() {
-			var schedule Schedule
+			schedule, err := c.getSchedule(sectionKey)
+			if err != nil {
+				continue
+			}
+			schedules = append(schedules, schedule.GetSchedule())
+		}
+	}
+	return schedules, nil
+}
+
+// GetScheduleSections returns a list of schedules
+func (c *Config) GetScheduleSections() (schedules map[string]*ScheduleSection, err error) {
+	c.requireMinVersion(Version02)
+
+	schedules = map[string]*ScheduleSection{}
+
+	if section := c.viper.Sub(constants.SectionConfigurationSchedules); section != nil {
+		for sectionKey := range section.AllSettings() {
+			var schedule *ScheduleSection
 			schedule, err = c.getSchedule(sectionKey)
 			if err != nil {
 				break
@@ -680,9 +692,9 @@ func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error
 	return
 }
 
-func (c *Config) getSchedule(key string) (Schedule, error) {
-	schedule := Schedule{}
-	err := c.unmarshalKey(c.flatKey(constants.SectionConfigurationSchedules, key), &schedule)
+func (c *Config) getSchedule(key string) (*ScheduleSection, error) {
+	schedule := NewScheduleSection(c, key)
+	err := c.unmarshalKey(c.flatKey(constants.SectionConfigurationSchedules, key), schedule)
 	if err != nil {
 		return schedule, err
 	}

@@ -139,7 +139,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 	}
 
 	extensionMatcher := regexp.MustCompile(`\.(conf|toml|yaml|json)$`)
-	version2Matcher := regexp.MustCompile(`^version[:=\s]+2`)
+	version2Matcher := regexp.MustCompile(`version[:="'\s]+2`)
 	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf)$`)
 	testCount := 0
 

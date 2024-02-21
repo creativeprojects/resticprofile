@@ -820,12 +820,14 @@ func (p *Profile) SchedulableCommands() (commands []string) {
 // Schedules returns a slice of Schedule for all the commands that have a schedule configuration
 // Only v1 configuration have schedules inside the profile
 func (p *Profile) Schedules() []*Schedule {
+	p.config.requireVersion(Version01)
+
 	// All SectionWithSchedule (backup, check, prune, etc)
 	sections := GetSectionsWith[Scheduling](p)
 	configs := make([]*Schedule, 0, len(sections))
 
-	for name, section := range sections {
-		if s := section.GetSchedule(); len(s.Schedule) > 0 {
+	for sectionName, section := range sections {
+		if s := section.GetSchedule(); s != nil && len(s.Schedule) > 0 {
 			env := util.NewDefaultEnvironment()
 
 			if len(s.ScheduleEnvCapture) > 0 {
@@ -852,7 +854,7 @@ func (p *Profile) Schedules() []*Schedule {
 			}
 
 			config := &Schedule{
-				CommandName:             name,
+				CommandName:             sectionName,
 				Group:                   "",
 				Profiles:                []string{p.Name},
 				Schedules:               s.Schedule,

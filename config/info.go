@@ -583,6 +583,7 @@ var infoTypes struct {
 	mixins,
 	mixinUse,
 	profile,
+	schedule,
 	genericSection reflect.Type
 	genericSectionNames []string
 }
@@ -596,6 +597,7 @@ func init() {
 		infoTypes.mixins = reflect.TypeOf(mixin{})
 		infoTypes.mixinUse = reflect.TypeOf(mixinUse{})
 		infoTypes.profile = reflect.TypeOf(profile)
+		infoTypes.schedule = reflect.TypeOf(ScheduleSection{})
 		infoTypes.genericSection = reflect.TypeOf(GenericSection{})
 		infoTypes.genericSectionNames = maps.Keys(profile.OtherSections)
 	}
@@ -621,6 +623,15 @@ func NewGroupInfo() NamedPropertySet {
 	}
 	customizeProperties(constants.SectionConfigurationGroups, set.properties)
 	return set
+}
+
+// NewScheduleInfo returns structural information on the "schedules" config v2 section
+func NewScheduleInfo() NamedPropertySet {
+	return &namedPropertySet{
+		name:        constants.SectionConfigurationSchedules,
+		description: "profile and group schedules",
+		propertySet: propertySetFromType(infoTypes.schedule),
+	}
 }
 
 // NewMixinsInfo returns structural information on the "mixins" config v2 section

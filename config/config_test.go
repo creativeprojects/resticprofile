@@ -599,7 +599,7 @@ two:
 	}
 }
 
-func TestGetSchedules(t *testing.T) {
+func TestGetSchedulesV1(t *testing.T) {
 	content := `---
 profile:
   backup:

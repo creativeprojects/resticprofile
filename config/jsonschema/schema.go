@@ -320,6 +320,16 @@ func schemaForGroups(version config.Version) SchemaType {
 	return object
 }
 
+func schemaForSchedules() SchemaType {
+	info := config.NewScheduleInfo()
+	object := newSchemaObject()
+	object.Description = info.Description()
+	schedules := schemaForPropertySet(info)
+	schedules.describe("schedule", "schedule declaration")
+	object.PatternProperties[matchAll] = schedules
+	return object
+}
+
 func schemaForGlobal() SchemaType {
 	return schemaForPropertySet(config.NewGlobalInfo())
 }
@@ -433,12 +443,13 @@ func schemaForConfigV2(profileInfo config.ProfileInfo) (object *schemaObject) {
 	object = newSchemaObject()
 	object.Description = "resticprofile configuration v2"
 	object.Properties = map[string]SchemaType{
-		constants.SectionConfigurationGlobal:   schemaForGlobal(),
-		constants.SectionConfigurationGroups:   schemaForGroups(config.Version02),
-		constants.SectionConfigurationIncludes: schemaForIncludes(),
-		constants.SectionConfigurationMixins:   schemaForMixins(),
-		constants.SectionConfigurationProfiles: schemaForProfile(profileInfo),
-		constants.ParameterVersion:             schemaForConfigVersion(config.Version02),
+		constants.SectionConfigurationGlobal:    schemaForGlobal(),
+		constants.SectionConfigurationGroups:    schemaForGroups(config.Version02),
+		constants.SectionConfigurationIncludes:  schemaForIncludes(),
+		constants.SectionConfigurationMixins:    schemaForMixins(),
+		constants.SectionConfigurationProfiles:  schemaForProfile(profileInfo),
+		constants.SectionConfigurationSchedules: schemaForSchedules(),
+		constants.ParameterVersion:              schemaForConfigVersion(config.Version02),
 	}
 	object.Required = append(object.Required, constants.ParameterVersion)
 	{
