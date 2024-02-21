@@ -42,14 +42,14 @@ jobs:
 
       - name: Prepare for broken link check
         run: |
-          mkdir -p /tmp/www
-          cp -r ./public /tmp/www/resticprofile
+          mkdir -p ./www
+          cp -r ./public ./www/resticprofile
 
       - name: Check broken links
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
           url: https://creativeprojects.github.io/resticprofile/
-          pages_path: /tmp/www/
+          pages_path: ./www/
           cmd_params: '--exclude="(linux.die.net|stackoverflow.com)" --buffer-size=8192 --max-connections-per-host=5 --rate-limit=5 --timeout=20 --header="User-Agent:curl/7.54.0" --skip-tls-verification'
 
       - name: Deploy to GitHub Pages
