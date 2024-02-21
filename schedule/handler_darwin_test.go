@@ -151,6 +151,7 @@ func TestLaunchdJobLog(t *testing.T) {
 				Title:     "profile",
 				SubTitle:  "backup",
 				Log:       fixture.log,
+				Command:   "resticprofile",
 				Arguments: args,
 			}
 			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
