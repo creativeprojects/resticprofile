@@ -49,7 +49,7 @@ jobs:
           export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
           hugo --minify --enableGitInfo --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
-      - name: Check
+      - name: Check broken links
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
           url: https://resticprofile.pages.dev/
