@@ -21,6 +21,11 @@ import (
 	"github.com/creativeprojects/resticprofile/util/templates"
 )
 
+const (
+	userAgentKey     = "User-Agent"
+	defaultUserAgent = "resticprofile/1.0"
+)
+
 type Sender struct {
 	client         *http.Client
 	insecureClient *http.Client
@@ -30,7 +35,7 @@ type Sender struct {
 
 func NewSender(certificates []string, userAgent string, timeout time.Duration, dryRun bool) *Sender {
 	if userAgent == "" {
-		userAgent = "resticprofile/1.0"
+		userAgent = defaultUserAgent
 	}
 
 	// normal client
@@ -149,24 +154,27 @@ func (s *Sender) logResponse(url string, resp *http.Response) {
 func (s *Sender) stringifyHeaders(headers http.Header, config []config.SendMonitoringHeader) string {
 	buf := &strings.Builder{}
 	w := tabwriter.NewWriter(buf, 0, 0, 2, ' ', 0)
-	for name, values := range headers {
+	for name, sendValues := range headers {
 		// Translate values to confidential replacement
-		for i, value := range values {
+		// copy values to a new slice otherwise the original slice will be modified with masked values
+		maskedValues := make([]string, len(sendValues))
+		for i, value := range sendValues {
+			maskedValues[i] = value
 			for _, ch := range config {
 				if ch.Value.IsConfidential() && ch.Value.Value() == value {
-					values[i] = ch.Value.String()
+					maskedValues[i] = ch.Value.String()
+					continue
 				}
 			}
 		}
 		// Print header
-		_, _ = fmt.Fprintf(w, "%s:\t%s\n", name, strings.Join(values, "; "))
+		_, _ = fmt.Fprintf(w, "%s:\t%s\n", name, strings.Join(maskedValues, "; "))
 	}
 	_ = w.Flush()
 	return buf.String()
 }
 
 func (s *Sender) setUserAgent(req *http.Request) {
-	userAgentKey := "User-Agent"
 	if req.Header.Get(userAgentKey) == "" {
 		req.Header.Add(userAgentKey, s.userAgent)
 	}
