@@ -215,9 +215,10 @@ func TestFailedRequest(t *testing.T) {
 
 func TestUserAgent(t *testing.T) {
 	calls := 0
+	agentHeader := "User-Agent"
 	testAgent := "test user agent/0.0"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, testAgent, r.Header.Get("User-Agent"))
+		assert.Equal(t, testAgent, r.Header.Get(agentHeader))
 		calls++
 	}))
 	defer server.Close()
@@ -226,10 +227,84 @@ func TestUserAgent(t *testing.T) {
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
 		Headers: []config.SendMonitoringHeader{
-			{Name: "User-Agent", Value: config.NewConfidentialValue(testAgent)},
+			{Name: agentHeader, Value: config.NewConfidentialValue(testAgent)},
 		},
 	}, Context{})
 	assert.NoError(t, err)
+	assert.Equal(t, 1, calls)
+}
+
+func TestConfidentialURL(t *testing.T) {
+	clog.SetTestLog(t)
+	defer clog.CloseTestLog()
+
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, password, ok := r.BasicAuth()
+		assert.True(t, ok)
+		assert.Equal(t, "user", user)
+		assert.Equal(t, "password", password)
+		calls++
+	}))
+	defer server.Close()
+
+	serverURL := strings.Replace(server.URL, "http://", "http://user:password@", 1)
+
+	profile := &config.Profile{
+		Backup: &config.BackupSection{
+			SectionWithScheduleAndMonitoring: config.SectionWithScheduleAndMonitoring{
+				SendMonitoringSections: config.SendMonitoringSections{
+					SendBefore: []config.SendMonitoringSection{
+						{
+							URL: config.NewConfidentialValue(serverURL),
+						},
+					},
+				},
+			},
+		},
+	}
+	config.ProcessConfidentialValues(profile)
+
+	sender := NewSender(nil, "", 300*time.Millisecond, false)
+	err := sender.Send(profile.Backup.SendBefore[0], Context{})
+	require.NoError(t, err)
+	assert.Equal(t, 1, calls)
+}
+
+func TestConfidentialHeader(t *testing.T) {
+	clog.SetTestLog(t)
+	defer clog.CloseTestLog()
+
+	calls := 0
+	headerKey := "Authorization"
+	headerValue := "Bearer secret_token"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, headerValue, r.Header.Get(headerKey))
+		calls++
+	}))
+	defer server.Close()
+
+	profile := &config.Profile{
+		Backup: &config.BackupSection{
+			SectionWithScheduleAndMonitoring: config.SectionWithScheduleAndMonitoring{
+				SendMonitoringSections: config.SendMonitoringSections{
+					SendBefore: []config.SendMonitoringSection{
+						{
+							URL: config.NewConfidentialValue(server.URL),
+							Headers: []config.SendMonitoringHeader{
+								{Name: headerKey, Value: config.NewConfidentialValue(headerValue)},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	config.ProcessConfidentialValues(profile)
+
+	sender := NewSender(nil, "", 300*time.Millisecond, false)
+	err := sender.Send(profile.Backup.SendBefore[0], Context{})
+	require.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
 

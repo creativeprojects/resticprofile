@@ -14,10 +14,13 @@ type ConfidentialValue struct {
 	public, confidential string
 }
 
+// Value returns the unmasked original value
 func (c ConfidentialValue) Value() string {
 	return c.confidential
 }
 
+// String returns the masked representation of a value, if confidential
+// It returns the original value if not confidential
 func (c ConfidentialValue) String() string {
 	return c.public
 }
