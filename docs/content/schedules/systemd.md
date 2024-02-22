@@ -46,7 +46,7 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 
 Specifying the profile option `schedule-after-network-online: true` means that the scheduled services will wait
 for a network connection before running.
-This is done via an [After=network-online.target](https://systemd.io/NETWORK_ONLINE/) entry in the service.
+This is done via an [After=network-online.target](https://systemd.io/networking/NETWORK_ONLINE.html) entry in the service.
 
 ## systemd drop-in files
 
@@ -142,7 +142,7 @@ SetCredentialEncrypted=rclone.conf: \
         rGvQzqQI7kNX+v7EPXj4B0tSUeBBJJCEu4mgajZNAhwHtbw==
 ```
 
-Generated with the following, see [systemd credentials docs](https://systemd.io/CREDENTIALS/)
+Generated with the following, see [systemd credentials docs](https://systemd.io/concepts/CREDENTIALS.html)
 for more details. This could allow, for example,
 using a TPM-backed encrypted password, outside of the
 resticprofile config itself
