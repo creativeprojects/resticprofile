@@ -305,6 +305,59 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 	})
 }
 
+func TestGetEnvironment(t *testing.T) {
+	t.Cleanup(util.ClearTempDir)
+
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		testConfig := version + `
+			[` + prefix + `profile]
+			# filling description with profile's env file to test auto-append
+			description = "{{env | js}}"
+			env = {"K1" = "V1"}
+			env-file = "~/non-existing-file-does-not-break"
+		`
+		profile, err := getResolvedProfile("toml", testConfig, "profile")
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+
+		t.Run("basic-profile-env", func(t *testing.T) {
+			env := profile.GetEnvironment(false)
+			assert.Equal(t, map[string]string{"K1": "V1"}, env.ValuesAsMap())
+		})
+
+		t.Run("env-file-list", func(t *testing.T) {
+			envFile := profile.Description
+			homeDir, err := os.UserHomeDir()
+			require.NoError(t, err)
+
+			assert.Equal(t, []string{
+				homeDir + "/non-existing-file-does-not-break",
+				envFile,
+			}, profile.EnvironmentFiles)
+		})
+
+		t.Run("env-file-auto-append", func(t *testing.T) {
+			envFile := profile.Description
+			require.FileExists(t, envFile)
+			assert.Contains(t, profile.EnvironmentFiles, envFile)
+
+			defer os.Truncate(envFile, 0)
+			assert.NoError(t, os.WriteFile(envFile, []byte("K2=V2"), 0600))
+
+			env := profile.GetEnvironment(false)
+			assert.Equal(t, map[string]string{"K1": "V1", "K2": "V2"}, env.ValuesAsMap())
+		})
+
+		t.Run("with-os-env", func(t *testing.T) {
+			testVar := fmt.Sprintf("v%d", rand.Int())
+			require.NoError(t, os.Setenv("TEST_VAR", testVar))
+
+			env := profile.GetEnvironment(true)
+			assert.Equal(t, testVar, env.Get("TEST_VAR"))
+		})
+	})
+}
+
 func TestSetRootInProfileUnix(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.SkipNow()

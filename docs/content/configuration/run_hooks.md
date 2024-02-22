@@ -207,8 +207,8 @@ The local resticprofile lock is surrounding the whole process. It means that the
 
 ### Passing environment variables
 
-Environment variables can be adjusted and passed between shell hooks & restic by writing one or more `VARIABLE=VALUE` into an `env-file` that is configured within the current profile.
-To simplify this for shell commands, the [template]({{% relref "/configuration/templates" %}}) function `{{env}}` can be used to get a temporary dotenv file that is automatically appended to the `env-file` list of the current profile and reloaded whenever modified.
+Environment variables can be adjusted and passed between shell commands & restic by writing one or more `VARIABLE=VALUE` into an `env-file` that is configured within the current profile.
+To simplify this for shell commands, the [template]({{% relref "templates" %}}) function `{{env}}` can be used to get a temporary dotenv file that is automatically appended to the `env-file` list of the current profile and reloaded whenever modified.
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}

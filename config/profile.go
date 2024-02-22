@@ -594,6 +594,7 @@ func (p *Profile) SetRootPath(rootPath string) {
 	p.CACert = fixPath(p.CACert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.TLSClientCert = fixPath(p.TLSClientCert, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	p.SystemdDropInFiles = fixPaths(p.SystemdDropInFiles, expandEnv, absolutePrefix(rootPath))
+	p.EnvironmentFiles = fixPaths(p.EnvironmentFiles, expandEnv, expandUserHome, absolutePrefix(rootPath))
 
 	// Forward to sections accepting paths
 	for _, s := range GetSectionsWith[relativePath](p) {

@@ -43,3 +43,16 @@ func TestFromMap(t *testing.T) {
 	assert.Nil(t, FromMap(map[string]int(nil), evenSwapped))
 	assert.Nil(t, FromMap(map[string]int{}, evenSwapped))
 }
+
+func TestKVMapper(t *testing.T) {
+	input := map[string]int{"1": 1, "2": 2, "3": 3, "4": 4, "5": 5}
+	expected := map[string]int{"d1": 2, "d2": 4, "d3": 6, "d4": 8, "d5": 10}
+
+	output := FromMap(input, KVMapper(CopyMapper[string], CopyMapper[int]))
+	assert.Equal(t, input, output)
+
+	output = FromMap(input, KVMapper(
+		func(k string) string { return "d" + k },
+		func(v int) int { return 2 * v }))
+	assert.Equal(t, expected, output)
+}

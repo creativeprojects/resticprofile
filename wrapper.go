@@ -22,7 +22,9 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"golang.org/x/exp/maps"
 )
 
 type resticWrapper struct {
@@ -671,20 +673,26 @@ func (r *resticWrapper) getEnvironment() (values []string) {
 	env := r.profile.GetEnvironment(false)
 	values = env.Values()
 
-	// Debug log with confidential filter
 	clog.Debug(func() string {
-		mapper := collect.KVMapper(collect.CopyMapper[string], config.NewConfidentialValue)
-		confidentialEnv := collect.FromMap(env.ValuesAsMap(), mapper)
-		config.ProcessConfidentialEnvironment(confidentialEnv)
-
-		out := &strings.Builder{}
-		out.WriteString("setting up environment variables:\n")
-		for name, value := range confidentialEnv {
-			_, _ = fmt.Fprintf(out, "%s=%s\n", name, value)
-		}
-		return out.String()
+		return fmt.Sprintf("setting up environment variables:\n%s", r.stringifyEnvironment(env))
 	})
 	return
+}
+
+// stringifyEnvironment converts the env into a string that can be used for logging
+func (r *resticWrapper) stringifyEnvironment(env *util.Environment) string {
+	mapper := collect.KVMapper(collect.CopyMapper[string], config.NewConfidentialValue)
+	confidentialEnv := collect.FromMap(env.ValuesAsMap(), mapper)
+	config.ProcessConfidentialEnvironment(confidentialEnv)
+
+	names := maps.Keys(confidentialEnv)
+	sort.Strings(names)
+
+	out := new(strings.Builder)
+	for _, name := range names {
+		_, _ = fmt.Fprintf(out, "%s=%s\n", name, confidentialEnv[name])
+	}
+	return out.String()
 }
 
 // getProfileEnvironment returns some environment variables about the current profile
