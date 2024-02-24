@@ -37,3 +37,21 @@ func GlobMultiMatcher(patterns ...string) MultiPatternMatcher {
 		return
 	}
 }
+
+// Condition returns a condition function that may be used with slices.ContainsFunc or collect.All.
+// The function returns true as a pattern matches the value.
+func (m MultiPatternMatcher) Condition() func(value string) (match bool) {
+	return func(value string) (match bool) {
+		match, _ = m(value)
+		return
+	}
+}
+
+// NoLiteralMatchCondition returns a condition function that may be used with slices.ContainsFunc or collect.All.
+// The function returns true as a pattern matches the value but does not match the pattern literally.
+func (m MultiPatternMatcher) NoLiteralMatchCondition() func(value string) (match bool) {
+	return func(value string) (match bool) {
+		match, pattern := m(value)
+		return match && pattern != value // match only if the pattern didn't match itself
+	}
+}

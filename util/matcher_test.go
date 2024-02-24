@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -82,5 +83,12 @@ func TestGlobMultiMatcher(t *testing.T) {
 			}
 			assert.Equal(t, input, patterns, "input must not change")
 		}
+	})
+
+	t.Run("can-be-used-as-condition", func(t *testing.T) {
+		matcher := GlobMultiMatcher("a*", "xx", "z*")
+		values := []string{"aa", "ab", "ca", "xx", "xy", "z", "z*", "zz"}
+		assert.Equal(t, []string{"aa", "ab", "xx", "z", "z*", "zz"}, collect.All(values, matcher.Condition()))
+		assert.Equal(t, []string{"aa", "ab", "z", "zz"}, collect.All(values, matcher.NoLiteralMatchCondition()))
 	})
 }

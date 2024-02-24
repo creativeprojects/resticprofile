@@ -23,6 +23,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/creativeprojects/resticprofile/win"
 )
@@ -428,11 +429,9 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 
 	// Step 1: Collect all jobs of all selected profiles
 	for _, profileName := range selectProfiles(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-
-		scheduler, profile, jobs, err := getScheduleJobs(c, profileFlags)
+		scheduler, profile, jobs, err := getSchedulesForProfile(c, profileName)
 		if err == nil {
-			err = requireScheduleJobs(jobs, profileFlags)
+			err = requireSchedules(jobs, profileName)
 
 			// Skip profile with no schedules when "--all" option is set.
 			if err != nil && slices.Contains(args, "--all") {
@@ -473,9 +472,7 @@ func removeSchedule(_ io.Writer, ctx commandContext) error {
 
 	// Unschedule all jobs of all selected profiles
 	for _, profileName := range selectProfiles(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-
-		scheduler, _, jobs, err := getRemovableScheduleJobs(c, profileFlags)
+		scheduler, _, jobs, err := getRemovableSchedulesForProfile(c, profileName)
 		if err != nil {
 			return err
 		}
@@ -498,12 +495,13 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	if !slices.Contains(args, "--all") {
 		// simple case of displaying status for one profile
-		scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+		profileName := flags.name
+		scheduler, profile, schedules, err := getSchedulesForProfile(c, profileName)
 		if err != nil {
 			return err
 		}
 		if len(schedules) == 0 {
-			clog.Warningf("profile %s has no schedule", flags.name)
+			clog.Warningf("profile %s has no schedule", profileName)
 			return nil
 		}
 		return statusScheduleProfile(scheduler, profile, schedules, flags)
@@ -511,7 +509,7 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	for _, profileName := range selectProfiles(c, flags, args) {
 		profileFlags := flagsForProfile(flags, profileName)
-		scheduler, profile, schedules, err := getScheduleJobs(c, profileFlags)
+		scheduler, profile, schedules, err := getSchedulesForProfile(c, profileName)
 		if err != nil {
 			return err
 		}
@@ -539,32 +537,118 @@ func statusScheduleProfile(scheduler schedule.SchedulerConfig, profile *config.P
 	return nil
 }
 
-func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
+// getProfilesForSchedule returns all profiles for the given V2 standalone schedule
+func getProfilesForSchedule(c *config.Config, s *config.Schedule) (scheduler schedule.SchedulerConfig, profiles []*config.Profile, err error) {
+	var global *config.Global
+	if global, err = c.GetGlobalSection(); err != nil {
+		err = fmt.Errorf("cannot load global section: %w", err)
+		return
+	}
+
+	// resolve profile names
+	if len(s.Group) > 0 && len(s.Profiles) == 0 {
+		var group *config.Group
+		if group, err = c.GetProfileGroup(s.Group); err != nil {
+			err = fmt.Errorf("cannot load group section %q: %w", s.Group, err)
+			return
+		}
+		s.Profiles = slices.Clone(group.Profiles)
+	}
+
+	// resolve glob expressions in the profiles list, e.g. use "*" to run for all profiles that define a command
+	hasGlob := func(name string) bool { return strings.ContainsAny(name, "?*[]") }
+	if slices.ContainsFunc(s.Profiles, hasGlob) {
+		// glob matcher for expressions in s.Profiles, excluding literal matches in s.Profiles
+		globMatches := util.GlobMultiMatcher(s.Profiles...).NoLiteralMatchCondition()
+		// remove glob expressions from s.Profiles
+		s.Profiles = collect.All(s.Profiles, collect.Not(hasGlob))
+		// add newly matched names at the end to preserve declaration order
+		for _, name := range collect.All(c.GetProfileNames(), globMatches) {
+			if !slices.Contains(s.Profiles, name) {
+				s.Profiles = append(s.Profiles, name)
+			}
+		}
+	}
+
+	// collect profiles
+	profiles = collect.From(s.Profiles, func(name string) (profile *config.Profile) {
+		if err == nil {
+			profile, err = c.GetProfile(name)
+		}
+		return
+	})
+	if err != nil {
+		err = fmt.Errorf("cannot load profiles ['%s']: %w", strings.Join(s.Profiles, "', '"), err)
+		return
+	}
+
+	// remove profiles that cannot be used
+	profiles = validProfilesForSchedule(profiles, global, s)
+	scheduler = schedule.NewSchedulerConfig(global)
+	return
+}
+
+// validProfilesForSchedule returns all profiles that the given schedule can execute
+func validProfilesForSchedule(profiles []*config.Profile, global *config.Global, schedule *config.Schedule) []*config.Profile {
+	// used in v2 schedules to find the profiles that can be executed
+	return collect.All(profiles, func(profile *config.Profile) bool {
+		return validScheduleFilter(profile, global)(schedule)
+	})
+}
+
+// validSchedulesFilter creates a filter func that accepts config.Schedule when it is allowed for the given profile
+func validScheduleFilter(profile *config.Profile, global *config.Global) func(schedule *config.Schedule) (valid bool) {
+	acceptCommand := commandFilter(profile, global)
+	definedCommands := profile.DefinedCommands()
+
+	return func(schedule *config.Schedule) (accepted bool) {
+		if profile != nil && schedule != nil {
+			if accepted = slices.Contains(schedule.Profiles, profile.Name); !accepted {
+				clog.Debugf("not in schedule: profile '%s' has no schedule for %q", profile.Name, schedule.CommandName)
+				return
+			}
+			if accepted = slices.Contains(definedCommands, schedule.CommandName); !accepted {
+				clog.Debugf("undefined command: cannot schedule %q for profile '%s'", schedule.CommandName, profile.Name)
+				return
+			}
+			if accepted = acceptCommand(schedule.CommandName); !accepted {
+				clog.Debugf("disallowed command: cannot schedule %q for profile '%s'", schedule.CommandName, profile.Name)
+			}
+		}
+		return
+	}
+}
+
+// getSchedulesForProfile returns the profile and its inline schedules for a given profile name
+func getSchedulesForProfile(c *config.Config, profileName string) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
 	global, err := c.GetGlobalSection()
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("cannot load global section: %w", err)
 	}
 
-	profile, err := c.GetProfile(flags.name)
+	profile, err := c.GetProfile(profileName)
 	if err != nil {
 		if errors.Is(err, config.ErrNotFound) {
-			return nil, nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
+			return nil, nil, nil, fmt.Errorf("profile '%s' not found: %w", profileName, err)
 		}
-		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
+		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", profileName, err)
 	}
 
-	return schedule.NewSchedulerConfig(global), profile, profile.Schedules(), nil
+	// collecting schedules that can be run on this profile
+	schedules := collect.All(profile.Schedules(), validScheduleFilter(profile, global))
+
+	return schedule.NewSchedulerConfig(global), profile, schedules, nil
 }
 
-func requireScheduleJobs(schedules []*config.Schedule, flags commandLineFlags) error {
+func requireSchedules(schedules []*config.Schedule, profileName string) error {
 	if len(schedules) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
+		return fmt.Errorf("no schedule found for profile '%s'", profileName)
 	}
 	return nil
 }
 
-func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
-	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
+func getRemovableSchedulesForProfile(c *config.Config, profileName string) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
+	scheduler, profile, schedules, err := getSchedulesForProfile(c, profileName)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -585,45 +669,67 @@ func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedul
 	return scheduler, profile, schedules, nil
 }
 
-func preRunSchedule(ctx *Context) error {
+func preRunSchedule(ctx *Context) (err error) {
 	if len(ctx.request.arguments) < 1 {
 		return errors.New("run-schedule command expects one argument: schedule name")
 	}
-	scheduleName := ctx.request.arguments[0]
-	// temporarily allow v2 configuration to run v1 schedules
-	// if ctx.config.GetVersion() < config.Version02
-	{
-		// schedule name is in the form "command@profile"
-		commandName, profileName, ok := strings.Cut(scheduleName, "@")
-		if !ok {
-			return errors.New("the expected format of the schedule name is <command>@<profile-name>")
-		}
-		ctx.request.profile = profileName
-		ctx.request.schedule = scheduleName
-		ctx.command = commandName
-		// remove the parameter from the arguments
-		ctx.request.arguments = ctx.request.arguments[1:]
 
-		// don't save the profile in the context now, it's only loaded but not prepared
-		profile, err := ctx.config.GetProfile(profileName)
-		if err != nil || profile == nil {
-			return fmt.Errorf("cannot load profile '%s': %w", profileName, err)
+	// extract scheduleName and remove the parameter from the arguments
+	scheduleName := ctx.request.arguments[0]
+	ctx.request.arguments = ctx.request.arguments[1:]
+	ctx.schedule = nil
+
+	if commandName, profileName, ok := strings.Cut(scheduleName, "@"); ok {
+		// Inline schedules use a name in the form "command@profile"
+		ctx.request.profile = profileName
+		ctx.command = commandName
+
+		// find the config.Schedule for the command in the profile
+		var schedules []*config.Schedule
+		if _, _, schedules, err = getSchedulesForProfile(ctx.config, profileName); err == nil {
+			matchesCommand := func(s *config.Schedule) bool { return s.CommandName == commandName }
+			if s := collect.First(schedules, matchesCommand); s != nil {
+				ctx.schedule = *s
+			}
 		}
-		// get the list of all scheduled commands to find the current command
-		schedules := profile.Schedules()
-		for _, schedule := range schedules {
-			if schedule.CommandName == ctx.command {
-				ctx.schedule = schedule
-				prepareScheduledProfile(ctx)
-				break
+	} else {
+		// Standalone V2 schedules use a name that references the schedule section
+		var (
+			schedule  *config.Schedule
+			schedules map[string]*config.Schedule
+			profiles  []*config.Profile
+		)
+		if schedules, err = ctx.config.GetScheduleSections(); err == nil {
+			schedule = schedules[scheduleName]
+		}
+		if schedule != nil {
+			if _, profiles, err = getProfilesForSchedule(ctx.config, schedule); err == nil {
+				names := schedule.Profiles
+				schedule.Profiles = collect.From(profiles, func(p *config.Profile) string { return p.Name })
+				if len(schedule.Profiles) > 0 {
+					ctx.schedule = schedule
+				} else {
+					err = fmt.Errorf("none of the profiles ['%s'] in schedule %q can be used", strings.Join(names, "', '"), scheduleName)
+				}
 			}
 		}
 	}
-	return nil
+
+	if ctx.schedule != nil {
+		ctx.request.schedule = scheduleName
+		prepareContextForSchedule(ctx)
+	} else if err == nil {
+		err = fmt.Errorf("schedule %q not found, the expected format of the schedule name is <command>@<profile-name> or <schedule-section-name>", scheduleName)
+	}
+	return
 }
 
-func prepareScheduledProfile(ctx *Context) {
-	clog.Debugf("preparing scheduled profile %q", ctx.request.schedule)
+func prepareContextForSchedule(ctx *Context) {
+	clog.Debugf("preparing schedule %q", ctx.request.schedule)
+	// requested profile
+	ctx.request.profile = ctx.schedule.Profiles[0]
+	// schedule command
+	ctx.command = ctx.schedule.CommandName
 	// log file
 	if len(ctx.schedule.Log) > 0 {
 		ctx.logTarget = ctx.schedule.Log
@@ -648,11 +754,10 @@ func prepareScheduledProfile(ctx *Context) {
 }
 
 func runSchedule(_ io.Writer, cmdCtx commandContext) error {
-	err := startProfileOrGroup(&cmdCtx.Context)
-	if err != nil {
-		return err
+	if cmdCtx.schedule == nil {
+		return fmt.Errorf("invalid state: schedule %q not initialized", cmdCtx.request.schedule)
 	}
-	return nil
+	return startContext(&cmdCtx.Context)
 }
 
 func testElevationCommand(_ io.Writer, ctx commandContext) error {
