@@ -135,3 +135,19 @@ func TestBoolJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestBoolString(t *testing.T) {
+	fixtures := []struct {
+		source   maybe.Bool
+		expected string
+	}{
+		{source: maybe.Bool{}, expected: ""},
+		{source: maybe.True(), expected: "true"},
+		{source: maybe.False(), expected: "false"},
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.source.String(), func(t *testing.T) {
+			assert.Equal(t, fixture.expected, fixture.source.String())
+		})
+	}
+}

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"reflect"
 	"regexp"
 
@@ -23,6 +24,16 @@ func (c ConfidentialValue) Value() string {
 // It returns the original value if not confidential
 func (c ConfidentialValue) String() string {
 	return c.public
+}
+
+func (c *ConfidentialValue) UnmarshalJSON(data []byte) (err error) {
+	err = json.Unmarshal(data, &c.confidential)
+	c.public = c.confidential
+	return
+}
+
+func (c ConfidentialValue) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.Value())
 }
 
 func (c *ConfidentialValue) IsConfidential() bool {

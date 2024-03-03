@@ -235,21 +235,22 @@ func TestValueTypeConversion(t *testing.T) {
 }
 
 var propertyInfoDefaults = map[string]any{
-	"CanBeNil":         false,
-	"CanBeBool":        false,
-	"CanBeNumeric":     false,
-	"CanBeString":      false,
-	"CanBePropertySet": false,
-	"IsDeprecated":     false,
-	"IsSingle":         false,
-	"IsMultiType":      false,
-	"IsOption":         false,
-	"IsRequired":       false,
-	"Name":             "",
-	"Description":      "",
-	"DefaultValue":     []string{""},
-	"EnumValues":       nil,
-	"ExampleValues":    nil,
+	"CanBeNil":            false,
+	"CanBeBool":           false,
+	"CanBeNumeric":        false,
+	"CanBeString":         false,
+	"CanBePropertySet":    false,
+	"IsDeprecated":        false,
+	"IsSingle":            false,
+	"IsSinglePropertySet": false,
+	"IsMultiType":         false,
+	"IsOption":            false,
+	"IsRequired":          false,
+	"Name":                "",
+	"Description":         "",
+	"DefaultValue":        []string{""},
+	"EnumValues":          nil,
+	"ExampleValues":       nil,
 }
 
 var propertySetDefaults = map[string]any{
@@ -357,6 +358,7 @@ func TestSchemaForPropertySet(t *testing.T) {
 		pi := new(mocks.PropertyInfo)
 		stringProperty(pi, "", "")
 		pi.EXPECT().IsSingle().Return(true)
+		pi.EXPECT().IsSinglePropertySet().Return(true)
 		setupMock(t, &pi.Mock, propertyInfoDefaults)
 
 		s := schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) {
@@ -385,6 +387,7 @@ func TestSchemaForPropertySet(t *testing.T) {
 		singleProperty := func(required bool) *mocks.PropertyInfo {
 			pi := new(mocks.PropertyInfo)
 			pi.EXPECT().IsSingle().Return(true)
+			pi.EXPECT().IsSinglePropertySet().Return(true)
 			pi.EXPECT().IsRequired().Return(required)
 			return pi
 		}

@@ -35,12 +35,15 @@ type Config struct {
 	viper           *viper.Viper
 	mixinUses       []map[string][]*mixinUse
 	mixins          map[string]*mixin
-	groups          map[string]Group
 	sourceTemplates *template.Template
 	version         Version
 	issues          struct {
 		changedPaths  map[string][]string // 'path' items that had been changed to absolute paths
 		failedSection map[string]error    // profile sections that failed to get parsed or resolved
+	}
+	cached struct {
+		groups map[string]*Group
+		global *Global
 	}
 }
 
@@ -48,6 +51,7 @@ var (
 	configOption = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
 		maybe.BoolDecoder(),
+		maybe.DurationDecoder(),
 		confidentialValueDecoder(),
 	))
 
@@ -316,6 +320,10 @@ func (c *Config) reloadTemplates(data TemplateData) error {
 		err = c.applyNonProfileMixins()
 	}
 
+	// clear cached items
+	c.cached.groups = nil
+	c.cached.global = nil
+
 	return err
 }
 
@@ -472,13 +480,23 @@ func (c *Config) GetGlobalSection() (*Global, error) {
 	// So we need to fix all relative files
 	rootPath := filepath.Dir(c.GetConfigFile())
 	if rootPath != "." {
-		rootPathMessage.Do(func() {
-			clog.Debugf("files in configuration are relative to %q", rootPath)
-		})
+		rootPathMessage.Do(func() { clog.Debugf("files in configuration are relative to %q", rootPath) })
 	}
 	global.SetRootPath(rootPath)
 
 	return global, nil
+}
+
+// mustGetGlobalSection returns a cached global configuration, panics if it can't be loaded (is for internal use)
+func (c *Config) mustGetGlobalSection() *Global {
+	if c.cached.global == nil {
+		var err error
+		c.cached.global, err = c.GetGlobalSection()
+		if err != nil {
+			panic(fmt.Errorf("MustGetGlobalSection: %w", err))
+		}
+	}
+	return c.cached.global
 }
 
 // HasProfileGroup returns true if the group of profiles exists in the configuration
@@ -489,7 +507,7 @@ func (c *Config) HasProfileGroup(groupKey string) bool {
 	if err := c.loadGroups(); err != nil {
 		return false
 	}
-	_, ok := c.groups[groupKey]
+	_, ok := c.cached.groups[groupKey]
 	return ok
 }
 
@@ -499,21 +517,35 @@ func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 		return nil, err
 	}
 
-	group, ok := c.groups[groupKey]
+	group, ok := c.cached.groups[groupKey]
 	if !ok {
 		return nil, fmt.Errorf("group '%s' not found", groupKey)
 	}
-	return &group, nil
+	return group, nil
 }
 
 // GetProfileGroups returns all groups from the configuration
 //
 // If the groups section does not exist, it returns an empty map
-func (c *Config) GetProfileGroups() map[string]Group {
+func (c *Config) GetProfileGroups() map[string]*Group {
 	if err := c.loadGroups(); err != nil {
 		clog.Errorf("failed loading groups: %s", err.Error())
 	}
-	return c.groups
+	return maps.Clone(c.cached.groups)
+}
+
+func (c *Config) GetGroupNames() (names []string) {
+	if c.GetVersion() <= Version01 {
+		_ = c.loadGroupsV1()
+		names = maps.Keys(c.cached.groups)
+	} else {
+		if groups := c.viper.Sub(constants.SectionConfigurationGroups); groups != nil {
+			for name := range groups.AllSettings() {
+				names = append(names, name)
+			}
+		}
+	}
+	return
 }
 
 func (c *Config) loadGroups() (err error) {
@@ -521,13 +553,14 @@ func (c *Config) loadGroups() (err error) {
 		return c.loadGroupsV1()
 	}
 
-	if c.groups == nil {
-		c.groups = map[string]Group{}
-
-		if c.IsSet(constants.SectionConfigurationGroups) {
-			groups := map[string]Group{}
-			if err = c.unmarshalKey(constants.SectionConfigurationGroups, &groups); err == nil {
-				c.groups = groups
+	if c.cached.groups == nil {
+		c.cached.groups = make(map[string]*Group)
+		for _, name := range c.GetGroupNames() {
+			group := NewGroup(c, name)
+			err = c.unmarshalKey(c.flatKey(constants.SectionConfigurationGroups, name), group)
+			if err == nil {
+				group.ResolveConfiguration()
+				c.cached.groups[name] = group
 			}
 		}
 	}
@@ -666,43 +699,6 @@ func (c *Config) getProfilePath(key string) string {
 		return key
 	}
 	return c.flatKey(constants.SectionConfigurationProfiles, key)
-}
-
-// GetSchedules loads all schedules from the configuration.
-func (c *Config) GetSchedules() ([]*Schedule, error) {
-	if c.GetVersion() <= Version01 {
-		return c.getSchedulesV1()
-	}
-	return nil, nil
-}
-
-// GetScheduleSections returns a list of schedules
-func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error) {
-	c.requireMinVersion(Version02)
-
-	schedules = map[string]Schedule{}
-
-	if section := c.viper.Sub(constants.SectionConfigurationSchedules); section != nil {
-		for sectionKey := range section.AllSettings() {
-			var schedule Schedule
-			schedule, err = c.getSchedule(sectionKey)
-			if err != nil {
-				break
-			}
-			schedules[sectionKey] = schedule
-		}
-	}
-
-	return
-}
-
-func (c *Config) getSchedule(key string) (Schedule, error) {
-	schedule := Schedule{}
-	err := c.unmarshalKey(c.flatKey(constants.SectionConfigurationSchedules, key), &schedule)
-	if err != nil {
-		return schedule, err
-	}
-	return schedule, nil
 }
 
 // unmarshalConfig returns the decoder config options depending on the configuration version and format

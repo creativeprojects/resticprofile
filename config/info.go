@@ -81,6 +81,8 @@ type PropertyInfo interface {
 	IsDeprecated() bool
 	// IsSingle indicates that the property can be defined only once.
 	IsSingle() bool
+	// IsSinglePropertySet indicates that a nested PropertySet can be defined only once (is implied with IsSingle).
+	IsSinglePropertySet() bool
 	// IsMultiType indicates that more than one of CanBeString, CanBeNumeric, CanBeBool & CanBePropertySet returns true
 	IsMultiType() bool
 	// IsAnyType indicates that all of CanBeString, CanBeNumeric & CanBeBool return true
@@ -196,7 +198,7 @@ type accessibleProperty interface {
 // basicPropertyInfo is the base for PropertyInfo implementations
 type basicPropertyInfo struct {
 	mayString, mayNumber, mayBool, mayNil, mustInt bool
-	deprecated, required, single                   bool
+	deprecated, required, single, singleNested     bool
 	from, to                                       *float64
 	fromExclusive, toExclusive                     bool
 	name, format, pattern                          string
@@ -209,6 +211,7 @@ func (b *basicPropertyInfo) Name() string                  { return b.name }
 func (b *basicPropertyInfo) IsDeprecated() bool            { return b.deprecated }
 func (b *basicPropertyInfo) IsRequired() bool              { return b.required }
 func (b *basicPropertyInfo) IsSingle() bool                { return b.single }
+func (b *basicPropertyInfo) IsSinglePropertySet() bool     { return b.IsSingle() || b.singleNested }
 func (b *basicPropertyInfo) CanBeBool() bool               { return b.mayBool }
 func (b *basicPropertyInfo) CanBeNil() bool                { return b.mayNil }
 func (b *basicPropertyInfo) CanBeNumeric() bool            { return b.mayNumber }
@@ -583,6 +586,7 @@ var infoTypes struct {
 	mixins,
 	mixinUse,
 	profile,
+	scheduleConfig,
 	genericSection reflect.Type
 	genericSectionNames []string
 }
@@ -596,6 +600,7 @@ func init() {
 		infoTypes.mixins = reflect.TypeOf(mixin{})
 		infoTypes.mixinUse = reflect.TypeOf(mixinUse{})
 		infoTypes.profile = reflect.TypeOf(profile)
+		infoTypes.scheduleConfig = reflect.TypeOf(ScheduleConfig{})
 		infoTypes.genericSection = reflect.TypeOf(GenericSection{})
 		infoTypes.genericSectionNames = maps.Keys(profile.OtherSections)
 	}
@@ -638,6 +643,15 @@ func NewMixinUseInfo() NamedPropertySet {
 		name:        constants.SectionConfigurationMixinUse,
 		description: "named mixin reference to apply to the current location",
 		propertySet: propertySetFromType(infoTypes.mixinUse),
+	}
+}
+
+// NewScheduleConfigInfo returns structural information on the "schedule" config structure
+func NewScheduleConfigInfo() NamedPropertySet {
+	return &namedPropertySet{
+		name:        constants.SectionConfigurationSchedule,
+		description: "schedule configuration structure",
+		propertySet: propertySetFromType(infoTypes.scheduleConfig),
 	}
 }
 

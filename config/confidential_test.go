@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -275,4 +276,33 @@ profile:
 
 	assert.Equal(t, []string{"--repo=" + expectedSecret}, args.GetAll())
 	assert.Equal(t, []string{"--repo=" + expectedPublic}, result.GetAll())
+}
+
+func TestConfidentialToJSON(t *testing.T) {
+	t.Run("marshal", func(t *testing.T) {
+		value := NewConfidentialValue("plain")
+		assert.False(t, value.IsConfidential())
+
+		binary, _ := json.Marshal(value)
+		assert.Equal(t, `"plain"`, string(binary))
+
+		value.hideValue()
+		assert.True(t, value.IsConfidential())
+
+		binary, _ = json.Marshal(value)
+		assert.Equal(t, `"plain"`, string(binary))
+	})
+
+	t.Run("unmarshal", func(t *testing.T) {
+		value := NewConfidentialValue("")
+		value.hideValue()
+		assert.True(t, value.IsConfidential())
+
+		assert.NoError(t, json.Unmarshal([]byte(`"plain"`), &value))
+
+		// the confidential state is not marshalled for now
+		assert.False(t, value.IsConfidential())
+		assert.Equal(t, "plain", value.Value())
+		assert.Equal(t, "plain", value.String())
+	})
 }

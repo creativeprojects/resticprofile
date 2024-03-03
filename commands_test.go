@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
@@ -64,10 +65,11 @@ schedule = "daily"
 	declaredCount := 0
 
 	for _, jobConfig := range schedules {
-		scheduler := schedule.NewScheduler(schedule.NewHandler(schedule.SchedulerDefaultOS{}), jobConfig.Profiles[0])
+		configOrigin := jobConfig.ScheduleOrigin()
+		scheduler := schedule.NewScheduler(schedule.NewHandler(schedule.SchedulerDefaultOS{}), configOrigin.Name)
 		defer func(s *schedule.Scheduler) { s.Close() }(scheduler) // Capture current ref to scheduler to be able to close it when function returns.
 
-		if jobConfig.CommandName == "check" {
+		if configOrigin.Command == constants.CommandCheck {
 			assert.False(t, scheduler.NewJob(scheduleToConfig(jobConfig)).RemoveOnly())
 			declaredCount++
 		} else {
@@ -114,7 +116,7 @@ schedule = "daily"
 		assert.NotNil(t, profile)
 		assert.NotEmpty(t, schedules)
 		assert.Len(t, schedules, 1)
-		assert.Equal(t, "check", schedules[0].CommandName)
+		assert.Equal(t, "check", schedules[0].ScheduleOrigin().Command)
 	}
 }
 
@@ -274,28 +276,20 @@ func TestGenerateCommand(t *testing.T) {
 
 func TestShowSchedules(t *testing.T) {
 	buffer := &bytes.Buffer{}
+	create := func(command string, at ...string) *config.Schedule {
+		origin := config.ScheduleOrigin("default", command)
+		return config.NewDefaultSchedule(nil, origin, at...)
+	}
 	schedules := []*config.Schedule{
-		{
-			Profiles:    []string{"default"},
-			CommandName: "check",
-			Schedules:   []string{"weekly"},
-		},
-		{
-			Profiles:    []string{"default"},
-			CommandName: "backup",
-			Schedules:   []string{"daily"},
-		},
+		create("check", "weekly"),
+		create("backup", "daily"),
 	}
 	expected := strings.TrimSpace(`
-schedule check@default:
-    run:       check
-    profiles:  default
-    schedule:  weekly
-
 schedule backup@default:
-    run:       backup
-    profiles:  default
-    schedule:  daily
+    at:  daily
+
+schedule check@default:
+    at:  weekly
 
 `)
 	showSchedules(buffer, schedules)

@@ -129,13 +129,14 @@ func statusJobs(handler schedule.Handler, profileName string, configs []*config.
 }
 
 func scheduleToConfig(sched *config.Schedule) *schedule.Config {
-	if len(sched.Schedules) == 0 {
+	origin := sched.ScheduleOrigin()
+	if !sched.HasSchedules() {
 		// there's no schedule defined, so this record is for removal only
-		return schedule.NewRemoveOnlyConfig(sched.Profiles[0], sched.CommandName)
+		return schedule.NewRemoveOnlyConfig(origin.Name, origin.Command)
 	}
 	return &schedule.Config{
-		ProfileName:             sched.Profiles[0],
-		CommandName:             sched.CommandName,
+		ProfileName:             origin.Name,
+		CommandName:             origin.Command,
 		Schedules:               sched.Schedules,
 		Permission:              sched.Permission,
 		WorkingDirectory:        "",
@@ -147,7 +148,7 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		Priority:                sched.Priority,
 		ConfigFile:              sched.ConfigFile,
 		Flags:                   sched.Flags,
-		IgnoreOnBattery:         sched.IgnoreOnBattery,
+		IgnoreOnBattery:         sched.IgnoreOnBattery.IsTrue(),
 		IgnoreOnBatteryLessThan: sched.IgnoreOnBatteryLessThan,
 	}
 }

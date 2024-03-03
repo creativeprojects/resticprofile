@@ -10,9 +10,9 @@ const (
 	SectionConfigurationIncludes    = "includes"
 	SectionConfigurationInherit     = "inherit"
 	SectionConfigurationProfiles    = "profiles"
-	SectionConfigurationSchedules   = "schedules"
 	SectionConfigurationMixins      = "mixins"
 	SectionConfigurationMixinUse    = "use"
+	SectionConfigurationSchedule    = "schedule"
 
 	SectionDefinitionCommon = "common"
 	SectionDefinitionForget = "forget"

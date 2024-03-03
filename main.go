@@ -541,14 +541,7 @@ func runProfile(ctx *Context) error {
 }
 
 func loadScheduledProfile(ctx *Context) error {
-	// get the list of all scheduled commands to find the current command
-	schedules := ctx.profile.Schedules()
-	for _, schedule := range schedules {
-		if schedule.CommandName == ctx.command {
-			ctx.schedule = schedule
-			break
-		}
-	}
+	ctx.schedule, _ = ctx.profile.Schedules()[ctx.command]
 	return nil
 }
 

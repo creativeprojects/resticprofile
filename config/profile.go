@@ -5,13 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"slices"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
@@ -29,11 +26,6 @@ type Empty interface {
 	IsEmpty() bool
 }
 
-// Scheduling provides access to schedule information inside a section
-type Scheduling interface {
-	GetSchedule() *ScheduleBaseSection
-}
-
 // Monitoring provides access to http hooks inside a section
 type Monitoring interface {
 	GetSendMonitoring() *SendMonitoringSections
@@ -47,6 +39,11 @@ type RunShellCommands interface {
 // OtherFlags provides access to dynamic commandline flags
 type OtherFlags interface {
 	GetOtherFlags() map[string]any
+}
+
+// scheduling provides access to schedule information inside a section
+type scheduling interface {
+	getScheduleConfig(p *Profile, command string) *ScheduleConfig
 }
 
 // commandFlags allows sections to return flags directly
@@ -185,6 +182,8 @@ type BackupSection struct {
 func (s *BackupSection) IsEmpty() bool { return s == nil }
 
 func (b *BackupSection) resolve(profile *Profile) {
+	b.ScheduleBaseSection.resolve(profile)
+
 	// Ensure UseStdin is set when Backup.StdinCommand is defined
 	if len(b.StdinCommand) > 0 {
 		b.UseStdin = true
@@ -228,6 +227,8 @@ type RetentionSection struct {
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
 
 func (r *RetentionSection) resolve(profile *Profile) {
+	r.ScheduleBaseSection.resolve(profile)
+
 	// Special cases of retention
 	isSet := func(flags OtherFlags, name string) (found bool) { _, found = flags.GetOtherFlags()[name]; return }
 	hasBackup := !profile.Backup.IsEmpty()
@@ -288,27 +289,39 @@ func (s *SectionWithScheduleAndMonitoring) IsEmpty() bool { return s == nil }
 
 // ScheduleBaseSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleBaseSection struct {
-	Schedule                        []string      `mapstructure:"schedule" show:"noshow" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Set the times at which the scheduled command is run (times are specified in systemd timer format)"`
-	SchedulePermission              string        `mapstructure:"schedule-permission" show:"noshow" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
-	ScheduleLog                     string        `mapstructure:"schedule-log" show:"noshow" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
-	SchedulePriority                string        `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
-	ScheduleLockMode                string        `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
-	ScheduleLockWait                time.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
-	ScheduleEnvCapture              []string      `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
-	ScheduleIgnoreOnBattery         bool          `mapstructure:"schedule-ignore-on-battery" show:"noshow" default:"false" description:"Don't schedule the start of this profile when running on battery"`
-	ScheduleIgnoreOnBatteryLessThan int           `mapstructure:"schedule-ignore-on-battery-less-than" show:"noshow" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
-	ScheduleAfterNetworkOnline      bool          `mapstructure:"schedule-after-network-online" show:"noshow" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
+	scheduleConfig                  *ScheduleConfig
+	Schedule                        any            `mapstructure:"schedule" show:"noshow" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Configures the schedule can be times in systemd timer format or a config structure"`
+	SchedulePermission              string         `mapstructure:"schedule-permission" show:"noshow" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	ScheduleLog                     string         `mapstructure:"schedule-log" show:"noshow" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
+	SchedulePriority                string         `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
+	ScheduleLockMode                string         `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	ScheduleLockWait                maybe.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+	ScheduleEnvCapture              []string       `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
+	ScheduleIgnoreOnBattery         maybe.Bool     `mapstructure:"schedule-ignore-on-battery" show:"noshow" default:"false" description:"Don't schedule the start of this profile when running on battery"`
+	ScheduleIgnoreOnBatteryLessThan int            `mapstructure:"schedule-ignore-on-battery-less-than" show:"noshow" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
+	ScheduleAfterNetworkOnline      maybe.Bool     `mapstructure:"schedule-after-network-online" show:"noshow" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
 	s.ScheduleLog = fixPath(s.ScheduleLog, expandEnv, expandUserHome)
 }
 
-func (s *ScheduleBaseSection) GetSchedule() *ScheduleBaseSection {
-	if s != nil && s.ScheduleEnvCapture == nil {
-		s.ScheduleEnvCapture = []string{"RESTIC_*"}
+func (s *ScheduleBaseSection) resolve(profile *Profile) {
+	if s == nil || profile.config == nil {
+		return
 	}
-	return s
+	if config := newScheduleConfig(profile.config, s); config.HasSchedules() {
+		s.scheduleConfig = config
+	}
+}
+
+func (s *ScheduleBaseSection) HasSchedule() bool { return s.scheduleConfig.HasSchedules() }
+
+func (s *ScheduleBaseSection) getScheduleConfig(p *Profile, command string) *ScheduleConfig {
+	if s.scheduleConfig != nil && p != nil {
+		s.scheduleConfig.origin = ScheduleOrigin(p.Name, command)
+	}
+	return s.scheduleConfig
 }
 
 // CopySection contains the destination parameters for a copy command
@@ -328,6 +341,8 @@ type CopySection struct {
 func (s *CopySection) IsEmpty() bool { return s == nil }
 
 func (c *CopySection) resolve(p *Profile) {
+	c.ScheduleBaseSection.resolve(p)
+
 	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
 }
 
@@ -763,10 +778,10 @@ func (p *Profile) GetRetentionFlags() *shell.Args {
 // HasDeprecatedRetentionSchedule indicates if there's one or more schedule parameters in the retention section,
 // which is deprecated as of 0.11.0
 func (p *Profile) HasDeprecatedRetentionSchedule() bool {
-	return p.Retention != nil && len(p.Retention.Schedule) > 0
+	return p.Retention != nil && p.Retention.HasSchedule()
 }
 
-// GetBackupSource returns the directories to backup
+// GetBackupSource returns the directories to back up
 func (p *Profile) GetBackupSource() []string {
 	if p.Backup == nil {
 		return nil
@@ -813,7 +828,7 @@ func (p *Profile) AllSections() (sections map[string]any) {
 
 // SchedulableCommands returns all command names that could have a schedule
 func (p *Profile) SchedulableCommands() (commands []string) {
-	if commands = maps.Keys(GetDeclaredSectionsWith[Scheduling](p)); commands != nil {
+	if commands = maps.Keys(GetDeclaredSectionsWith[scheduling](p)); commands != nil {
 		sort.Strings(commands)
 	}
 	return
@@ -844,62 +859,20 @@ func (p *Profile) GetEnvironment(withOs bool) (env *util.Environment) {
 	return
 }
 
-// Schedules returns a slice of Schedule for all the commands that have a schedule configuration
+// Schedules returns a map of command -> Schedule, for all the commands that have a schedule configuration
 // Only v1 configuration have schedules inside the profile
-func (p *Profile) Schedules() []*Schedule {
-	// All SectionWithSchedule (backup, check, prune, etc)
-	sections := GetSectionsWith[Scheduling](p)
-	configs := make([]*Schedule, 0, len(sections))
+func (p *Profile) Schedules() map[string]*Schedule {
+	// All SectionWithSchedule (backup, check, prune, etc.)
+	sections := GetSectionsWith[scheduling](p)
+	schedules := make(map[string]*Schedule)
 
 	for name, section := range sections {
-		if s := section.GetSchedule(); len(s.Schedule) > 0 {
-			var envValues []string
-
-			if len(s.ScheduleEnvCapture) > 0 {
-				env := p.GetEnvironment(true)
-
-				for index, key := range env.Names() {
-					matched := slices.ContainsFunc(s.ScheduleEnvCapture, func(pattern string) bool {
-						matched, err := filepath.Match(pattern, key)
-						if err != nil && index == 0 {
-							clog.Tracef("env not matched with invalid glob expression '%s': %s", pattern, err.Error())
-						}
-						return matched
-					})
-					if !matched {
-						env.Remove(key)
-					}
-				}
-
-				envValues = env.Values()
-			}
-
-			config := &Schedule{
-				CommandName:             name,
-				Group:                   "",
-				Profiles:                []string{p.Name},
-				Schedules:               s.Schedule,
-				Permission:              s.SchedulePermission,
-				Log:                     s.ScheduleLog,
-				Priority:                s.SchedulePriority,
-				LockMode:                s.ScheduleLockMode,
-				LockWait:                s.ScheduleLockWait,
-				Environment:             envValues,
-				IgnoreOnBattery:         s.ScheduleIgnoreOnBattery,
-				IgnoreOnBatteryLessThan: s.ScheduleIgnoreOnBatteryLessThan,
-				AfterNetworkOnline:      s.ScheduleAfterNetworkOnline,
-				SystemdDropInFiles:      p.SystemdDropInFiles,
-				ConfigFile:              p.config.configFile,
-				Flags:                   map[string]string{},
-			}
-
-			config.Init(p.config)
-
-			configs = append(configs, config)
+		if config := section.getScheduleConfig(p, name); config != nil {
+			schedules[name] = newScheduleForProfile(p, config)
 		}
 	}
 
-	return configs
+	return schedules
 }
 
 func (p *Profile) GetRunShellCommandsSections(command string) (profileCommands RunShellCommandsSection, sectionCommands RunShellCommandsSection) {
@@ -978,3 +951,6 @@ func addArgsFromOtherFlags(args *shell.Args, profile *Profile, section OtherFlag
 	maps.Copy(aliases, argAliasesFromStruct(section))
 	addArgsFromMap(args, aliases, section.GetOtherFlags())
 }
+
+// Implements Schedulable
+var _ Schedulable = new(Profile)

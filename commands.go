@@ -24,6 +24,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/creativeprojects/resticprofile/win"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -330,7 +331,7 @@ func showProfile(output io.Writer, ctx commandContext) error {
 	_, _ = fmt.Fprintln(output)
 
 	// Show schedules
-	showSchedules(output, profile.Schedules())
+	showSchedules(output, maps.Values(profile.Schedules()))
 
 	// Show deprecation notice
 	displayProfileDeprecationNotices(profile)
@@ -342,12 +343,13 @@ func showProfile(output io.Writer, ctx commandContext) error {
 }
 
 func showSchedules(output io.Writer, schedules []*config.Schedule) {
+	slices.SortFunc(schedules, config.CompareSchedules)
 	for _, schedule := range schedules {
-		err := config.ShowStruct(output, schedule, "schedule "+schedule.CommandName+"@"+schedule.Profiles[0])
+		err := config.ShowStruct(output, schedule.ScheduleConfig, fmt.Sprintf("schedule %s", schedule.ScheduleOrigin()))
 		if err != nil {
-			fmt.Fprintln(output, err)
+			_, _ = fmt.Fprintln(output, err)
 		}
-		fmt.Fprintln(output, "")
+		_, _ = fmt.Fprintln(output, "")
 	}
 }
 
@@ -552,7 +554,7 @@ func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.Schedul
 		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
 	}
 
-	return schedule.NewSchedulerConfig(global), profile, profile.Schedules(), nil
+	return schedule.NewSchedulerConfig(global), profile, maps.Values(profile.Schedules()), nil
 }
 
 func requireScheduleJobs(schedules []*config.Schedule, flags commandLineFlags) error {
@@ -572,12 +574,13 @@ func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedul
 	for _, command := range profile.SchedulableCommands() {
 		declared := false
 		for _, s := range schedules {
-			if declared = s.CommandName == command; declared {
+			if declared = s.ScheduleOrigin().Command == command; declared {
 				break
 			}
 		}
 		if !declared {
-			schedules = append(schedules, config.NewEmptySchedule(profile.Name, command))
+			origin := config.ScheduleOrigin(profile.Name, command)
+			schedules = append(schedules, config.NewDefaultSchedule(c, origin))
 		}
 	}
 
@@ -609,13 +612,8 @@ func preRunSchedule(ctx *Context) error {
 			return fmt.Errorf("cannot load profile '%s': %w", profileName, err)
 		}
 		// get the list of all scheduled commands to find the current command
-		schedules := profile.Schedules()
-		for _, schedule := range schedules {
-			if schedule.CommandName == ctx.command {
-				ctx.schedule = schedule
-				prepareScheduledProfile(ctx)
-				break
-			}
+		if ctx.schedule, ok = profile.Schedules()[ctx.command]; ok {
+			prepareScheduledProfile(ctx)
 		}
 	}
 	return nil
@@ -623,25 +621,23 @@ func preRunSchedule(ctx *Context) error {
 
 func prepareScheduledProfile(ctx *Context) {
 	clog.Debugf("preparing scheduled profile %q", ctx.request.schedule)
+	s := ctx.schedule
 	// log file
-	if len(ctx.schedule.Log) > 0 {
-		ctx.logTarget = ctx.schedule.Log
+	if len(s.Log) > 0 {
+		ctx.logTarget = s.Log
 	}
 	// battery
-	if ctx.schedule.IgnoreOnBatteryLessThan > 0 {
-		ctx.stopOnBattery = ctx.schedule.IgnoreOnBatteryLessThan
-	} else if ctx.schedule.IgnoreOnBattery {
+	if s.IgnoreOnBatteryLessThan > 0 && !s.IgnoreOnBattery.IsStrictlyFalse() {
+		ctx.stopOnBattery = s.IgnoreOnBatteryLessThan
+	} else if s.IgnoreOnBattery.IsTrue() {
 		ctx.stopOnBattery = 100
 	}
 	// lock
-	if ctx.schedule.GetLockWait() > 0 {
-		ctx.lockWait = ctx.schedule.LockWait
-	}
-	if ctx.schedule.GetLockMode() == config.ScheduleLockModeDefault {
-		if ctx.schedule.GetLockWait() > 0 {
-			ctx.lockWait = ctx.schedule.GetLockWait()
+	if s.GetLockMode() == config.ScheduleLockModeDefault {
+		if duration := s.GetLockWait(); duration > 0 {
+			ctx.lockWait = duration
 		}
-	} else if ctx.schedule.GetLockMode() == config.ScheduleLockModeIgnore {
+	} else if s.GetLockMode() == config.ScheduleLockModeIgnore {
 		ctx.noLock = true
 	}
 }

@@ -748,6 +748,51 @@ func (_c *PropertyInfo_IsSingle_Call) RunAndReturn(run func() bool) *PropertyInf
 	return _c
 }
 
+// IsSinglePropertySet provides a mock function with given fields:
+func (_m *PropertyInfo) IsSinglePropertySet() bool {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsSinglePropertySet")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// PropertyInfo_IsSinglePropertySet_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsSinglePropertySet'
+type PropertyInfo_IsSinglePropertySet_Call struct {
+	*mock.Call
+}
+
+// IsSinglePropertySet is a helper method to define mock.On call
+func (_e *PropertyInfo_Expecter) IsSinglePropertySet() *PropertyInfo_IsSinglePropertySet_Call {
+	return &PropertyInfo_IsSinglePropertySet_Call{Call: _e.mock.On("IsSinglePropertySet")}
+}
+
+func (_c *PropertyInfo_IsSinglePropertySet_Call) Run(run func()) *PropertyInfo_IsSinglePropertySet_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *PropertyInfo_IsSinglePropertySet_Call) Return(_a0 bool) *PropertyInfo_IsSinglePropertySet_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *PropertyInfo_IsSinglePropertySet_Call) RunAndReturn(run func() bool) *PropertyInfo_IsSinglePropertySet_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // MustBeInteger provides a mock function with given fields:
 func (_m *PropertyInfo) MustBeInteger() bool {
 	ret := _m.Called()

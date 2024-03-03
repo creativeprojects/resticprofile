@@ -2,6 +2,7 @@ package maybe
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Optional[T any] struct {
@@ -22,6 +23,13 @@ func (m Optional[T]) HasValue() bool {
 
 func (m Optional[T]) Value() T {
 	return m.value
+}
+
+func (m Optional[T]) String() string {
+	if !m.HasValue() {
+		return ""
+	}
+	return fmt.Sprintf("%v", m.Value())
 }
 
 func (m *Optional[T]) UnmarshalJSON(data []byte) error {
