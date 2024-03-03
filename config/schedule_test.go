@@ -47,7 +47,7 @@ func TestNewSchedule(t *testing.T) {
 			systemd-drop-in-files = "drop-in-file.conf"
 
 			[global.schedule-defaults]
-			log = "/custom/path"
+			log = "global-custom.log"
 			lock-wait = "30s"
 
 			[default.backup]
@@ -61,7 +61,7 @@ func TestNewSchedule(t *testing.T) {
 				} else {
 					schedule = p.Schedules()["backup"]
 				}
-				assert.Equal(t, "/custom/path", schedule.Log)
+				assert.Equal(t, "global-custom.log", schedule.Log)
 				assert.Equal(t, 30*time.Second, schedule.GetLockWait())
 				assert.Equal(t, []string{"drop-in-file.conf"}, schedule.SystemdDropInFiles)
 			}
@@ -136,6 +136,11 @@ func TestNewSchedule(t *testing.T) {
 	})
 }
 
+func TestQueryNilScheduleConfig(t *testing.T) {
+	var config *ScheduleConfig
+	assert.False(t, config.HasSchedules())
+}
+
 func TestScheduleBuiltinDefaults(t *testing.T) {
 	s := NewDefaultSchedule(nil, ScheduleOrigin("", ""))
 	require.Equal(t, scheduleBaseConfigDefaults, s.ScheduleBaseConfig)
@@ -162,7 +167,7 @@ func TestLockModes(t *testing.T) {
 
 func TestLockWait(t *testing.T) {
 	tests := map[time.Duration]ScheduleBaseConfig{
-		0:               {LockWait: maybe.SetDuration(2 * time.Second)}, // min lock wait is is >2 seconds
+		0:               {LockWait: maybe.SetDuration(2 * time.Second)}, // min lock wait is >2 seconds
 		3 * time.Second: {LockWait: maybe.SetDuration(3 * time.Second)},
 		120 * time.Hour: {LockWait: maybe.SetDuration(120 * time.Hour)},
 	}
