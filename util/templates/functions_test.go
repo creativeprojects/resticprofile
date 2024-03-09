@@ -2,7 +2,6 @@ package templates
 
 import (
 	"fmt"
-	"github.com/creativeprojects/resticprofile/platform"
 	"io/fs"
 	"math/rand"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

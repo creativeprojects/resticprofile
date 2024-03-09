@@ -398,7 +398,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	arguments = append([]string{command}, arguments...)
 	publicArguments = append([]string{command}, publicArguments...)
 
-	env := append(os.Environ(), r.getEnvironment()...)
+	env := r.getEnvironment(true)
 	env = append(env, r.getProfileEnvironment()...)
 
 	clog.Debugf("starting command: %s %s", r.ctx.binary, strings.Join(publicArguments, " "))
@@ -586,12 +586,13 @@ func (r *resticWrapper) runShellCommands(commands []string, commandsType, comman
 		commandsType = commandsType + " " + command
 	}
 
-	env := append(os.Environ(), r.getEnvironment()...)
-	env = append(env, r.getProfileEnvironment()...)
-	env = append(env, r.getFailEnvironment(failure)...)
-
 	for i, shellCommand := range commands {
 		clog.Debugf("starting %s on profile %d/%d", commandsType, i+1, len(commands))
+		// env might change between runs, creating it for every command
+		env := r.getEnvironment(true)
+		env = append(env, r.getProfileEnvironment()...)
+		env = append(env, r.getFailEnvironment(failure)...)
+		// creating command
 		rCommand := newShellCommand(shellCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
@@ -614,14 +615,15 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 	commands = append(commands, sectionCommands.RunFinally...)
 	commands = append(commands, profileCommands.RunFinally...)
 
-	env := append(os.Environ(), r.getEnvironment()...)
-	env = append(env, r.getProfileEnvironment()...)
-	env = append(env, r.getFailEnvironment(fail)...)
-
 	for i := len(commands) - 1; i >= 0; i-- {
 		// Using defer stack for "finally" to ensure every command is run even on panic
 		defer func(index int, cmd string) {
 			clog.Debugf("starting final command %d/%d", index+1, len(commands))
+			// env might change between runs, creating it for every command
+			env := r.getEnvironment(true)
+			env = append(env, r.getProfileEnvironment()...)
+			env = append(env, r.getFailEnvironment(fail)...)
+			// creating command
 			rCommand := newShellCommand(cmd, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 			// stdout are stderr are coming from the default terminal (in case they're redirected)
 			rCommand.stdout = term.GetOutput()
@@ -668,9 +670,10 @@ func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, 
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration
-func (r *resticWrapper) getEnvironment() (values []string) {
-	// Note: variable names match the original case for OS variables. Vars embedded in the profile environment are all uppercase.
-	env := r.profile.GetEnvironment(false)
+func (r *resticWrapper) getEnvironment(withOs bool) (values []string) {
+	// Note: Variable names match the original case for existing OS variables.
+	//       New profile environment variables are all uppercase if not matching any OS variable.
+	env := r.profile.GetEnvironment(withOs)
 	values = env.Values()
 
 	clog.Debug(func() string {
@@ -690,7 +693,11 @@ func (r *resticWrapper) stringifyEnvironment(env *util.Environment) string {
 
 	out := new(strings.Builder)
 	for _, name := range names {
-		_, _ = fmt.Fprintf(out, "%s=%s\n", name, confidentialEnv[name])
+		cev := confidentialEnv[name]
+		notSameAsOS := cev.Value() != os.Getenv(name) || cev.Value() == ""
+		if notSameAsOS {
+			_, _ = fmt.Fprintf(out, "%s=%s\n", name, cev)
+		}
 	}
 	return out.String()
 }
