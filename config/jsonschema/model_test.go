@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/util/bools"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,7 +51,7 @@ func TestBase(t *testing.T) {
 	assert.Same(t, base, base.base())
 
 	base.setDeprecated(true)
-	assert.Equal(t, bools.True(), base.Deprecated)
+	assert.Equal(t, maybe.True().Nilable(), base.Deprecated)
 	base.setDeprecated(false)
 	assert.Nil(t, base.Deprecated)
 

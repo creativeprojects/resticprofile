@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/spf13/cast"
 )
@@ -111,6 +112,17 @@ type ScheduleConfigOrigin struct {
 	Name, Command string
 }
 
+func (o ScheduleConfigOrigin) Compare(other ScheduleConfigOrigin) (c int) {
+	c = int(other.Type) - int(o.Type) // groups first
+	if c == 0 {
+		c = strings.Compare(o.Name, other.Name)
+	}
+	if c == 0 {
+		c = strings.Compare(o.Command, other.Command)
+	}
+	return
+}
+
 func (o ScheduleConfigOrigin) String() string {
 	kind := ""
 	if o.Type == ScheduleOriginGroup {
@@ -131,6 +143,7 @@ func ScheduleOrigin(name, command string, kind ...ScheduleOriginType) (s Schedul
 
 // ScheduleConfig is the user configuration of a specific schedule bound to a command in a profile or group.
 type ScheduleConfig struct {
+	normalized         bool
 	origin             ScheduleConfigOrigin `show:"noshow"`
 	Schedules          []string             `mapstructure:"at" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Set the times at which the scheduled command is run (times are specified in systemd timer format)"`
 	ScheduleBaseConfig `mapstructure:",squash"`
@@ -145,7 +158,7 @@ func NewDefaultScheduleConfig(config *Config, origin ScheduleConfigOrigin, sched
 
 	s = new(ScheduleConfig)
 	if len(schedules) > 0 {
-		s.Schedules = slices.Clone(schedules)
+		s.setSchedules(schedules)
 	}
 	s.init(defaults)
 	s.origin = origin
@@ -153,44 +166,62 @@ func NewDefaultScheduleConfig(config *Config, origin ScheduleConfigOrigin, sched
 }
 
 func newScheduleConfig(config *Config, section *ScheduleBaseSection) (s *ScheduleConfig) {
-	s = new(ScheduleConfig)
+	origin := ScheduleConfigOrigin{} // is set later
 
 	// decode ScheduleBaseSection.Schedule
 	switch expression := section.Schedule.(type) {
 	case string:
-		s.Schedules = append(s.Schedules, expression)
+		s = NewDefaultScheduleConfig(config, origin, expression)
 	case []string, []any:
-		s.Schedules = append(s.Schedules, cast.ToStringSlice(expression)...)
+		s = NewDefaultScheduleConfig(config, origin, cast.ToStringSlice(expression)...)
 	default:
 		if expression != nil {
-			decoder, err := config.newUnmarshaller(s)
+			cfg := NewDefaultScheduleConfig(config, origin)
+			decoder, err := config.newUnmarshaller(cfg)
 			if err == nil {
 				err = decoder.Decode(expression)
 			}
-			if err != nil {
+			if err == nil {
+				s = cfg
+			} else {
 				if bytes, e := json.Marshal(expression); e == nil {
 					expression = string(bytes)
 				}
 				clog.Errorf("failed decoding schedule %v: %s", expression, err.Error())
-				s = nil
 			}
 		}
 	}
 
 	// init
-	if s != nil {
-		s.init(config.mustGetGlobalSection().ScheduleDefaults)
+	if s.HasSchedules() {
 		s.applyOverrides(section)
+	} else {
+		s = nil
 	}
 	return
 }
 
-func (s *ScheduleConfig) ScheduleOrigin() ScheduleConfigOrigin {
-	return s.origin
+func (s *ScheduleConfig) setSchedules(schedules []string) {
+	schedules = collect.From(schedules, strings.TrimSpace)
+	schedules = collect.All(schedules, func(at string) bool { return len(at) > 0 })
+	s.Schedules = schedules
+	s.normalized = true
 }
 
+// HasSchedules returns true if the normalized list of schedules is not empty.
+// The func is nil tolerant and returns false for config.Schedule(nil).HasSchedules()
 func (s *ScheduleConfig) HasSchedules() bool {
-	return s != nil && len(s.Schedules) > 0
+	if s == nil {
+		return false
+	}
+	if !s.normalized {
+		s.setSchedules(s.Schedules)
+	}
+	return len(s.Schedules) > 0
+}
+
+func (s *ScheduleConfig) ScheduleOrigin() ScheduleConfigOrigin {
+	return s.origin
 }
 
 // Schedulable may be implemented by sections that can provide command schedules (= groups and profiles)
@@ -224,7 +255,7 @@ func newScheduleForProfile(profile *Profile, sc *ScheduleConfig) *Schedule {
 	if origin.Type == ScheduleOriginProfile && origin.Name == profile.Name {
 		return newSchedule(profile.config, sc, profile)
 	}
-	panic(fmt.Sprintf("invalid use of newScheduleForProfile(%s, %s)", profile.Name, origin))
+	panic(fmt.Errorf("invalid use of newScheduleForProfile(%s, %s)", profile.Name, origin))
 }
 
 func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule {
@@ -251,11 +282,7 @@ func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule
 			s.SystemdDropInFiles = profile.SystemdDropInFiles
 		}
 
-		// env - todo: replace with profile.GetEnvironment(withOs=true) when available
-		env = util.NewDefaultEnvironment(os.Environ()...)
-		for k, v := range profile.Environment {
-			env.Put(env.ResolveName(k), v.Value())
-		}
+		env = profile.GetEnvironment(true)
 	}
 
 	// init
@@ -301,12 +328,12 @@ func (s *Schedule) init(env *util.Environment) {
 			}
 		}
 
-		env.Remove("RESTICPROFILE_SCHEDULE_ID")
+		env.Remove(constants.EnvScheduleId)
 		s.Environment = env.Values()
 	}
 
 	// add the ID of the schedule so that shell hooks can know in which schedule they're in
-	s.Environment = append(s.Environment, fmt.Sprintf("RESTICPROFILE_SCHEDULE_ID=%s", s.GetId()))
+	s.Environment = append(s.Environment, fmt.Sprintf("%s=%s", constants.EnvScheduleId, s.GetId()))
 	sort.Strings(s.Environment)
 }
 
@@ -315,12 +342,14 @@ func (s *Schedule) GetId() string {
 }
 
 func (s *Schedule) Compare(other *Schedule) (c int) {
-	c = int(other.origin.Type) - int(s.origin.Type)
-	if c == 0 {
-		c = strings.Compare(s.origin.Name, other.origin.Name)
-	}
-	if c == 0 {
-		c = strings.Compare(s.origin.Command, other.origin.Command)
+	if s == other {
+		c = 0
+	} else if s == nil {
+		c = -1
+	} else if other == nil {
+		c = 1
+	} else {
+		c = s.origin.Compare(other.origin)
 	}
 	return
 }

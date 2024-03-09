@@ -19,8 +19,8 @@ import (
 	"github.com/creativeprojects/resticprofile/config/mocks"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util"
-	"github.com/creativeprojects/resticprofile/util/bools"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -139,7 +139,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 	}
 
 	extensionMatcher := regexp.MustCompile(`\.(conf|toml|yaml|json)$`)
-	version2Matcher := regexp.MustCompile(`^version[:=\s]+2`)
+	version2Matcher := regexp.MustCompile(`"version":\s*"2`)
 	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf)$`)
 	testCount := 0
 
@@ -161,7 +161,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 				content, e = os.ReadFile(filename)
 				assert.NoError(t, e)
 				schema := schema1
-				if version2Matcher.Match(content) {
+				if version2Matcher.Find(content) != nil {
 					schema = schema2
 				}
 
@@ -662,7 +662,7 @@ func TestConfigureBasicInfo(t *testing.T) {
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("IsDeprecated", true))
 		each(schemaType, func(item SchemaType) {
-			assert.Equal(t, bools.True(), item.base().Deprecated)
+			assert.Equal(t, maybe.True().Nilable(), item.base().Deprecated)
 		})
 	})
 

@@ -1,10 +1,14 @@
 package config
 
 import (
+	"bytes"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
@@ -39,6 +43,15 @@ func TestNewSchedule(t *testing.T) {
 		p, origin := profile(t, ``)
 		schedule := NewDefaultSchedule(p.config, origin)
 		assert.False(t, schedule.HasSchedules())
+	})
+
+	t.Run("profile origin", func(t *testing.T) {
+		// Ensure DefaultSchedule can be used as remove-only config
+		p, origin := profile(t, `
+			[default.backup]
+			schedule = "daily"
+		`)
+		assert.Equal(t, origin, p.Schedules()["backup"].ScheduleOrigin())
 	})
 
 	t.Run("global defaults", func(t *testing.T) {
@@ -99,6 +112,32 @@ func TestNewSchedule(t *testing.T) {
 		assert.Equal(t, "ignore", schedule.LockMode)
 	})
 
+	t.Run("profile schedule parse error", func(t *testing.T) {
+		defaultLogger := clog.GetDefaultLogger()
+		defer clog.SetDefaultLogger(defaultLogger)
+		mem := clog.NewMemoryHandler()
+		clog.SetDefaultLogger(clog.NewLogger(mem))
+
+		p, _ := profile(t, `
+			[default.backup.schedule]
+			at = true
+			non-existing = "xyz"
+
+			[default.check.schedule]
+			at = "daily"
+			lock-wait = ["invalid"]
+		`)
+
+		schedule := p.Schedules()["backup"]
+		assert.Equal(t, []string{"1"}, schedule.Schedules)
+
+		assert.Nil(t, p.Schedules()["check"])
+		msg := `failed decoding schedule {"at":"daily","lock-wait":["invalid"]}: 1 error(s) decoding:
+
+* 'lock-wait' expected a map, got 'slice'`
+		assert.Contains(t, mem.Logs(), msg)
+	})
+
 	t.Run("profile inline schedule", func(t *testing.T) {
 		p, _ := profile(t, `
 			[default.backup]
@@ -112,6 +151,19 @@ func TestNewSchedule(t *testing.T) {
 		assert.Equal(t, []string{"10:00", "weekly"}, schedule.Schedules)
 		schedule = p.Schedules()["check"]
 		assert.Equal(t, []string{"daily"}, schedule.Schedules)
+	})
+
+	t.Run("profile undefined schedule", func(t *testing.T) {
+		p, _ := profile(t, `
+			[default.backup]
+			schedule = ""
+
+			[default.check.schedule]
+			at = ""
+		`)
+
+		assert.Nil(t, p.Schedules()["backup"])
+		assert.Nil(t, p.Schedules()["check"])
 	})
 
 	t.Run("profile environment", func(t *testing.T) {
@@ -136,9 +188,140 @@ func TestNewSchedule(t *testing.T) {
 	})
 }
 
+func TestNewScheduleFromGroup(t *testing.T) {
+	group := func(t *testing.T, config string) (*Group, ScheduleConfigOrigin) {
+		config = "version = \"2\"\n\n" + config
+		if !strings.Contains(config, "profiles =") {
+			config += `
+			[groups.default]
+			profiles = "default"
+			`
+		}
+		c, err := Load(bytes.NewBufferString(config), "toml")
+		require.NoError(t, err)
+		group, err := c.GetProfileGroup("default")
+		require.NoError(t, err)
+		require.NotNil(t, group)
+		return group, ScheduleOrigin(group.Name, constants.CommandBackup, ScheduleOriginGroup)
+	}
+
+	t.Run("group without schedule", func(t *testing.T) {
+		g, _ := group(t, ``)
+		assert.Empty(t, g.Schedules())
+	})
+
+	t.Run("group with undefined schedule", func(t *testing.T) {
+		g, _ := group(t, `
+			[groups.default.schedules.backup]
+			at = "" # empty schedule
+		`)
+		assert.Empty(t, g.Schedules())
+	})
+
+	t.Run("group with schedule", func(t *testing.T) {
+		g, _ := group(t, `
+			[groups.default.schedules.backup]
+			at = "daily"
+			log = "group-backup.log"
+			[groups.default.schedules.check]
+			at = "monthly"
+			log = "group-check.log"
+		`)
+		require.Len(t, g.Schedules(), 2)
+		backup, check := g.Schedules()["backup"], g.Schedules()["check"]
+		require.NotNil(t, backup)
+		require.Equal(t, []string{"daily"}, backup.Schedules)
+		require.Equal(t, "group-backup.log", backup.Log)
+		require.Equal(t, []string{"monthly"}, check.Schedules)
+		require.Equal(t, "group-check.log", check.Log)
+	})
+
+	t.Run("group origin", func(t *testing.T) {
+		g, origin := group(t, `
+			[groups.default.schedules.backup]
+			at = "daily"
+		`)
+		assert.Equal(t, origin, g.Schedules()["backup"].ScheduleOrigin())
+	})
+
+	t.Run("global defaults", func(t *testing.T) {
+		g, origin := group(t, `
+			[global]
+			systemd-drop-in-files = "drop-in-file.conf"
+
+			[global.schedule-defaults]
+			log = "global-custom.log"
+			lock-wait = "30s"
+
+			[groups.default.schedules.backup]
+			at = "daily"
+		`)
+		t.Run("schedule-defaults apply", func(t *testing.T) {
+			for i := 0; i < 2; i++ {
+				var schedule *Schedule
+				if i == 0 {
+					schedule = NewDefaultSchedule(g.config, origin)
+				} else {
+					schedule = g.Schedules()["backup"]
+					assert.Equal(t, []string{"daily"}, schedule.Schedules)
+				}
+				assert.Equal(t, "global-custom.log", schedule.Log)
+				assert.Equal(t, 30*time.Second, schedule.GetLockWait())
+				assert.Equal(t, []string{"drop-in-file.conf"}, schedule.SystemdDropInFiles)
+			}
+		})
+	})
+}
+
 func TestQueryNilScheduleConfig(t *testing.T) {
 	var config *ScheduleConfig
 	assert.False(t, config.HasSchedules())
+}
+
+func TestNormalizeLogPath(t *testing.T) {
+	sep := regexp.MustCompile(`[/\\]`)
+	baseDir, _ := filepath.Abs(t.TempDir())
+	s := NewSchedule(nil, NewDefaultScheduleConfig(nil, ScheduleOrigin("", "")))
+	s.ConfigFile = filepath.Join(baseDir, "profiles.yaml")
+
+	expected := filepath.Join(baseDir, "schedule.log")
+	s.Log = "schedule.log"
+	s.init(nil)
+	assert.Equal(t, sep.Split(expected, -1), sep.Split(s.Log, -1))
+
+	expected = "tcp://localhost"
+	s.Log = "tcp://localhost"
+	s.init(nil)
+	assert.Equal(t, expected, s.Log)
+}
+
+func TestCompareSchedules(t *testing.T) {
+	cfgA := NewDefaultScheduleConfig(nil, ScheduleOrigin("a-name", "a-command"))
+	cfgB := NewDefaultScheduleConfig(nil, ScheduleOrigin("b-name", "b-command"))
+	cfgC := NewDefaultScheduleConfig(nil, ScheduleOrigin("a-name", "b-command"))
+	a, b, c := NewSchedule(nil, cfgA), NewSchedule(nil, cfgB), NewSchedule(nil, cfgC)
+
+	assert.Equal(t, 0, CompareSchedules(nil, nil))
+	assert.Equal(t, 0, CompareSchedules(a, a))
+	assert.Equal(t, 0, CompareSchedules(b, b))
+	assert.Equal(t, 1, CompareSchedules(a, nil))
+	assert.Equal(t, -1, CompareSchedules(nil, a))
+	assert.Equal(t, -1, CompareSchedules(a, b))
+	assert.Equal(t, 1, CompareSchedules(b, a))
+	assert.Equal(t, 1, CompareSchedules(c, a))
+	assert.Equal(t, -1, CompareSchedules(a, c))
+}
+
+func TestScheduleForProfileEnforcesOrigin(t *testing.T) {
+	profile := NewProfile(nil, "profile")
+	config := NewDefaultScheduleConfig(nil, ScheduleOrigin(profile.Name, "backup", ScheduleOriginGroup))
+
+	assert.PanicsWithError(t, "invalid use of newScheduleForProfile(profile, g:backup@profile)", func() {
+		newScheduleForProfile(profile, config)
+	})
+
+	config.origin.Type = ScheduleOriginProfile
+	assert.NotNil(t, newScheduleForProfile(profile, config))
 }
 
 func TestScheduleBuiltinDefaults(t *testing.T) {

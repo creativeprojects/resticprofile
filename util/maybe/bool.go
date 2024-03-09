@@ -8,13 +8,13 @@ type Bool struct {
 	Optional[bool]
 }
 
-func False() Bool {
-	return Bool{Set(false)}
-}
+func SetBool(value bool) Bool { return Bool{Set(value)} }
 
-func True() Bool {
-	return Bool{Set(true)}
-}
+func UnsetBool() Bool { return Bool{} }
+
+func False() Bool { return SetBool(false) }
+
+func True() Bool { return SetBool(true) }
 
 func (value Bool) IsTrue() bool {
 	return value.HasValue() && value.Value()
@@ -34,6 +34,13 @@ func (value Bool) IsUndefined() bool {
 
 func (value Bool) IsTrueOrUndefined() bool {
 	return !value.HasValue() || value.Value() == true
+}
+
+func BoolFromNilable(value *bool) Bool {
+	if value == nil {
+		return UnsetBool()
+	}
+	return SetBool(*value)
 }
 
 // BoolDecoder implements config parsing for maybe.Bool

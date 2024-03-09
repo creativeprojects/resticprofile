@@ -124,3 +124,8 @@ Most flags for resticprofile can be set using environment variables. If both are
 |---------------------------------|---------|--------------------------------------------------------------------------------------|
 | `RESTICPROFILE_PWSH_NO_AUTOENV` | _empty_ | Disables powershell script pre-processing that converts unset `$VAR` into `$Env:VAR` |
 
+### Environment variables set by resticprofile
+
+| Environment Variable        | Example                        | When                                |
+|-----------------------------|--------------------------------|-------------------------------------|
+| `RESTICPROFILE_SCHEDULE_ID` | `profiles.yaml:backup@profile` | Set when running scheduled commands |

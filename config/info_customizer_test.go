@@ -196,9 +196,79 @@ func TestMaybeBoolProperty(t *testing.T) {
 	for _, name := range set.Properties() {
 		t.Run(name, func(t *testing.T) {
 			info := set.PropertyInfo(name)
+			assert.True(t, info.CanBeNil())
 			assert.True(t, info.CanBeBool())
 			assert.False(t, info.CanBePropertySet())
 			assert.False(t, info.IsMultiType())
+		})
+	}
+}
+
+func TestMaybeDurationProperty(t *testing.T) {
+	var testType = struct {
+		Simple maybe.Duration `mapstructure:"simple"`
+	}{}
+
+	set := propertySetFromType(reflect.TypeOf(testType))
+
+	assert.ElementsMatch(t, []string{"simple"}, set.Properties())
+	for _, name := range set.Properties() {
+		t.Run(name+"/before", func(t *testing.T) {
+			info := set.PropertyInfo(name)
+			require.True(t, info.CanBePropertySet())
+			assert.Equal(t, "Duration", info.PropertySet().TypeName())
+			assert.False(t, info.CanBeNumeric())
+			assert.False(t, info.IsMultiType())
+		})
+	}
+
+	customizeProperties("any", set.properties)
+
+	for _, name := range set.Properties() {
+		t.Run(name, func(t *testing.T) {
+			info := set.PropertyInfo(name)
+			assert.True(t, info.CanBeNil())
+			assert.True(t, info.CanBeNumeric())
+			assert.True(t, info.CanBeString())
+			assert.True(t, info.IsMultiType())
+			assert.False(t, info.CanBeBool())
+			assert.False(t, info.CanBePropertySet())
+			assert.Equal(t, "duration", info.Format())
+		})
+	}
+}
+
+func TestScheduleProperty(t *testing.T) {
+	var testType = struct {
+		Schedule any `mapstructure:"schedule"`
+	}{}
+
+	set := propertySetFromType(reflect.TypeOf(testType))
+
+	assert.ElementsMatch(t, []string{"schedule"}, set.Properties())
+	for _, name := range set.Properties() {
+		t.Run(name+"/before", func(t *testing.T) {
+			info := set.PropertyInfo(name)
+			require.True(t, info.IsAnyType())
+		})
+	}
+
+	customizeProperties("any", set.properties)
+
+	for _, name := range set.Properties() {
+		t.Run(name, func(t *testing.T) {
+			info := set.PropertyInfo(name)
+			assert.True(t, info.CanBeNil())
+			assert.True(t, info.IsMultiType())
+			assert.True(t, info.CanBeString())
+			assert.False(t, info.CanBeNumeric())
+			assert.False(t, info.CanBeBool())
+
+			require.True(t, info.CanBePropertySet())
+			assert.Equal(t, NewScheduleConfigInfo().Name(), info.PropertySet().Name())
+
+			assert.False(t, info.IsSingle(), "multiple strings")
+			assert.True(t, info.IsSinglePropertySet(), "just one nested type")
 		})
 	}
 }

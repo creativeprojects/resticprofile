@@ -8,13 +8,13 @@ import (
 	"github.com/spf13/cast"
 )
 
+// Duration implements Optional[time.Duration]
 type Duration struct {
 	Optional[time.Duration]
 }
 
-func SetDuration(value time.Duration) Duration {
-	return Duration{Set(value)}
-}
+// SetDuration returns a maybe.Duration with value
+func SetDuration(value time.Duration) Duration { return Duration{Set(value)} }
 
 // DurationDecoder implements config parsing for maybe.Duration
 func DurationDecoder() func(from, to reflect.Type, data any) (any, error) {
@@ -34,11 +34,9 @@ func DurationDecoder() func(from, to reflect.Type, data any) (any, error) {
 			err = e
 		}
 
-		if err != nil || from != fromType {
-			return
+		if err == nil && from == fromType {
+			result = SetDuration(data.(time.Duration))
 		}
-
-		result = SetDuration(data.(time.Duration))
 		return
 	}
 }

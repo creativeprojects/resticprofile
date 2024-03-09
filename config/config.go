@@ -487,7 +487,7 @@ func (c *Config) GetGlobalSection() (*Global, error) {
 	return global, nil
 }
 
-// mustGetGlobalSection returns a cached global configuration, panics if it can't be loaded (is for internal use)
+// mustGetGlobalSection returns a cached global configuration, panics if it can't be loaded (for internal use only)
 func (c *Config) mustGetGlobalSection() *Global {
 	if c.cached.global == nil {
 		var err error

@@ -146,6 +146,7 @@ func init() {
 			if util.ElementType(field.Type).AssignableTo(maybeBoolType) {
 				basic := property.basic().resetTypeInfo()
 				basic.mayBool = true
+				basic.mayNil = true
 			}
 		}
 	})
@@ -160,6 +161,7 @@ func init() {
 				basic.mustInt = true
 				basic.format = "duration"
 				basic.mayString = true
+				basic.mayNil = true
 			}
 		}
 	})
