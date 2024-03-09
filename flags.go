@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/spf13/cast"
 	"github.com/spf13/pflag"
 )
 
@@ -35,28 +37,67 @@ type commandLineFlags struct {
 	usagesHelp      string
 }
 
+func envValueOverride[T any](defaultValue T, keys ...string) T {
+	for _, key := range keys {
+		if value := os.Getenv(key); len(value) > 0 {
+			var v any = defaultValue
+			switch v.(type) {
+			case bool:
+				v = cast.ToBool(value)
+			case int:
+				v = cast.ToInt(value)
+			case time.Duration:
+				v = cast.ToDuration(value)
+			case string:
+				v = value
+			}
+			defaultValue = v.(T)
+			break
+		}
+	}
+	return defaultValue
+}
+
 // loadFlags loads command line flags (before any command)
 func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset := pflag.NewFlagSet("resticprofile", pflag.ContinueOnError)
 
-	flags := commandLineFlags{}
+	// flags with default values and env overrides
+	flags := commandLineFlags{
+		help:            false,
+		quiet:           envValueOverride(constants.DefaultQuietFlag, "RESTICPROFILE_QUIET"),
+		verbose:         envValueOverride(constants.DefaultVerboseFlag, "RESTICPROFILE_VERBOSE"),
+		veryVerbose:     envValueOverride(constants.DefaultVerboseFlag, "RESTICPROFILE_TRACE"),
+		config:          envValueOverride(constants.DefaultConfigurationFile, "RESTICPROFILE_CONFIG"),
+		format:          envValueOverride("", "RESTICPROFILE_FORMAT"),
+		name:            envValueOverride(constants.DefaultProfileName, "RESTICPROFILE_NAME"),
+		log:             envValueOverride("", "RESTICPROFILE_LOG"),
+		dryRun:          envValueOverride(false, "RESTICPROFILE_DRY_RUN"),
+		noLock:          envValueOverride(false, "RESTICPROFILE_NO_LOCK"),
+		lockWait:        envValueOverride(time.Duration(0), "RESTICPROFILE_LOCK_WAIT"),
+		noAnsi:          envValueOverride(false, "RESTICPROFILE_NO_ANSI"),
+		theme:           envValueOverride(constants.DefaultTheme, "RESTICPROFILE_THEME"),
+		noPriority:      envValueOverride(false, "RESTICPROFILE_NO_PRIORITY"),
+		wait:            envValueOverride(false, "RESTICPROFILE_WAIT"),
+		ignoreOnBattery: envValueOverride(0, "RESTICPROFILE_IGNORE_ON_BATTERY"),
+	}
 
-	flagset.BoolVarP(&flags.help, "help", "h", false, "display this help")
-	flagset.BoolVarP(&flags.quiet, "quiet", "q", constants.DefaultQuietFlag, "display only warnings and errors")
-	flagset.BoolVarP(&flags.verbose, "verbose", "v", constants.DefaultVerboseFlag, "display some debugging information")
-	flagset.BoolVar(&flags.veryVerbose, "trace", constants.DefaultVerboseFlag, "display even more debugging information")
-	flagset.StringVarP(&flags.config, "config", "c", constants.DefaultConfigurationFile, "configuration file")
-	flagset.StringVarP(&flags.format, "format", "f", "", "file format of the configuration (default is to use the file extension)")
-	flagset.StringVarP(&flags.name, "name", "n", constants.DefaultProfileName, "profile name")
-	flagset.StringVarP(&flags.log, "log", "l", "", "logs to a target instead of the console")
-	flagset.BoolVar(&flags.dryRun, "dry-run", false, "display the restic commands instead of running them")
-	flagset.BoolVar(&flags.noLock, "no-lock", false, "skip profile lock file")
-	flagset.DurationVar(&flags.lockWait, "lock-wait", 0, "wait up to duration to acquire a lock (syntax \"1h5m30s\")")
-	flagset.BoolVar(&flags.noAnsi, "no-ansi", false, "disable ansi control characters (disable console colouring)")
-	flagset.StringVar(&flags.theme, "theme", constants.DefaultTheme, "console colouring theme (dark, light, none)")
-	flagset.BoolVar(&flags.noPriority, "no-prio", false, "don't change the process priority: used when started from a service that has already set the priority")
-	flagset.BoolVarP(&flags.wait, "wait", "w", false, "wait at the end until the user presses the enter key")
-	flagset.IntVar(&flags.ignoreOnBattery, "ignore-on-battery", 0, "don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value")
+	flagset.BoolVarP(&flags.help, "help", "h", flags.help, "display this help")
+	flagset.BoolVarP(&flags.quiet, "quiet", "q", flags.quiet, "display only warnings and errors")
+	flagset.BoolVarP(&flags.verbose, "verbose", "v", flags.verbose, "display some debugging information")
+	flagset.BoolVar(&flags.veryVerbose, "trace", flags.veryVerbose, "display even more debugging information")
+	flagset.StringVarP(&flags.config, "config", "c", flags.config, "configuration file")
+	flagset.StringVarP(&flags.format, "format", "f", flags.format, "file format of the configuration (default is to use the file extension)")
+	flagset.StringVarP(&flags.name, "name", "n", flags.name, "profile name")
+	flagset.StringVarP(&flags.log, "log", "l", flags.log, "logs to a target instead of the console")
+	flagset.BoolVar(&flags.dryRun, "dry-run", flags.dryRun, "display the restic commands instead of running them")
+	flagset.BoolVar(&flags.noLock, "no-lock", flags.noLock, "skip profile lock file")
+	flagset.DurationVar(&flags.lockWait, "lock-wait", flags.lockWait, "wait up to duration to acquire a lock (syntax \"1h5m30s\")")
+	flagset.BoolVar(&flags.noAnsi, "no-ansi", flags.noAnsi, "disable ansi control characters (disable console colouring)")
+	flagset.StringVar(&flags.theme, "theme", flags.theme, "console colouring theme (dark, light, none)")
+	flagset.BoolVar(&flags.noPriority, "no-prio", flags.noPriority, "don't change the process priority: used when started from a service that has already set the priority")
+	flagset.BoolVarP(&flags.wait, "wait", "w", flags.wait, "wait at the end until the user presses the enter key")
+	flagset.IntVar(&flags.ignoreOnBattery, "ignore-on-battery", flags.ignoreOnBattery, "don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value")
 	flagset.Lookup("ignore-on-battery").NoOptDefVal = "100" // 0 is flag not set, 100 is for a flag with no value (meaning just battery discharge)
 
 	if platform.IsWindows() {
