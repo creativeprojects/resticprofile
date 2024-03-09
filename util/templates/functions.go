@@ -3,6 +3,7 @@ package templates
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"maps"
 	"os"
@@ -124,18 +125,45 @@ func TempFile(name string) (filename string) {
 	return
 }
 
+// NotStrictlyPrivate indicates that a PrivateTempFile was successfully created but the OS reports that it can be accessed by others
+var NotStrictlyPrivate = errors.New("the private temp file is not strictly accessible by owners only")
+
+// PrivateTempFile is like TempFile but guarantees that the returned file can be accessed by owners only when err is nil
+func PrivateTempFile(name string) (filename string, err error) {
+	filename = TempFile(name)
+	const privateMode = os.FileMode(0600)
+	if err = os.Chmod(filename, privateMode); err == nil {
+		if stat, e := os.Stat(filename); e != nil || stat.Mode() != privateMode {
+			err = NotStrictlyPrivate
+		}
+	}
+	return
+}
+
 // EnvFileReceiverFunc declares the backend interface for the "{{env}}" template function
 type EnvFileReceiverFunc func() (profileKey string, receiveFile func(string))
 
 // EnvFileFunc creates a template func to retrieve a profile .env file that can be used to pass variables between shells
 func EnvFileFunc(receiverFunc EnvFileReceiverFunc) map[string]any {
+	files := make(map[string]string)
+
+	getEnvFile := func(profile string) (envFile string) {
+		envFile = files[profile]
+		if len(envFile) == 0 {
+			var err error
+			envFile, err = PrivateTempFile(fmt.Sprintf("%s.env", profile))
+			if err != nil && !errors.Is(err, NotStrictlyPrivate) {
+				panic(fmt.Errorf("failed setting permissions for %s: %w", envFile, err))
+			}
+			//files[profile] = envFile
+		}
+		return
+	}
+
 	return map[string]any{
 		"env": func() (envFile string) {
 			profile, receive := receiverFunc()
-			envFile = TempFile(fmt.Sprintf("%s.env", profile))
-			if err := os.Chmod(envFile, 0600); err != nil {
-				panic(fmt.Errorf("failed setting permissions for %s: %w", envFile, err))
-			}
+			envFile = getEnvFile(profile)
 			receive(envFile)
 			return
 		},

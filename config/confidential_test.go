@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/creativeprojects/resticprofile/util/templates"
+	"github.com/stretchr/testify/require"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -261,9 +264,11 @@ profile:
 func TestGetNonConfidentialArgs(t *testing.T) {
 	repo := "local:user:%s@host/path with space"
 	testConfig := `
-profile:
-  repository: "` + fmt.Sprintf(repo, "password") + `"
-`
+      global:
+        prevent-auto-repository-file: true
+      profile:
+        repository: "` + fmt.Sprintf(repo, "password") + `"
+      `
 	profile, err := getProfile("yaml", testConfig, "profile", "")
 	assert.NoError(t, err)
 	assert.NotNil(t, profile)
@@ -276,6 +281,41 @@ profile:
 
 	assert.Equal(t, []string{"--repo=" + expectedSecret}, args.GetAll())
 	assert.Equal(t, []string{"--repo=" + expectedPublic}, result.GetAll())
+}
+
+func TestGetAutoRepositoryFile(t *testing.T) {
+	tests := map[string]bool{
+		"/path/to/file":                      false,
+		"file:/path/to/file":                 false,
+		"local:user:pw@host/path with space": true,
+		"https://public/":                    false,
+		"https://user:password@private/":     true,
+	}
+
+	for repo, usesFile := range tests {
+		t.Run(repo, func(t *testing.T) {
+			config := fmt.Sprintf(`
+				[my-profile]
+				repository = %q
+            `, repo)
+			profile, err := getResolvedProfile("toml", config, "my-profile")
+			require.NoError(t, err)
+			args := profile.GetCommandFlags(constants.CommandBackup)
+
+			if usesFile {
+				file := templates.TempFile("my-profile-repo.txt")
+				expected := shell.NewArg(file, shell.ArgConfigEscape).String()
+				assert.Equal(t, []string{"--repository-file=" + expected}, args.GetAll())
+
+				content, err := os.ReadFile(file)
+				assert.NoError(t, err)
+				assert.Equal(t, repo, string(content))
+			} else {
+				expected := shell.NewArg(repo, shell.ArgConfigEscape).String()
+				assert.Equal(t, []string{"--repo=" + expected}, args.GetAll())
+			}
+		})
+	}
 }
 
 func TestConfidentialToJSON(t *testing.T) {

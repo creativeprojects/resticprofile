@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/maybe"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/exp/maps"
 )
@@ -144,6 +145,10 @@ func (i *InitSection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		"from-password-command": "password-command2",
 		"from-key-hint":         "key-hint2",
 	}
+
+	// Handle confidential repo in flags
+	restore := profile.replaceWithRepositoryFile(&i.FromRepository, &i.FromRepositoryFile, "-from")
+	defer restore()
 
 	flags = profile.GetCommonFlags()
 	addArgsFromStruct(flags, i)
@@ -308,7 +313,7 @@ func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
 }
 
 func (s *ScheduleBaseSection) resolve(profile *Profile) {
-	if s == nil || profile.config == nil {
+	if s == nil || !profile.hasConfig() {
 		return
 	}
 	if config := newScheduleConfig(profile.config, s); config.HasSchedules() {
@@ -392,6 +397,10 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		constants.ParameterPasswordCommand: s.PasswordCommand,
 		constants.ParameterKeyHint:         s.KeyHint,
 	}
+
+	// Handle confidential repo in flags
+	restore := profile.replaceWithRepositoryFile(&s.Repository, &s.RepositoryFile, "-to")
+	defer restore()
 
 	flags = profile.GetCommonFlags()
 	addArgsFromStruct(flags, s)
@@ -525,7 +534,7 @@ func (p *Profile) fillOtherSections() {
 			section := new(GenericSection)
 
 			var err error
-			if p.config == nil {
+			if !p.hasConfig() {
 				err = mapstructure.WeakDecode(content, section)
 			} else {
 				if decoder, e := p.config.newUnmarshaller(section); e == nil {
@@ -538,7 +547,7 @@ func (p *Profile) fillOtherSections() {
 			if err == nil {
 				p.OtherSections[name] = section
 				delete(p.OtherFlags, name)
-			} else if p.config != nil {
+			} else if p.hasConfig() {
 				p.config.reportFailedSection(name, err)
 			}
 		}
@@ -688,7 +697,7 @@ func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
 		for _, path := range paths {
 			if len(path) > 0 {
 				for _, rp := range revolver(path) {
-					if rp != path && p.config != nil && !hasAbsoluteBase {
+					if rp != path && p.hasConfig() && !hasAbsoluteBase {
 						p.config.reportChangedPath(rp, path, origin)
 					}
 					resolved = append(resolved, rp)
@@ -736,8 +745,48 @@ func (p *Profile) allFlagsSections() (sections []map[string]any) {
 	return
 }
 
+func (p *Profile) replaceWithRepositoryFile(repository *ConfidentialValue, repositoryFile *string, suffix string) (restore func()) {
+	origRepo, origFile := *repository, *repositoryFile
+	restore = func() {
+		*repository = origRepo
+		*repositoryFile = origFile
+	}
+
+	if !p.hasConfig() || p.config.mustGetGlobalSection().NoAutoRepositoryFile {
+		return
+	}
+
+	if repository.IsConfidential() && len(*repositoryFile) == 0 {
+		file, err := templates.PrivateTempFile(fmt.Sprintf("%s%s-repo.txt", p.Name, suffix))
+		if err != nil {
+			clog.Debugf(`private file %s not supported: %s`, file, err.Error())
+			return
+		}
+
+		if err = os.WriteFile(file, []byte(origRepo.Value()), 0600); err == nil {
+			clog.Debugf(`replaced plain "repository" argument with "repository-file" (%s) to avoid password leak`, file)
+			*repository = NewConfidentialValue("")
+			*repositoryFile = file
+		} else {
+			clog.Debugf(`failed writing %s: %s`, file, err.Error())
+		}
+	}
+	return
+}
+
+// hasConfig returns true if the profile has an initialized config instance (always true in normal runtime)
+func (p *Profile) hasConfig() bool {
+	return p != nil &&
+		p.config != nil &&
+		p.config.viper != nil
+}
+
 // GetCommonFlags returns the flags common to all commands
 func (p *Profile) GetCommonFlags() (flags *shell.Args) {
+	// Handle confidential repo in flags
+	restore := p.replaceWithRepositoryFile(&p.Repository, &p.RepositoryFile, "")
+	defer restore()
+
 	// Flags from the profile fields
 	flags = shell.NewArgs().SetLegacyArg(p.legacyArg)
 	addArgsFromStruct(flags, p)
