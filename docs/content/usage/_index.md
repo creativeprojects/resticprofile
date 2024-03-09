@@ -92,6 +92,35 @@ For custom log forwarding, the prefix `temp:` can be used (e.g. `temp:/t/msg.log
 into a command or http hook by referencing it with `{{ tempDir }}/...` or `{{ tempFile "msg.log" }}` in the configuration file.
 * **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. 
 This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
+* **[--ignore-on-battery]**: Don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value.
 * **[resticprofile OR restic command]**: Like snapshots, backup, check, prune, forget, mount, etc.
 * **[additional flags]**: Any additional flags to pass to the restic command line
+
+## Environment variables
+
+Most flags for resticprofile can be set using environment variables. If both are specified, command line flags take the precedence.
+
+| Flag                  | Environment variable              | Built-In default |
+|-----------------------|-----------------------------------|------------------|
+| `--quiet`             | `RESTICPROFILE_QUIET`             | `false`          |
+| `--verbose`           | `RESTICPROFILE_VERBOSE`           | `false`          |
+| `--trace`             | `RESTICPROFILE_TRACE`             | `false`          |
+| `--config`            | `RESTICPROFILE_CONFIG`            | `"profiles"`     |
+| `--format`            | `RESTICPROFILE_FORMAT`            | `""`             |
+| `--name`              | `RESTICPROFILE_NAME`              | `"default"`      |
+| `--log`               | `RESTICPROFILE_LOG`               | `""`             |
+| `--dry-run`           | `RESTICPROFILE_DRY_RUN`           | `false`          |
+| `--no-lock`           | `RESTICPROFILE_NO_LOCK`           | `false`          |
+| `--lock-wait`         | `RESTICPROFILE_LOCK_WAIT`         | `0`              |
+| `--no-ansi`           | `RESTICPROFILE_NO_ANSI`           | `false`          |
+| `--theme`             | `RESTICPROFILE_THEME`             | `"light"`        |
+| `--no-priority`       | `RESTICPROFILE_NO_PRIORITY`       | `false`          |
+| `--wait`              | `RESTICPROFILE_WAIT`              | `false`          |
+| `--ignore-on-battery` | `RESTICPROFILE_IGNORE_ON_BATTERY` | `0`              |
+
+### Other environment variables
+
+| Environment Variable            | Default | Purpose                                                                              |
+|---------------------------------|---------|--------------------------------------------------------------------------------------|
+| `RESTICPROFILE_PWSH_NO_AUTOENV` | _empty_ | Disables powershell script pre-processing that converts unset `$VAR` into `$Env:VAR` |
 

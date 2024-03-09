@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
@@ -36,6 +39,62 @@ func TestBackupProfileName(t *testing.T) {
 	assert.Equal(t, flags.name, "profile1")
 	assert.False(t, flags.verbose)
 	assert.Equal(t, flags.resticArgs, []string{"backup", "-v"})
+}
+
+func TestEnvOverrides(t *testing.T) {
+	var envNames []string
+	t.Cleanup(func() {
+		for _, name := range envNames {
+			_ = os.Unsetenv(name)
+		}
+	})
+
+	setEnv := func(value any, key string) any {
+		envNames = append(envNames, key)
+		assert.NoError(t, os.Setenv(key, fmt.Sprintf("%v", value)))
+		return value
+	}
+
+	flags := commandLineFlags{
+		help:            false,
+		quiet:           setEnv(true, "RESTICPROFILE_QUIET").(bool),
+		verbose:         setEnv(true, "RESTICPROFILE_VERBOSE").(bool),
+		veryVerbose:     setEnv(true, "RESTICPROFILE_TRACE").(bool),
+		config:          setEnv("custom-conf", "RESTICPROFILE_CONFIG").(string),
+		format:          setEnv("custom-format", "RESTICPROFILE_FORMAT").(string),
+		name:            setEnv("custom-profile", "RESTICPROFILE_NAME").(string),
+		log:             setEnv("custom.log", "RESTICPROFILE_LOG").(string),
+		dryRun:          setEnv(true, "RESTICPROFILE_DRY_RUN").(bool),
+		noLock:          setEnv(true, "RESTICPROFILE_NO_LOCK").(bool),
+		lockWait:        setEnv(time.Minute*5, "RESTICPROFILE_LOCK_WAIT").(time.Duration),
+		noAnsi:          setEnv(true, "RESTICPROFILE_NO_ANSI").(bool),
+		theme:           setEnv("custom-theme", "RESTICPROFILE_THEME").(string),
+		noPriority:      setEnv(true, "RESTICPROFILE_NO_PRIORITY").(bool),
+		wait:            setEnv(true, "RESTICPROFILE_WAIT").(bool),
+		ignoreOnBattery: setEnv(50, "RESTICPROFILE_IGNORE_ON_BATTERY").(int),
+	}
+
+	load := func(t *testing.T, args ...string) commandLineFlags {
+		_, loaded, err := loadFlags(args)
+		assert.NoError(t, err)
+		flags.resticArgs = loaded.resticArgs
+		flags.usagesHelp = loaded.usagesHelp
+		return loaded
+	}
+
+	t.Run("all-defined-by-env", func(t *testing.T) {
+		loaded := load(t, "--verbose")
+		assert.Equal(t, flags, loaded)
+	})
+
+	t.Run("cli-has-higher-prio", func(t *testing.T) {
+		loaded := load(t, "--name", "cli-profile-name")
+		assert.NotEqual(t, flags, loaded)
+		assert.Equal(t, "cli-profile-name", loaded.name)
+
+		loaded.name = flags.name
+		assert.Equal(t, flags, loaded)
+	})
 }
 
 func TestProfileCommandWithProfileNamePrecedence(t *testing.T) {
