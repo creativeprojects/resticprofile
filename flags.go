@@ -39,7 +39,7 @@ type commandLineFlags struct {
 
 func envValueOverride[T any](defaultValue T, keys ...string) T {
 	for _, key := range keys {
-		if value := os.Getenv(key); len(value) > 0 {
+		if value := strings.TrimSpace(os.Getenv(key)); len(value) > 0 {
 			var v any = defaultValue
 			switch v.(type) {
 			case bool:
