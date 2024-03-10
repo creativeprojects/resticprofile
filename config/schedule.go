@@ -41,7 +41,7 @@ type ScheduleBaseConfig struct {
 	LockWait                maybe.Duration `mapstructure:"lock-wait" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
 	EnvCapture              []string       `mapstructure:"capture-environment" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
 	IgnoreOnBattery         maybe.Bool     `mapstructure:"ignore-on-battery" default:"false" description:"Don't start this schedule when running on battery"`
-	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20,33,50,75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
+	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
 }
 

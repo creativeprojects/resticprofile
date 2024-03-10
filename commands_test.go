@@ -286,11 +286,18 @@ func TestShowSchedules(t *testing.T) {
 	}
 	expected := strings.TrimSpace(`
 schedule backup@default:
-    at:  daily
+    at:                   daily
+    permission:           auto
+    priority:             background
+    lock-mode:            default
+    capture-environment:  RESTIC_*
 
 schedule check@default:
-    at:  weekly
-
+    at:                   weekly
+    permission:           auto
+    priority:             background
+    lock-mode:            default
+    capture-environment:  RESTIC_*
 `)
 	showSchedules(buffer, schedules)
 	assert.Equal(t, expected, strings.TrimSpace(buffer.String()))

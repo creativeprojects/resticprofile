@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/creativeprojects/clog"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

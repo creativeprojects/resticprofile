@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/creativeprojects/clog"
 	"os"
 	"slices"
 	"strings"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"

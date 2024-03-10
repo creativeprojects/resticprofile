@@ -334,7 +334,7 @@ func schemaForGroups(version config.Version) SchemaType {
 		groups = newSchemaArray(newSchemaString())
 		describeAll(groups, "profile-name", "profile names in this group")
 	} else {
-		groups = schemaForPropertySet(config.NewGroupInfo())
+		groups = schemaForPropertySet(info)
 	}
 	groups.describe("group", "group declaration")
 	object.PatternProperties[matchAll] = groups

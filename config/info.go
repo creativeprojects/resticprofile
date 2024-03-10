@@ -573,7 +573,11 @@ func customizeProperties(sectionName string, properties map[string]PropertyInfo)
 			}
 			if nested := property.PropertySet(); nested != nil {
 				if ps, ok := nested.(*namedPropertySet); ok {
-					customizeProperties("nested:"+nested.TypeName(), ps.properties)
+					name := fmt.Sprintf("nested:%s", nested.TypeName())
+					customizeProperties(name, ps.properties)
+					if ps.otherProperty != nil {
+						customizeProperties(name, map[string]PropertyInfo{"*": ps.otherProperty})
+					}
 				}
 			}
 		}
