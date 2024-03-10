@@ -22,7 +22,9 @@ import (
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"golang.org/x/exp/maps"
 )
 
 type resticWrapper struct {
@@ -44,6 +46,7 @@ type resticWrapper struct {
 	startTime     time.Time
 	executionTime time.Duration
 	doneTryUnlock bool
+	previousEnv   string
 }
 
 func newResticWrapper(ctx *Context) *resticWrapper {
@@ -357,7 +360,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Add extra commandline arguments
 	moreArgs := slices.Clone(r.moreArgs)
 	if filter != nil {
-		clog.Debugf("unfiltered extra flags: %s", strings.Join(config.GetNonConfidentialValues(r.profile, moreArgs), " "))
+		clog.Tracef("unfiltered extra flags: %s", strings.Join(config.GetNonConfidentialValues(r.profile, moreArgs), " "))
 		moreArgs = filter(moreArgs, allowExtraValues)
 	}
 	args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
@@ -388,7 +391,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Build arguments and publicArguments (for logging)
 	arguments, publicArguments := args.GetAll(), config.GetNonConfidentialArgs(r.profile, args).GetAll()
 	if filter != nil {
-		clog.Debugf("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
+		clog.Tracef("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
 		arguments, publicArguments = filter(arguments, true), filter(publicArguments, true)
 	}
 
@@ -396,7 +399,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	arguments = append([]string{command}, arguments...)
 	publicArguments = append([]string{command}, publicArguments...)
 
-	env := append(os.Environ(), r.getEnvironment()...)
+	env := r.getEnvironment(true)
 	env = append(env, r.getProfileEnvironment()...)
 
 	clog.Debugf("starting command: %s %s", r.ctx.binary, strings.Join(publicArguments, " "))
@@ -584,12 +587,13 @@ func (r *resticWrapper) runShellCommands(commands []string, commandsType, comman
 		commandsType = commandsType + " " + command
 	}
 
-	env := append(os.Environ(), r.getEnvironment()...)
-	env = append(env, r.getProfileEnvironment()...)
-	env = append(env, r.getFailEnvironment(failure)...)
-
 	for i, shellCommand := range commands {
 		clog.Debugf("starting %s on profile %d/%d", commandsType, i+1, len(commands))
+		// env might change between runs, creating it for every command
+		env := r.getEnvironment(true)
+		env = append(env, r.getProfileEnvironment()...)
+		env = append(env, r.getFailEnvironment(failure)...)
+		// creating command
 		rCommand := newShellCommand(shellCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
 		rCommand.stdout = term.GetOutput()
@@ -612,14 +616,15 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 	commands = append(commands, sectionCommands.RunFinally...)
 	commands = append(commands, profileCommands.RunFinally...)
 
-	env := append(os.Environ(), r.getEnvironment()...)
-	env = append(env, r.getProfileEnvironment()...)
-	env = append(env, r.getFailEnvironment(fail)...)
-
 	for i := len(commands) - 1; i >= 0; i-- {
 		// Using defer stack for "finally" to ensure every command is run even on panic
 		defer func(index int, cmd string) {
 			clog.Debugf("starting final command %d/%d", index+1, len(commands))
+			// env might change between runs, creating it for every command
+			env := r.getEnvironment(true)
+			env = append(env, r.getProfileEnvironment()...)
+			env = append(env, r.getFailEnvironment(fail)...)
+			// creating command
 			rCommand := newShellCommand(cmd, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 			// stdout are stderr are coming from the default terminal (in case they're redirected)
 			rCommand.stdout = term.GetOutput()
@@ -666,13 +671,42 @@ func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, 
 }
 
 // getEnvironment returns the environment variables defined in the profile configuration
-func (r *resticWrapper) getEnvironment() (env []string) {
-	// Note: variable names match the original case for OS variables. Custom vars are all uppercase.
-	for key, value := range r.profile.Environment {
-		clog.Debugf("setting up environment variable: %s=%s", key, value)
-		env = append(env, fmt.Sprintf("%s=%s", key, value.Value()))
-	}
+func (r *resticWrapper) getEnvironment(withOs bool) (values []string) {
+	// Note: Variable names match the original case for existing OS variables.
+	//       New profile environment variables are all uppercase if not matching any OS variable.
+	env := r.profile.GetEnvironment(withOs)
+	values = env.Values()
+
+	clog.Debug(func() string {
+		appliedEnv := r.stringifyEnvironment(env)
+		if r.previousEnv != appliedEnv {
+			r.previousEnv = appliedEnv
+			return fmt.Sprintf("command environment:\n%s", appliedEnv)
+		} else {
+			return "command environment: reusing previous"
+		}
+	})
 	return
+}
+
+// stringifyEnvironment converts the env into a string that can be used for logging
+func (r *resticWrapper) stringifyEnvironment(env *util.Environment) string {
+	mapper := collect.KVMapper(collect.CopyMapper[string], config.NewConfidentialValue)
+	confidentialEnv := collect.FromMap(env.ValuesAsMap(), mapper)
+	config.ProcessConfidentialEnvironment(confidentialEnv)
+
+	names := maps.Keys(confidentialEnv)
+	sort.Strings(names)
+
+	out := new(strings.Builder)
+	for _, name := range names {
+		cev := confidentialEnv[name]
+		notSameAsOS := cev.Value() != os.Getenv(name) || cev.Value() == ""
+		if notSameAsOS {
+			_, _ = fmt.Fprintf(out, "%s=%s\n", name, cev)
+		}
+	}
+	return out.String()
 }
 
 // getProfileEnvironment returns some environment variables about the current profile

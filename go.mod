@@ -11,6 +11,7 @@ require (
 	github.com/creativeprojects/go-selfupdate v1.1.3
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.16.0
+	github.com/joho/godotenv v1.5.1
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/mapstructure v1.5.0

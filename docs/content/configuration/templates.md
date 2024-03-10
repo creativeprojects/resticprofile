@@ -600,9 +600,13 @@ resticprofile supports the following set of own functions in all templates:
 * `{{ with list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}` => ` A-B-C-D `
 * `{{ tempDir }}` => `/tmp/resticprofile.../t` - unique OS specific existing temporary directory
 * `{{ tempFile "filename" }}` => `/tmp/resticprofile.../t/filename` - unique OS specific existing temporary file
+* `{{ env }}` => `/tmp/resticprofile.../t/profile.env` - unique OS specific existing temporary file that is added to the current profile env-files list
 
 All `{{ temp* }}` functions guarantee that returned temporary directories and files are existing & writable. 
 When resticprofile ends, temporary directories and files are removed.
+
+The `{{ env }}` function is a special case of `{{ tempFile ... }}` returning a path to a file in dotenv file format that can be used in [shell commands]({{% relref "run_hooks" %}}) to alter the environment. 
+On posix compatible file systems, the file is accessible only by the user that started resticprofile. Further it is automatically added to the `env-file` list of the current profile.
 
 The following functions can be used to encode data (e.g. when dealing with arbitrary input):
 
@@ -613,7 +617,7 @@ The following functions can be used to encode data (e.g. when dealing with arbit
 * `{{ "plain" | hex }}` => `706c61696e` - Hexadecimal encoded input
 
 {{% notice hint %}}
-Encode with `js` when creating **strings** in *YAML*, *TOML* or *JSON* configuration files, e.g.: `"{{ .Env.MyVar | js }}"`. 
+Encode with `js` when creating **strings** in *YAML*, *TOML* or *JSON* configuration files, e.g.: `"{{ .Env.MY_VAR | js }}"`. 
 This ensures the markup remains correct and can be parsed regardless of the input data.
 {{% /notice %}}
 

@@ -43,15 +43,6 @@ import (
 //   - {{ tempDir }} => "/path/to/unique-tempdir"
 //   - {{ tempFile "filename" }} => "/path/to/unique-tempdir/filename"
 func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
-	compiled := sync.Map{}
-	mustCompile := func(pattern string) *regexp.Regexp {
-		value, ok := compiled.Load(pattern)
-		if !ok {
-			value, _ = compiled.LoadOrStore(pattern, regexp.MustCompile(pattern))
-		}
-		return value.(*regexp.Regexp)
-	}
-
 	templateFuncs = map[string]any{
 		"contains":   func(search any, src any) bool { return strings.Contains(toString(src), toString(search)) },
 		"matches":    func(ptn string, src any) bool { return mustCompile(ptn).MatchString(toString(src)) },
@@ -71,6 +62,7 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 		"hex":        func(src any) string { return hex.EncodeToString([]byte(toString(src))) },
 		"tempDir":    TempDir,
 		"tempFile":   TempFile,
+		"env":        func() string { return TempFile(".env.none") }, // satisfies the {{env}} interface w.o. functionality
 	}
 
 	// aliases
@@ -87,6 +79,16 @@ func New(name string, funcs ...map[string]any) (tpl *template.Template) {
 	tpl = template.New(name)
 	tpl.Funcs(TemplateFuncs(funcs...))
 	return
+}
+
+var compiled = sync.Map{}
+
+func mustCompile(pattern string) *regexp.Regexp {
+	value, ok := compiled.Load(pattern)
+	if !ok {
+		value, _ = compiled.LoadOrStore(pattern, regexp.MustCompile(pattern))
+	}
+	return value.(*regexp.Regexp)
 }
 
 var tempDirInitializer sync.Once
@@ -110,6 +112,9 @@ func TempDir() string {
 
 // TempFile returns the volatile temporary file that is returned by template function tempFile
 func TempFile(name string) (filename string) {
+	// sanitize filename
+	name = mustCompile(`[^\w0-9_\-.]`).ReplaceAllString(name, "_")
+	// create temp file
 	filename = path.Join(TempDir(), name)
 	if file, err := os.OpenFile(filename, os.O_CREATE, 0644); err == nil {
 		_ = file.Close()
@@ -117,6 +122,24 @@ func TempFile(name string) (filename string) {
 		panic(err)
 	}
 	return
+}
+
+// EnvFileReceiverFunc declares the backend interface for the "{{env}}" template function
+type EnvFileReceiverFunc func() (profileKey string, receiveFile func(string))
+
+// EnvFileFunc creates a template func to retrieve a profile .env file that can be used to pass variables between shells
+func EnvFileFunc(receiverFunc EnvFileReceiverFunc) map[string]any {
+	return map[string]any{
+		"env": func() (envFile string) {
+			profile, receive := receiverFunc()
+			envFile = TempFile(fmt.Sprintf("%s.env", profile))
+			if err := os.Chmod(envFile, 0600); err != nil {
+				panic(fmt.Errorf("failed setting permissions for %s: %w", envFile, err))
+			}
+			receive(envFile)
+			return
+		},
+	}
 }
 
 func toAny[T any](arg T) any { return arg }

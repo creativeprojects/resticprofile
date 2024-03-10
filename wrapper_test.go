@@ -213,7 +213,7 @@ func TestGetEmptyEnvironment(t *testing.T) {
 		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
-	env := wrapper.getEnvironment()
+	env := wrapper.getEnvironment(false)
 	assert.Empty(t, env)
 }
 
@@ -229,7 +229,7 @@ func TestGetSingleEnvironment(t *testing.T) {
 		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
-	env := wrapper.getEnvironment()
+	env := wrapper.getEnvironment(false)
 	assert.Equal(t, []string{"USER=me"}, env)
 }
 
@@ -246,10 +246,20 @@ func TestGetMultipleEnvironment(t *testing.T) {
 		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
-	env := wrapper.getEnvironment()
-	assert.Len(t, env, 2)
-	assert.Contains(t, env, "USER=me")
-	assert.Contains(t, env, "PASSWORD=secret")
+
+	t.Run("getEnvironment", func(t *testing.T) {
+		env := wrapper.getEnvironment(false)
+		assert.Len(t, env, 2)
+		assert.Contains(t, env, "USER=me")
+		assert.Contains(t, env, "PASSWORD=secret")
+	})
+
+	t.Run("stringifyEnvironment", func(t *testing.T) {
+		env := profile.GetEnvironment(false)
+		str := wrapper.stringifyEnvironment(env)
+		assert.Equal(t, "PASSWORD=×××\nUSER=me\n", str)
+		assert.Equal(t, "secret", env.Get("PASSWORD"))
+	})
 }
 
 func TestPreProfileScriptFail(t *testing.T) {

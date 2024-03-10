@@ -1,7 +1,8 @@
-package config
+package util
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 
@@ -87,7 +88,7 @@ func isInvalidUTF(reader io.ReadSeeker, readSize, scanSize int) (invalid bool, e
 
 	for n := 1; n > 0; {
 		n, err = validator.Read(buf)
-		invalid = err == encoding.ErrInvalidUTF8
+		invalid = errors.Is(err, encoding.ErrInvalidUTF8)
 		if invalid || err == io.EOF {
 			err = nil
 			break

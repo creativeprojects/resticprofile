@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -15,6 +16,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
@@ -28,6 +30,8 @@ type Config struct {
 	format          string
 	configFile      string
 	includeFiles    []string
+	envFiles        []string
+	lastProfileKey  string
 	viper           *viper.Viper
 	mixinUses       []map[string][]*mixinUse
 	mixins          map[string]*mixin
@@ -152,7 +156,7 @@ func (c *Config) templateName(name string) string {
 
 func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 	if rs, ok := input.(io.ReadSeeker); ok {
-		input = NewUTF8Reader(rs)
+		input = util.NewUTF8Reader(rs)
 	}
 
 	inputString := &strings.Builder{}
@@ -163,7 +167,8 @@ func (c *Config) addTemplate(input io.Reader, name string, replace bool) error {
 
 	var source *template.Template
 	if c.sourceTemplates == nil || replace {
-		source = templates.New(c.templateName(name))
+		envFile := templates.EnvFileFunc(func() (string, func(string)) { return c.lastProfileKey, c.addEnvFile })
+		source = templates.New(c.templateName(name), envFile)
 		c.sourceTemplates = source
 	} else {
 		source = c.sourceTemplates.New(c.templateName(name))
@@ -529,9 +534,17 @@ func (c *Config) loadGroups() (err error) {
 	return
 }
 
+func (c *Config) addEnvFile(filename string) {
+	if !slices.Contains(c.envFiles, filename) {
+		c.envFiles = append(c.envFiles, filename)
+	}
+}
+
 // GetProfile in configuration. If the profile is not found, it returns errNotFound
 func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	c.ClearConfigurationIssues()
+	c.envFiles = nil
+	c.lastProfileKey = profileKey
 
 	if c.sourceTemplates != nil {
 		err = c.reloadTemplates(newTemplateData(c.configFile, profileKey, ""))
@@ -555,10 +568,13 @@ func (c *Config) GetProfile(profileKey string) (profile *Profile, err error) {
 	return
 }
 
-// postProcessProfile applies additional post processing steps before a profile can be used
+// postProcessProfile applies additional post-processing steps before a profile can be used
 func (c *Config) postProcessProfile(profile *Profile) {
 	// Hide confidential values (keys, passwords) from the public representation
 	ProcessConfidentialValues(profile)
+
+	// Add additional envFiles
+	profile.EnvironmentFiles = append(profile.EnvironmentFiles, c.envFiles...)
 
 	// Resolve config dependencies
 	profile.ResolveConfiguration()

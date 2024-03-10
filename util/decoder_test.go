@@ -1,4 +1,4 @@
-package config
+package util
 
 import (
 	"bytes"

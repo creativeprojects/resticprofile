@@ -68,7 +68,7 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 		defer bufferedWriter.Flush()
 		defer signal.Stop(commandSignals)
 
-		env := append(os.Environ(), r.getEnvironment()...)
+		env := r.getEnvironment(true)
 		env = append(env, r.getProfileEnvironment()...)
 
 		for i, sourceCommand := range r.profile.Backup.StdinCommand {
