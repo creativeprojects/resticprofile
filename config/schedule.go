@@ -34,15 +34,15 @@ const (
 
 // ScheduleBaseConfig is the base user configuration that could be shared across all schedules.
 type ScheduleBaseConfig struct {
-	Permission              string         `mapstructure:"permission" show:"noshow" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
-	Log                     string         `mapstructure:"log" show:"noshow" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
-	Priority                string         `mapstructure:"priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
-	LockMode                string         `mapstructure:"lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
-	LockWait                maybe.Duration `mapstructure:"lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
-	EnvCapture              []string       `mapstructure:"capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
-	IgnoreOnBattery         maybe.Bool     `mapstructure:"ignore-on-battery" show:"noshow" default:"false" description:"Don't schedule the start of this profile when running on battery"`
-	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" show:"noshow" default:"" description:"Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value"`
-	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" show:"noshow" description:"Don't schedule the start of this profile when the network is offline (supported in \"systemd\")."`
+	Permission              string         `mapstructure:"permission" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	Log                     string         `mapstructure:"log" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
+	Priority                string         `mapstructure:"priority" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
+	LockMode                string         `mapstructure:"lock-mode" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	LockWait                maybe.Duration `mapstructure:"lock-wait" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+	EnvCapture              []string       `mapstructure:"capture-environment" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
+	IgnoreOnBattery         maybe.Bool     `mapstructure:"ignore-on-battery" default:"false" description:"Don't start this schedule when running on battery"`
+	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20,33,50,75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
+	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
 }
 
 // scheduleBaseConfigDefaults declares built-in scheduling defaults

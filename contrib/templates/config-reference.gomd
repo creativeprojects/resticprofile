@@ -72,6 +72,7 @@ date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
     {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
     {{- $more := 0 -}}
     {{- $single := .IsSingle -}}
+    {{- $singlePropertySet := .IsSinglePropertySet -}}
     {{- if .CanBeBool -}}
       `true` / `false`
       {{- $more = 1 -}}
@@ -98,7 +99,7 @@ date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
         {{- if $more }} OR {{ end -}}
         {{- with .PropertySet -}}
             {{- if .TypeName -}}
-                {{- if not $single }} one or more {{ end -}}
+                {{- if not $singlePropertySet }} one or more {{ end -}}
                 nested *[{{ .TypeName }}](#nested-{{ .TypeName | lower }})*
             {{- else -}}
                 {{- if .OtherPropertyInfo -}}
@@ -187,7 +188,7 @@ The configuration file reference is generated from resticprofile's data model an
     * [Section profile\.<strong>{{ .Name }}</strong>](#section-profile{{ .Name | lower }})
 {{- end }}
   * [Nested profile sections](#nested-profile-sections)
-{{- range .NestedProfileSections }}
+{{- range .NestedSections }}
     * [Nested <em>{{ .Name }}</em>](#nested-{{ .Name | lower }})
 {{- end }}
   * [Section <strong>groups</strong>](#section-groups)
@@ -277,7 +278,7 @@ can be overridden in this section.
 Nested sections describe configuration structure that is assigned to flags within the
 configuration, see [HTTP Hooks]({{- $configWebUrl -}}/http_hooks/) as an example.
 
-{{ range .NestedProfileSections -}}{{ $layoutHeadings -}}### Nested *{{ .Name }}*
+{{ range .NestedSections -}}{{ $layoutHeadings -}}### Nested *{{ .Name }}*
 
 {{ .Description }}
 

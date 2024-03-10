@@ -443,10 +443,12 @@ func TestInfoData(t *testing.T) {
 
 	assert.NotEmpty(t, data.ProfileSections())
 
-	t.Run("NestedProfileSections", func(t *testing.T) {
-		sections := data.NestedProfileSections()
+	t.Run("NestedSections", func(t *testing.T) {
+		sections := data.NestedSections()
 		assert.NotEmpty(t, sections)
 		assert.Subset(t, collect.From(sections, SectionInfo.Name), []string{
+			"ScheduleBaseConfig",
+			"ScheduleConfig",
 			"SendMonitoringHeader",
 			"SendMonitoringSection",
 			"StreamErrorSection",

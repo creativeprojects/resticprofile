@@ -610,7 +610,7 @@ func init() {
 func NewGlobalInfo() NamedPropertySet {
 	set := &namedPropertySet{
 		name:        constants.SectionConfigurationGlobal,
-		description: "global settings",
+		description: "Global settings",
 		propertySet: propertySetFromType(infoTypes.global),
 	}
 	customizeProperties(constants.SectionConfigurationGlobal, set.properties)
@@ -621,7 +621,7 @@ func NewGlobalInfo() NamedPropertySet {
 func NewGroupInfo() NamedPropertySet {
 	set := &namedPropertySet{
 		name:        constants.SectionConfigurationGroups,
-		description: "profile groups",
+		description: "Profile groups",
 		propertySet: propertySetFromType(infoTypes.group),
 	}
 	customizeProperties(constants.SectionConfigurationGroups, set.properties)
@@ -632,7 +632,7 @@ func NewGroupInfo() NamedPropertySet {
 func NewMixinsInfo() NamedPropertySet {
 	return &namedPropertySet{
 		name:        constants.SectionConfigurationMixins,
-		description: "global mixins declaration",
+		description: "Global mixins declaration.",
 		propertySet: propertySetFromType(infoTypes.mixins),
 	}
 }
@@ -641,7 +641,7 @@ func NewMixinsInfo() NamedPropertySet {
 func NewMixinUseInfo() NamedPropertySet {
 	return &namedPropertySet{
 		name:        constants.SectionConfigurationMixinUse,
-		description: "named mixin reference to apply to the current location",
+		description: "Named mixin reference to apply to the current location.",
 		propertySet: propertySetFromType(infoTypes.mixinUse),
 	}
 }
@@ -650,7 +650,7 @@ func NewMixinUseInfo() NamedPropertySet {
 func NewScheduleConfigInfo() NamedPropertySet {
 	return &namedPropertySet{
 		name:        constants.SectionConfigurationSchedule,
-		description: "schedule configuration structure",
+		description: "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
 		propertySet: propertySetFromType(infoTypes.scheduleConfig),
 	}
 }
