@@ -2,13 +2,18 @@
 title: "Ansible"
 date: 2022-04-23T23:47:41+01:00
 weight: 15
+categories: ["installation"]
 ---
 
 ## Installation using Ansible
 
 Installation using Ansible is not streamlined, but here's the playbook I'm using on my servers:
 
-{{% attachments style="info" title="Playbooks" icon="paperclip" sort="asc" /%}}
+<!-- {{% resources style="info" title="Playbooks" icon="paperclip" sort="asc" /%}} -->
+
+{{% notice style="secondary" title="Playbooks" icon="paperclip" %}}
+* [resticprofile.yml]({{< absolute "installation/ansible/resticprofile.yml" nohtml >}})
+{{% /notice %}}
 
 This is very much work in progress. Once I get a stable ansible script I should publish it to Ansible Galaxy.
 

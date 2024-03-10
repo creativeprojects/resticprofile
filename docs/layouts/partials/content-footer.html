@@ -1,20 +1,34 @@
-{{- with .Params.LastModifierDisplayName }}
-              <i class='fas fa-user'></i> {{ with $.Params.LastModifierEmail }}<a href="mailto:{{ . }}">{{ end }}{{ . }}{{ with $.Params.LastModifierEmail }}</a>{{ end }}
-  {{- with $.Date }}
-              <i class='fas fa-calendar'></i> {{ . | time.Format ":date_medium" }}
+{{- $LastModifierDisplayName := "" }}
+{{- $LastModifierEmail := "" }}
+{{- $Date := "" }}
+{{- with .GitInfo }}
+  {{- with .AuthorName }}
+    {{- $LastModifierDisplayName = . }}
+  {{- end }}
+  {{- with .AuthorEmail  }}
+    {{- $LastModifierEmail = . }}
+  {{- end }}
+  {{- with .AuthorDate  }}
+    {{- $Date = . | time.Format ":date_medium" }}
+  {{- end }}
+{{- else }}
+  {{- with .Params.LastModifierDisplayName }}
+    {{- $LastModifierDisplayName = . }}
+  {{- end }}
+  {{- with .Params.LastModifierEmail }}
+    {{- $LastModifierEmail = . }}
+  {{- end }}
+  {{- with .Date }}
+    {{- $Date = . | time.Format ":date_medium" }}
   {{- end }}
 {{- end }}
-{{ with .Page.Lastmod }}
-            <i class='fas fa-calendar'></i> {{ T "Page-last-updated" }} {{ . | time.Format ":date_medium" }}
-{{- end }}
-{{- $page := . }}
-{{- if .Params.categories }}
-              <i class='fas fa-list'></i>
-  {{- $categories := slice | append .Params.categories }}
-  {{- range $idx, $category := sort $categories }}
-    {{- with $page.Site.GetPage (printf "%s%s" ("/categories/" | relURL ) ( $category | plainify | anchorize ) ) }}
-      {{- $to := . }}
-              {{ if gt $idx 0 }} | {{ end }}<a class="tag-link" href="{{ partial "relLangPrettyUglyURL.hugo" (dict "to" $to) }}">{{ $category }}</a>
-    {{- end }}
+
+  {{- with $Date }}
+              <i class='fas fa-calendar'></i> {{ T "Page-last-updated" }} {{ . }}
   {{- end }}
-{{- end }}
+
+{{- partial "term-list.html" (dict
+  "page" .
+  "taxonomy" "categories"
+  "icon" "layer-group"
+) }}
