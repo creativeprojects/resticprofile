@@ -46,6 +46,7 @@ type resticWrapper struct {
 	startTime     time.Time
 	executionTime time.Duration
 	doneTryUnlock bool
+	previousEnv   string
 }
 
 func newResticWrapper(ctx *Context) *resticWrapper {
@@ -359,7 +360,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Add extra commandline arguments
 	moreArgs := slices.Clone(r.moreArgs)
 	if filter != nil {
-		clog.Debugf("unfiltered extra flags: %s", strings.Join(config.GetNonConfidentialValues(r.profile, moreArgs), " "))
+		clog.Tracef("unfiltered extra flags: %s", strings.Join(config.GetNonConfidentialValues(r.profile, moreArgs), " "))
 		moreArgs = filter(moreArgs, allowExtraValues)
 	}
 	args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
@@ -390,7 +391,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Build arguments and publicArguments (for logging)
 	arguments, publicArguments := args.GetAll(), config.GetNonConfidentialArgs(r.profile, args).GetAll()
 	if filter != nil {
-		clog.Debugf("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
+		clog.Tracef("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
 		arguments, publicArguments = filter(arguments, true), filter(publicArguments, true)
 	}
 
@@ -677,7 +678,13 @@ func (r *resticWrapper) getEnvironment(withOs bool) (values []string) {
 	values = env.Values()
 
 	clog.Debug(func() string {
-		return fmt.Sprintf("setting up environment variables:\n%s", r.stringifyEnvironment(env))
+		appliedEnv := r.stringifyEnvironment(env)
+		if r.previousEnv != appliedEnv {
+			r.previousEnv = appliedEnv
+			return fmt.Sprintf("command environment:\n%s", appliedEnv)
+		} else {
+			return "command environment: reusing previous"
+		}
 	})
 	return
 }
