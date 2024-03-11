@@ -677,10 +677,10 @@ func (c *Config) GetSchedules() ([]*Schedule, error) {
 }
 
 // GetScheduleSections returns a list of schedules
-func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error) {
+func (c *Config) GetScheduleSections() (schedules map[string]*Schedule, err error) {
 	c.requireMinVersion(Version02)
 
-	schedules = map[string]Schedule{}
+	schedules = map[string]*Schedule{}
 
 	if section := c.viper.Sub(constants.SectionConfigurationSchedules); section != nil {
 		for sectionKey := range section.AllSettings() {
@@ -689,7 +689,7 @@ func (c *Config) GetScheduleSections() (schedules map[string]Schedule, err error
 			if err != nil {
 				break
 			}
-			schedules[sectionKey] = schedule
+			schedules[sectionKey] = &schedule
 		}
 	}
 

@@ -14,6 +14,7 @@ type Global struct {
 	Nice                 int           `mapstructure:"nice" default:"0" range:"[-20:19]" description:"Sets the unix \"nice\" value for resticprofile and child processes (on any OS)"`
 	Priority             string        `mapstructure:"priority" default:"normal" enum:"idle;background;low;normal;high;highest" description:"Sets process priority class for resticprofile and child processes (on any OS)"`
 	DefaultCommand       string        `mapstructure:"default-command" default:"snapshots" description:"The restic or resticprofile command to use when no command was specified"`
+	BaseProfiles         []string      `mapstructure:"base-profiles" default:"__*" description:"One or more glob expression matching names of profiles that are meant for inheritance only. Profile names matching these expression cannot be executed directly - see https://creativeprojects.github.io/resticprofile/configuration/inheritance/"`
 	Initialize           bool          `mapstructure:"initialize" default:"false" description:"Initialize a repository if missing"`
 	ResticBinary         string        `mapstructure:"restic-binary" description:"Full path of the restic executable (detected if not set)"`
 	ResticVersion        string        // not configurable at the moment. To be set after ResticBinary is known.
@@ -40,6 +41,7 @@ func NewGlobal() *Global {
 		IONiceClass:          constants.DefaultIONiceClass,
 		Nice:                 constants.DefaultStandardNiceFlag,
 		DefaultCommand:       constants.DefaultCommand,
+		BaseProfiles:         []string{constants.DefaultBaseProfile},
 		FilterResticFlags:    constants.DefaultFilterResticFlags,
 		ResticLockRetryAfter: constants.DefaultResticLockRetryAfter,
 		ResticStaleLockAge:   constants.DefaultResticStaleLockAge,

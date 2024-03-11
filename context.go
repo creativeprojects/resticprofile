@@ -127,6 +127,18 @@ func (c *Context) WithProfile(profileName string) *Context {
 	return newContext
 }
 
+// WithSchedule sets the schedule and profile name of the current schedule run. A new copy of the context is returned.
+// Profile information is not copied over, schedule is replaced with the specified value.
+func (c *Context) WithSchedule(schedule *config.Schedule, profileName string) *Context {
+	newContext := c.clone()
+	newContext.request.profile = profileName
+	newContext.request.group = ""
+	newContext.profile = nil
+	newContext.schedule = schedule
+	newContext.command = schedule.CommandName
+	return newContext
+}
+
 func (c *Context) clone() *Context {
 	clone := *c
 	return &clone

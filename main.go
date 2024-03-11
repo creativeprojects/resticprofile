@@ -253,7 +253,7 @@ func main() {
 	ctx = ctx.WithCommand(ctx.request.command)
 
 	// it wasn't an internal command so we run a profile
-	err = startProfileOrGroup(ctx)
+	err = startContext(ctx)
 	if err != nil {
 		clog.Error(err)
 		if errors.Is(err, ErrProfileNotFound) {
@@ -359,8 +359,31 @@ func detectResticBinary(global *config.Global) (string, error) {
 	return resticBinary, nil
 }
 
-func startProfileOrGroup(ctx *Context) error {
-	if ctx.config.HasProfile(ctx.request.profile) {
+func startContext(ctx *Context) error {
+	if ctx.schedule != nil {
+		// if running as a systemd timer
+		notifyStart()
+		defer notifyStop()
+
+		// Schedule run
+		var err error
+		profiles := ctx.schedule.Profiles
+		for i, name := range profiles {
+			clog.Debugf("[%d/%d] starting profile '%s' from schedule %q", i+1, len(profiles), name, ctx.request.schedule)
+			ctx = ctx.WithSchedule(ctx.schedule, name)
+			err = runProfile(ctx)
+			if err != nil {
+				if len(profiles) > 1 && canContinueGroupOnError(ctx, ctx.schedule.Group) {
+					clog.Error(err)
+					err = nil
+				} else {
+					break
+				}
+			}
+		}
+		return err
+
+	} else if ctx.config.HasProfile(ctx.request.profile) {
 		// if running as a systemd timer
 		notifyStart()
 		defer notifyStop()
@@ -390,7 +413,7 @@ func startProfileOrGroup(ctx *Context) error {
 				ctx = ctx.WithProfile(profileName).WithGroup(groupName)
 				err = runProfile(ctx)
 				if err != nil {
-					if ctx.global.GroupContinueOnError && group.ContinueOnError.IsTrueOrUndefined() {
+					if canContinueGroupOnError(ctx, groupName) {
 						// keep going to the next profile
 						clog.Error(err)
 						continue
@@ -405,6 +428,14 @@ func startProfileOrGroup(ctx *Context) error {
 		return fmt.Errorf("%w: %q", ErrProfileNotFound, ctx.request.profile)
 	}
 	return nil
+}
+
+// canContinueGroupOnError returns true if global.GroupContinueOnError and it is not overridden in the specified group
+// Note: a non-existing group is evaluated the same as a group that doesn't override the global value
+func canContinueGroupOnError(ctx *Context, groupKey string) bool {
+	group, err := ctx.config.GetProfileGroup(groupKey)
+	return ctx.global.GroupContinueOnError &&
+		(err != nil || group == nil || group.ContinueOnError.IsTrueOrUndefined())
 }
 
 func openProfile(c *config.Config, profileName string) (profile *config.Profile, cleanup func(), err error) {
@@ -533,11 +564,12 @@ func runProfile(ctx *Context) error {
 		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, ctx.request.group, version, profile.PrometheusLabels)))
 	}
 
-	err = wrapper.runProfile()
-	if err != nil {
-		return err
+	if accept := commandFilter(profile, ctx.global); accept(ctx.request.command) {
+		err = wrapper.runProfile()
+	} else {
+		err = fmt.Errorf("profile %q does not allow running %q", ctx.request.profile, ctx.request.command)
 	}
-	return nil
+	return err
 }
 
 func loadScheduledProfile(ctx *Context) error {
