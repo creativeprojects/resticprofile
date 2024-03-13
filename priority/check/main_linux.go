@@ -26,7 +26,7 @@ func getPriority() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Printf("Process Priority: %d\nGroup Priority: %d\n", processNice, groupNice)
+	fmt.Printf("Process Priority: %d, Group Priority: %d\n", processNice, groupNice)
 }
 
 func getIOPriority() {
