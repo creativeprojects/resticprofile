@@ -16,12 +16,17 @@ func main() {
 }
 
 func getPriority() {
-	pri, err := priority.GetNice()
+	processNice, err := priority.GetProcessNice()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Printf("Priority: %d\n", pri)
+	groupNice, err := priority.GetGroupNice()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Printf("Process Priority: %d\nGroup Priority: %d\n", processNice, groupNice)
 }
 
 func getIOPriority() {

@@ -53,13 +53,13 @@ func SetNice(priority int) error {
 	// group variants of Setpriority etc to affect all of our threads in one go
 	err = unix.Setpgid(pid, 0)
 	if err != nil {
-		return fmt.Errorf("cannot set process group priority, restic will run with the default priority: %w", err)
+		return fmt.Errorf("cannot set process group, restic will run with the default priority: %w", err)
 	}
 
 	clog.Debugf("setting process priority to %d", priority)
-	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
+	err = unix.Setpriority(unix.PRIO_PGRP, pid, priority)
 	if err != nil {
-		return fmt.Errorf("cannot set process priority, restic will run with the default priority: %w", err)
+		return fmt.Errorf("cannot set group process priority, restic will run with the default priority: %w", err)
 	}
 	return nil
 }
@@ -69,9 +69,18 @@ func SetClass(class int) error {
 	return SetNice(class)
 }
 
-// GetNice returns the current nice value
-func GetNice() (int, error) {
+// GetProcessNice returns the nice value of the current process
+func GetProcessNice() (int, error) {
 	pri, err := unix.Getpriority(unix.PRIO_PROCESS, 0)
+	if err != nil {
+		return 0, err
+	}
+	return 20 - pri, nil
+}
+
+// GetProcessNice returns the nice value of the current process group
+func GetGroupNice() (int, error) {
+	pri, err := unix.Getpriority(unix.PRIO_PGRP, 0)
 	if err != nil {
 		return 0, err
 	}
