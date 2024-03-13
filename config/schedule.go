@@ -1,13 +1,23 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"slices"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/maybe"
+	"github.com/spf13/cast"
 )
 
 type ScheduleLockMode int8
@@ -22,36 +32,275 @@ const (
 	ScheduleLockModeIgnore = ScheduleLockMode(2)
 )
 
-// Schedule is an intermediary object between the configuration (v1, v2+) and the ScheduleConfig object used by the scheduler.
-// The object is also used to display the scheduling configuration
-type Schedule struct {
-	CommandName             string            `mapstructure:"run"`
-	Group                   string            `mapstructure:"group"`    // v2+ only
-	Profiles                []string          `mapstructure:"profiles"` // multiple profiles in v2+ only
-	Schedules               []string          `mapstructure:"schedule"`
-	Permission              string            `mapstructure:"permission"`
-	Log                     string            `mapstructure:"log"`
-	Priority                string            `mapstructure:"priority"`
-	LockMode                string            `mapstructure:"lock-mode"`
-	LockWait                time.Duration     `mapstructure:"lock-wait"`
-	Environment             []string          `mapstructure:"environment"`
-	IgnoreOnBattery         bool              `mapstructure:"ignore-on-battery"`
-	IgnoreOnBatteryLessThan int               `mapstructure:"ignore-on-battery-less-than"`
-	AfterNetworkOnline      bool              `mapstructure:"after-network-online"`
-	SystemdDropInFiles      []string          `mapstructure:"systemd-drop-in-files"`
-	ConfigFile              string            `show:"noshow"`
-	Flags                   map[string]string `show:"noshow"`
+// ScheduleBaseConfig is the base user configuration that could be shared across all schedules.
+type ScheduleBaseConfig struct {
+	Permission              string         `mapstructure:"permission" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	Log                     string         `mapstructure:"log" examples:"/resticprofile.log;tcp://localhost:514" description:"Redirect the output into a log file or to syslog when running on schedule"`
+	Priority                string         `mapstructure:"priority" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
+	LockMode                string         `mapstructure:"lock-mode" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	LockWait                maybe.Duration `mapstructure:"lock-wait" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
+	EnvCapture              []string       `mapstructure:"capture-environment" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
+	IgnoreOnBattery         maybe.Bool     `mapstructure:"ignore-on-battery" default:"false" description:"Don't start this schedule when running on battery"`
+	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
+	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
 }
 
-func NewEmptySchedule(profileName, command string) *Schedule {
-	return &Schedule{
-		Profiles:    []string{profileName},
-		CommandName: command,
+// scheduleBaseConfigDefaults declares built-in scheduling defaults
+var scheduleBaseConfigDefaults = ScheduleBaseConfig{
+	Permission: "auto",
+	Priority:   "background",
+	LockMode:   "default",
+	EnvCapture: []string{"RESTIC_*"},
+}
+
+func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
+	// defaults
+	if defaults == nil {
+		defaults = &scheduleBaseConfigDefaults
+	}
+	if s.Permission == "" {
+		s.Permission = defaults.Permission
+	}
+	if s.Log == "" {
+		s.Log = defaults.Log
+	}
+	if s.Priority == "" {
+		s.Priority = defaults.Priority
+	}
+	if s.LockMode == "" {
+		s.LockMode = defaults.LockMode
+	}
+	if !s.LockWait.HasValue() {
+		s.LockWait = defaults.LockWait
+	}
+	if s.EnvCapture == nil {
+		s.EnvCapture = slices.Clone(defaults.EnvCapture)
+	}
+	if !s.IgnoreOnBattery.HasValue() {
+		s.IgnoreOnBattery = defaults.IgnoreOnBattery
+	}
+	if !s.AfterNetworkOnline.HasValue() {
+		s.AfterNetworkOnline = defaults.AfterNetworkOnline
 	}
 }
 
-func (s *Schedule) Init(config *Config, profiles ...*Profile) {
-	// populate profiles from group (v2+ only)
+func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
+	// capture a copy of self as defaults
+	defaults := *s
+	// applying the settings of the section
+	s.Permission = section.SchedulePermission
+	s.Log = section.ScheduleLog
+	s.Priority = section.SchedulePriority
+	s.LockMode = section.ScheduleLockMode
+	s.LockWait = section.ScheduleLockWait
+	s.EnvCapture = section.ScheduleEnvCapture
+	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
+	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
+	// re-init with defaults
+	s.init(&defaults)
+}
+
+type ScheduleOriginType int
+
+const (
+	ScheduleOriginProfile ScheduleOriginType = iota
+	ScheduleOriginGroup
+)
+
+type ScheduleConfigOrigin struct {
+	Type          ScheduleOriginType
+	Name, Command string
+}
+
+func (o ScheduleConfigOrigin) Compare(other ScheduleConfigOrigin) (c int) {
+	c = int(other.Type) - int(o.Type) // groups first
+	if c == 0 {
+		c = strings.Compare(o.Name, other.Name)
+	}
+	if c == 0 {
+		c = strings.Compare(o.Command, other.Command)
+	}
+	return
+}
+
+func (o ScheduleConfigOrigin) String() string {
+	kind := ""
+	if o.Type == ScheduleOriginGroup {
+		kind = "g:"
+	}
+	return fmt.Sprintf("%s%s@%s", kind, o.Command, o.Name)
+}
+
+// ScheduleOrigin returns a origin for the specified name command and optional type (defaulting to ScheduleOriginProfile)
+func ScheduleOrigin(name, command string, kind ...ScheduleOriginType) (s ScheduleConfigOrigin) {
+	s.Name = name
+	s.Command = command
+	if len(kind) == 1 {
+		s.Type = kind[0]
+	}
+	return
+}
+
+// ScheduleConfig is the user configuration of a specific schedule bound to a command in a profile or group.
+type ScheduleConfig struct {
+	normalized         bool
+	origin             ScheduleConfigOrigin `show:"noshow"`
+	Schedules          []string             `mapstructure:"at" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Set the times at which the scheduled command is run (times are specified in systemd timer format)"`
+	ScheduleBaseConfig `mapstructure:",squash"`
+}
+
+// NewDefaultScheduleConfig returns a new schedule configuration that is initialized with defaults
+func NewDefaultScheduleConfig(config *Config, origin ScheduleConfigOrigin, schedules ...string) (s *ScheduleConfig) {
+	var defaults *ScheduleBaseConfig
+	if config != nil {
+		defaults = config.mustGetGlobalSection().ScheduleDefaults
+	}
+
+	s = new(ScheduleConfig)
+	if len(schedules) > 0 {
+		s.setSchedules(schedules)
+	}
+	s.init(defaults)
+	s.origin = origin
+	return s
+}
+
+func newScheduleConfig(config *Config, section *ScheduleBaseSection) (s *ScheduleConfig) {
+	origin := ScheduleConfigOrigin{} // is set later
+
+	// decode ScheduleBaseSection.Schedule
+	switch expression := section.Schedule.(type) {
+	case string:
+		s = NewDefaultScheduleConfig(config, origin, expression)
+	case []string, []any:
+		s = NewDefaultScheduleConfig(config, origin, cast.ToStringSlice(expression)...)
+	default:
+		if expression != nil {
+			cfg := NewDefaultScheduleConfig(config, origin)
+			decoder, err := config.newUnmarshaller(cfg)
+			if err == nil {
+				err = decoder.Decode(expression)
+			}
+			if err == nil {
+				s = cfg
+			} else {
+				if bytes, e := json.Marshal(expression); e == nil {
+					expression = string(bytes)
+				}
+				clog.Errorf("failed decoding schedule %v: %s", expression, err.Error())
+			}
+		}
+	}
+
+	// init
+	if s.HasSchedules() {
+		s.applyOverrides(section)
+	} else {
+		s = nil
+	}
+	return
+}
+
+func (s *ScheduleConfig) setSchedules(schedules []string) {
+	schedules = collect.From(schedules, strings.TrimSpace)
+	schedules = collect.All(schedules, func(at string) bool { return len(at) > 0 })
+	s.Schedules = schedules
+	s.normalized = true
+}
+
+// HasSchedules returns true if the normalized list of schedules is not empty.
+// The func is nil tolerant and returns false for config.Schedule(nil).HasSchedules()
+func (s *ScheduleConfig) HasSchedules() bool {
+	if s == nil {
+		return false
+	}
+	if !s.normalized {
+		s.setSchedules(s.Schedules)
+	}
+	return len(s.Schedules) > 0
+}
+
+func (s *ScheduleConfig) ScheduleOrigin() ScheduleConfigOrigin {
+	return s.origin
+}
+
+// Schedulable may be implemented by sections that can provide command schedules (= groups and profiles)
+type Schedulable interface {
+	// Schedules returns a command to schedule map
+	Schedules() map[string]*Schedule
+}
+
+// Schedule is the configuration used in profiles and groups for passing the user config to the scheduler system.
+type Schedule struct {
+	ScheduleConfig
+	ConfigFile         string            `show:"noshow"`
+	Environment        []string          `show:"noshow"`
+	SystemdDropInFiles []string          `show:"noshow"`
+	Flags              map[string]string `show:"noshow"`
+}
+
+// NewDefaultSchedule creates a new Schedule for the specified ScheduleConfigOrigin that is initialized with defaults
+func NewDefaultSchedule(config *Config, origin ScheduleConfigOrigin, schedules ...string) *Schedule {
+	return NewSchedule(config, NewDefaultScheduleConfig(config, origin, schedules...))
+}
+
+// NewSchedule creates a new Schedule for the specified Config and ScheduleConfig
+func NewSchedule(config *Config, sc *ScheduleConfig) *Schedule {
+	return newSchedule(config, sc, nil)
+}
+
+// newScheduleForProfile creates a Schedule for the given Profile and ScheduleConfig
+func newScheduleForProfile(profile *Profile, sc *ScheduleConfig) *Schedule {
+	origin := sc.ScheduleOrigin()
+	if origin.Type == ScheduleOriginProfile && origin.Name == profile.Name {
+		return newSchedule(profile.config, sc, profile)
+	}
+	panic(fmt.Errorf("invalid use of newScheduleForProfile(%s, %s)", profile.Name, origin))
+}
+
+func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule {
+	var env *util.Environment
+
+	// schedule
+	s := new(Schedule)
+	if sc != nil {
+		s.ScheduleConfig = *sc
+	}
+
+	// config
+	if config != nil {
+		s.ConfigFile = config.GetConfigFile()
+
+		// global defaults
+		global := config.mustGetGlobalSection()
+		s.SystemdDropInFiles = global.SystemdDropInFiles
+	}
+
+	// profile
+	if profile != nil {
+		if profile.SystemdDropInFiles != nil {
+			s.SystemdDropInFiles = profile.SystemdDropInFiles
+		}
+
+		env = profile.GetEnvironment(true)
+	}
+
+	// init
+	s.init(env)
+	return s
+}
+
+var uriPrefixRegex = regexp.MustCompile("^(?i)[a-z]{2,}:")
+
+func (s *Schedule) init(env *util.Environment) {
+	// fix paths
+	rootPath := filepath.Dir(s.ConfigFile)
+	s.SystemdDropInFiles = fixPaths(s.SystemdDropInFiles, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	if uriPrefixRegex.MatchString(s.Log) {
+		s.Log = fixPath(s.Log, expandEnv, expandUserHome)
+	} else {
+		s.Log = fixPath(s.Log, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	}
 
 	// temporary log file
 	if s.Log != "" {
@@ -59,7 +308,53 @@ func (s *Schedule) Init(config *Config, profiles ...*Profile) {
 			s.Log = path.Join(constants.TemporaryDirMarker, s.Log[len(tempDir):])
 		}
 	}
+
+	// capture schedule environment
+	if len(s.EnvCapture) > 0 {
+		if env == nil {
+			env = util.NewDefaultEnvironment(os.Environ()...)
+		}
+
+		for index, key := range env.Names() {
+			matched := slices.ContainsFunc(s.EnvCapture, func(pattern string) bool {
+				matched, err := filepath.Match(pattern, key)
+				if err != nil && index == 0 {
+					clog.Tracef("env not matched with invalid glob expression '%s': %s", pattern, err.Error())
+				}
+				return matched
+			})
+			if !matched {
+				env.Remove(key)
+			}
+		}
+
+		env.Remove(constants.EnvScheduleId)
+		s.Environment = env.Values()
+	}
+
+	// add the ID of the schedule so that shell hooks can know in which schedule they're in
+	s.Environment = append(s.Environment, fmt.Sprintf("%s=%s", constants.EnvScheduleId, s.GetId()))
+	sort.Strings(s.Environment)
 }
+
+func (s *Schedule) GetId() string {
+	return fmt.Sprintf("%s:%s", s.ConfigFile, s.origin)
+}
+
+func (s *Schedule) Compare(other *Schedule) (c int) {
+	if s == other {
+		c = 0
+	} else if s == nil {
+		c = -1
+	} else if other == nil {
+		c = 1
+	} else {
+		c = s.origin.Compare(other.origin)
+	}
+	return
+}
+
+func CompareSchedules(a, b *Schedule) int { return a.Compare(b) }
 
 func (s *Schedule) GetLockMode() ScheduleLockMode {
 	switch s.LockMode {
@@ -73,10 +368,10 @@ func (s *Schedule) GetLockMode() ScheduleLockMode {
 }
 
 func (s *Schedule) GetLockWait() time.Duration {
-	if s.LockWait <= 2*time.Second {
+	if !s.LockWait.HasValue() || s.LockWait.Value() <= 2*time.Second {
 		return 0
 	}
-	return s.LockWait
+	return s.LockWait.Value()
 }
 
 func (s *Schedule) GetFlag(name string) (string, bool) {

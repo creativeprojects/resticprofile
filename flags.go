@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
@@ -40,18 +41,25 @@ type commandLineFlags struct {
 func envValueOverride[T any](defaultValue T, keys ...string) T {
 	for _, key := range keys {
 		if value := strings.TrimSpace(os.Getenv(key)); len(value) > 0 {
-			var v any = defaultValue
+			var (
+				err error
+				v   any = defaultValue
+			)
 			switch v.(type) {
 			case bool:
-				v = cast.ToBool(value)
+				v, err = cast.ToBoolE(value)
 			case int:
-				v = cast.ToInt(value)
+				v, err = cast.ToIntE(value)
 			case time.Duration:
-				v = cast.ToDuration(value)
+				v, err = cast.ToDurationE(value)
 			case string:
 				v = value
 			}
-			defaultValue = v.(T)
+			if err == nil {
+				defaultValue = v.(T)
+			} else {
+				clog.Errorf("cannot convert env variable %s=%q: %s", key, value, err.Error())
+			}
 			break
 		}
 	}

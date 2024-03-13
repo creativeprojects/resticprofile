@@ -2,6 +2,9 @@ package maybe
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"github.com/creativeprojects/resticprofile/util"
 )
 
 type Optional[T any] struct {
@@ -22,6 +25,20 @@ func (m Optional[T]) HasValue() bool {
 
 func (m Optional[T]) Value() T {
 	return m.value
+}
+
+func (m Optional[T]) Nilable() *T {
+	if m.HasValue() {
+		return util.CopyRef(m.value)
+	}
+	return nil
+}
+
+func (m Optional[T]) String() string {
+	if !m.HasValue() {
+		return ""
+	}
+	return fmt.Sprintf("%v", m.Value())
 }
 
 func (m *Optional[T]) UnmarshalJSON(data []byte) error {

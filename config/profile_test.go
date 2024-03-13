@@ -980,14 +980,15 @@ func TestSchedules(t *testing.T) {
 			config := profile.Schedules()
 			require.Len(t, config, 1)
 
-			schedule := config[0]
-			assert.Equal(t, command, schedule.CommandName)
+			schedule := config[command]
+			assert.Equal(t, command, schedule.ScheduleOrigin().Command)
 			assert.Equal(t, []string{"@hourly"}, schedule.Schedules)
 			assert.Equal(t, path.Join(constants.TemporaryDirMarker, "rp.log"), schedule.Log)
 			assert.Equal(t, map[string]string{
-				"RESTIC_VAR":  "profile-only-value",
-				"RESTIC_ANY1": "xyz",
-				"RESTIC_ANY2": "123",
+				"RESTICPROFILE_SCHEDULE_ID": fmt.Sprintf(":%s@profile", command),
+				"RESTIC_VAR":                "profile-only-value",
+				"RESTIC_ANY1":               "xyz",
+				"RESTIC_ANY2":               "123",
 			}, util.NewDefaultEnvironment(schedule.Environment...).ValuesAsMap())
 
 			// Check that schedule is optional
@@ -1098,12 +1099,12 @@ profile:
 		format := testItem.format
 		testConfig := testItem.config
 		t.Run(format, func(t *testing.T) {
-			profile, err := getProfile(format, testConfig, "profile", "")
+			profile, err := getResolvedProfile(format, testConfig, "profile")
 			require.NoError(t, err)
 
 			assert.NotNil(t, profile)
 			assert.NotNil(t, profile.Retention)
-			assert.NotEmpty(t, profile.Retention.Schedule)
+			assert.NotNil(t, profile.Retention.getScheduleConfig(nil, ""))
 			assert.True(t, profile.HasDeprecatedRetentionSchedule())
 		})
 	}

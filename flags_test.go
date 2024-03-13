@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -95,6 +96,21 @@ func TestEnvOverrides(t *testing.T) {
 		loaded.name = flags.name
 		assert.Equal(t, flags, loaded)
 	})
+}
+
+func TestEnvOverridesError(t *testing.T) {
+	logger := clog.GetDefaultLogger()
+	defer clog.SetDefaultLogger(logger)
+	mem := clog.NewMemoryHandler()
+	clog.SetDefaultLogger(clog.NewLogger(mem))
+
+	assert.NoError(t, os.Setenv("RESTICPROFILE_LOCK_WAIT", "no-valid-duration"))
+	t.Cleanup(func() { _ = os.Unsetenv("RESTICPROFILE_LOCK_WAIT") })
+
+	_, loaded, err := loadFlags([]string{"--verbose"})
+	assert.NoError(t, err)
+	assert.NotNil(t, loaded)
+	assert.Contains(t, mem.Logs(), `cannot convert env variable RESTICPROFILE_LOCK_WAIT="no-valid-duration": time: invalid duration "no-valid-duration"`)
 }
 
 func TestProfileCommandWithProfileNamePrecedence(t *testing.T) {

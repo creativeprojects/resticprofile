@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 )
 
 const (
@@ -172,7 +172,7 @@ func (s *schemaTypeBase) verify() (err error) {
 
 func (s *schemaTypeBase) setDeprecated(value bool) {
 	if value {
-		s.Deprecated = util.CopyRef(value)
+		s.Deprecated = maybe.True().Nilable()
 	} else {
 		s.Deprecated = nil
 	}

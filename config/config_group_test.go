@@ -212,7 +212,11 @@ groups:
 
 			group, err := c.GetProfileGroup("test")
 			require.NoError(t, err)
-			assert.Equal(t, &Group{Profiles: []string{"first", "second", "third"}}, group)
+			assert.Equal(t, &Group{
+				config:   c,
+				Name:     "test",
+				Profiles: []string{"first", "second", "third"},
+			}, group)
 
 			_, err = c.GetProfileGroup("my-group")
 			assert.Error(t, err)

@@ -30,12 +30,14 @@ var (
 	configOptionV1 = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
 		maybe.BoolDecoder(),
+		maybe.DurationDecoder(),
 		confidentialValueDecoder(),
 	))
 
 	configOptionV1HCL = viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(
 		mapstructure.StringToTimeDurationHookFunc(),
 		maybe.BoolDecoder(),
+		maybe.DurationDecoder(),
 		confidentialValueDecoder(),
 		sliceOfMapsToMapHookFunc(),
 	))
@@ -62,19 +64,18 @@ func (c *Config) getProfileNamesV1() (names []string) {
 func (c *Config) loadGroupsV1() (err error) {
 	c.requireVersion(Version01)
 
-	if c.groups == nil {
-		c.groups = map[string]Group{}
+	if c.cached.groups == nil {
+		c.cached.groups = make(map[string]*Group)
 
 		if c.IsSet(constants.SectionConfigurationGroups) {
 			groups := map[string][]string{}
 			if err = c.unmarshalKey(constants.SectionConfigurationGroups, &groups); err == nil {
 				// fits previous version into new structure
 				for groupName, group := range groups {
-					c.groups[groupName] = Group{
-						Description:     "",
-						Profiles:        group,
-						ContinueOnError: maybe.Bool{},
-					}
+					g := NewGroup(c, groupName)
+					g.Profiles = group
+					g.ResolveConfiguration()
+					c.cached.groups[groupName] = g
 				}
 			}
 		}
@@ -119,24 +120,6 @@ func (c *Config) getProfileV1(profileKey string) (profile *Profile, err error) {
 	}
 
 	return profile, nil
-}
-
-// getSchedulesV1 loads schedules from profiles
-func (c *Config) getSchedulesV1() ([]*Schedule, error) {
-	profiles := c.GetProfileNames()
-	if len(profiles) == 0 {
-		return nil, nil
-	}
-	schedules := []*Schedule{}
-	for _, profileName := range profiles {
-		profile, err := c.GetProfile(profileName)
-		if err != nil {
-			return nil, fmt.Errorf("cannot load profile %q: %w", profileName, err)
-		}
-		profileSchedules := profile.Schedules()
-		schedules = append(schedules, profileSchedules...)
-	}
-	return schedules, nil
 }
 
 // unmarshalConfigV1 returns the viper.DecoderConfigOption to use for V1 configuration files

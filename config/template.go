@@ -78,10 +78,12 @@ func (t *TemplateInfoData) collectPropertiesByType(set PropertySet, byType map[s
 	}
 }
 
-// NestedProfileSections lists SectionInfo of all nested sections that may be used inside the configuration
-func (t *TemplateInfoData) NestedProfileSections() []SectionInfo {
+// NestedSections lists SectionInfo of all nested sections that may be used inside the configuration
+func (t *TemplateInfoData) NestedSections() []SectionInfo {
 	sectionByType := make(map[string]*namedPropertySet)
 
+	t.collectPropertiesByType(t.Global, sectionByType)
+	t.collectPropertiesByType(t.Group, sectionByType)
 	t.collectPropertiesByType(t.Profile, sectionByType)
 	for _, section := range t.ProfileSections() {
 		t.collectPropertiesByType(section, sectionByType)

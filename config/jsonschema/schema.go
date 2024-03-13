@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/config"
@@ -151,27 +152,47 @@ func schemaForPropertySet(props config.PropertySet) (object *schemaObject) {
 }
 
 func schemaForPropertyInfo(info config.PropertyInfo) SchemaType {
+	if info == nil {
+		return nil
+	}
+
+	// Special nested handling: treat nestedType separately from propertyType to fulfil IsSinglePropertySet when not IsSingle
+	enforceNestedSingle := info.IsSinglePropertySet() && !info.IsSingle()
+
 	// Detect item type of this property
 	var propertyType, nestedType SchemaType
 
 	if types, nestedIndex := typesFromPropertyInfo(info); len(types) > 0 {
+		// nested handling
+		if nestedIndex > -1 {
+			nestedType = types[nestedIndex]
+			if enforceNestedSingle {
+				types = slices.Delete(types, nestedIndex, nestedIndex+1)
+			}
+		}
+		// type list
 		if len(types) > 1 {
 			oneOf := info.IsSingle()
 			propertyType = newSchemaTypeList(!oneOf, types...)
-		} else {
+		} else if len(types) > 0 {
 			propertyType = types[0]
-		}
-		if nestedIndex > -1 {
-			nestedType = types[nestedIndex]
 		}
 	} else {
 		return nil
 	}
 
-	// Array or single type
-	if !info.IsSingle() {
-		// viper supports single elements for list types
+	// array of propertyType or single propertyType
+	if propertyType != nil && !info.IsSingle() {
 		propertyType = newSchemaTypeList(true, propertyType, newSchemaArray(propertyType))
+	}
+
+	// re-add separated nestedType (nestedType or propertyType)
+	if nestedType != nil && enforceNestedSingle {
+		if propertyType == nil {
+			propertyType = nestedType
+		} else {
+			propertyType = newSchemaTypeList(true, nestedType, propertyType)
+		}
 	}
 
 	// Set basic info
@@ -313,7 +334,7 @@ func schemaForGroups(version config.Version) SchemaType {
 		groups = newSchemaArray(newSchemaString())
 		describeAll(groups, "profile-name", "profile names in this group")
 	} else {
-		groups = schemaForPropertySet(config.NewGroupInfo())
+		groups = schemaForPropertySet(info)
 	}
 	groups.describe("group", "group declaration")
 	object.PatternProperties[matchAll] = groups

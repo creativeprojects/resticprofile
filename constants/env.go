@@ -8,4 +8,5 @@ const (
 	EnvErrorCommandLine = "ERROR_COMMANDLINE"
 	EnvErrorExitCode    = "ERROR_EXIT_CODE"
 	EnvErrorStderr      = "ERROR_STDERR"
+	EnvScheduleId       = "RESTICPROFILE_SCHEDULE_ID"
 )

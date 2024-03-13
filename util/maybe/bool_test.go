@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 )
@@ -52,6 +53,20 @@ func TestMaybeBool(t *testing.T) {
 			assert.Equal(t, fixture.isTrueOrUndefined, fixture.source.IsTrueOrUndefined())
 		})
 	}
+}
+
+func TestBoolCreators(t *testing.T) {
+	assert.Equal(t, maybe.Bool{}, maybe.UnsetBool())
+	assert.Equal(t, maybe.True(), maybe.SetBool(true))
+	assert.Equal(t, maybe.False(), maybe.SetBool(false))
+
+	assert.Equal(t, maybe.UnsetBool(), maybe.BoolFromNilable(nil))
+	assert.Equal(t, maybe.True(), maybe.BoolFromNilable(util.CopyRef(true)))
+	assert.Equal(t, maybe.False(), maybe.BoolFromNilable(util.CopyRef(false)))
+
+	assert.Nil(t, maybe.UnsetBool().Nilable())
+	assert.Equal(t, util.CopyRef(true), maybe.True().Nilable())
+	assert.Equal(t, util.CopyRef(false), maybe.False().Nilable())
 }
 
 func TestBoolDecoder(t *testing.T) {
@@ -108,7 +123,7 @@ func TestBoolJSON(t *testing.T) {
 		expected string
 	}{
 		{
-			source:   maybe.Bool{},
+			source:   maybe.UnsetBool(),
 			expected: "null",
 		},
 		{
@@ -132,6 +147,22 @@ func TestBoolJSON(t *testing.T) {
 			err = decodedValue.UnmarshalJSON(encoded)
 			assert.NoError(t, err)
 			assert.Equal(t, fixture.source, decodedValue)
+		})
+	}
+}
+
+func TestBoolString(t *testing.T) {
+	fixtures := []struct {
+		source   maybe.Bool
+		expected string
+	}{
+		{source: maybe.UnsetBool(), expected: ""},
+		{source: maybe.True(), expected: "true"},
+		{source: maybe.False(), expected: "false"},
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.source.String(), func(t *testing.T) {
+			assert.Equal(t, fixture.expected, fixture.source.String())
 		})
 	}
 }

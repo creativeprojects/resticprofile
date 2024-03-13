@@ -610,11 +610,12 @@ profile:
 	require.NoError(t, err)
 	assert.NotNil(t, cfg)
 
-	schedules, err := cfg.GetSchedules()
+	profile, err := cfg.GetProfile("profile")
+	schedules := profile.Schedules()
 	require.NoError(t, err)
 	assert.Len(t, schedules, 1)
 
-	assert.Equal(t, []string{"daily"}, schedules[0].Schedules)
+	assert.Equal(t, []string{"daily"}, schedules["backup"].Schedules)
 }
 
 func TestRegressionInheritanceListMerging(t *testing.T) {

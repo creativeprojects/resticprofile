@@ -109,7 +109,22 @@ func init() {
 		}
 	})
 
-	// Profile: special handling for ConfidentialValue
+	// Profile: special handling for ScheduleBaseSection.Schedule
+	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
+		if field := property.field(); field != nil && propertyName == constants.SectionConfigurationSchedule {
+			if field.Type.Kind() == reflect.Interface {
+				basic := property.basic().resetTypeInfo()
+				basic.nested = NewScheduleConfigInfo()
+				basic.single = false
+				basic.singleNested = true
+				basic.mayString = true
+				basic.mayNil = true
+			}
+		}
+		return
+	})
+
+	// Profile or Group: special handling for ConfidentialValue
 	confidentialType := reflect.TypeOf(ConfidentialValue{})
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if field := property.field(); field != nil {
@@ -124,18 +139,34 @@ func init() {
 		}
 	})
 
-	// Profile: special handling for maybe.Bool
+	// Profile or Group: special handling for maybe.Bool
 	maybeBoolType := reflect.TypeOf(maybe.Bool{})
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if field := property.field(); field != nil {
 			if util.ElementType(field.Type).AssignableTo(maybeBoolType) {
 				basic := property.basic().resetTypeInfo()
 				basic.mayBool = true
+				basic.mayNil = true
 			}
 		}
 	})
 
-	// Profile: deprecated sections (squash with deprecated, e.g. schedule in retention)
+	// Profile or Group: special handling for maybe.Duration
+	maybeDurationType := reflect.TypeOf(maybe.Duration{})
+	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
+		if field := property.field(); field != nil {
+			if util.ElementType(field.Type).AssignableTo(maybeDurationType) {
+				basic := property.basic().resetTypeInfo()
+				basic.mayNumber = true
+				basic.mustInt = true
+				basic.format = "duration"
+				basic.mayString = true
+				basic.mayNil = true
+			}
+		}
+	})
+
+	// Profile or Group: deprecated sections (squash with deprecated, e.g. schedule in retention)
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if field := property.sectionField(nil); field != nil {
 			if _, deprecated := field.Tag.Lookup("deprecated"); deprecated {

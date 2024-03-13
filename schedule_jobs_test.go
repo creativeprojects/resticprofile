@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func configForJob(command string, at ...string) *config.Schedule {
+	origin := config.ScheduleOrigin("profile", command)
+	return config.NewDefaultSchedule(nil, origin, at...)
+}
+
 func TestScheduleNilJobs(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
@@ -36,11 +41,7 @@ func TestSimpleScheduleJob(t *testing.T) {
 			return nil
 		})
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-		Schedules:   []string{"sched"},
-	}
+	scheduleConfig := configForJob("backup", "sched")
 	err := scheduleJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
@@ -57,11 +58,7 @@ func TestFailScheduleJob(t *testing.T) {
 		mock.AnythingOfType("string")).
 		Return(errors.New("error creating job"))
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-		Schedules:   []string{"sched"},
-	}
+	scheduleConfig := configForJob("backup", "sched")
 	err := scheduleJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.Error(t, err)
 }
@@ -86,11 +83,7 @@ func TestRemoveJob(t *testing.T) {
 			return nil
 		})
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-		Schedules:   []string{"sched"},
-	}
+	scheduleConfig := configForJob("backup", "sched")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
@@ -106,10 +99,7 @@ func TestRemoveJobNoConfig(t *testing.T) {
 			return nil
 		})
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-	}
+	scheduleConfig := configForJob("backup")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
@@ -121,11 +111,7 @@ func TestFailRemoveJob(t *testing.T) {
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
 		Return(errors.New("error removing job"))
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-		Schedules:   []string{"sched"},
-	}
+	scheduleConfig := configForJob("backup", "sched")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.Error(t, err)
 }
@@ -137,11 +123,7 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
 		Return(schedule.ErrorServiceNotFound)
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-		Schedules:   []string{"sched"},
-	}
+	scheduleConfig := configForJob("backup", "sched")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
@@ -153,10 +135,7 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
 		Return(schedule.ErrorServiceNotFound)
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-	}
+	scheduleConfig := configForJob("backup")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
@@ -180,11 +159,7 @@ func TestStatusJob(t *testing.T) {
 	handler.EXPECT().DisplayJobStatus(mock.AnythingOfType("*schedule.Config")).Return(nil)
 	handler.EXPECT().DisplayStatus("profile").Return(nil)
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-		Schedules:   []string{"sched"},
-	}
+	scheduleConfig := configForJob("backup", "sched")
 	err := statusJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
@@ -194,10 +169,7 @@ func TestStatusRemoveOnlyJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 
-	scheduleConfig := &config.Schedule{
-		Profiles:    []string{"profile"},
-		CommandName: "backup",
-	}
+	scheduleConfig := configForJob("backup")
 	err := statusJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.Error(t, err)
 }
