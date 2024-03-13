@@ -48,7 +48,7 @@ jobs:
           sed -i "s/canonifyURLs = true/canonifyURLs = false/g" config.toml
           export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
           echo "BRANCH_NAME=${BRANCH_NAME}" >> "$GITHUB_ENV"
-          hugo --minify --enableGitInfo --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
+          hugo --minify --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
       - name: Check broken links
         uses: ruzickap/action-my-broken-link-checker@v2
