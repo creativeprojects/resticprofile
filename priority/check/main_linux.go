@@ -5,23 +5,38 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/creativeprojects/resticprofile/priority"
+	"golang.org/x/sys/unix"
 )
 
-// This is only displaying the priority of the current process (for testing)
+const selfPID = 0
+
 func main() {
-	getPriority()
-	getIOPriority()
+	// run it in a go routine in case it would make a difference
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		displayProcessAndGroup()
+		displayPriority()
+		displayIOPriority()
+	}()
+	wg.Wait()
 }
 
-func getPriority() {
-	processNice, err := priority.GetProcessNice()
+func displayProcessAndGroup() {
+	fmt.Printf("Process ID: %d, Group ID: %d\n", unix.Getpid(), unix.Getpgrp())
+}
+
+func displayPriority() {
+	processNice, err := getProcessNice()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	groupNice, err := priority.GetGroupNice()
+	groupNice, err := getGroupNice()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -29,7 +44,25 @@ func getPriority() {
 	fmt.Printf("Process Priority: %d, Group Priority: %d\n", processNice, groupNice)
 }
 
-func getIOPriority() {
+// getProcessNice returns the nice value of the current process
+func getProcessNice() (int, error) {
+	pri, err := unix.Getpriority(unix.PRIO_PROCESS, selfPID)
+	if err != nil {
+		return 0, err
+	}
+	return 20 - pri, nil
+}
+
+// GetProcessNice returns the nice value of the current process group
+func getGroupNice() (int, error) {
+	pri, err := unix.Getpriority(unix.PRIO_PGRP, selfPID)
+	if err != nil {
+		return 0, err
+	}
+	return 20 - pri, nil
+}
+
+func displayIOPriority() {
 	class, value, err := priority.GetIONice()
 	if err != nil {
 		fmt.Println(err)

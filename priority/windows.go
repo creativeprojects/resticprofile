@@ -1,9 +1,8 @@
-//+build windows
+//go:build windows
 
 package priority
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/creativeprojects/clog"
@@ -82,9 +81,4 @@ func GetPriorityClassName(class uint32) string {
 		return "REALTIME"
 	}
 	return fmt.Sprintf("0x%x", class)
-}
-
-// SetIONice does nothing in Windows
-func SetIONice(class, value int) error {
-	return errors.New("IONice is only supported on Linux")
 }
