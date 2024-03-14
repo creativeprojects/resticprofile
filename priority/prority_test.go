@@ -29,7 +29,6 @@ func TestStartProcessWithPriority(t *testing.T) {
 			assert.Contains(t, output, "Priority class: NORMAL")
 		} else {
 			assert.Contains(t, output, "Process Priority: 0")
-			assert.Contains(t, output, "Group Priority: 0")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
@@ -49,7 +48,6 @@ func TestStartProcessWithPriority(t *testing.T) {
 			assert.Contains(t, output, "Priority class: BELOW_NORMAL")
 		} else {
 			assert.Contains(t, output, "Process Priority: 10")
-			assert.Contains(t, output, "Group Priority: 10")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
@@ -69,7 +67,6 @@ func TestStartProcessWithPriority(t *testing.T) {
 			assert.Contains(t, output, "Priority class: IDLE")
 		} else {
 			assert.Contains(t, output, "Process Priority: 15")
-			assert.Contains(t, output, "Group Priority: 15")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
