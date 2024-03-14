@@ -9,7 +9,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const selfPID = 0
+const (
+	selfPID      = 0
+	errorMessage = "cannot set process group priority, restic will run with the default priority: %w"
+)
 
 // SetNice sets the unix "nice" value of the current process
 func SetNice(priority int) error {
@@ -22,9 +25,25 @@ func SetNice(priority int) error {
 	clog.Debugf("setting process group priority to %d", priority)
 	err = unix.Setpriority(unix.PRIO_PGRP, selfPID, priority)
 	if err != nil {
-		return fmt.Errorf("cannot set process group priority, restic will run with the default priority: %w", err)
+		if err.Error() == "operation not permitted" {
+			// try again after creating a new process group
+			return setNewProcessGroup(priority)
+		}
+		return fmt.Errorf(errorMessage, err)
 	}
 
+	return nil
+}
+
+func setNewProcessGroup(priority int) error {
+	err := unix.Setpgid(selfPID, 0)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
+	err = unix.Setpriority(unix.PRIO_PGRP, selfPID, priority)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
 	return nil
 }
 
