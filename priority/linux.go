@@ -51,7 +51,7 @@ func SetNice(priority int) error {
 		return fmt.Errorf("cannot set process group, restic will run with the default priority: %w", err)
 	}
 
-	clog.Debugf("setting group process priority to %d", priority)
+	clog.Debugf("setting process group priority to %d", priority)
 	err = unix.Setpriority(unix.PRIO_PGRP, selfPID, priority)
 	if err != nil {
 		clog.Debugf("setting process priority to %d instead", priority)
