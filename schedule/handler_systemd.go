@@ -193,23 +193,22 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 		}
 	}
 
-	err = os.Remove(path.Join(systemdPath, timerFile))
-	if err != nil {
-		return nil
-	}
-
 	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
-	err = os.Remove(path.Join(systemdPath, serviceFile))
-	if err != nil {
-		return nil
-	}
-
 	dropInDir := systemd.GetServiceFileDropInDir(job.ProfileName, job.CommandName)
-	err = os.RemoveAll(path.Join(systemdPath, dropInDir))
-	if err != nil {
-		return nil
+	timerDropInDir := systemd.GetTimerFileDropInDir(job.ProfileName, job.CommandName)
+
+	obsoletes := []string{
+		path.Join(systemdPath, timerFile),
+		path.Join(systemdPath, serviceFile),
+		path.Join(systemdPath, timerDropInDir),
+		path.Join(systemdPath, dropInDir),
 	}
 
+	for _, pathToRemove := range obsoletes {
+		if err = os.RemoveAll(pathToRemove); err != nil {
+			clog.Errorf("failed removing %q, error: %s. Please remove this path", pathToRemove, err.Error())
+		}
+	}
 	return nil
 }
 

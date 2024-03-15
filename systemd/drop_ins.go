@@ -3,6 +3,7 @@
 package systemd
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -14,11 +15,26 @@ import (
 
 var (
 	ownedDropInRegex = regexp.MustCompile(".resticprofile.conf$")
+	timerDropInRegex = regexp.MustCompile(`(?i)^\s*\[TIMER]\s*$`)
 )
 
 func getOwnedName(basename string) string {
 	ext := filepath.Ext(basename)
 	return fmt.Sprintf("%s.resticprofile%s", strings.TrimSuffix(basename, ext), ext)
+}
+
+func IsTimerDropIn(file string) bool {
+	if f, err := fs.Open(file); err == nil {
+		defer func() { _ = f.Close() }()
+		for reader := bufio.NewScanner(f); reader.Scan(); {
+			if timerDropInRegex.Match(reader.Bytes()) {
+				return true
+			}
+		}
+	} else {
+		clog.Warningf("failed reading %q, cannot determine type", file)
+	}
+	return false
 }
 
 func CreateDropIns(dir string, files []string) error {
