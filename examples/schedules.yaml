@@ -1,9 +1,9 @@
 version: "2"
 
 global:
-  systemd-drop-in-files:
-    - my-drop-in.conf
   schedule-defaults:
+    systemd-drop-in-files:
+      - my-drop-in.conf
     log: "scheduling.log"
     lock-wait: 120m
     after-network-online: true

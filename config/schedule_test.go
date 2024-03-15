@@ -56,10 +56,8 @@ func TestNewSchedule(t *testing.T) {
 
 	t.Run("global defaults", func(t *testing.T) {
 		p, origin := profile(t, `
-			[global]
-			systemd-drop-in-files = "drop-in-file.conf"
-
 			[global.schedule-defaults]
+			systemd-drop-in-files = "drop-in-file.conf"
 			log = "global-custom.log"
 			lock-wait = "30s"
 
@@ -83,8 +81,7 @@ func TestNewSchedule(t *testing.T) {
 			schedule := NewSchedule(p.config, NewDefaultScheduleConfig(nil, origin))
 			assert.Empty(t, schedule.Log)
 			assert.Equal(t, 0*time.Second, schedule.GetLockWait())
-			// other global defaults are applied
-			assert.Equal(t, []string{"drop-in-file.conf"}, schedule.SystemdDropInFiles)
+			assert.Empty(t, schedule.SystemdDropInFiles)
 		})
 	})
 
@@ -246,10 +243,8 @@ func TestNewScheduleFromGroup(t *testing.T) {
 
 	t.Run("global defaults", func(t *testing.T) {
 		g, origin := group(t, `
-			[global]
-			systemd-drop-in-files = "drop-in-file.conf"
-
 			[global.schedule-defaults]
+			systemd-drop-in-files = "drop-in-file.conf"
 			log = "global-custom.log"
 			lock-wait = "30s"
 
