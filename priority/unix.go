@@ -1,29 +1,48 @@
-//+build !windows,!linux
+//go:build !windows
 
 package priority
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/creativeprojects/clog"
 	"golang.org/x/sys/unix"
 )
 
+const (
+	selfPID      = 0
+	errorMessage = "cannot set process group priority, restic will run with the default priority: %w"
+)
+
 // SetNice sets the unix "nice" value of the current process
 func SetNice(priority int) error {
 	var err error
-	// pid 0 means "self"
-	pid := 0
 
 	if priority < -20 || priority > 19 {
 		return fmt.Errorf("unexpected priority value %d", priority)
 	}
 
-	clog.Debugf("setting process priority to %d", priority)
-	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
+	clog.Debugf("setting process group priority to %d", priority)
+	err = unix.Setpriority(unix.PRIO_PGRP, selfPID, priority)
 	if err != nil {
-		return fmt.Errorf("error setting process priority: %v", err)
+		if err.Error() == "operation not permitted" {
+			// try again after creating a new process group
+			return setNewProcessGroup(priority)
+		}
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	return nil
+}
+
+func setNewProcessGroup(priority int) error {
+	err := unix.Setpgid(selfPID, 0)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
+	err = unix.Setpriority(unix.PRIO_PGRP, selfPID, priority)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
 	}
 	return nil
 }
@@ -31,18 +50,4 @@ func SetNice(priority int) error {
 // SetClass sets the priority class of the current process
 func SetClass(class int) error {
 	return SetNice(class)
-}
-
-// GetNice returns the scheduler priority of the current process
-func GetNice() (int, error) {
-	pri, err := unix.Getpriority(unix.PRIO_PROCESS, 0)
-	if err != nil {
-		return 0, err
-	}
-	return pri, nil
-}
-
-// SetIONice does nothing in non-linux OS
-func SetIONice(class, value int) error {
-	return errors.New("IONice is only supported on Linux")
 }

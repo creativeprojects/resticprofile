@@ -34,50 +34,6 @@ const (
 	IOPrioWhoUser
 )
 
-// SetNice sets the unix "nice" value of the current process
-func SetNice(priority int) error {
-	var err error
-	// pid 0 means "self"
-	pid := 0
-
-	if priority < -20 || priority > 19 {
-		return fmt.Errorf("unexpected priority value %d", priority)
-	}
-
-	currentPriority, _ := unix.Getpriority(unix.PRIO_PROCESS, 0)
-	if currentPriority == priority {
-		return nil
-	}
-
-	// Move ourselves to a new process group so that we can use the process
-	// group variants of Setpriority etc to affect all of our threads in one go
-	err = unix.Setpgid(pid, 0)
-	if err != nil {
-		return fmt.Errorf("cannot set process group priority, restic will run with the default priority: %w", err)
-	}
-
-	clog.Debugf("setting process priority to %d", priority)
-	err = unix.Setpriority(unix.PRIO_PROCESS, pid, priority)
-	if err != nil {
-		return fmt.Errorf("cannot set process priority, restic will run with the default priority: %w", err)
-	}
-	return nil
-}
-
-// SetClass sets the priority class of the current process
-func SetClass(class int) error {
-	return SetNice(class)
-}
-
-// GetNice returns the current nice value
-func GetNice() (int, error) {
-	pri, err := unix.Getpriority(unix.PRIO_PROCESS, 0)
-	if err != nil {
-		return 0, err
-	}
-	return 20 - pri, nil
-}
-
 // SetIONice sets the io_prio class and value
 func SetIONice(class, value int) error {
 	if class < 1 || class > 3 {
@@ -106,7 +62,6 @@ func GetIONice() (IOPrioClass, int, error) {
 }
 
 func getIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
-
 	r1, _, errno := unix.Syscall(
 		unix.SYS_IOPRIO_GET,
 		uintptr(who),
@@ -122,7 +77,6 @@ func getIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
 }
 
 func setIOPrio(who IOPrioWho, class IOPrioClass, value int) error {
-
 	_, _, errno := unix.Syscall(
 		unix.SYS_IOPRIO_SET,
 		uintptr(who),

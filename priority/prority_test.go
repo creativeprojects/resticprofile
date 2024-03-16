@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"io"
 	"os/exec"
-	"runtime"
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,10 +25,10 @@ func TestStartProcessWithPriority(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Log(output)
-		if runtime.GOOS == "windows" {
+		if platform.IsWindows() {
 			assert.Contains(t, output, "Priority class: NORMAL")
 		} else {
-			assert.Contains(t, output, "Priority: 0")
+			assert.Contains(t, output, "Process Priority: 0")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
@@ -44,10 +44,10 @@ func TestStartProcessWithPriority(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Log(output)
-		if runtime.GOOS == "windows" {
+		if platform.IsWindows() {
 			assert.Contains(t, output, "Priority class: BELOW_NORMAL")
 		} else {
-			assert.Contains(t, output, "Priority: 10")
+			assert.Contains(t, output, "Process Priority: 10")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
@@ -63,10 +63,10 @@ func TestStartProcessWithPriority(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Log(output)
-		if runtime.GOOS == "windows" {
+		if platform.IsWindows() {
 			assert.Contains(t, output, "Priority class: IDLE")
 		} else {
-			assert.Contains(t, output, "Priority: 15")
+			assert.Contains(t, output, "Process Priority: 15")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
