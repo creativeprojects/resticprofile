@@ -88,7 +88,7 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	}
 }
 
-func (s *ScheduleBaseConfig) applyOverrides(profile *Profile, section *ScheduleBaseSection) {
+func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	// capture a copy of self as defaults
 	defaults := *s
 	// applying the settings of the section
@@ -97,10 +97,18 @@ func (s *ScheduleBaseConfig) applyOverrides(profile *Profile, section *ScheduleB
 	s.Priority = section.SchedulePriority
 	s.LockMode = section.ScheduleLockMode
 	s.LockWait = section.ScheduleLockWait
-	s.EnvCapture = section.ScheduleEnvCapture
+	s.EnvCapture = slices.Clone(section.ScheduleEnvCapture)
 	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
 	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
-	s.SystemdDropInFiles = profile.SystemdDropInFiles
+	// re-init with defaults
+	s.init(&defaults)
+}
+
+func (s *ScheduleBaseConfig) applyProfile(profile *Profile) {
+	// capture a copy of self as defaults
+	defaults := *s
+	// applying the settings from the profile
+	s.SystemdDropInFiles = slices.Clone(profile.SystemdDropInFiles)
 	// re-init with defaults
 	s.init(&defaults)
 }
@@ -178,16 +186,21 @@ func newScheduleConfig(profile *Profile, section *ScheduleBaseSection) (s *Sched
 	switch expression := section.Schedule.(type) {
 	case string:
 		s = NewDefaultScheduleConfig(config, origin, expression)
+		s.applyProfile(profile)
 	case []string, []any:
 		s = NewDefaultScheduleConfig(config, origin, cast.ToStringSlice(expression)...)
+		s.applyProfile(profile)
 	default:
 		if expression != nil {
-			cfg := NewDefaultScheduleConfig(config, origin)
+			cfg := new(ScheduleConfig)
 			decoder, err := config.newUnmarshaller(cfg)
 			if err == nil {
 				err = decoder.Decode(expression)
 			}
 			if err == nil {
+				defaults := NewDefaultScheduleConfig(config, origin) // applying defaults after parsing to avoid side effects
+				defaults.applyProfile(profile)
+				cfg.init(&defaults.ScheduleBaseConfig)
 				s = cfg
 			} else {
 				if bytes, e := json.Marshal(expression); e == nil {
@@ -200,7 +213,7 @@ func newScheduleConfig(profile *Profile, section *ScheduleBaseSection) (s *Sched
 
 	// init
 	if s.HasSchedules() {
-		s.applyOverrides(profile, section)
+		s.applyOverrides(section)
 	} else {
 		s = nil
 	}
@@ -264,8 +277,6 @@ func newScheduleForProfile(profile *Profile, sc *ScheduleConfig) *Schedule {
 }
 
 func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule {
-	var env *util.Environment
-
 	// schedule
 	s := new(Schedule)
 	if sc != nil {
@@ -278,11 +289,8 @@ func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule
 	}
 
 	// profile
+	var env *util.Environment
 	if profile != nil {
-		if profile.SystemdDropInFiles != nil {
-			s.SystemdDropInFiles = profile.SystemdDropInFiles
-		}
-
 		env = profile.GetEnvironment(true)
 	}
 

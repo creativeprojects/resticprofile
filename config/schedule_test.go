@@ -109,6 +109,26 @@ func TestNewSchedule(t *testing.T) {
 		assert.Equal(t, "ignore", schedule.LockMode)
 	})
 
+	t.Run("profile drop-in overrides", func(t *testing.T) {
+		p, _ := profile(t, `
+			[global.schedule-defaults]
+			systemd-drop-in-files = "drop-in-file.conf"
+			
+			[default]
+			systemd-drop-in-files = "default-drop-in.conf"
+			
+			[default.backup.schedule]
+			at = "monthly"
+			
+			[default.check.schedule]
+			at = "monthly"
+			systemd-drop-in-files = "check-drop-in.conf"
+		`)
+
+		assert.Equal(t, []string{"default-drop-in.conf"}, p.Schedules()["backup"].SystemdDropInFiles)
+		assert.Equal(t, []string{"check-drop-in.conf"}, p.Schedules()["check"].SystemdDropInFiles)
+	})
+
 	t.Run("profile schedule parse error", func(t *testing.T) {
 		defaultLogger := clog.GetDefaultLogger()
 		defer clog.SetDefaultLogger(defaultLogger)
