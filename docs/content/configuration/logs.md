@@ -16,6 +16,10 @@ The log destination syntax is a such:
 * `temp:filename` {{% icon icon="arrow-right" %}} redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
 * `tcp://syslog_server:514` or `udp://syslog_server:514` {{% icon icon="arrow-right" %}} redirects all the logs to the **syslog** server.
 
+{{% notice style="note" %}}
+Logging to syslog is not available on Windows.
+{{% /notice %}}
+
 {{% notice tip %}}
 If the location cannot be opened, **resticprofile** will default to send the logs to the console.
 {{% /notice %}}
