@@ -109,12 +109,13 @@ func main() {
 			// also redirect the terminal through the client
 			term.SetAllOutput(term.NewRemoteTerm(client))
 		} else {
-			logTarget := ""
+			logTarget, logCommands := "", ""
 			if ctx != nil {
 				logTarget = ctx.logTarget
+				logCommands = ctx.logCommands
 			}
 			if logTarget != "" && logTarget != "-" {
-				if closer, err := setupTargetLogger(flags, logTarget); err == nil {
+				if closer, err := setupTargetLogger(flags, logTarget, logCommands); err == nil {
 					logCloser = func() { _ = closer.Close() }
 				} else {
 					// fallback to a console logger

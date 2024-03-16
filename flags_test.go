@@ -65,6 +65,7 @@ func TestEnvOverrides(t *testing.T) {
 		format:          setEnv("custom-format", "RESTICPROFILE_FORMAT").(string),
 		name:            setEnv("custom-profile", "RESTICPROFILE_NAME").(string),
 		log:             setEnv("custom.log", "RESTICPROFILE_LOG").(string),
+		logCommands:     setEnv("log", "RESTICPROFILE_LOG_COMMANDS").(string),
 		dryRun:          setEnv(true, "RESTICPROFILE_DRY_RUN").(bool),
 		noLock:          setEnv(true, "RESTICPROFILE_NO_LOCK").(bool),
 		lockWait:        setEnv(time.Minute*5, "RESTICPROFILE_LOCK_WAIT").(time.Duration),

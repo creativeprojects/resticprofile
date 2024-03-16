@@ -626,6 +626,9 @@ func prepareScheduledProfile(ctx *Context) {
 	if len(s.Log) > 0 {
 		ctx.logTarget = s.Log
 	}
+	if len(s.LogCommands) > 0 {
+		ctx.logCommands = s.LogCommands
+	}
 	// battery
 	if s.IgnoreOnBatteryLessThan > 0 && !s.IgnoreOnBattery.IsStrictlyFalse() {
 		ctx.stopOnBattery = s.IgnoreOnBatteryLessThan

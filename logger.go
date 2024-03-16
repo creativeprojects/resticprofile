@@ -40,7 +40,7 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, logTarget, logCommands string) (io.Closer, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
@@ -62,7 +62,19 @@ func setupTargetLogger(flags commandLineFlags, logTarget string) (io.Closer, err
 
 	// also redirect all terminal output
 	if file != nil {
-		term.SetAllOutput(file)
+		if logCommands == "auto" {
+			if term.OsStdoutIsTerminal() {
+				logCommands = "both"
+			} else {
+				logCommands = "log"
+			}
+		}
+		if logCommands == "both" {
+			term.SetOutput(io.MultiWriter(file, term.GetOutput()))
+			term.SetErrorOutput(io.MultiWriter(file, term.GetErrorOutput()))
+		} else if logCommands == "log" {
+			term.SetAllOutput(file)
+		}
 	}
 	// and return the handler (so we can close it at the end)
 	return handler, nil
