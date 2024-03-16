@@ -150,5 +150,7 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		Flags:                   sched.Flags,
 		IgnoreOnBattery:         sched.IgnoreOnBattery.IsTrue(),
 		IgnoreOnBatteryLessThan: sched.IgnoreOnBatteryLessThan,
+		AfterNetworkOnline:      sched.AfterNetworkOnline.IsTrue(),
+		SystemdDropInFiles:      sched.SystemdDropInFiles,
 	}
 }
