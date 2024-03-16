@@ -3,6 +3,7 @@
 package systemd
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -14,11 +15,26 @@ import (
 
 var (
 	ownedDropInRegex = regexp.MustCompile(".resticprofile.conf$")
+	timerDropInRegex = regexp.MustCompile(`(?i)^\s*\[TIMER]\s*$`)
 )
 
 func getOwnedName(basename string) string {
 	ext := filepath.Ext(basename)
-	return fmt.Sprintf("%s.resticprofile%s", strings.TrimSuffix(basename, ext), ext)
+	return fmt.Sprintf("%s.resticprofile.conf", strings.TrimSuffix(basename, ext))
+}
+
+func IsTimerDropIn(file string) bool {
+	if f, err := fs.Open(file); err == nil {
+		defer func() { _ = f.Close() }()
+		for reader := bufio.NewScanner(f); reader.Scan(); {
+			if timerDropInRegex.Match(reader.Bytes()) {
+				return true
+			}
+		}
+	} else {
+		clog.Warningf("failed reading %q, cannot determine type", file)
+	}
+	return false
 }
 
 func CreateDropIns(dir string, files []string) error {
@@ -58,10 +74,11 @@ func CreateDropIns(dir string, files []string) error {
 
 	for _, dropInFilePath := range files {
 		dropInFileBase := filepath.Base(dropInFilePath)
-		// change the extension to prepend `.resticprofile`
+		// change the extension to `.resticprofile.conf`
 		// to signify it wasn't created outside of resticprofile, i.e. we own it
 		dropInFileOwned := getOwnedName(dropInFileBase)
 		dstPath := filepath.Join(dir, dropInFileOwned)
+		clog.Infof("writing %v", dstPath)
 		dst, err := fs.Create(dstPath)
 		if err != nil {
 			return err
@@ -70,7 +87,6 @@ func CreateDropIns(dir string, files []string) error {
 		if err != nil {
 			return err
 		}
-		clog.Infof("writing %v", dstPath)
 		if _, err := io.Copy(dst, src); err != nil {
 			return err
 		}

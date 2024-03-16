@@ -14,6 +14,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/spf13/afero"
 )
@@ -150,12 +151,12 @@ func Generate(config Config) error {
 	if err != nil {
 		return err
 	}
-	if err := unitTmpl.Execute(&data, info); err != nil {
+	if err = unitTmpl.Execute(&data, info); err != nil {
 		return err
 	}
 	filePathName := filepath.Join(systemdUserDir, systemdProfile)
 	clog.Infof("writing %v", filePathName)
-	if err := afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
+	if err = afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 	data.Reset()
@@ -168,18 +169,24 @@ func Generate(config Config) error {
 	if err != nil {
 		return err
 	}
-	if err := timerTmpl.Execute(&data, info); err != nil {
+	if err = timerTmpl.Execute(&data, info); err != nil {
 		return err
 	}
 	filePathName = filepath.Join(systemdUserDir, timerProfile)
 	clog.Infof("writing %v", filePathName)
-	if err := afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
+	if err = afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 
-	dropInDir := filepath.Join(systemdUserDir, GetServiceFileDropInDir(config.Title, config.SubTitle))
-	if err := CreateDropIns(dropInDir, config.DropInFiles); err != nil {
-		return err
+	dropIns := map[string][]string{
+		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(config.DropInFiles, IsTimerDropIn),
+		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(config.DropInFiles, collect.Not(IsTimerDropIn)),
+	}
+	for dropInDir, dropInFiles := range dropIns {
+		dropInDir = filepath.Join(systemdUserDir, dropInDir)
+		if err = CreateDropIns(dropInDir, dropInFiles); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -190,9 +197,14 @@ func GetServiceFile(profileName, commandName string) string {
 	return fmt.Sprintf("resticprofile-%s@profile-%s.service", commandName, profileName)
 }
 
-// GetServiceDropInFile returns the service file drop-in dir name for the profile
+// GetServiceFileDropInDir returns the service file drop-in dir name for the profile
 func GetServiceFileDropInDir(profileName, commandName string) string {
 	return fmt.Sprintf("resticprofile-%s@profile-%s.service.d", commandName, profileName)
+}
+
+// GetTimerFileDropInDir returns the timer file drop-in dir name for the profile
+func GetTimerFileDropInDir(profileName, commandName string) string {
+	return fmt.Sprintf("resticprofile-%s@profile-%s.timer.d", commandName, profileName)
 }
 
 // GetTimerFile returns the timer file name for the profile

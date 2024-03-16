@@ -304,20 +304,26 @@ func TestGenerateWithDropInFile(t *testing.T) {
 [Service]
 Environment=foo=bar
 `)
+	dropInTimerFileContents := []byte(`
+[Timer]
+RandomizedDelaySec=5h
+`)
 
-	err := afero.WriteFile(fs, "99-example.conf", dropInFileContents, 0o600)
-	require.NoError(t, err)
+	require.NoError(t, afero.WriteFile(fs, "98-example.conf", dropInTimerFileContents, 0o600))
+	require.NoError(t, afero.WriteFile(fs, "99-example.conf", dropInFileContents, 0o600))
 
 	systemdDir := GetSystemDir()
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
 	dropInFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/99-example.resticprofile.conf")
+	dropInTimerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer.d/98-example.resticprofile.conf")
 
 	assertNoFileExists(t, serviceFile)
 	assertNoFileExists(t, timerFile)
 	assertNoFileExists(t, dropInFile)
+	assertNoFileExists(t, dropInTimerFile)
 
-	err = Generate(Config{
+	err := Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -327,16 +333,21 @@ Environment=foo=bar
 		Schedules:        []string{"daily"},
 		UnitType:         SystemUnit,
 		Priority:         "low",
-		DropInFiles:      []string{"99-example.conf"},
+		DropInFiles:      []string{"98-example.conf", "99-example.conf"},
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
 	requireFileExists(t, timerFile)
 	requireFileExists(t, dropInFile)
+	requireFileExists(t, dropInTimerFile)
 
 	dropIn, err := afero.ReadFile(fs, dropInFile)
 	require.NoError(t, err)
 	assert.Equal(t, dropInFileContents, dropIn)
+
+	dropIn, err = afero.ReadFile(fs, dropInTimerFile)
+	require.NoError(t, err)
+	assert.Equal(t, dropInTimerFileContents, dropIn)
 }
 
 func TestGenerateCleansUpOrphanDropIns(t *testing.T) {
@@ -346,29 +357,37 @@ func TestGenerateCleansUpOrphanDropIns(t *testing.T) {
 [Service]
 Environment=foo=bar
 `)
+	dropInTimerFileContents := []byte(`
+[Timer]
+RandomizedDelaySec=5h
+`)
 
-	err := afero.WriteFile(fs, "99-example.conf", dropInFileContents, 0o600)
-	require.NoError(t, err)
+	require.NoError(t, afero.WriteFile(fs, "98-example.conf", dropInTimerFileContents, 0o600))
+	require.NoError(t, afero.WriteFile(fs, "99-example.conf", dropInFileContents, 0o600))
 
 	systemdDir := GetSystemDir()
 
 	orphanFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/88-orphan.resticprofile.conf")
-	err = afero.WriteFile(fs, orphanFile, []byte{}, 0o600)
-	require.NoError(t, err)
+	require.NoError(t, afero.WriteFile(fs, orphanFile, []byte{}, 0o600))
+	orphanTimerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer.d/87-orphan.resticprofile.conf")
+	require.NoError(t, afero.WriteFile(fs, orphanTimerFile, []byte{}, 0o600))
 
 	externallyCreatedFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/77-external.conf")
-	err = afero.WriteFile(fs, externallyCreatedFile, []byte{}, 0o600)
-	require.NoError(t, err)
+	require.NoError(t, afero.WriteFile(fs, externallyCreatedFile, []byte{}, 0o600))
+	externallyCreatedTimerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer.d/76-external.conf")
+	require.NoError(t, afero.WriteFile(fs, externallyCreatedTimerFile, []byte{}, 0o600))
 
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
 	dropInFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/99-example.resticprofile.conf")
+	dropInTimerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer.d/98-example.resticprofile.conf")
 
 	assertNoFileExists(t, serviceFile)
 	assertNoFileExists(t, timerFile)
 	assertNoFileExists(t, dropInFile)
+	assertNoFileExists(t, dropInTimerFile)
 
-	err = Generate(Config{
+	err := Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -378,18 +397,17 @@ Environment=foo=bar
 		Schedules:        []string{"daily"},
 		UnitType:         SystemUnit,
 		Priority:         "low",
-		DropInFiles:      []string{"99-example.conf"},
+		DropInFiles:      []string{"98-example.conf", "99-example.conf"},
 	})
 	require.NoError(t, err)
 	requireFileExists(t, serviceFile)
 	requireFileExists(t, timerFile)
 	requireFileExists(t, dropInFile)
+	requireFileExists(t, dropInTimerFile)
 	assertNoFileExists(t, orphanFile)
+	assertNoFileExists(t, orphanTimerFile)
 	requireFileExists(t, externallyCreatedFile)
-
-	dropIn, err := afero.ReadFile(fs, dropInFile)
-	require.NoError(t, err)
-	assert.Equal(t, dropInFileContents, dropIn)
+	requireFileExists(t, externallyCreatedTimerFile)
 }
 
 func TestGetUserDirOnReadOnlyFs(t *testing.T) {
