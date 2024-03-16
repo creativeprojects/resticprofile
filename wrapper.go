@@ -632,8 +632,8 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 			term.FlushAllOutput()
 			_, _, err := runShellCommand(rCommand)
 			if err != nil {
-				clog.Errorf("run-finally command %d/%d failed ('%s' on profile '%s'): %w",
-					index+1, len(commands), command, r.profile.Name, err)
+				clog.Errorf("run-finally command %d/%d failed ('%s' on profile '%s'): %s",
+					index+1, len(commands), command, r.profile.Name, err.Error())
 			}
 		}(i, commands[i])
 	}

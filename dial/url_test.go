@@ -16,13 +16,24 @@ func TestGetDialAddr(t *testing.T) {
 	}{
 		// invalid
 		{"://", "", "", false},
+		// supported schemes
+		{"TCP://:123", "tcp", ":123", true},
+		{"UDP://:123", "udp", ":123", true},
+		{"tcp://:123", "tcp", ":123", true},
+		{"udp://:123", "udp", ":123", true},
+		{"syslog://:123", "syslog", ":123", true},
+		{"syslog-tcp://:123", "syslog-tcp", ":123", true},
 		// url
-		{"scheme://:123", "scheme", ":123", true},
-		{"scheme://host:123", "scheme", "host:123", true},
-		{"scheme://host", "scheme", "host", true},
+		{"syslog://:123", "syslog", ":123", true},
+		{"syslog://host:123", "syslog", "host:123", true},
+		{"syslog://host", "syslog", "host", true},
+		{"syslog://", "syslog", "", true},
+		{"syslog:", "syslog", "", true},
 		// too short
-		{"scheme://", "", "", false},
-		{"scheme://:", "", "", false},
+		{"tcp://", "", "", false},
+		{"tcp:", "", "", false},
+		{"syslog-tcp:", "", "", false},
+		{"udp:", "", "", false},
 		{"c://", "", "", false},
 		{"c://:", "", "", false},
 		{"c://:123", "", "", false},

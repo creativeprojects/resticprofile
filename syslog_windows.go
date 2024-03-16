@@ -4,8 +4,10 @@ package main
 
 import (
 	"errors"
+	"io"
 )
 
-func getSyslogHandler(scheme, hostPort string) (LogCloser, error) {
-	return nil, errors.New("syslog is not supported on Windows")
+func getSyslogHandler(scheme, hostPort string) (_ LogCloser, _ io.Writer, err error) {
+	err = errors.New("syslog is not supported on Windows")
+	return
 }

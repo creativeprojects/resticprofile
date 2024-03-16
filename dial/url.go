@@ -1,18 +1,40 @@
 package dial
 
-import "net/url"
+import (
+	"net/url"
+	"slices"
+	"strings"
+
+	"github.com/creativeprojects/clog"
+)
+
+var validSchemes = []string{
+	"udp",
+	"tcp",
+	"syslog",     // local or UDP
+	"syslog-tcp", // TCP
+	// "syslog-tls", reserved for future support
+}
+
+var noHostAllowed = []string{
+	"syslog",
+}
 
 // GetAddr returns scheme, host&port, isURL
 func GetAddr(source string) (scheme, hostPort string, isURL bool) {
 	URL, err := url.Parse(source)
-	if err != nil {
-		return "", "", false
+	if err == nil {
+		scheme = strings.ToLower(URL.Scheme)
+		hostPort = URL.Host
+		schemeOk := slices.Contains(validSchemes, scheme)
+		hostOk := len(hostPort) >= 3 || slices.Contains(noHostAllowed, scheme)
+		if isURL = schemeOk && hostOk; isURL {
+			return
+		}
+	} else {
+		clog.Tracef("is not an URL %q", source)
 	}
-	// need a minimum of udp://:12
-	if len(URL.Scheme) < 3 || len(URL.Host) < 3 {
-		return "", "", false
-	}
-	return URL.Scheme, URL.Host, true
+	return "", "", false
 }
 
 func IsURL(source string) bool {

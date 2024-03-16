@@ -14,7 +14,7 @@ The log destination syntax is a such:
 * `-` {{% icon icon="arrow-right" %}} redirects all the logs to the console / stdout (is the default log destination)
 * `filename` {{% icon icon="arrow-right" %}} redirects all the logs to the local file called **filename**
 * `temp:filename` {{% icon icon="arrow-right" %}} redirects all the logs to a temporary file available during the whole session, and deleted afterwards.
-* `tcp://syslog_server:514` or `udp://syslog_server:514` {{% icon icon="arrow-right" %}} redirects all the logs to the **syslog** server.
+* `syslog:`, `syslog://syslog_server[:514]` or `syslog-tcp://syslog_server[:514]` {{% icon icon="arrow-right" %}} redirects all the logs to a local or remote **syslog** server. Alternative configurations for remote servers are: `udp://syslog_server:514` & `tcp://syslog_server:514`.
 
 {{% notice style="note" %}}
 Logging to syslog is not available on Windows.
@@ -36,6 +36,8 @@ version = "1"
 
 [global]
 log = "resticprofile.log"
+[global.schedule-defaults]
+log = "scheduled-resticprofile.log"
 ```
 
 {{% /tab %}}
@@ -46,6 +48,8 @@ version: "1"
 
 global:
   log: "resticprofile.log"
+  schedule-defaults:
+    log: "scheduled-resticprofile.log"
 ```
 
 {{% /tab %}}
@@ -54,6 +58,9 @@ global:
 ```hcl
 "global" {
   "log" = "resticprofile.log"
+  "schedule-defaults" {
+    "log" = "scheduled-resticprofile.log"
+  }
 }
 ```
 
@@ -64,7 +71,10 @@ global:
 {
   "version": "1",
   "global": {
-    "log": "resticprofile.log"
+    "log": "resticprofile.log",
+    "schedule-defaults": {
+      "log": "scheduled-resticprofile.log"
+    }
   }
 }
 ```
