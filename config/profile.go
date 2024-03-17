@@ -311,7 +311,7 @@ func (s *ScheduleBaseSection) resolve(profile *Profile) {
 	if s == nil || profile.config == nil {
 		return
 	}
-	if config := newScheduleConfig(profile.config, s); config.HasSchedules() {
+	if config := newScheduleConfig(profile, s); config.HasSchedules() {
 		s.scheduleConfig = config
 	}
 }

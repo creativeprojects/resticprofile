@@ -43,6 +43,7 @@ type ScheduleBaseConfig struct {
 	IgnoreOnBattery         maybe.Bool     `mapstructure:"ignore-on-battery" default:"false" description:"Don't start this schedule when running on battery"`
 	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
+	SystemdDropInFiles      []string       `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 }
 
 // scheduleBaseConfigDefaults declares built-in scheduling defaults
@@ -82,6 +83,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	if !s.AfterNetworkOnline.HasValue() {
 		s.AfterNetworkOnline = defaults.AfterNetworkOnline
 	}
+	if s.SystemdDropInFiles == nil {
+		s.SystemdDropInFiles = slices.Clone(defaults.SystemdDropInFiles)
+	}
 }
 
 func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
@@ -93,9 +97,18 @@ func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	s.Priority = section.SchedulePriority
 	s.LockMode = section.ScheduleLockMode
 	s.LockWait = section.ScheduleLockWait
-	s.EnvCapture = section.ScheduleEnvCapture
+	s.EnvCapture = slices.Clone(section.ScheduleEnvCapture)
 	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
 	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
+	// re-init with defaults
+	s.init(&defaults)
+}
+
+func (s *ScheduleBaseConfig) applyProfile(profile *Profile) {
+	// capture a copy of self as defaults
+	defaults := *s
+	// applying the settings from the profile
+	s.SystemdDropInFiles = slices.Clone(profile.SystemdDropInFiles)
 	// re-init with defaults
 	s.init(&defaults)
 }
@@ -165,23 +178,29 @@ func NewDefaultScheduleConfig(config *Config, origin ScheduleConfigOrigin, sched
 	return s
 }
 
-func newScheduleConfig(config *Config, section *ScheduleBaseSection) (s *ScheduleConfig) {
+func newScheduleConfig(profile *Profile, section *ScheduleBaseSection) (s *ScheduleConfig) {
 	origin := ScheduleConfigOrigin{} // is set later
+	config := profile.config
 
 	// decode ScheduleBaseSection.Schedule
 	switch expression := section.Schedule.(type) {
 	case string:
 		s = NewDefaultScheduleConfig(config, origin, expression)
+		s.applyProfile(profile)
 	case []string, []any:
 		s = NewDefaultScheduleConfig(config, origin, cast.ToStringSlice(expression)...)
+		s.applyProfile(profile)
 	default:
 		if expression != nil {
-			cfg := NewDefaultScheduleConfig(config, origin)
+			cfg := new(ScheduleConfig)
 			decoder, err := config.newUnmarshaller(cfg)
 			if err == nil {
 				err = decoder.Decode(expression)
 			}
 			if err == nil {
+				defaults := NewDefaultScheduleConfig(config, origin) // applying defaults after parsing to avoid side effects
+				defaults.applyProfile(profile)
+				cfg.init(&defaults.ScheduleBaseConfig)
 				s = cfg
 			} else {
 				if bytes, e := json.Marshal(expression); e == nil {
@@ -233,10 +252,9 @@ type Schedulable interface {
 // Schedule is the configuration used in profiles and groups for passing the user config to the scheduler system.
 type Schedule struct {
 	ScheduleConfig
-	ConfigFile         string            `show:"noshow"`
-	Environment        []string          `show:"noshow"`
-	SystemdDropInFiles []string          `show:"noshow"`
-	Flags              map[string]string `show:"noshow"`
+	ConfigFile  string            `show:"noshow"`
+	Environment []string          `show:"noshow"`
+	Flags       map[string]string `show:"noshow"`
 }
 
 // NewDefaultSchedule creates a new Schedule for the specified ScheduleConfigOrigin that is initialized with defaults
@@ -259,8 +277,6 @@ func newScheduleForProfile(profile *Profile, sc *ScheduleConfig) *Schedule {
 }
 
 func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule {
-	var env *util.Environment
-
 	// schedule
 	s := new(Schedule)
 	if sc != nil {
@@ -270,18 +286,11 @@ func newSchedule(config *Config, sc *ScheduleConfig, profile *Profile) *Schedule
 	// config
 	if config != nil {
 		s.ConfigFile = config.GetConfigFile()
-
-		// global defaults
-		global := config.mustGetGlobalSection()
-		s.SystemdDropInFiles = global.SystemdDropInFiles
 	}
 
 	// profile
+	var env *util.Environment
 	if profile != nil {
-		if profile.SystemdDropInFiles != nil {
-			s.SystemdDropInFiles = profile.SystemdDropInFiles
-		}
-
 		env = profile.GetEnvironment(true)
 	}
 

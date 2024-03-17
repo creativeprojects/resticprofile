@@ -56,10 +56,8 @@ func TestNewSchedule(t *testing.T) {
 
 	t.Run("global defaults", func(t *testing.T) {
 		p, origin := profile(t, `
-			[global]
-			systemd-drop-in-files = "drop-in-file.conf"
-
 			[global.schedule-defaults]
+			systemd-drop-in-files = "drop-in-file.conf"
 			log = "global-custom.log"
 			lock-wait = "30s"
 
@@ -83,8 +81,7 @@ func TestNewSchedule(t *testing.T) {
 			schedule := NewSchedule(p.config, NewDefaultScheduleConfig(nil, origin))
 			assert.Empty(t, schedule.Log)
 			assert.Equal(t, 0*time.Second, schedule.GetLockWait())
-			// other global defaults are applied
-			assert.Equal(t, []string{"drop-in-file.conf"}, schedule.SystemdDropInFiles)
+			assert.Empty(t, schedule.SystemdDropInFiles)
 		})
 	})
 
@@ -110,6 +107,26 @@ func TestNewSchedule(t *testing.T) {
 		assert.Equal(t, "overridden.log", schedule.Log)
 		assert.Equal(t, 55*time.Second, schedule.GetLockWait())
 		assert.Equal(t, "ignore", schedule.LockMode)
+	})
+
+	t.Run("profile drop-in overrides", func(t *testing.T) {
+		p, _ := profile(t, `
+			[global.schedule-defaults]
+			systemd-drop-in-files = "drop-in-file.conf"
+			
+			[default]
+			systemd-drop-in-files = "default-drop-in.conf"
+			
+			[default.backup.schedule]
+			at = "monthly"
+			
+			[default.check.schedule]
+			at = "monthly"
+			systemd-drop-in-files = "check-drop-in.conf"
+		`)
+
+		assert.Equal(t, []string{"default-drop-in.conf"}, p.Schedules()["backup"].SystemdDropInFiles)
+		assert.Equal(t, []string{"check-drop-in.conf"}, p.Schedules()["check"].SystemdDropInFiles)
 	})
 
 	t.Run("profile schedule parse error", func(t *testing.T) {
@@ -246,10 +263,8 @@ func TestNewScheduleFromGroup(t *testing.T) {
 
 	t.Run("global defaults", func(t *testing.T) {
 		g, origin := group(t, `
-			[global]
-			systemd-drop-in-files = "drop-in-file.conf"
-
 			[global.schedule-defaults]
+			systemd-drop-in-files = "drop-in-file.conf"
 			log = "global-custom.log"
 			lock-wait = "30s"
 
