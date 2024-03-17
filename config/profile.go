@@ -752,24 +752,39 @@ func (p *Profile) replaceWithRepositoryFile(repository *ConfidentialValue, repos
 		*repositoryFile = origFile
 	}
 
-	if !p.hasConfig() || p.config.mustGetGlobalSection().NoAutoRepositoryFile {
+	// abort if repo is not confidential or a file is in use already
+	if !repository.IsConfidential() || len(origFile) > 0 {
 		return
 	}
 
-	if repository.IsConfidential() && len(*repositoryFile) == 0 {
-		file, err := templates.PrivateTempFile(fmt.Sprintf("%s%s-repo.txt", p.Name, suffix))
-		if err != nil {
-			clog.Debugf(`private file %s not supported: %s`, file, err.Error())
+	// abort by global config or environment
+	var global *Global
+	if p.hasConfig() {
+		global = p.config.mustGetGlobalSection()
+	}
+	if global == nil || global.NoAutoRepositoryFile.IsTrue() {
+		return
+	} else if global.NoAutoRepositoryFile.IsUndefined() {
+		env := p.GetEnvironment(true)
+		if len(env.Get("RESTIC_REPOSITORY")) > 0 || len(env.Get("RESTIC_REPOSITORY_FILE")) > 0 {
+			clog.Debug("restic repository is set using environment variables, not replacing plain \"repository\" argument")
 			return
 		}
+	}
 
-		if err = os.WriteFile(file, []byte(origRepo.Value()), 0600); err == nil {
-			clog.Debugf(`replaced plain "repository" argument with "repository-file" (%s) to avoid password leak`, file)
-			*repository = NewConfidentialValue("")
-			*repositoryFile = file
-		} else {
-			clog.Debugf(`failed writing %s: %s`, file, err.Error())
-		}
+	// apply temporary change
+	file, err := templates.PrivateTempFile(fmt.Sprintf("%s%s-repo.txt", p.Name, suffix))
+	if err != nil {
+		clog.Debugf(`private file %s not supported: %s`, file, err.Error())
+		return
+	}
+
+	if err = os.WriteFile(file, []byte(origRepo.Value()), 0600); err == nil {
+		clog.Debugf(`replaced plain "repository" argument with "repository-file" (%s) to avoid password leak`, file)
+		*repository = NewConfidentialValue("")
+		*repositoryFile = file
+	} else {
+		clog.Debugf(`failed writing %s: %s`, file, err.Error())
 	}
 	return
 }

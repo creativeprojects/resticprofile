@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/creativeprojects/resticprofile/util/templates"
-	"github.com/stretchr/testify/require"
 	"os"
 	"reflect"
 	"regexp"
@@ -13,8 +11,11 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -284,6 +285,9 @@ func TestGetNonConfidentialArgs(t *testing.T) {
 }
 
 func TestGetAutoRepositoryFile(t *testing.T) {
+	require.NoError(t, os.Unsetenv("RESTIC_REPOSITORY"))
+	require.NoError(t, os.Unsetenv("RESTIC_REPOSITORY_FILE"))
+
 	tests := map[string]bool{
 		"/path/to/file":                      false,
 		"file:/path/to/file":                 false,
@@ -302,6 +306,10 @@ func TestGetAutoRepositoryFile(t *testing.T) {
 			require.NoError(t, err)
 			args := profile.GetCommandFlags(constants.CommandBackup)
 
+			if usesFile && platform.IsWindows() {
+				usesFile = false // Windows has no support for repository file right now (as temp files can't be forced to private with standard go API)
+			}
+
 			if usesFile {
 				file := templates.TempFile("my-profile-repo.txt")
 				expected := shell.NewArg(file, shell.ArgConfigEscape).String()
@@ -314,6 +322,55 @@ func TestGetAutoRepositoryFile(t *testing.T) {
 				expected := shell.NewArg(repo, shell.ArgConfigEscape).String()
 				assert.Equal(t, []string{"--repo=" + expected}, args.GetAll())
 			}
+		})
+	}
+}
+
+func TestGetAutoRepositoryFileDisabledWithEnv(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip()
+	}
+
+	tests := []string{
+		"RESTIC_REPOSITORY",
+		"RESTIC_REPOSITORY_FILE",
+	}
+
+	for _, envKey := range tests {
+		t.Run(envKey, func(t *testing.T) {
+			config := fmt.Sprintf(`
+				[my-profile]
+				repository = %q
+            `, defaultHttpUrl)
+
+			defer os.Unsetenv(envKey)
+			profile, err := getResolvedProfile("toml", config, "my-profile")
+			require.NoError(t, err)
+
+			hasRepoFlag := func() (found bool) {
+				_, found = profile.GetCommandFlags(constants.CommandBackup).Get("repo")
+				return
+			}
+
+			t.Run("no-env", func(t *testing.T) {
+				require.NoError(t, os.Unsetenv(envKey))
+				profile.Environment = nil
+				assert.False(t, hasRepoFlag())
+			})
+
+			t.Run("profile-env", func(t *testing.T) {
+				require.NoError(t, os.Unsetenv(envKey))
+				profile.Environment = map[string]ConfidentialValue{
+					envKey: NewConfidentialValue("1"),
+				}
+				assert.True(t, hasRepoFlag())
+			})
+
+			t.Run("os-env", func(t *testing.T) {
+				require.NoError(t, os.Setenv(envKey, "1"))
+				profile.Environment = nil
+				assert.True(t, hasRepoFlag())
+			})
 		})
 	}
 }

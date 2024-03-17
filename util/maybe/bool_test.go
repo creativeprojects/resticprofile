@@ -1,6 +1,7 @@
 package maybe_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -77,10 +78,10 @@ func TestBoolDecoder(t *testing.T) {
 		expected any
 	}{
 		{
-			from:     reflect.TypeOf(""),
+			from:     reflect.TypeOf(struct{}{}),
 			to:       reflect.TypeOf(maybe.Bool{}),
-			source:   true,
-			expected: true, // same value returned as the "from" type in unexpected
+			source:   struct{}{},
+			expected: struct{}{}, // same value returned as the "from" type in unexpected
 		},
 		{
 			from:     reflect.TypeOf(true),
@@ -89,10 +90,28 @@ func TestBoolDecoder(t *testing.T) {
 			expected: false, // same value returned as the "to" type in unexpected
 		},
 		{
-			from:     reflect.TypeOf(true),
+			from:     reflect.TypeOf(""),
 			to:       reflect.TypeOf(maybe.Bool{}),
 			source:   "",
 			expected: "", // same value returned as the original value in unexpected
+		},
+		{
+			from:     reflect.TypeOf(""),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   "true",
+			expected: maybe.True(),
+		},
+		{
+			from:     reflect.TypeOf(""),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   "t",
+			expected: maybe.True(),
+		},
+		{
+			from:     reflect.TypeOf(""),
+			to:       reflect.TypeOf(maybe.Bool{}),
+			source:   "f",
+			expected: maybe.False(),
 		},
 		{
 			from:     reflect.TypeOf(true),
@@ -107,8 +126,8 @@ func TestBoolDecoder(t *testing.T) {
 			expected: maybe.False(),
 		},
 	}
-	for _, fixture := range fixtures {
-		t.Run("", func(t *testing.T) {
+	for i, fixture := range fixtures {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			decoder := maybe.BoolDecoder()
 			decoded, err := decoder(fixture.from, fixture.to, fixture.source)
 			assert.NoError(t, err)

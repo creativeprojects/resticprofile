@@ -155,7 +155,7 @@ func EnvFileFunc(receiverFunc EnvFileReceiverFunc) map[string]any {
 			if err != nil && !errors.Is(err, NotStrictlyPrivate) {
 				panic(fmt.Errorf("failed setting permissions for %s: %w", envFile, err))
 			}
-			//files[profile] = envFile
+			files[profile] = envFile
 		}
 		return
 	}
