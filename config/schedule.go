@@ -67,6 +67,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	if s.Log == "" {
 		s.Log = defaults.Log
 	}
+	if s.LogCommands == "" {
+		s.LogCommands = defaults.LogCommands
+	}
 	if s.Priority == "" {
 		s.Priority = defaults.Priority
 	}

@@ -288,6 +288,7 @@ func TestShowSchedules(t *testing.T) {
 schedule backup@default:
     at:                   daily
     permission:           auto
+    log-commands:         auto
     priority:             background
     lock-mode:            default
     capture-environment:  RESTIC_*
@@ -295,6 +296,7 @@ schedule backup@default:
 schedule check@default:
     at:                   weekly
     permission:           auto
+    log-commands:         auto
     priority:             background
     lock-mode:            default
     capture-environment:  RESTIC_*
