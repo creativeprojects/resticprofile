@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/maybe"
 )
 
 // Global holds the configuration from the global section
@@ -15,6 +16,7 @@ type Global struct {
 	Priority             string              `mapstructure:"priority" default:"normal" enum:"idle;background;low;normal;high;highest" description:"Sets process priority class for resticprofile and child processes (on any OS)"`
 	DefaultCommand       string              `mapstructure:"default-command" default:"snapshots" description:"The restic or resticprofile command to use when no command was specified"`
 	Initialize           bool                `mapstructure:"initialize" default:"false" description:"Initialize a repository if missing"`
+	NoAutoRepositoryFile maybe.Bool          `mapstructure:"prevent-auto-repository-file" default:"false" description:"Prevents using a repository file for repository definitions containing a password"`
 	ResticBinary         string              `mapstructure:"restic-binary" description:"Full path of the restic executable (detected if not set)"`
 	ResticVersion        string              // not configurable at the moment. To be set after ResticBinary is known.
 	FilterResticFlags    bool                `mapstructure:"restic-arguments-filter" default:"true" description:"Remove unknown flags instead of passing all configured flags to restic"`

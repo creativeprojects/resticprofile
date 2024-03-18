@@ -306,8 +306,6 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 }
 
 func TestGetEnvironment(t *testing.T) {
-	t.Cleanup(util.ClearTempDir)
-
 	runForVersions(t, func(t *testing.T, version, prefix string) {
 		testConfig := version + `
 			[` + prefix + `profile]

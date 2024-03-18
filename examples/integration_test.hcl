@@ -1,3 +1,7 @@
+global {
+    prevent-auto-repository-file = "true"
+}
+
 default {
     repository = "rest:http://user:password@localhost:8000/path"
     password-file = "key"

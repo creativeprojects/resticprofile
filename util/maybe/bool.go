@@ -1,7 +1,11 @@
 package maybe
 
 import (
+	"errors"
 	"reflect"
+	"strconv"
+
+	"github.com/spf13/cast"
 )
 
 type Bool struct {
@@ -45,17 +49,25 @@ func BoolFromNilable(value *bool) Bool {
 
 // BoolDecoder implements config parsing for maybe.Bool
 func BoolDecoder() func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-	boolValueType := reflect.TypeOf(Bool{})
+	fromType := reflect.TypeOf(true)
+	valueType := reflect.TypeOf(Bool{})
 
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-		if from != reflect.TypeOf(true) || to != boolValueType {
-			return data, nil
+	return func(from reflect.Type, to reflect.Type, data interface{}) (result interface{}, err error) {
+		result = data
+		if to != valueType {
+			return
 		}
-		boolValue, ok := data.(bool)
-		if !ok {
-			// it should never happen
-			return data, nil
+
+		if value, e := cast.ToBoolE(data); e == nil {
+			from = fromType
+			data = value
+		} else if errors.Is(e, new(strconv.NumError)) {
+			err = e
 		}
-		return Bool{Set(boolValue)}, nil
+
+		if err == nil && from == fromType {
+			result = SetBool(data.(bool))
+		}
+		return
 	}
 }
