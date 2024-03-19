@@ -159,7 +159,7 @@ syslog:
         schedule:
             - "*:*"
         schedule-permission: user
-        schedule-log: "tcp://localhost:5514"
+        schedule-log: "syslog://localhost:5514"
 
 prom:
     force-inactive-lock: true
