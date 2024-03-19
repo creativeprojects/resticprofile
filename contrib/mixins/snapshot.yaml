@@ -1,0 +1,135 @@
+---
+title: "Mixins for snapshot creation in posix shell environments"
+github_repo: "github.com/creativeprojects/resticprofile"
+license: "GPL3"
+copyright: |-
+  This file is part of resticprofile (github.com/creativeprojects/resticprofile).
+  Copyright (c) 2024 resticprofile authors.
+  
+  This program is free software: you can redistribute it and/or modify  
+  it under the terms of the GNU General Public License as published by  
+  the Free Software Foundation, version 3.
+  
+  This program is distributed in the hope that it will be useful, but 
+  WITHOUT ANY WARRANTY; without even the implied warranty of 
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+  General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License 
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+---
+mixins:
+  ##
+  # Creates a temporary snapshot of a btrfs volume
+  # Usage
+  #
+  #   backup:
+  #     use:
+  #       - {name: "snapshot-btrfs", FROM: "/opt/data", TO: "/opt/data_snapshot"}
+  #     source: "/opt/data_snapshot"
+  #
+  snapshot-btrfs:
+    default-vars:
+      FROM: ""
+      TO: ""
+
+    ...run-before: |
+      if [ ! -d "${FROM}" ]       ; then echo "source volume (${FROM}) is not existing" ; exit 1 ; fi 
+      if [ -z "${TO}" ]           ; then echo "snapshot destination is not specified" ; exit 1 ; fi
+      if [ "${TO}" == "${FROM}" ] ; then echo "snapshot source & destination must differ" ; exit 1 ; fi
+      ;
+      if [ -d "${TO}" ] ; then
+        btrfs subvolume delete "${TO}"
+      fi
+      btrfs subvolume snapshot -r "${FROM}" "${TO}"
+
+    run-finally...: |
+      if [ -d "${TO}" ] && [ "${TO}" != "${FROM}" ] ; then
+        btrfs subvolume delete "${TO}"
+      fi
+
+  ##
+  # Creates a temporary snapshot of a lvm volume
+  # Usage
+  #
+  #   backup:
+  #     use:
+  #       - {name: "snapshot-lvm", FROM: "/dev/vg00/data", TO: "/mnt/data_snapshot"}
+  #     source: "/mnt/data_snapshot"
+  #
+  snapshot-lvm:
+    default-vars:
+      FROM: ""
+      TO: ""
+      SNAPSHOT_NAME: ""
+      DEFAULT_OPTS: "-l100%FREE"
+      OPTS: ""
+
+    ...run-before: |
+      if [ ! -e "${FROM}" ]       ; then echo "source volume (${FROM}) is not existing" ; exit 1 ; fi 
+      if [ -z "${TO}" ]           ; then echo "snapshot destination is not specified" ; exit 1 ; fi 
+      if [ "${TO}" == "${FROM}" ] ; then echo "snapshot source & destination must differ" ; exit 1 ; fi
+      ( [ -d "${TO}" ] || mkdir -p "${TO}" ) || exit 1
+      ;
+      export snap_name="$( [ -z "${SNAPSHOT_NAME}" ] || echo "${SNAPSHOT_NAME}" )" 
+      snap_name="restic_${snap_name:-"$(basename "${TO}")"}"
+      if [ -d "${TO}" ] && [ -e "${FROM}" ] ; then 
+        lvcreate ${DEFAULT_OPTS} ${OPTS} --name "${snap_name}" --snapshot "${FROM}" 
+        mount "$(dirname "${FROM}")/${snap_name}" "${TO}"
+      fi
+
+    run-finally...: |
+      export snap_name="$( [ -z "${SNAPSHOT_NAME}" ] || echo "${SNAPSHOT_NAME}" )" 
+      snap_name="restic_${snap_name:-"$(basename "${TO}")"}" 
+      if [ -d "${TO}" ] && [ -e "${FROM}" ] && [ "${TO}" != "${FROM}" ] ; then 
+        umount "${TO}" && lvremove --force "$(dirname "${FROM}")/${snap_name}" 
+      fi
+
+
+  ##
+  # Temporarily freezes the image of a VM managed by virsh so that it can be backed-up while the keeps VM running
+  # Usage
+  #
+  #   backup:
+  #     use:
+  #       - {name: "snapshot-virsh", VM: "vmname", DUMPXML: "/opt/vms/vmname-definition.xml"}
+  #       - {name: "snapshot-virsh", VM: "vm2", DUMPXML: "/opt/vms/vm2-definition.xml"}
+  #       - {name: "snapshot-virsh", VM: "vm3"}
+  #       - {name: "snapshot-virsh", VM: "vm4"}
+  #       # OPTIONAL: - "snapshot-virsh-aa-teardown" # place last if snapshot restore block with apparmor)
+  #     source:
+  #       - /opt/vms
+  #
+  snapshot-virsh:
+    default-vars:
+      DOMAIN: ""
+      DUMPXML: ""
+      LD_PATH: "/var/db"
+      LD_SUFFIX: "livedata.qcow2"
+      LD_DISCSPEC: "vda"
+      SNAPSHOT_SUFFIX: "restic-backup"
+      DEFAULT_OPTS: "--atomic --no-metadata"
+      OPTS: "--quiesce"
+
+    excludes...:
+      - "*-${LD_SUFFIX}"
+
+    ...run-before: >
+      virsh snapshot-create-as --domain "${DOMAIN}" --name "${DOMAIN}-${SNAPSHOT_SUFFIX}"
+        --diskspec "${LD_DISCSPEC},file=${LD_PATH}/${DOMAIN}-${LD_SUFFIX}"
+        --disk-only ${DEFAULT_OPTS} ${OPTS}
+      && ( [ -z "${DUMPXML}" ] 
+           || virsh dumpxml --domain "${DOMAIN}" --inactive --migratable > "${DUMPXML}" ) 
+
+    run-finally...: >
+      virsh blockcommit --domain "${DOMAIN}" ${LD_DISCSPEC} --wait --active
+        && virsh blockjob --domain "${DOMAIN}" "${LD_PATH}/${DOMAIN}-${LD_SUFFIX}" --pivot
+        && rm -f "${LD_PATH}/${DOMAIN}-${LD_SUFFIX}"
+
+  #
+  # Utility to teardown apparmor before other run finals and restart it after
+  # See "snapshot-virsh"
+  #
+  snapshot-virsh-aa-teardown:
+    ...run-finally: aa-teardown
+    run-finally...: service apparmor restart

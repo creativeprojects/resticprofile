@@ -619,3 +619,49 @@ mysql {
 {{% /tab %}}
 {{< /tabs >}}
 
+
+## Using the common mixins library
+
+The following example shows how the [common mixins library](https://github.com/creativeprojects/resticprofile/tree/master/contrib/mixins) can be used to apply common tasks related to backups.
+
+{{< tabs groupid="config" >}}
+{{% tab title="toml" %}}
+
+```toml
+version = "2"
+
+# downloaded by "https://raw.githubusercontent.com/creativeprojects/resticprofile/master/contrib/mixins/get.sh" 
+includes = ["mixins-*.yaml"]
+
+[profiles.__base]
+repository = "/repo"
+password-file = "key"
+
+[proflies.default]
+inherit = "__base"
+[proflies.default.backup]
+use = {name = "snapshot-btrfs", FROM = "/opt/data", TO = "/opt/data_snapshot"}
+source = "/opt/data_snapshot"
+```
+{{% /tab %}}
+{{% tab title="yaml" %}}
+
+```yaml
+version: "2"
+
+# downloaded by "https://raw.githubusercontent.com/creativeprojects/resticprofile/master/contrib/mixins/get.sh" 
+includes: ["mixins-*.yaml"]
+
+profiles:
+  __base:
+    repository: "/repo"
+    password-file: "key"
+
+  default:
+    inherit: "__base"
+    backup:
+      use: {name: "snapshot-btrfs", FROM: "/opt/data", TO: "/opt/data_snapshot"}
+      source: "/opt/data_snapshot"
+```
+{{% /tab %}}
+{{< /tabs >}}

@@ -22,6 +22,7 @@ func TestTemplateFuncs(t *testing.T) {
 
 	tests := []struct {
 		template, expected string
+		panics             bool
 	}{
 		{template: `{{ "some string" | contains "some" }}`, expected: `true`},
 		{template: `{{ "some string" | contains "else" }}`, expected: `false`},
@@ -52,6 +53,7 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ tempDir }}`, expected: dir}, // constant results when repeated
 		{template: `{{ tempFile "test.txt" }}`, expected: file},
 		{template: `{{ tempFile "test.txt" }}`, expected: file}, // constant results when repeated
+		{template: `{{ privateTempFile "test.txt" }}`, expected: file, panics: platform.IsWindows()},
 		{template: `{{ env }}`, expected: TempFile(".env.none")},
 		{template: `{{ "a & b\n" | html }}`, expected: "a &amp; b\n"},
 		{template: `{{ "a & b\n" | urlquery }}`, expected: "a+%26+b%0A"},
@@ -74,9 +76,13 @@ func TestTemplateFuncs(t *testing.T) {
 			require.NotNil(t, tpl)
 
 			buffer.Reset()
-			err = tpl.Execute(buffer, nil)
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, buffer.String())
+			if test.panics {
+				assert.Panics(t, func() { _ = tpl.Execute(buffer, nil) })
+			} else {
+				err = tpl.Execute(buffer, nil)
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected, buffer.String())
+			}
 		})
 	}
 

@@ -1,0 +1,111 @@
+---
+title: "Mixins for database backups in posix shell environments"
+github_repo: "github.com/creativeprojects/resticprofile"
+license: "GPL3"
+copyright: |-
+  This file is part of resticprofile (github.com/creativeprojects/resticprofile).
+  Copyright (c) 2024 resticprofile authors.
+  
+  This program is free software: you can redistribute it and/or modify  
+  it under the terms of the GNU General Public License as published by  
+  the Free Software Foundation, version 3.
+  
+  This program is distributed in the hope that it will be useful, but 
+  WITHOUT ANY WARRANTY; without even the implied warranty of 
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+  General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License 
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+---
+mixins:
+
+  ###
+  # MySQL / MariaDB dump from stdin
+  #
+  # Usage
+  #
+  #   backup:
+  #     use:
+  #       - {name: "database-mysql", DATABASE: "dbname"}
+  #       - {name: "database-mysql", DATABASE: "dbname", HOST: "dbhost", USER: "dbuser", PASSWORD: "dbpassword"}
+  #
+  database-mysql:
+    default-vars:
+      HOST: "${MYSQLDUMP_HOST}"
+      PORT: "${MYSQLDUMP_PORT}"
+      USER: "${MYSQLDUMP_USER}"
+      PASSWORD: "${MYSQLDUMP_PASSWORD}"
+      PASSWORD_FILE: "${MYSQLDUMP_PASSWORD_FILE}"
+      DATABASE: "--all-databases"
+      FILENAME: "mysql-dump.sql"
+      DEFAULT_OPTS: "--order-by-primary"
+      OPTS: ""
+
+    # creating a defaults-file for mysqldump if the PASSWORD is non-empty
+    run-before...: |
+      defaults=""
+      __pw="${PASSWORD}"
+      if [ -n "${__pw}" ] || [ -n "${PASSWORD_FILE}" ] ; then 
+        defaults="{{ tempFile("mysql-default.conf") }}"
+        chmod 0600 "$defaults"
+      fi
+      [ -f "$defaults" ] && cat > "$defaults" <<-EOF
+          [mysqldump]
+          password = "${__pw:-"$(cat "${PASSWORD_FILE}")"}"
+      EOF
+      echo "MYSQL_DEFAULTS_FILE=${defaults}" >> "{{ env }}"
+
+    # defining stdin command to that writes the mysql dump
+    stdin-filename: "${FILENAME}"
+    stdin-command: >
+      host="$( [ -z "${HOST}" ] || echo "--host='${HOST}'" )"
+      port="$( [ -z "${PORT}" ] || echo "--port='${PORT}'" )"
+      user="$( [ -z "${USER}" ] || echo "-u '${USER}'" )"
+      pass="$( [ -z "${MYSQL_DEFAULTS_FILE}" ] || echo "--defaults-file='${MYSQL_DEFAULTS_FILE}'" )"
+      mysqldump $user $pass $host $port ${DEFAULT_OPTS} ${OPTS} ${DATABASE}
+    source: []
+
+
+  ###
+  # Postgres dump from stdin
+  #
+  # Usage
+  #
+  #   backup:
+  #     use:
+  #       - {name: "database-pgsql", DATABASE: "dbname"}
+  #       - {name: "database-pgsql", DATABASE: "dbname", HOST: "dbhost", USER: "dbuser", PASSWORD: "dbpassword"}
+  #
+  database-pgsql:
+    default-vars:
+      HOST: "${PGDUMP_HOST}"
+      PORT: "${PGDUMP_PORT}"
+      USER: "${PGDUMP_USER}"
+      PASSWORD: "${PGDUMP_PASSWORD}"
+      PASSWORD_FILE: "${PGDUMP_PASSWORD_FILE}"
+      DATABASE: ""
+      FILENAME: "pgsql-dump.sql"
+      DEFAULT_OPTS: "--clean --if-exists --quote-all-identifiers --serializable-deferrable"
+      OPTS: ""
+
+    # creating a .pgpass file for pg_dump if the PASSWORD is non-empty
+    run-before...: |
+      pgpass=""
+      __pw="${PASSWORD}"
+      if [ -n "${__pw}" ] || [ -n "${PASSWORD_FILE}" ] ; then 
+        pgpass="{{ tempFile(".pgpass") }}"
+        echo "*:*:*:*:${__pw:-"$(cat "${PASSWORD_FILE}")"}" > "$pgpass"
+        chmod 0600 "$pgpass" 
+      fi
+      echo "PGPASS_FILE=${pgpass}" >> "{{ env }}" 
+
+    # defining stdin command to that writes the mysql dump
+    stdin-filename: "${FILENAME}"
+    stdin-command: >
+      [ -z "${PGPASS_FILE}" ] || export HOME=$(dirname "${PGPASS_FILE}") 
+      ; host="$( [ -z "${HOST}" ] || echo "--host='${HOST}'" )"
+        port="$( [ -z "${PORT}" ] || echo "--port='${PORT}'" )"
+        user="$( [ -z "${USER}" ] || echo "--username='${USER}'" )"
+        pg_dump $user --no-password $host $port ${DEFAULT_OPTS} ${OPTS} ${DATABASE}
+    source: []

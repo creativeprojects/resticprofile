@@ -600,6 +600,7 @@ resticprofile supports the following set of own functions in all templates:
 * `{{ with list "A" "B" "C" "D" | map "key" }} {{ .key | join "-" }} {{ end }}` => ` A-B-C-D `
 * `{{ tempDir }}` => `/tmp/resticprofile.../t` - unique OS specific existing temporary directory
 * `{{ tempFile "filename" }}` => `/tmp/resticprofile.../t/filename` - unique OS specific existing temporary file
+* `{{ privateTempFile "filename" }}` => `/tmp/resticprofile.../t/filename` - similar to `tempFile` but ensures that file is accessible by the user that started resticprofile only. Not supported in all OS, fails with a parse error when unsupported. 
 * `{{ env }}` => `/tmp/resticprofile.../t/profile.env` - unique OS specific existing temporary file that is added to the current profile env-files list
 
 All `{{ temp* }}` functions guarantee that returned temporary directories and files are existing & writable. 
