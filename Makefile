@@ -277,16 +277,6 @@ documentation: generate-jsonschema generate-config-reference
 	@echo "[*] $@"
 	cd docs && hugo --minify
 
-syslog:
-	@echo "[*] $@"
-	docker run -d \
-		--name=rsyslogd \
-		--rm \
-		-p 5514:514/udp \
-		-p 5514:514/tcp \
-		-v $(CURRENT_DIR)/examples/rsyslogd.conf:/etc/rsyslog.d/listen.conf \
-		instantlinux/rsyslogd:latest
-
 syslog-ng:
 	@echo "[*] $@"
 	docker run -d \
