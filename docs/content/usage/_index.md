@@ -87,9 +87,10 @@ There are not many options on the command line, most of the options are in the c
 light or dark terminal (none to disable colouring)
 * **[--lock-wait] duration**: Retry to acquire resticprofile and restic locks for up to the specified amount of time before failing on a lock failure. 
 * **[-l | --log] file path or url**: To write the logs to a file or a syslog server instead of displaying on the console. 
-The format of the server url is `tcp://192.168.0.1:514` or `udp://localhost:514`.
+The format of the syslog server url is `syslog-tcp://192.168.0.1:514`, `syslog://udp-server:514` or `syslog:`.
 For custom log forwarding, the prefix `temp:` can be used (e.g. `temp:/t/msg.log`) to create unique log output that can be fed 
-into a command or http hook by referencing it with `{{ tempDir }}/...` or `{{ tempFile "msg.log" }}` in the configuration file.
+into a command or http hook by referencing it with `"{{ tempFile "msg.log" }}"` in the configuration file.
+* **[--command-output]**: Sets how to redirect command output when a log target is specified. Can be `auto`, `log`, `console` or `all`.
 * **[-w | --wait]**: Wait at the very end of the execution for the user to press enter. 
 This is only useful in Windows when resticprofile is started from explorer and the console window closes automatically at the end.
 * **[--ignore-on-battery]**: Don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value.
@@ -109,6 +110,7 @@ Most flags for resticprofile can be set using environment variables. If both are
 | `--format`            | `RESTICPROFILE_FORMAT`            | `""`             |
 | `--name`              | `RESTICPROFILE_NAME`              | `"default"`      |
 | `--log`               | `RESTICPROFILE_LOG`               | `""`             |
+| `--command-output`    | `RESTICPROFILE_COMMAND_OUTPUT`    | `"auto"`         |
 | `--dry-run`           | `RESTICPROFILE_DRY_RUN`           | `false`          |
 | `--no-lock`           | `RESTICPROFILE_NO_LOCK`           | `false`          |
 | `--lock-wait`         | `RESTICPROFILE_LOCK_WAIT`         | `0`              |
