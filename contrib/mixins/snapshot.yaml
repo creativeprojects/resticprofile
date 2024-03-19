@@ -32,6 +32,7 @@ mixins:
     default-vars:
       FROM: ""
       TO: ""
+      IF_EXISTS: "fail"  # one of (delete, continue, fail)
 
     ...run-before: |
       if [ ! -d "${FROM}" ]       ; then echo "source volume (${FROM}) is not existing" ; exit 1 ; fi 
@@ -39,12 +40,20 @@ mixins:
       if [ "${TO}" == "${FROM}" ] ; then echo "snapshot source & destination must differ" ; exit 1 ; fi
       ;
       if [ -d "${TO}" ] ; then
-        btrfs subvolume delete "${TO}"
+        if [ "${IF_EXISTS}" == "delete" ] ; then
+          btrfs subvolume delete "${TO}"
+        elif [ "${IF_EXISTS}" == "continue" ] ; then
+          echo "${TO} already existing, continuing without creating a new snapshot" ; exit 0
+        else
+          echo "${TO} already existing, snapshot failed" ; exit 1
+        fi
       fi
-      btrfs subvolume snapshot -r "${FROM}" "${TO}"
+      ;
+      btrfs subvolume snapshot -r "${FROM}" "${TO}" \
+      && echo "btrfs:${FROM}:${TO}--" >> "{{ tempFile "mixins-lib-snapshots.list" }}" 
 
     run-finally...: |
-      if [ -d "${TO}" ] && [ "${TO}" != "${FROM}" ] ; then
+      if [ -d "${TO}" ] && grep -q "btrfs:${FROM}:${TO}--" "{{ tempFile "mixins-lib-snapshots.list" }}" ; then
         btrfs subvolume delete "${TO}"
       fi
 
@@ -71,18 +80,22 @@ mixins:
       if [ "${TO}" == "${FROM}" ] ; then echo "snapshot source & destination must differ" ; exit 1 ; fi
       ( [ -d "${TO}" ] || mkdir -p "${TO}" ) || exit 1
       ;
-      export snap_name="$( [ -z "${SNAPSHOT_NAME}" ] || echo "${SNAPSHOT_NAME}" )" 
+      export snap_name="$( [ -z "${SNAPSHOT_NAME}" ] || echo "${SNAPSHOT_NAME}" )"
       snap_name="restic_${snap_name:-"$(basename "${TO}")"}"
-      if [ -d "${TO}" ] && [ -e "${FROM}" ] ; then 
-        lvcreate ${DEFAULT_OPTS} ${OPTS} --name "${snap_name}" --snapshot "${FROM}" 
-        mount "$(dirname "${FROM}")/${snap_name}" "${TO}"
-      fi
+      export snap_dev="$(dirname "${FROM}")/${snap_name}"
+      ;
+      lvcreate ${DEFAULT_OPTS} ${OPTS} --name "${snap_name}" --snapshot "${FROM}" \
+      && mount "${snap_dev}" "${TO}" \
+      && echo "lvm:${snap_dev}:${TO}--" >> "{{ tempFile "mixins-lib-snapshots.list" }}"
 
     run-finally...: |
       export snap_name="$( [ -z "${SNAPSHOT_NAME}" ] || echo "${SNAPSHOT_NAME}" )" 
       snap_name="restic_${snap_name:-"$(basename "${TO}")"}" 
-      if [ -d "${TO}" ] && [ -e "${FROM}" ] && [ "${TO}" != "${FROM}" ] ; then 
-        umount "${TO}" && lvremove --force "$(dirname "${FROM}")/${snap_name}" 
+      export snap_dev="$(dirname "${FROM}")/${snap_name}"
+      ;
+      if [ -d "${TO}" ] && grep -q "lvm:${snap_dev}:${TO}--" "{{ tempFile "mixins-lib-snapshots.list" }}" ; then 
+        umount "${TO}" \
+        && lvremove --force "${snap_dev}" 
       fi
 
 
@@ -92,11 +105,12 @@ mixins:
   #
   #   backup:
   #     use:
-  #       - {name: "snapshot-virsh", VM: "vmname", DUMPXML: "/opt/vms/vmname-definition.xml"}
-  #       - {name: "snapshot-virsh", VM: "vm2", DUMPXML: "/opt/vms/vm2-definition.xml"}
-  #       - {name: "snapshot-virsh", VM: "vm3"}
-  #       - {name: "snapshot-virsh", VM: "vm4"}
-  #       # OPTIONAL: - "snapshot-virsh-aa-teardown" # place last if snapshot restore block with apparmor)
+  #       - {name: "snapshot-virsh", DOMAIN: "vmname", DUMPXML: "/opt/vms/vmname-definition.xml"}
+  #       - {name: "snapshot-virsh", DOMAIN: "vm2", DUMPXML: "/opt/vms/vm2-definition.xml"}
+  #       - {name: "snapshot-virsh", DOMAIN: "vm3"}
+  #       - {name: "snapshot-virsh", DOMAIN: "vm4"}
+  #       - {name: "snapshot-virsh", DOMAIN: "vm4-without-quest-additions", OPTS: ""}
+  #       # OPTIONAL: - "snapshot-virsh-aa-teardown" # place last if snapshot restores block with apparmor)
   #     source:
   #       - /opt/vms
   #
@@ -109,7 +123,7 @@ mixins:
       LD_DISCSPEC: "vda"
       SNAPSHOT_SUFFIX: "restic-backup"
       DEFAULT_OPTS: "--atomic --no-metadata"
-      OPTS: "--quiesce"
+      OPTS: "--quiesce" # (fsync in guest OS, needs guest additions, highly recommended)
 
     excludes...:
       - "*-${LD_SUFFIX}"
@@ -118,16 +132,18 @@ mixins:
       virsh snapshot-create-as --domain "${DOMAIN}" --name "${DOMAIN}-${SNAPSHOT_SUFFIX}"
         --diskspec "${LD_DISCSPEC},file=${LD_PATH}/${DOMAIN}-${LD_SUFFIX}"
         --disk-only ${DEFAULT_OPTS} ${OPTS}
+      && echo "virsh:${LD_PATH}/${DOMAIN}-${LD_SUFFIX}--" >> "{{ tempFile "mixins-lib-snapshots.list" }}"
       && ( [ -z "${DUMPXML}" ] 
            || virsh dumpxml --domain "${DOMAIN}" --inactive --migratable > "${DUMPXML}" ) 
 
     run-finally...: >
-      virsh blockcommit --domain "${DOMAIN}" ${LD_DISCSPEC} --wait --active
-        && virsh blockjob --domain "${DOMAIN}" "${LD_PATH}/${DOMAIN}-${LD_SUFFIX}" --pivot
-        && rm -f "${LD_PATH}/${DOMAIN}-${LD_SUFFIX}"
+      grep -q "virsh:${LD_PATH}/${DOMAIN}-${LD_SUFFIX}--" "{{ tempFile "mixins-lib-snapshots.list" }}"
+      && virsh blockcommit --domain "${DOMAIN}" ${LD_DISCSPEC} --wait --active
+      && virsh blockjob --domain "${DOMAIN}" "${LD_PATH}/${DOMAIN}-${LD_SUFFIX}" --pivot
+      && rm -f "${LD_PATH}/${DOMAIN}-${LD_SUFFIX}"
 
   #
-  # Utility to teardown apparmor before other run finals and restart it after
+  # Utility to teardown apparmor before other run finals (e.g. blockcommit / blockjob) and restart it afterward
   # See "snapshot-virsh"
   #
   snapshot-virsh-aa-teardown:
