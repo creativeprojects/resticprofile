@@ -26,9 +26,7 @@ mixins:
   # Usage
   #
   #   backup:
-  #     use:
-  #       - {name: "database-mysql", DATABASE: "dbname"}
-  #       - {name: "database-mysql", DATABASE: "dbname", HOST: "dbhost", USER: "dbuser", PASSWORD: "dbpassword"}
+  #     use: {name: "database-mysql", DATABASE: "dbname", HOST: "dbhost", USER: "dbuser", PASSWORD_FILE: "dbpassword.txt"}
   #
   database-mysql:
     default-vars:
@@ -39,7 +37,7 @@ mixins:
       PASSWORD_FILE: "${MYSQLDUMP_PASSWORD_FILE}"
       DATABASE: "--all-databases"
       FILENAME: "mysql-dump.sql"
-      DEFAULT_OPTS: "--order-by-primary"
+      DEFAULT_OPTS: "${MYSQLDUMP_DEFAULT_OPTS:-'--order-by-primary'}"
       OPTS: ""
 
     # creating a defaults-file for mysqldump if the PASSWORD is non-empty
@@ -73,9 +71,7 @@ mixins:
   # Usage
   #
   #   backup:
-  #     use:
-  #       - {name: "database-pgsql", DATABASE: "dbname"}
-  #       - {name: "database-pgsql", DATABASE: "dbname", HOST: "dbhost", USER: "dbuser", PASSWORD: "dbpassword"}
+  #     use: {name: "database-pgsql", DATABASE: "dbname", HOST: "dbhost", USER: "dbuser", PASSWORD_FILE: "dbpassword.txt"}
   #
   database-pgsql:
     default-vars:
@@ -86,7 +82,7 @@ mixins:
       PASSWORD_FILE: "${PGDUMP_PASSWORD_FILE}"
       DATABASE: ""
       FILENAME: "pgsql-dump.sql"
-      DEFAULT_OPTS: "--clean --if-exists --quote-all-identifiers --serializable-deferrable"
+      DEFAULT_OPTS: "${PGDUMP_DEFAULT_OPTS:-'--clean --if-exists --quote-all-identifiers --serializable-deferrable'}"
       OPTS: ""
 
     # creating a .pgpass file for pg_dump if the PASSWORD is non-empty
