@@ -27,7 +27,7 @@ type Global struct {
 	Scheduler            string              `mapstructure:"scheduler" description:"Leave blank for the default scheduler or use \"crond\" to select cron on supported operating systems"`
 	ScheduleDefaults     *ScheduleBaseConfig `mapstructure:"schedule-defaults" default:"" description:"Sets defaults for all schedules"`
 	Log                  string              `mapstructure:"log" default:"" examples:"/resticprofile.log;syslog-tcp://syslog-server:514;syslog:server;syslog:" description:"Sets the default log destination to be used if not specified in \"--log\" or \"schedule-log\" - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
-	LogCommands          string              `mapstructure:"log-commands" default:"auto" enum:"auto;log;console;both" description:"Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
+	CommandOutput        string              `mapstructure:"command-output" default:"auto" enum:"auto;log;console;all" description:"Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
 	LegacyArguments      bool                `mapstructure:"legacy-arguments" default:"false" deprecated:"0.20.0" description:"Legacy, broken arguments mode of resticprofile before version 0.15"`
 	SystemdUnitTemplate  string              `mapstructure:"systemd-unit-template" default:"" description:"File containing the go template to generate a systemd unit - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	SystemdTimerTemplate string              `mapstructure:"systemd-timer-template" default:"" description:"File containing the go template to generate a systemd timer - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
@@ -48,7 +48,7 @@ func NewGlobal() *Global {
 		ResticLockRetryAfter: constants.DefaultResticLockRetryAfter,
 		ResticStaleLockAge:   constants.DefaultResticStaleLockAge,
 		MinMemory:            constants.DefaultMinMemory,
-		LogCommands:          constants.DefaultLogCommands,
+		CommandOutput:        constants.DefaultCommandOutput,
 		SenderTimeout:        constants.DefaultSenderTimeout,
 	}
 }

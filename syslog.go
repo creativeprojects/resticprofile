@@ -86,7 +86,8 @@ func getSyslogHandler(scheme, hostPort string) (handler *Syslog, writer io.Write
 			scheme = "udp"
 		}
 	default:
-		err = fmt.Errorf("unsupported scheme %q", scheme)
+		err = fmt.Errorf("unsupported syslog URL scheme %q", scheme)
+		return
 	}
 
 	var logger *syslog.Writer

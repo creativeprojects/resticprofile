@@ -24,7 +24,7 @@ type commandLineFlags struct {
 	format          string
 	name            string
 	log             string // file path or log url
-	logCommands     string
+	commandOutput   string
 	dryRun          bool
 	noLock          bool
 	lockWait        time.Duration
@@ -81,7 +81,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		format:          envValueOverride("", "RESTICPROFILE_FORMAT"),
 		name:            envValueOverride(constants.DefaultProfileName, "RESTICPROFILE_NAME"),
 		log:             envValueOverride("", "RESTICPROFILE_LOG"),
-		logCommands:     envValueOverride(constants.DefaultLogCommands, "RESTICPROFILE_LOG_COMMANDS"),
+		commandOutput:   envValueOverride(constants.DefaultCommandOutput, "RESTICPROFILE_COMMAND_OUTPUT"),
 		dryRun:          envValueOverride(false, "RESTICPROFILE_DRY_RUN"),
 		noLock:          envValueOverride(false, "RESTICPROFILE_NO_LOCK"),
 		lockWait:        envValueOverride(time.Duration(0), "RESTICPROFILE_LOCK_WAIT"),
@@ -100,7 +100,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.StringVarP(&flags.format, "format", "f", flags.format, "file format of the configuration (default is to use the file extension)")
 	flagset.StringVarP(&flags.name, "name", "n", flags.name, "profile name")
 	flagset.StringVarP(&flags.log, "log", "l", flags.log, "logs to a target instead of the console")
-	flagset.StringVar(&flags.logCommands, "log-commands", flags.logCommands, "sets how to log command output when a log target is specified (auto, log, console, both)")
+	flagset.StringVar(&flags.commandOutput, "command-output", flags.commandOutput, "sets how to redirect command output when a log target is specified (auto, log, console, all)")
 	flagset.BoolVar(&flags.dryRun, "dry-run", flags.dryRun, "display the restic commands instead of running them")
 	flagset.BoolVar(&flags.noLock, "no-lock", flags.noLock, "skip profile lock file")
 	flagset.DurationVar(&flags.lockWait, "lock-wait", flags.lockWait, "wait up to duration to acquire a lock (syntax \"1h5m30s\")")

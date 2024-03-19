@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/collect"
 )
 
 type LogCloser interface {
@@ -40,7 +42,7 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget, logCommands string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) (io.Closer, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
@@ -62,17 +64,19 @@ func setupTargetLogger(flags commandLineFlags, logTarget, logCommands string) (i
 
 	// also redirect all terminal output
 	if file != nil {
-		if logCommands == "auto" {
+		if commandOutput == "auto" {
 			if term.OsStdoutIsTerminal() {
-				logCommands = "both"
+				commandOutput = "log,console"
 			} else {
-				logCommands = "log"
+				commandOutput = "log"
 			}
 		}
-		if logCommands == "both" {
+		co := collect.From(strings.Split(commandOutput, ","), strings.TrimSpace)
+		all := slices.Contains(co, "all") || (slices.Contains(co, "log") && slices.Contains(co, "console"))
+		if all {
 			term.SetOutput(io.MultiWriter(file, term.GetOutput()))
 			term.SetErrorOutput(io.MultiWriter(file, term.GetErrorOutput()))
-		} else if logCommands == "log" {
+		} else if slices.Contains(co, "log") {
 			term.SetAllOutput(file)
 		}
 	}

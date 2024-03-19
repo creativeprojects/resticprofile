@@ -18,7 +18,7 @@ const (
 	DefaultVerboseFlag          = false
 	DefaultQuietFlag            = false
 	DefaultMinMemory            = 100
-	DefaultLogCommands          = "auto"
+	DefaultCommandOutput        = "auto"
 	DefaultSenderTimeout        = 30 * time.Second
 	DefaultPrometheusPushFormat = "text"
 	BatteryFull                 = 100

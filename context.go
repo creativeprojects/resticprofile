@@ -29,7 +29,7 @@ type Context struct {
 	schedule      *config.Schedule // when profile is running with run-schedule command
 	sigChan       chan os.Signal   // termination request
 	logTarget     string           // where to send the log output
-	logCommands   string           // where to send the command output when a lotTarget is set
+	commandOutput string           // where to send the command output when a lotTarget is set
 	stopOnBattery int              // stop if running on battery
 	noLock        bool             // skip profile lock file
 	lockWait      time.Duration    // wait up to duration to acquire a lock
@@ -52,16 +52,16 @@ func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Co
 			group:     "",
 			schedule:  "",
 		},
-		flags:       flags,
-		global:      global,
-		config:      cfg,
-		binary:      "",
-		command:     "",
-		profile:     nil,
-		schedule:    nil,
-		sigChan:     nil,
-		logTarget:   global.Log, // default to global (which can be empty)
-		logCommands: global.LogCommands,
+		flags:         flags,
+		global:        global,
+		config:        cfg,
+		binary:        "",
+		command:       "",
+		profile:       nil,
+		schedule:      nil,
+		sigChan:       nil,
+		logTarget:     global.Log, // default to global (which can be empty)
+		commandOutput: global.CommandOutput,
 	}
 	// own commands can check the context before running
 	if ownCommands.Exists(command, true) {
@@ -74,8 +74,8 @@ func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Co
 	if flags.log != "" {
 		ctx.logTarget = flags.log
 	}
-	if flags.logCommands != "" {
-		ctx.logCommands = flags.logCommands
+	if flags.commandOutput != "" {
+		ctx.commandOutput = flags.commandOutput
 	}
 	// same for battery configuration
 	if flags.ignoreOnBattery > 0 {
