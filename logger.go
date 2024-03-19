@@ -48,7 +48,7 @@ func setupTargetLogger(flags commandLineFlags, logTarget string) (io.Closer, err
 	)
 	scheme, hostPort, isURL := dial.GetAddr(logTarget)
 	if isURL {
-		handler, err = getSyslogHandler(scheme, hostPort)
+		handler, file, err = getSyslogHandler(scheme, hostPort)
 	} else {
 		handler, file, err = getFileHandler(logTarget)
 	}
