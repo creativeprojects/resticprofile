@@ -15,3 +15,5 @@ func IsWindows() bool {
 func SupportsSyslog() bool {
 	return true
 }
+
+func Executable(name string) string { return name }
