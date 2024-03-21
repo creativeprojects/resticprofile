@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 type Request struct {
@@ -74,7 +75,7 @@ func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Co
 	if flags.log != "" {
 		ctx.logTarget = flags.log
 	}
-	if flags.commandOutput != "" {
+	if flags.commandOutput != constants.DefaultCommandOutput {
 		ctx.commandOutput = flags.commandOutput
 	}
 	// same for battery configuration
