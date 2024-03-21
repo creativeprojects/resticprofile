@@ -115,6 +115,8 @@ func (c *Completer) completeFlagSetValue(flag *pflag.Flag, word string) (complet
 		fallthrough
 	case "log":
 		completions = []string{RequestFileCompletion}
+	case "command-output":
+		completions = []string{"auto", "log", "console", "all"}
 	}
 
 	completions = c.appendMatches(completions, word, list...)

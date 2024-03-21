@@ -30,6 +30,7 @@ func TestGetDialAddr(t *testing.T) {
 		{"syslog://", "syslog", "", true},
 		{"syslog:", "syslog", "", true},
 		// too short
+		{"syslog:opaque", "", "", false},
 		{"tcp://", "", "", false},
 		{"tcp:", "", "", false},
 		{"syslog-tcp:", "", "", false},
@@ -55,6 +56,15 @@ func TestGetDialAddr(t *testing.T) {
 			assert.Equal(t, fixture.isURL, isURL)
 			assert.Equal(t, fixture.scheme, scheme)
 			assert.Equal(t, fixture.hostPort, port)
+
+			assert.Equal(t, fixture.isURL, dial.IsSupportedURL(fixture.addr))
 		})
 	}
+}
+
+func TestIsUrl(t *testing.T) {
+	assert.True(t, dial.IsURL("ftp://"))
+	assert.True(t, dial.IsURL("http://"))
+	assert.False(t, dial.IsURL("c://"))
+	assert.False(t, dial.IsURL(""))
 }

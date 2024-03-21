@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -62,7 +63,12 @@ func TestCompleter(t *testing.T) {
 					if flag.Hidden {
 						expected = nil
 					}
-					assert.Equal(t, expected, completer.completeFlagSet(fmt.Sprintf("--%s", flag.Name)))
+					actual := completer.completeFlagSet(fmt.Sprintf("--%s", flag.Name))
+					assert.Subset(t, actual, expected)
+					for _, flag := range actual {
+						ok := slices.ContainsFunc(expected, func(prefix string) bool { return strings.HasPrefix(flag, prefix) })
+						assert.True(t, ok, "prefixes not matched for %q", flag)
+					}
 
 					if len(flag.Shorthand) > 0 && !flag.Hidden {
 						expected = flagCompletion(flag, true)[0:1]

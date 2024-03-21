@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/collect"
 )
 
 type LogCloser interface {
@@ -40,15 +43,16 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) (io.Closer, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
 		err     error
 	)
-	scheme, hostPort, isURL := dial.GetAddr(logTarget)
-	if isURL {
+	if scheme, hostPort, isURL := dial.GetAddr(logTarget); isURL {
 		handler, file, err = getSyslogHandler(scheme, hostPort)
+	} else if dial.IsURL(logTarget) {
+		err = fmt.Errorf("unsupported URL: %s", logTarget)
 	} else {
 		handler, file, err = getFileHandler(logTarget)
 	}
@@ -62,10 +66,29 @@ func setupTargetLogger(flags commandLineFlags, logTarget string) (io.Closer, err
 
 	// also redirect all terminal output
 	if file != nil {
-		term.SetAllOutput(file)
+		if all, toLog := parseCommandOutput(commandOutput); all {
+			term.SetOutput(io.MultiWriter(file, term.GetOutput()))
+			term.SetErrorOutput(io.MultiWriter(file, term.GetErrorOutput()))
+		} else if toLog {
+			term.SetAllOutput(file)
+		}
 	}
 	// and return the handler (so we can close it at the end)
 	return handler, nil
+}
+
+func parseCommandOutput(commandOutput string) (all, log bool) {
+	if strings.TrimSpace(commandOutput) == "auto" {
+		if term.OsStdoutIsTerminal() {
+			commandOutput = "log,console"
+		} else {
+			commandOutput = "log"
+		}
+	}
+	co := collect.From(strings.Split(commandOutput, ","), strings.TrimSpace)
+	log = slices.Contains(co, "log")
+	all = slices.Contains(co, "all") || (log && slices.Contains(co, "console"))
+	return
 }
 
 func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error) {
