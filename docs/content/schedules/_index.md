@@ -10,9 +10,11 @@ resticprofile is capable of managing scheduled backups for you. Under the hood i
 - **launchd** on macOS X
 - **Task Scheduler** on Windows
 - **systemd** where available (Linux and other BSDs)
-- **crond** on supported platforms (Linux and other BSDs)
+- **crond** as fallback (depends on the availability of a `crontab` binary)
+- **crontab** files (low level)
 
-On unixes (except macOS) resticprofile is using **systemd** by default. **crond** can be used instead if configured in `global` `scheduler` parameter:
+On unixes (except macOS) resticprofile is using **systemd** if available and falls back to **crond**. 
+On any OS a **crond** compatible scheduler can be used instead if configured in `global` / `scheduler`:
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -20,6 +22,9 @@ On unixes (except macOS) resticprofile is using **systemd** by default. **crond*
 ```toml
 [global]
   scheduler = "crond"
+  # scheduler = "crond:/usr/bin/crontab"
+  # scheduler = "crontab:*:/etc/cron.d/resticprofile"
+  # scheduler = "crontab:-:/var/spool/cron/crontabs/username"
 ```
 
 {{% /tab %}}
@@ -29,6 +34,9 @@ On unixes (except macOS) resticprofile is using **systemd** by default. **crond*
 ---
 global:
     scheduler: crond
+    # scheduler: "crond:/usr/bin/crontab"
+    # scheduler: "crontab:*:/etc/cron.d/resticprofile"
+    # scheduler: "crontab:-:/var/spool/cron/crontabs/username"
 ```
 
 {{% /tab %}}
@@ -37,6 +45,9 @@ global:
 ```hcl
 "global" = {
   "scheduler" = "crond"
+  # "scheduler" = "crond:/usr/bin/crontab"
+  # "scheduler" = "crontab:*:/etc/cron.d/resticprofile"
+  # "scheduler" = "crontab:-:/var/spool/cron/crontabs/username"
 }
 ```
 
