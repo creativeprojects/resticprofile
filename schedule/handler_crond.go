@@ -6,7 +6,10 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
+	"github.com/creativeprojects/resticprofile/platform"
 )
+
+var crontabBinary = "crontab"
 
 // HandlerCrond is a handler for crond scheduling
 type HandlerCrond struct {
@@ -15,17 +18,22 @@ type HandlerCrond struct {
 
 // NewHandlerCrond creates a new handler for crond scheduling
 func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
-	return &HandlerCrond{
-		config: config.(SchedulerCrond),
+	cfg, ok := config.(SchedulerCrond)
+	if !ok {
+		cfg = SchedulerCrond{}
 	}
+	if cfg.CrontabBinary == "" {
+		cfg.CrontabBinary = platform.Executable(crontabBinary)
+	}
+	return &HandlerCrond{config: cfg}
 }
 
 // Init verifies crond is available on this system
 func (h *HandlerCrond) Init() error {
-	if binary := crond.CrontabBinary; binary != "" && h.config.CrontabFile == "" {
-		return lookupBinary("crond", binary)
+	if len(h.config.CrontabFile) > 0 {
+		return nil
 	}
-	return nil
+	return lookupBinary("crond", h.config.CrontabBinary)
 }
 
 // Close does nothing with crond
@@ -63,9 +71,13 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 			job.Command+" "+strings.Join(job.Arguments, " "),
 			job.WorkingDirectory,
 		)
+		if h.config.Username != "" {
+			entries[i] = entries[i].WithUser(h.config.Username)
+		}
 	}
 	crontab := crond.NewCrontab(entries)
 	crontab.SetFile(h.config.CrontabFile)
+	crontab.SetBinary(h.config.CrontabBinary)
 	err := crontab.Rewrite()
 	if err != nil {
 		return err
@@ -86,6 +98,7 @@ func (h *HandlerCrond) RemoveJob(job *Config, permission string) error {
 	}
 	crontab := crond.NewCrontab(entries)
 	crontab.SetFile(h.config.CrontabFile)
+	crontab.SetBinary(h.config.CrontabBinary)
 	num, err := crontab.Remove()
 	if err != nil {
 		return err
@@ -103,9 +116,10 @@ func (h *HandlerCrond) DisplayJobStatus(job *Config) error {
 
 // init registers HandlerCrond
 func init() {
-	AddHandlerProvider(func(config SchedulerConfig) (hr Handler) {
-		if config.Type() == constants.SchedulerCrond {
-			hr = NewHandlerCrond(config)
+	AddHandlerProvider(func(config SchedulerConfig, fallback bool) (hr Handler) {
+		if config.Type() == constants.SchedulerCrond ||
+			(fallback && config.Type() == constants.SchedulerOSDefault) {
+			hr = NewHandlerCrond(config.Convert(constants.SchedulerCrond))
 		}
 		return
 	})

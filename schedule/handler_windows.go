@@ -95,7 +95,7 @@ func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 
 // init registers HandlerWindows
 func init() {
-	AddHandlerProvider(func(config SchedulerConfig) (hr Handler) {
+	AddHandlerProvider(func(config SchedulerConfig, _ bool) (hr Handler) {
 		if config.Type() == constants.SchedulerWindows ||
 			config.Type() == constants.SchedulerOSDefault {
 			hr = &HandlerWindows{

@@ -15,6 +15,11 @@ import (
 	"howett.net/plist"
 )
 
+func TestHandlerCrond(t *testing.T) {
+	handler := NewHandler(SchedulerCrond{})
+	assert.IsType(t, &HandlerCrond{}, handler)
+}
+
 func TestPListEncoderWithCalendarInterval(t *testing.T) {
 	expected := `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

@@ -16,6 +16,7 @@ type Entry struct {
 	commandName string
 	commandLine string
 	workDir     string
+	user        string
 }
 
 // NewEntry creates a new crontab entry
@@ -29,6 +30,18 @@ func NewEntry(event *calendar.Event, configFile, profileName, commandName, comma
 		workDir:     workDir,
 	}
 }
+
+// WithUser creates a new entry that adds a user that should run the command
+func (e Entry) WithUser(user string) Entry {
+	e.user = strings.TrimSpace(user)
+	return e
+}
+
+func (e Entry) HasUser() bool { return len(e.user) > 0 }
+
+func (e Entry) NeedsUser() bool { return e.user == "*" }
+
+func (e Entry) SkipUser() bool { return e.NeedsUser() || e.user == "-" }
 
 // String returns the crontab line representation of the entry (end of line included)
 func (e Entry) String() string {
@@ -52,6 +65,9 @@ func (e Entry) String() string {
 	if e.event.WeekDay.HasValue() {
 		// don't make ranges for days of the week as it can fail with high sunday (7)
 		dayOfWeek = formatList(e.event.WeekDay.GetRangeValues(), formatWeekDay)
+	}
+	if e.HasUser() && !e.SkipUser() {
+		return fmt.Sprintf("%s %s %s %s %s\t%s\t%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, e.user, wd, e.commandLine)
 	}
 	return fmt.Sprintf("%s %s %s %s %s\t%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, wd, e.commandLine)
 }

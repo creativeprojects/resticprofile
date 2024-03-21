@@ -406,7 +406,7 @@ func parseStatus(status string) map[string]string {
 
 // init registers HandlerLaunchd
 func init() {
-	AddHandlerProvider(func(config SchedulerConfig) (hr Handler) {
+	AddHandlerProvider(func(config SchedulerConfig, _ bool) (hr Handler) {
 		if config.Type() == constants.SchedulerLaunchd ||
 			config.Type() == constants.SchedulerOSDefault {
 			hr = &HandlerLaunchd{

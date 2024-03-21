@@ -9,12 +9,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEmptyUserEvent(t *testing.T) {
+func TestEmptyEvent(t *testing.T) {
 	entry := NewEntry(calendar.NewEvent(), "", "", "", "command line", "")
 	buffer := &strings.Builder{}
 	err := entry.Generate(buffer)
 	require.NoError(t, err)
 	assert.Equal(t, "* * * * *\tcommand line\n", buffer.String())
+}
+
+func TestEntryWithUser(t *testing.T) {
+	entry := NewEntry(calendar.NewEvent(), "", "", "", "command line", "")
+	entry = entry.WithUser("root")
+	assert.Equal(t, "* * * * *\troot\tcommand line\n", entry.String())
+	entry = entry.WithUser("-")
+	assert.Equal(t, "* * * * *\tcommand line\n", entry.String())
+	entry = entry.WithUser("*")
+	assert.Equal(t, "* * * * *\tcommand line\n", entry.String())
 }
 
 func TestEvents(t *testing.T) {

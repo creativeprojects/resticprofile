@@ -62,14 +62,11 @@ func saveCrontabFile(file, content, charset string) (err error) {
 	return
 }
 
-// CrontabBinary is the name of the crontab binary to use when no file is set
-var CrontabBinary = DefaultCrontabBinary
-
-func loadCrontab(file string) (content, charset string, err error) {
-	if file == "" && CrontabBinary != "" {
+func loadCrontab(file, crontabBinary string) (content, charset string, err error) {
+	if file == "" && crontabBinary != "" {
 		buffer := new(strings.Builder)
 		{
-			cmd := exec.Command(CrontabBinary, "-l")
+			cmd := exec.Command(crontabBinary, "-l")
 			cmd.Stdout = buffer
 			cmd.Stderr = buffer
 			err = cmd.Run()
@@ -77,6 +74,7 @@ func loadCrontab(file string) (content, charset string, err error) {
 		if err != nil {
 			if strings.HasPrefix(buffer.String(), "no crontab for ") {
 				err = nil // it's ok to be empty
+				buffer.Reset()
 			} else {
 				err = fmt.Errorf("%w: %s", err, buffer.String())
 			}
@@ -90,9 +88,9 @@ func loadCrontab(file string) (content, charset string, err error) {
 	}
 }
 
-func saveCrontab(file, content, charset string) (err error) {
-	if file == "" && CrontabBinary != "" {
-		cmd := exec.Command(CrontabBinary, "-")
+func saveCrontab(file, content, charset, crontabBinary string) (err error) {
+	if file == "" && crontabBinary != "" {
+		cmd := exec.Command(crontabBinary, "-")
 		cmd.Stdin = strings.NewReader(content)
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
