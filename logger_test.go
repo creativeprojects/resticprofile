@@ -96,6 +96,39 @@ func TestFileHandler(t *testing.T) {
 	}
 }
 
+func TestParseCommandOutput(t *testing.T) {
+	tests := []struct {
+		co       string
+		all, log bool
+	}{
+		{co: "", all: false, log: false},
+		{co: "auto", all: term.OsStdoutIsTerminal(), log: true},
+		{co: "log", all: false, log: true},
+		{co: "console", all: false, log: false},
+		{co: "all", all: true, log: false},
+		{co: "all,log", all: true, log: true},
+		{co: "console,log", all: true, log: true},
+		{co: "log,console", all: true, log: true},
+		{co: "log,a", all: false, log: true},
+		{co: "console,a", all: false, log: false},
+
+		{co: " auto ", all: term.OsStdoutIsTerminal(), log: true},
+		{co: " all ", all: true, log: false},
+		{co: " log ", all: false, log: true},
+		{co: " console ", all: false, log: false},
+		{co: " console , log ", all: true, log: true},
+		{co: " log , console ", all: true, log: true},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			a, l := parseCommandOutput(test.co)
+			assert.Equal(t, test.all, a, "all")
+			assert.Equal(t, test.log, l, "log")
+		})
+	}
+}
+
 // FIXME: writing into a closed handler shouldn't panic
 //
 // func TestCloseFileHandler(t *testing.T) {
