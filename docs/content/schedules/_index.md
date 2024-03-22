@@ -11,7 +11,7 @@ resticprofile is capable of managing scheduled backups for you. Under the hood i
 - **Task Scheduler** on Windows
 - **systemd** where available (Linux and other BSDs)
 - **crond** as fallback (depends on the availability of a `crontab` binary)
-- **crontab** files (low level)
+- **crontab** files (low level, with (`*`) or without (`-`) user column)
 
 On unixes (except macOS) resticprofile is using **systemd** if available and falls back to **crond**. 
 On any OS a **crond** compatible scheduler can be used instead if configured in `global` / `scheduler`:
@@ -65,7 +65,7 @@ global:
 {{% /tab %}}
 {{< /tabs >}}
 
-
+See also [reference / global section]({{% relref "/configuration/reference/#section-profilebackup" %}}) for options on how to configure the scheduler.
 
 
 Each profile can be scheduled independently (groups are not available for scheduling yet - it will be available in version '2' of the configuration file).
