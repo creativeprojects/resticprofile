@@ -45,25 +45,26 @@ import (
 //   - {{ tempFile "filename" }} => "/path/to/unique-tempdir/filename"
 func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 	templateFuncs = map[string]any{
-		"contains":   func(search any, src any) bool { return strings.Contains(toString(src), toString(search)) },
-		"matches":    func(ptn string, src any) bool { return mustCompile(ptn).MatchString(toString(src)) },
-		"replace":    func(old, new, src string) string { return strings.ReplaceAll(src, old, new) },
-		"replaceR":   func(ptn, repl, src string) string { return mustCompile(ptn).ReplaceAllString(src, repl) },
-		"lower":      strings.ToLower,
-		"upper":      strings.ToUpper,
-		"trim":       strings.TrimSpace,
-		"trimPrefix": func(prefix, src string) string { return strings.TrimPrefix(src, prefix) },
-		"trimSuffix": func(suffix, src string) string { return strings.TrimSuffix(src, suffix) },
-		"split":      func(sep, src string) []any { return collect.From(strings.Split(src, sep), toAny[string]) },
-		"splitR":     func(ptn, src string) []any { return collect.From(mustCompile(ptn).Split(src, -1), toAny[string]) },
-		"join":       func(sep string, src []any) string { return strings.Join(collect.From(src, toString), sep) },
-		"list":       func(args ...any) []any { return args },
-		"map":        toMap,
-		"base64":     func(src any) string { return base64.StdEncoding.EncodeToString([]byte(toString(src))) },
-		"hex":        func(src any) string { return hex.EncodeToString([]byte(toString(src))) },
-		"tempDir":    TempDir,
-		"tempFile":   TempFile,
-		"env":        func() string { return TempFile(".env.none") }, // satisfies the {{env}} interface w.o. functionality
+		"contains":        func(search any, src any) bool { return strings.Contains(toString(src), toString(search)) },
+		"matches":         func(ptn string, src any) bool { return mustCompile(ptn).MatchString(toString(src)) },
+		"replace":         func(old, new, src string) string { return strings.ReplaceAll(src, old, new) },
+		"replaceR":        func(ptn, repl, src string) string { return mustCompile(ptn).ReplaceAllString(src, repl) },
+		"lower":           strings.ToLower,
+		"upper":           strings.ToUpper,
+		"trim":            strings.TrimSpace,
+		"trimPrefix":      func(prefix, src string) string { return strings.TrimPrefix(src, prefix) },
+		"trimSuffix":      func(suffix, src string) string { return strings.TrimSuffix(src, suffix) },
+		"split":           func(sep, src string) []any { return collect.From(strings.Split(src, sep), toAny[string]) },
+		"splitR":          func(ptn, src string) []any { return collect.From(mustCompile(ptn).Split(src, -1), toAny[string]) },
+		"join":            func(sep string, src []any) string { return strings.Join(collect.From(src, toString), sep) },
+		"list":            func(args ...any) []any { return args },
+		"map":             toMap,
+		"base64":          func(src any) string { return base64.StdEncoding.EncodeToString([]byte(toString(src))) },
+		"hex":             func(src any) string { return hex.EncodeToString([]byte(toString(src))) },
+		"tempDir":         TempDir,
+		"tempFile":        TempFile,
+		"privateTempFile": MustPrivateTempFile,
+		"env":             func() string { return TempFile(".env.none") }, // satisfies the {{env}} interface w.o. functionality
 	}
 
 	// aliases
@@ -138,6 +139,15 @@ func PrivateTempFile(name string) (filename string, err error) {
 		}
 	}
 	return
+}
+
+// MustPrivateTempFile returns a strictly private temp file or panics if this is not supported (e.g. on Windows)
+func MustPrivateTempFile(name string) string {
+	if filename, err := PrivateTempFile(name); err == nil {
+		return filename
+	} else {
+		panic(fmt.Errorf("failed creating private file %q (may be unsupported by this OS): %w", filename, err))
+	}
 }
 
 // EnvFileReceiverFunc declares the backend interface for the "{{env}}" template function
