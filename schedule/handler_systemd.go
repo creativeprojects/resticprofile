@@ -46,13 +46,9 @@ type HandlerSystemd struct {
 func NewHandlerSystemd(config SchedulerConfig) *HandlerSystemd {
 	cfg, ok := config.(SchedulerSystemd)
 	if !ok {
-		return &HandlerSystemd{
-			config: SchedulerSystemd{}, // empty configuration
-		}
+		cfg = SchedulerSystemd{} // empty configuration
 	}
-	return &HandlerSystemd{
-		config: cfg,
-	}
+	return &HandlerSystemd{config: cfg}
 }
 
 // Init verifies systemd is available on this system
@@ -294,4 +290,15 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	err := cmd.Run()
 	fmt.Println("")
 	return err
+}
+
+// init registers HandlerSystemd
+func init() {
+	AddHandlerProvider(func(config SchedulerConfig, _ bool) (hr Handler) {
+		if config.Type() == constants.SchedulerSystemd ||
+			config.Type() == constants.SchedulerOSDefault {
+			hr = NewHandlerSystemd(config.Convert(constants.SchedulerSystemd))
+		}
+		return
+	})
 }

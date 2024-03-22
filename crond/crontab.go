@@ -1,14 +1,9 @@
-//go:build !darwin && !windows
-// +build !darwin,!windows
-
 package crond
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
+	"os/user"
 	"regexp"
 	"strings"
 )
@@ -19,27 +14,40 @@ const (
 )
 
 type Crontab struct {
-	entries []Entry
+	file, binary, charset, user string
+	entries                     []Entry
 }
 
-var (
-	crontabBinary = "crontab"
-)
+func NewCrontab(entries []Entry) (c *Crontab) {
+	c = &Crontab{entries: entries}
 
-func NewCrontab(entries []Entry) *Crontab {
-	return &Crontab{
-		entries: entries,
+	for i, entry := range c.entries {
+		if entry.NeedsUser() {
+			c.entries[i] = c.entries[i].WithUser(c.username())
+		}
 	}
+
+	return
 }
 
-// Update crontab entries:
+// SetBinary sets the crontab binary to use for reading and writing the crontab (if empty, SetFile must be used)
+func (c *Crontab) SetBinary(crontabBinary string) {
+	c.binary = crontabBinary
+}
+
+// SetFile toggles whether to read & write a crontab file instead of using the crontab binary
+func (c *Crontab) SetFile(file string) {
+	c.file = file
+}
+
+// update crontab entries:
 //
-// # If addEntries is set to true, it will delete and add all new entries
+// - If addEntries is set to true, it will delete and add all new entries
 //
-// # If addEntries is set to false, it will only delete the matching entries
+// - If addEntries is set to false, it will only delete the matching entries
 //
 // Return values are the number of entries deleted, and an error if any
-func (c *Crontab) Update(source string, addEntries bool, w io.StringWriter) (int, error) {
+func (c *Crontab) update(source string, addEntries bool, w io.StringWriter) (int, error) {
 	var err error
 	var deleted int
 
@@ -117,19 +125,30 @@ func (c *Crontab) Generate(w io.StringWriter) error {
 	return nil
 }
 
-func (c *Crontab) LoadCurrent() (string, error) {
-	buffer := &strings.Builder{}
-	cmd := exec.Command(crontabBinary, "-l")
-	cmd.Stdout = buffer
-	cmd.Stderr = buffer
-	err := cmd.Run()
-	if err != nil && strings.HasPrefix(buffer.String(), "no crontab for ") {
-		// it's ok to be empty
-		return "", nil
-	} else if err != nil {
-		return "", fmt.Errorf("%w: %s", err, buffer.String())
+func (c *Crontab) LoadCurrent() (content string, err error) {
+	content, c.charset, err = loadCrontab(c.file, c.binary)
+	if err == nil {
+		if cleaned := cleanupCrontab(content); cleaned != content {
+			if len(c.file) == 0 {
+				content = cleaned
+			} else {
+				err = fmt.Errorf("refusing to change crontab with \"DO NOT EDIT\": %q", c.file)
+			}
+		}
 	}
-	return cleanupCrontab(buffer.String()), nil
+	return
+}
+
+func (c *Crontab) username() string {
+	if len(c.user) == 0 {
+		if current, err := user.Current(); err == nil {
+			c.user = current.Username
+		}
+		if len(c.user) == 0 || strings.ContainsAny(c.user, "\t \n\r") {
+			c.user = "root"
+		}
+	}
+	return c.user
 }
 
 func (c *Crontab) Rewrite() error {
@@ -137,20 +156,22 @@ func (c *Crontab) Rewrite() error {
 	if err != nil {
 		return err
 	}
-	input := &bytes.Buffer{}
-	_, err = c.Update(crontab, true, input)
+
+	if len(c.file) > 0 && detectNeedsUserColumn(crontab) {
+		for i, entry := range c.entries {
+			if !entry.HasUser() {
+				c.entries[i] = entry.WithUser(c.username())
+			}
+		}
+	}
+
+	buffer := new(strings.Builder)
+	_, err = c.update(crontab, true, buffer)
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(crontabBinary, "-")
-	cmd.Stdin = input
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
+	return saveCrontab(c.file, buffer.String(), c.charset, c.binary)
 }
 
 func (c *Crontab) Remove() (int, error) {
@@ -158,20 +179,13 @@ func (c *Crontab) Remove() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	buffer := &bytes.Buffer{}
-	num, err := c.Update(crontab, false, buffer)
-	if err != nil {
-		return num, err
-	}
 
-	cmd := exec.Command(crontabBinary, "-")
-	cmd.Stdin = buffer
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return num, err
+	buffer := new(strings.Builder)
+	num, err := c.update(crontab, false, buffer)
+	if err == nil {
+		err = saveCrontab(c.file, buffer.String(), c.charset, c.binary)
 	}
-	return num, nil
+	return num, err
 }
 
 func cleanupCrontab(crontab string) string {
@@ -181,8 +195,46 @@ func cleanupCrontab(crontab string) string {
 	return pattern.ReplaceAllString(crontab, "")
 }
 
+// detectNeedsUserColumn attempts to detect if this crontab needs a user column or not (only relevant for direct file access)
+func detectNeedsUserColumn(crontab string) bool {
+	headerR := regexp.MustCompile(`^#\s*[*]\s+[*]\s+[*]\s+[*]\s+[*](\s+user.*)?\s+(command|cmd).*$`)
+	entryR := regexp.MustCompile(`^\s*(\S+\s+\S+\s+\S+\s+\S+\s+\S+|@[a-z]+)((?:\s{2,}|\t)\S+)?(?:\s{2,}|\t)(\S.*)$`)
+
+	var header, userHeader int
+	var entries, userEntries float32
+	for _, line := range strings.Split(crontab, "\n") {
+		if m := headerR.FindStringSubmatch(line); m != nil {
+			header++
+			if len(m) == 3 && strings.HasPrefix(strings.TrimSpace(m[1]), "user") {
+				userHeader++
+			}
+		} else if m = entryR.FindStringSubmatch(line); m != nil {
+			entries++
+			if len(m) == 4 && len(m[2]) > 0 {
+				userEntries++
+			}
+		}
+	}
+
+	userEntryPercentage := float32(0)
+	if entries > 0 {
+		userEntryPercentage = userEntries / entries
+	}
+
+	if header > 0 {
+		if userHeader == header || (userHeader > 0 && userEntryPercentage > 0) {
+			return true
+		}
+		return false
+	} else {
+		return userEntryPercentage > 0.75
+	}
+}
+
 // extractOwnSection returns before our section, inside, and after if found.
+//
 // - It is not returning both start and end markers.
+//
 // - If not found, it returns the file content in the first string
 func extractOwnSection(crontab string) (string, string, string, bool) {
 	start := strings.Index(crontab, startMarker)

@@ -17,5 +17,13 @@ func TestWindows(t *testing.T) {
 }
 
 func TestSupportsSyslog(t *testing.T) {
-	assert.Equal(t, runtime.GOOS != "windows", platform.SupportsSyslog())
+	assert.Equal(t, !platform.IsWindows(), platform.SupportsSyslog())
+}
+
+func TestExecutable(t *testing.T) {
+	expected := "/path/to/app"
+	if platform.IsWindows() {
+		expected = "/path/to/app.exe"
+	}
+	assert.Equal(t, expected, platform.Executable("/path/to/app"))
 }

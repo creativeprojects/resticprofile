@@ -1,15 +1,16 @@
-//go:build !darwin && !windows
-// +build !darwin,!windows
-
 package crond
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -71,6 +72,7 @@ func TestDeleteLine(t *testing.T) {
 		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup\n", true},
 		{"#\n#\n#\n# 00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", false},
 		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
+		{"#\n#\n#\n00,30 * * * *	user	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
 	}
 
 	for _, testRun := range testData {
@@ -114,7 +116,7 @@ func TestSectionOnItsOwn(t *testing.T) {
 func TestUpdateEmptyCrontab(t *testing.T) {
 	crontab := NewCrontab(nil)
 	buffer := &strings.Builder{}
-	deleted, err := crontab.Update("", true, buffer)
+	deleted, err := crontab.update("", true, buffer)
 	require.NoError(t, err)
 	assert.Equal(t, 0, deleted)
 	assert.Equal(t, "\n"+startMarker+endMarker, buffer.String())
@@ -126,7 +128,7 @@ func TestUpdateSimpleCrontab(t *testing.T) {
 		event.Hour.MustAddValue(1)
 	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
-	deleted, err := crontab.Update("", true, buffer)
+	deleted, err := crontab.update("", true, buffer)
 	require.NoError(t, err)
 	assert.Equal(t, 0, deleted)
 	assert.Equal(t, "\n"+startMarker+"01 01 * * *\tresticprofile backup\n"+endMarker, buffer.String())
@@ -138,7 +140,7 @@ func TestUpdateExistingCrontab(t *testing.T) {
 		event.Hour.MustAddValue(1)
 	}), "", "", "", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
-	deleted, err := crontab.Update("something\n"+startMarker+endMarker, true, buffer)
+	deleted, err := crontab.update("something\n"+startMarker+endMarker, true, buffer)
 	require.NoError(t, err)
 	assert.Equal(t, 0, deleted)
 	assert.Equal(t, "something\n"+startMarker+"01 01 * * *\tresticprofile backup\n"+endMarker, buffer.String())
@@ -150,24 +152,187 @@ func TestRemoveCrontab(t *testing.T) {
 		event.Hour.MustAddValue(1)
 	}), "config.yaml", "profile", "backup", "resticprofile backup", "")})
 	buffer := &strings.Builder{}
-	deleted, err := crontab.Update("something\n"+startMarker+"01 01 * * *\t/opt/resticprofile --no-ansi --config config.yaml --name profile backup\n"+endMarker, false, buffer)
+	deleted, err := crontab.update("something\n"+startMarker+"01 01 * * *\t/opt/resticprofile --no-ansi --config config.yaml --name profile backup\n"+endMarker, false, buffer)
 	require.NoError(t, err)
 	assert.Equal(t, 1, deleted)
 	assert.Equal(t, "something\n"+startMarker+endMarker, buffer.String())
 }
 
-func TestLoadCurrent(t *testing.T) {
-	defer func() {
-		_ = os.Remove("./crontab")
-	}()
-	cmd := exec.Command("go", "build", "-o", "crontab", "./stdin")
-	err := cmd.Run()
-	require.NoError(t, err)
-	crontabBinary = "./crontab"
+func TestFromFile(t *testing.T) {
+	file, err := filepath.Abs(filepath.Join(t.TempDir(), "crontab"))
 
-	crontab := NewCrontab(nil)
-	assert.NotNil(t, crontab)
+	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
+		event.Minute.MustAddValue(1)
+		event.Hour.MustAddValue(1)
+	}), "", "", "", "resticprofile backup", "")})
+
+	assert.ErrorContains(t, crontab.Rewrite(), "no contrab file was specified")
+
+	crontab.SetFile(file)
+
+	assert.NoFileExists(t, file)
+	assert.NoError(t, crontab.Rewrite())
+	assert.FileExists(t, file)
+
 	result, err := crontab.LoadCurrent()
 	assert.NoError(t, err)
-	assert.Equal(t, "", result)
+	assert.Contains(t, result, "01 01 * * *\tresticprofile backup")
+}
+
+func getExpectedUser(crontab *Crontab) (expectedUser string) {
+	if c, e := user.Current(); e != nil || strings.ContainsAny(c.Username, "\n \r\n") {
+		expectedUser = "testuser"
+		crontab.user = "testuser"
+	} else {
+		expectedUser = c.Username
+	}
+	return
+}
+
+func TestFromFileDetectsUserColumn(t *testing.T) {
+	file, err := filepath.Abs(filepath.Join(t.TempDir(), "crontab"))
+	userLine := `17 *	* * *	root	cd / && run-parts --report /etc/cron.hourly`
+	require.NoError(t, os.WriteFile(file, []byte("\n"+userLine+"\n"), 0600))
+	cmdLine := "resticprofile --no-ansi --config config.yaml --name profile backup"
+
+	crontab := NewCrontab([]Entry{NewEntry(calendar.NewEvent(func(event *calendar.Event) {
+		event.Minute.MustAddValue(1)
+		event.Hour.MustAddValue(1)
+	}), "config.yaml", "profile", "backup", cmdLine, "")})
+
+	crontab.SetFile(file)
+	expectedUser := getExpectedUser(crontab)
+
+	assert.NoError(t, crontab.Rewrite())
+	result, err := crontab.LoadCurrent()
+	assert.NoError(t, err)
+	assert.Contains(t, result, userLine)
+	assert.Contains(t, result, fmt.Sprintf("01 01 * * *\t%s\t%s", expectedUser, cmdLine))
+
+	_, err = crontab.Remove()
+	assert.NoError(t, err)
+	result, err = crontab.LoadCurrent()
+	assert.NoError(t, err)
+	assert.Contains(t, result, userLine)
+	assert.NotContains(t, result, cmdLine)
+}
+
+func TestNewCrontabWithCurrentUser(t *testing.T) {
+	event := calendar.NewEvent(func(event *calendar.Event) {
+		event.Minute.MustAddValue(1)
+		event.Hour.MustAddValue(1)
+	})
+	entry := NewEntry(event, "config.yaml", "profile", "backup", "", "").
+		WithUser("*")
+
+	crontab := NewCrontab([]Entry{entry})
+	expectedUser := getExpectedUser(crontab)
+	assert.Equal(t, expectedUser, crontab.entries[0].user)
+}
+
+func TestNoLoadCurrentFromNoEditFile(t *testing.T) {
+	file, err := filepath.Abs(filepath.Join(t.TempDir(), "crontab"))
+	assert.NoError(t, os.WriteFile(file, []byte("# DO NOT EDIT THIS FILE \n#\n#\n"), 0600))
+
+	crontab := NewCrontab(nil)
+	crontab.SetFile(file)
+
+	_, err = crontab.LoadCurrent()
+	assert.ErrorContains(t, err, fmt.Sprintf(`refusing to change crontab with "DO NOT EDIT": %q`, file))
+}
+
+func TestDetectNeedsUserColumn(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		assert.False(t, detectNeedsUserColumn(""))
+	})
+
+	t.Run("by-header", func(t *testing.T) {
+		assert.True(t, detectNeedsUserColumn(`# *  *  *  *  * user cmd`))
+		assert.True(t, detectNeedsUserColumn(`# *  *  *  *  * user-name command to be executed`))
+		assert.False(t, detectNeedsUserColumn(`# *  *  *  *  * user cmd
+# *  *  *  *  * cmd`))
+		assert.False(t, detectNeedsUserColumn(`# *  *  *  *  * cmd
+# *  *  *  *  * user cmd`))
+		assert.True(t, detectNeedsUserColumn(`# *  *  *  *  * cmd
+# *  *  *  *  * user cmd
+17 *	* * *	root	cd / && run-parts --report /etc/cron.hourly`))
+	})
+
+	t.Run("by-entry", func(t *testing.T) {
+		assert.True(t, detectNeedsUserColumn(`17 *	* * *	root	cd / && run-parts --report /etc/cron.hourly`))
+		assert.True(t, detectNeedsUserColumn(`SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+0 4 * * *   root    test -x /etc/cron.daily/popularity-contest && /etc/cron.daily/popularity-contest --crond`))
+	})
+
+	t.Run("by-entry-statistically", func(t *testing.T) {
+		user := `17 *	* * *	root	cd / && run-parts --report /etc/cron.hourly`
+		noUser := `01 01 * * *	resticprofile backup`
+		compose := func(split int) string {
+			return strings.Repeat(user+"\n", split) + strings.Repeat(noUser+"\n", 10-split)
+		}
+		assert.False(t, detectNeedsUserColumn(compose(1)))
+		assert.False(t, detectNeedsUserColumn(compose(7)))
+		assert.True(t, detectNeedsUserColumn(compose(8)))
+		assert.True(t, detectNeedsUserColumn(compose(9)))
+		assert.True(t, detectNeedsUserColumn(compose(10)))
+	})
+}
+
+func TestUseCrontabBinary(t *testing.T) {
+	binary := platform.Executable("./crontab")
+	defer func() { _ = os.Remove(binary) }()
+
+	cmd := exec.Command("go", "build", "-o", binary, "./mock")
+	require.NoError(t, cmd.Run())
+
+	crontab := NewCrontab(nil)
+	crontab.SetBinary(binary)
+
+	t.Run("load-error", func(t *testing.T) {
+		result, err := crontab.LoadCurrent()
+		assert.Error(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("save-error", func(t *testing.T) {
+		err := crontab.Rewrite()
+		assert.Error(t, err)
+	})
+
+	t.Run("load-empty", func(t *testing.T) {
+		require.NoError(t, os.Setenv("NO_CRONTAB", "empty"))
+		defer os.Unsetenv("NO_CRONTAB")
+
+		result, err := crontab.LoadCurrent()
+		assert.NoError(t, err)
+		assert.Equal(t, "", result)
+	})
+
+	t.Run("load-empty-for-user", func(t *testing.T) {
+		require.NoError(t, os.Setenv("NO_CRONTAB", "user"))
+		defer os.Unsetenv("NO_CRONTAB")
+
+		result, err := crontab.LoadCurrent()
+		assert.NoError(t, err)
+		assert.Equal(t, "", result)
+	})
+
+	t.Run("load-crontab", func(t *testing.T) {
+		ct := "01 01 * * *\tresticprofile backup"
+		require.NoError(t, os.Setenv("CRONTAB", ct))
+		defer os.Unsetenv("CRONTAB")
+
+		result, err := crontab.LoadCurrent()
+		assert.NoError(t, err)
+		assert.Equal(t, ct, result)
+	})
+
+	t.Run("save-crontab", func(t *testing.T) {
+		ct := "01 01 * * *\tresticprofile backup"
+		require.NoError(t, os.Setenv("CRONTAB", ct))
+		defer os.Unsetenv("CRONTAB")
+
+		assert.NoError(t, crontab.Rewrite())
+	})
 }

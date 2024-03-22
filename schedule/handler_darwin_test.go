@@ -15,6 +15,11 @@ import (
 	"howett.net/plist"
 )
 
+func TestHandlerCrond(t *testing.T) {
+	handler := NewHandler(SchedulerCrond{})
+	assert.IsType(t, &HandlerCrond{}, handler)
+}
+
 func TestPListEncoderWithCalendarInterval(t *testing.T) {
 	expected := `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -140,7 +145,7 @@ func TestLaunchdJobPreservesEnv(t *testing.T) {
 
 	for i, fixture := range fixtures {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			handler := NewHandler(SchedulerLaunchd{})
+			handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 			cfg := &Config{ProfileName: "t", CommandName: "s", Environment: fixture.environment}
 			launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
 			assert.Equal(t, fixture.expected, launchdJob.EnvironmentVariables)
@@ -149,7 +154,7 @@ func TestLaunchdJobPreservesEnv(t *testing.T) {
 }
 
 func TestCreateUserPlist(t *testing.T) {
-	handler := NewHandler(SchedulerLaunchd{})
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 	handler.fs = afero.NewMemMapFs()
 
 	launchdJob := &LaunchdJob{
@@ -163,7 +168,7 @@ func TestCreateUserPlist(t *testing.T) {
 }
 
 func TestCreateSystemPlist(t *testing.T) {
-	handler := NewHandler(SchedulerLaunchd{})
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 	handler.fs = afero.NewMemMapFs()
 
 	launchdJob := &LaunchdJob{

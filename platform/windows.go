@@ -2,6 +2,8 @@
 
 package platform
 
+import "fmt"
+
 const LineSeparator = "\r\n"
 
 func IsDarwin() bool {
@@ -15,3 +17,5 @@ func IsWindows() bool {
 func SupportsSyslog() bool {
 	return false
 }
+
+func Executable(name string) string { return fmt.Sprintf("%s.exe", name) }
