@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  scheduled-backup:
+    image: creativeprojects/resticprofile:${RP_VERSION:-latest}
+    container_name: backup_container
+    hostname: backup_container
+    user: resticprofile:resticprofile
+    entrypoint: '/bin/sh'
+    command:
+      - '-c'
+      - 'resticprofile schedule --all && supercronic /resticprofile/crontab'
+    volumes:
+      - '${RP_CONFIG}:/resticprofile/profiles.yaml:ro'
+      - '${RP_KEYFILE}:/resticprofile/key:ro'
+      - '${BACKUP_SOURCE}:/source:ro'
+      - '${RP_REPOSITORY}:/restic_repo'
+    environment:
+      - TZ=${TIMEZONE:-Etc/UTC}
