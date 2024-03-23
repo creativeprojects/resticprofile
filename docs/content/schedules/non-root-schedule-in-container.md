@@ -1,9 +1,14 @@
-# Scheduling inside a container with a non-root user
+---
+title: "User schedule in container"
+weight: 150
+tags: ["v0.27.0"]
+---
+
 
 You can schedule your backups with resticprofile by running `crond` inside a container.
 This version shows how to use [supercronic](https://github.com/aptible/supercronic) to run the scheduled backups as a non-root user.
 
-You can create a container with this modified version from the official image:
+You can create a container with this modified version from the [official image](https://github.com/creativeprojects/resticprofile/blob/master/build/Dockerfile):
 
 ```Dockerfile
 FROM alpine:latest
@@ -81,7 +86,7 @@ default:
 
 ## More information
 
-[Discussion on Supersonic](https://github.com/creativeprojects/resticprofile/issues/288)
+[Discussion on Supercronic](https://github.com/creativeprojects/resticprofile/issues/288)
 
 [Discussion on non-root container](https://github.com/creativeprojects/resticprofile/issues/321)
 
