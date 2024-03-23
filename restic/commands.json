@@ -491,7 +491,7 @@
   },
   {
     "Name": "diff",
-    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink",
+    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink\n\n\nTo only compare files in specific subfolders, you can use the\n\":\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -517,7 +517,7 @@
   },
   {
     "Name": "dump",
-    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshot \"latest\" can be used to use the latest snapshot in the\nrepository.",
+    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\":\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1563,6 +1563,23 @@
     ]
   },
   {
+    "Name": "repair-packs",
+    "Description": "WARNING: The CLI for this command is experimental and will likely change in the future!\n\nThe \"repair packs\" command extracts intact blobs from the specified pack files, rebuilds\nthe index to remove the damaged pack files and removes the pack files from the repository.",
+    "FromVersion": "0.16.1",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for packs",
+        "Once": true,
+        "FromVersion": "0.16.1",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
     "Name": "repair-snapshots",
     "Description": "The \"repair snapshots\" command repairs broken snapshots. It scans the given\nsnapshots and generates new ones with damaged directories and file contents\nremoved. If the broken snapshots are deleted, a prune run will be able to\nclean up the repository.\n\nThe command depends on a correct index, thus make sure to run \"repair index\"\nfirst!",
     "FromVersion": "0.16.0",
@@ -1626,7 +1643,7 @@
   },
   {
     "Name": "restore",
-    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshot \"latest\" can be used to restore the latest snapshot in the\nrepository.",
+    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \":\"\nsyntax, where \"subfolder\" is a path within the snapshot.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1661,7 +1678,7 @@
         "Name": "iexclude",
         "Alias": "",
         "Default": "",
-        "Description": "same as --exclude but ignores the casing of filenames",
+        "Description": "same as --exclude but ignores the casing of pattern",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -1670,7 +1687,7 @@
         "Name": "iinclude",
         "Alias": "",
         "Default": "",
-        "Description": "same as --include but ignores the casing of filenames",
+        "Description": "same as --include but ignores the casing of pattern",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -2205,6 +2222,15 @@
         "Description": "do not use a local cache",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "no-extra-verify",
+        "Alias": "",
+        "Default": "false",
+        "Description": "skip additional verification of data before upload (see documentation)",
+        "Once": true,
+        "FromVersion": "0.16.4",
         "RemovedInVersion": ""
       },
       {

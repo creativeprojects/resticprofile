@@ -7,20 +7,34 @@ import (
 	"io"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/term"
 )
 
 func (r *resticWrapper) prepareStreamSource() (io.ReadCloser, error) {
-	if r.profile.Backup != nil && r.profile.Backup.UseStdin {
-		if len(r.profile.Backup.StdinCommand) > 0 {
-			return r.prepareCommandStreamSource()
-		} else {
+	if backup := r.profile.Backup; backup != nil {
+		if len(backup.StdinCommand) > 0 {
+			// check if we can pass stdin-from-command to restic directly (preferred as restic will do the error handling)
+			var supportsCommand bool
+			if cmd, ok := restic.GetCommandForVersion(constants.CommandBackup, r.getResticVersion(), false); ok {
+				if opt, ok := cmd.Lookup(constants.StdinFromCommand); ok {
+					supportsCommand = opt.AvailableForOS()
+				}
+			}
+			if supportsCommand && len(backup.StdinCommand) == 1 {
+				backup.UseStdin = false
+				backup.SetOtherFlag(constants.StdinFromCommand, backup.StdinCommand[0])
+			} else {
+				return r.prepareCommandStreamSource()
+			}
+		} else if backup.UseStdin {
 			return r.prepareStdinStreamSource()
 		}
 	}
@@ -122,7 +136,7 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 			// Stopping restic when stream source command fails while producing content
 			if err != nil && err != io.EOF {
 				clog.Errorf("interrupting '%s' after stdin read error: %s", r.command, err)
-				if runtime.GOOS == "windows" {
+				if platform.IsWindows() {
 					return // that will close stdin and stops restic
 				} else if r.sigChan != nil {
 					r.sigChan <- os.Interrupt
