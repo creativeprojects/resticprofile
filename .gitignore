@@ -33,3 +33,5 @@ status.json
 /docs/static/jsonschema
 /public
 .hugo_build.lock
+
+.env
