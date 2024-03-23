@@ -677,10 +677,12 @@ func TestBackupWithStreamSource(t *testing.T) {
 		signals := make(chan os.Signal, 1)
 		ctx := &Context{
 			binary:  mockBinary,
+			global:  config.NewGlobal(),
 			profile: profile,
 			command: "stdin-test",
 			sigChan: signals,
 		}
+		ctx.global.ResticVersion = "0.16" // just before --stdin-from-stream support
 		wrapper = newResticWrapper(ctx)
 		return
 	}
@@ -767,6 +769,29 @@ func TestBackupWithStreamSource(t *testing.T) {
 
 		_, err := run(t, wrapper)
 		assert.Nil(t, err)
+	})
+
+	t.Run("StreamSourceUsesFromCommandWhenAvailable", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		wrapper.global.ResticVersion = "0.17"
+		command := "echo 123"
+		profile.Backup.StdinCommand = []string{command}
+		profile.ResolveConfiguration()
+
+		// check that no content is sent to stdin
+		content, err := run(t, wrapper)
+		assert.Nil(t, err)
+		assert.Empty(t, content)
+
+		// check that backup was modified to use StdinFromCommand
+		assert.False(t, profile.Backup.UseStdin)
+		assert.Equal(t, command, profile.Backup.GetOtherFlags()[constants.StdinFromCommand])
+
+		// check also that the arg is sent to mock
+		wrapper.moreArgs = append(wrapper.moreArgs, "--args")
+		content, err = run(t, wrapper)
+		assert.Nil(t, err)
+		assert.Contains(t, content, fmt.Sprintf("--%s=%s", constants.StdinFromCommand, command))
 	})
 
 	t.Run("StreamSourceErrorSendsSIGINT", func(t *testing.T) {

@@ -25,4 +25,5 @@ const (
 	ParameterPasswordFile    = "password-file"
 	ParameterPasswordCommand = "password-command"
 	ParameterKeyHint         = "key-hint"
+	StdinFromCommand         = "stdin-from-command"
 )
