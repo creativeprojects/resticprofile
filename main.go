@@ -52,7 +52,7 @@ func main() {
 	args := os.Args[1:]
 	_, flags, flagErr := loadFlags(args)
 	if flagErr != nil && flagErr != pflag.ErrHelp {
-		fmt.Println(flagErr)
+		term.Println(flagErr)
 		_ = displayHelpCommand(os.Stdout, commandContext{
 			ownCommands: ownCommands,
 			Context: Context{
@@ -70,7 +70,7 @@ func main() {
 		// keep the console running at the end of the program
 		// so we can see what's going on
 		defer func() {
-			fmt.Println("\n\nPress the Enter Key to continue...")
+			term.Println("\n\nPress the Enter Key to continue...")
 			fmt.Scanln()
 		}()
 	}
@@ -113,6 +113,12 @@ func main() {
 			if ctx != nil {
 				logTarget = ctx.logTarget
 				commandOutput = ctx.commandOutput
+				if ctx.request.command == constants.CommandCat ||
+					ctx.request.command == constants.CommandDump {
+					clog.Debugf("redirecting console to stderr for command %q", ctx.request.command)
+					flags.stderr = true
+				}
+				term.PrintToError = flags.stderr
 			}
 			if logTarget != "" && logTarget != "-" {
 				if closer, err := setupTargetLogger(flags, logTarget, commandOutput); err == nil {

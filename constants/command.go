@@ -10,6 +10,7 @@ const (
 	CommandSnapshots = "snapshots"
 	CommandUnlock    = "unlock"
 	CommandMount     = "mount"
+	CommandCat       = "cat"
 	CommandCopy      = "copy"
 	CommandDump      = "dump"
 	CommandFind      = "find"

@@ -33,6 +33,7 @@ type commandLineFlags struct {
 	resticArgs      []string
 	wait            bool
 	isChild         bool
+	stderr          bool
 	parentPort      int
 	noPriority      bool
 	ignoreOnBattery int
@@ -85,6 +86,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		dryRun:          envValueOverride(false, "RESTICPROFILE_DRY_RUN"),
 		noLock:          envValueOverride(false, "RESTICPROFILE_NO_LOCK"),
 		lockWait:        envValueOverride(time.Duration(0), "RESTICPROFILE_LOCK_WAIT"),
+		stderr:          envValueOverride(false, "RESTICPROFILE_STDERR"),
 		noAnsi:          envValueOverride(false, "RESTICPROFILE_NO_ANSI"),
 		theme:           envValueOverride(constants.DefaultTheme, "RESTICPROFILE_THEME"),
 		noPriority:      envValueOverride(false, "RESTICPROFILE_NO_PRIORITY"),
@@ -104,6 +106,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.BoolVar(&flags.dryRun, "dry-run", flags.dryRun, "display the restic commands instead of running them")
 	flagset.BoolVar(&flags.noLock, "no-lock", flags.noLock, "skip profile lock file")
 	flagset.DurationVar(&flags.lockWait, "lock-wait", flags.lockWait, "wait up to duration to acquire a lock (syntax \"1h5m30s\")")
+	flagset.BoolVar(&flags.stderr, "stderr", flags.noAnsi, "send console output to stderr (enabled for \"cat\" and \"dump\")")
 	flagset.BoolVar(&flags.noAnsi, "no-ansi", flags.noAnsi, "disable ansi control characters (disable console colouring)")
 	flagset.StringVar(&flags.theme, "theme", flags.theme, "console colouring theme (dark, light, none)")
 	flagset.BoolVar(&flags.noPriority, "no-prio", flags.noPriority, "don't change the process priority: used when started from a service that has already set the priority")

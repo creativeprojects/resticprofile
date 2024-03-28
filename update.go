@@ -68,7 +68,7 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 
 	// don't ask in quiet mode
 	if !quiet && !term.AskYesNo(os.Stdin, fmt.Sprintf("Do you want to update to version %s", latest.Version()), true) {
-		fmt.Println("Never mind")
+		term.Println("Never mind")
 		return nil
 	}
 
