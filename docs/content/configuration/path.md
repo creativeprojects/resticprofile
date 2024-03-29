@@ -101,6 +101,7 @@ default {
 {{% notice hint %}}
 Set `base-dir` to an absolute path to resolve `files` and `local:backup` relative to it.
 Set `source-base` if you need a separate base path for backup sources.
+To set the working directory for the `local:backup` command, use `change-working-dir`. Doing so means that the `source` will not be resolved to an absolute path in this context.
 {{% /notice %}}
 
 ## How the configuration file is resolved

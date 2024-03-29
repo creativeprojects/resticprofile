@@ -366,8 +366,12 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
 
 	// Special case for backup command
+	var dir string
 	if command == constants.CommandBackup {
 		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
+		if r.profile.Backup != nil {
+			dir = r.profile.Backup.SourceBase
+		}
 	}
 	// Special case for copy command
 	if command == constants.CommandCopy {
@@ -409,6 +413,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	rCommand.stdout = term.GetOutput()
 	rCommand.stderr = term.GetErrorOutput()
 	rCommand.streamError = r.profile.StreamError
+	rCommand.dir = dir
 
 	return rCommand
 }

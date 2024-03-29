@@ -172,6 +172,7 @@ type BackupSection struct {
 	CheckAfter                       bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
 	UseStdin                         bool     `mapstructure:"stdin" argument:"stdin"`
 	StdinCommand                     []string `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
+	ChangeWorkingDir                 bool     `mapstructure:"change-working-dir" description:"Change the restic backup command's working directory to \"source-base\". When set, the \"source\" does not expand to absolute paths"`
 	SourceBase                       string   `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
 	Source                           []string `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
 	Exclude                          []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
@@ -651,15 +652,19 @@ func (p *Profile) SetRootPath(rootPath string) {
 func (p *Profile) resolveSourcePath(sourceBase string, sourcePaths ...string) []string {
 	var applySourceBase, applyBaseDir pathFix
 
-	// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
-	// Applying "sourceBase" if set
-	if sourceBase = strings.TrimSpace(sourceBase); sourceBase != "" {
-		sourceBase = fixPath(sourceBase, expandEnv, expandUserHome)
-		applySourceBase = absolutePrefix(sourceBase)
-	}
-	// Applying a custom PWD eagerly so that own commands (e.g. "show") display correct paths
-	if p.BaseDir != "" {
-		applyBaseDir = absolutePrefix(p.BaseDir)
+	sourceBase = fixPath(sourceBase, expandEnv, expandUserHome)
+	// When "change-working-dir" is set, the source paths are relative to the "source-base"
+	if !p.Backup.ChangeWorkingDir {
+		// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
+		// Applying "sourceBase" if set
+		if sourceBase = strings.TrimSpace(sourceBase); sourceBase != "" {
+			applySourceBase = absolutePrefix(sourceBase)
+		}
+		// Applying a custom PWD eagerly so that own commands (e.g. "show") display correct paths
+		if p.BaseDir != "" {
+			applyBaseDir = absolutePrefix(p.BaseDir)
+		}
+
 	}
 
 	// prefix paths starting with "-" with a "./" to distinguish a source path from a flag

@@ -114,6 +114,8 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 		cmd.Env = append(cmd.Env, c.Environ...)
 	}
 
+	cmd.Dir = c.Dir
+
 	start := time.Now()
 
 	// spawn the child process

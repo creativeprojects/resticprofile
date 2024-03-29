@@ -285,6 +285,23 @@ func TestSelectCustomShell(t *testing.T) {
 	assert.Empty(t, shell)
 }
 
+func TestRunShellWorkingDir(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	cmd := NewCommand("pwd", nil)
+	cmd.Stdout = buffer
+	cmd.Dir = "/tmp"
+	_, _, err := cmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := ioutil.ReadAll(buffer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Contains(t, strings.TrimSpace(string(output)), "/tmp")
+}
+
 func TestRunShellEcho(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	cmd := NewCommand("echo", []string{"TestRunShellEcho"})
