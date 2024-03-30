@@ -639,7 +639,7 @@ func TestResolveSourcesAgainstBase(t *testing.T) {
 	backupSource := func(base, source string, changeWorkingDir bool) []string {
 		config := `
 			[profile.backup]
-			change-working-dir = ` + strconv.FormatBool(changeWorkingDir) + `
+			source-relative = ` + strconv.FormatBool(changeWorkingDir) + `
 			source-base = "` + filepath.ToSlash(base) + `"
 			source = "` + filepath.ToSlash(source) + `"
 		`
