@@ -3,6 +3,7 @@ package shell
 import (
 	"bytes"
 	"fmt"
+	"github.com/creativeprojects/resticprofile/platform"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -286,20 +287,23 @@ func TestSelectCustomShell(t *testing.T) {
 }
 
 func TestRunShellWorkingDir(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	cmd := NewCommand("pwd", nil)
+	command := func() string {
+		if platform.IsWindows() {
+			return "(pwd).Path"
+		}
+		return "pwd"
+	}()
+	temp := t.TempDir()
+	buffer := new(strings.Builder)
+	cmd := NewCommand(command, nil)
 	cmd.Stdout = buffer
-	cmd.Dir = "/tmp"
+	cmd.Dir = temp
 	_, _, err := cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
-	output, err := ioutil.ReadAll(buffer)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	assert.Contains(t, strings.TrimSpace(string(output)), "/tmp")
+	assert.Contains(t, strings.TrimSpace(buffer.String()), temp)
 }
 
 func TestRunShellEcho(t *testing.T) {
