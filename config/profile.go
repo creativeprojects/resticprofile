@@ -654,7 +654,7 @@ func (p *Profile) resolveSourcePath(sourceBase string, sourcePaths ...string) []
 
 	sourceBase = fixPath(sourceBase, expandEnv, expandUserHome)
 	// When "source-relative" is set, the source paths are relative to the "source-base"
-	if !p.Backup.SourceRelative {
+	if p.Backup == nil || !p.Backup.SourceRelative {
 		// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
 		// Applying "sourceBase" if set
 		if sourceBase = strings.TrimSpace(sourceBase); sourceBase != "" {
