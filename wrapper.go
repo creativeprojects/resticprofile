@@ -369,7 +369,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	var dir string
 	if command == constants.CommandBackup {
 		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
-		if r.profile.Backup != nil {
+		if r.profile.Backup != nil && r.profile.Backup.SourceRelative {
 			dir = r.profile.Backup.SourceBase
 		}
 	}
