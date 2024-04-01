@@ -18,6 +18,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/fatih/color"
 )
 
 type LogCloser interface {
@@ -26,6 +27,12 @@ type LogCloser interface {
 }
 
 func setupConsoleLogger(flags commandLineFlags) {
+	if flags.stderr {
+		out := color.Output
+		color.Output = color.Error
+		defer func() { color.Output = out }()
+	}
+
 	consoleHandler := clog.NewConsoleHandler("", log.LstdFlags)
 	if flags.theme != "" {
 		consoleHandler.SetTheme(flags.theme)

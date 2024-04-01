@@ -82,6 +82,7 @@ There are not many options on the command line, most of the options are in the c
 * **[-v | --verbose]**: Force resticprofile and restic to be verbose (override any configuration from the profile)
 * **[--trace]**: Display even more debugging information
 * **[--no-ansi]**: Disable console colouring (to save output into a log file)
+* **[--stderr]**: Send console output from resticprofile to stderr (is enabled for commands `cat` and `dump`)
 * **[--no-lock]**: Disable resticprofile locks, neither create nor fail on a lock. restic locks are unaffected by this option.
 * **[--theme]**: Can be `light`, `dark` or `none`. The colours will adjust to a 
 light or dark terminal (none to disable colouring)
@@ -114,6 +115,7 @@ Most flags for resticprofile can be set using environment variables. If both are
 | `--dry-run`           | `RESTICPROFILE_DRY_RUN`           | `false`          |
 | `--no-lock`           | `RESTICPROFILE_NO_LOCK`           | `false`          |
 | `--lock-wait`         | `RESTICPROFILE_LOCK_WAIT`         | `0`              |
+| `--stderr`            | `RESTICPROFILE_STDERR`            | `false`          |
 | `--no-ansi`           | `RESTICPROFILE_NO_ANSI`           | `false`          |
 | `--theme`             | `RESTICPROFILE_THEME`             | `"light"`        |
 | `--no-priority`       | `RESTICPROFILE_NO_PRIORITY`       | `false`          |

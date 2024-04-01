@@ -69,6 +69,7 @@ func TestEnvOverrides(t *testing.T) {
 		dryRun:          setEnv(true, "RESTICPROFILE_DRY_RUN").(bool),
 		noLock:          setEnv(true, "RESTICPROFILE_NO_LOCK").(bool),
 		lockWait:        setEnv(time.Minute*5, "RESTICPROFILE_LOCK_WAIT").(time.Duration),
+		stderr:          setEnv(true, "RESTICPROFILE_STDERR").(bool),
 		noAnsi:          setEnv(true, "RESTICPROFILE_NO_ANSI").(bool),
 		theme:           setEnv("custom-theme", "RESTICPROFILE_THEME").(string),
 		noPriority:      setEnv(true, "RESTICPROFILE_NO_PRIORITY").(bool),
