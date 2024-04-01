@@ -338,7 +338,7 @@ func (c *Config) DisplayConfigurationIssues() {
 		msg = append([]string{
 			"the configuration contains relative \"path\" items which may lead to unstable results in restic " +
 				"commands that select snapshots. Consider using absolute paths in \"path\" (and \"source\"), " +
-				"set \"base-dir\" in the profile or use \"tag\" instead of \"path\" (path = false) to select " +
+				"set \"base-dir\" or \"source-base\" in the profile or use \"tag\" instead of \"path\" (path = false) to select " +
 				"snapshots for restic commands.",
 			"Affected paths are:",
 		}, msg...)
