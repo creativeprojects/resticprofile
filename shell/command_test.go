@@ -3,7 +3,6 @@ package shell
 import (
 	"bytes"
 	"fmt"
-	"github.com/creativeprojects/resticprofile/platform"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -16,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -195,6 +195,15 @@ func (b *BackupSection) resolve(profile *Profile) {
 	if len(b.StdinCommand) > 0 {
 		b.UseStdin = true
 	}
+	// Resolve symlinks if we send relative paths to restic (to match paths in snapshots)
+	if b.SourceRelative {
+		if dir := strings.TrimSpace(profile.BaseDir); dir != "" {
+			profile.BaseDir = evaluateSymlinks(dir)
+		}
+		if dir := strings.TrimSpace(b.SourceBase); dir != "" {
+			b.SourceBase = evaluateSymlinks(dir)
+		}
+	}
 	// Resolve source paths
 	if b.unresolvedSource == nil {
 		b.unresolvedSource = b.Source
@@ -664,8 +673,7 @@ func (p *Profile) resolveSourcePath(sourceBase string, relativePaths bool, sourc
 		if p.BaseDir != "" {
 			applyBaseDir = absolutePrefix(p.BaseDir)
 		}
-
-	} else if p.BaseDir == "" && sourceBase == "" && p.config != nil {
+	} else if p.BaseDir == "" && sourceBase == "" && p.hasConfig() {
 		p.config.reportChangedPath(".", "<none>", "source-base (for relative source)")
 	}
 
@@ -699,8 +707,9 @@ func (p *Profile) SetTag(tags ...string) {
 
 // SetPath will replace any path value from a boolean to sourcePaths and change paths to absolute
 func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
+	hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir) || basePath != "" && filepath.IsAbs(basePath)
+
 	resolvePath := func(origin string, paths []string, revolver func(string) []string) (resolved []string) {
-		hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir) || basePath != "" && filepath.IsAbs(basePath)
 		for _, path := range paths {
 			if len(path) > 0 {
 				for _, rp := range revolver(path) {

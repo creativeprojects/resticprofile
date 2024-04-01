@@ -406,7 +406,14 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	env := r.getEnvironment(true)
 	env = append(env, r.getProfileEnvironment()...)
 
-	clog.Debugf("starting command: %s %s", r.ctx.binary, strings.Join(publicArguments, " "))
+	clog.Debug(func() string {
+		wd := ""
+		if dir != "" {
+			wd = fmt.Sprintf(" (in %s)", dir)
+		}
+		return fmt.Sprintf("starting command: %s %s%s", r.ctx.binary, strings.Join(publicArguments, " "), wd)
+	})
+
 	rCommand := newShellCommand(r.ctx.binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
