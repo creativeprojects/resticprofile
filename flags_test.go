@@ -117,6 +117,7 @@ func TestEnvOverridesError(t *testing.T) {
 }
 
 func TestCommandProfile(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		sourceArgs      []string
 		expectedProfile string
@@ -185,6 +186,7 @@ func TestCommandProfile(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(strings.Join(testCase.sourceArgs, " "), func(t *testing.T) {
+			t.Parallel()
 			_, flags, err := loadFlags(testCase.sourceArgs)
 			require.NoError(t, err)
 			assert.Equal(t, flags.name, testCase.expectedProfile)
