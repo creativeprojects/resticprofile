@@ -156,27 +156,50 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	// parse first positional argument as <profile>.<command> if the profile was not set via name
 	nameFlag := flagset.Lookup("name")
-	if (nameFlag == nil || !nameFlag.Changed) && strings.Contains(flags.resticArgs[0], ".") {
-		// split first argument at `.`
-		profileAndCommand := strings.Split(flags.resticArgs[0], ".")
-		// last element will be used as restic command
-		command := profileAndCommand[len(profileAndCommand)-1]
-		// remaining elements will be stiched together with `.` and used as profile name
-		profile := strings.Join(profileAndCommand[0:len(profileAndCommand)-1], ".")
+	if nameFlag == nil || !nameFlag.Changed {
+		if strings.Contains(flags.resticArgs[0], ".") {
+			// split first argument at `.`
+			profileAndCommand := strings.Split(flags.resticArgs[0], ".")
+			// last element will be used as restic command
+			command := profileAndCommand[len(profileAndCommand)-1]
+			// remaining elements will be stiched together with `.` and used as profile name
+			profile := strings.Join(profileAndCommand[0:len(profileAndCommand)-1], ".")
 
-		// set command
-		if len(command) == 0 {
-			// take default command by removing it from resticArgs
-			flags.resticArgs = flags.resticArgs[1:]
-		} else {
-			flags.resticArgs[0] = command
-		}
+			// set command
+			if len(command) == 0 {
+				// take default command by removing it from resticArgs
+				flags.resticArgs = flags.resticArgs[1:]
+			} else {
+				flags.resticArgs[0] = command
+			}
 
-		// set profile
-		if len(profile) == 0 {
-			profile = constants.DefaultProfileName
+			// set profile
+			if len(profile) == 0 {
+				profile = constants.DefaultProfileName
+			}
+			flags.name = profile
+		} else if strings.Contains(flags.resticArgs[0], "@") {
+			// split first argument at `@`
+			commandAndProfile := strings.Split(flags.resticArgs[0], "@")
+			// first element will be used as restic command
+			profile := commandAndProfile[0]
+			// last element will be used as profile name
+			command := commandAndProfile[len(commandAndProfile)-1]
+
+			// set command
+			if len(command) == 0 {
+				// take default command by removing it from resticArgs
+				flags.resticArgs = flags.resticArgs[1:]
+			} else {
+				flags.resticArgs[0] = command
+			}
+
+			// set profile
+			if len(profile) == 0 {
+				profile = constants.DefaultProfileName
+			}
+			flags.name = profile
 		}
-		flags.name = profile
 	}
 
 	return flagset, flags, nil

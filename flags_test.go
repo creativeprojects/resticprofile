@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -115,84 +116,80 @@ func TestEnvOverridesError(t *testing.T) {
 	assert.Contains(t, mem.Logs(), `cannot convert env variable RESTICPROFILE_LOCK_WAIT="no-valid-duration": time: invalid duration "no-valid-duration"`)
 }
 
-func TestProfileCommandWithProfileNamePrecedence(t *testing.T) {
-	_, flags, err := loadFlags([]string{"-n", "profile2", "-v", "some.command"})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, "profile2")
-	assert.True(t, flags.verbose)
-	assert.Equal(t, flags.resticArgs, []string{"some.command"})
-}
-
-func TestProfileCommandWithProfileNamePrecedenceWithDefaultProfile(t *testing.T) {
-	_, flags, err := loadFlags([]string{"-n", constants.DefaultProfileName, "-v", "some.other.command"})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, constants.DefaultProfileName)
-	assert.True(t, flags.verbose)
-	assert.Equal(t, flags.resticArgs, []string{"some.other.command"})
-}
-
-func TestProfileCommandWithResticVerbose(t *testing.T) {
-	_, flags, err := loadFlags([]string{"profile1.check", "--", "-v"})
-	require.NoError(t, err)
-	assert.False(t, flags.help)
-	assert.Equal(t, flags.name, "profile1")
-	assert.False(t, flags.verbose)
-	assert.Equal(t, flags.resticArgs, []string{"check", "--", "-v"})
-}
-
-func TestProfileCommandWithResticprofileVerbose(t *testing.T) {
-	_, flags, err := loadFlags([]string{"-v", "pro.file1.backup"})
-	require.NoError(t, err)
-	assert.True(t, flags.verbose)
-	assert.Equal(t, flags.name, "pro.file1")
-	assert.Equal(t, flags.resticArgs, []string{"backup"})
-}
-
-func TestProfileCommandThreePart(t *testing.T) {
-	_, flags, err := loadFlags([]string{"bla.foo.backup"})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, "bla.foo")
-	assert.Equal(t, flags.resticArgs, []string{"backup"})
-}
-
-func TestProfileCommandTwoPartCommandMissing(t *testing.T) {
-	_, flags, err := loadFlags([]string{"bar."})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, "bar")
-	assert.Equal(t, flags.resticArgs, []string{})
-}
-
-func TestProfileCommandTwoPartProfileMissing(t *testing.T) {
-	_, flags, err := loadFlags([]string{".baz"})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, constants.DefaultProfileName)
-	assert.Equal(t, flags.resticArgs, []string{"baz"})
-}
-
-func TestProfileCommandTwoPartDotPrefix(t *testing.T) {
-	_, flags, err := loadFlags([]string{".baz.qux"})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, ".baz")
-	assert.Equal(t, flags.resticArgs, []string{"qux"})
-}
-
-func TestProfileCommandThreePartCommandMissing(t *testing.T) {
-	_, flags, err := loadFlags([]string{"quux.quuz."})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, "quux.quuz")
-	assert.Equal(t, flags.resticArgs, []string{})
-}
-
-func TestProfileCommandTwoPartDotPrefixCommandMissing(t *testing.T) {
-	_, flags, err := loadFlags([]string{".corge."})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, ".corge")
-	assert.Equal(t, flags.resticArgs, []string{})
-}
-
-func TestProfileCommandTwoPartProfileMissingCommandMissing(t *testing.T) {
-	_, flags, err := loadFlags([]string{"."})
-	require.NoError(t, err)
-	assert.Equal(t, flags.name, constants.DefaultProfileName)
-	assert.Equal(t, flags.resticArgs, []string{})
+func TestCommandProfile(t *testing.T) {
+	testCases := []struct {
+		sourceArgs      []string
+		expectedProfile string
+		expectedArgs    []string
+		expectedVerbose bool
+	}{
+		{
+			sourceArgs:      []string{"."},
+			expectedProfile: constants.DefaultProfileName,
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{".baz"},
+			expectedProfile: constants.DefaultProfileName,
+			expectedArgs:    []string{"baz"},
+		},
+		{
+			sourceArgs:      []string{"bar."},
+			expectedProfile: "bar",
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{".corge."},
+			expectedProfile: ".corge",
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{"quux.quuz."},
+			expectedProfile: "quux.quuz",
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{".baz.qux"},
+			expectedProfile: ".baz",
+			expectedArgs:    []string{"qux"},
+		},
+		{
+			sourceArgs:      []string{"bla.foo.backup"},
+			expectedProfile: "bla.foo",
+			expectedArgs:    []string{"backup"},
+		},
+		{
+			sourceArgs:      []string{"-v", "pro.file1.backup"},
+			expectedProfile: "pro.file1",
+			expectedArgs:    []string{"backup"},
+			expectedVerbose: true,
+		},
+		{
+			sourceArgs:      []string{"profile1.check", "--", "-v"},
+			expectedProfile: "profile1",
+			expectedArgs:    []string{"check", "--", "-v"},
+			expectedVerbose: false,
+		},
+		{
+			sourceArgs:      []string{"-n", constants.DefaultProfileName, "-v", "some.other.command"},
+			expectedProfile: constants.DefaultProfileName,
+			expectedArgs:    []string{"some.other.command"},
+			expectedVerbose: true,
+		},
+		{
+			sourceArgs:      []string{"-n", "profile2", "-v", "some.command"},
+			expectedProfile: "profile2",
+			expectedArgs:    []string{"some.command"},
+			expectedVerbose: true,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(strings.Join(testCase.sourceArgs, " "), func(t *testing.T) {
+			_, flags, err := loadFlags(testCase.sourceArgs)
+			require.NoError(t, err)
+			assert.Equal(t, flags.name, testCase.expectedProfile)
+			assert.Equal(t, flags.resticArgs, testCase.expectedArgs)
+			assert.Equal(t, flags.verbose, testCase.expectedVerbose)
+		})
+	}
 }
