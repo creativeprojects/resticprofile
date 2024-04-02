@@ -116,7 +116,7 @@ func TestEnvOverridesError(t *testing.T) {
 	assert.Contains(t, mem.Logs(), `cannot convert env variable RESTICPROFILE_LOCK_WAIT="no-valid-duration": time: invalid duration "no-valid-duration"`)
 }
 
-func TestCommandProfile(t *testing.T) {
+func TestCommandProfileOrProfileCommandShortcuts(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		sourceArgs      []string
@@ -130,34 +130,34 @@ func TestCommandProfile(t *testing.T) {
 			expectedArgs:    []string{},
 		},
 		{
-			sourceArgs:      []string{".baz"},
+			sourceArgs:      []string{".command"},
 			expectedProfile: constants.DefaultProfileName,
-			expectedArgs:    []string{"baz"},
+			expectedArgs:    []string{"command"},
 		},
 		{
-			sourceArgs:      []string{"bar."},
-			expectedProfile: "bar",
+			sourceArgs:      []string{"profile."},
+			expectedProfile: "profile",
 			expectedArgs:    []string{},
 		},
 		{
-			sourceArgs:      []string{".corge."},
-			expectedProfile: ".corge",
+			sourceArgs:      []string{".profile."},
+			expectedProfile: ".profile",
 			expectedArgs:    []string{},
 		},
 		{
-			sourceArgs:      []string{"quux.quuz."},
-			expectedProfile: "quux.quuz",
+			sourceArgs:      []string{"pro.file."},
+			expectedProfile: "pro.file",
 			expectedArgs:    []string{},
 		},
 		{
-			sourceArgs:      []string{".baz.qux"},
-			expectedProfile: ".baz",
-			expectedArgs:    []string{"qux"},
+			sourceArgs:      []string{".profile.command"},
+			expectedProfile: ".profile",
+			expectedArgs:    []string{"command"},
 		},
 		{
-			sourceArgs:      []string{"bla.foo.backup"},
-			expectedProfile: "bla.foo",
-			expectedArgs:    []string{"backup"},
+			sourceArgs:      []string{"pro.file.command"},
+			expectedProfile: "pro.file",
+			expectedArgs:    []string{"command"},
 		},
 		{
 			sourceArgs:      []string{"-v", "pro.file1.backup"},
@@ -181,6 +181,65 @@ func TestCommandProfile(t *testing.T) {
 			sourceArgs:      []string{"-n", "profile2", "-v", "some.command"},
 			expectedProfile: "profile2",
 			expectedArgs:    []string{"some.command"},
+			expectedVerbose: true,
+		},
+		{
+			sourceArgs:      []string{"@"},
+			expectedProfile: constants.DefaultProfileName,
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{"command@"},
+			expectedProfile: constants.DefaultProfileName,
+			expectedArgs:    []string{"command"},
+		},
+		{
+			sourceArgs:      []string{"@profile"},
+			expectedProfile: "profile",
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{"@profile@"},
+			expectedProfile: "profile@",
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{"command@profile@"},
+			expectedProfile: "profile@",
+			expectedArgs:    []string{"command"},
+		},
+		{
+			sourceArgs:      []string{"@pro@file"},
+			expectedProfile: "pro@file",
+			expectedArgs:    []string{},
+		},
+		{
+			sourceArgs:      []string{"command@pro@file"},
+			expectedProfile: "pro@file",
+			expectedArgs:    []string{"command"},
+		},
+		{
+			sourceArgs:      []string{"-v", "backup@pro@file1"},
+			expectedProfile: "pro@file1",
+			expectedArgs:    []string{"backup"},
+			expectedVerbose: true,
+		},
+		{
+			sourceArgs:      []string{"check@profile1", "--", "-v"},
+			expectedProfile: "profile1",
+			expectedArgs:    []string{"check", "--", "-v"},
+			expectedVerbose: false,
+		},
+		{
+			sourceArgs:      []string{"-n", constants.DefaultProfileName, "-v", "some@other@command"},
+			expectedProfile: constants.DefaultProfileName,
+			expectedArgs:    []string{"some@other@command"},
+			expectedVerbose: true,
+		},
+		{
+			sourceArgs:      []string{"-n", "profile2", "-v", "some@command"},
+			expectedProfile: "profile2",
+			expectedArgs:    []string{"some@command"},
 			expectedVerbose: true,
 		},
 	}

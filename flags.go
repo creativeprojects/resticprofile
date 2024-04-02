@@ -162,7 +162,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 			profileAndCommand := strings.Split(flags.resticArgs[0], ".")
 			// last element will be used as restic command
 			command := profileAndCommand[len(profileAndCommand)-1]
-			// remaining elements will be stiched together with `.` and used as profile name
+			// remaining elements will be stitched together with `.` and used as profile name
 			profile := strings.Join(profileAndCommand[0:len(profileAndCommand)-1], ".")
 
 			// set command
@@ -182,9 +182,9 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 			// split first argument at `@`
 			commandAndProfile := strings.Split(flags.resticArgs[0], "@")
 			// first element will be used as restic command
-			profile := commandAndProfile[0]
-			// last element will be used as profile name
-			command := commandAndProfile[len(commandAndProfile)-1]
+			command := commandAndProfile[0]
+			// last element(s) will be used as profile name
+			profile := strings.Join(commandAndProfile[1:], "@")
 
 			// set command
 			if len(command) == 0 {
