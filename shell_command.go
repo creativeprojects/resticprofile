@@ -18,6 +18,7 @@ type shellCommandDefinition struct {
 	publicArgs  []string
 	env         []string
 	shell       []string
+	dir         string
 	stdin       io.ReadCloser
 	stdout      io.Writer
 	stderr      io.Writer
@@ -84,6 +85,10 @@ func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, s
 	if command.env != nil && len(command.env) > 0 {
 		shellCmd.Environ = append(shellCmd.Environ, command.env...)
 	}
+
+	// If Dir is the empty string, Run runs the command in the
+	// calling process's current directory.
+	shellCmd.Dir = command.dir
 
 	// scan output
 	if command.scanOutput != nil {

@@ -636,9 +636,10 @@ func TestResolveSourcesWithFlagPrefixInBackup(t *testing.T) {
 }
 
 func TestResolveSourcesAgainstBase(t *testing.T) {
-	backupSource := func(base, source string) []string {
+	backupSource := func(base, source string, changeWorkingDir bool) []string {
 		config := `
 			[profile.backup]
+			source-relative = ` + strconv.FormatBool(changeWorkingDir) + `
 			source-base = "` + filepath.ToSlash(base) + `"
 			source = "` + filepath.ToSlash(source) + `"
 		`
@@ -653,18 +654,27 @@ func TestResolveSourcesAgainstBase(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Run("no-base", func(t *testing.T) {
-		assert.Equal(t, []string{"src"}, backupSource("", "src"))
+		assert.Equal(t, []string{"src"}, backupSource("", "src", false))
 	})
 	t.Run("relative-base", func(t *testing.T) {
-		assert.Equal(t, []string{filepath.Join("rel", "src")}, backupSource("rel", "src"))
+		assert.Equal(t, []string{filepath.Join("rel", "src")}, backupSource("rel", "src", false))
 	})
 	t.Run("absolute-base", func(t *testing.T) {
-		assert.Equal(t, []string{filepath.Join(cwd, "src")}, backupSource(cwd, "src"))
+		assert.Equal(t, []string{filepath.Join(cwd, "src")}, backupSource(cwd, "src", false))
 	})
 	t.Run("env-var-base", func(t *testing.T) {
 		assert.NoError(t, os.Setenv("RP_TEST_CWD", cwd))
 		defer os.Unsetenv("RP_TEST_CWD")
-		assert.Equal(t, []string{filepath.Join(cwd, "path", "src")}, backupSource("${RP_TEST_CWD}/path", "src"))
+		assert.Equal(t, []string{filepath.Join(cwd, "path", "src")}, backupSource("${RP_TEST_CWD}/path", "src", false))
+	})
+	t.Run("change-relative-working-dir", func(t *testing.T) {
+		assert.Equal(t, []string{"."}, backupSource("path", ".", true))
+		assert.Equal(t, []string{filepath.Join("path", ".")}, backupSource("path", ".", false))
+	})
+	t.Run("change-env-var-working-dir", func(t *testing.T) {
+		assert.NoError(t, os.Setenv("RP_TEST_ENV", "."))
+		defer os.Unsetenv("RP_TEST_ENV")
+		assert.Equal(t, []string{"."}, backupSource("path", "${RP_TEST_ENV}", true))
 	})
 }
 

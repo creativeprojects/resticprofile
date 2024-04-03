@@ -101,6 +101,7 @@ default {
 {{% notice hint %}}
 Set `base-dir` to an absolute path to resolve `files` and `local:backup` relative to it.
 Set `source-base` if you need a separate base path for backup sources.
+When you want to use relative source paths for backup, set the `source-relative` option. This will change the working directory of the `restic backup` command to `source-base` and will not expand `source` to an absolute path.
 {{% /notice %}}
 
 ## How the configuration file is resolved

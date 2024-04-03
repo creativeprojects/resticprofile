@@ -172,6 +172,7 @@ type BackupSection struct {
 	CheckAfter                       bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
 	UseStdin                         bool     `mapstructure:"stdin" argument:"stdin"`
 	StdinCommand                     []string `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
+	SourceRelative                   bool     `mapstructure:"source-relative" description:"Enable backup with relative source paths. This will change the working directory of the \"restic backup\" command to \"source-base\", and will not expand \"source\" to an absolute path."`
 	SourceBase                       string   `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
 	Source                           []string `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
 	Exclude                          []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
@@ -198,7 +199,7 @@ func (b *BackupSection) resolve(profile *Profile) {
 	if b.unresolvedSource == nil {
 		b.unresolvedSource = b.Source
 	}
-	b.Source = profile.resolveSourcePath(b.SourceBase, b.unresolvedSource...)
+	b.Source = profile.resolveSourcePath(b.SourceBase, b.SourceRelative, b.unresolvedSource...)
 
 	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
 	if profile.config != nil && profile.config.version >= Version02 {
@@ -648,18 +649,24 @@ func (p *Profile) SetRootPath(rootPath string) {
 	}
 }
 
-func (p *Profile) resolveSourcePath(sourceBase string, sourcePaths ...string) []string {
+func (p *Profile) resolveSourcePath(sourceBase string, relativePaths bool, sourcePaths ...string) []string {
 	var applySourceBase, applyBaseDir pathFix
 
-	// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
-	// Applying "sourceBase" if set
-	if sourceBase = strings.TrimSpace(sourceBase); sourceBase != "" {
-		sourceBase = fixPath(sourceBase, expandEnv, expandUserHome)
-		applySourceBase = absolutePrefix(sourceBase)
-	}
-	// Applying a custom PWD eagerly so that own commands (e.g. "show") display correct paths
-	if p.BaseDir != "" {
-		applyBaseDir = absolutePrefix(p.BaseDir)
+	sourceBase = fixPath(strings.TrimSpace(sourceBase), expandEnv, expandUserHome)
+	// When "source-relative" is set, the source paths are relative to the "source-base"
+	if !relativePaths {
+		// Backup source is NOT relative to the configuration, but to PWD or sourceBase (if not empty)
+		// Applying "sourceBase" if set
+		if sourceBase != "" {
+			applySourceBase = absolutePrefix(sourceBase)
+		}
+		// Applying a custom PWD eagerly so that own commands (e.g. "show") display correct paths
+		if p.BaseDir != "" {
+			applyBaseDir = absolutePrefix(p.BaseDir)
+		}
+
+	} else if p.BaseDir == "" && sourceBase == "" && p.config != nil {
+		p.config.reportChangedPath(".", "<none>", "source-base (for relative source)")
 	}
 
 	// prefix paths starting with "-" with a "./" to distinguish a source path from a flag
@@ -693,7 +700,7 @@ func (p *Profile) SetTag(tags ...string) {
 // SetPath will replace any path value from a boolean to sourcePaths and change paths to absolute
 func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
 	resolvePath := func(origin string, paths []string, revolver func(string) []string) (resolved []string) {
-		hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir)
+		hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir) || basePath != "" && filepath.IsAbs(basePath)
 		for _, path := range paths {
 			if len(path) > 0 {
 				for _, rp := range revolver(path) {
@@ -720,7 +727,7 @@ func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
 			// Replace bool-true with absolute sourcePaths
 			if !sourcePathsResolved {
 				sourcePaths = resolvePath("path (from source)", sourcePaths, func(path string) []string {
-					return fixPaths(p.resolveSourcePath(basePath, path), absolutePath)
+					return fixPaths(p.resolveSourcePath(basePath, false, path), absolutePath)
 				})
 				sourcePathsResolved = true
 			}
