@@ -107,6 +107,21 @@ func absolutePath(value string) string {
 	return value
 }
 
+func evaluateSymlinks(value string) string {
+	suffix, name := "", "-"
+	for path := value; path != "" && name != ""; {
+		link := filepath.Clean(path)
+		path, name = filepath.Split(link)
+		if prefix, err := filepath.EvalSymlinks(link); err == nil {
+			return filepath.Join(prefix, suffix)
+		} else if !errors.Is(err, os.ErrNotExist) {
+			clog.Errorf("cannot evaluate symlinks for [%s]/%s: %s", link, suffix, err.Error())
+		}
+		suffix = filepath.Join(name, suffix)
+	}
+	return value
+}
+
 // resolveGlob evaluates glob expressions in a slice of paths and returns a resolved slice
 func resolveGlob(sources []string) (resolved []string) {
 	if len(sources) > 0 {
