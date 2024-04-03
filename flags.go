@@ -114,6 +114,14 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.IntVar(&flags.ignoreOnBattery, "ignore-on-battery", flags.ignoreOnBattery, "don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value")
 	flagset.Lookup("ignore-on-battery").NoOptDefVal = "100" // 0 is flag not set, 100 is for a flag with no value (meaning just battery discharge)
 
+	flagset.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		switch name {
+		case "profile":
+			name = "name"
+		}
+		return pflag.NormalizedName(name)
+	})
+
 	if platform.IsWindows() {
 		// flag for internal use only
 		flagset.BoolVar(&flags.isChild, constants.FlagAsChild, false, "run as an elevated user child process")
@@ -148,27 +156,50 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 
 	// parse first positional argument as <profile>.<command> if the profile was not set via name
 	nameFlag := flagset.Lookup("name")
-	if (nameFlag == nil || !nameFlag.Changed) && strings.Contains(flags.resticArgs[0], ".") {
-		// split first argument at `.`
-		profileAndCommand := strings.Split(flags.resticArgs[0], ".")
-		// last element will be used as restic command
-		command := profileAndCommand[len(profileAndCommand)-1]
-		// remaining elements will be stiched together with `.` and used as profile name
-		profile := strings.Join(profileAndCommand[0:len(profileAndCommand)-1], ".")
+	if nameFlag == nil || !nameFlag.Changed {
+		if strings.Contains(flags.resticArgs[0], ".") {
+			// split first argument at `.`
+			profileAndCommand := strings.Split(flags.resticArgs[0], ".")
+			// last element will be used as restic command
+			command := profileAndCommand[len(profileAndCommand)-1]
+			// remaining elements will be stitched together with `.` and used as profile name
+			profile := strings.Join(profileAndCommand[0:len(profileAndCommand)-1], ".")
 
-		// set command
-		if len(command) == 0 {
-			// take default command by removing it from resticArgs
-			flags.resticArgs = flags.resticArgs[1:]
-		} else {
-			flags.resticArgs[0] = command
-		}
+			// set command
+			if len(command) == 0 {
+				// take default command by removing it from resticArgs
+				flags.resticArgs = flags.resticArgs[1:]
+			} else {
+				flags.resticArgs[0] = command
+			}
 
-		// set profile
-		if len(profile) == 0 {
-			profile = constants.DefaultProfileName
+			// set profile
+			if len(profile) == 0 {
+				profile = constants.DefaultProfileName
+			}
+			flags.name = profile
+		} else if strings.Contains(flags.resticArgs[0], "@") {
+			// split first argument at `@`
+			commandAndProfile := strings.Split(flags.resticArgs[0], "@")
+			// first element will be used as restic command
+			command := commandAndProfile[0]
+			// last element(s) will be used as profile name
+			profile := strings.Join(commandAndProfile[1:], "@")
+
+			// set command
+			if len(command) == 0 {
+				// take default command by removing it from resticArgs
+				flags.resticArgs = flags.resticArgs[1:]
+			} else {
+				flags.resticArgs[0] = command
+			}
+
+			// set profile
+			if len(profile) == 0 {
+				profile = constants.DefaultProfileName
+			}
+			flags.name = profile
 		}
-		flags.name = profile
 	}
 
 	return flagset, flags, nil
