@@ -707,7 +707,7 @@ func (p *Profile) SetTag(tags ...string) {
 
 // SetPath will replace any path value from a boolean to sourcePaths and change paths to absolute
 func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
-	hasAbsoluteBase := len(p.BaseDir) > 0 && filepath.IsAbs(p.BaseDir) || basePath != "" && filepath.IsAbs(basePath)
+	hasAbsoluteBase := filepath.IsAbs(p.BaseDir) || filepath.IsAbs(basePath)
 
 	resolvePath := func(origin string, paths []string, revolver func(string) []string) (resolved []string) {
 		for _, path := range paths {

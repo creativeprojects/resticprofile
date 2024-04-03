@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -98,7 +99,7 @@ func TestExpandEnv(t *testing.T) {
 	assert.Equal(t, "", expandEnv("$__UNDEFINED_ENV_VAR__"))
 }
 
-func TestEvalSymlinks(t *testing.T) {
+func TestEvaluateSymlinks(t *testing.T) {
 	if platform.IsWindows() {
 		t.SkipNow()
 	}
@@ -146,5 +147,31 @@ func TestEvalSymlinks(t *testing.T) {
 		assert.Equal(t, filepath.Join(dir, "a/nested"), evaluateSymlinks(filepath.Join(rawDir, "b/c")))
 		assert.Equal(t, filepath.Join(dir, "d"), evaluateSymlinks(filepath.Join(rawDir, "b/c/toD")))
 		assert.Equal(t, filepath.Join(dir, "d"), evaluateSymlinks(filepath.Join(rawDir, "a/nested/toD")))
+	})
+
+	t.Run("usage-in-profile", func(t *testing.T) {
+		setup(t)
+		link(t, "my-base", "linked-base")
+		baseDir := filepath.Join(rawDir, "linked-base")
+
+		config := func(relative bool) string {
+			return fmt.Sprintf(`
+				[profile]
+				base-dir = %q
+				[profile.backup]
+				source-relative = %v
+				source-base = %q
+			`, baseDir, relative, baseDir)
+		}
+
+		profile, err := getResolvedProfile("toml", config(false), "profile")
+		require.NoError(t, err)
+		assert.Equal(t, baseDir, profile.BaseDir)
+		assert.Equal(t, profile.BaseDir, profile.Backup.SourceBase)
+
+		profile, err = getResolvedProfile("toml", config(true), "profile")
+		require.NoError(t, err)
+		assert.Equal(t, evaluateSymlinks(baseDir), profile.BaseDir)
+		assert.Equal(t, profile.BaseDir, profile.Backup.SourceBase)
 	})
 }
