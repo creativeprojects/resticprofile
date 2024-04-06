@@ -14,8 +14,8 @@ github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/creativeprojects/clog v0.14.0 h1:kthfMG6efS9kI4ACgYRIOPZ2efQkXvW7VhqZigCtpzU=
 github.com/creativeprojects/clog v0.14.0/go.mod h1:iHLlN4sZU+o5rRiFab6ZGHs2vApq09DyykMVJ2Sflro=
-github.com/creativeprojects/go-selfupdate v1.1.4 h1:6/+Wfg08lXAbmU/qEU0v9W4w5Wp6TWf9x2DAttZEwzg=
-github.com/creativeprojects/go-selfupdate v1.1.4/go.mod h1:zCTXcZolcs0Cw9WsfXZvlcX9AupkAlikQ14PQqIV2v0=
+github.com/creativeprojects/go-selfupdate v1.2.0 h1:sHpsnSJuSxQ6pua32c+86Izm+nG1jEKPo3UP/MAE6IM=
+github.com/creativeprojects/go-selfupdate v1.2.0/go.mod h1:zCTXcZolcs0Cw9WsfXZvlcX9AupkAlikQ14PQqIV2v0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=

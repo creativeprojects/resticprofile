@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -15,12 +16,19 @@ func TestCanReadOsEnv(t *testing.T) {
 
 	// All values are included
 	for _, value := range os.Environ() {
-		kv := strings.SplitN(value, "=", 2)
-		assert.Equal(t, kv[1], env.Get(strings.TrimSpace(kv[0])))
+		key, value, found := strings.Cut(value, "=")
+		key = strings.TrimSpace(key)
+		if found && key != "" {
+			assert.Equalf(t, value, env.Get(key), "key %q", key)
+		}
 	}
 
-	// Elements are retained like specified
-	assert.ElementsMatch(t, env.Values(), os.Environ())
+	// Elements are retained like specified, except for some strange values in cmd.exe
+	// https://stackoverflow.com/questions/10431689/what-are-these-strange-environment-variables
+	assert.ElementsMatch(t, env.Values(), slices.DeleteFunc(os.Environ(), func(value string) bool {
+		return strings.HasPrefix(value, "=")
+	}))
+
 }
 
 func TestEnvironmentPreservesCase(t *testing.T) {
