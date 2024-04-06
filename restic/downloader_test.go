@@ -2,12 +2,13 @@ package restic
 
 import (
 	"context"
-	"fmt"
-	"path"
+	"path/filepath"
 	"testing"
 
 	sup "github.com/creativeprojects/go-selfupdate"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDownloadBinary(t *testing.T) {
@@ -15,8 +16,6 @@ func TestDownloadBinary(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
-
-	temp := t.TempDir()
 
 	versions := []string{
 		"latest",
@@ -28,12 +27,12 @@ func TestDownloadBinary(t *testing.T) {
 		version := version
 		t.Run(version, func(t *testing.T) {
 			t.Parallel()
-			executable := path.Join(temp, fmt.Sprintf("restic-%s", version))
+			executable := platform.Executable(filepath.Join(t.TempDir(), "restic"))
 			err := DownloadBinary(executable, version)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			actualVersion, err := GetVersion(executable)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.NotEmpty(t, actualVersion)
 			if version == "latest" {
 				assert.NotEqual(t, version, actualVersion)

@@ -8,7 +8,7 @@ require (
 	github.com/capnspacehook/taskmaster v0.0.0-20210519235353-1629df7c85e9
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.14.0
-	github.com/creativeprojects/go-selfupdate v1.1.4
+	github.com/creativeprojects/go-selfupdate v1.2.0
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.16.0
 	github.com/joho/godotenv v1.5.1
