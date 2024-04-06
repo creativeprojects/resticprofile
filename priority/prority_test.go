@@ -12,8 +12,6 @@ import (
 )
 
 func TestStartProcessWithPriority(t *testing.T) {
-
-	// Run these 3 tests inside one test, so we don't have any concurrency issue
 	t.Run("WithNormalPriority", func(t *testing.T) {
 		err := SetClass(Normal)
 		if err != nil {
@@ -52,8 +50,8 @@ func TestStartProcessWithPriority(t *testing.T) {
 	})
 	time.Sleep(30 * time.Millisecond)
 
-	t.Run("WithBackgroundPriority", func(t *testing.T) {
-		err := SetClass(Background)
+	t.Run("WithIdlePriority", func(t *testing.T) {
+		err := SetClass(Idle)
 		if err != nil {
 			t.Error(err)
 		}
@@ -66,7 +64,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 		if platform.IsWindows() {
 			assert.Contains(t, output, "Priority class: IDLE")
 		} else {
-			assert.Contains(t, output, "Process Priority: 15")
+			assert.Contains(t, output, "Process Priority: 19")
 		}
 	})
 	time.Sleep(30 * time.Millisecond)
