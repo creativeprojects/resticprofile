@@ -368,6 +368,10 @@ func TestFindConfigurationIncludes(t *testing.T) {
 func TestAddRootToRelativePaths(t *testing.T) {
 	t.Parallel()
 
+	if platform.IsWindows() {
+		t.Skip("not supported on Windows")
+	}
+
 	testCases := []struct {
 		root       string
 		inputPath  []string
