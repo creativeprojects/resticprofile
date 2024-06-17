@@ -40,6 +40,8 @@ func TestMain(t *testing.M) {
 // ConfigDirs: [C:\ProgramData C:\Users\runneradmin\AppData\Roaming]
 // ApplicationDirs: [C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu\Programs C:\ProgramData\Microsoft\Windows\Start Menu\Programs]
 func TestDefaultConfigDirs(t *testing.T) {
+	t.Parallel()
+
 	t.Log("ConfigHome:", xdg.ConfigHome)
 	t.Log("ConfigDirs:", xdg.ConfigDirs)
 	t.Log("ApplicationDirs:", xdg.ApplicationDirs)
@@ -192,6 +194,8 @@ func testLocations(t *testing.T) []testLocation {
 }
 
 func TestFindConfigurationFile(t *testing.T) {
+	t.Parallel()
+
 	// Work from a temporary directory
 	err := os.Chdir(os.TempDir())
 	require.NoError(t, err)
@@ -206,7 +210,7 @@ func TestFindConfigurationFile(t *testing.T) {
 		var err error
 		// Install empty config file
 		if location.realPath != "" {
-			err = fs.MkdirAll(location.realPath, 0700)
+			err = fs.MkdirAll(location.realPath, 0o700)
 			require.NoError(t, err)
 		}
 		file, err := fs.Create(filepath.Join(location.realPath, location.realFile))
@@ -230,12 +234,16 @@ func TestFindConfigurationFile(t *testing.T) {
 }
 
 func TestCannotFindConfigurationFile(t *testing.T) {
+	t.Parallel()
+
 	found, err := FindConfigurationFile("some_config_file")
 	assert.Empty(t, found)
 	assert.Error(t, err)
 }
 
 func TestFindResticBinary(t *testing.T) {
+	t.Parallel()
+
 	binary, err := FindResticBinary("some_other_name")
 	if binary != "" {
 		assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
@@ -246,6 +254,8 @@ func TestFindResticBinary(t *testing.T) {
 }
 
 func TestFindResticBinaryWithTilde(t *testing.T) {
+	t.Parallel()
+
 	if runtime.GOOS == "windows" {
 		t.Skip("not supported on Windows")
 		return
@@ -253,7 +263,7 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	tempFile, err := afero.TempFile(fs, home, "TestFindResticBinaryWithTilde")
+	tempFile, err := afero.TempFile(fs, home, t.Name())
 	require.NoError(t, err)
 	tempFile.Close()
 	defer func() {
@@ -267,6 +277,8 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 }
 
 func TestShellExpand(t *testing.T) {
+	t.Parallel()
+
 	if runtime.GOOS == "windows" {
 		t.Skip("not supported on Windows")
 		return
@@ -298,6 +310,8 @@ func TestShellExpand(t *testing.T) {
 }
 
 func TestFindConfigurationIncludes(t *testing.T) {
+	t.Parallel()
+
 	testID := fmt.Sprintf("%d", uint32(time.Now().UnixNano()))
 	tempDir := os.TempDir()
 	files := []string{
@@ -347,6 +361,35 @@ func TestFindConfigurationIncludes(t *testing.T) {
 					assert.Equal(t, test.expected, result)
 				}
 			}
+		})
+	}
+}
+
+func TestAddRootToRelativePaths(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		root       string
+		inputPath  []string
+		outputPath []string
+	}{
+		{
+			root:       "",
+			inputPath:  []string{"", "dir", "~/user", "/root"},
+			outputPath: []string{"", "dir", "~/user", "/root"},
+		},
+		{
+			root:       "/home",
+			inputPath:  []string{"", "dir", "~/user", "/root"},
+			outputPath: []string{"/home", "/home/dir", "/home/user", "/root"},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.root, func(t *testing.T) {
+			t.Parallel()
+
+			result := addRootToRelativePaths(testCase.root, testCase.inputPath)
+			assert.Equal(t, testCase.outputPath, result)
 		})
 	}
 }
