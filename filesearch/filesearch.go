@@ -69,7 +69,7 @@ var (
 	}
 )
 
-var fs afero.Fs
+var fs afero.Fs // we could probably change the implementation to use fs.FS instead
 
 func init() {
 	fs = afero.NewOsFs()
@@ -191,7 +191,7 @@ func FindResticBinary(configLocation string) (string, error) {
 			return filename, nil
 		}
 	}
-	clog.Tracef("count not find restic binary %q in any of these locations: %s", binaryFile, strings.Join(paths, ", "))
+	clog.Tracef("could not find restic binary %q in any of these locations: %s", binaryFile, strings.Join(paths, ", "))
 
 	// Last resort, search from the OS PATH
 	filename, err := exec.LookPath(binaryFile)
