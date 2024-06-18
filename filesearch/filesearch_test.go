@@ -302,6 +302,8 @@ func TestShellExpand(t *testing.T) {
 
 	for _, testItem := range testData {
 		t.Run(testItem.source, func(t *testing.T) {
+			t.Parallel()
+
 			result, err := ShellExpand(testItem.source)
 			require.NoError(t, err)
 			assert.Equal(t, testItem.expected, result)
@@ -323,7 +325,9 @@ func TestFindConfigurationIncludes(t *testing.T) {
 
 	for _, file := range files {
 		require.NoError(t, afero.WriteFile(fs, file, []byte{}, iofs.ModePerm))
-		defer fs.Remove(file) // defer stack is ok for cleanup
+		t.Cleanup(func() {
+			_ = fs.Remove(file)
+		})
 	}
 
 	testData := []struct {
@@ -349,6 +353,8 @@ func TestFindConfigurationIncludes(t *testing.T) {
 
 	for _, test := range testData {
 		t.Run(strings.Join(test.includes, ","), func(t *testing.T) {
+			t.Parallel()
+
 			result, err := FindConfigurationIncludes(files[0], test.includes)
 			if test.expected == nil {
 				assert.Nil(t, result)

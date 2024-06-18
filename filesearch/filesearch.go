@@ -274,15 +274,20 @@ func fileExists(filename string) bool {
 }
 
 func addRootToRelativePaths(home string, paths []string) []string {
+	if platform.IsWindows() {
+		return paths
+	}
 	if home == "" {
 		return paths
 	}
+	rootedPaths := make([]string, len(paths))
 	for i, path := range paths {
 		if filepath.IsAbs(path) {
+			rootedPaths[i] = path
 			continue
 		}
 		path = strings.TrimPrefix(path, "~/")
-		paths[i] = filepath.Join(home, path)
+		rootedPaths[i] = filepath.Join(home, path)
 	}
-	return paths
+	return rootedPaths
 }
