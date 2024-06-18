@@ -7,7 +7,6 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/spf13/afero"
 )
 
 type SchedulerConfig interface {
@@ -35,16 +34,13 @@ type SchedulerWindows struct{}
 func (s SchedulerWindows) Type() string                     { return constants.SchedulerWindows }
 func (s SchedulerWindows) Convert(_ string) SchedulerConfig { return s }
 
-type SchedulerLaunchd struct {
-	Fs afero.Fs
-}
+type SchedulerLaunchd struct{}
 
 func (s SchedulerLaunchd) Type() string                     { return constants.SchedulerLaunchd }
 func (s SchedulerLaunchd) Convert(_ string) SchedulerConfig { return s }
 
 // SchedulerCrond configures crond compatible schedulers, either needs CrontabBinary or CrontabFile
 type SchedulerCrond struct {
-	Fs            afero.Fs
 	CrontabFile   string
 	CrontabBinary string
 	Username      string
@@ -54,7 +50,6 @@ func (s SchedulerCrond) Type() string                     { return constants.Sch
 func (s SchedulerCrond) Convert(_ string) SchedulerConfig { return s }
 
 type SchedulerSystemd struct {
-	Fs            afero.Fs
 	UnitTemplate  string
 	TimerTemplate string
 }

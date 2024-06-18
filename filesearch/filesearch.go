@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	XDGAppName = "resticprofile"
+	AppName = "resticprofile"
 
 	// configurationExtensions list the possible extensions for the config file
 	configurationExtensions = []string{
@@ -38,6 +38,10 @@ var (
 		"/opt/local/etc/",
 		"/opt/local/etc/restic/",
 		"/opt/local/etc/resticprofile/",
+	}
+
+	addConfigurationLocationsDarwin = []string{
+		".config/" + AppName + "/",
 	}
 
 	defaultConfigurationLocationsWindows = []string{
@@ -65,7 +69,7 @@ var (
 	}
 )
 
-var fs afero.Fs
+var fs afero.Fs // we could probably change the implementation to use fs.FS instead
 
 func init() {
 	fs = afero.NewOsFs()
@@ -187,6 +191,8 @@ func FindResticBinary(configLocation string) (string, error) {
 			return filename, nil
 		}
 	}
+	clog.Tracef("could not find restic binary %q in any of these locations: %s", binaryFile, strings.Join(paths, ", "))
+
 	// Last resort, search from the OS PATH
 	filename, err := exec.LookPath(binaryFile)
 	if err != nil {
@@ -211,9 +217,11 @@ func ShellExpand(filename string) (string, error) {
 }
 
 func getSearchConfigurationLocations() []string {
-	locations := []string{filepath.Join(xdg.ConfigHome, XDGAppName)}
+	home, _ := os.UserHomeDir()
+
+	locations := []string{filepath.Join(xdg.ConfigHome, AppName)}
 	for _, configDir := range xdg.ConfigDirs {
-		locations = append(locations, filepath.Join(configDir, XDGAppName))
+		locations = append(locations, filepath.Join(configDir, AppName))
 	}
 
 	if platform.IsWindows() {
@@ -222,7 +230,11 @@ func getSearchConfigurationLocations() []string {
 		locations = append(locations, defaultConfigurationLocationsUnix...)
 	}
 
-	if home, err := os.UserHomeDir(); err == nil {
+	if platform.IsDarwin() {
+		locations = append(locations, addRootToRelativePaths(home, addConfigurationLocationsDarwin)...)
+	}
+
+	if home != "" {
 		locations = append(locations, home)
 	}
 
@@ -244,7 +256,7 @@ func getSearchBinaryLocations() []string {
 		paths = defaultBinaryLocationsUnix
 	}
 	if home, err := os.UserHomeDir(); err == nil {
-		paths = append(paths, filepath.Join(home, ".local/bin/"), filepath.Join(home, "bin/"))
+		paths = append(paths, addRootToRelativePaths(home, []string{".local/bin/", "bin/"})...)
 	}
 	return paths
 }
@@ -259,4 +271,23 @@ func getResticBinaryName() string {
 func fileExists(filename string) bool {
 	_, err := fs.Stat(filename)
 	return err == nil || errors.Is(err, iofs.ErrExist)
+}
+
+func addRootToRelativePaths(home string, paths []string) []string {
+	if platform.IsWindows() {
+		return paths
+	}
+	if home == "" {
+		return paths
+	}
+	rootedPaths := make([]string, len(paths))
+	for i, path := range paths {
+		if filepath.IsAbs(path) {
+			rootedPaths[i] = path
+			continue
+		}
+		path = strings.TrimPrefix(path, "~/")
+		rootedPaths[i] = filepath.Join(home, path)
+	}
+	return rootedPaths
 }
