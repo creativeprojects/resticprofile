@@ -35,3 +35,6 @@ status.json
 .hugo_build.lock
 
 .env
+
+go.work
+go.work.sum
