@@ -262,9 +262,6 @@ func displayVersion(output io.Writer, ctx commandContext) error {
 		out("\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
 		out("\t%s:\t%s\n", "os", runtime.GOOS)
 		out("\t%s:\t%s\n", "arch", runtime.GOARCH)
-		if goarm > 0 {
-			out("\t%s:\tv%d\n", "arm", goarm)
-		}
 		out("\t%s:\t%s\n", "version", version)
 		out("\t%s:\t%s\n", "commit", commit)
 		out("\t%s:\t%s\n", "compiled", date)
