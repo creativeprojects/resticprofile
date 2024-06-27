@@ -51,7 +51,7 @@
     --BOX-BG-color: rgba( 8, 8, 8, 1 ); /* background color of colored boxes */
     --BOX-TEXT-color: initial; /* text color of colored box content */
 
-    /* optional base colors for colored boxes as in attachments, badges, buttons and notice shortcode */
+    /* optional base colors for colored boxes as in badges, buttons, notice, etc. shortcode */
     --BOX-BLUE-color: rgba( 48, 117, 229, 1 ); /* background color of blue boxes */
     --BOX-BLUE-TEXT-color: var( --BOX-BLUE-color ); /* text color of blue boxes */
     --BOX-GREEN-color: rgba( 42, 178, 24, 1 ); /* background color of green boxes */
@@ -166,7 +166,8 @@ body #R-sidebar .searchbox button:hover{
 body #R-sidebar select:hover,
 body #R-sidebar .collapsible-menu li:not(.active) > label:hover,
 body #R-sidebar .menu-control:hover,
-body #R-sidebar a:hover {
+body #R-sidebar a:hover,
+body #R-prefooter button:hover {
     color: rgba( 255, 255, 255, 1 );
     text-shadow:
         0 0  1px rgba( 255, 255, 255, 1 ),

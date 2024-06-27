@@ -1,7 +1,7 @@
 :root {
     --PRIMARY-color: rgba( 131, 201, 50, 1 ); /* brand primary color */
     --SECONDARY-color: rgba( 99, 128, 208, 1 ); /* brand secondary color */
-    --ACCENT-color: rgba( 255, 136, 255, 1 ); /* brand accent color, used for search highlights */
+    --ACCENT-color: rgb( 255, 102, 78, 1 ); /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: rgba( 0, 0, 0, 1 ); /* text color of content and h1 titles */
     --MAIN-LINK-HOVER-color: rgba( 32, 40, 145, 1 ); /* hovered link color of content */

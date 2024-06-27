@@ -97,7 +97,17 @@ a:focus,
 }
 
 mark {
-    background-color: var(--INTERNAL-ACCENT-color);
+    background-image: linear-gradient(
+        to right,
+        color-mix( in srgb, var(--INTERNAL-ACCENT-color) 20%, transparent ),
+        color-mix( in srgb, var(--INTERNAL-ACCENT-color) 90%, transparent ) 4%,
+        color-mix( in srgb, var(--INTERNAL-ACCENT-color) 40%, transparent )
+    );
+}
+
+kbd {
+    color: var(--INTERNAL-TEXT-color);
+    font-family: var(--INTERNAL-CODE-font);
 }
 
 h1 {

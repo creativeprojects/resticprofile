@@ -55,6 +55,15 @@
       "minItems": 0,
       "uniqueItems": false
     },
+    "id-052a168c104bb25ef25e3e09f86a7c03": {
+      "title": "send-before...",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-0859ea60b2fdecb8f8f9e6ce02ccc7e2": {
       "title": "tag",
       "description": "add tags for the new snapshot in the format tag[,tag,...].\nBoolean true is unsupported in section \"backup\".",
@@ -165,15 +174,390 @@
         }
       ]
     },
-    "id-12455b5443f0012a5aeac1a5d93615f8": {
-      "description": "named mixin reference to apply to the current location",
+    "id-10e2bac6b25309c63ca936f6f4170786": {
+      "title": "schedule",
+      "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure",
       "anyOf": [
         {
-          "type": "string",
-          "minLength": 0
+          "description": "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "...at": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "...capture-environment": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "...systemd-drop-in-files": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "after-network-online": {
+              "title": "after-network-online",
+              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
+              "type": "boolean"
+            },
+            "at": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "at...": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "at__APPEND": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "at__PREPEND": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "capture-environment": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "capture-environment...": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "capture-environment__APPEND": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "capture-environment__PREPEND": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "command-output": {
+              "title": "command-output",
+              "default": "auto",
+              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "log",
+                "console",
+                "all"
+              ],
+              "minLength": 0
+            },
+            "ignore-on-battery": {
+              "title": "ignore-on-battery",
+              "description": "Don't start this schedule when running on battery",
+              "type": "boolean"
+            },
+            "ignore-on-battery-less-than": {
+              "title": "ignore-on-battery-less-than",
+              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+              "type": "integer",
+              "examples": [
+                20,
+                33,
+                50,
+                75
+              ]
+            },
+            "lock-mode": {
+              "title": "lock-mode",
+              "default": "default",
+              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "default",
+                "fail",
+                "ignore"
+              ],
+              "minLength": 0
+            },
+            "lock-wait": {
+              "title": "lock-wait",
+              "description": "Set the maximum time to wait for acquiring locks when running on schedule",
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string",
+                  "examples": [
+                    "150s",
+                    "15m",
+                    "30m",
+                    "45m",
+                    "1h",
+                    "2h30m"
+                  ],
+                  "minLength": 2,
+                  "pattern": "^(\\d+(h|m|s|ms))+$"
+                }
+              ]
+            },
+            "log": {
+              "title": "log",
+              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "examples": [
+                "/resticprofile.log",
+                "syslog-tcp://syslog-server:514",
+                "syslog:server",
+                "syslog:"
+              ],
+              "minLength": 0
+            },
+            "permission": {
+              "title": "permission",
+              "default": "auto",
+              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "system",
+                "user",
+                "user_logged_on"
+              ],
+              "minLength": 0
+            },
+            "priority": {
+              "title": "priority",
+              "default": "background",
+              "description": "Set the priority at which the schedule is run",
+              "type": "string",
+              "enum": [
+                "background",
+                "standard"
+              ],
+              "minLength": 0
+            },
+            "systemd-drop-in-files": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "systemd-drop-in-files...": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "systemd-drop-in-files__APPEND": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "systemd-drop-in-files__PREPEND": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "use": {
+              "description": "Named mixin reference to apply to the current location.",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                }
+              ]
+            }
+          }
         },
         {
-          "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
+          "title": "schedule",
+          "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+            },
+            {
+              "title": "schedule...",
+              "type": "array",
+              "examples": [
+                "hourly",
+                "daily",
+                "weekly",
+                "monthly",
+                "10:00,14:00,18:00,22:00",
+                "Wed,Fri 17:48",
+                "*-*-15 02:45",
+                "Mon..Fri 00:30"
+              ],
+              "items": {
+                "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
         }
       ]
     },
@@ -206,6 +590,18 @@
         },
         {
           "$ref": "#/$defs/id-db1114758e1d6654c768fbf9a4b59645"
+        }
+      ]
+    },
+    "id-169a8a109f5202e4e730ddb575c1282c": {
+      "description": "Named mixin reference to apply to the current location.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
         }
       ]
     },
@@ -242,22 +638,17 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-173faf928989dfcf2c60b82f2368260d": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "name": {
-          "title": "name",
-          "description": "named mixin reference to apply to the current location",
-          "type": "string",
-          "minLength": 0
+    "id-1fcb7f2138c894ddc8b954809daf9590": {
+      "title": "send-finally",
+      "description": "Send HTTP request(s) always, after all other commands",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
         },
-        "vars": {
-          "description": "named mixin reference to apply to the current location",
-          "type": "object",
-          "additionalProperties": true
+        {
+          "$ref": "#/$defs/id-9e7d0d652e41d4a0ab871e99b638b398"
         }
-      }
+      ]
     },
     "id-20cb912e946a794f54e5e7cd6faeb133": {
       "title": "stdin-command",
@@ -374,18 +765,6 @@
         }
       ]
     },
-    "id-3655eb66e4d2d1ecfb14e0977d17250e": {
-      "title": "send-after",
-      "description": "Send HTTP request(s) after a successful restic command",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
-        },
-        {
-          "$ref": "#/$defs/id-db1862c57a8fe6ced474ddb1a739e54e"
-        }
-      ]
-    },
     "id-366bc37fbc920b9db2020ae49b716c6b": {
       "title": "restic-stale-lock-age",
       "description": "The age an unused lock on a restic repository must have at least before resiticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/",
@@ -466,27 +845,6 @@
           "uniqueItems": false
         }
       ]
-    },
-    "id-4013793fd7a5aaa3895d07967107b88f": {
-      "title": "send-before",
-      "description": "Send HTTP request(s) before a restic command",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
-        },
-        {
-          "$ref": "#/$defs/id-641dbc3b72de2af724c5825d50da3eb4"
-        }
-      ]
-    },
-    "id-4315fb3c4d73232c356bd397e6af50c2": {
-      "title": "send-after-fail...",
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
-      },
-      "minItems": 0,
-      "uniqueItems": false
     },
     "id-43751bb98b8f27a3043a5cf8114dcc42": {
       "title": "files-from",
@@ -653,15 +1011,6 @@
         }
       ]
     },
-    "id-641dbc3b72de2af724c5825d50da3eb4": {
-      "title": "send-before...",
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
     "id-654756fabcdbea48a17af3e334b174fa": {
       "title": "host",
       "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
@@ -693,575 +1042,6 @@
           "$ref": "#/$defs/id-e086c1ba1c26403064afda18d971c2a7"
         }
       ]
-    },
-    "id-66398b0321ca42460ad64975faddbb0d": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "...headers": {
-          "title": "headers",
-          "description": "Additional HTTP headers to send with the request",
-          "anyOf": [
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "name": {
-                  "title": "name",
-                  "description": "Name of the HTTP header",
-                  "type": "string",
-                  "examples": [
-                    "Authorization",
-                    "Cache-Control",
-                    "Content-Disposition",
-                    "Content-Type"
-                  ],
-                  "minLength": 0
-                },
-                "use": {
-                  "description": "named mixin reference to apply to the current location",
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "minLength": 0
-                    },
-                    {
-                      "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                    }
-                  ]
-                },
-                "value": {
-                  "title": "value",
-                  "description": "Value of the header",
-                  "type": "string",
-                  "examples": [
-                    "Bearer ...",
-                    "Basic ...",
-                    "no-cache",
-                    "attachment; filename=stats.txt",
-                    "application/json",
-                    "text/plain",
-                    "text/xml"
-                  ],
-                  "minLength": 0
-                }
-              }
-            },
-            {
-              "title": "headers...",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "title": "name",
-                    "description": "Name of the HTTP header",
-                    "type": "string",
-                    "examples": [
-                      "Authorization",
-                      "Cache-Control",
-                      "Content-Disposition",
-                      "Content-Type"
-                    ],
-                    "minLength": 0
-                  },
-                  "use": {
-                    "description": "named mixin reference to apply to the current location",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "minLength": 0
-                      },
-                      {
-                        "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                      }
-                    ]
-                  },
-                  "value": {
-                    "title": "value",
-                    "description": "Value of the header",
-                    "type": "string",
-                    "examples": [
-                      "Bearer ...",
-                      "Basic ...",
-                      "no-cache",
-                      "attachment; filename=stats.txt",
-                      "application/json",
-                      "text/plain",
-                      "text/xml"
-                    ],
-                    "minLength": 0
-                  }
-                }
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
-        },
-        "body": {
-          "title": "body",
-          "description": "Request body, overrides \"body-template\"",
-          "type": "string",
-          "minLength": 0
-        },
-        "body-template": {
-          "title": "body-template",
-          "description": "Path to a file containing the request body (go template). See https://creativeprojects.github.io/resticprofile/configuration/http_hooks/#body-template",
-          "type": "string",
-          "minLength": 0
-        },
-        "headers": {
-          "title": "headers",
-          "description": "Additional HTTP headers to send with the request",
-          "anyOf": [
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "name": {
-                  "title": "name",
-                  "description": "Name of the HTTP header",
-                  "type": "string",
-                  "examples": [
-                    "Authorization",
-                    "Cache-Control",
-                    "Content-Disposition",
-                    "Content-Type"
-                  ],
-                  "minLength": 0
-                },
-                "use": {
-                  "description": "named mixin reference to apply to the current location",
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "minLength": 0
-                    },
-                    {
-                      "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                    }
-                  ]
-                },
-                "value": {
-                  "title": "value",
-                  "description": "Value of the header",
-                  "type": "string",
-                  "examples": [
-                    "Bearer ...",
-                    "Basic ...",
-                    "no-cache",
-                    "attachment; filename=stats.txt",
-                    "application/json",
-                    "text/plain",
-                    "text/xml"
-                  ],
-                  "minLength": 0
-                }
-              }
-            },
-            {
-              "title": "headers...",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "title": "name",
-                    "description": "Name of the HTTP header",
-                    "type": "string",
-                    "examples": [
-                      "Authorization",
-                      "Cache-Control",
-                      "Content-Disposition",
-                      "Content-Type"
-                    ],
-                    "minLength": 0
-                  },
-                  "use": {
-                    "description": "named mixin reference to apply to the current location",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "minLength": 0
-                      },
-                      {
-                        "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                      }
-                    ]
-                  },
-                  "value": {
-                    "title": "value",
-                    "description": "Value of the header",
-                    "type": "string",
-                    "examples": [
-                      "Bearer ...",
-                      "Basic ...",
-                      "no-cache",
-                      "attachment; filename=stats.txt",
-                      "application/json",
-                      "text/plain",
-                      "text/xml"
-                    ],
-                    "minLength": 0
-                  }
-                }
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
-        },
-        "headers...": {
-          "title": "headers",
-          "description": "Additional HTTP headers to send with the request",
-          "anyOf": [
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "name": {
-                  "title": "name",
-                  "description": "Name of the HTTP header",
-                  "type": "string",
-                  "examples": [
-                    "Authorization",
-                    "Cache-Control",
-                    "Content-Disposition",
-                    "Content-Type"
-                  ],
-                  "minLength": 0
-                },
-                "use": {
-                  "description": "named mixin reference to apply to the current location",
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "minLength": 0
-                    },
-                    {
-                      "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                    }
-                  ]
-                },
-                "value": {
-                  "title": "value",
-                  "description": "Value of the header",
-                  "type": "string",
-                  "examples": [
-                    "Bearer ...",
-                    "Basic ...",
-                    "no-cache",
-                    "attachment; filename=stats.txt",
-                    "application/json",
-                    "text/plain",
-                    "text/xml"
-                  ],
-                  "minLength": 0
-                }
-              }
-            },
-            {
-              "title": "headers...",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "title": "name",
-                    "description": "Name of the HTTP header",
-                    "type": "string",
-                    "examples": [
-                      "Authorization",
-                      "Cache-Control",
-                      "Content-Disposition",
-                      "Content-Type"
-                    ],
-                    "minLength": 0
-                  },
-                  "use": {
-                    "description": "named mixin reference to apply to the current location",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "minLength": 0
-                      },
-                      {
-                        "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                      }
-                    ]
-                  },
-                  "value": {
-                    "title": "value",
-                    "description": "Value of the header",
-                    "type": "string",
-                    "examples": [
-                      "Bearer ...",
-                      "Basic ...",
-                      "no-cache",
-                      "attachment; filename=stats.txt",
-                      "application/json",
-                      "text/plain",
-                      "text/xml"
-                    ],
-                    "minLength": 0
-                  }
-                }
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
-        },
-        "headers__APPEND": {
-          "title": "headers",
-          "description": "Additional HTTP headers to send with the request",
-          "anyOf": [
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "name": {
-                  "title": "name",
-                  "description": "Name of the HTTP header",
-                  "type": "string",
-                  "examples": [
-                    "Authorization",
-                    "Cache-Control",
-                    "Content-Disposition",
-                    "Content-Type"
-                  ],
-                  "minLength": 0
-                },
-                "use": {
-                  "description": "named mixin reference to apply to the current location",
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "minLength": 0
-                    },
-                    {
-                      "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                    }
-                  ]
-                },
-                "value": {
-                  "title": "value",
-                  "description": "Value of the header",
-                  "type": "string",
-                  "examples": [
-                    "Bearer ...",
-                    "Basic ...",
-                    "no-cache",
-                    "attachment; filename=stats.txt",
-                    "application/json",
-                    "text/plain",
-                    "text/xml"
-                  ],
-                  "minLength": 0
-                }
-              }
-            },
-            {
-              "title": "headers...",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "title": "name",
-                    "description": "Name of the HTTP header",
-                    "type": "string",
-                    "examples": [
-                      "Authorization",
-                      "Cache-Control",
-                      "Content-Disposition",
-                      "Content-Type"
-                    ],
-                    "minLength": 0
-                  },
-                  "use": {
-                    "description": "named mixin reference to apply to the current location",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "minLength": 0
-                      },
-                      {
-                        "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                      }
-                    ]
-                  },
-                  "value": {
-                    "title": "value",
-                    "description": "Value of the header",
-                    "type": "string",
-                    "examples": [
-                      "Bearer ...",
-                      "Basic ...",
-                      "no-cache",
-                      "attachment; filename=stats.txt",
-                      "application/json",
-                      "text/plain",
-                      "text/xml"
-                    ],
-                    "minLength": 0
-                  }
-                }
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
-        },
-        "headers__PREPEND": {
-          "title": "headers",
-          "description": "Additional HTTP headers to send with the request",
-          "anyOf": [
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "name": {
-                  "title": "name",
-                  "description": "Name of the HTTP header",
-                  "type": "string",
-                  "examples": [
-                    "Authorization",
-                    "Cache-Control",
-                    "Content-Disposition",
-                    "Content-Type"
-                  ],
-                  "minLength": 0
-                },
-                "use": {
-                  "description": "named mixin reference to apply to the current location",
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "minLength": 0
-                    },
-                    {
-                      "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                    }
-                  ]
-                },
-                "value": {
-                  "title": "value",
-                  "description": "Value of the header",
-                  "type": "string",
-                  "examples": [
-                    "Bearer ...",
-                    "Basic ...",
-                    "no-cache",
-                    "attachment; filename=stats.txt",
-                    "application/json",
-                    "text/plain",
-                    "text/xml"
-                  ],
-                  "minLength": 0
-                }
-              }
-            },
-            {
-              "title": "headers...",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "title": "name",
-                    "description": "Name of the HTTP header",
-                    "type": "string",
-                    "examples": [
-                      "Authorization",
-                      "Cache-Control",
-                      "Content-Disposition",
-                      "Content-Type"
-                    ],
-                    "minLength": 0
-                  },
-                  "use": {
-                    "description": "named mixin reference to apply to the current location",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "minLength": 0
-                      },
-                      {
-                        "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-                      }
-                    ]
-                  },
-                  "value": {
-                    "title": "value",
-                    "description": "Value of the header",
-                    "type": "string",
-                    "examples": [
-                      "Bearer ...",
-                      "Basic ...",
-                      "no-cache",
-                      "attachment; filename=stats.txt",
-                      "application/json",
-                      "text/plain",
-                      "text/xml"
-                    ],
-                    "minLength": 0
-                  }
-                }
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
-        },
-        "method": {
-          "title": "method",
-          "default": "GET",
-          "description": "HTTP method of the request",
-          "type": "string",
-          "enum": [
-            "GET",
-            "DELETE",
-            "HEAD",
-            "OPTIONS",
-            "PATCH",
-            "POST",
-            "PUT",
-            "TRACE"
-          ],
-          "minLength": 0
-        },
-        "skip-tls-verification": {
-          "title": "skip-tls-verification",
-          "description": "Enables insecure TLS (without verification), see also \"global.ca-certificates\"",
-          "type": "boolean"
-        },
-        "url": {
-          "title": "url",
-          "description": "URL of the target to send to",
-          "type": "string",
-          "minLength": 0,
-          "format": "uri"
-        },
-        "use": {
-          "description": "named mixin reference to apply to the current location",
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 0
-            },
-            {
-              "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
-            }
-          ]
-        }
-      }
     },
     "id-69fb502c96bc12b6aa7cca6a0ec27c06": {
       "title": "host",
@@ -1295,15 +1075,6 @@
         }
       ]
     },
-    "id-6ad91d98e2c5c24e874fcf5efa4caa82": {
-      "title": "send-finally...",
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
     "id-6b767374afe44ab7caa0ae97e251c4ed": {
       "title": "verbose",
       "description": "be verbose (true for level 1 or a number for increased verbosity, max level is 2)",
@@ -1336,6 +1107,57 @@
           ],
           "minLength": 0,
           "format": "hostname"
+        }
+      ]
+    },
+    "id-6e3f69f4cd1eec58c0f94211a5f66b23": {
+      "title": "at...",
+      "type": "array",
+      "examples": [
+        "hourly",
+        "daily",
+        "weekly",
+        "monthly",
+        "10:00,14:00,18:00,22:00",
+        "Wed,Fri 17:48",
+        "*-*-15 02:45",
+        "Mon..Fri 00:30"
+      ],
+      "items": {
+        "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-71d4c72a873617fc9b373bf506f9606d": {
+      "title": "env-file",
+      "description": "Additional dotenv files to load and set as environment in any child process",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "env-file...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-734e7052ffb3742969c96ccff9d0e7b2": {
+      "title": "send-after-fail",
+      "description": "Send HTTP request(s) after failed restic or shell commands",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
+        },
+        {
+          "$ref": "#/$defs/id-bc7a8ba8f54f45b25490b5dae9d7d3e2"
         }
       ]
     },
@@ -1512,54 +1334,6 @@
         }
       ]
     },
-    "id-84f2be57e54d952b83b456e4157aee99": {
-      "title": "schedule...",
-      "deprecated": true,
-      "type": "array",
-      "examples": [
-        "hourly",
-        "daily",
-        "weekly",
-        "monthly",
-        "10:00,14:00,18:00,22:00",
-        "Wed,Fri 17:48",
-        "*-*-15 02:45",
-        "Mon..Fri 00:30"
-      ],
-      "items": {
-        "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
-    "id-898088268e693f43f6a185b7c972ff67": {
-      "title": "schedule...",
-      "type": "array",
-      "examples": [
-        "hourly",
-        "daily",
-        "weekly",
-        "monthly",
-        "10:00,14:00,18:00,22:00",
-        "Wed,Fri 17:48",
-        "*-*-15 02:45",
-        "Mon..Fri 00:30"
-      ],
-      "items": {
-        "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
-    "id-8a7cd32381cd8ef5d3ea73a8bf9a529d": {
-      "title": "stream-error...",
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/id-ea6b86c1a2c405fc347e1c1d050cfe14"
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
     "id-8a855b50c90b22087e65d132470fe10e": {
       "title": "host...",
       "type": "array",
@@ -1593,6 +1367,41 @@
       },
       "minItems": 0,
       "uniqueItems": false
+    },
+    "id-8dc244da59b67cffbcc6e5de402cffb5": {
+      "title": "send-after...",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-8e1fcc63a67be14220d248d0225ed5b7": {
+      "title": "capture-environment",
+      "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+      "anyOf": [
+        {
+          "default": "RESTIC_*",
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+        }
+      ]
+    },
+    "id-8ed79f73925689de4526f415d4bf639d": {
+      "title": "send-before",
+      "description": "Send HTTP request(s) before a restic command",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
+        },
+        {
+          "$ref": "#/$defs/id-052a168c104bb25ef25e3e09f86a7c03"
+        }
+      ]
     },
     "id-8fee4af1900e0d2f64f1ee66a27254ef": {
       "title": "tag",
@@ -1645,6 +1454,25 @@
         }
       ]
     },
+    "id-930a40c1f62ccd05adebb753afc31217": {
+      "title": "...",
+      "type": "array",
+      "items": {
+        "title": "use",
+        "description": "Named mixin reference to apply to the current location.",
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 0
+          },
+          {
+            "$ref": "#/$defs/id-b88443d3eba9c9dfad608c2a71614d0d"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-931c146f741a9fec3d98e7a08865a530": {
       "title": "ca-certificates",
       "description": "Path to PEM encoded certificates to trust in addition to system certificates when resticprofile sends to a webhook - see https://creativeprojects.github.io/resticprofile/configuration/http_hooks/",
@@ -1662,6 +1490,18 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-94210984cb45797ad8ac9de467d98489": {
+      "title": "at",
+      "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+        },
+        {
+          "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
         }
       ]
     },
@@ -1686,6 +1526,15 @@
           "uniqueItems": false
         }
       ]
+    },
+    "id-9e7d0d652e41d4a0ab871e99b638b398": {
+      "title": "send-finally...",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
+      },
+      "minItems": 0,
+      "uniqueItems": false
     },
     "id-9ef1233a753c84edabc29066b234299f": {
       "title": "include",
@@ -1757,6 +1606,28 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-a09c499e58e4610808213948c41e1c54": {
+      "title": "lock-wait",
+      "description": "Set the maximum time to wait for acquiring locks when running on schedule",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "examples": [
+            "150s",
+            "15m",
+            "30m",
+            "45m",
+            "1h",
+            "2h30m"
+          ],
+          "minLength": 2,
+          "pattern": "^(\\d+(h|m|s|ms))+$"
         }
       ]
     },
@@ -1893,29 +1764,603 @@
         }
       ]
     },
-    "id-acb498fa195eeb35ab1f2a90dbd477af": {
-      "title": "stream-error",
-      "description": "Run shell command(s) when a pattern matches the stderr of restic",
+    "id-ac68e24112f7466d1d5141d04c491c8c": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "...headers": {
+          "title": "headers",
+          "description": "Additional HTTP headers to send with the request",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "title": "name",
+                  "description": "Name of the HTTP header",
+                  "type": "string",
+                  "examples": [
+                    "Authorization",
+                    "Cache-Control",
+                    "Content-Disposition",
+                    "Content-Type"
+                  ],
+                  "minLength": 0
+                },
+                "use": {
+                  "description": "Named mixin reference to apply to the current location.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 0
+                    },
+                    {
+                      "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                    }
+                  ]
+                },
+                "value": {
+                  "title": "value",
+                  "description": "Value of the header",
+                  "type": "string",
+                  "examples": [
+                    "Bearer ...",
+                    "Basic ...",
+                    "no-cache",
+                    "attachment; filename=stats.txt",
+                    "application/json",
+                    "text/plain",
+                    "text/xml"
+                  ],
+                  "minLength": 0
+                }
+              }
+            },
+            {
+              "title": "headers...",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "title": "name",
+                    "description": "Name of the HTTP header",
+                    "type": "string",
+                    "examples": [
+                      "Authorization",
+                      "Cache-Control",
+                      "Content-Disposition",
+                      "Content-Type"
+                    ],
+                    "minLength": 0
+                  },
+                  "use": {
+                    "description": "Named mixin reference to apply to the current location.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 0
+                      },
+                      {
+                        "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "title": "value",
+                    "description": "Value of the header",
+                    "type": "string",
+                    "examples": [
+                      "Bearer ...",
+                      "Basic ...",
+                      "no-cache",
+                      "attachment; filename=stats.txt",
+                      "application/json",
+                      "text/plain",
+                      "text/xml"
+                    ],
+                    "minLength": 0
+                  }
+                }
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
+        },
+        "body": {
+          "title": "body",
+          "description": "Request body, overrides \"body-template\"",
+          "type": "string",
+          "minLength": 0
+        },
+        "body-template": {
+          "title": "body-template",
+          "description": "Path to a file containing the request body (go template). See https://creativeprojects.github.io/resticprofile/configuration/http_hooks/#body-template",
+          "type": "string",
+          "minLength": 0
+        },
+        "headers": {
+          "title": "headers",
+          "description": "Additional HTTP headers to send with the request",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "title": "name",
+                  "description": "Name of the HTTP header",
+                  "type": "string",
+                  "examples": [
+                    "Authorization",
+                    "Cache-Control",
+                    "Content-Disposition",
+                    "Content-Type"
+                  ],
+                  "minLength": 0
+                },
+                "use": {
+                  "description": "Named mixin reference to apply to the current location.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 0
+                    },
+                    {
+                      "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                    }
+                  ]
+                },
+                "value": {
+                  "title": "value",
+                  "description": "Value of the header",
+                  "type": "string",
+                  "examples": [
+                    "Bearer ...",
+                    "Basic ...",
+                    "no-cache",
+                    "attachment; filename=stats.txt",
+                    "application/json",
+                    "text/plain",
+                    "text/xml"
+                  ],
+                  "minLength": 0
+                }
+              }
+            },
+            {
+              "title": "headers...",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "title": "name",
+                    "description": "Name of the HTTP header",
+                    "type": "string",
+                    "examples": [
+                      "Authorization",
+                      "Cache-Control",
+                      "Content-Disposition",
+                      "Content-Type"
+                    ],
+                    "minLength": 0
+                  },
+                  "use": {
+                    "description": "Named mixin reference to apply to the current location.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 0
+                      },
+                      {
+                        "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "title": "value",
+                    "description": "Value of the header",
+                    "type": "string",
+                    "examples": [
+                      "Bearer ...",
+                      "Basic ...",
+                      "no-cache",
+                      "attachment; filename=stats.txt",
+                      "application/json",
+                      "text/plain",
+                      "text/xml"
+                    ],
+                    "minLength": 0
+                  }
+                }
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
+        },
+        "headers...": {
+          "title": "headers",
+          "description": "Additional HTTP headers to send with the request",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "title": "name",
+                  "description": "Name of the HTTP header",
+                  "type": "string",
+                  "examples": [
+                    "Authorization",
+                    "Cache-Control",
+                    "Content-Disposition",
+                    "Content-Type"
+                  ],
+                  "minLength": 0
+                },
+                "use": {
+                  "description": "Named mixin reference to apply to the current location.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 0
+                    },
+                    {
+                      "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                    }
+                  ]
+                },
+                "value": {
+                  "title": "value",
+                  "description": "Value of the header",
+                  "type": "string",
+                  "examples": [
+                    "Bearer ...",
+                    "Basic ...",
+                    "no-cache",
+                    "attachment; filename=stats.txt",
+                    "application/json",
+                    "text/plain",
+                    "text/xml"
+                  ],
+                  "minLength": 0
+                }
+              }
+            },
+            {
+              "title": "headers...",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "title": "name",
+                    "description": "Name of the HTTP header",
+                    "type": "string",
+                    "examples": [
+                      "Authorization",
+                      "Cache-Control",
+                      "Content-Disposition",
+                      "Content-Type"
+                    ],
+                    "minLength": 0
+                  },
+                  "use": {
+                    "description": "Named mixin reference to apply to the current location.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 0
+                      },
+                      {
+                        "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "title": "value",
+                    "description": "Value of the header",
+                    "type": "string",
+                    "examples": [
+                      "Bearer ...",
+                      "Basic ...",
+                      "no-cache",
+                      "attachment; filename=stats.txt",
+                      "application/json",
+                      "text/plain",
+                      "text/xml"
+                    ],
+                    "minLength": 0
+                  }
+                }
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
+        },
+        "headers__APPEND": {
+          "title": "headers",
+          "description": "Additional HTTP headers to send with the request",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "title": "name",
+                  "description": "Name of the HTTP header",
+                  "type": "string",
+                  "examples": [
+                    "Authorization",
+                    "Cache-Control",
+                    "Content-Disposition",
+                    "Content-Type"
+                  ],
+                  "minLength": 0
+                },
+                "use": {
+                  "description": "Named mixin reference to apply to the current location.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 0
+                    },
+                    {
+                      "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                    }
+                  ]
+                },
+                "value": {
+                  "title": "value",
+                  "description": "Value of the header",
+                  "type": "string",
+                  "examples": [
+                    "Bearer ...",
+                    "Basic ...",
+                    "no-cache",
+                    "attachment; filename=stats.txt",
+                    "application/json",
+                    "text/plain",
+                    "text/xml"
+                  ],
+                  "minLength": 0
+                }
+              }
+            },
+            {
+              "title": "headers...",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "title": "name",
+                    "description": "Name of the HTTP header",
+                    "type": "string",
+                    "examples": [
+                      "Authorization",
+                      "Cache-Control",
+                      "Content-Disposition",
+                      "Content-Type"
+                    ],
+                    "minLength": 0
+                  },
+                  "use": {
+                    "description": "Named mixin reference to apply to the current location.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 0
+                      },
+                      {
+                        "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "title": "value",
+                    "description": "Value of the header",
+                    "type": "string",
+                    "examples": [
+                      "Bearer ...",
+                      "Basic ...",
+                      "no-cache",
+                      "attachment; filename=stats.txt",
+                      "application/json",
+                      "text/plain",
+                      "text/xml"
+                    ],
+                    "minLength": 0
+                  }
+                }
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
+        },
+        "headers__PREPEND": {
+          "title": "headers",
+          "description": "Additional HTTP headers to send with the request",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "title": "name",
+                  "description": "Name of the HTTP header",
+                  "type": "string",
+                  "examples": [
+                    "Authorization",
+                    "Cache-Control",
+                    "Content-Disposition",
+                    "Content-Type"
+                  ],
+                  "minLength": 0
+                },
+                "use": {
+                  "description": "Named mixin reference to apply to the current location.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 0
+                    },
+                    {
+                      "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                    }
+                  ]
+                },
+                "value": {
+                  "title": "value",
+                  "description": "Value of the header",
+                  "type": "string",
+                  "examples": [
+                    "Bearer ...",
+                    "Basic ...",
+                    "no-cache",
+                    "attachment; filename=stats.txt",
+                    "application/json",
+                    "text/plain",
+                    "text/xml"
+                  ],
+                  "minLength": 0
+                }
+              }
+            },
+            {
+              "title": "headers...",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "title": "name",
+                    "description": "Name of the HTTP header",
+                    "type": "string",
+                    "examples": [
+                      "Authorization",
+                      "Cache-Control",
+                      "Content-Disposition",
+                      "Content-Type"
+                    ],
+                    "minLength": 0
+                  },
+                  "use": {
+                    "description": "Named mixin reference to apply to the current location.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 0
+                      },
+                      {
+                        "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "title": "value",
+                    "description": "Value of the header",
+                    "type": "string",
+                    "examples": [
+                      "Bearer ...",
+                      "Basic ...",
+                      "no-cache",
+                      "attachment; filename=stats.txt",
+                      "application/json",
+                      "text/plain",
+                      "text/xml"
+                    ],
+                    "minLength": 0
+                  }
+                }
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
+        },
+        "method": {
+          "title": "method",
+          "default": "GET",
+          "description": "HTTP method of the request",
+          "type": "string",
+          "enum": [
+            "GET",
+            "DELETE",
+            "HEAD",
+            "OPTIONS",
+            "PATCH",
+            "POST",
+            "PUT",
+            "TRACE"
+          ],
+          "minLength": 0
+        },
+        "skip-tls-verification": {
+          "title": "skip-tls-verification",
+          "description": "Enables insecure TLS (without verification), see also \"global.ca-certificates\"",
+          "type": "boolean"
+        },
+        "url": {
+          "title": "url",
+          "description": "URL of the target to send to",
+          "type": "string",
+          "minLength": 0,
+          "format": "uri"
+        },
+        "use": {
+          "description": "Named mixin reference to apply to the current location.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 0
+            },
+            {
+              "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+            }
+          ]
+        }
+      }
+    },
+    "id-b03ccdd7899cd5486625a0e514a03d2c": {
+      "title": "send-after",
+      "description": "Send HTTP request(s) after a successful restic command",
       "anyOf": [
         {
-          "$ref": "#/$defs/id-ea6b86c1a2c405fc347e1c1d050cfe14"
+          "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
         },
         {
-          "$ref": "#/$defs/id-8a7cd32381cd8ef5d3ea73a8bf9a529d"
+          "$ref": "#/$defs/id-8dc244da59b67cffbcc6e5de402cffb5"
         }
       ]
     },
-    "id-b25a1288b7d95f88211e28f1c4359b73": {
-      "title": "send-finally",
-      "description": "Send HTTP request(s) always, after all other commands",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
+    "id-b88443d3eba9c9dfad608c2a71614d0d": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "title": "name",
+          "description": "Named mixin reference to apply to the current location.",
+          "type": "string",
+          "minLength": 0
         },
-        {
-          "$ref": "#/$defs/id-6ad91d98e2c5c24e874fcf5efa4caa82"
+        "vars": {
+          "description": "Named mixin reference to apply to the current location.",
+          "type": "object",
+          "additionalProperties": true
         }
-      ]
+      }
     },
     "id-bac728d70d7f809711e6c27ea7825da9": {
       "title": "tag",
@@ -1947,6 +2392,15 @@
           "$ref": "#/$defs/id-5bfb7690d77d0226d2ffe0fe927a4981"
         }
       ]
+    },
+    "id-bc7a8ba8f54f45b25490b5dae9d7d3e2": {
+      "title": "send-after-fail...",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id-ac68e24112f7466d1d5141d04c491c8c"
+      },
+      "minItems": 0,
+      "uniqueItems": false
     },
     "id-bdebeefb786b97126bbaf65dcffdb112": {
       "title": "cacert",
@@ -1999,6 +2453,394 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-ca6d9f5660f88c82d389d4525551cc7e": {
+      "title": "schedule",
+      "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure [deprecated]",
+      "anyOf": [
+        {
+          "description": "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "...at": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "...capture-environment": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "...systemd-drop-in-files": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "after-network-online": {
+              "title": "after-network-online",
+              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
+              "type": "boolean"
+            },
+            "at": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "at...": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "at__APPEND": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "at__PREPEND": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "$ref": "#/$defs/id-6e3f69f4cd1eec58c0f94211a5f66b23"
+                }
+              ]
+            },
+            "capture-environment": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "capture-environment...": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "capture-environment__APPEND": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "capture-environment__PREPEND": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-fdf62d09f0edc601bbd1dd5a126d8dbc"
+                }
+              ]
+            },
+            "command-output": {
+              "title": "command-output",
+              "default": "auto",
+              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "log",
+                "console",
+                "all"
+              ],
+              "minLength": 0
+            },
+            "ignore-on-battery": {
+              "title": "ignore-on-battery",
+              "description": "Don't start this schedule when running on battery",
+              "type": "boolean"
+            },
+            "ignore-on-battery-less-than": {
+              "title": "ignore-on-battery-less-than",
+              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+              "type": "integer",
+              "examples": [
+                20,
+                33,
+                50,
+                75
+              ]
+            },
+            "lock-mode": {
+              "title": "lock-mode",
+              "default": "default",
+              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "default",
+                "fail",
+                "ignore"
+              ],
+              "minLength": 0
+            },
+            "lock-wait": {
+              "title": "lock-wait",
+              "description": "Set the maximum time to wait for acquiring locks when running on schedule",
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string",
+                  "examples": [
+                    "150s",
+                    "15m",
+                    "30m",
+                    "45m",
+                    "1h",
+                    "2h30m"
+                  ],
+                  "minLength": 2,
+                  "pattern": "^(\\d+(h|m|s|ms))+$"
+                }
+              ]
+            },
+            "log": {
+              "title": "log",
+              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "examples": [
+                "/resticprofile.log",
+                "syslog-tcp://syslog-server:514",
+                "syslog:server",
+                "syslog:"
+              ],
+              "minLength": 0
+            },
+            "permission": {
+              "title": "permission",
+              "default": "auto",
+              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "system",
+                "user",
+                "user_logged_on"
+              ],
+              "minLength": 0
+            },
+            "priority": {
+              "title": "priority",
+              "default": "background",
+              "description": "Set the priority at which the schedule is run",
+              "type": "string",
+              "enum": [
+                "background",
+                "standard"
+              ],
+              "minLength": 0
+            },
+            "systemd-drop-in-files": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "systemd-drop-in-files...": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "systemd-drop-in-files__APPEND": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "systemd-drop-in-files__PREPEND": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "use": {
+              "description": "Named mixin reference to apply to the current location.",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "schedule",
+          "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure [deprecated]",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
+            },
+            {
+              "title": "schedule...",
+              "deprecated": true,
+              "type": "array",
+              "examples": [
+                "hourly",
+                "daily",
+                "weekly",
+                "monthly",
+                "10:00,14:00,18:00,22:00",
+                "Wed,Fri 17:48",
+                "*-*-15 02:45",
+                "Mon..Fri 00:30"
+              ],
+              "items": {
+                "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
         }
       ]
     },
@@ -2070,18 +2912,6 @@
         }
       ]
     },
-    "id-d3e990e34129afb00a1b7c101abf0c0a": {
-      "title": "send-after-fail",
-      "description": "Send HTTP request(s) after failed restic or shell commands",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
-        },
-        {
-          "$ref": "#/$defs/id-4315fb3c4d73232c356bd397e6af50c2"
-        }
-      ]
-    },
     "id-d7f8fecbb230b837e9062334f594f0b5": {
       "title": "exclude-file",
       "description": "read exclude patterns from a file",
@@ -2132,15 +2962,6 @@
             "format": "hostname"
           }
         ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
-    "id-db1862c57a8fe6ced474ddb1a739e54e": {
-      "title": "send-after...",
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/id-66398b0321ca42460ad64975faddbb0d"
       },
       "minItems": 0,
       "uniqueItems": false
@@ -2213,37 +3034,6 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-e2999546540d65af97ec47b7bdf58f0e": {
-      "title": "schedule",
-      "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format) [deprecated]",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
-        },
-        {
-          "$ref": "#/$defs/id-84f2be57e54d952b83b456e4157aee99"
-        }
-      ]
-    },
-    "id-e387867d8e7f5f098d6a1346e2da9a6e": {
-      "title": "...",
-      "type": "array",
-      "items": {
-        "title": "use",
-        "description": "named mixin reference to apply to the current location",
-        "anyOf": [
-          {
-            "type": "string",
-            "minLength": 0
-          },
-          {
-            "$ref": "#/$defs/id-173faf928989dfcf2c60b82f2368260d"
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
     "id-e53da3b88d470edbc47a4cdd4160ff3f": {
       "title": "option",
       "description": "set extended option (key=value)",
@@ -2297,7 +3087,7 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-ea6b86c1a2c405fc347e1c1d050cfe14": {
+    "id-e61f589a6ce6dba6d1329fb1b9c029dd": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2327,30 +3117,18 @@
           "minLength": 0
         },
         "use": {
-          "description": "named mixin reference to apply to the current location",
+          "description": "Named mixin reference to apply to the current location.",
           "anyOf": [
             {
               "type": "string",
               "minLength": 0
             },
             {
-              "$ref": "#/$defs/id-e387867d8e7f5f098d6a1346e2da9a6e"
+              "$ref": "#/$defs/id-930a40c1f62ccd05adebb753afc31217"
             }
           ]
         }
       }
-    },
-    "id-ed55b285d65fc7caf2a37fb501d8048d": {
-      "title": "schedule",
-      "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-        },
-        {
-          "$ref": "#/$defs/id-898088268e693f43f6a185b7c972ff67"
-        }
-      ]
     },
     "id-eeb8a98cfbdda89f5344c19ef0ca1ef7": {
       "title": "tag",
@@ -2506,6 +3284,39 @@
           "pattern": "^(\\d+(h|m|s|ms))+$"
         }
       ]
+    },
+    "id-f859f484fd3c41a21f89c97b3c8add1b": {
+      "title": "stream-error...",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id-e61f589a6ce6dba6d1329fb1b9c029dd"
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-fba55e7c724d1978f8496e3c1ba2bb58": {
+      "title": "stream-error",
+      "description": "Run shell command(s) when a pattern matches the stderr of restic",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/id-e61f589a6ce6dba6d1329fb1b9c029dd"
+        },
+        {
+          "$ref": "#/$defs/id-f859f484fd3c41a21f89c97b3c8add1b"
+        }
+      ]
+    },
+    "id-fdf62d09f0edc601bbd1dd5a126d8dbc": {
+      "title": "capture-environment...",
+      "default": "RESTIC_*",
+      "type": "array",
+      "items": {
+        "default": "RESTIC_*",
+        "type": "string",
+        "minLength": 0
+      },
+      "minItems": 0,
+      "uniqueItems": false
     }
   },
   "description": "resticprofile configuration v2",
@@ -2514,7 +3325,7 @@
   "properties": {
     "global": {
       "title": "global",
-      "description": "global settings",
+      "description": "Global settings",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2535,6 +3346,19 @@
         },
         "ca-certificates__PREPEND": {
           "$ref": "#/$defs/id-931c146f741a9fec3d98e7a08865a530"
+        },
+        "command-output": {
+          "title": "command-output",
+          "default": "auto",
+          "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+          "type": "string",
+          "enum": [
+            "auto",
+            "log",
+            "console",
+            "all"
+          ],
+          "minLength": 0
         },
         "default-command": {
           "title": "default-command",
@@ -2613,8 +3437,14 @@
         },
         "log": {
           "title": "log",
-          "description": "Sets the default log destination to be used if not specified in '--log' or 'schedule-log' - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+          "description": "Sets the default log destination to be used if not specified in \"--log\" or \"schedule-log\" - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
           "type": "string",
+          "examples": [
+            "/resticprofile.log",
+            "syslog-tcp://syslog-server:514",
+            "syslog:server",
+            "syslog:"
+          ],
           "minLength": 0
         },
         "min-memory": {
@@ -2629,6 +3459,11 @@
           "type": "integer",
           "minimum": -20,
           "maximum": 19
+        },
+        "prevent-auto-repository-file": {
+          "title": "prevent-auto-repository-file",
+          "description": "Prevents using a repository file for repository definitions containing a password",
+          "type": "boolean"
         },
         "prevent-sleep": {
           "title": "prevent-sleep",
@@ -2668,10 +3503,144 @@
         "restic-stale-lock-age": {
           "$ref": "#/$defs/id-366bc37fbc920b9db2020ae49b716c6b"
         },
+        "schedule-defaults": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "...capture-environment": {
+              "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+            },
+            "...systemd-drop-in-files": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "after-network-online": {
+              "title": "after-network-online",
+              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
+              "type": "boolean"
+            },
+            "capture-environment": {
+              "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+            },
+            "capture-environment...": {
+              "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+            },
+            "capture-environment__APPEND": {
+              "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+            },
+            "capture-environment__PREPEND": {
+              "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+            },
+            "command-output": {
+              "title": "command-output",
+              "default": "auto",
+              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "log",
+                "console",
+                "all"
+              ],
+              "minLength": 0
+            },
+            "ignore-on-battery": {
+              "title": "ignore-on-battery",
+              "description": "Don't start this schedule when running on battery",
+              "type": "boolean"
+            },
+            "ignore-on-battery-less-than": {
+              "title": "ignore-on-battery-less-than",
+              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+              "type": "integer",
+              "examples": [
+                20,
+                33,
+                50,
+                75
+              ]
+            },
+            "lock-mode": {
+              "title": "lock-mode",
+              "default": "default",
+              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "default",
+                "fail",
+                "ignore"
+              ],
+              "minLength": 0
+            },
+            "lock-wait": {
+              "$ref": "#/$defs/id-a09c499e58e4610808213948c41e1c54"
+            },
+            "log": {
+              "title": "log",
+              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "examples": [
+                "/resticprofile.log",
+                "syslog-tcp://syslog-server:514",
+                "syslog:server",
+                "syslog:"
+              ],
+              "minLength": 0
+            },
+            "permission": {
+              "title": "permission",
+              "default": "auto",
+              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "system",
+                "user",
+                "user_logged_on"
+              ],
+              "minLength": 0
+            },
+            "priority": {
+              "title": "priority",
+              "default": "background",
+              "description": "Set the priority at which the schedule is run",
+              "type": "string",
+              "enum": [
+                "background",
+                "standard"
+              ],
+              "minLength": 0
+            },
+            "systemd-drop-in-files": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "systemd-drop-in-files...": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "systemd-drop-in-files__APPEND": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "systemd-drop-in-files__PREPEND": {
+              "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+            },
+            "use": {
+              "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
+            }
+          }
+        },
         "scheduler": {
           "title": "scheduler",
-          "description": "Leave blank for the default scheduler or use \"crond\" to select cron on supported operating systems",
+          "default": "auto",
+          "description": "Selects the scheduler. Blank or \"auto\" uses the default scheduler of your operating system: \"launchd\", \"systemd\", \"taskscheduler\" or \"crond\" (as fallback). Alternatively you can set \"crond\" for cron compatible schedulers supporting the crontab executable API or \"crontab:[user:]file\" to write into a crontab file directly. The need for a user is detected if missing and can be set to a name, \"-\" (no user) or \"*\" (current user).",
           "type": "string",
+          "examples": [
+            "auto",
+            "launchd",
+            "systemd",
+            "taskscheduler",
+            "crond",
+            "crond:/usr/bin/crontab",
+            "crontab:*:/etc/cron.d/resticprofile"
+          ],
           "minLength": 0
         },
         "send-timeout": {
@@ -2702,12 +3671,12 @@
           "minLength": 0
         },
         "use": {
-          "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+          "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
         }
       }
     },
     "groups": {
-      "description": "profile groups",
+      "description": "Profile groups",
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
@@ -2743,15 +3712,165 @@
             "profiles__PREPEND": {
               "$ref": "#/$defs/id-2682695859679e0c4c2f3f7557a3c670"
             },
+            "schedules": {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                ".+": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "...at": {
+                      "$ref": "#/$defs/id-94210984cb45797ad8ac9de467d98489"
+                    },
+                    "...capture-environment": {
+                      "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+                    },
+                    "...systemd-drop-in-files": {
+                      "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+                    },
+                    "after-network-online": {
+                      "title": "after-network-online",
+                      "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
+                      "type": "boolean"
+                    },
+                    "at": {
+                      "$ref": "#/$defs/id-94210984cb45797ad8ac9de467d98489"
+                    },
+                    "at...": {
+                      "$ref": "#/$defs/id-94210984cb45797ad8ac9de467d98489"
+                    },
+                    "at__APPEND": {
+                      "$ref": "#/$defs/id-94210984cb45797ad8ac9de467d98489"
+                    },
+                    "at__PREPEND": {
+                      "$ref": "#/$defs/id-94210984cb45797ad8ac9de467d98489"
+                    },
+                    "capture-environment": {
+                      "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+                    },
+                    "capture-environment...": {
+                      "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+                    },
+                    "capture-environment__APPEND": {
+                      "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+                    },
+                    "capture-environment__PREPEND": {
+                      "$ref": "#/$defs/id-8e1fcc63a67be14220d248d0225ed5b7"
+                    },
+                    "command-output": {
+                      "title": "command-output",
+                      "default": "auto",
+                      "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+                      "type": "string",
+                      "enum": [
+                        "auto",
+                        "log",
+                        "console",
+                        "all"
+                      ],
+                      "minLength": 0
+                    },
+                    "ignore-on-battery": {
+                      "title": "ignore-on-battery",
+                      "description": "Don't start this schedule when running on battery",
+                      "type": "boolean"
+                    },
+                    "ignore-on-battery-less-than": {
+                      "title": "ignore-on-battery-less-than",
+                      "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+                      "type": "integer",
+                      "examples": [
+                        20,
+                        33,
+                        50,
+                        75
+                      ]
+                    },
+                    "lock-mode": {
+                      "title": "lock-mode",
+                      "default": "default",
+                      "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+                      "type": "string",
+                      "enum": [
+                        "default",
+                        "fail",
+                        "ignore"
+                      ],
+                      "minLength": 0
+                    },
+                    "lock-wait": {
+                      "$ref": "#/$defs/id-a09c499e58e4610808213948c41e1c54"
+                    },
+                    "log": {
+                      "title": "log",
+                      "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+                      "type": "string",
+                      "examples": [
+                        "/resticprofile.log",
+                        "syslog-tcp://syslog-server:514",
+                        "syslog:server",
+                        "syslog:"
+                      ],
+                      "minLength": 0
+                    },
+                    "permission": {
+                      "title": "permission",
+                      "default": "auto",
+                      "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+                      "type": "string",
+                      "enum": [
+                        "auto",
+                        "system",
+                        "user",
+                        "user_logged_on"
+                      ],
+                      "minLength": 0
+                    },
+                    "priority": {
+                      "title": "priority",
+                      "default": "background",
+                      "description": "Set the priority at which the schedule is run",
+                      "type": "string",
+                      "enum": [
+                        "background",
+                        "standard"
+                      ],
+                      "minLength": 0
+                    },
+                    "systemd-drop-in-files": {
+                      "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+                    },
+                    "systemd-drop-in-files...": {
+                      "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+                    },
+                    "systemd-drop-in-files__APPEND": {
+                      "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+                    },
+                    "systemd-drop-in-files__PREPEND": {
+                      "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
+                    },
+                    "use": {
+                      "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
+                    }
+                  }
+                }
+              },
+              "properties": {
+                "use": {
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
+                }
+              }
+            },
             "use": {
-              "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+              "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
             }
           }
         }
       },
       "properties": {
         "use": {
-          "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+          "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
         }
       }
     },
@@ -2759,13 +3878,13 @@
       "$ref": "#/$defs/id-9e1013a6d9d54bc7974f9c0ff9c0ea3e"
     },
     "mixins": {
-      "description": "global mixins declaration",
+      "description": "Global mixins declaration.",
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
         ".+": {
           "title": "mixins",
-          "description": "global mixins declaration",
+          "description": "Global mixins declaration.",
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -2787,6 +3906,9 @@
           "type": "object",
           "additionalProperties": true,
           "properties": {
+            "...env-file": {
+              "$ref": "#/$defs/id-71d4c72a873617fc9b373bf506f9606d"
+            },
             "...option": {
               "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
             },
@@ -2803,7 +3925,7 @@
               "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
             },
             "...stream-error": {
-              "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
+              "$ref": "#/$defs/id-fba55e7c724d1978f8496e3c1ba2bb58"
             },
             "...systemd-drop-in-files": {
               "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
@@ -2850,23 +3972,20 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
-                "...schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "...send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "...send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "...send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...source": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
@@ -3137,11 +4256,11 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                  "$ref": "#/$defs/id-10e2bac6b25309c63ca936f6f4170786"
                 },
                 "schedule-after-network-online": {
                   "title": "schedule-after-network-online",
-                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
                   "type": "boolean"
                 },
                 "schedule-capture-environment": {
@@ -3158,13 +4277,19 @@
                 },
                 "schedule-ignore-on-battery": {
                   "title": "schedule-ignore-on-battery",
-                  "description": "Don't schedule the start of this profile when running on battery",
+                  "description": "Don't start this schedule when running on battery",
                   "type": "boolean"
                 },
                 "schedule-ignore-on-battery-less-than": {
                   "title": "schedule-ignore-on-battery-less-than",
-                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
-                  "type": "integer"
+                  "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+                  "type": "integer",
+                  "examples": [
+                    20,
+                    33,
+                    50,
+                    75
+                  ]
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -3187,7 +4312,9 @@
                   "type": "string",
                   "examples": [
                     "/resticprofile.log",
-                    "tcp://localhost:514"
+                    "syslog-tcp://syslog-server:514",
+                    "syslog:server",
+                    "syslog:"
                   ],
                   "minLength": 0
                 },
@@ -3215,62 +4342,53 @@
                   ],
                   "minLength": 0
                 },
-                "schedule...": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__APPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__PREPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail...": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__APPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__PREPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after...": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__APPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__PREPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before...": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__APPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__PREPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally...": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__APPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__PREPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "source": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
@@ -3286,6 +4404,11 @@
                     "%cd%"
                   ],
                   "minLength": 0
+                },
+                "source-relative": {
+                  "title": "source-relative",
+                  "description": "Enable backup with relative source paths. This will change the working directory of the \"restic backup\" command to \"source-base\", and will not expand \"source\" to an absolute path.",
+                  "type": "boolean"
                 },
                 "source...": {
                   "$ref": "#/$defs/id-d1f2b5737dfffd577f5878457493a891"
@@ -3345,7 +4468,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -3553,7 +4676,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -3734,7 +4857,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -3753,23 +4876,20 @@
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
-                "...schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "...send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "...send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "...send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -3800,8 +4920,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -3878,11 +4998,11 @@
                   "minLength": 0
                 },
                 "schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                  "$ref": "#/$defs/id-10e2bac6b25309c63ca936f6f4170786"
                 },
                 "schedule-after-network-online": {
                   "title": "schedule-after-network-online",
-                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
                   "type": "boolean"
                 },
                 "schedule-capture-environment": {
@@ -3899,13 +5019,19 @@
                 },
                 "schedule-ignore-on-battery": {
                   "title": "schedule-ignore-on-battery",
-                  "description": "Don't schedule the start of this profile when running on battery",
+                  "description": "Don't start this schedule when running on battery",
                   "type": "boolean"
                 },
                 "schedule-ignore-on-battery-less-than": {
                   "title": "schedule-ignore-on-battery-less-than",
-                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
-                  "type": "integer"
+                  "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+                  "type": "integer",
+                  "examples": [
+                    20,
+                    33,
+                    50,
+                    75
+                  ]
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -3928,7 +5054,9 @@
                   "type": "string",
                   "examples": [
                     "/resticprofile.log",
-                    "tcp://localhost:514"
+                    "syslog-tcp://syslog-server:514",
+                    "syslog:server",
+                    "syslog:"
                   ],
                   "minLength": 0
                 },
@@ -3956,62 +5084,53 @@
                   ],
                   "minLength": 0
                 },
-                "schedule...": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__APPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__PREPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail...": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__APPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__PREPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after...": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__APPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__PREPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before...": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__APPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__PREPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally...": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__APPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__PREPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
@@ -4020,7 +5139,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -4067,23 +5186,20 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
-                "...schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "...send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "...send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "...send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...snapshot": {
                   "$ref": "#/$defs/id-a0a0f94f7b67bcfce0325495ae74a8f5"
@@ -4304,11 +5420,11 @@
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                  "$ref": "#/$defs/id-10e2bac6b25309c63ca936f6f4170786"
                 },
                 "schedule-after-network-online": {
                   "title": "schedule-after-network-online",
-                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
                   "type": "boolean"
                 },
                 "schedule-capture-environment": {
@@ -4325,13 +5441,19 @@
                 },
                 "schedule-ignore-on-battery": {
                   "title": "schedule-ignore-on-battery",
-                  "description": "Don't schedule the start of this profile when running on battery",
+                  "description": "Don't start this schedule when running on battery",
                   "type": "boolean"
                 },
                 "schedule-ignore-on-battery-less-than": {
                   "title": "schedule-ignore-on-battery-less-than",
-                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
-                  "type": "integer"
+                  "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+                  "type": "integer",
+                  "examples": [
+                    20,
+                    33,
+                    50,
+                    75
+                  ]
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -4354,7 +5476,9 @@
                   "type": "string",
                   "examples": [
                     "/resticprofile.log",
-                    "tcp://localhost:514"
+                    "syslog-tcp://syslog-server:514",
+                    "syslog:server",
+                    "syslog:"
                   ],
                   "minLength": 0
                 },
@@ -4382,62 +5506,53 @@
                   ],
                   "minLength": 0
                 },
-                "schedule...": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__APPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__PREPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail...": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__APPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__PREPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after...": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__APPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__PREPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before...": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__APPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__PREPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally...": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__APPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__PREPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "snapshot": {
                   "$ref": "#/$defs/id-a0a0f94f7b67bcfce0325495ae74a8f5"
@@ -4470,7 +5585,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -4656,7 +5771,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -4876,7 +5991,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -4889,9 +6004,21 @@
               "additionalProperties": true,
               "properties": {
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 }
               }
+            },
+            "env-file": {
+              "$ref": "#/$defs/id-71d4c72a873617fc9b373bf506f9606d"
+            },
+            "env-file...": {
+              "$ref": "#/$defs/id-71d4c72a873617fc9b373bf506f9606d"
+            },
+            "env-file__APPEND": {
+              "$ref": "#/$defs/id-71d4c72a873617fc9b373bf506f9606d"
+            },
+            "env-file__PREPEND": {
+              "$ref": "#/$defs/id-71d4c72a873617fc9b373bf506f9606d"
             },
             "extended-status": {
               "title": "extended-status",
@@ -4962,6 +6089,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -4977,11 +6109,6 @@
                 "ignore-case": {
                   "title": "ignore-case",
                   "description": "ignore case for pattern",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5168,7 +6295,7 @@
                   "type": "boolean"
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -5201,23 +6328,20 @@
                 "...path": {
                   "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
                 },
-                "...schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "...send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "...send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "...send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
@@ -5255,6 +6379,11 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -5273,11 +6402,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -5406,11 +6530,11 @@
                   "minLength": 0
                 },
                 "schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                  "$ref": "#/$defs/id-10e2bac6b25309c63ca936f6f4170786"
                 },
                 "schedule-after-network-online": {
                   "title": "schedule-after-network-online",
-                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
                   "type": "boolean"
                 },
                 "schedule-capture-environment": {
@@ -5427,13 +6551,19 @@
                 },
                 "schedule-ignore-on-battery": {
                   "title": "schedule-ignore-on-battery",
-                  "description": "Don't schedule the start of this profile when running on battery",
+                  "description": "Don't start this schedule when running on battery",
                   "type": "boolean"
                 },
                 "schedule-ignore-on-battery-less-than": {
                   "title": "schedule-ignore-on-battery-less-than",
-                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
-                  "type": "integer"
+                  "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+                  "type": "integer",
+                  "examples": [
+                    20,
+                    33,
+                    50,
+                    75
+                  ]
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -5456,7 +6586,9 @@
                   "type": "string",
                   "examples": [
                     "/resticprofile.log",
-                    "tcp://localhost:514"
+                    "syslog-tcp://syslog-server:514",
+                    "syslog:server",
+                    "syslog:"
                   ],
                   "minLength": 0
                 },
@@ -5484,62 +6616,53 @@
                   ],
                   "minLength": 0
                 },
-                "schedule...": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__APPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__PREPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail...": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__APPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__PREPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after...": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__APPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__PREPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before...": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__APPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__PREPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally...": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__APPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__PREPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
@@ -5560,7 +6683,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -5714,7 +6837,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -5903,7 +7026,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "user": {
                   "title": "user",
@@ -5979,8 +7102,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -6100,7 +7223,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -6169,6 +7292,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -6180,11 +7308,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -6336,7 +7459,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -6516,7 +7639,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -6584,6 +7707,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -6595,11 +7723,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -6758,7 +7881,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -6810,7 +7933,7 @@
               },
               "properties": {
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 }
               }
             },
@@ -6856,23 +7979,20 @@
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
-                "...schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
                 "...send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "...send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "...send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "...send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -6964,11 +8084,11 @@
                   "minLength": 0
                 },
                 "schedule": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
+                  "$ref": "#/$defs/id-10e2bac6b25309c63ca936f6f4170786"
                 },
                 "schedule-after-network-online": {
                   "title": "schedule-after-network-online",
-                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\").",
+                  "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
                   "type": "boolean"
                 },
                 "schedule-capture-environment": {
@@ -6985,13 +8105,19 @@
                 },
                 "schedule-ignore-on-battery": {
                   "title": "schedule-ignore-on-battery",
-                  "description": "Don't schedule the start of this profile when running on battery",
+                  "description": "Don't start this schedule when running on battery",
                   "type": "boolean"
                 },
                 "schedule-ignore-on-battery-less-than": {
                   "title": "schedule-ignore-on-battery-less-than",
-                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value",
-                  "type": "integer"
+                  "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+                  "type": "integer",
+                  "examples": [
+                    20,
+                    33,
+                    50,
+                    75
+                  ]
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -7014,7 +8140,9 @@
                   "type": "string",
                   "examples": [
                     "/resticprofile.log",
-                    "tcp://localhost:514"
+                    "syslog-tcp://syslog-server:514",
+                    "syslog:server",
+                    "syslog:"
                   ],
                   "minLength": 0
                 },
@@ -7042,62 +8170,53 @@
                   ],
                   "minLength": 0
                 },
-                "schedule...": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__APPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
-                "schedule__PREPEND": {
-                  "$ref": "#/$defs/id-ed55b285d65fc7caf2a37fb501d8048d"
-                },
                 "send-after": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after-fail": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail...": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__APPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after-fail__PREPEND": {
-                  "$ref": "#/$defs/id-d3e990e34129afb00a1b7c101abf0c0a"
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
                 "send-after...": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__APPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-after__PREPEND": {
-                  "$ref": "#/$defs/id-3655eb66e4d2d1ecfb14e0977d17250e"
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
                 "send-before": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before...": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__APPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-before__PREPEND": {
-                  "$ref": "#/$defs/id-4013793fd7a5aaa3895d07967107b88f"
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
                 "send-finally": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally...": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__APPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "send-finally__PREPEND": {
-                  "$ref": "#/$defs/id-b25a1288b7d95f88211e28f1c4359b73"
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
@@ -7106,7 +8225,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -7286,7 +8405,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -7340,8 +8459,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -7461,7 +8580,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -7559,6 +8678,11 @@
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -7606,11 +8730,6 @@
                 },
                 "include__PREPEND": {
                   "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7758,7 +8877,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -7790,9 +8909,6 @@
                 },
                 "...path": {
                   "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
-                },
-                "...schedule": {
-                  "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
                 },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
@@ -7994,12 +9110,12 @@
                   "minLength": 0
                 },
                 "schedule": {
-                  "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
+                  "$ref": "#/$defs/id-ca6d9f5660f88c82d389d4525551cc7e"
                 },
                 "schedule-after-network-online": {
                   "title": "schedule-after-network-online",
                   "deprecated": true,
-                  "description": "Don't schedule the start of this profile when the network is offline (supported in \"systemd\"). [deprecated]",
+                  "description": "Don't start this schedule when the network is offline (supported in \"systemd\") [deprecated]",
                   "type": "boolean"
                 },
                 "schedule-capture-environment": {
@@ -8017,14 +9133,20 @@
                 "schedule-ignore-on-battery": {
                   "title": "schedule-ignore-on-battery",
                   "deprecated": true,
-                  "description": "Don't schedule the start of this profile when running on battery [deprecated]",
+                  "description": "Don't start this schedule when running on battery [deprecated]",
                   "type": "boolean"
                 },
                 "schedule-ignore-on-battery-less-than": {
                   "title": "schedule-ignore-on-battery-less-than",
                   "deprecated": true,
-                  "description": "Don't schedule the start of this profile when running on battery, and the battery charge left is less than the value [deprecated]",
-                  "type": "integer"
+                  "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage [deprecated]",
+                  "type": "integer",
+                  "examples": [
+                    20,
+                    33,
+                    50,
+                    75
+                  ]
                 },
                 "schedule-lock-mode": {
                   "title": "schedule-lock-mode",
@@ -8048,7 +9170,9 @@
                   "type": "string",
                   "examples": [
                     "/resticprofile.log",
-                    "tcp://localhost:514"
+                    "syslog-tcp://syslog-server:514",
+                    "syslog:server",
+                    "syslog:"
                   ],
                   "minLength": 0
                 },
@@ -8076,15 +9200,6 @@
                   ],
                   "minLength": 0
                 },
-                "schedule...": {
-                  "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
-                },
-                "schedule__APPEND": {
-                  "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
-                },
-                "schedule__PREPEND": {
-                  "$ref": "#/$defs/id-e2999546540d65af97ec47b7bdf58f0e"
-                },
                 "tag": {
                   "$ref": "#/$defs/id-eeb8a98cfbdda89f5344c19ef0ca1ef7"
                 },
@@ -8104,7 +9219,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -8220,6 +9335,11 @@
                   "description": "use compact output format",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -8237,11 +9357,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -8389,7 +9504,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -8616,7 +9731,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -8630,16 +9745,16 @@
               "minLength": 0
             },
             "stream-error": {
-              "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
+              "$ref": "#/$defs/id-fba55e7c724d1978f8496e3c1ba2bb58"
             },
             "stream-error...": {
-              "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
+              "$ref": "#/$defs/id-fba55e7c724d1978f8496e3c1ba2bb58"
             },
             "stream-error__APPEND": {
-              "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
+              "$ref": "#/$defs/id-fba55e7c724d1978f8496e3c1ba2bb58"
             },
             "stream-error__PREPEND": {
-              "$ref": "#/$defs/id-acb498fa195eeb35ab1f2a90dbd477af"
+              "$ref": "#/$defs/id-fba55e7c724d1978f8496e3c1ba2bb58"
             },
             "systemd-drop-in-files": {
               "$ref": "#/$defs/id-efc256c6055c563ef627167bef02d66c"
@@ -8730,6 +9845,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -8741,11 +9861,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -8911,7 +10026,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -8971,8 +10086,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -9097,7 +10212,7 @@
                   "minLength": 0
                 },
                 "use": {
-                  "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
                 },
                 "verbose": {
                   "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -9105,7 +10220,7 @@
               }
             },
             "use": {
-              "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+              "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
             },
             "verbose": {
               "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
@@ -9115,7 +10230,7 @@
       },
       "properties": {
         "use": {
-          "$ref": "#/$defs/id-12455b5443f0012a5aeac1a5d93615f8"
+          "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
         }
       }
     },

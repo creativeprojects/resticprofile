@@ -42,7 +42,7 @@ var variants = {
 
 	init: function( variants ){
 		this.variants = variants;
-		var variant = window.localStorage.getItem( window.relearn.baseUriFull+'variant' ) || ( this.variants.length ? this.variants[0] : '' );
+		var variant = window.localStorage.getItem( window.relearn.absBaseUri+'/variant' ) || ( this.variants.length ? this.variants[0] : '' );
 		this.changeVariant( variant );
 		document.addEventListener( 'readystatechange', function(){
 			if( document.readyState == 'interactive' ){
@@ -57,7 +57,7 @@ var variants = {
 
 	setVariant: function( variant ){
 		this.variant = variant;
-		window.localStorage.setItem( window.relearn.baseUriFull+'variant', variant );
+		window.localStorage.setItem( window.relearn.absBaseUri+'/variant', variant );
 	},
 
 	isVariantLoaded: function(){
@@ -95,11 +95,11 @@ var variants = {
 	},
 
 	addCustomVariantOption: function(){
-		var variantbase = window.localStorage.getItem( window.relearn.baseUriFull+'customvariantbase' );
+		var variantbase = window.localStorage.getItem( window.relearn.absBaseUri+'/customvariantbase' );
 		if( this.variants.indexOf( variantbase ) < 0 ){
 			variantbase = '';
 		}
-		if( !window.localStorage.getItem( window.relearn.baseUriFull+'customvariant' ) ){
+		if( !window.localStorage.getItem( window.relearn.absBaseUri+'/customvariant' ) ){
 			variantbase = '';
 		}
 		if( !variantbase ){
@@ -136,15 +136,15 @@ var variants = {
 
 	saveCustomVariant: function(){
 		if( this.getVariant() != this.customvariantname ){
-			window.localStorage.setItem( window.relearn.baseUriFull+'customvariantbase', this.getVariant() );
+			window.localStorage.setItem( window.relearn.absBaseUri+'/customvariantbase', this.getVariant() );
 		}
-		window.localStorage.setItem( window.relearn.baseUriFull+'customvariant', this.generateStylesheet() );
+		window.localStorage.setItem( window.relearn.absBaseUri+'/customvariant', this.generateStylesheet() );
 		this.setVariant( this.customvariantname );
 		this.markSelectedVariant();
 	},
 
 	loadCustomVariant: function(){
-		var stylesheet = window.localStorage.getItem( window.relearn.baseUriFull+'customvariant' );
+		var stylesheet = window.localStorage.getItem( window.relearn.absBaseUri+'/customvariant' );
 
 		// temp styles to document
 		var head = document.querySelector( 'head' );
@@ -170,10 +170,10 @@ var variants = {
 	},
 
 	resetVariant: function(){
-		var variantbase = window.localStorage.getItem( window.relearn.baseUriFull+'customvariantbase' );
+		var variantbase = window.localStorage.getItem( window.relearn.absBaseUri+'/customvariantbase' );
 		if( variantbase && confirm( 'You have made changes to your custom variant. Are you sure you want to reset all changes?' ) ){
-			window.localStorage.removeItem( window.relearn.baseUriFull+'customvariantbase' );
-			window.localStorage.removeItem( window.relearn.baseUriFull+'customvariant' );
+			window.localStorage.removeItem( window.relearn.absBaseUri+'/customvariantbase' );
+			window.localStorage.removeItem( window.relearn.absBaseUri+'/customvariant' );
 			this.removeCustomVariantOption();
 			if( this.getVariant() == this.customvariantname ){
 				this.changeVariant( variantbase );
@@ -205,11 +205,11 @@ var variants = {
 
 	changeVariant: function( variant ){
 		if( variant == this.customvariantname ){
-			var variantbase = window.localStorage.getItem( window.relearn.baseUriFull+'customvariantbase' );
+			var variantbase = window.localStorage.getItem( window.relearn.absBaseUri+'/customvariantbase' );
 			if( this.variants.indexOf( variantbase ) < 0 ){
 				variant = '';
 			}
-			if( !window.localStorage.getItem( window.relearn.baseUriFull+'customvariant' ) ){
+			if( !window.localStorage.getItem( window.relearn.absBaseUri+'/customvariant' ) ){
 				variant = '';
 			}
 			this.setVariant( variant );
@@ -238,7 +238,7 @@ var variants = {
 		graphs.forEach( function( e ){ e.innerHTML = graphDefinition; });
 
 		var interval_id = setInterval( function(){
-			if( document.querySelectorAll( vargenerator + '.mermaid > svg' ).length ){
+			if( document.querySelectorAll( vargenerator + ' .mermaid > svg' ).length ){
 				clearInterval( interval_id );
 				this.styleGraph();
 			}

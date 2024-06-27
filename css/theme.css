@@ -470,33 +470,31 @@ article a:focus > img:only-child:empty{
 #R-body .flex-block-wrapper {
     margin-left: auto;
     margin-right: auto;
-    max-width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 3.25rem );
+    max-width: calc( var(--INTERNAL-MAIN-WIDTH-MAX) - var(--INTERNAL-MENU-WIDTH-L) - 2 * 3.25rem );
     width: 100%;
 }
 body:not(.print) #R-body .narrow .flex-block-wrapper {
-    max-width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 9.75rem );
+    max-width: calc( var(--INTERNAL-MAIN-WIDTH-MAX) - var(--INTERNAL-MENU-WIDTH-L) - 2 * 9.75rem );
 }
 /* we limit width if we have large screens */
-@media screen and ( min-width: 81.25rem ){ /* #R-sidebar/width + ./max-width */
-    #R-body .flex-block-wrapper {
-        width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 3.25rem );
-    }
-    body:not(.print) #R-body .narrow .flex-block-wrapper {
-        width: calc( 81.25rem - var(--INTERNAL-MENU-WIDTH-L) - 2 * 9.75rem );
-    }
+body.main-width-max #R-body .flex-block-wrapper {
+    width: calc( var(--INTERNAL-MAIN-WIDTH-MAX) - var(--INTERNAL-MENU-WIDTH-L) - 2 * 3.25rem );
+}
+body.main-width-max:not(.print) #R-body .narrow .flex-block-wrapper {
+    width: calc( var(--INTERNAL-MAIN-WIDTH-MAX) - var(--INTERNAL-MENU-WIDTH-L) - 2 * 9.75rem );
 }
 
 body:not(.print) #R-body-inner.narrow {
-    padding: 2rem 9.75rem;
+    padding: 0 9.75rem 2rem 9.75rem;
 }
 @media screen and (max-width: 59.999rem) {
     body:not(.print) #R-body-inner.narrow {
-        padding: 1rem 6.5rem;
+        padding: 0 6.5rem 1rem 6.5rem;
     }
 }
 @media screen and (max-width: 47.999rem) {
     body:not(.print) #R-body-inner.narrow {
-        padding: .375rem 3.25rem;
+        padding: 0 3.25rem .375rem 3.25rem;
     }
 }
 
@@ -506,6 +504,19 @@ body:not(.print) #R-body-inner.narrow {
     margin-top: 0;
     text-align: center;
 }
+body:not(.print) #R-body-inner.narrow div.article-subheading{
+    margin-top: 2rem;
+}
+@media screen and (max-width: 59.999rem) {
+    body:not(.print) #R-body-inner.narrow div.article-subheading{
+        margin-top: 1rem;
+    }
+}
+@media screen and (max-width: 47.999rem) {
+    body:not(.print) #R-body-inner.narrow div.article-subheading{
+        margin-top: .375rem;
+    }
+}
 
 body:not(.print) #R-body-inner.narrow p {
     font-size: 1.2rem;
@@ -513,7 +524,33 @@ body:not(.print) #R-body-inner.narrow p {
 }
 
 mark {
+    background: transparent;
+    border-radius: 0.8em 0.3rem;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
     color: rgba( 0, 0, 0, 1 );
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    margin: 0 -0.4rem;
+    padding: 0.1em 0.4rem;
+}
+
+kbd {
+    background-color: rgba( 134, 134, 134, .166 );
+    border-color: rgba( 134, 134, 134, .5 );
+    border-radius: 0.25rem;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 .0625rem 0 .0625rem rgba( 134, 134, 134, .5 );
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    font-size: 0.75rem;
+    line-height: 1;
+    min-width: 0.75rem;
+    padding: .125rem .3125rem .125rem .3125rem;
+    position: relative;
+    text-align: center;
+    top: -.125rem;
 }
 
 h1 {
@@ -667,7 +704,7 @@ p:empty {
     margin-bottom: 0;
 }
 
-/* attachments shortcode */
+/* resources shortcode */
 
 div.attachments .box-content {
     display: block;
@@ -1369,26 +1406,26 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
 }
 
 .mermaid {
-    border: 1px solid transparent;
     display: inline-block;
+    border: 1px solid transparent;
     padding: .5rem .5rem 0 .5rem;
     position: relative;
     /* don't use display: none, as this will cause no renderinge by Mermaid */
     visibility: hidden;
     width: 100%;
 }
+.mermaid-container.zoomable > .mermaid:hover {
+    border-color: rgba( 134, 134, 134, .333 );
+}
 .mermaid.mermaid-render {
     visibility: visible;
-}
-.mermaid.zoomable:hover {
-    border-color: rgba( 134, 134, 134, .333 );
 }
 
 .mermaid > svg {
     /* remove inline height from generated diagram */
     height: initial !important;
 }
-.mermaid.zoomable > svg {
+.mermaid-container.zoomable > .mermaid > svg {
     cursor: grab;
 }
 
@@ -1734,6 +1771,10 @@ input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration { display: none; }
 
+span.math:has(> mjx-container[display]) {
+    display: block;
+}
+
 @supports selector(.math:has(> mjx-container)){
     .math{
         visibility: hidden;
@@ -1742,7 +1783,6 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
         visibility: visible;
     }
 }
-
 .math.align-left > mjx-container{
     text-align: left !important;
 }

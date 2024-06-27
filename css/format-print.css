@@ -139,7 +139,7 @@ h1 + .footline{
 .term-list {
     display: none;
 }
-mark {
+mark.search {
     background: inherit;
     color: inherit;
 }

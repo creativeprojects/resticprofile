@@ -445,8 +445,8 @@
 	}
 
 	div.box.accent {
-		background-color: rgba( 255, 136, 255, 1 ); /* var(--INTERNAL-ACCENT-color) */
-		border-color: rgba( 255, 136, 255, 1 ); /* var(--INTERNAL-ACCENT-color) */
+		background-color: rgb( 255, 102, 78, 1 ); /* var(--INTERNAL-ACCENT-color) */
+		border-color: rgb( 255, 102, 78, 1 ); /* var(--INTERNAL-ACCENT-color) */
 	}
 
 	div.box.accent > .box-content {
@@ -679,11 +679,11 @@
 	}
 
 	.btn.cstyle.accent {
-		background-color: rgba( 255, 136, 255, 1 ); /* var(--ACCENT-color) */
+		background-color: rgb( 255, 102, 78, 1 ); /* var(--ACCENT-color) */
 	}
 
 	.btn.cstyle.accent > * {
-		border-color: rgba( 255, 136, 255, 1 ); /* var(--ACCENT-color) */
+		border-color: rgb( 255, 102, 78, 1 ); /* var(--ACCENT-color) */
 	}
 
 	.btn.cstyle.blue {
@@ -789,7 +789,7 @@
 	}
 
 	.badge.accent > .badge-content {
-		background-color: rgba( 255, 136, 255, 1 ); /* var(--INTERNAL-ACCENT-color) */
+		background-color: rgb( 255, 102, 78, 1 ); /* var(--INTERNAL-ACCENT-color) */
 	}
 
 	.badge.blue > .badge-content {
