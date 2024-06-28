@@ -1,16 +1,48 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var (
+	mockBinary string
+	echoBinary string
+)
+
+func TestMain(m *testing.M) {
+	mockBinary = "./shellmock"
+	if platform.IsWindows() {
+		mockBinary = `.\\shellmock.exe`
+	}
+	cmdMock := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./shell/mock")
+	if output, err := cmdMock.CombinedOutput(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error building shell/mock binary: %s\nCommand output: %s\n", err, string(output))
+	}
+
+	echoBinary = "./shellecho"
+	if platform.IsWindows() {
+		echoBinary = `.\\shellecho.exe`
+	}
+	cmdEcho := exec.Command("go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
+	if output, err := cmdEcho.CombinedOutput(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
+	}
+
+	m.Run()
+	_ = os.Remove(mockBinary)
+	_ = os.Remove(echoBinary)
+}
 
 func TestGetProfile(t *testing.T) {
 	baseDir, _ := filepath.Abs(t.TempDir())

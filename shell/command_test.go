@@ -3,7 +3,7 @@ package shell
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -24,22 +24,22 @@ var (
 	mockBinary string
 )
 
-func init() {
-	// all the tests are running in the exec directory
-	if runtime.GOOS == "windows" {
-		mockBinary = "..\\mock.exe"
-	} else {
-		mockBinary = "../mock"
+func TestMain(m *testing.M) {
+	mockBinary = "./shellmock"
+	if platform.IsWindows() {
+		mockBinary = `.\\shellmock.exe`
 	}
-	// build restic mock
-	cmd := exec.Command("go", "build", "-o", mockBinary, "./mock")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		panic(fmt.Sprintf("cannot build mock: %q", string(output)))
+	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
+	if output, err := cmd.CombinedOutput(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
 	}
+	m.Run()
+	_ = os.Remove(mockBinary)
 }
 
 func TestRemoveQuotes(t *testing.T) {
+	t.Parallel()
+
 	source := []string{
 		`-p`,
 		`"file"`,
@@ -58,6 +58,8 @@ func TestRemoveQuotes(t *testing.T) {
 }
 
 func TestShellCommandWithArguments(t *testing.T) {
+	t.Parallel()
+
 	testCommand := "/bin/restic"
 	testArgs := []string{
 		`-v`,
@@ -74,10 +76,8 @@ func TestShellCommandWithArguments(t *testing.T) {
 	}
 
 	command, args, err := c.GetShellCommand()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if runtime.GOOS == "windows" {
+	require.NoError(t, err)
+	if platform.IsWindows() {
 		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			`/V:ON`, `/C`,
@@ -100,6 +100,8 @@ func TestShellCommandWithArguments(t *testing.T) {
 }
 
 func TestShellCommand(t *testing.T) {
+	t.Parallel()
+
 	testCommand := "/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup ."
 	testArgs := []string{}
 	c := &Command{
@@ -108,10 +110,8 @@ func TestShellCommand(t *testing.T) {
 	}
 
 	command, args, err := c.GetShellCommand()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if runtime.GOOS == "windows" {
+	require.NoError(t, err)
+	if platform.IsWindows() {
 		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			"/V:ON", "/C",
@@ -127,6 +127,8 @@ func TestShellCommand(t *testing.T) {
 }
 
 func TestShellArgumentsComposing(t *testing.T) {
+	t.Parallel()
+
 	exeWithSpace := filepath.Join(t.TempDir(), "some folder", "executable")
 	require.NoError(t, os.MkdirAll(filepath.Dir(exeWithSpace), 0700))
 	require.NoError(t, os.WriteFile(exeWithSpace, []byte{0}, 0700))
@@ -191,15 +193,20 @@ func TestShellArgumentsComposing(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("#%d", i), func(t *testing.T) {
+			t.Parallel()
+
 			var shells []string
 			for _, shell := range test.shell {
 				shells = append(shells, shell)
 				shells = append(shells, shell+".exe")
 				shells = append(shells, strings.ToUpper(shell+".exe"))
 				shells = append(shells, "some/path/to/"+shell)
+				shells = append(shells, "other path/to/"+shell)
 			}
 			for _, shell := range shells {
 				t.Run(shell, func(t *testing.T) {
+					t.Parallel()
+
 					c := &Command{
 						Shell:     []string{shell},
 						Command:   test.command,
@@ -215,6 +222,8 @@ func TestShellArgumentsComposing(t *testing.T) {
 }
 
 func TestVariablesRewrite(t *testing.T) {
+	t.Parallel()
+
 	mapper := func(name string) string { return fmt.Sprintf("!%s!", name) }
 
 	tests := []struct{ in, expected string }{
@@ -237,6 +246,8 @@ func TestVariablesRewrite(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			t.Parallel()
+
 			for _, prefix := range frame {
 				for _, suffix := range frame {
 					input := prefix + test.in + suffix
@@ -251,6 +262,8 @@ func TestVariablesRewrite(t *testing.T) {
 }
 
 func TestRunLocalCommand(t *testing.T) {
+	t.Parallel()
+
 	cmd := NewCommand("command.go", nil)
 	expected := "." + string(os.PathSeparator) + "command.go"
 
@@ -261,6 +274,8 @@ func TestRunLocalCommand(t *testing.T) {
 }
 
 func TestShellSearchPath(t *testing.T) {
+	t.Parallel()
+
 	searchList := NewCommand("echo", []string{}).getShellSearchList()
 	assert.NotEmpty(t, searchList)
 	for _, shell := range searchList {
@@ -269,6 +284,8 @@ func TestShellSearchPath(t *testing.T) {
 }
 
 func TestSelectCustomShell(t *testing.T) {
+	t.Parallel()
+
 	cmd := NewCommand("sleep", []string{"1"})
 	cmd.Shell = []string{mockBinary}
 	shell, _, err := cmd.GetShellCommand()
@@ -276,7 +293,7 @@ func TestSelectCustomShell(t *testing.T) {
 	assert.Equal(t, mockBinary, shell)
 
 	expected := "cannot find shell: exec: \"non-existing-shell\": executable file not found in $PATH (tried non-existing-shell)"
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		expected = strings.ReplaceAll(expected, "$PATH", "%PATH%")
 	}
 
@@ -287,6 +304,8 @@ func TestSelectCustomShell(t *testing.T) {
 }
 
 func TestRunShellWorkingDir(t *testing.T) {
+	t.Parallel()
+
 	command := func() string {
 		if platform.IsWindows() {
 			return "@echo %CD%"
@@ -299,30 +318,28 @@ func TestRunShellWorkingDir(t *testing.T) {
 	cmd.Stdout = buffer
 	cmd.Dir = temp
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	assert.Contains(t, strings.TrimSpace(buffer.String()), temp)
 }
 
 func TestRunShellEcho(t *testing.T) {
+	t.Parallel()
+
 	buffer := &bytes.Buffer{}
 	cmd := NewCommand("echo", []string{"TestRunShellEcho"})
 	cmd.Stdout = buffer
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
-	output, err := ioutil.ReadAll(buffer)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+	output, err := io.ReadAll(buffer)
+	require.NoError(t, err)
 
 	assert.Contains(t, string(output), "TestRunShellEcho")
 }
 
 func TestRunShellEchoWithSignalling(t *testing.T) {
+	t.Parallel()
+
 	buffer := &bytes.Buffer{}
 
 	c := make(chan os.Signal, 1)
@@ -332,20 +349,18 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 	cmd := NewSignalledCommand("echo", []string{"TestRunShellEchoWithSignalling"}, c)
 	cmd.Stdout = buffer
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
-	output, err := ioutil.ReadAll(buffer)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+	output, err := io.ReadAll(buffer)
+	require.NoError(t, err)
 
 	assert.Contains(t, string(output), "TestRunShellEchoWithSignalling")
 }
 
 // There is something wrong with this test under Linux
 func TestInterruptShellCommand(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	t.Parallel()
+
+	if platform.IsWindows() {
 		t.Skip("Test not running on this platform")
 	}
 	if runtime.GOOS == "linux" {
@@ -377,22 +392,24 @@ func TestInterruptShellCommand(t *testing.T) {
 }
 
 func TestSetPIDCallback(t *testing.T) {
+	t.Parallel()
+
 	called := 0
 	buffer := &bytes.Buffer{}
-	cmd := NewCommand("echo", []string{"TestSetPIDCallback"})
+	cmd := NewCommand("echo", []string{t.Name()})
 	cmd.Stdout = buffer
 	cmd.SetPID = func(pid int) {
 		called++
 	}
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	assert.Equal(t, 1, called)
 }
 
 func TestSetPIDCallbackWithSignalling(t *testing.T) {
+	t.Parallel()
+
 	called := 0
 	buffer := &bytes.Buffer{}
 
@@ -400,27 +417,27 @@ func TestSetPIDCallbackWithSignalling(t *testing.T) {
 	signal.Notify(c, os.Interrupt)
 	defer signal.Reset(os.Interrupt)
 
-	cmd := NewSignalledCommand("echo", []string{"TestSetPIDCallbackWithSignalling"}, c)
+	cmd := NewSignalledCommand("echo", []string{t.Name()}, c)
 	cmd.Stdout = buffer
 	cmd.SetPID = func(pid int) {
 		called++
 	}
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	assert.Equal(t, 1, called)
 }
 
 func TestSummaryDurationCommand(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.SkipNow()
 	}
 	buffer := &bytes.Buffer{}
 
 	cmd := NewCommand("sleep", []string{"1"})
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		cmd.Shell = []string{powershell}
 	}
 	cmd.Stdout = buffer
@@ -436,6 +453,8 @@ func TestSummaryDurationCommand(t *testing.T) {
 }
 
 func TestSummaryDurationSignalledCommand(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.SkipNow()
 	}
@@ -443,7 +462,7 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 
 	sigChan := make(chan os.Signal, 1)
 	cmd := NewSignalledCommand("sleep", []string{"1"}, sigChan)
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		cmd.Shell = []string{powershell}
 	}
 	cmd.Stdout = buffer
@@ -459,8 +478,10 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 }
 
 func TestStderr(t *testing.T) {
+	t.Parallel()
+
 	expected := "error message\n"
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		expected = "\"error message\" \r\n"
 	}
 
@@ -475,8 +496,10 @@ func TestStderr(t *testing.T) {
 }
 
 func TestStderrSignalledCommand(t *testing.T) {
+	t.Parallel()
+
 	expected := "error message\n"
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		expected = "\"error message\" \r\n"
 	}
 
@@ -492,6 +515,8 @@ func TestStderrSignalledCommand(t *testing.T) {
 }
 
 func TestStderrNotRedirected(t *testing.T) {
+	t.Parallel()
+
 	cmd := NewCommand("echo", []string{"error message", ">&2"})
 	bufferStdout := &bytes.Buffer{}
 	cmd.Stdout = bufferStdout
@@ -503,6 +528,8 @@ func TestStderrNotRedirected(t *testing.T) {
 }
 
 func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
+	t.Parallel()
+
 	sigChan := make(chan os.Signal, 1)
 	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
 	bufferStdout := &bytes.Buffer{}
@@ -514,36 +541,38 @@ func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
 	assert.Equal(t, "", stderr)
 }
 
-// Try to make a test to make sure restic is catching the signal properly
 func TestResticCanCatchInterruptSignal(t *testing.T) {
-	// if runtime.GOOS == "windows" {
-	// 	t.Skip("cannot send a signal to a child process in Windows")
-	// }
+	t.Parallel()
 
-	// childPID := 0
-	// var err error
-	// buffer := &bytes.Buffer{}
-	// cmd := NewCommand("restic", []string{"version"})
-	// cmd.SetPID = func(pid int) {
-	// 	childPID = pid
-	// 	t.Logf("child PID = %d", childPID)
-	// 	// release the current goroutine
-	// 	go func(t *testing.T, pid int) {
-	// 		time.Sleep(1 * time.Millisecond)
-	// 		process, err := os.FindProcess(pid)
-	// 		require.NoError(t, err)
-	// 		t.Log("send SIGINT")
-	// 		err = process.Signal(syscall.SIGINT)
-	// 		require.NoError(t, err)
-	// 	}(t, childPID)
-	// }
-	// cmd.Stdout = buffer
-	// _, err = cmd.Run()
-	// assert.Error(t, err)
+	if platform.IsWindows() {
+		t.Skip("cannot send a signal to a child process in Windows")
+	}
+
+	childPID := 0
+	var err error
+	buffer := &bytes.Buffer{}
+	cmd := NewCommand(mockBinary, []string{"test", "-sleep", "2000"})
+	cmd.SetPID = func(pid int) {
+		childPID = pid
+		t.Logf("child PID = %d", childPID)
+		// release the current goroutine
+		go func(t *testing.T, pid int) {
+			process, err := os.FindProcess(pid)
+			require.NoError(t, err)
+			t.Log("send SIGINT")
+			err = process.Signal(syscall.SIGINT)
+			require.NoError(t, err)
+		}(t, childPID)
+	}
+	cmd.Stdout = buffer
+	_, _, err = cmd.Run()
+	assert.ErrorContains(t, err, "signal: interrupt")
 }
 
 func TestCanAnalyseLockFailure(t *testing.T) {
-	file, err := ioutil.TempFile(".", "test-restic-lock-failure")
+	t.Parallel()
+
+	file, err := os.CreateTemp(".", "test-restic-lock-failure")
 	require.NoError(t, err)
 	file.Write([]byte(ResticLockFailureOutput))
 	file.Close()
@@ -560,6 +589,8 @@ func TestCanAnalyseLockFailure(t *testing.T) {
 }
 
 func TestCanAnalyseWithCustomPattern(t *testing.T) {
+	t.Parallel()
+
 	reportedLine := ""
 	expectedLine := "--content-to-match--"
 	cmd := NewCommand(mockBinary, []string{"test", "--stderr", expectedLine})
