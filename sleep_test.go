@@ -9,11 +9,15 @@ import (
 )
 
 func TestNonInterruptedSleep(t *testing.T) {
+	t.Parallel()
+
 	err := interruptibleSleep(30*time.Millisecond, make(<-chan os.Signal))
 	assert.NoError(t, err)
 }
 
 func TestInterruptedSleep(t *testing.T) {
+	t.Parallel()
+
 	maxWait := 3 * time.Second
 	sigChan := make(chan os.Signal)
 	go func() {

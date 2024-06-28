@@ -7,7 +7,6 @@ import (
 	"io"
 	"math/rand"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -32,21 +31,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var (
-	mockBinary string
-)
-
-func init() {
-	// build restic mock
-	cmd := exec.Command("go", "build", "./shell/mock")
-	cmd.Run()
-	if runtime.GOOS == "windows" {
-		mockBinary = "mock.exe"
-	} else {
-		mockBinary = "./mock"
-	}
-}
 
 func TestValidResticArgumentsList(t *testing.T) {
 	wrapper := &resticWrapper{}

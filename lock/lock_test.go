@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 	if platform.IsWindows() {
 		helperBinary = `.\locktest.exe`
 	}
-	cmd := exec.Command("go", "build", "-o", helperBinary, "./test")
+	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
 	if err := cmd.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
 	}
@@ -267,7 +267,7 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	err = cmd.Start()
 	require.NoError(t, err)
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	err = cmd.Process.Signal(syscall.SIGINT)
 	require.NoError(t, err)
 
@@ -293,7 +293,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	err = cmd.Start()
 	require.NoError(t, err)
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	err = cmd.Process.Signal(syscall.SIGINT)
 	require.NoError(t, err)
 

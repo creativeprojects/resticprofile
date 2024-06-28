@@ -3,32 +3,16 @@ package main
 import (
 	"bytes"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var (
-	echoBinary string
-)
-
-func init() {
-	// build restic mock
-	cmd := exec.Command("go", "build", "./shell/echo")
-	cmd.Run()
-	if runtime.GOOS == "windows" {
-		echoBinary = "echo.exe"
-	} else {
-		echoBinary = "./echo"
-	}
-}
 
 // TestFromConfigFileToCommandLine loads all examples/integration_test.* configuration files
 // and run some commands to display all the arguments that were sent
@@ -157,7 +141,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NoError(t, err)
 
 					expected := fixture.expected
-					if runtime.GOOS == "windows" {
+					if platform.IsWindows() {
 						if fixture.expectedOnWindows != "" {
 							expected = fixture.expectedOnWindows
 						} else {
@@ -167,7 +151,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					assert.Equal(t, expected, strings.TrimSpace(buffer.String()))
 				})
 
-				if runtime.GOOS == "windows" {
+				if platform.IsWindows() {
 					continue
 				}
 

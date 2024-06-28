@@ -18,6 +18,8 @@ func configForJob(command string, at ...string) *config.Schedule {
 }
 
 func TestScheduleNilJobs(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -27,6 +29,8 @@ func TestScheduleNilJobs(t *testing.T) {
 }
 
 func TestSimpleScheduleJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -47,6 +51,8 @@ func TestSimpleScheduleJob(t *testing.T) {
 }
 
 func TestFailScheduleJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -64,6 +70,8 @@ func TestFailScheduleJob(t *testing.T) {
 }
 
 func TestRemoveNilJobs(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -73,6 +81,8 @@ func TestRemoveNilJobs(t *testing.T) {
 }
 
 func TestRemoveJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -89,6 +99,8 @@ func TestRemoveJob(t *testing.T) {
 }
 
 func TestRemoveJobNoConfig(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -105,6 +117,8 @@ func TestRemoveJobNoConfig(t *testing.T) {
 }
 
 func TestFailRemoveJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -117,6 +131,8 @@ func TestFailRemoveJob(t *testing.T) {
 }
 
 func TestNoFailRemoveUnknownJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -129,6 +145,8 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 }
 
 func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -141,6 +159,8 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 }
 
 func TestStatusNilJobs(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -151,6 +171,8 @@ func TestStatusNilJobs(t *testing.T) {
 }
 
 func TestStatusJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
@@ -165,6 +187,8 @@ func TestStatusJob(t *testing.T) {
 }
 
 func TestStatusRemoveOnlyJob(t *testing.T) {
+	t.Parallel()
+
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
