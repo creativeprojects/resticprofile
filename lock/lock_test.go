@@ -286,7 +286,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 
 	var err error
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("sh", "-c", helperBinary+" -wait 2000 -lock "+lockfile)
+	cmd := exec.Command("sh", "-c", "exec "+helperBinary+" -wait 2000 -lock "+lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
