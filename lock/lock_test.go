@@ -28,7 +28,9 @@ func init() {
 		helperBinary += ".exe"
 	}
 	cmd := exec.Command("go", "build", "-o", helperBinary, "./test")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
+	}
 }
 
 func getTempfile(t *testing.T) string {
@@ -138,9 +140,7 @@ func TestProcessFinished(t *testing.T) {
 		childPID = pid
 	}
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	// at that point, the child process should be finished
 	running, err := process.PidExists(int32(childPID))
@@ -221,9 +221,8 @@ func TestForceLockWithExpiredPID(t *testing.T) {
 	cmd := shell.NewSignalledCommand("echo", []string{"Hello World!"}, c)
 	cmd.SetPID = lock.SetPID
 	_, _, err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	// child process should be finished
 	// let's close the lockfile handle manually (unix doesn't actually care, but windows would complain)
 	lock.file.Close()
@@ -318,7 +317,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 
 	var err error
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command(helperBinary, "-wait", "600", "-lock", lockfile)
+	cmd := exec.Command("sh", "-c", helperBinary+" -wait 600 -lock "+lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
