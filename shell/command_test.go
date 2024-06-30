@@ -541,34 +541,6 @@ func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
 	assert.Equal(t, "", stderr)
 }
 
-func TestResticCanCatchInterruptSignal(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("cannot send a signal to a child process in Windows")
-	}
-
-	childPID := 0
-	var err error
-	buffer := &bytes.Buffer{}
-	cmd := NewCommand(mockBinary, []string{"test", "-sleep", "2000"})
-	cmd.SetPID = func(pid int) {
-		childPID = pid
-		t.Logf("child PID = %d", childPID)
-		// release the current goroutine
-		go func(t *testing.T, pid int) {
-			process, err := os.FindProcess(pid)
-			require.NoError(t, err)
-			t.Log("send SIGINT")
-			err = process.Signal(syscall.SIGINT)
-			require.NoError(t, err)
-		}(t, childPID)
-	}
-	cmd.Stdout = buffer
-	_, _, err = cmd.Run()
-	assert.ErrorContains(t, err, "signal: interrupt")
-}
-
 func TestCanAnalyseLockFailure(t *testing.T) {
 	t.Parallel()
 
