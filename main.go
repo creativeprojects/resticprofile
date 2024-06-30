@@ -278,13 +278,23 @@ func banner() {
 }
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
+	fs := afero.NewOsFs()
+
+	if flags.remote != "" {
+		fs = afero.NewMemMapFs()
+		err := loadRemoteConfiguration(fs, flags.remote)
+		if err != nil {
+			return nil, nil, fmt.Errorf("cannot load remote configuration: %w", err)
+		}
+	}
+
 	var configFile string
-	if configFile, err = filesearch.FindConfigurationFile(afero.NewOsFs(), flags.config); err == nil {
+	if configFile, err = filesearch.FindConfigurationFile(fs, flags.config); err == nil {
 		if configFile != flags.config && !silent {
 			clog.Infof("using configuration file: %s", configFile)
 		}
 
-		if cfg, err = config.LoadFile(afero.NewOsFs(), configFile, flags.format); err == nil {
+		if cfg, err = config.LoadFile(fs, configFile, flags.format); err == nil {
 			global, err = cfg.GetGlobalSection()
 			if err != nil {
 				err = fmt.Errorf("cannot load global configuration: %w", err)

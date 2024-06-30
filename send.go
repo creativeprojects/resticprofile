@@ -23,7 +23,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
-		sendFiles(resp, remote.SendFiles)
+		sendFiles(resp, append(remote.SendFiles, remote.ConfigurationFile))
 	})
 	cnx := ssh.NewSSH(ssh.Config{
 		Host:           remote.Host,

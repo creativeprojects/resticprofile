@@ -36,7 +36,7 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 		clog.Debugf("sending configuration for %q", remoteName)
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
-		sendFiles(resp, remote.SendFiles)
+		sendFiles(resp, append(remote.SendFiles, remote.ConfigurationFile))
 	})
 
 	quit := make(chan os.Signal, 1)
