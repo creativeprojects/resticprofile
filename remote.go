@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
 
 	"github.com/creativeprojects/clog"
 	"github.com/spf13/afero"
@@ -36,6 +37,9 @@ func loadRemoteConfiguration(fs afero.Fs, endpoint string) error {
 		}
 		if err != nil {
 			return fmt.Errorf("failed to read tar header: %w", err)
+		}
+		if !filepath.IsLocal(hdr.Name) {
+			return fmt.Errorf("invalid file name: %s", hdr.Name)
 		}
 		clog.Debugf("downloading file %s (%d bytes)", hdr.Name, hdr.Size)
 		copyFile(fs, reader, hdr.Name)
