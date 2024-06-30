@@ -74,8 +74,7 @@ func formatFromExtension(configFile string) string {
 
 // LoadFile loads configuration from file
 // Leave format blank for auto-detection from the file extension
-func LoadFile(configFile, format string) (config *Config, err error) {
-	fs := afero.NewOsFs()
+func LoadFile(fs afero.Fs, configFile, format string) (config *Config, err error) {
 	if format == "" {
 		format = formatFromExtension(configFile)
 	}

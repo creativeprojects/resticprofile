@@ -136,7 +136,7 @@ func (c *Completer) listProfileNames() (list []string) {
 		}
 
 		if file, err := filesearch.FindConfigurationFile(afero.NewOsFs(), filename); err == nil {
-			if conf, err := config.LoadFile(file, format); err == nil {
+			if conf, err := config.LoadFile(afero.NewOsFs(), file, format); err == nil {
 				list = append(list, conf.GetProfileNames()...)
 				for name, _ := range conf.GetProfileGroups() {
 					list = append(list, name)

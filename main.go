@@ -284,7 +284,7 @@ func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global
 			clog.Infof("using configuration file: %s", configFile)
 		}
 
-		if cfg, err = config.LoadFile(configFile, flags.format); err == nil {
+		if cfg, err = config.LoadFile(afero.NewOsFs(), configFile, flags.format); err == nil {
 			global, err = cfg.GetGlobalSection()
 			if err != nil {
 				err = fmt.Errorf("cannot load global configuration: %w", err)
