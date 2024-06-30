@@ -2,10 +2,12 @@ package main
 
 import (
 	"archive/tar"
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/creativeprojects/clog"
 	"github.com/spf13/afero"
@@ -25,6 +27,12 @@ func loadRemoteConfiguration(fs afero.Fs, endpoint string) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		buf := &bytes.Buffer{}
+		_, _ = buf.ReadFrom(resp.Body)
+		return fmt.Errorf("http error %d: %q", resp.StatusCode, strings.TrimSpace(buf.String()))
+	}
+
 	if resp.Header.Get("Content-Type") != "application/x-tar" {
 		return fmt.Errorf("unexpected content type: %s", resp.Header.Get("Content-Type"))
 	}
@@ -42,7 +50,10 @@ func loadRemoteConfiguration(fs afero.Fs, endpoint string) error {
 			return fmt.Errorf("invalid file name: %s", hdr.Name)
 		}
 		clog.Debugf("downloading file %s (%d bytes)", hdr.Name, hdr.Size)
-		copyFile(fs, reader, hdr.Name)
+		err = copyFile(fs, reader, hdr.Name)
+		if err != nil {
+			return fmt.Errorf("failed to copy file: %w", err)
+		}
 	}
 
 	return nil
