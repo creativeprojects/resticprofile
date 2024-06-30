@@ -20,18 +20,20 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 	handler.HandleFunc("GET /configuration/{remote}", func(resp http.ResponseWriter, req *http.Request) {
 		remoteName := req.PathValue("remote")
 		if !cmdCtx.config.HasRemote(remoteName) {
+			resp.Header().Set("Content-Type", "text/plain")
 			resp.WriteHeader(http.StatusNotFound)
 			resp.Write([]byte("remote not found"))
 			return
 		}
 		remote, err := cmdCtx.config.GetRemote(remoteName)
 		if err != nil {
+			resp.Header().Set("Content-Type", "text/plain")
 			resp.WriteHeader(http.StatusBadRequest)
 			resp.Write([]byte(err.Error()))
 			return
 		}
 
-		clog.Infof("sending configuration for %q", remoteName)
+		clog.Debugf("sending configuration for %q", remoteName)
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
 		sendFiles(resp, remote.SendFiles)
@@ -62,7 +64,7 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 	}(server, quit)
 
 	// we want to return the server error if any so we need to keep it in the main thread.
-	clog.Infof("listening on %s", server.Addr)
+	clog.Debugf("listening on %s", server.Addr)
 	err := server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return err

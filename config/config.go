@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -20,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/maps"
 )
@@ -75,6 +75,7 @@ func formatFromExtension(configFile string) string {
 // LoadFile loads configuration from file
 // Leave format blank for auto-detection from the file extension
 func LoadFile(configFile, format string) (config *Config, err error) {
+	fs := afero.NewOsFs()
 	if format == "" {
 		format = formatFromExtension(configFile)
 	}
@@ -84,7 +85,7 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 
 	readAndAdd := func(configFile string, replace bool) error {
 		clog.Debugf("loading: %s", configFile)
-		file, fileErr := os.Open(configFile)
+		file, fileErr := fs.Open(configFile)
 		if fileErr != nil {
 			return fmt.Errorf("cannot open configuration file for reading: %w", fileErr)
 		}
@@ -101,7 +102,7 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 
 	// Load includes (if any).
 	var includes []string
-	if includes, err = filesearch.FindConfigurationIncludes(configFile, config.getIncludes()); err == nil {
+	if includes, err = filesearch.FindConfigurationIncludes(fs, configFile, config.getIncludes()); err == nil {
 		for _, include := range includes {
 			format := formatFromExtension(include)
 

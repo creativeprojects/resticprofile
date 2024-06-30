@@ -24,6 +24,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/shutdown"
 	"github.com/mackerelio/go-osstat/memory"
+	"github.com/spf13/afero"
 	"github.com/spf13/pflag"
 )
 
@@ -278,7 +279,7 @@ func banner() {
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
 	var configFile string
-	if configFile, err = filesearch.FindConfigurationFile(flags.config); err == nil {
+	if configFile, err = filesearch.FindConfigurationFile(afero.NewOsFs(), flags.config); err == nil {
 		if configFile != flags.config && !silent {
 			clog.Infof("using configuration file: %s", configFile)
 		}
@@ -349,7 +350,7 @@ func shouldStopOnBattery(batteryLimit int) bool {
 }
 
 func detectResticBinary(global *config.Global) (string, error) {
-	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
+	resticBinary, err := filesearch.FindResticBinary(afero.NewOsFs(), global.ResticBinary)
 	if err != nil {
 		return "", fmt.Errorf("cannot find restic: %w", err)
 	}

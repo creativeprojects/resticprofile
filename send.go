@@ -18,6 +18,8 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	}
 	// send the files to the remote using tar
 	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		resp.Header().Set("Content-Type", "application/x-tar")
+		resp.WriteHeader(http.StatusOK)
 		sendFiles(resp, remote.SendFiles)
 	})
 	cnx := ssh.NewSSH(ssh.Config{

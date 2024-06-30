@@ -12,7 +12,6 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 const startPort = 10001
@@ -37,10 +36,10 @@ func (s *SSH) Connect() error {
 	if err != nil {
 		return err
 	}
-	hostKeyCallback, err := knownhosts.New(s.config.KnownHostsPath)
-	if err != nil {
-		return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
-	}
+	// hostKeyCallback, err := knownhosts.New(s.config.KnownHostsPath)
+	// if err != nil {
+	// 	return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
+	// }
 	key, err := os.ReadFile(s.config.PrivateKeyPath)
 	if err != nil {
 		return fmt.Errorf("unable to read private key: %w", err)
@@ -58,7 +57,7 @@ func (s *SSH) Connect() error {
 			// Use the PublicKeys method for remote authentication.
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback: hostKeyCallback,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
 	// Connect to the remote server and perform the SSH handshake.
@@ -96,7 +95,8 @@ func (s *SSH) Connect() error {
 	// the remote side using the Run method.
 	var b bytes.Buffer
 	session.Stdout = &b
-	if err := session.Run(fmt.Sprintf("curl http://localhost:%d", s.port)); err != nil {
+	// "/home/gouarfig/go/src/github.com/creativeprojects/resticprofile/resticprofile"
+	if err := session.Run(fmt.Sprintf("curl http://localhost:%d | tar -tv", s.port)); err != nil {
 		log.Fatal("Failed to run: " + err.Error())
 	}
 	fmt.Println(b.String())

@@ -5,8 +5,8 @@ import (
 	iofs "io/fs"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -17,11 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestMain(t *testing.M) {
-	fs = afero.NewMemMapFs()
-	os.Exit(t.Run())
-}
 
 // Quick test to see the default xdg config on the build agents
 //
@@ -196,21 +191,14 @@ func testLocations(t *testing.T) []testLocation {
 func TestFindConfigurationFile(t *testing.T) {
 	t.Parallel()
 
-	// Work from a temporary directory
-	err := os.Chdir(os.TempDir())
-	require.NoError(t, err)
-
-	cwd, err := os.Getwd()
-	require.NoError(t, err)
-	t.Log("Working directory:", cwd)
-
 	locations := testLocations(t)
 
 	for _, location := range locations {
-		var err error
+		fs := afero.NewMemMapFs()
+
 		// Install empty config file
 		if location.realPath != "" {
-			err = fs.MkdirAll(location.realPath, 0o700)
+			err := fs.MkdirAll(location.realPath, 0o700)
 			require.NoError(t, err)
 		}
 		file, err := fs.Create(filepath.Join(location.realPath, location.realFile))
@@ -218,25 +206,18 @@ func TestFindConfigurationFile(t *testing.T) {
 		file.Close()
 
 		// Test
-		found, err := FindConfigurationFile(filepath.Join(location.searchPath, location.searchFile))
+		found, err := FindConfigurationFile(fs, filepath.Join(location.searchPath, location.searchFile))
 		assert.NoError(t, err)
 		assert.NotEmpty(t, found)
 		assert.Equal(t, filepath.Join(location.realPath, location.realFile), found)
-
-		// Clears up the test file
-		if location.realPath == "" || !location.deletePathAfter {
-			err = fs.Remove(filepath.Join(location.realPath, location.realFile))
-		} else {
-			err = fs.RemoveAll(location.realPath)
-		}
-		require.NoError(t, err)
 	}
 }
 
 func TestCannotFindConfigurationFile(t *testing.T) {
 	t.Parallel()
 
-	found, err := FindConfigurationFile("some_config_file")
+	fs := afero.NewMemMapFs()
+	found, err := FindConfigurationFile(fs, "some_config_file")
 	assert.Empty(t, found)
 	assert.Error(t, err)
 }
@@ -244,7 +225,8 @@ func TestCannotFindConfigurationFile(t *testing.T) {
 func TestFindResticBinary(t *testing.T) {
 	t.Parallel()
 
-	binary, err := FindResticBinary("some_other_name")
+	fs := afero.NewMemMapFs()
+	binary, err := FindResticBinary(fs, "some_other_name")
 	if binary != "" {
 		assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
 		assert.NoError(t, err)
@@ -256,10 +238,13 @@ func TestFindResticBinary(t *testing.T) {
 func TestFindResticBinaryWithTilde(t *testing.T) {
 	t.Parallel()
 
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		t.Skip("not supported on Windows")
 		return
 	}
+
+	fs := afero.NewMemMapFs()
+
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
@@ -270,8 +255,8 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 		fs.Remove(tempFile.Name())
 	}()
 
-	search := filepath.Join("~", filepath.Base(tempFile.Name()))
-	binary, err := FindResticBinary(search)
+	search := filepath.Join("~", path.Base(tempFile.Name()))
+	binary, err := FindResticBinary(fs, search)
 	require.NoError(t, err)
 	assert.Equalf(t, tempFile.Name(), binary, "cannot find %q", search)
 }
@@ -279,7 +264,7 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 func TestShellExpand(t *testing.T) {
 	t.Parallel()
 
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		t.Skip("not supported on Windows")
 		return
 	}
@@ -323,11 +308,9 @@ func TestFindConfigurationIncludes(t *testing.T) {
 		filepath.Join(tempDir, "inc3."+testID+".conf"),
 	}
 
+	fs := afero.NewMemMapFs()
 	for _, file := range files {
 		require.NoError(t, afero.WriteFile(fs, file, []byte{}, iofs.ModePerm))
-		t.Cleanup(func() {
-			_ = fs.Remove(file)
-		})
 	}
 
 	testData := []struct {
@@ -355,7 +338,7 @@ func TestFindConfigurationIncludes(t *testing.T) {
 		t.Run(strings.Join(test.includes, ","), func(t *testing.T) {
 			t.Parallel()
 
-			result, err := FindConfigurationIncludes(files[0], test.includes)
+			result, err := FindConfigurationIncludes(fs, files[0], test.includes)
 			if test.expected == nil {
 				assert.Nil(t, result)
 				assert.NotNil(t, err)
