@@ -12,6 +12,9 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	if len(cmdCtx.flags.resticArgs) < 2 {
 		return fmt.Errorf("missing argument: remote name")
 	}
+	if !cmdCtx.config.HasRemote(cmdCtx.flags.resticArgs[1]) {
+		return fmt.Errorf("remote not found")
+	}
 	remote, err := cmdCtx.config.GetRemote(cmdCtx.flags.resticArgs[1])
 	if err != nil {
 		return err

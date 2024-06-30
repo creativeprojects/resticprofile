@@ -12,6 +12,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 const startPort = 10001
@@ -36,10 +37,10 @@ func (s *SSH) Connect() error {
 	if err != nil {
 		return err
 	}
-	// hostKeyCallback, err := knownhosts.New(s.config.KnownHostsPath)
-	// if err != nil {
-	// 	return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
-	// }
+	hostKeyCallback, err := knownhosts.New(s.config.KnownHostsPath)
+	if err != nil {
+		return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
+	}
 	key, err := os.ReadFile(s.config.PrivateKeyPath)
 	if err != nil {
 		return fmt.Errorf("unable to read private key: %w", err)
@@ -57,7 +58,8 @@ func (s *SSH) Connect() error {
 			// Use the PublicKeys method for remote authentication.
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback:   hostKeyCallback,
+		HostKeyAlgorithms: []string{ssh.KeyAlgoED25519, ssh.KeyAlgoECDSA256}, // we might need to make this configurable
 	}
 
 	// Connect to the remote server and perform the SSH handshake.
