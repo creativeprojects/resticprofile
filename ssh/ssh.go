@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -69,7 +70,7 @@ func (s *SSH) Connect() error {
 	}
 
 	// Request the remote side to open a local port
-	s.tunnel, err = s.client.Listen("tcp", fmt.Sprintf("localhost:%d", s.port))
+	s.tunnel, err = s.client.Listen("tcp", fmt.Sprintf("localhost:%d", s.port)) // increment the port in a loop in case of an error
 	if err != nil {
 		log.Fatal("unable to register tcp forward: ", err)
 	}
@@ -80,32 +81,40 @@ func (s *SSH) Connect() error {
 		}
 		// Serve HTTP with your SSH server acting as a reverse proxy.
 		err := s.server.Serve(s.tunnel)
-		if err != nil && err != http.ErrServerClosed {
+		if err != nil && err != http.ErrServerClosed && err != io.EOF {
 			clog.Warningf("unable to serve http: %s", err)
 		}
 	}()
+	time.Sleep(100 * time.Millisecond) // wait for the server to start
+	return nil
+}
 
+func (s *SSH) TunnelPort() int {
+	return s.port
+}
+
+func (s *SSH) Run(command string) (string, string, error) {
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := s.client.NewSession()
 	if err != nil {
-		log.Fatal("Failed to create session: ", err)
+		return "", "", fmt.Errorf("failed to create session: %w", err)
 	}
 	defer session.Close()
 
 	// Once a Session is created, we can execute a single command on
 	// the remote side using the Run method.
-	var b bytes.Buffer
-	session.Stdout = &b
-	// "/home/gouarfig/go/src/github.com/creativeprojects/resticprofile/resticprofile"
-	if err := session.Run(fmt.Sprintf("curl http://localhost:%d | tar -tv", s.port)); err != nil {
-		log.Fatal("Failed to run: " + err.Error())
+	var stdout, stderr bytes.Buffer
+	session.Stdout = &stdout
+	session.Stderr = &stderr
+	if err := session.Run(command); err != nil {
+		return stdout.String(), stderr.String(), fmt.Errorf("failed to run: %w", err)
 	}
-	fmt.Println(b.String())
-	return nil
+	return stdout.String(), stderr.String(), nil
 }
 
 func (s *SSH) Close() {
+	// close the tunnel first otherwise it fails with error: "ssh: cancel-tcpip-forward failed"
 	if s.tunnel != nil {
 		err := s.tunnel.Close()
 		if err != nil {

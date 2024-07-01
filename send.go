@@ -38,5 +38,10 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	if err != nil {
 		return err
 	}
+	stdout, _, err := cnx.Run(fmt.Sprintf("curl http://localhost:%d | tar -tv", cnx.TunnelPort()))
+	if err != nil {
+		return fmt.Errorf("failed to run command: %w", err)
+	}
+	fmt.Println(stdout)
 	return nil
 }
