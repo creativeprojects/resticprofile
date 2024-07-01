@@ -160,7 +160,7 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "send",
-			description:       "send a configuration profile to a remote client",
+			description:       "send a configuration profile to a remote client and execute a command",
 			action:            sendProfileCommand,
 			needConfiguration: true,
 			noProfile:         true,

@@ -4,18 +4,22 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 
+	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/ssh"
+	"github.com/spf13/afero"
 )
 
 func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	if len(cmdCtx.flags.resticArgs) < 2 {
 		return fmt.Errorf("missing argument: remote name")
 	}
-	if !cmdCtx.config.HasRemote(cmdCtx.flags.resticArgs[1]) {
+	remoteName := cmdCtx.flags.resticArgs[1]
+	if !cmdCtx.config.HasRemote(remoteName) {
 		return fmt.Errorf("remote not found")
 	}
-	remote, err := cmdCtx.config.GetRemote(cmdCtx.flags.resticArgs[1])
+	remoteConfig, err := cmdCtx.config.GetRemote(remoteName)
 	if err != nil {
 		return err
 	}
@@ -23,13 +27,19 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
-		sendFiles(resp, append(remote.SendFiles, remote.ConfigurationFile))
+
+		tar := remote.NewTar(resp)
+		defer tar.Close()
+		tar.SendFiles(afero.NewOsFs(), append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+		tar.SendFile(remote.ManifestFilename, []byte(remote.CreateManifest(map[string]string{
+			remote.ManifestKeyConfigurationFile: path.Base(remoteConfig.ConfigurationFile), // need to take file path into consideration
+		})))
 	})
 	cnx := ssh.NewSSH(ssh.Config{
-		Host:           remote.Host,
-		Username:       remote.Username,
-		PrivateKeyPath: remote.PrivateKeyPath,
-		KnownHostsPath: remote.KnownHostsPath,
+		Host:           remoteConfig.Host,
+		Username:       remoteConfig.Username,
+		PrivateKeyPath: remoteConfig.PrivateKeyPath,
+		KnownHostsPath: remoteConfig.KnownHostsPath,
 		Handler:        handler,
 	})
 	defer cnx.Close()
@@ -38,10 +48,18 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	if err != nil {
 		return err
 	}
-	stdout, _, err := cnx.Run(fmt.Sprintf("curl http://localhost:%d | tar -tv", cnx.TunnelPort()))
-	if err != nil {
-		return fmt.Errorf("failed to run command: %w", err)
+	binaryPath := remoteConfig.BinaryPath
+	if binaryPath == "" {
+		binaryPath = "resticprofile"
 	}
-	fmt.Println(stdout)
+	commandLine := fmt.Sprintf("%s -v -r http://localhost:%d/configuration/%s ",
+		binaryPath,
+		cnx.TunnelPort(),
+		remoteName,
+	)
+	err = cnx.Run(commandLine)
+	if err != nil {
+		return fmt.Errorf("failed to run command %q: %w", commandLine, err)
+	}
 	return nil
 }

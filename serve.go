@@ -7,9 +7,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/spf13/afero"
 )
 
 func serveCommand(w io.Writer, cmdCtx commandContext) error {
@@ -25,7 +28,7 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 			resp.Write([]byte("remote not found"))
 			return
 		}
-		remote, err := cmdCtx.config.GetRemote(remoteName)
+		remoteConfig, err := cmdCtx.config.GetRemote(remoteName)
 		if err != nil {
 			resp.Header().Set("Content-Type", "text/plain")
 			resp.WriteHeader(http.StatusBadRequest)
@@ -36,7 +39,13 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 		clog.Debugf("sending configuration for %q", remoteName)
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
-		sendFiles(resp, append(remote.SendFiles, remote.ConfigurationFile))
+
+		tar := remote.NewTar(resp)
+		defer tar.Close()
+		tar.SendFiles(afero.NewOsFs(), append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+		tar.SendFile(remote.ManifestFilename, []byte(remote.CreateManifest(map[string]string{
+			remote.ManifestKeyConfigurationFile: path.Base(remoteConfig.ConfigurationFile), // need to take file path into consideration
+		})))
 	})
 
 	quit := make(chan os.Signal, 1)

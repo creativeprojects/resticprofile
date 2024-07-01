@@ -1,7 +1,6 @@
 package ssh
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -93,24 +92,23 @@ func (s *SSH) TunnelPort() int {
 	return s.port
 }
 
-func (s *SSH) Run(command string) (string, string, error) {
+func (s *SSH) Run(command string) error {
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := s.client.NewSession()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to create session: %w", err)
+		return fmt.Errorf("failed to create session: %w", err)
 	}
 	defer session.Close()
 
 	// Once a Session is created, we can execute a single command on
 	// the remote side using the Run method.
-	var stdout, stderr bytes.Buffer
-	session.Stdout = &stdout
-	session.Stderr = &stderr
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stderr
 	if err := session.Run(command); err != nil {
-		return stdout.String(), stderr.String(), fmt.Errorf("failed to run: %w", err)
+		return fmt.Errorf("failed to run: %w", err)
 	}
-	return stdout.String(), stderr.String(), nil
+	return nil
 }
 
 func (s *SSH) Close() {

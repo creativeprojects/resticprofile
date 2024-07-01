@@ -8,6 +8,7 @@ type Remote struct {
 	Username          string   `mapstructure:"username" description:"User to connect to the remote client"`
 	PrivateKeyPath    string   `mapstructure:"private-key" description:"Path to the private key to use for authentication"`
 	KnownHostsPath    string   `mapstructure:"known-hosts" description:"Path to the known hosts file"`
+	BinaryPath        string   `mapstructure:"binary-path" description:"Path to the resticprofile binary to use on the remote client"`
 	ConfigurationFile string   `mapstructure:"configuration-file" description:"Path to the configuration file to transfer to the remote client"`
 	SendFiles         []string `mapstructure:"send-files" description:"Other configuration files to transfer to the remote client"`
 }

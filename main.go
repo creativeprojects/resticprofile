@@ -282,9 +282,16 @@ func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global
 
 	if flags.remote != "" {
 		fs = afero.NewMemMapFs()
-		err := loadRemoteConfiguration(fs, flags.remote)
+		parameters, err := loadRemoteConfiguration(fs, flags.remote)
 		if err != nil {
 			return nil, nil, fmt.Errorf("cannot load remote configuration: %w", err)
+		}
+		// we should probably move this to the context (and keep flags intact)
+		if flags.config == constants.DefaultConfigurationFile {
+			flags.config = parameters[remote.ManifestKeyConfigurationFile]
+		}
+		if flags.name == constants.DefaultProfileName {
+			flags.name = parameters[remote.ManifestKeyProfileName]
 		}
 	}
 
