@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -36,6 +37,18 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 			return
 		}
 
+		// prepare manifest file
+		manifest := remote.Manifest{
+			ConfigurationFile: path.Base(remoteConfig.ConfigurationFile), // need to take file path into consideration
+		}
+		manifestData, err := json.Marshal(manifest)
+		if err != nil {
+			resp.Header().Set("Content-Type", "text/plain")
+			resp.WriteHeader(http.StatusInternalServerError)
+			resp.Write([]byte(err.Error()))
+			return
+		}
+
 		clog.Debugf("sending configuration for %q", remoteName)
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
@@ -43,9 +56,8 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 		tar := remote.NewTar(resp)
 		defer tar.Close()
 		tar.SendFiles(afero.NewOsFs(), append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
-		tar.SendFile(remote.ManifestFilename, []byte(remote.CreateManifest(map[string]string{
-			remote.ManifestKeyConfigurationFile: path.Base(remoteConfig.ConfigurationFile), // need to take file path into consideration
-		})))
+		tar.SendFile(remote.ManifestFilename, manifestData)
+
 	})
 
 	quit := make(chan os.Signal, 1)

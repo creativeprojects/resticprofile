@@ -288,10 +288,10 @@ func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global
 		}
 		// we should probably move this to the context (and keep flags intact)
 		if flags.config == constants.DefaultConfigurationFile {
-			flags.config = parameters[remote.ManifestKeyConfigurationFile]
+			flags.config = parameters.ConfigurationFile
 		}
 		if flags.name == constants.DefaultProfileName {
-			flags.name = parameters[remote.ManifestKeyProfileName]
+			flags.name = parameters.ProfileName
 		}
 	}
 

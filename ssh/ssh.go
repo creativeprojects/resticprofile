@@ -101,6 +101,16 @@ func (s *SSH) Run(command string) error {
 	}
 	defer session.Close()
 
+	// request a pseudo terminal to display colors
+	if termType := os.Getenv("TERM"); termType != "" {
+		modes := ssh.TerminalModes{
+			ssh.ECHO: 0, // disable echoing
+		}
+		if err := session.RequestPty(termType, 40, 80, modes); err != nil {
+			clog.Warningf("request for pseudo terminal failed: %s", err)
+		}
+	}
+
 	// Once a Session is created, we can execute a single command on
 	// the remote side using the Run method.
 	session.Stdout = os.Stdout

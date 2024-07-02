@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,15 +26,25 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	}
 	// send the files to the remote using tar
 	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		// prepare manifest file
+		manifest := remote.Manifest{
+			ConfigurationFile: path.Base(remoteConfig.ConfigurationFile), // need to take file path into consideration
+		}
+		manifestData, err := json.Marshal(manifest)
+		if err != nil {
+			resp.Header().Set("Content-Type", "text/plain")
+			resp.WriteHeader(http.StatusInternalServerError)
+			resp.Write([]byte(err.Error()))
+			return
+		}
+
 		resp.Header().Set("Content-Type", "application/x-tar")
 		resp.WriteHeader(http.StatusOK)
 
 		tar := remote.NewTar(resp)
 		defer tar.Close()
 		tar.SendFiles(afero.NewOsFs(), append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
-		tar.SendFile(remote.ManifestFilename, []byte(remote.CreateManifest(map[string]string{
-			remote.ManifestKeyConfigurationFile: path.Base(remoteConfig.ConfigurationFile), // need to take file path into consideration
-		})))
+		tar.SendFile(remote.ManifestFilename, manifestData)
 	})
 	cnx := ssh.NewSSH(ssh.Config{
 		Host:           remoteConfig.Host,

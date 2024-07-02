@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,8 +15,8 @@ import (
 	"github.com/spf13/afero"
 )
 
-func loadRemoteConfiguration(fs afero.Fs, endpoint string) (map[string]string, error) {
-	var parameters map[string]string
+func loadRemoteConfiguration(fs afero.Fs, endpoint string) (*remote.Manifest, error) {
+	var parameters *remote.Manifest
 
 	client := http.DefaultClient
 	request, err := http.NewRequest("GET", endpoint, http.NoBody)
@@ -87,14 +88,12 @@ func copyFile(fs afero.Fs, reader io.Reader, filename string, size int64) error 
 	return nil
 }
 
-func getManifestParameters(reader io.Reader, size int64) (map[string]string, error) {
-	buf := &bytes.Buffer{}
-	read, err := buf.ReadFrom(reader)
+func getManifestParameters(reader io.Reader, size int64) (*remote.Manifest, error) {
+	manifest := &remote.Manifest{}
+	decoder := json.NewDecoder(reader)
+	err := decoder.Decode(manifest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read manifest: %w", err)
+		return nil, fmt.Errorf("failed to decode manifest: %w", err)
 	}
-	if read != size {
-		return nil, fmt.Errorf("manifest size mismatch: expected %d, got %d", size, read)
-	}
-	return remote.ParseManifest(buf.Bytes()), nil
+	return manifest, nil
 }
