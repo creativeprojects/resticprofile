@@ -1,5 +1,5 @@
 global:
-    default-command: version
+    default-command: snapshots
     initialize: false
     priority: low
     systemd-unit-template: sample.service

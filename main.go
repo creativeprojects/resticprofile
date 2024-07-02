@@ -24,6 +24,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/shutdown"
 	"github.com/mackerelio/go-osstat/memory"
+	"github.com/spf13/afero"
 	"github.com/spf13/pflag"
 )
 
@@ -277,13 +278,30 @@ func banner() {
 }
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
+	fs := afero.NewOsFs()
+
+	if flags.remote != "" {
+		fs = afero.NewMemMapFs()
+		parameters, err := loadRemoteConfiguration(fs, flags.remote)
+		if err != nil {
+			return nil, nil, fmt.Errorf("cannot load remote configuration: %w", err)
+		}
+		// we should probably move this to the context (and keep flags intact)
+		if flags.config == constants.DefaultConfigurationFile {
+			flags.config = parameters.ConfigurationFile
+		}
+		if flags.name == constants.DefaultProfileName {
+			flags.name = parameters.ProfileName
+		}
+	}
+
 	var configFile string
-	if configFile, err = filesearch.FindConfigurationFile(flags.config); err == nil {
+	if configFile, err = filesearch.FindConfigurationFile(fs, flags.config); err == nil {
 		if configFile != flags.config && !silent {
 			clog.Infof("using configuration file: %s", configFile)
 		}
 
-		if cfg, err = config.LoadFile(configFile, flags.format); err == nil {
+		if cfg, err = config.LoadFile(fs, configFile, flags.format); err == nil {
 			global, err = cfg.GetGlobalSection()
 			if err != nil {
 				err = fmt.Errorf("cannot load global configuration: %w", err)
@@ -349,7 +367,7 @@ func shouldStopOnBattery(batteryLimit int) bool {
 }
 
 func detectResticBinary(global *config.Global) (string, error) {
-	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
+	resticBinary, err := filesearch.FindResticBinary(afero.NewOsFs(), global.ResticBinary)
 	if err != nil {
 		return "", fmt.Errorf("cannot find restic: %w", err)
 	}
