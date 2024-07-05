@@ -1,0 +1,61 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+title: "Section Profile"
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+weight: 5
+alwaysopen: false
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+
+
+{{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
+
+{{ $layoutHeadings -}}## Profile sections
+
+In config file format v1, the name of this section is the name of your profile
+(excluding reserved names like `global`, `groups`, `includes` & `version`).
+
+From config file format v2, profile sections are declared as named configuration
+structure below section `profiles` (see [Configuration v2]({{- $configWebUrl -}}/v2/)
+for details).
+
+{{ $layoutHeadings -}}### Section **profile**
+
+{{ with .Profile | properties | own -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags used by **resticprofile** only:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+{{ with .Profile | properties | restic -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags passed to the **restic** command line:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+
+{{ $layoutNoticeStart }}
+Most **restic** command flags defined in profile sections below can also be set at profile level.
+They will be inherited in all sections that define these flags and ignored in all others.
+{{ $layoutNoticeEnd }}

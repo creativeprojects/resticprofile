@@ -2,7 +2,6 @@
 archetype: "home"
 ---
 
-# resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)
 
 **resticprofile** is the missing link between a configuration file and restic backup. Creating a configuration file for restic has been [discussed before](https://github.com/restic/restic/issues/16), but seems to be a very low priority right now.

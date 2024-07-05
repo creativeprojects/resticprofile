@@ -2,27 +2,22 @@ package main
 
 import (
 	"crypto/rand"
-	_ "embed"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"regexp"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/config/jsonschema"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
-	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/creativeprojects/resticprofile/win"
 	"golang.org/x/exp/maps"
 )
@@ -199,97 +194,6 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 		}
 	}
 	return nil
-}
-
-//go:embed contrib/completion/bash-completion.sh
-var bashCompletionScript string
-
-//go:embed contrib/completion/zsh-completion.sh
-var zshCompletionScript string
-
-func generateCommand(output io.Writer, ctx commandContext) (err error) {
-	args := ctx.request.arguments
-	// enforce no-log
-	logger := clog.GetDefaultLogger()
-	handler := logger.GetHandler()
-	logger.SetHandler(clog.NewDiscardHandler())
-
-	if slices.Contains(args, "--bash-completion") {
-		_, err = fmt.Fprintln(output, bashCompletionScript)
-	} else if slices.Contains(args, "--config-reference") {
-		err = generateConfigReference(output, args[slices.Index(args, "--config-reference")+1:])
-	} else if slices.Contains(args, "--json-schema") {
-		err = generateJsonSchema(output, args[slices.Index(args, "--json-schema")+1:])
-	} else if slices.Contains(args, "--random-key") {
-		ctx.flags.resticArgs = args[slices.Index(args, "--random-key"):]
-		err = randomKey(output, ctx)
-	} else if slices.Contains(args, "--zsh-completion") {
-		_, err = fmt.Fprintln(output, zshCompletionScript)
-	} else {
-		err = fmt.Errorf("nothing to generate for: %s", strings.Join(args, ", "))
-	}
-
-	if err != nil {
-		logger.SetHandler(handler)
-	}
-	return
-}
-
-//go:embed contrib/templates/config-reference.gomd
-var configReferenceTemplate string
-
-func generateConfigReference(output io.Writer, args []string) (err error) {
-	resticVersion := restic.AnyVersion
-	if slices.Contains(args, "--version") {
-		args = args[slices.Index(args, "--version"):]
-		if len(args) > 1 {
-			resticVersion = args[1]
-			args = args[2:]
-		}
-	}
-
-	data := config.NewTemplateInfoData(resticVersion)
-	tpl := templates.New("config-reference", data.GetFuncs())
-
-	if len(args) > 0 {
-		tpl, err = tpl.ParseFiles(args...)
-	} else {
-		tpl, err = tpl.Parse(configReferenceTemplate)
-	}
-
-	if err != nil {
-		err = fmt.Errorf("parsing failed: %w", err)
-	} else {
-		err = tpl.Execute(output, data)
-	}
-	return
-}
-
-func generateJsonSchema(output io.Writer, args []string) (err error) {
-	resticVersion := restic.AnyVersion
-	if slices.Contains(args, "--version") {
-		args = args[slices.Index(args, "--version"):]
-		if len(args) > 1 {
-			resticVersion = args[1]
-			args = args[2:]
-		}
-	}
-
-	version := config.Version02
-	if len(args) > 0 && args[0] == "v1" {
-		version = config.Version01
-	}
-
-	return jsonschema.WriteJsonSchema(version, resticVersion, output)
-}
-
-func sortedProfileKeys(data map[string]*config.Profile) []string {
-	keys := make([]string, 0, len(data))
-	for key := range data {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
 }
 
 func showProfile(output io.Writer, ctx commandContext) error {

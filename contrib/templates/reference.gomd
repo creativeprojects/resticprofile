@@ -1,0 +1,48 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+archetype: "chapter"
+pre: "<b>6. </b>"
+linkTitle: Reference
+slug: reference
+{{ if .Env.META_TITLE -}}
+  title: {{ .Env.META_TITLE }}
+{{- else -}}
+  title: "Resticprofile configuration reference"
+{{- end }}
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+{{ if .Env.META_WEIGHT -}}
+  weight: {{ .Env.META_WEIGHT }}
+{{- else -}}
+  weight: 6
+{{- end }}
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+
+{{ if not .Env.LAYOUT_NO_HEADLINE -}}
+    {{ $layoutHeadings -}}# Resticprofile configuration reference
+{{- end }}
+
+{{ $layoutNoticeStart }}
+The configuration file reference is generated from resticprofile's data model and restic's manual pages.
+{{ $layoutNoticeEnd }}
+
+{{ `{{% children sort="weight" depth="2" %}}` }}
+

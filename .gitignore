@@ -30,6 +30,7 @@ status.json
 
 # documentation
 /docs/content/configuration/reference/index.md
+/docs/content/reference/**/*.md
 /docs/static/jsonschema
 /public
 .hugo_build.lock

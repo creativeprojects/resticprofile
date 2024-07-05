@@ -1,0 +1,21 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+title: "Section global"
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+weight: 1
+---
+
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+
+{{ $layoutHeadings -}}## Section **global**
+
+The `global` section is at the root of the configuration file and contains the global
+settings for resticprofile.
+
+{{ template "printPropertyTable" .Global | properties }}
+

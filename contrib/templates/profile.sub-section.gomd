@@ -1,0 +1,64 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/SectionInfoData*/ -}}
+---
+title: {{ .Section.Name }}
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+weight: {{ .Weight }}
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+
+{{- with .Section -}}
+
+{{ $layoutHeadings -}}### Section profile.**{{.Name}}**
+
+{{ if .IsCommandSection -}}
+This section configures restic command `{{.Command.GetName}}` {{- " " -}}
+{{- if .Command.GetFromVersion | or .Command.GetRemovedInVersion -}}
+    {{- if .Command.GetFromVersion }} available since `{{ .Command.GetFromVersion }}` {{ end -}}
+    {{- if .Command.GetRemovedInVersion }} removed in `{{ .Command.GetRemovedInVersion }}` {{ end -}}
+{{- end -}}.
+Information on command and flags is copied from the [restic](https://github.com/restic/restic) {{- " " -}}
+manual pages.
+{{- end }}
+
+{{ .Description }}
+
+{{ with . | properties | own -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags used by **resticprofile** only:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+{{ with . | properties | restic -}}
+    {{- if . -}}
+        {{ $layoutHeadings -}}
+        {{- "#### Flags passed to the **restic** command line:\n\n" -}}
+        {{- template "printPropertyTable" . -}}
+    {{- end -}}
+{{- end }}
+
+{{- end }}
+
+{{ $layoutHintStart }}
+Flags declared for the **restic** command line in section *[profile](../profile)*
+can be overridden in this section.
+{{ $layoutHintEnd }}
+

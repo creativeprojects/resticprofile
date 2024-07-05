@@ -1,0 +1,138 @@
+{{- /* ------------------------------------------------------------------------------
+
+  Template that creates a configuration reference in markdown format
+
+  Usage: resticprofile generate --config-reference
+
+  Note: resticprofile bundles this template and uses it when no other
+        template was specified with command generate.
+
+  Template data type:
+    - github.com/creativeprojects/resticprofile/config.TemplateInfoData
+
+  Available extra functions (in addition to default funcs):
+    - {{ .Profile | properties }} - get all []PropertyInfo from a PropertySet
+    - {{ .. properties | own }} - select all resticprofile own properties
+    - {{ .. properties | restic }} - select all restic properties
+
+------------------------------------------------------------------------------ */ -}}
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+
+
+{{- /* ------------------------------------------------------------------------------
+  Partial templates declaration
+------------------------------------------------------------------------------ */ -}}
+
+{{ define "printCell" -}}
+    {{ . | replace "|" "/" | replace "\n" " " }}
+{{- end }}
+
+{{ define "printRange" -}}
+    {{- range $index, $item := . -}}
+        {{- if gt $index 0 }}, {{ end -}}
+        `{{ template "printCell" $item }}`
+    {{- end -}}
+{{- end }}
+
+{{ define "printPropertyType" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
+    {{- $more := 0 -}}
+    {{- $single := .IsSingle -}}
+    {{- $singlePropertySet := .IsSinglePropertySet -}}
+    {{- if .CanBeBool -}}
+      `true` / `false`
+      {{- $more = 1 -}}
+    {{- end -}}
+    {{- if .CanBeNumeric -}}
+        {{- if $more }} OR {{ end -}}
+        {{- if .MustBeInteger -}}
+          `integer`
+        {{- else -}}
+          `numeric`
+        {{- end -}}
+        {{- $more = 1 -}}
+    {{- end -}}
+    {{- if .CanBeString -}}
+        {{- if $more }} OR {{ end -}}
+        {{- if $single -}}
+          `{{ if .Format }}{{ .Format }}{{ else }}string{{ end }}`
+        {{- else -}}
+          one or more `{{ if .Format }}{{ .Format }}{{ else }}string{{ end }}s`
+        {{- end -}}
+        {{- $more = 1 -}}
+    {{- end -}}
+    {{- if .CanBePropertySet -}}
+        {{- if $more }} OR {{ end -}}
+        {{- with .PropertySet -}}
+            {{- if .TypeName -}}
+                {{- if not $singlePropertySet }} one or more {{ end -}}
+                nested *[{{ .TypeName }}](../nested/{{ .TypeName | lower }})*
+            {{- else -}}
+                {{- if .OtherPropertyInfo -}}
+                  `key` => {{ template "printPropertyType" .OtherPropertyInfo }}
+                {{- else -}}
+                  `key` => `value`
+                {{- end -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- end }}
+
+{{ define "printPropertyTable" -}}
+    {{- "| Name              | Type                    | Default  | Notes |\n" -}}
+    {{- "|:------------------|:------------------------|:---------|:------|\n" -}}
+    {{ range . -}}
+        {{ template "printPropertyRow" . }}
+    {{- end -}}
+    {{- "\n\n" -}}
+{{ end }}
+
+{{ define "printPropertyRow" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
+    {{- if .IsDeprecated -}}
+      | ~~{{ template "printCell" .Name }}~~ |
+    {{- else -}}
+      | **{{ template "printCell" .Name }}** |
+    {{- end -}}
+    {{- template "printPropertyType" . }} |
+    {{- template "printRange" .DefaultValue }} |
+    {{- template "printDescription" . }} |
+{{ end }}
+
+{{ define "printDescription" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
+    {{- template "printCell" .Description
+    | regex "(\\s|$)(https://[^/\\s]+/resticprofile/)([^\\s]+)(\\s|$)" "$1[$3]($2$3)$4"
+    | trim
+    | trimSuffix "." -}}
+    {{- if .EnumValues -}}
+        {{- ". Is one of " }}{{ template "printRange" .EnumValues }}{{ " " -}}
+    {{- end -}}
+    {{- with .NumericRange -}}
+        {{- if .From | or .To -}}
+            {{- ". Must be " -}}
+            {{- if .From -}}
+              >{{ if not .FromExclusive }}={{ end }} {{.From}}
+              {{- if .To }} and {{ end -}}
+            {{- end -}}
+            {{- if .To }} <{{- if not .FromExclusive }}={{ end }} {{.To}}{{ end -}}
+            {{- " " -}}
+        {{- end -}}
+    {{- end -}}
+    {{- if .ExampleValues -}}
+        {{- ". **Examples**: " }}{{ template "printRange" .ExampleValues }}{{ " " -}}
+    {{- end -}}
+    {{- if .IsOption -}}
+        {{- with .Option -}}
+            {{- if .FromVersion | or .RemovedInVersion -}}
+                {{- ". `restic" -}}
+                {{- if .FromVersion }} >= {{ template "printCell" .FromVersion }}{{ end -}}
+                {{- if .RemovedInVersion }} < {{ template "printCell" .RemovedInVersion }}{{ end -}}
+                {{- "` " -}}
+            {{- end -}}
+            {{- if .OnlyInOS -}}
+                {{- ". Available only for " }}{{ template "printRange" .OnlyInOS }}{{ " " -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{ end }}
