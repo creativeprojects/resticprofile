@@ -57,10 +57,18 @@ var configReferenceTemplates embed.FS
 
 func generateConfigReference(output io.Writer, args []string) error {
 	resticVersion := restic.AnyVersion
+	destination := "docs/content/reference"
 	if slices.Contains(args, "--version") {
 		args = args[slices.Index(args, "--version"):]
 		if len(args) > 1 {
 			resticVersion = args[1]
+			args = args[2:]
+		}
+	}
+	if slices.Contains(args, "--to") {
+		args = args[slices.Index(args, "--to"):]
+		if len(args) > 1 {
+			destination = args[1]
 			args = args[2:]
 		}
 	}
@@ -97,7 +105,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 
 	for _, staticPage := range staticPages {
 		fmt.Fprintf(output, "generating %s...\n", staticPage.templateName)
-		err = generatePage(tpl, data, staticPage.fileName, staticPage.templateName)
+		err = generatePage(tpl, data, filepath.Join(destination, staticPage.fileName), staticPage.templateName)
 		if err != nil {
 			return fmt.Errorf("unable to generate page %s: %w", staticPage.fileName, err)
 		}
@@ -111,7 +119,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 			Section:     profileSection,
 			Weight:      weight,
 		}
-		err = generatePage(tpl, sectionData, filepath.Join("profile", profileSection.Name()+".md"), "profile.sub-section.gomd")
+		err = generatePage(tpl, sectionData, filepath.Join(destination, "profile", profileSection.Name()+".md"), "profile.sub-section.gomd")
 		if err != nil {
 			return fmt.Errorf("unable to generate profile section %s: %w", profileSection.Name(), err)
 		}
@@ -126,7 +134,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 			Section:     nestedSection,
 			Weight:      weight,
 		}
-		err = generatePage(tpl, sectionData, filepath.Join("nested", nestedSection.Name()+".md"), "profile.nested-section.gomd")
+		err = generatePage(tpl, sectionData, filepath.Join(destination, "nested", nestedSection.Name()+".md"), "profile.nested-section.gomd")
 		if err != nil {
 			return fmt.Errorf("unable to generate nested section %s: %w", nestedSection.Name(), err)
 		}
@@ -136,12 +144,11 @@ func generateConfigReference(output io.Writer, args []string) error {
 }
 
 func generatePage(tpl *template.Template, data any, fileName, templateName string) error {
-	fullname := filepath.Join("docs/content/reference", fileName)
-	err := os.MkdirAll(filepath.Dir(fullname), 0o755)
+	err := os.MkdirAll(filepath.Dir(fileName), 0o755)
 	if err != nil {
 		return fmt.Errorf("cannot create directory: %w", err)
 	}
-	file, err := os.Create(fullname)
+	file, err := os.Create(fileName)
 	if err != nil {
 		return fmt.Errorf("cannot open file: %w", err)
 	}
