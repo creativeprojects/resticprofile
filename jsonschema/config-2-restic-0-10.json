@@ -4736,8 +4736,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -4920,8 +4920,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -5834,6 +5834,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -5845,11 +5850,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -6379,11 +6379,6 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -6402,6 +6397,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -6896,13 +6896,13 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "host": {
-                  "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
-                },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
+                },
+                "host": {
+                  "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7292,11 +7292,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
                 },
@@ -7308,6 +7303,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7513,14 +7513,14 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "force": {
                   "title": "force",
                   "description": "apply a migration a second time",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8284,8 +8284,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "json": {
-                  "title": "json",
+                "extended-status": {
+                  "title": "extended-status",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -8459,8 +8459,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -8959,6 +8959,11 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -8977,11 +8982,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -9845,11 +9845,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
                 },
@@ -9861,6 +9856,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -10086,8 +10086,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },

@@ -128,10 +128,10 @@ h1 + .footline{
 }
 #R-topbar{
     /* the header is sticky which is not suitable for print; */
-    position: inherit; /* IE11 doesn't know "initial" here */
+    position: initial;
 }
 #R-topbar > .topbar-wrapper {
-    background-color: rgba( 255, 255, 255, 1 ); /* IE11 doesn't know "initial" here */
+    background-color: initial;
 }
 #R-body .topbar-sidebar-divider {
     border-width: 0;

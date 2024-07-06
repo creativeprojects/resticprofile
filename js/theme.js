@@ -1,15 +1,6 @@
 window.relearn = window.relearn || {};
 
 var theme = true;
-var isIE = /*@cc_on!@*/false || !!document.documentMode;
-if( isIE ){
-    // we don't support sidebar flyout in IE
-    document.querySelector( 'body' ).classList.remove( 'mobile-support' );
-}
-else{
-    document.querySelector( 'body' ).classList.add( 'mobile-support' );
-}
-
 var isPrint = document.querySelector( 'body' ).classList.contains( 'print' );
 
 var isRtl = document.querySelector( 'html' ).getAttribute( 'dir' ) == 'rtl';
@@ -19,7 +10,7 @@ var dir_padding_end = 'padding-right';
 var dir_key_start = 37;
 var dir_key_end = 39;
 var dir_scroll = 1;
-if( isRtl && !isIE ){
+if( isRtl ){
     dir_padding_start = 'padding-right';
     dir_padding_end = 'padding-left';
     dir_key_start = 39;
@@ -357,10 +348,6 @@ function initMermaid( update, attrs ) {
 }
 
 function initOpenapi( update, attrs ){
-    if( isIE ){
-        return;
-    }
-
     var state = this;
     if( update && !state.is_initialized ){
         return;
@@ -391,10 +378,9 @@ function initOpenapi( update, attrs ){
     }
     function renderOpenAPI(oc) {
         var relBasePath = window.relearn.relBasePath;
-        var mod = window.relearn.themeVariantModifier;
         var buster = window.themeUseOpenapi.assetsBuster ? '?' + window.themeUseOpenapi.assetsBuster : '';
         var print = isPrint || attrs.isPrintPreview ? "PRINT-" : "";
-        var theme = print ? `${relBasePath}/css/theme-relearn-light${mod}.css${buster}` : document.querySelector( '#R-variant-style' ).attributes.href.value
+        var theme = print ? `${relBasePath}/css/theme-relearn-light.css${buster}` : document.querySelector( '#R-variant-style' ).attributes.href.value
         var swagger_theme = variants.getColorValue( print + 'OPENAPI-theme' );
         var swagger_code_theme = variants.getColorValue( print + 'OPENAPI-CODE-theme' );
 
@@ -1569,10 +1555,6 @@ function updateTheme( detail ){
 })();
 
 function useMermaid( config ){
-    if( !Object.assign ){
-        // We don't support Mermaid for IE11 anyways, so bail out early
-        return;
-    }
     window.relearn.mermaidConfig = config;
     if (typeof mermaid != 'undefined' && typeof mermaid.mermaidAPI != 'undefined') {
         mermaid.initialize( Object.assign( { "securityLevel": "antiscript", "startOnLoad": false }, config ) );

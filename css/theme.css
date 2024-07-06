@@ -115,7 +115,7 @@ html {
 
 body {
     display: flex;
-    flex-direction: row-reverse; /* IE11 to allow body to have initial focus for PS and better SEO and a11y */
+    flex-direction: row-reverse; /* to allow body to have initial focus for PS in some browsers and better SEO and a11y */
     font-size: 1.015625rem;
     font-weight: 300;
     height: 100%;
@@ -448,13 +448,19 @@ article a:active,
 article a:focus,
 article a:hover .copy-to-clipboard,
 article a:active .copy-to-clipboard,
-article a:focus .copy-to-clipboard {
+article a:focus .copy-to-clipboard,
+article a.lightbox-back:hover > img:only-child:empty,
+article a.lightbox-back:active > img:only-child:empty,
+article a.lightbox-back:focus > img:only-child:empty
+article .btn > button:hover,
+article .btn > button:active,
+article .btn > button:focus{
     outline: none;
 }
 article a:hover > img:only-child:empty,
 article a:active > img:only-child:empty,
 article a:focus > img:only-child:empty{
-    outline: auto;
+    outline: .15rem solid var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
 #R-body-inner:focus-visible{
@@ -672,7 +678,7 @@ p:empty {
     display: none;
 }
 
-/* in case of image render hook, Hugo may generate empty <p>s that we want to ignore aswell, so a simple :first-child or :last-child is not enough */
+/* in case of image render hook, Hugo may generate empty <p>s that we want to ignore as well, so a simple :first-child or :last-child is not enough */
 #R-body table th > :nth-child(1 of :not(:empty)),
 #R-body table th > :nth-child(1 of :not(:empty)) :nth-child(1 of :not(:empty)),
 #R-body table td > :nth-child(1 of :not(:empty)),
@@ -839,7 +845,6 @@ div.highlight > div td{
 }
 /* disable selection for lineno cells */
 div.highlight > div td:first-child:not(:last-child){
-    -ms-user-select: none;
     -webkit-user-select: none;
     user-select: none;
 }
@@ -1577,7 +1582,6 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     line-height: 1.1;
     margin-bottom: 0;
     touch-action: manipulation;
-    -ms-user-select: none;
     -webkit-user-select: none;
     user-select: none;
 }
@@ -1606,7 +1610,6 @@ html[dir="rtl"] .expand > .expand-label > i.fa-chevron-right {
     padding: 6px 12px;
     text-align: center;
     touch-action: manipulation;
-    -ms-user-select: none;
     -webkit-user-select: none;
     user-select: none;
     white-space: nowrap;
@@ -1715,6 +1718,7 @@ html[dir="rtl"] .menu-control span {
 .menu-control button {
     -webkit-appearance: none;
     appearance: none;
+    height: 1.33rem;
     outline: none;
     width: 100%;
 }
@@ -1722,7 +1726,7 @@ html[dir="rtl"] .menu-control span {
 .menu-control button:focus,
 .menu-control select:active,
 .menu-control select:focus{
-    outline-style: auto;
+    outline-style: solid;
 }
 
 .menu-control select {

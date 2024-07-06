@@ -7,15 +7,12 @@
   width: device-width; }
 @-moz-viewport {
   width: device-width; }
-@-ms-viewport {
-  width: device-width; }
 @-o-viewport {
   width: device-width; }
 @viewport {
   width: device-width; }
 html {
   font-size: 16px;
-  -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%; }
 
@@ -255,7 +252,6 @@ select {
 button,
 input[type="submit"] {
   cursor: pointer;
-  -ms-user-select: none;
   -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
