@@ -13,6 +13,7 @@ const (
 	SectionConfigurationMixins      = "mixins"
 	SectionConfigurationMixinUse    = "use"
 	SectionConfigurationSchedule    = "schedule"
+	SectionConfigurationRemotes     = "remotes"
 
 	SectionDefinitionCommon = "common"
 	SectionDefinitionForget = "forget"
