@@ -11,10 +11,10 @@ publishdir = "../public/"
   home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
 
 [params]
-  # Change default color scheme with a variant one.
   themeVariant = [ "relearn-dark", "relearn-light"  ]
   collapsibleMenu = true
   externalLinkTarget = "_blank"
+  ordersectionsby = "weight"
 
 [[menu.shortcuts]]
   name = "<i class='fas fa-tags'></i> Tags"

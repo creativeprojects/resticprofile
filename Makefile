@@ -263,7 +263,7 @@ generate-config-reference: build
 	@echo "[*] $@"
 
 	META_TITLE="Resticprofile configuration reference" \
-	META_WEIGHT="50" \
+	META_WEIGHT="6" \
 	LAYOUT_NO_HEADLINE="1" \
 	LAYOUT_HEADINGS_START="#" \
 	LAYOUT_NOTICE_START="{{% notice note %}}" \

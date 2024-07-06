@@ -1,6 +1,7 @@
 name: documentation
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
@@ -61,7 +62,7 @@ jobs:
       - name: Build for pages.dev
         run: |
           cd docs
-          sed -i "s/canonifyURLs = true/canonifyURLs = false/g" config.toml
+          sed -i "s/canonifyURLs = true/canonifyURLs = false/g" hugo.toml
           hugo --minify --baseURL https://resticprofile.creativeprojects.tech/
 
       - name: Publish to pages.dev
