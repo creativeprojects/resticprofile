@@ -229,9 +229,9 @@ func TestGenerateCommand(t *testing.T) {
 		buffer.Reset()
 		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--config-reference"})))
 		ref := buffer.String()
-		assert.Contains(t, ref, "| **ionice-class** |")
-		assert.Contains(t, ref, "| **check-after** |")
-		assert.Contains(t, ref, "| **continue-on-error** |")
+		assert.Contains(t, ref, "generating reference.gomd")
+		assert.Contains(t, ref, "generating profile section")
+		assert.Contains(t, ref, "generating nested section")
 	})
 
 	t.Run("--json-schema", func(t *testing.T) {

@@ -322,6 +322,15 @@ func displayGroups(output io.Writer, configuration *config.Config, flags command
 	out("\n")
 }
 
+func sortedProfileKeys(data map[string]*config.Profile) []string {
+	keys := make([]string, 0, len(data))
+	for key := range data {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 // lineLengthWriter limits the max line length, adding line breaks ('\n') as needed.
 // the writer detects the right most column (consecutive whitespace) and aligns content if possible.
 type lineLengthWriter struct {

@@ -1,0 +1,38 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+title: "Section Groups"
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+weight: 15
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+{{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
+
+{{ $layoutHeadings -}}## Section **groups**
+
+Config file format v1 uses a simplified groups section. Every named item below `groups`
+maps to one or more `profile` names (list of strings).
+
+From file format v2, every named item in the groups section is configuration structure
+following the format described below (see [Configuration v2]({{- $configWebUrl -}}/v2/)
+for details):
+
+{{ template "printPropertyTable" .Group | properties }}

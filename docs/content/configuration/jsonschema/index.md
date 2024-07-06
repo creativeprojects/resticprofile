@@ -16,10 +16,10 @@ JSON schema URLs for **any** *restic* version:
 * Config V2: {{< absolute "jsonschema/config-2.json" >}}
 
 These universal schemas contain all flags and commands of all known *restic* versions and 
-may allow to set flags that are not supported by a particular *restic* version. Descriptions 
+may allow setting flags that are not supported by a particular *restic* version. Descriptions 
 and deprecation markers indicate what is supported and what should no longer be used.
 
-JSON schema URLs for a **specific** *restic* version (list of [available URLs]({{% relref "reference/#json-schema" %}})):
+JSON schema URLs for a **specific** *restic* version (list of [available URLs]({{% relref "reference/json-schema" %}})):
 
 * `.../config-1-restic-{MAJOR}-{MINOR}.json`
 * `.../config-2-restic-{MAJOR}-{MINOR}.json`

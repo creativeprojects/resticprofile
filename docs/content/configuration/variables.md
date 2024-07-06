@@ -520,7 +520,7 @@ This means they must be used carefully to create correct config markup, but they
 
 There is also unix style variable expansion using the `${variable}` or `$variable` syntax on configuration **values** that expand after the config file was parsed. Values that take a file path or path expression and a few others support this expansion. 
 
-If not specified differently, these variables resolve to the corresponding environment variable or to an empty value if no such environment variable exists. Exceptions are [mixins]({{% relref "/configuration/inheritance#mixins" %}}) where `$variable` style is used for parametrisation and the profile [config flag]({{% relref "configuration/reference#section-profile" %}}) `prometheus-push-job`.
+If not specified differently, these variables resolve to the corresponding environment variable or to an empty value if no such environment variable exists. Exceptions are [mixins]({{% relref "/configuration/inheritance#mixins" %}}) where `$variable` style is used for parametrisation and the profile [config flag]({{% relref "reference/profile" %}}) `prometheus-push-job`.
 
 ### Example
 

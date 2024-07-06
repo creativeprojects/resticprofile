@@ -65,7 +65,7 @@ global:
 {{% /tab %}}
 {{< /tabs >}}
 
-See also [reference / global section]({{% relref "/configuration/reference#section-global" %}}) for options on how to configure the scheduler.
+See also [reference / global section]({{% relref "/reference/global" %}}) for options on how to configure the scheduler.
 
 
 Each profile can be scheduled independently (groups are not available for scheduling yet - it will be available in version '2' of the configuration file).

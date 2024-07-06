@@ -1,0 +1,50 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+title: "JSON Schema"
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+weight: 30
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+{{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
+
+resticprofile provides a JSON schema for v1 & v2 configuration files. The schema may be
+used to validate configuration files in JSON format (and possibly others), see
+[JSON schema]({{- $configWebUrl -}}/jsonschema/) for details.
+
+JSON schema URLs for **any** *restic* version:
+
+* Config V1: {{ $webBaseUrl }}/jsonschema/config-1.json
+* Config V2: {{ $webBaseUrl }}/jsonschema/config-2.json
+
+JSON schema URLs for a specific *restic* version:
+
+* `.../config-1-restic-{MAJOR}-{MINOR}.json`
+* `.../config-2-restic-{MAJOR}-{MINOR}.json`
+
+Available URLs:
+{{ range $version := .KnownResticVersions }}
+  {{- $version = slice ($version | split ".") 0 2 | join "." }}
+  {{- "\n" }} * {{ $webBaseUrl }}/jsonschema/config-2-restic-{{ $version | replace "." "-" }}.json
+  {{- "\n" }} * {{ $webBaseUrl }}/jsonschema/config-1-restic-{{ $version | replace "." "-" }}.json
+{{- end }}
+
+

@@ -1,0 +1,35 @@
+{{- /*gotype: github.com/creativeprojects/resticprofile/config.TemplateInfoData*/ -}}
+---
+title: "Nested Sections"
+date: {{ .Now.Format "2006-01-02T15:04:05Z07:00" }}
+weight: 10
+alwaysopen: false
+---
+
+{{- $layoutNoticeStart := "\n\n**Note**: " -}}
+{{- $layoutNoticeEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_NOTICE_START | and .Env.LAYOUT_NOTICE_END -}}
+    {{- $layoutNoticeStart = .Env.LAYOUT_NOTICE_START -}}
+    {{- $layoutNoticeEnd = .Env.LAYOUT_NOTICE_END -}}
+{{- end }}
+{{- $layoutHintStart := "\n\nHint: " -}}
+{{- $layoutHintEnd := "\n\n" -}}
+{{- if .Env.LAYOUT_HINT_START | and .Env.LAYOUT_HINT_END -}}
+    {{- $layoutHintStart = .Env.LAYOUT_HINT_START -}}
+    {{- $layoutHintEnd = .Env.LAYOUT_HINT_END -}}
+{{- end }}
+
+{{- $layoutHeadings := "" -}}
+{{- if .Env.LAYOUT_HEADINGS_START -}}
+    {{ $layoutHeadings = .Env.LAYOUT_HEADINGS_START -}}
+{{- end }}
+
+{{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
+
+{{ $layoutHeadings -}}## Nested profile sections
+
+Nested sections describe configuration structure that is assigned to flags within the
+configuration, see [HTTP Hooks]({{- $configWebUrl -}}/http_hooks/) as an example.
+
+{{ `{{% children sort="weight" %}}` }}

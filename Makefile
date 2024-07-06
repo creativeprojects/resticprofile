@@ -36,7 +36,7 @@ RESTIC_DIR=$(BUILD)restic-
 RESTIC_CMD=$(BUILD)restic-commands.json
 
 JSONSCHEMA_DIR=docs/static/jsonschema
-CONFIG_REFERENCE_DIR=docs/content/configuration/reference
+CONFIG_REFERENCE_DIR=docs/content/reference
 
 BUILD_DATE=`date`
 BUILD_COMMIT=`git rev-parse HEAD`
@@ -262,8 +262,8 @@ generate-jsonschema: build
 generate-config-reference: build
 	@echo "[*] $@"
 
-	META_TITLE="Reference" \
-	META_WEIGHT="50" \
+	META_TITLE="Resticprofile configuration reference" \
+	META_WEIGHT="6" \
 	LAYOUT_NO_HEADLINE="1" \
 	LAYOUT_HEADINGS_START="#" \
 	LAYOUT_NOTICE_START="{{% notice note %}}" \
@@ -271,7 +271,7 @@ generate-config-reference: build
 	LAYOUT_HINT_START="{{% notice hint %}}" \
 	LAYOUT_HINT_END="{{% /notice %}}" \
 	LAYOUT_UPLINK="[go to top](#reference)" \
-	$(abspath $(BINARY)) generate --config-reference > $(CONFIG_REFERENCE_DIR)/index.md
+	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
 documentation: generate-jsonschema generate-config-reference
 	@echo "[*] $@"
