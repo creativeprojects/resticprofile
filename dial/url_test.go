@@ -47,6 +47,7 @@ func TestGetDialAddr(t *testing.T) {
 		{"/file", "", "", false},
 		{"path/file", "", "", false},
 		{"/root/file", "", "", false},
+		{"temp:/t/backup.log", "", "", false},
 	}
 
 	for _, fixture := range fixtures {
@@ -66,5 +67,6 @@ func TestIsUrl(t *testing.T) {
 	assert.True(t, dial.IsURL("ftp://"))
 	assert.True(t, dial.IsURL("http://"))
 	assert.False(t, dial.IsURL("c://"))
+	assert.False(t, dial.IsURL("temp:/t/backup.log"))
 	assert.False(t, dial.IsURL(""))
 }
