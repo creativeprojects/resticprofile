@@ -46,5 +46,5 @@ func IsSupportedURL(source string) bool {
 // IsURL is true if the provided source is a parsable URL and no file path
 func IsURL(source string) bool {
 	u, e := url.Parse(source)
-	return e == nil && len(u.Scheme) > 1
+	return e == nil && len(u.Scheme) > 1 && u.Scheme != "temp"
 }

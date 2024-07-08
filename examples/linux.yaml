@@ -1,9 +1,13 @@
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+
+version: "1"
+
 global:
     default-command: version
     initialize: false
     priority: low
     systemd-unit-template: sample.service
-    prevent-sleep: true
+    prevent-sleep: false
 
 default:
     password-file: key
@@ -60,6 +64,19 @@ test2:
         schedule: "*-*-2"
         schedule-permission: system
         schedule-log: check-test2.log
+
+test3:
+    inherit: default
+    initialize: true
+    verbose: true
+    backup:
+        source: ./
+        exclude: .git
+        schedule: "*:05,20,35,50"
+        schedule-permission: user
+        schedule-log: '{{ tempFile "backup.log" }}'
+        run-finally:
+            - 'grep --invert-match -E "^unchanged\\s" {{ tempFile "backup.log" }} > /tmp/backup-{{ .Profile.Name }}-{{ .Now.Format "2006-01-02_15-04" }}.log'
 
 longrun:
     inherit: default
