@@ -28,7 +28,7 @@ var allowedEmptyValueArgs = []string{
 func tryAddEmptyArg(args *shell.Args, name string, value any) bool {
 	sv, ok := value.(string)
 	if ok && sv == "" && slices.Contains(allowedEmptyValueArgs, name) {
-		args.AddFlag2(name, shell.NewEmptyValueArg())
+		args.AddFlag(name, shell.NewEmptyValueArg())
 		return true
 	}
 	return false
@@ -55,7 +55,7 @@ func addArgsFromStruct(args *shell.Args, section any) {
 					for _, v := range convert {
 						flags = append(flags, shell.NewArg(v, getArgType(field), shell.NewConfidentialArgOption(isConfidential)))
 					}
-					args.AddFlags2(argument, flags)
+					args.AddFlags(argument, flags)
 				} else if len(convert) == 1 {
 					_ = tryAddEmptyArg(args, argument, convert[0])
 				}
@@ -89,7 +89,7 @@ func addArgsFromMap(args *shell.Args, argAliases map[string]string, argsMap map[
 			name = targetName
 		}
 		if convert, ok := stringifyValueOf(value); ok {
-			args.AddFlags(name, convert, shell.ArgConfigEscape)
+			args.AddFlags(name, shell.NewArgsSlice(convert, shell.ArgConfigEscape))
 		} else {
 			_ = tryAddEmptyArg(args, name, value)
 		}

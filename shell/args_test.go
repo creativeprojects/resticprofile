@@ -18,8 +18,8 @@ func TestConversionToArgsFromFlags(t *testing.T) {
 	t.Parallel()
 
 	args := NewArgs()
-	args.AddFlags("aaa", []string{"one", "two"}, ArgConfigEscape)
-	args.AddFlag("bbb", "three", ArgConfigEscape)
+	args.AddFlags("aaa", NewArgsSlice([]string{"one", "two"}, ArgConfigEscape))
+	args.AddFlag("bbb", NewArg("three", ArgConfigEscape))
 	assert.Equal(t, []string{"--aaa=one", "--aaa=two", "--bbb=three"}, args.GetAll())
 }
 
@@ -27,7 +27,7 @@ func TestConversionToArgsNoFlag(t *testing.T) {
 	t.Parallel()
 
 	args := NewArgs()
-	args.AddArgs([]string{"one", "two"}, ArgConfigEscape)
+	args.AddArgs(NewArgsSlice([]string{"one", "two"}, ArgConfigEscape))
 	args.AddArg(NewArg("three", ArgConfigEscape))
 	assert.Equal(t, []string{"one", "two", "three"}, args.GetAll())
 }
@@ -36,7 +36,7 @@ func TestClone(t *testing.T) {
 	t.Parallel()
 
 	args := NewArgs()
-	args.AddFlag("x", "y", ArgConfigEscape)
+	args.AddFlag("x", NewArg("y", ArgConfigEscape))
 	args.AddArg(NewArg("more", ArgConfigEscape))
 
 	clone := args.Clone()
@@ -53,7 +53,7 @@ func TestWalk(t *testing.T) {
 	t.Parallel()
 
 	args := NewArgs()
-	args.AddFlag("x", "y", ArgConfigEscape)
+	args.AddFlag("x", NewArg("y", ArgConfigEscape))
 	args.AddArg(NewArg("more", ArgConfigEscape))
 
 	var walked []string
@@ -74,7 +74,7 @@ func TestRenameAndRemove(t *testing.T) {
 	t.Parallel()
 
 	args := NewArgs()
-	args.AddFlag("x", "y", ArgConfigEscape)
+	args.AddFlag("x", NewArg("y", ArgConfigEscape))
 	args.AddArg(NewArg("more", ArgConfigEscape))
 
 	args.Rename("more", "new-more")
@@ -92,9 +92,9 @@ func TestConversionToArgs(t *testing.T) {
 	t.Parallel()
 
 	args := NewArgs()
-	args.AddFlags("aaa", []string{"simple", "with space", "with\"quote"}, ArgConfigEscape)
-	args.AddFlags("bbb", []string{"simple", "with space", "with\"quote"}, ArgConfigKeepGlobQuote)
-	args.AddArgs([]string{"with space", "with\"quote", "with$variable"}, ArgConfigEscape)
+	args.AddFlags("aaa", NewArgsSlice([]string{"simple", "with space", "with\"quote"}, ArgConfigEscape))
+	args.AddFlags("bbb", NewArgsSlice([]string{"simple", "with space", "with\"quote"}, ArgConfigKeepGlobQuote))
+	args.AddArgs(NewArgsSlice([]string{"with space", "with\"quote", "with$variable"}, ArgConfigEscape))
 	args.AddArg(NewArg("with space\"quote", ArgConfigKeepGlobQuote))
 	args.AddArg(NewArg("with$variable", ArgConfigKeepGlobQuote))
 

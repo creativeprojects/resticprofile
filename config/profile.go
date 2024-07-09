@@ -419,7 +419,7 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		// restic < 0.14: repo2, password-file2, etc. is the destination, repo, password-file, etc. the source
 		for name, value := range repositoryArgs {
 			if len(value) > 0 {
-				flags.AddFlag(fmt.Sprintf("%s2", name), value, shell.ArgConfigEscape)
+				flags.AddFlag(fmt.Sprintf("%s2", name), shell.NewArg(value, shell.ArgConfigEscape))
 			}
 		}
 	} else {
@@ -429,7 +429,7 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		}
 		for name, value := range repositoryArgs {
 			if len(value) > 0 {
-				flags.AddFlag(name, value, shell.ArgConfigEscape)
+				flags.AddFlag(name, shell.NewArg(value, shell.ArgConfigEscape))
 			}
 		}
 	}

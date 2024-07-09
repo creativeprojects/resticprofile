@@ -26,6 +26,8 @@ var (
 )
 
 func TestConfidentialHideAll(t *testing.T) {
+	t.Parallel()
+
 	value := NewConfidentialValue("val")
 
 	assert.Equal(t, value.String(), value.Value())
@@ -37,6 +39,8 @@ func TestConfidentialHideAll(t *testing.T) {
 }
 
 func TestConfidentialHideSubmatch(t *testing.T) {
+	t.Parallel()
+
 	value := NewConfidentialValue("some-vAl-with-sEcRet-parts")
 
 	assert.Equal(t, value.String(), value.Value())
@@ -50,6 +54,8 @@ func TestConfidentialHideSubmatch(t *testing.T) {
 }
 
 func TestUpdateConfidentialValue(t *testing.T) {
+	t.Parallel()
+
 	v := NewConfidentialValue("abc")
 
 	v.setValue("xyz")
@@ -65,6 +71,8 @@ func TestUpdateConfidentialValue(t *testing.T) {
 }
 
 func TestFmtStringDoesntLeakConfidentialValues(t *testing.T) {
+	t.Parallel()
+
 	value := NewConfidentialValue("secret")
 	value.hideValue()
 
@@ -75,6 +83,8 @@ func TestFmtStringDoesntLeakConfidentialValues(t *testing.T) {
 }
 
 func TestStringifyPassesConfidentialValues(t *testing.T) {
+	t.Parallel()
+
 	value := NewConfidentialValue("secret")
 	value.hideValue()
 
@@ -85,6 +95,8 @@ func TestStringifyPassesConfidentialValues(t *testing.T) {
 }
 
 func TestConfidentialURLs(t *testing.T) {
+	t.Parallel()
+
 	// https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html
 	urls := map[string]string{
 		"local:some/path":                                      "-",
@@ -122,6 +134,8 @@ repository = "%s"
 }
 
 func TestConfidentialEnvironment(t *testing.T) {
+	t.Parallel()
+
 	// https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html
 	vars := map[string]string{
 		"MY_VALUE": "-",
@@ -194,6 +208,8 @@ func TestConfidentialEnvironment(t *testing.T) {
 }
 
 func TestShowConfigHidesConfidentialValues(t *testing.T) {
+	t.Parallel()
+
 	testConfig := `
 profile:
   repository: "local:user:pass@host"
@@ -223,6 +239,8 @@ profile:
 }
 
 func TestGetNonConfidentialValues(t *testing.T) {
+	t.Parallel()
+
 	testConfig := `
 profile:
   verbose: false
@@ -263,6 +281,8 @@ profile:
 }
 
 func TestGetNonConfidentialArgs(t *testing.T) {
+	t.Parallel()
+
 	repo := "local:user:%s@host/path with space"
 	testConfig := `
 global:
@@ -285,6 +305,11 @@ profile:
 }
 
 func TestGetNonConfidentialArgsFromEnvironmentVariable(t *testing.T) {
+	t.Parallel()
+
+	if platform.IsWindows() {
+		t.Skip()
+	}
 	repo := "local:user:%s@host/path with space"
 	environment := []string{
 		"MY_REPOSITORY=" + fmt.Sprintf(repo, "password"),
@@ -402,6 +427,8 @@ func TestGetAutoRepositoryFileDisabledWithEnv(t *testing.T) {
 }
 
 func TestConfidentialToJSON(t *testing.T) {
+	t.Parallel()
+
 	t.Run("marshal", func(t *testing.T) {
 		value := NewConfidentialValue("plain")
 		assert.False(t, value.IsConfidential())
@@ -417,6 +444,8 @@ func TestConfidentialToJSON(t *testing.T) {
 	})
 
 	t.Run("unmarshal", func(t *testing.T) {
+		t.Parallel()
+
 		value := NewConfidentialValue("")
 		value.hideValue()
 		assert.True(t, value.IsConfidential())

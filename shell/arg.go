@@ -48,6 +48,14 @@ func NewArg(value string, argType ArgType, options ...ArgOption) Arg {
 	return arg
 }
 
+func NewArgsSlice(args []string, argType ArgType, options ...ArgOption) []Arg {
+	result := make([]Arg, len(args))
+	for i, arg := range args {
+		result[i] = NewArg(arg, argType, options...)
+	}
+	return result
+}
+
 func NewEmptyValueArg() Arg {
 	return NewArg("", ArgConfigKeepGlobQuote, &EmptyArgOption{})
 }

@@ -67,27 +67,12 @@ func (a *Args) Modify(modifier ArgModifier) *Args {
 }
 
 // AddFlag adds a value to a flag
-func (a *Args) AddFlag(key, value string, argType ArgType) {
-	a.args[key] = []Arg{NewArg(value, argType)}
-}
-
-func (a *Args) AddFlag2(key string, arg Arg) {
+func (a *Args) AddFlag(key string, arg Arg) {
 	a.args[key] = []Arg{arg}
 }
 
 // AddFlags adds a slice of values for the same flag
-func (a *Args) AddFlags(key string, values []string, argType ArgType) {
-	args := make([]Arg, len(values))
-	for i, value := range values {
-		args[i] = NewArg(value, argType)
-	}
-	a.args[key] = args
-}
-
-func (a *Args) AddFlags2(key string, args []Arg) {
-	for key, arg := range args {
-		args[key] = arg
-	}
+func (a *Args) AddFlags(key string, args []Arg) {
 	a.args[key] = args
 }
 
@@ -97,10 +82,8 @@ func (a *Args) AddArg(arg Arg) {
 }
 
 // AddArgs adds multiple arguments not associated with a flag
-func (a *Args) AddArgs(args []string, argType ArgType) {
-	for _, arg := range args {
-		a.more = append(a.more, NewArg(arg, argType))
-	}
+func (a *Args) AddArgs(args []Arg) {
+	a.more = append(a.more, args...)
 }
 
 // ToMap converts the arguments to a map.
@@ -139,7 +122,7 @@ func (a *Args) Rename(oldName, newName string) bool {
 	args, ok := a.Remove(oldName)
 	if ok {
 		for _, arg := range args {
-			a.AddFlag(newName, arg.Value(), arg.Type())
+			a.AddFlag(newName, NewArg(arg.Value(), arg.Type()))
 		}
 	}
 	args = a.RemoveArg(oldName)
