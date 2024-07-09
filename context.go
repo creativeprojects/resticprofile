@@ -34,6 +34,7 @@ type Context struct {
 	stopOnBattery int              // stop if running on battery
 	noLock        bool             // skip profile lock file
 	lockWait      time.Duration    // wait up to duration to acquire a lock
+	legacyArgs    bool             // I'm not even sure it's been used by anyone?
 }
 
 func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Config, ownCommands *OwnCommands) (*Context, error) {
@@ -63,6 +64,7 @@ func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Co
 		sigChan:       nil,
 		logTarget:     global.Log, // default to global (which can be empty)
 		commandOutput: global.CommandOutput,
+		legacyArgs:    global.LegacyArguments, // use the broken arguments escaping (before v0.15.0)
 	}
 	// own commands can check the context before running
 	if ownCommands.Exists(command, true) {

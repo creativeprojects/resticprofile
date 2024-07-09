@@ -28,7 +28,7 @@ var allowedEmptyValueArgs = []string{
 func tryAddEmptyArg(args *shell.Args, name string, value any) bool {
 	sv, ok := value.(string)
 	if ok && sv == "" && slices.Contains(allowedEmptyValueArgs, name) {
-		args.AddFlag(name, shell.EmptyArgValue(), shell.NewEmptyValueArg().Type())
+		args.AddFlag2(name, shell.NewEmptyValueArg())
 		return true
 	}
 	return false
@@ -49,13 +49,13 @@ func addArgsFromStruct(args *shell.Args, section any) {
 			if argument != "" {
 				convert, ok := stringifyConfidentialValue(valueOf.Field(i))
 				if ok {
-					argType := shell.ArgConfigEscape
-					// check if the argument type was specified
-					rawType, ok := field.Tag.Lookup("argument-type")
-					if ok && rawType == "no-glob" {
-						argType = shell.ArgConfigKeepGlobQuote
+					// FIXME quick hack for now
+					isConfidential := valueOf.Field(i).Type() == reflect.TypeOf(ConfidentialValue{})
+					flags := make([]shell.Arg, 0, len(convert))
+					for _, v := range convert {
+						flags = append(flags, shell.NewArg(v, getArgType(field), shell.NewConfidentialArgOption(isConfidential)))
 					}
-					args.AddFlags(argument, convert, argType)
+					args.AddFlags2(argument, flags)
 				} else if len(convert) == 1 {
 					_ = tryAddEmptyArg(args, argument, convert[0])
 				}
@@ -94,6 +94,16 @@ func addArgsFromMap(args *shell.Args, argAliases map[string]string, argsMap map[
 			_ = tryAddEmptyArg(args, name, value)
 		}
 	}
+}
+
+func getArgType(field reflect.StructField) shell.ArgType {
+	argType := shell.ArgConfigEscape
+	// check if the argument type was specified
+	rawType, ok := field.Tag.Lookup("argument-type")
+	if ok && rawType == "no-glob" {
+		argType = shell.ArgConfigKeepGlobQuote
+	}
+	return argType
 }
 
 // stringifyValueOf returns a string representation of the value, and if it has any value at all

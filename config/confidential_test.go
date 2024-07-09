@@ -265,16 +265,42 @@ profile:
 func TestGetNonConfidentialArgs(t *testing.T) {
 	repo := "local:user:%s@host/path with space"
 	testConfig := `
+global:
+  prevent-auto-repository-file: true
+profile:
+  repository: "` + fmt.Sprintf(repo, "password") + `"
+`
+	profile, err := getProfile("yaml", testConfig, "profile", "")
+	assert.NoError(t, err)
+	assert.NotNil(t, profile)
+
+	args := profile.GetCommandFlags(constants.CommandBackup)
+	result := GetNonConfidentialArgs(profile, args)
+
+	expectedSecret := shell.NewArg(fmt.Sprintf(repo, "password"), shell.ArgConfigEscape).String()
+	expectedPublic := shell.NewArg(fmt.Sprintf(repo, ConfidentialReplacement), shell.ArgConfigEscape).String()
+
+	assert.Equal(t, []string{"--repo=" + expectedSecret}, args.GetAll())
+	assert.Equal(t, []string{"--repo=" + expectedPublic}, result.GetAll())
+}
+
+func TestGetNonConfidentialArgsFromEnvironmentVariable(t *testing.T) {
+	repo := "local:user:%s@host/path with space"
+	environment := []string{
+		"MY_REPOSITORY=" + fmt.Sprintf(repo, "password"),
+	}
+	testConfig := `
       global:
         prevent-auto-repository-file: true
       profile:
-        repository: "` + fmt.Sprintf(repo, "password") + `"
+        repository: $MY_REPOSITORY
       `
 	profile, err := getProfile("yaml", testConfig, "profile", "")
 	assert.NoError(t, err)
 	assert.NotNil(t, profile)
 
 	args := profile.GetCommandFlags(constants.CommandBackup)
+	args = args.Modify(shell.NewExpandEnvModifier(environment))
 	result := GetNonConfidentialArgs(profile, args)
 
 	expectedSecret := shell.NewArg(fmt.Sprintf(repo, "password"), shell.ArgConfigEscape).String()

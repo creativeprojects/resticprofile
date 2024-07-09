@@ -12,6 +12,8 @@ import (
 )
 
 func TestArgumentEscape(t *testing.T) {
+	t.Parallel()
+
 	if runtime.GOOS == "windows" {
 		t.Skip("Not running on Windows")
 	}
@@ -51,6 +53,8 @@ func TestArgumentEscape(t *testing.T) {
 			displayEscapedString(testItem.expectedEscape),
 			displayEscapedString(testItem.expectedNoGlobQuote))
 		t.Run(testItem.input, func(t *testing.T) {
+			t.Parallel()
+
 			assert.Equal(t, testItem.expectedEscape, NewArg(testItem.input, ArgConfigEscape).String())
 			assert.Equal(t, testItem.expectedNoGlobQuote, NewArg(testItem.input, ArgConfigKeepGlobQuote).String())
 		})
@@ -67,13 +71,17 @@ func displayEscapedString(input string) string {
 }
 
 func TestEmptyArgValue(t *testing.T) {
+	t.Parallel()
+
 	noValue := NewArg("", ArgConfigKeepGlobQuote)
-	emptyValue := NewArg(EmptyArgValue(), ArgConfigKeepGlobQuote)
+	emptyValue := NewEmptyValueArg()
 
 	assert.False(t, noValue.HasValue())
+	assert.False(t, noValue.IsEmptyValue())
 	assert.Equal(t, "", noValue.Value())
 
 	assert.True(t, emptyValue.HasValue())
+	assert.True(t, emptyValue.IsEmptyValue())
 	assert.Equal(t, "", emptyValue.Value())
 	if !platform.IsWindows() {
 		assert.Equal(t, `""`, emptyValue.String())

@@ -378,6 +378,17 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 		args.AddArgs(r.profile.GetCopySnapshotIDs(), shell.ArgConfigEscape)
 	}
 
+	env := r.getEnvironment(true)
+	env = append(env, r.getProfileEnvironment()...)
+
+	modifiers := []shell.ArgModifier{
+		shell.NewLegacyArgModifier(r.ctx.legacyArgs),
+		shell.NewExpandEnvModifier(env),
+	}
+	for _, modifier := range modifiers {
+		args = args.Modify(modifier)
+	}
+
 	// Add retry-lock (supported from restic 0.16, depends on filter being enabled)
 	if lockRetryTime, enabled := r.remainingLockRetryTime(); enabled && filter != nil {
 		// limiting the retry handling in restic, we need to make sure we can retry internally so that unlock is called.
@@ -402,9 +413,6 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Add restic command
 	arguments = append([]string{command}, arguments...)
 	publicArguments = append([]string{command}, publicArguments...)
-
-	env := r.getEnvironment(true)
-	env = append(env, r.getProfileEnvironment()...)
 
 	clog.Debug(func() string {
 		wd := ""

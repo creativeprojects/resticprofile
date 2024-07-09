@@ -68,7 +68,6 @@ type Profile struct {
 	RunShellCommandsSection `mapstructure:",squash"`
 	OtherFlagsSection       `mapstructure:",squash"`
 	config                  *Config
-	legacyArg               bool
 	resticVersion           *semver.Version
 	Name                    string
 	Description             string                            `mapstructure:"description" description:"Describes the profile"`
@@ -604,11 +603,6 @@ func (p *Profile) ResolveConfiguration() {
 	}
 }
 
-// SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
-func (p *Profile) SetLegacyArg(legacy bool) {
-	p.legacyArg = legacy
-}
-
 // SetResticVersion sets the effective restic version for validation and to determine how to format flags.
 // Note that flags filtering happens later inside resticWrapper and is not necessary inside the profile.
 func (p *Profile) SetResticVersion(resticVersion string) (err error) {
@@ -819,7 +813,7 @@ func (p *Profile) GetCommonFlags() (flags *shell.Args) {
 	defer restore()
 
 	// Flags from the profile fields
-	flags = shell.NewArgs().SetLegacyArg(p.legacyArg)
+	flags = shell.NewArgs()
 	addArgsFromStruct(flags, p)
 	addArgsFromOtherFlags(flags, p, p)
 	return flags

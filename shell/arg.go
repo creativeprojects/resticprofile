@@ -1,8 +1,6 @@
 package shell
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strings"
@@ -12,8 +10,7 @@ import (
 
 var (
 	escapeNoGlobCharacters = []byte{'|', '&', ';', '<', '>', '(', ')', '$', '`', '\\', '"', '\'', ' ', '\t', '\r', '\n'}
-	// escapeGlobCharacters   = []byte{'*', '?', '['}
-	doubleQuotePattern = regexp.MustCompile(`[^\\][|&;<>()$'" \t\r\n*?[]`)
+	doubleQuotePattern     = regexp.MustCompile(`[^\\][|&;<>()$'" \t\r\n*?[]`)
 )
 
 type ArgType int
@@ -31,61 +28,80 @@ const (
 	ArgLegacyConfigBackupSource
 )
 
-var emptyArgValueMarker = func() string {
-	token := make([]byte, 16)
-	n, err := rand.Read(token)
-	if err == nil && n != 16 {
-		err = fmt.Errorf("insufficient random bytes %d", n)
-	}
-	if err != nil {
-		panic(err)
-	}
-	return hex.EncodeToString(token)
-}()
+type Arg struct {
+	value              string
+	argType            ArgType
+	empty              bool
+	confidentialFilter func(string) string
+}
 
-func EmptyArgValue() string {
-	return emptyArgValueMarker
+func NewArg(value string, argType ArgType, options ...ArgOption) Arg {
+	arg := Arg{
+		value:              value,
+		argType:            argType,
+		empty:              false,
+		confidentialFilter: nil,
+	}
+	for _, option := range options {
+		option.setup(&arg)
+	}
+	return arg
 }
 
 func NewEmptyValueArg() Arg {
-	return NewArg(EmptyArgValue(), ArgConfigKeepGlobQuote)
+	return NewArg("", ArgConfigKeepGlobQuote, &EmptyArgOption{})
 }
 
-type Arg struct {
-	raw     string
-	argType ArgType
-}
-
-func NewArg(raw string, argType ArgType) Arg {
+func (a Arg) Clone() Arg {
 	return Arg{
-		raw:     raw,
-		argType: argType,
+		value:              a.value,
+		argType:            a.argType,
+		empty:              a.empty,
+		confidentialFilter: a.confidentialFilter,
 	}
 }
 
+// IsEmpty means the flag is specifically empty, not just a flag without a value
+// (e.g. --flag="")
+func (a Arg) IsEmptyValue() bool {
+	return a.empty
+}
+
+// HasValue returns true if the argument has a value (e.g. --flag=value).
+// The value could be empty (e.g. --flag="").
+// If false, the argument is a simple flag (e.g. --verbose).
 func (a Arg) HasValue() bool {
-	return a.raw != ""
+	return a.empty || a.value != ""
+}
+
+// IsConfidential returns true if the argument may contain credentials.
+func (a Arg) HasConfidentialFilter() bool {
+	return a.confidentialFilter != nil
 }
 
 func (a Arg) Value() string {
-	if a.raw == EmptyArgValue() {
-		return ""
-	}
-	return a.raw
+	return a.value
 }
 
 func (a Arg) Type() ArgType {
 	return a.argType
 }
 
-func (a Arg) String() string {
-	value := a.Value()
+func (a Arg) GetConfidentialValue() string {
+	if a.HasConfidentialFilter() {
+		return a.confidentialFilter(a.value)
+	}
+	return a.value
+}
 
+// String returns an escaped value to send to the command line
+func (a Arg) String() string {
 	if !a.HasValue() {
 		return ""
 	}
 
-	if a.Value() == "" {
+	value := a.Value()
+	if value == "" {
 		return `""`
 	}
 

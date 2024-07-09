@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/monitor"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,6 +17,8 @@ const (
 )
 
 func TestScanJsonSummary(t *testing.T) {
+	t.Parallel()
+
 	// example of restic output (beginning and end of the output)
 	resticOutput := `{"message_type":"status","percent_done":0,"total_files":1,"total_bytes":10244}
 {"message_type":"status","percent_done":0.028711419769115988,"total_files":213,"files_done":13,"total_bytes":362948126,"bytes_done":10420756,"current_files":["/go/src/github.com/creativeprojects/resticprofile/build/restic","/go/src/github.com/creativeprojects/resticprofile/build/resticprofile"]}
@@ -26,7 +29,7 @@ func TestScanJsonSummary(t *testing.T) {
 
 	if runtime.GOOS == "windows" {
 		// change the source
-		resticOutput = strings.ReplaceAll(resticOutput, "\n", eol)
+		resticOutput = strings.ReplaceAll(resticOutput, "\n", platform.LineSeparator)
 	}
 
 	reader, writer, err := os.Pipe()
@@ -41,7 +44,7 @@ func TestScanJsonSummary(t *testing.T) {
 				// https://github.com/restic/restic/issues/3111
 				writer.WriteString("\r\x1b[2K")
 			}
-			writer.WriteString(line + eol)
+			writer.WriteString(line + platform.LineSeparator)
 		}
 		writer.Close()
 	}()
@@ -53,7 +56,7 @@ func TestScanJsonSummary(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check what we read back is right (should be empty)
-	assert.Equal(t, eol, output.String())
+	assert.Equal(t, platform.LineSeparator, output.String())
 
 	// Check the values found are right
 	assert.Equal(t, 213, summary.FilesNew)
@@ -68,13 +71,15 @@ func TestScanJsonSummary(t *testing.T) {
 }
 
 func TestScanJsonError(t *testing.T) {
+	t.Parallel()
+
 	resticOutput := `Fatal: unable to open config file: Stat: stat /Volumes/RAMDisk/self/config: no such file or directory
 Is there a repository at the following location?
 /Volumes/RAMDisk/self
 `
 	if runtime.GOOS == "windows" {
 		// change the source
-		resticOutput = strings.ReplaceAll(resticOutput, "\n", eol)
+		resticOutput = strings.ReplaceAll(resticOutput, "\n", platform.LineSeparator)
 	}
 
 	reader, writer, err := os.Pipe()
@@ -85,7 +90,7 @@ Is there a repository at the following location?
 		lines := strings.Split(resticOutput, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
-			writer.WriteString(line + eol)
+			writer.WriteString(line + platform.LineSeparator)
 		}
 		writer.Close()
 	}()
@@ -97,7 +102,7 @@ Is there a repository at the following location?
 	require.NoError(t, err)
 
 	// Check what we read back is right
-	assert.Equal(t, resticOutput+eol, output.String())
+	assert.Equal(t, resticOutput+platform.LineSeparator, output.String())
 
 	// Check the values found are right
 	assert.Equal(t, 0, summary.FilesNew)
