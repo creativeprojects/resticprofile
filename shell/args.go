@@ -7,11 +7,13 @@ import (
 	"github.com/creativeprojects/resticprofile/util/collect"
 )
 
+// Args is a collection of arguments that can be used to build a command line.
 type Args struct {
 	args map[string][]Arg
 	more []Arg
 }
 
+// NewArgs creates a new Args instance
 func NewArgs() *Args {
 	return &Args{
 		args: make(map[string][]Arg, 10),
