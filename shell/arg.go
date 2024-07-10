@@ -28,11 +28,13 @@ const (
 	ArgLegacyConfigBackupSource
 )
 
+type filterFunc func(string) string
+
 type Arg struct {
 	value              string
 	argType            ArgType
 	empty              bool
-	confidentialFilter func(string) string
+	confidentialFilter filterFunc
 }
 
 func NewArg(value string, argType ArgType, options ...ArgOption) Arg {

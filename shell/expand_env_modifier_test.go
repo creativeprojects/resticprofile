@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExpandEnv(t *testing.T) {
+func TestExpandEnvModifier(t *testing.T) {
 	t.Parallel()
 
 	if platform.IsWindows() {

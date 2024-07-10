@@ -128,3 +128,31 @@ func TestConversionToArgs(t *testing.T) {
 	}
 	assert.Equal(t, expected, args.GetAll())
 }
+
+type testModifier struct{}
+
+func (m testModifier) Arg(name string, arg *Arg) (*Arg, bool) {
+	newArg := arg.Clone()
+	newArg.value = "modified-" + arg.Value()
+	return &newArg, true
+}
+
+func TestArgsModify(t *testing.T) {
+	t.Parallel()
+
+	args := &Args{
+		args: map[string][]Arg{
+			"aaa": {NewArg("value", ArgConfigEscape)},
+			"bbb": {NewArg("value", ArgConfigKeepGlobQuote)},
+		},
+		more: []Arg{
+			NewArg("value", ArgConfigEscape),
+			NewArg("value", ArgConfigKeepGlobQuote),
+		},
+	}
+
+	newArgs := args.Modify(testModifier{})
+
+	expected := []string{"--aaa=modified-value", "--bbb=modified-value", "modified-value", "modified-value"}
+	assert.Equal(t, expected, newArgs.GetAll())
+}

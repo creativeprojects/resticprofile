@@ -9,7 +9,7 @@ func NewConfidentialArgModifier() *ConfidentialArgModifier {
 	return &ConfidentialArgModifier{}
 }
 
-// Arg returns either the same of a new argument if the type has changed.
+// Arg returns either the same of a new argument if the value has changed.
 // A boolean value indicates if Arg has changed.
 func (m ConfidentialArgModifier) Arg(name string, arg *Arg) (*Arg, bool) {
 	if arg.HasConfidentialFilter() {
