@@ -2,7 +2,6 @@ package shell
 
 import (
 	"os"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -10,10 +9,6 @@ import (
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-)
-
-const (
-	summary = `{"message_type":"summary","files_new":10,"files_changed":11,"files_unmodified":211,"dirs_new":0,"dirs_changed":12,"dirs_unmodified":58,"data_blobs":6,"tree_blobs":7,"data_added":8,"total_files_processed":232,"total_bytes_processed":362946952,"total_duration":0.220900201,"snapshot_id":"196f3b36"}`
 )
 
 func TestScanJsonSummary(t *testing.T) {
@@ -27,7 +22,7 @@ func TestScanJsonSummary(t *testing.T) {
 {"message_type":"summary","files_new":213,"files_changed":11,"files_unmodified":12,"dirs_new":58,"dirs_changed":2,"dirs_unmodified":3,"data_blobs":402,"tree_blobs":59,"data_added":296530781,"total_files_processed":236,"total_bytes_processed":362948126,"total_duration":1.009156009,"snapshot_id":"6daa8ef6"}
 `
 
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		// change the source
 		resticOutput = strings.ReplaceAll(resticOutput, "\n", platform.LineSeparator)
 	}
@@ -36,18 +31,20 @@ func TestScanJsonSummary(t *testing.T) {
 	require.NoError(t, err)
 
 	// Start writing into the pipe, line by line
-	go func() {
+	go func(t *testing.T) {
 		lines := strings.Split(resticOutput, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
-			if runtime.GOOS == "windows" {
+			if platform.IsWindows() {
 				// https://github.com/restic/restic/issues/3111
-				writer.WriteString("\r\x1b[2K")
+				_, err := writer.WriteString("\r\x1b[2K")
+				assert.NoError(t, err)
 			}
-			writer.WriteString(line + platform.LineSeparator)
+			_, err := writer.WriteString(line + platform.LineSeparator)
+			assert.NoError(t, err)
 		}
-		writer.Close()
-	}()
+		_ = writer.Close()
+	}(t)
 
 	// Read the stream and send back to output buffer
 	summary := &monitor.Summary{}
@@ -77,7 +74,7 @@ func TestScanJsonError(t *testing.T) {
 Is there a repository at the following location?
 /Volumes/RAMDisk/self
 `
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		// change the source
 		resticOutput = strings.ReplaceAll(resticOutput, "\n", platform.LineSeparator)
 	}
@@ -86,14 +83,15 @@ Is there a repository at the following location?
 	require.NoError(t, err)
 
 	// Start writing into the pipe, line by line
-	go func() {
+	go func(t *testing.T) {
 		lines := strings.Split(resticOutput, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
-			writer.WriteString(line + platform.LineSeparator)
+			_, err := writer.WriteString(line + platform.LineSeparator)
+			assert.NoError(t, err)
 		}
-		writer.Close()
-	}()
+		_ = writer.Close()
+	}(t)
 
 	// Read the stream and send back to output buffer
 	summary := &monitor.Summary{}
