@@ -1,5 +1,6 @@
 package shell
 
+// LegacyArgModifier changes the type of arguments to a legacy type.
 type LegacyArgModifier struct {
 	legacy bool
 }

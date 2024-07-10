@@ -1,5 +1,6 @@
 package shell
 
+// ConfidentialArgModifier masks confidential information in arguments.
 type ConfidentialArgModifier struct {
 }
 

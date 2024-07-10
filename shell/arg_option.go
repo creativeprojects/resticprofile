@@ -17,12 +17,14 @@ type ConfidentialArgOption struct {
 	ConfidentialFilter filterFunc
 }
 
+var confidentialFilterFunc filterFunc = func(value string) string {
+	return mask.Submatches(mask.RepositoryConfidentialPart, value)
+}
+
 func NewConfidentialArgOption(confidential bool) *ConfidentialArgOption {
 	var confidentialFilter filterFunc
 	if confidential {
-		confidentialFilter = func(value string) string {
-			return mask.Submatches(mask.RepositoryConfidentialPart, value)
-		}
+		confidentialFilter = confidentialFilterFunc
 	}
 	return &ConfidentialArgOption{
 		ConfidentialFilter: confidentialFilter,
