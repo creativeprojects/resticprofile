@@ -189,7 +189,12 @@ func (d *deferredFileWriter) Flush() error {
 	return <-req
 }
 
-func (d *deferredFileWriter) Write(data []byte) (n int, _ error) {
+func (d *deferredFileWriter) Write(data []byte) (n int, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
 	c := make([]byte, len(data))
 	n = copy(c, data)
 	d.data <- c
@@ -301,4 +306,8 @@ func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) 
 	}()
 
 	return d, lastError
+}
+
+func catch(f func() error) error {
+	return f()
 }

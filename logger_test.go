@@ -129,21 +129,14 @@ func TestParseCommandOutput(t *testing.T) {
 	}
 }
 
-// FIXME: writing into a closed handler shouldn't panic
-//
-// func TestCloseFileHandler(t *testing.T) {
-// 	logFile := filepath.Join(t.TempDir(), "file.log")
-// 	handler, writer, err := getFileHandler(logFile)
-// 	require.NoError(t, err)
-// 	assert.NotNil(t, handler)
-// 	assert.NotNil(t, writer)
-// 	defer handler.Close()
+func TestCloseFileHandler(t *testing.T) {
+	logFile := filepath.Join(t.TempDir(), "file.log")
+	handler, writer, err := getFileHandler(logFile)
+	require.NoError(t, err)
+	assert.NotNil(t, handler)
+	assert.NotNil(t, writer)
 
-// 	log := func(line string) {
-// 		assert.NoError(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: line}))
-// 	}
-
-// 	log("log-line-1")
-// 	handler.Close()
-// 	log("log-line-2")
-// }
+	assert.NoError(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: "log-line-1"}))
+	handler.Close()
+	assert.Error(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: "log-line-2"}))
+}
