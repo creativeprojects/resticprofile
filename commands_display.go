@@ -19,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
+	"github.com/spf13/afero"
 )
 
 var (
@@ -165,7 +166,7 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 		}
 	}
 
-	if restic, err := filesearch.FindResticBinary(resticBinary); err == nil {
+	if restic, err := filesearch.FindResticBinary(afero.NewOsFs(), resticBinary); err == nil {
 		buf := bytes.Buffer{}
 		cmd := shell.NewCommand(restic, []string{"help", command})
 		cmd.Stdout = &buf
