@@ -128,6 +128,7 @@ self:
     retention:
         after-backup: true
         keep-last: 30
+        group-by: host
     forget:
         schedule: "weekly"
         schedule-priority: standard
