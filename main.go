@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
 	"text/tabwriter"
 
@@ -308,7 +309,7 @@ func setPriority(nice int, class string) error {
 	var err error
 
 	if class != "" {
-		if classID, ok := constants.PriorityValues[class]; ok {
+		if classID, ok := constants.PriorityValues[strings.ToLower(class)]; ok {
 			err = priority.SetClass(classID)
 			if err != nil {
 				return err
