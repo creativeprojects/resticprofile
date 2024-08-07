@@ -232,6 +232,9 @@ generate-restic:
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.14.0 --version=0.14.0 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.15.0 --version=0.15.0 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.16.0 --version=0.16.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.16.1 --version=0.16.1 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.16.4 --version=0.16.4 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.17.0 --version=0.17.0 --commands $(RESTIC_CMD)
 
 	cp $(RESTIC_CMD) restic/commands.json
 
