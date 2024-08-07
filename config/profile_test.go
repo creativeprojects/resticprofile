@@ -1572,6 +1572,6 @@ func TestGetCopyStructFields(t *testing.T) {
 		p := &(*profile)
 		assert.Nil(t, p.GetCopyInitializeFlags())
 		p.Copy = copy
-		assert.Equal(t, copy.getInitFlags(p), p.GetCopyInitializeFlags())
+		assert.Equal(t, copy.getInitFlags(p).GetAll(), p.GetCopyInitializeFlags().GetAll())
 	})
 }

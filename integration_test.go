@@ -155,22 +155,21 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					continue
 				}
 
-				// legacy test
+				// legacy args test
 				t.Run(fixture.profileName+"/"+fixture.commandName+"/legacy", func(t *testing.T) {
 					profile, err := cfg.GetProfile(fixture.profileName)
 					require.NoError(t, err)
 					require.NotNil(t, profile)
-
-					profile.SetLegacyArg(true)
 
 					ctx := &Context{
 						request: Request{
 							profile:   fixture.profileName,
 							arguments: fixture.cmdlineArgs,
 						},
-						binary:  echoBinary,
-						profile: profile,
-						command: fixture.commandName,
+						binary:     echoBinary,
+						profile:    profile,
+						command:    fixture.commandName,
+						legacyArgs: true,
 					}
 					wrapper := newResticWrapper(ctx)
 					buffer := &bytes.Buffer{}

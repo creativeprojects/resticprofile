@@ -7,12 +7,13 @@ import (
 	"github.com/creativeprojects/resticprofile/util/collect"
 )
 
+// Args is a collection of arguments that can be used to build a command line.
 type Args struct {
-	args   map[string][]Arg
-	more   []Arg
-	legacy bool
+	args map[string][]Arg
+	more []Arg
 }
 
+// NewArgs creates a new Args instance
 func NewArgs() *Args {
 	return &Args{
 		args: make(map[string][]Arg, 10),
@@ -29,7 +30,6 @@ func (a *Args) Clone() *Args {
 		clone.args[name] = args
 	}
 	clone.more = append(clone.more, a.more...)
-	clone.legacy = a.legacy
 	return clone
 }
 
@@ -47,43 +47,45 @@ func (a *Args) Walk(callback func(name string, arg *Arg) *Arg) {
 	processArgs("", a.more)
 }
 
-// SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
-func (a *Args) SetLegacyArg(legacy bool) *Args {
-	a.legacy = legacy
-	return a
-}
-
-func (a *Args) addLegacy(argType ArgType) ArgType {
-	if a.legacy && argType <= ArgConfigBackupSource {
-		argType += ArgTypeCount
+// Modify returns a new Args with all arguments modified by the provided modifier
+func (a *Args) Modify(modifier ArgModifier) *Args {
+	processArgs := func(name string, args []Arg) []Arg {
+		newArgs := make([]Arg, len(args))
+		for i, arg := range args {
+			newArg, _ := modifier.Arg(name, &arg)
+			newArgs[i] = *newArg
+		}
+		return newArgs
 	}
-	return argType
+	newArgs := &Args{
+		args: make(map[string][]Arg, len(a.args)),
+		more: make([]Arg, 0, len(a.more)),
+	}
+	for name, args := range a.args {
+		newArgs.args[name] = processArgs(name, args)
+	}
+	newArgs.more = processArgs("", a.more)
+	return newArgs
 }
 
 // AddFlag adds a value to a flag
-func (a *Args) AddFlag(key, value string, argType ArgType) {
-	a.args[key] = []Arg{NewArg(value, a.addLegacy(argType))}
+func (a *Args) AddFlag(key string, arg Arg) {
+	a.args[key] = []Arg{arg}
 }
 
 // AddFlags adds a slice of values for the same flag
-func (a *Args) AddFlags(key string, values []string, argType ArgType) {
-	args := make([]Arg, len(values))
-	for i, value := range values {
-		args[i] = NewArg(value, a.addLegacy(argType))
-	}
+func (a *Args) AddFlags(key string, args []Arg) {
 	a.args[key] = args
 }
 
 // AddArg adds a single argument with no flag
-func (a *Args) AddArg(arg string, argType ArgType) {
-	a.more = append(a.more, NewArg(arg, a.addLegacy(argType)))
+func (a *Args) AddArg(arg Arg) {
+	a.more = append(a.more, arg)
 }
 
 // AddArgs adds multiple arguments not associated with a flag
-func (a *Args) AddArgs(args []string, argType ArgType) {
-	for _, arg := range args {
-		a.more = append(a.more, NewArg(arg, a.addLegacy(argType)))
-	}
+func (a *Args) AddArgs(args []Arg) {
+	a.more = append(a.more, args...)
 }
 
 // ToMap converts the arguments to a map.
@@ -122,13 +124,13 @@ func (a *Args) Rename(oldName, newName string) bool {
 	args, ok := a.Remove(oldName)
 	if ok {
 		for _, arg := range args {
-			a.AddFlag(newName, arg.Value(), arg.Type())
+			a.AddFlag(newName, NewArg(arg.Value(), arg.Type()))
 		}
 	}
 	args = a.RemoveArg(oldName)
 	ok = ok || len(args) > 0
 	for _, arg := range args {
-		a.AddArg(newName, arg.Type())
+		a.AddArg(NewArg(newName, arg.Type()))
 	}
 	return ok
 }

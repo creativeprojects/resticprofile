@@ -7,11 +7,14 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/monitor"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPipeScanBackup(t *testing.T) {
+	t.Parallel()
+
 	source := `repository 2e92db7f opened successfully, password is correct
 created new cache in /Users/home/Library/Caches/restic
 
@@ -25,7 +28,7 @@ snapshot 07ab30a5 saved
 
 	if runtime.GOOS == "windows" {
 		// change the source
-		source = strings.ReplaceAll(source, "\n", eol)
+		source = strings.ReplaceAll(source, "\n", platform.LineSeparator)
 	}
 
 	reader, writer, err := os.Pipe()
@@ -36,7 +39,7 @@ snapshot 07ab30a5 saved
 		lines := strings.Split(source, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
-			writer.WriteString(line + eol)
+			writer.WriteString(line + platform.LineSeparator)
 		}
 		writer.Close()
 	}()
@@ -48,7 +51,7 @@ snapshot 07ab30a5 saved
 	require.NoError(t, err)
 
 	// Check what we read back is right
-	assert.Equal(t, source+eol, output.String())
+	assert.Equal(t, source+platform.LineSeparator, output.String())
 
 	// Check the values found are right
 	assert.Equal(t, 209, summary.FilesNew)

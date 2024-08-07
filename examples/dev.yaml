@@ -118,11 +118,13 @@ self:
         schedule-ignore-on-battery: true
         schedule-after-network-online: true
 
+    run-before:
+        - "echo DOW=`date +\"%u\"` >> {{ env }}"
     run-after-fail:
         - "echo restic returned an error, command line = ${ERROR_COMMANDLINE}"
         - "echo restic stderr = ${RESTIC_STDERR}"
     check:
-        read-data: true
+        read-data-subset: "$DOW/7"
         schedule:
             - "*:15"
     retention:
@@ -140,6 +142,7 @@ self:
     snapshots:
         host: true
         run-before:
+          - "env"
           - "echo STEP=Before >> {{ env }}"
           - "echo \"$STEP ($Step)\""
         run-after:

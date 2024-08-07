@@ -8,34 +8,40 @@ import (
 )
 
 func TestEmptyConversionToArgs(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs().GetAll()
 	assert.Equal(t, []string{}, args)
 }
 
 func TestConversionToArgsFromFlags(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs()
-	args.AddFlags("aaa", []string{"one", "two"}, ArgConfigEscape)
-	args.AddFlag("bbb", "three", ArgConfigEscape)
+	args.AddFlags("aaa", NewArgsSlice([]string{"one", "two"}, ArgConfigEscape))
+	args.AddFlag("bbb", NewArg("three", ArgConfigEscape))
 	assert.Equal(t, []string{"--aaa=one", "--aaa=two", "--bbb=three"}, args.GetAll())
 }
 
 func TestConversionToArgsNoFlag(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs()
-	args.AddArgs([]string{"one", "two"}, ArgConfigEscape)
-	args.AddArg("three", ArgConfigEscape)
+	args.AddArgs(NewArgsSlice([]string{"one", "two"}, ArgConfigEscape))
+	args.AddArg(NewArg("three", ArgConfigEscape))
 	assert.Equal(t, []string{"one", "two", "three"}, args.GetAll())
 }
 
 func TestClone(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs()
-	args.AddFlag("x", "y", ArgConfigEscape)
-	args.AddArg("more", ArgConfigEscape)
-	args.SetLegacyArg(true)
+	args.AddFlag("x", NewArg("y", ArgConfigEscape))
+	args.AddArg(NewArg("more", ArgConfigEscape))
 
 	clone := args.Clone()
 	assert.Equal(t, args.GetAll(), clone.GetAll())
 	assert.Equal(t, args.ToMap(), clone.ToMap())
-	assert.Equal(t, args.legacy, clone.legacy)
 
 	assert.NotSame(t, args, clone)
 	assert.NotSame(t, args.args, clone.args)
@@ -44,9 +50,11 @@ func TestClone(t *testing.T) {
 }
 
 func TestWalk(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs()
-	args.AddFlag("x", "y", ArgConfigEscape)
-	args.AddArg("more", ArgConfigEscape)
+	args.AddFlag("x", NewArg("y", ArgConfigEscape))
+	args.AddArg(NewArg("more", ArgConfigEscape))
 
 	var walked []string
 	args.Walk(func(name string, arg *Arg) *Arg {
@@ -63,9 +71,11 @@ func TestWalk(t *testing.T) {
 }
 
 func TestRenameAndRemove(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs()
-	args.AddFlag("x", "y", ArgConfigEscape)
-	args.AddArg("more", ArgConfigEscape)
+	args.AddFlag("x", NewArg("y", ArgConfigEscape))
+	args.AddArg(NewArg("more", ArgConfigEscape))
 
 	args.Rename("more", "new-more")
 	args.Rename("x", "new-x")
@@ -79,12 +89,14 @@ func TestRenameAndRemove(t *testing.T) {
 }
 
 func TestConversionToArgs(t *testing.T) {
+	t.Parallel()
+
 	args := NewArgs()
-	args.AddFlags("aaa", []string{"simple", "with space", "with\"quote"}, ArgConfigEscape)
-	args.AddFlags("bbb", []string{"simple", "with space", "with\"quote"}, ArgConfigKeepGlobQuote)
-	args.AddArgs([]string{"with space", "with\"quote", "with$variable"}, ArgConfigEscape)
-	args.AddArg("with space\"quote", ArgConfigKeepGlobQuote)
-	args.AddArg("with$variable", ArgConfigKeepGlobQuote)
+	args.AddFlags("aaa", NewArgsSlice([]string{"simple", "with space", "with\"quote"}, ArgConfigEscape))
+	args.AddFlags("bbb", NewArgsSlice([]string{"simple", "with space", "with\"quote"}, ArgConfigKeepGlobQuote))
+	args.AddArgs(NewArgsSlice([]string{"with space", "with\"quote", "with$variable"}, ArgConfigEscape))
+	args.AddArg(NewArg("with space\"quote", ArgConfigKeepGlobQuote))
+	args.AddArg(NewArg("with$variable", ArgConfigKeepGlobQuote))
 
 	expected := []string{
 		"--aaa=simple",
@@ -115,4 +127,32 @@ func TestConversionToArgs(t *testing.T) {
 		}
 	}
 	assert.Equal(t, expected, args.GetAll())
+}
+
+type testModifier struct{}
+
+func (m testModifier) Arg(name string, arg *Arg) (*Arg, bool) {
+	newArg := arg.Clone()
+	newArg.value = "modified-" + arg.Value()
+	return &newArg, true
+}
+
+func TestArgsModify(t *testing.T) {
+	t.Parallel()
+
+	args := &Args{
+		args: map[string][]Arg{
+			"aaa": {NewArg("value", ArgConfigEscape)},
+			"bbb": {NewArg("value", ArgConfigKeepGlobQuote)},
+		},
+		more: []Arg{
+			NewArg("value", ArgConfigEscape),
+			NewArg("value", ArgConfigKeepGlobQuote),
+		},
+	}
+
+	newArgs := args.Modify(testModifier{})
+
+	expected := []string{"--aaa=modified-value", "--bbb=modified-value", "modified-value", "modified-value"}
+	assert.Equal(t, expected, newArgs.GetAll())
 }

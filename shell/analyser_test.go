@@ -18,6 +18,8 @@ the 'unlock' command can be used to remove stale locks
 `
 
 func TestRemoteLockFailure(t *testing.T) {
+	t.Parallel()
+
 	analysis := NewOutputAnalyser()
 	require.NoError(t, analysis.AnalyseStringLines(ResticLockFailureOutput))
 
@@ -43,6 +45,8 @@ func TestRemoteLockFailure(t *testing.T) {
 }
 
 func TestCustomErrorCallback(t *testing.T) {
+	t.Parallel()
+
 	var analyser *OutputAnalyser
 	invoked := 0
 	var cbError error

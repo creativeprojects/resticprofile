@@ -363,19 +363,30 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 		clog.Tracef("unfiltered extra flags: %s", strings.Join(config.GetNonConfidentialValues(r.profile, moreArgs), " "))
 		moreArgs = filter(moreArgs, allowExtraValues)
 	}
-	args.AddArgs(moreArgs, shell.ArgCommandLineEscape)
+	args.AddArgs(shell.NewArgsSlice(moreArgs, shell.ArgCommandLineEscape))
 
 	// Special case for backup command
 	var dir string
 	if command == constants.CommandBackup {
-		args.AddArgs(r.profile.GetBackupSource(), shell.ArgConfigBackupSource)
+		args.AddArgs(shell.NewArgsSlice(r.profile.GetBackupSource(), shell.ArgConfigBackupSource))
 		if r.profile.Backup != nil && r.profile.Backup.SourceRelative {
 			dir = r.profile.Backup.SourceBase
 		}
 	}
 	// Special case for copy command
 	if command == constants.CommandCopy {
-		args.AddArgs(r.profile.GetCopySnapshotIDs(), shell.ArgConfigEscape)
+		args.AddArgs(shell.NewArgsSlice(r.profile.GetCopySnapshotIDs(), shell.ArgConfigEscape))
+	}
+
+	env := r.getEnvironment(true)
+	env = append(env, r.getProfileEnvironment()...)
+
+	modifiers := []shell.ArgModifier{
+		shell.NewLegacyArgModifier(r.ctx.legacyArgs),
+		shell.NewExpandEnvModifier(env),
+	}
+	for _, modifier := range modifiers {
+		args = args.Modify(modifier)
 	}
 
 	// Add retry-lock (supported from restic 0.16, depends on filter being enabled)
@@ -388,7 +399,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 		lockRetryTime = lockRetryTime.Truncate(time.Minute)
 
 		if lockRetryTime > 0 && !r.containsArguments(args.GetAll(), fmt.Sprintf("--%s", constants.ParameterRetryLock)) {
-			args.AddFlag(constants.ParameterRetryLock, fmt.Sprintf("%.0fm", lockRetryTime.Minutes()), shell.ArgConfigEscape)
+			args.AddFlag(constants.ParameterRetryLock, shell.NewArg(fmt.Sprintf("%.0fm", lockRetryTime.Minutes()), shell.ArgConfigEscape))
 		}
 	}
 
@@ -402,9 +413,6 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Add restic command
 	arguments = append([]string{command}, arguments...)
 	publicArguments = append([]string{command}, publicArguments...)
-
-	env := r.getEnvironment(true)
-	env = append(env, r.getProfileEnvironment()...)
 
 	clog.Debug(func() string {
 		wd := ""

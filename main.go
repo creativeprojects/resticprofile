@@ -495,11 +495,6 @@ func runProfile(ctx *Context) error {
 		changeLevelFilter(clog.LevelDebug)
 	}
 
-	// use the broken arguments escaping (before v0.15.0)
-	if ctx.global.LegacyArguments {
-		profile.SetLegacyArg(true)
-	}
-
 	// tell the profile what version of restic is in use
 	if e := profile.SetResticVersion(ctx.global.ResticVersion); e != nil {
 		clog.Warningf("restic version %q is no valid semver: %s", ctx.global.ResticVersion, e.Error())

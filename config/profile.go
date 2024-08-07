@@ -68,7 +68,6 @@ type Profile struct {
 	RunShellCommandsSection `mapstructure:",squash"`
 	OtherFlagsSection       `mapstructure:",squash"`
 	config                  *Config
-	legacyArg               bool
 	resticVersion           *semver.Version
 	Name                    string
 	Description             string                            `mapstructure:"description" description:"Describes the profile"`
@@ -420,7 +419,7 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		// restic < 0.14: repo2, password-file2, etc. is the destination, repo, password-file, etc. the source
 		for name, value := range repositoryArgs {
 			if len(value) > 0 {
-				flags.AddFlag(fmt.Sprintf("%s2", name), value, shell.ArgConfigEscape)
+				flags.AddFlag(fmt.Sprintf("%s2", name), shell.NewArg(value, shell.ArgConfigEscape))
 			}
 		}
 	} else {
@@ -430,7 +429,7 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		}
 		for name, value := range repositoryArgs {
 			if len(value) > 0 {
-				flags.AddFlag(name, value, shell.ArgConfigEscape)
+				flags.AddFlag(name, shell.NewArg(value, shell.ArgConfigEscape))
 			}
 		}
 	}
@@ -602,11 +601,6 @@ func (p *Profile) ResolveConfiguration() {
 		// Resolve path parameter (no copy since backup is not defined)
 		p.SetPath("")
 	}
-}
-
-// SetLegacyArg is used to activate the legacy (broken) mode of sending arguments on the restic command line
-func (p *Profile) SetLegacyArg(legacy bool) {
-	p.legacyArg = legacy
 }
 
 // SetResticVersion sets the effective restic version for validation and to determine how to format flags.
@@ -819,7 +813,7 @@ func (p *Profile) GetCommonFlags() (flags *shell.Args) {
 	defer restore()
 
 	// Flags from the profile fields
-	flags = shell.NewArgs().SetLegacyArg(p.legacyArg)
+	flags = shell.NewArgs()
 	addArgsFromStruct(flags, p)
 	addArgsFromOtherFlags(flags, p, p)
 	return flags

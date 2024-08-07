@@ -15,6 +15,10 @@ type ConfidentialValue struct {
 	public, confidential string
 }
 
+func (c ConfidentialValue) HasValue() bool {
+	return c.confidential != ""
+}
+
 // Value returns the unmasked original value
 func (c ConfidentialValue) Value() string {
 	return c.confidential
@@ -206,19 +210,8 @@ func GetNonConfidentialArgs(profile *Profile, args *shell.Args) *shell.Args {
 		return nil
 	}
 
-	target := args.Clone()
-	confidentials := getAllConfidentialValues(profile)
+	modifier := shell.NewConfidentialArgModifier()
+	newArgs := args.Modify(modifier)
 
-	target.Walk(func(name string, arg *shell.Arg) *shell.Arg {
-		if arg.HasValue() {
-			value := convertToNonConfidential(confidentials, arg.Value())
-			if value != arg.Value() {
-				a := shell.NewArg(value, arg.Type())
-				return &a
-			}
-		}
-		return arg
-	})
-
-	return target
+	return newArgs
 }

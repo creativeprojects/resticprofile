@@ -33,6 +33,8 @@ import (
 )
 
 func TestValidResticArgumentsList(t *testing.T) {
+	t.Parallel()
+
 	wrapper := &resticWrapper{}
 
 	for _, command := range restic.CommandNames() {
@@ -69,6 +71,8 @@ func TestValidResticArgumentsList(t *testing.T) {
 }
 
 func TestVersionedResticArgumentsList(t *testing.T) {
+	t.Parallel()
+
 	wrapper := &resticWrapper{global: new(config.Global)}
 
 	wrapper.global.ResticVersion = "0.14"
@@ -83,6 +87,8 @@ func TestVersionedResticArgumentsList(t *testing.T) {
 }
 
 func TestValidArgumentsFilter(t *testing.T) {
+	t.Parallel()
+
 	wrapper := &resticWrapper{}
 	validArgs := collect.All(wrapper.validResticArgumentsList(constants.CommandBackup), func(arg string) bool {
 		return arg != "-x" && arg != "--xxx"
@@ -136,6 +142,8 @@ func TestValidArgumentsFilter(t *testing.T) {
 }
 
 func TestFilteredArgumentsRegression(t *testing.T) {
+	t.Parallel()
+
 	if platform.IsWindows() {
 		t.Skip()
 	}
@@ -190,6 +198,8 @@ func TestFilteredArgumentsRegression(t *testing.T) {
 }
 
 func TestGetEmptyEnvironment(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  "restic",
@@ -202,6 +212,8 @@ func TestGetEmptyEnvironment(t *testing.T) {
 }
 
 func TestGetSingleEnvironment(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Environment = map[string]config.ConfidentialValue{
 		"User": config.NewConfidentialValue("me"),
@@ -218,6 +230,8 @@ func TestGetSingleEnvironment(t *testing.T) {
 }
 
 func TestGetMultipleEnvironment(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Environment = map[string]config.ConfidentialValue{
 		"User":     config.NewConfidentialValue("me"),
@@ -247,6 +261,8 @@ func TestGetMultipleEnvironment(t *testing.T) {
 }
 
 func TestPreProfileScriptFail(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.RunBefore = []string{"exit 1"} // this should both work on unix shell and windows batch
 	ctx := &Context{
@@ -260,6 +276,8 @@ func TestPreProfileScriptFail(t *testing.T) {
 }
 
 func TestPostProfileScriptFail(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfter = []string{"exit 1"} // this should both work on unix shell and windows batch
 	ctx := &Context{
@@ -273,6 +291,8 @@ func TestPostProfileScriptFail(t *testing.T) {
 }
 
 func TestRunEchoProfile(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  "echo",
@@ -285,6 +305,8 @@ func TestRunEchoProfile(t *testing.T) {
 }
 
 func TestPostProfileAfterFail(t *testing.T) {
+	t.Parallel()
+
 	testFile := "TestPostProfileAfterFail.txt"
 	_ = os.Remove(testFile)
 	profile := config.NewProfile(nil, "name")
@@ -302,6 +324,8 @@ func TestPostProfileAfterFail(t *testing.T) {
 }
 
 func TestPostFailProfile(t *testing.T) {
+	t.Parallel()
+
 	testFile := "TestPostFailProfile.txt"
 	_ = os.Remove(testFile)
 	profile := config.NewProfile(nil, "name")
@@ -319,6 +343,8 @@ func TestPostFailProfile(t *testing.T) {
 }
 
 func TestFinallyProfile(t *testing.T) {
+	t.Parallel()
+
 	testFile := "TestFinallyProfile.txt"
 	defer os.Remove(testFile)
 
@@ -525,6 +551,8 @@ func TestEnvStderr(t *testing.T) {
 }
 
 func TestRunProfileWithSetPIDCallback(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Lock = filepath.Join(os.TempDir(), fmt.Sprintf("%s%d%d.tmp", "TestRunProfileWithSetPIDCallback", time.Now().UnixNano(), os.Getpid()))
 	t.Logf("lockfile = %s", profile.Lock)
@@ -539,6 +567,8 @@ func TestRunProfileWithSetPIDCallback(t *testing.T) {
 }
 
 func TestInitializeNoError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -551,6 +581,8 @@ func TestInitializeNoError(t *testing.T) {
 }
 
 func TestInitializeWithError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -564,6 +596,8 @@ func TestInitializeWithError(t *testing.T) {
 }
 
 func TestInitializeCopyNoError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: maybe.False()}
 	ctx := &Context{
@@ -577,6 +611,8 @@ func TestInitializeCopyNoError(t *testing.T) {
 }
 
 func TestInitializeCopyWithError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Copy = &config.CopySection{InitializeCopyChunkerParams: maybe.False()}
 	ctx := &Context{
@@ -591,6 +627,8 @@ func TestInitializeCopyWithError(t *testing.T) {
 }
 
 func TestCheckNoError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -603,6 +641,8 @@ func TestCheckNoError(t *testing.T) {
 }
 
 func TestCheckWithError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -616,6 +656,8 @@ func TestCheckWithError(t *testing.T) {
 }
 
 func TestRetentionNoError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -628,6 +670,8 @@ func TestRetentionNoError(t *testing.T) {
 }
 
 func TestRetentionWithError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -641,6 +685,8 @@ func TestRetentionWithError(t *testing.T) {
 }
 
 func TestBackupWithStreamSource(t *testing.T) {
+	t.Parallel()
+
 	expected := "---Backup-Content---"
 	expectedInterruptedError := []string{
 		"stdin-test on profile 'name': exit status 128",
@@ -797,6 +843,8 @@ func TestBackupWithStreamSource(t *testing.T) {
 }
 
 func TestBackupWithSuccess(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
@@ -810,6 +858,8 @@ func TestBackupWithSuccess(t *testing.T) {
 }
 
 func TestBackupWithError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
@@ -824,6 +874,8 @@ func TestBackupWithError(t *testing.T) {
 }
 
 func TestBackupWithResticLockFailureRetried(t *testing.T) {
+	t.Parallel()
+
 	lockWait := constants.MinResticLockRetryDelay + time.Second
 	lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
 		"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
@@ -858,6 +910,8 @@ func TestBackupWithResticLockFailureRetried(t *testing.T) {
 }
 
 func TestBackupWithResticLockFailureCancelled(t *testing.T) {
+	t.Parallel()
+
 	lockWait := constants.MinResticLockRetryDelay + time.Second
 	lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
 		"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
@@ -896,6 +950,8 @@ func TestBackupWithResticLockFailureCancelled(t *testing.T) {
 }
 
 func TestBackupWithNoConfiguration(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -909,6 +965,8 @@ func TestBackupWithNoConfiguration(t *testing.T) {
 }
 
 func TestBackupWithNoConfigurationButStatusFile(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.StatusFile = "status.json"
 	ctx := &Context{
@@ -924,6 +982,8 @@ func TestBackupWithNoConfigurationButStatusFile(t *testing.T) {
 }
 
 func TestBackupWithWarningAsError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(nil, "name")
 	profile.Backup = &config.BackupSection{}
 	ctx := &Context{
@@ -938,6 +998,8 @@ func TestBackupWithWarningAsError(t *testing.T) {
 }
 
 func TestBackupWithSupressedWarnings(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{NoErrorOnWarning: true}
 	ctx := &Context{
@@ -952,6 +1014,8 @@ func TestBackupWithSupressedWarnings(t *testing.T) {
 }
 
 func TestRunShellCommands(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{}
 	profile.Check = &config.SectionWithScheduleAndMonitoring{}
@@ -1031,6 +1095,8 @@ func TestRunStreamErrorHandler(t *testing.T) {
 }
 
 func TestRunStreamErrorHandlerDoesNotBreakCommand(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{}
 	profile.StreamError = []config.StreamErrorSection{{Pattern: ".+error-line.+", Run: "exit 1"}}
@@ -1047,6 +1113,8 @@ func TestRunStreamErrorHandlerDoesNotBreakCommand(t *testing.T) {
 }
 
 func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{}
 	profile.StreamError = []config.StreamErrorSection{{Pattern: "(", Run: "echo pass"}}
@@ -1063,6 +1131,8 @@ func TestStreamErrorHandlerWithInvalidRegex(t *testing.T) {
 }
 
 func TestCanRetryAfterErrorDontFailWhenNoOutputAnalysis(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	ctx := &Context{
 		binary:  mockBinary,
@@ -1077,6 +1147,8 @@ func TestCanRetryAfterErrorDontFailWhenNoOutputAnalysis(t *testing.T) {
 }
 
 func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
+	t.Parallel()
+
 	lockedSince := time.Duration(0)
 	mockOutput := mocks.NewOutputAnalysis(t)
 	mockOutput.EXPECT().ContainsRemoteLockFailure().Return(true)
@@ -1134,10 +1206,12 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 }
 
 func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
+	t.Parallel()
+
 	lockFailure := false
 	mockOutput := mocks.NewOutputAnalysis(t)
 	mockOutput.EXPECT().ContainsRemoteLockFailure().RunAndReturn(func() bool { return lockFailure })
-	mockOutput.EXPECT().GetRemoteLockedBy().Return("TestCanRetryAfterRemoteLockFailure", true)
+	mockOutput.EXPECT().GetRemoteLockedBy().Return(t.Name(), true)
 	mockOutput.EXPECT().GetRemoteLockedSince().Return(5*time.Minute, true)
 
 	profile := config.NewProfile(&config.Config{}, "name")
@@ -1187,6 +1261,8 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 }
 
 func TestCanUseResticLockRetry(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Repository = config.NewConfidentialValue("my-repo")
 	emptyArgs := shell.NewArgs()
@@ -1350,6 +1426,8 @@ func TestLocksAndLockWait(t *testing.T) {
 }
 
 func TestGetContext(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
 	ctx := &Context{
 		binary:  "",
@@ -1368,6 +1446,8 @@ func TestGetContext(t *testing.T) {
 }
 
 func TestGetContextWithError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
 	ctx := &Context{
 		binary:  "",
@@ -1386,6 +1466,8 @@ func TestGetContextWithError(t *testing.T) {
 }
 
 func TestGetErrorContext(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
 		binary:  "",
@@ -1402,6 +1484,8 @@ func TestGetErrorContext(t *testing.T) {
 }
 
 func TestGetErrorContextWithStandardError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
 		binary:  "",
@@ -1418,6 +1502,8 @@ func TestGetErrorContextWithStandardError(t *testing.T) {
 }
 
 func TestGetErrorContextWithCommandError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
 		binary:  "",
@@ -1440,6 +1526,8 @@ func TestGetErrorContextWithCommandError(t *testing.T) {
 }
 
 func TestGetProfileEnvironment(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
 	ctx := &Context{
 		binary:  "",
@@ -1454,6 +1542,8 @@ func TestGetProfileEnvironment(t *testing.T) {
 }
 
 func TestGetFailEnvironmentNoError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
 		binary:  "",
@@ -1468,6 +1558,8 @@ func TestGetFailEnvironmentNoError(t *testing.T) {
 }
 
 func TestGetFailEnvironmentWithStandardError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
 		binary:  "",
@@ -1482,6 +1574,8 @@ func TestGetFailEnvironmentWithStandardError(t *testing.T) {
 }
 
 func TestGetFailEnvironmentWithCommandError(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "")
 	ctx := &Context{
 		binary:  "",
@@ -1590,6 +1684,8 @@ func TestRunInitCopyCommand(t *testing.T) {
 }
 
 func TestCopyNoSnapshot(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Copy = &config.CopySection{}
 	ctx := &Context{
@@ -1604,6 +1700,8 @@ func TestCopyNoSnapshot(t *testing.T) {
 }
 
 func TestCopySnapshot(t *testing.T) {
+	t.Parallel()
+
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Copy = &config.CopySection{Snapshots: []string{"snapshot1", "snapshot2"}}
 	ctx := &Context{
