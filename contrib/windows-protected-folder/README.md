@@ -17,7 +17,7 @@ differences may exist with previous versions of Windows.
 2. [Procedure](#procedure)
    1. [Create `resticprofile` folder in `ProgramData`](#create-resticprofile-folder-in-programdata)
    2. [Create `resticlogs` folder in `ProgramData`](#create-resticlogs-folder-in-programdata)
-   3. [(Optional) Pin `resticlogs` folder to Start and/or 'Quick access\`](#optional-pin-resticlogs-folder-to-start-andor-quick-access)
+   3. [(Optional) Pin `resticlogs` folder to Start and/or 'Quick access'](#optional-pin-resticlogs-folder-to-start-andor-quick-access)
    4. [Set ACL (permissions) on the `resticprofile` folder](#set-acl-permissions-on-the-resticprofile-folder)
    5. [(Optional) Set ACL (permissions) on the `resticlogs` folder](#optional-set-acl-permissions-on-the-resticlogs-folder)
    6. [Create your resticprofile profiles configuration file](#create-your-resticprofile-profiles-configuration-file)
@@ -44,7 +44,7 @@ cd \ProgramData
 mkdir resticlogs
 ```
 
-### (Optional) Pin `resticlogs` folder to Start and/or 'Quick access`
+### (Optional) Pin `resticlogs` folder to Start and/or 'Quick access'
 
 In the same console, issue: `explorer .` to open File Explorer. Then, right-click on the `resticlogs` folder and choose
 'Pin to Start' and/or 'Pin to Quick access'.
@@ -98,7 +98,7 @@ the `C:\\ProgramData\\resticlogs\\` folder.
 
 - Resticprofile can now be used from an Administrative console.
 
-- To view the logs you can use the Start menu or Quick access links you created, or you
+- To view the logs, you can use the Start menu or Quick access links you created, or you
   can open an Administrative console and issue:
 
   ```powershell
