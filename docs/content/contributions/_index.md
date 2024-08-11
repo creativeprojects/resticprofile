@@ -16,4 +16,4 @@ I have created a [contributions section](https://github.com/creativeprojects/res
 - [get backup status information in zabbix](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix)
 - [scheduling inside a docker container](https://github.com/creativeprojects/resticprofile/tree/master/contrib/schedule-in-docker)
 - [backup stats in InfluxDB via Telegraf](https://github.com/creativeprojects/resticprofile/tree/master/contrib/telegraf)
-- [use a protected folder for configuration on Windows](https://github.com/creativeproejcts/resticprofile/tree/master/contrib/windows-protected-folder)
+- [use a protected folder for configuration on Windows](https://github.com/creativeprojects/resticprofile/tree/master/contrib/windows-protected-folder)
