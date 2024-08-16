@@ -90,7 +90,7 @@
         "Name": "force",
         "Alias": "f",
         "Default": "false",
-        "Description": "force re-reading the target files/directories (overrides the \"parent\" flag)",
+        "Description": "force re-reading the source files/directories (overrides the \"parent\" flag)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -117,7 +117,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "\"\"",
-        "Description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag",
+        "Description": "set the hostname for the snapshot manually (default: $RESTIC_HOST). To prevent an expensive rescan use the \"parent\" flag",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -153,7 +153,7 @@
         "Name": "ignore-inode",
         "Alias": "",
         "Default": "false",
-        "Description": "ignore inode number changes when checking for modified files",
+        "Description": "ignore inode number and ctime changes when checking for modified files",
         "Once": true,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -195,6 +195,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "skip-if-unchanged",
+        "Alias": "",
+        "Default": "false",
+        "Description": "skip snapshot creation if identical to parent snapshot",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "stdin",
         "Alias": "",
         "Default": "false",
@@ -210,6 +219,15 @@
         "Description": "filename to use when reading from stdin",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "stdin-from-command",
+        "Alias": "",
+        "Default": "false",
+        "Description": "interpret arguments as command to execute and store its stdout",
+        "Once": true,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       },
       {
@@ -362,6 +380,15 @@
     "RemovedInVersion": "",
     "Options": [
       {
+        "Name": "from-insecure-no-password",
+        "Alias": "",
+        "Default": "false",
+        "Description": "use an empty password for the source repository, must be passed to every restic command (insecure)",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "from-key-hint",
         "Alias": "",
         "Default": "\"\"",
@@ -419,7 +446,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -455,7 +482,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -491,7 +518,7 @@
   },
   {
     "Name": "diff",
-    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink",
+    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink\n?  Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n\u0026'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -517,7 +544,7 @@
   },
   {
     "Name": "dump",
-    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshot \"latest\" can be used to use the latest snapshot in the\nrepository.",
+    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -543,7 +570,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -552,7 +579,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -564,6 +591,15 @@
         "Description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "target",
+        "Alias": "t",
+        "Default": "\"\"",
+        "Description": "write the output to target path",
+        "Once": true,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       }
     ]
@@ -596,7 +632,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -659,7 +695,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -704,7 +740,7 @@
   },
   {
     "Name": "forget",
-    "Description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-*\" options is applied to each group individually.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
+    "Description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-\" options is applied to each group individually.\nIf there are not enough snapshots to keep one for each duration related\n\"--keep-{within-,}\" option, the oldest snapshot in the group is kept\nadditionally.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -748,7 +784,7 @@
         "Name": "host",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -892,7 +928,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -940,6 +976,15 @@
         "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "unsafe-allow-remove-all",
+        "Alias": "",
+        "Default": "false",
+        "Description": "allow deleting all snapshots of a snapshot group",
+        "Once": true,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       }
     ]
@@ -1019,6 +1064,15 @@
         "Description": "copy chunker parameters from the secondary repository (useful with the copy command)",
         "Once": true,
         "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "from-insecure-no-password",
+        "Alias": "",
+        "Default": "false",
+        "Description": "use an empty password for the source repository, must be passed to every restic command (insecure)",
+        "Once": true,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       },
       {
@@ -1133,7 +1187,7 @@
   },
   {
     "Name": "key",
-    "Description": "The \"key\" command manages keys (passwords) for accessing the repository.",
+    "Description": "The \"key\" command allows you to set multiple access keys or passwords\nper repository.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1153,7 +1207,7 @@
         "Description": "the hostname for new keys",
         "Once": true,
         "FromVersion": "0.10.0",
-        "RemovedInVersion": ""
+        "RemovedInVersion": "0.17.0"
       },
       {
         "Name": "new-password-file",
@@ -1162,7 +1216,7 @@
         "Description": "file from which to read the new password",
         "Once": true,
         "FromVersion": "",
-        "RemovedInVersion": ""
+        "RemovedInVersion": "0.17.0"
       },
       {
         "Name": "user",
@@ -1171,6 +1225,146 @@
         "Description": "the username for new keys",
         "Once": true,
         "FromVersion": "0.10.0",
+        "RemovedInVersion": "0.17.0"
+      }
+    ]
+  },
+  {
+    "Name": "key-add",
+    "Description": "The \"add\" sub-command creates a new key and validates the key. Returns the new key ID.",
+    "FromVersion": "0.17.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for add",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "the hostname for new key",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "new-insecure-no-password",
+        "Alias": "",
+        "Default": "false",
+        "Description": "add an empty password for the repository (insecure)",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "new-password-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the new password",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "user",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "the username for new key",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "key-list",
+    "Description": "The \"list\" sub-command lists all the keys (passwords) associated with the repository.\nReturns the key ID, username, hostname, created time and if it's the current key being\nused to access the repository.",
+    "FromVersion": "0.17.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for list",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "key-passwd",
+    "Description": "The \"passwd\" sub-command creates a new key, validates the key and remove the old key ID.\nReturns the new key ID.",
+    "FromVersion": "0.17.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for passwd",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "host",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "the hostname for new key",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "new-insecure-no-password",
+        "Alias": "",
+        "Default": "false",
+        "Description": "add an empty password for the repository (insecure)",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "new-password-file",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "file from which to read the new password",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "user",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "the username for new key",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
+    "Name": "key-remove",
+    "Description": "The \"remove\" sub-command removes the selected key ID. The \"remove\" command does not allow\nremoving the current key being used to access the repository.",
+    "FromVersion": "0.17.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for remove",
+        "Once": true,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       }
     ]
@@ -1211,7 +1405,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1235,10 +1429,19 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "ncdu",
+        "Alias": "",
+        "Default": "false",
+        "Description": "output NCDU export format (pipe into 'ncdu -f -')",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1326,7 +1529,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1353,7 +1556,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1563,6 +1766,23 @@
     ]
   },
   {
+    "Name": "repair-packs",
+    "Description": "WARNING: The CLI for this command is experimental and will likely change in the future!\n\nThe \"repair packs\" command extracts intact blobs from the specified pack files, rebuilds\nthe index to remove the damaged pack files and removes the pack files from the repository.",
+    "FromVersion": "0.16.1",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for packs",
+        "Once": true,
+        "FromVersion": "0.16.1",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
     "Name": "repair-snapshots",
     "Description": "The \"repair snapshots\" command repairs broken snapshots. It scans the given\nsnapshots and generates new ones with damaged directories and file contents\nremoved. If the broken snapshots are deleted, a prune run will be able to\nclean up the repository.\n\nThe command depends on a correct index, thus make sure to run \"repair index\"\nfirst!",
     "FromVersion": "0.16.0",
@@ -1599,7 +1819,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "0.16.0",
         "RemovedInVersion": ""
@@ -1608,7 +1828,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "0.16.0",
         "RemovedInVersion": ""
@@ -1626,10 +1846,28 @@
   },
   {
     "Name": "restore",
-    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshot \"latest\" can be used to restore the latest snapshot in the\nrepository.",
+    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
+      {
+        "Name": "delete",
+        "Alias": "",
+        "Default": "false",
+        "Description": "delete files from target directory if they do not exist in snapshot. Use '--dry-run -vv' to check what would be deleted",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "dry-run",
+        "Alias": "",
+        "Default": "false",
+        "Description": "do not write any data, just show what would be done",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
       {
         "Name": "exclude",
         "Alias": "e",
@@ -1637,6 +1875,15 @@
         "Description": "exclude a pattern (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "exclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "read exclude patterns from a file (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       },
       {
@@ -1652,7 +1899,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1661,34 +1908,70 @@
         "Name": "iexclude",
         "Alias": "",
         "Default": "",
-        "Description": "same as --exclude but ignores the casing of filenames",
+        "Description": "same as --exclude pattern but ignores the casing of filenames",
         "Once": false,
         "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iexclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --exclude-file but ignores casing of filenames in patterns",
+        "Once": false,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       },
       {
         "Name": "iinclude",
         "Alias": "",
         "Default": "",
-        "Description": "same as --include but ignores the casing of filenames",
+        "Description": "same as --include pattern but ignores the casing of filenames",
         "Once": false,
         "FromVersion": "0.10.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iinclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --include-file but ignores casing of filenames in patterns",
+        "Once": false,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       },
       {
         "Name": "include",
         "Alias": "i",
         "Default": "",
-        "Description": "include a pattern, exclude everything else (can be specified multiple times)",
+        "Description": "include a pattern (can be specified multiple times)",
         "Once": false,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "include-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "read include patterns from a file (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "overwrite",
+        "Alias": "",
+        "Default": "always",
+        "Description": "overwrite behavior, one of (always|if-changed|if-newer|never) (default: always)",
+        "Once": true,
+        "FromVersion": "0.17.0",
         "RemovedInVersion": ""
       },
       {
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1786,7 +2069,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "0.15.0",
         "RemovedInVersion": ""
@@ -1810,10 +2093,28 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "new-host",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "replace hostname",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "new-time",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "replace time of the backup",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "0.15.0",
         "RemovedInVersion": ""
@@ -1892,7 +2193,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1919,7 +2220,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1937,7 +2238,7 @@
   },
   {
     "Name": "stats",
-    "Description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
+    "Description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1954,7 +2255,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1972,7 +2273,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -2016,7 +2317,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times)",
+        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2025,7 +2326,7 @@
         "Name": "path",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times)",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2154,6 +2455,24 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "http-user-agent",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "set a http user agent for outgoing http requests",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "insecure-no-password",
+        "Alias": "",
+        "Default": "false",
+        "Description": "use an empty password for the repository, must be passed to every restic command (insecure)",
+        "Once": true,
+        "FromVersion": "0.17.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "insecure-tls",
         "Alias": "",
         "Default": "false",
@@ -2205,6 +2524,15 @@
         "Description": "do not use a local cache",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "no-extra-verify",
+        "Alias": "",
+        "Default": "false",
+        "Description": "skip additional verification of data before upload (see documentation)",
+        "Once": true,
+        "FromVersion": "0.16.4",
         "RemovedInVersion": ""
       },
       {

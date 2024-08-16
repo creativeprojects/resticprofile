@@ -150,6 +150,7 @@ var (
 	manSectionStart   = regexp.MustCompile(`^\.SH ([A-Z 0-9]+)$`)
 	manParagraphStart = regexp.MustCompile(`^\.PP$`)
 	manEscapeSequence = regexp.MustCompile(`(\\f[A-Z]|\\)`)
+	lineCleanup       = regexp.MustCompile("([`]{2,})")
 )
 
 func parseStream(input io.Reader, commandName string) (cmd *command, err error) {
@@ -182,6 +183,7 @@ func parseStream(input io.Reader, commandName string) (cmd *command, err error) 
 			}
 		} else {
 			line = manEscapeSequence.ReplaceAllString(line, "")
+			line = lineCleanup.ReplaceAllString(line, "")
 
 			switch section {
 			case "DESCRIPTION":
