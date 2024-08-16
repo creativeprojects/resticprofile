@@ -117,6 +117,7 @@ self:
         schedule-log: "_schedule-log.txt"
         schedule-ignore-on-battery: true
         schedule-after-network-online: true
+        skip-if-unchanged: true
 
     run-before:
         - "echo DOW=`date +\"%u\"` >> {{ env }}"
@@ -339,3 +340,8 @@ empty-fields:
         keep-tag: ""
         group-by: ""
         tag: ""
+
+nopwd:
+    initialize: true
+    repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
+    insecure-no-password: true
