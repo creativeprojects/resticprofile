@@ -11,7 +11,7 @@ COPY build/restic-${ARCH} /usr/bin/restic
 COPY build/rclone-${ARCH} /usr/bin/rclone
 COPY resticprofile /usr/bin/resticprofile
 
-RUN apk add --no-cache openssh-client-default curl tzdata ca-certificates
+RUN apk add --no-cache ca-certificates curl openssh-client-default tzdata
 
 VOLUME /resticprofile
 WORKDIR /resticprofile
