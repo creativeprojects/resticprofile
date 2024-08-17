@@ -22,6 +22,132 @@
         }
       ]
     },
+    "id-040cdbfb985915c1376d7d7a1fa0d38a": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-069c0c672104098e9e41d7ac3841fd0c": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-06bbc4cdada9fbb2f0e5aff8aa18b8a5": {
       "title": "tag",
       "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
@@ -144,13 +270,13 @@
         }
       ]
     },
-    "id-0c8ddafad83236e17c1fe5bedb0bb757": {
-      "title": "host",
-      "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the hostname of the system.",
+    "id-0dd6bafe51f2901fa7f446e31a3b881d": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
       "anyOf": [
         {
-          "title": "host",
-          "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the hostname of the system.",
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
           "anyOf": [
             {
               "type": "boolean",
@@ -164,24 +290,23 @@
               "examples": [
                 true,
                 false,
-                "host"
+                "path"
               ],
-              "minLength": 0,
-              "format": "hostname"
+              "minLength": 0
             }
           ]
         },
         {
-          "title": "host...",
+          "title": "path...",
           "type": "array",
           "examples": [
             true,
             false,
-            "host"
+            "path"
           ],
           "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the hostname of the system.",
+            "title": "path",
+            "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
             "anyOf": [
               {
                 "type": "boolean",
@@ -195,10 +320,9 @@
                 "examples": [
                   true,
                   false,
-                  "host"
+                  "path"
                 ],
-                "minLength": 0,
-                "format": "hostname"
+                "minLength": 0
               }
             ]
           },
@@ -247,63 +371,20 @@
         }
       ]
     },
-    "id-11840c6b8b3cf28d1945e74a49bb2d95": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+    "id-1372d6a4f6961e5e86fd694445a39721": {
+      "title": "iexclude-file",
+      "description": "same as --exclude-file but ignores casing of filenames in patterns [restic \u003e= 0.17.0]",
       "anyOf": [
         {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
+          "type": "string",
+          "minLength": 0
         },
         {
-          "title": "host...",
+          "title": "iexclude-file...",
           "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
           "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
+            "type": "string",
+            "minLength": 0
           },
           "minItems": 0,
           "uniqueItems": false
@@ -342,6 +423,87 @@
           "items": {
             "type": "string",
             "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-1b525c9f6a0698293ca268ea3866afa4": {
+      "title": "include",
+      "description": "include a pattern",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "include...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-1e3e4f194a26f596cf3db367ea81cd15": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "title": "path...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "path"
+          ],
+          "items": {
+            "title": "path",
+            "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "path"
+                ],
+                "minLength": 0
+              }
+            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -418,6 +580,69 @@
           "items": {
             "type": "string",
             "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-228c0688714ab2ef9eeccf2b322df2d8": {
+      "title": "host",
+      "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -569,67 +794,6 @@
         }
       ]
     },
-    "id-29d75b4b4a44869cb20bf5d71db46b7f": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "title": "path...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "path"
-          ],
-          "items": {
-            "title": "path",
-            "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "path"
-                ],
-                "minLength": 0
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-2abe3a6ae2ea65720f26903b318892d6": {
       "title": "send-before",
       "description": "Send HTTP request(s) before a restic command",
@@ -721,122 +885,20 @@
         }
       ]
     },
-    "id-326d159415b9d63d8b28799e1b6cd274": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+    "id-35e9a66d22a93b5cfbcebc1b8d53c231": {
+      "title": "iinclude-file",
+      "description": "same as --include-file but ignores casing of filenames in patterns [restic \u003e= 0.17.0]",
       "anyOf": [
         {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
+          "type": "string",
+          "minLength": 0
         },
         {
-          "title": "path...",
+          "title": "iinclude-file...",
           "type": "array",
-          "examples": [
-            true,
-            false,
-            "path"
-          ],
           "items": {
-            "title": "path",
-            "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "path"
-                ],
-                "minLength": 0
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-355078e8e3fb9047383190d159c6d9bd": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "title": "path...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "path"
-          ],
-          "items": {
-            "title": "path",
-            "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "path"
-                ],
-                "minLength": 0
-              }
-            ]
+            "type": "string",
+            "minLength": 0
           },
           "minItems": 0,
           "uniqueItems": false
@@ -855,6 +917,67 @@
           "type": "string",
           "minLength": 2,
           "pattern": "^(\\d+(h|m|s|ms))+$"
+        }
+      ]
+    },
+    "id-3b78ee34ba5fc91fdf9fa51c39062f53": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "title": "path...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "path"
+          ],
+          "items": {
+            "title": "path",
+            "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "path"
+                ],
+                "minLength": 0
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
         }
       ]
     },
@@ -902,26 +1025,6 @@
         }
       ]
     },
-    "id-3d131e4cdb38324feb36c3c91bb96398": {
-      "title": "iexclude",
-      "description": "same as --exclude but ignores the casing of filenames [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "iexclude...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-43751bb98b8f27a3043a5cf8114dcc42": {
       "title": "files-from",
       "description": "read the files to backup from file (can be combined with file args)",
@@ -942,26 +1045,64 @@
         }
       ]
     },
-    "id-54517d1f96d560d720efea73a786256d": {
-      "title": "host",
-      "description": "the hostname for new keys.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-      "oneOf": [
+    "id-4d5c283f98d0925082ab484d3bdd4d16": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+      "anyOf": [
         {
-          "type": "boolean",
-          "examples": [
-            true,
-            false
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
           ]
         },
         {
-          "type": "string",
+          "title": "path...",
+          "type": "array",
           "examples": [
             true,
             false,
-            "host"
+            "path"
           ],
-          "minLength": 0,
-          "format": "hostname"
+          "items": {
+            "title": "path",
+            "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "path"
+                ],
+                "minLength": 0
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
         }
       ]
     },
@@ -1069,6 +1210,69 @@
         }
       ]
     },
+    "id-5a7604cd62739bf6b90cc25decf3beb6": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-5ad549b9f26107194acb0d599b5435a0": {
       "title": "send-after",
       "description": "Send HTTP request(s) after a successful restic command",
@@ -1148,88 +1352,13 @@
         }
       ]
     },
-    "id-6b767374afe44ab7caa0ae97e251c4ed": {
-      "title": "verbose",
-      "description": "be verbose (true for level 1 or a number for increased verbosity, max level is 2)",
-      "oneOf": [
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "integer"
-        }
-      ]
-    },
-    "id-6c961a5e7bc2bf9ec9e2c3a9874621c5": {
-      "title": "host",
-      "description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system. Defaults to true for config version 2 in \"backup\".",
-      "oneOf": [
-        {
-          "type": "boolean",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        {
-          "type": "string",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "minLength": 0,
-          "format": "hostname"
-        }
-      ]
-    },
-    "id-71d4c72a873617fc9b373bf506f9606d": {
-      "title": "env-file",
-      "description": "Additional dotenv files to load and set as environment in any child process",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "env-file...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-783b5260d9a5f4eba741f6448d3a73a0": {
-      "title": "exclude",
-      "description": "exclude a pattern [restic \u003e= 0.15.0]",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "exclude...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-7c446eddb6d84a646a7050e5b3706e80": {
+    "id-65f906f27a87d15f551fa4dc5250b520": {
       "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
       "anyOf": [
         {
           "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
           "anyOf": [
             {
               "type": "boolean",
@@ -1259,7 +1388,7 @@
           ],
           "items": {
             "title": "path",
-            "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+            "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
             "anyOf": [
               {
                 "type": "boolean",
@@ -1278,6 +1407,139 @@
                 "minLength": 0
               }
             ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-6b767374afe44ab7caa0ae97e251c4ed": {
+      "title": "verbose",
+      "description": "be verbose (true for level 1 or a number for increased verbosity, max level is 2)",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "id-703d64899271340b197b461a1da954f0": {
+      "title": "exclude-file",
+      "description": "read exclude patterns from a file [restic \u003e= 0.17.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "exclude-file...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-71d4c72a873617fc9b373bf506f9606d": {
+      "title": "env-file",
+      "description": "Additional dotenv files to load and set as environment in any child process",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "env-file...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-754cd1d064baa6520e3f6b581da6308b": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "title": "path...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "path"
+          ],
+          "items": {
+            "title": "path",
+            "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "path"
+                ],
+                "minLength": 0
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-783b5260d9a5f4eba741f6448d3a73a0": {
+      "title": "exclude",
+      "description": "exclude a pattern [restic \u003e= 0.15.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "exclude...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
           },
           "minItems": 0,
           "uniqueItems": false
@@ -1325,69 +1587,6 @@
           ],
           "minLength": 2,
           "pattern": "^(\\d+(h|m|s|ms))+$"
-        }
-      ]
-    },
-    "id-88ae7e2f5b3fa2e0f432bda54e20778c": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
         }
       ]
     },
@@ -1687,6 +1886,29 @@
         }
       ]
     },
+    "id-9cfa481f3803a7b12fe7275be73cfc24": {
+      "title": "host",
+      "description": "the hostname for new key.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.17.0]",
+      "oneOf": [
+        {
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
+        }
+      ]
+    },
     "id-9e1013a6d9d54bc7974f9c0ff9c0ea3e": {
       "title": "includes",
       "description": "glob patterns of configuration files to include",
@@ -1709,20 +1931,63 @@
         }
       ]
     },
-    "id-9ef1233a753c84edabc29066b234299f": {
-      "title": "include",
-      "description": "include a pattern, exclude everything else",
+    "id-9eb097550c08524117d0906abd0d2a05": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
       "anyOf": [
         {
-          "type": "string",
-          "minLength": 0
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
         },
         {
-          "title": "include...",
+          "title": "host...",
           "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
           "items": {
-            "type": "string",
-            "minLength": 0
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -1739,6 +2004,26 @@
         },
         {
           "title": "exclude...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-a009c428eabb1a0bbd5a6afe6ac4816a": {
+      "title": "include-file",
+      "description": "read include patterns from a file [restic \u003e= 0.17.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "include-file...",
           "type": "array",
           "items": {
             "type": "string",
@@ -1820,67 +2105,6 @@
           "items": {
             "type": "string",
             "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-aabc881b870c0a99f28a293ea1391847": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "title": "path...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "path"
-          ],
-          "items": {
-            "title": "path",
-            "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "path"
-                ],
-                "minLength": 0
-              }
-            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -2021,33 +2245,13 @@
         }
       ]
     },
-    "id-bdebeefb786b97126bbaf65dcffdb112": {
-      "title": "cacert",
-      "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "cacert...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-be7c1ad659cb5ea675351ab77d7527c7": {
+    "id-bcda8b199ef5b0659a200468e2517a9f": {
       "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system.",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
       "anyOf": [
         {
           "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system.",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
           "anyOf": [
             {
               "type": "boolean",
@@ -2078,7 +2282,7 @@
           ],
           "items": {
             "title": "host",
-            "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system.",
+            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
             "anyOf": [
               {
                 "type": "boolean",
@@ -2098,6 +2302,26 @@
                 "format": "hostname"
               }
             ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-bdebeefb786b97126bbaf65dcffdb112": {
+      "title": "cacert",
+      "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "cacert...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
           },
           "minItems": 0,
           "uniqueItems": false
@@ -2335,26 +2559,6 @@
         }
       ]
     },
-    "id-c605c7f497d93d2d4142e6b4fc88db4a": {
-      "title": "iinclude",
-      "description": "same as --include but ignores the casing of filenames [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "iinclude...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-c74ea9cfd0cf38b4f051386e08ea0eab": {
       "type": "object",
       "additionalProperties": false,
@@ -2487,6 +2691,29 @@
         }
       ]
     },
+    "id-d7af7929542f414971eae9ea31c9fbe3": {
+      "title": "host",
+      "description": "set the hostname for the snapshot manually (default: $RESTIC_HOST). To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system. Defaults to true for config version 2 in \"backup\".",
+      "oneOf": [
+        {
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
+        }
+      ]
+    },
     "id-d7f8fecbb230b837e9062334f594f0b5": {
       "title": "exclude-file",
       "description": "read exclude patterns from a file",
@@ -2521,67 +2748,6 @@
           "items": {
             "type": "string",
             "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-de830c42bbc7a1076b5b56cfb1aa1030": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "title": "path...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "path"
-          ],
-          "items": {
-            "title": "path",
-            "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "path"
-                ],
-                "minLength": 0
-              }
-            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -2623,6 +2789,26 @@
           "type": "array",
           "items": {
             "default": "RESTIC_*",
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-e85b383c5fe5f267b43cb2035308e933": {
+      "title": "iinclude",
+      "description": "same as --include pattern but ignores the casing of filenames [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "iinclude...",
+          "type": "array",
+          "items": {
             "type": "string",
             "minLength": 0
           },
@@ -2714,132 +2900,6 @@
         }
       ]
     },
-    "id-f4864ab83384783badd86acf60dbf8a8": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-f6117b1192ca2bbfd50b31ef03b30ddd": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-f7bc4372460aefc0a1ecf448de19d0c8": {
       "title": "schedule-lock-wait",
       "description": "Set the maximum time to wait for acquiring locks when running on schedule",
@@ -2859,6 +2919,31 @@
           ],
           "minLength": 2,
           "pattern": "^(\\d+(h|m|s|ms))+$"
+        }
+      ]
+    },
+    "id-ff0dfd3fabc9eefcc415fbef01071197": {
+      "title": "host",
+      "description": "the hostname for new keys.\nBoolean true is replaced with the hostname of the system. [deprecated, removed in 0.17.0, restic \u003e= 0.10.0]",
+      "oneOf": [
+        {
+          "deprecated": true,
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "deprecated": true,
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
         }
       ]
     }
@@ -2949,7 +3034,7 @@
             },
             "force": {
               "title": "force",
-              "description": "force re-reading the target files/directories (overrides the \"parent\" flag)",
+              "description": "force re-reading the source files/directories (overrides the \"parent\" flag)",
               "type": "boolean"
             },
             "group-by": {
@@ -2960,7 +3045,13 @@
               "minLength": 0
             },
             "host": {
-              "$ref": "#/$defs/id-6c961a5e7bc2bf9ec9e2c3a9874621c5"
+              "$ref": "#/$defs/id-d7af7929542f414971eae9ea31c9fbe3"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "iexclude": {
               "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
@@ -2975,7 +3066,12 @@
             },
             "ignore-inode": {
               "title": "ignore-inode",
-              "description": "ignore inode number changes when checking for modified files [restic \u003e= 0.10.0]",
+              "description": "ignore inode number and ctime changes when checking for modified files [restic \u003e= 0.10.0]",
+              "type": "boolean"
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
               "type": "boolean"
             },
             "insecure-tls": {
@@ -3007,6 +3103,11 @@
             "no-error-on-warning": {
               "title": "no-error-on-warning",
               "description": "Do not fail the backup when some files could not be read",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -3180,6 +3281,11 @@
             "send-finally": {
               "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
             },
+            "skip-if-unchanged": {
+              "title": "skip-if-unchanged",
+              "description": "skip snapshot creation if identical to parent snapshot [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "source": {
               "$ref": "#/$defs/id-b0370690ac6a8a0301e000cc1e13dd04"
             },
@@ -3214,6 +3320,11 @@
               "description": "filename to use when reading from stdin",
               "type": "string",
               "minLength": 0
+            },
+            "stdin-from-command": {
+              "title": "stdin-from-command",
+              "description": "interpret arguments as command to execute and store its stdout [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "tag": {
               "$ref": "#/$defs/id-1f33e5af642ab1e472fcd28edcf102e5"
@@ -3293,6 +3404,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -3323,6 +3445,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -3433,14 +3560,25 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
               "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3462,6 +3600,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -3572,6 +3715,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -3596,6 +3750,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -3806,6 +3965,11 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "from-insecure-no-password": {
+              "title": "from-insecure-no-password",
+              "description": "use an empty password for the source repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "from-key-hint": {
               "title": "from-key-hint",
               "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -3837,7 +4001,13 @@
               "minLength": 0
             },
             "host": {
-              "$ref": "#/$defs/id-f4864ab83384783badd86acf60dbf8a8"
+              "$ref": "#/$defs/id-040cdbfb985915c1376d7d7a1fa0d38a"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "initialize": {
               "title": "initialize",
@@ -3848,6 +4018,11 @@
               "title": "initialize-copy-chunker-params",
               "default": true,
               "description": "Copy chunker parameters when initializing the secondary repository",
+              "type": "boolean"
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
               "type": "boolean"
             },
             "insecure-tls": {
@@ -3881,6 +4056,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -3923,7 +4103,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-29d75b4b4a44869cb20bf5d71db46b7f"
+              "$ref": "#/$defs/id-1e3e4f194a26f596cf3db367ea81cd15"
             },
             "quiet": {
               "title": "quiet",
@@ -4095,7 +4275,7 @@
         },
         "diff": {
           "title": "diff",
-          "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink",
+          "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink\n?  Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n\u0026'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -4122,6 +4302,17 @@
             "extended-status": {
               "title": "extended-status",
               "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
               "type": "boolean"
             },
             "insecure-tls": {
@@ -4153,6 +4344,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -4228,7 +4424,7 @@
         },
         "dump": {
           "title": "dump",
-          "description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshot \"latest\" can be used to use the latest snapshot in the\nrepository.",
+          "description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -4259,17 +4455,28 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "host": {
-              "$ref": "#/$defs/id-0c8ddafad83236e17c1fe5bedb0bb757"
+              "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -4291,6 +4498,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -4319,7 +4531,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-aabc881b870c0a99f28a293ea1391847"
+              "$ref": "#/$defs/id-4d5c283f98d0925082ab484d3bdd4d16"
             },
             "quiet": {
               "title": "quiet",
@@ -4358,6 +4570,12 @@
             },
             "tag": {
               "$ref": "#/$defs/id-5a6e7b23808067f4ea3cd8627e7434be"
+            },
+            "target": {
+              "title": "target",
+              "description": "write the output to target path [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "tls-client-cert": {
               "title": "tls-client-cert",
@@ -4420,7 +4638,13 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
+              "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "human-readable": {
               "title": "human-readable",
@@ -4430,6 +4654,11 @@
             "ignore-case": {
               "title": "ignore-case",
               "description": "ignore case for pattern",
+              "type": "boolean"
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
               "type": "boolean"
             },
             "insecure-tls": {
@@ -4469,6 +4698,11 @@
               "description": "do not use a local cache",
               "type": "boolean"
             },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
             "no-lock": {
               "title": "no-lock",
               "description": "do not lock the repository, this allows some operations on read-only repositories",
@@ -4506,7 +4740,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-355078e8e3fb9047383190d159c6d9bd"
+              "$ref": "#/$defs/id-0dd6bafe51f2901fa7f446e31a3b881d"
             },
             "quiet": {
               "title": "quiet",
@@ -4577,7 +4811,7 @@
         },
         "forget": {
           "title": "forget",
-          "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-*\" options is applied to each group individually.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
+          "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-\" options is applied to each group individually.\nIf there are not enough snapshots to keep one for each duration related\n\"--keep-{within-,}\" option, the oldest snapshot in the group is kept\nadditionally.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -4624,7 +4858,18 @@
               "minLength": 0
             },
             "host": {
-              "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
+              "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -4734,6 +4979,11 @@
               "description": "do not use a local cache",
               "type": "boolean"
             },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
             "no-lock": {
               "title": "no-lock",
               "description": "do not lock the repository, this allows some operations on read-only repositories",
@@ -4760,7 +5010,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-355078e8e3fb9047383190d159c6d9bd"
+              "$ref": "#/$defs/id-0dd6bafe51f2901fa7f446e31a3b881d"
             },
             "prune": {
               "title": "prune",
@@ -4904,10 +5154,21 @@
               "type": "string",
               "minLength": 0
             },
+            "unsafe-allow-remove-all": {
+              "title": "unsafe-allow-remove-all",
+              "description": "allow deleting all snapshots of a snapshot group [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "verbose": {
               "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
             }
           }
+        },
+        "http-user-agent": {
+          "title": "http-user-agent",
+          "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+          "type": "string",
+          "minLength": 0
         },
         "inherit": {
           "title": "inherit",
@@ -4951,6 +5212,11 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "from-insecure-no-password": {
+              "title": "from-insecure-no-password",
+              "description": "use an empty password for the source repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "from-key-hint": {
               "title": "from-key-hint",
               "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -4980,6 +5246,17 @@
               "description": "file from which to read the source repository location to copy chunker parameters from (default: $RESTIC_FROM_REPOSITORY_FILE) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -5012,6 +5289,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -5113,6 +5395,11 @@
           "description": "Initialize the restic repository if missing",
           "type": "boolean"
         },
+        "insecure-no-password": {
+          "title": "insecure-no-password",
+          "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+          "type": "boolean"
+        },
         "insecure-tls": {
           "title": "insecure-tls",
           "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -5120,7 +5407,7 @@
         },
         "key": {
           "title": "key",
-          "description": "The \"key\" command manages keys (passwords) for accessing the repository.",
+          "description": "The \"key\" command allows you to set multiple access keys or passwords\nper repository.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -5150,7 +5437,18 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
+              "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -5175,13 +5473,19 @@
             },
             "new-password-file": {
               "title": "new-password-file",
-              "description": "file from which to read the new password",
+              "deprecated": true,
+              "description": "file from which to read the new password [deprecated, removed in 0.17.0]",
               "type": "string",
               "minLength": 0
             },
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -5252,7 +5556,172 @@
             },
             "user": {
               "title": "user",
-              "description": "the username for new keys [restic \u003e= 0.10.0]",
+              "deprecated": true,
+              "description": "the username for new keys [deprecated, removed in 0.17.0, restic \u003e= 0.10.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "verbose": {
+              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+            }
+          }
+        },
+        "key-add": {
+          "title": "key-add",
+          "description": "The \"add\" sub-command creates a new key and validates the key. Returns the new key ID.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacert": {
+              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+            },
+            "cache-dir": {
+              "title": "cache-dir",
+              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "type": "string",
+              "minLength": 0
+            },
+            "cleanup-cache": {
+              "title": "cleanup-cache",
+              "description": "auto remove old cache directories",
+              "type": "boolean"
+            },
+            "compression": {
+              "title": "compression",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "host": {
+              "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "insecure-tls": {
+              "title": "insecure-tls",
+              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "key-hint": {
+              "title": "key-hint",
+              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "limit-download": {
+              "title": "limit-download",
+              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "limit-upload": {
+              "title": "limit-upload",
+              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "new-insecure-no-password": {
+              "title": "new-insecure-no-password",
+              "description": "add an empty password for the repository (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "new-password-file": {
+              "title": "new-password-file",
+              "description": "file from which to read the new password [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "no-cache": {
+              "title": "no-cache",
+              "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
+            "no-lock": {
+              "title": "no-lock",
+              "description": "do not lock the repository, this allows some operations on read-only repositories",
+              "type": "boolean"
+            },
+            "option": {
+              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "pack-size": {
+              "title": "pack-size",
+              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+              "type": "integer"
+            },
+            "password-command": {
+              "title": "password-command",
+              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+              "type": "string",
+              "minLength": 0
+            },
+            "password-file": {
+              "title": "password-file",
+              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+              "type": "string",
+              "minLength": 0
+            },
+            "quiet": {
+              "title": "quiet",
+              "description": "do not output comprehensive progress report",
+              "type": "boolean"
+            },
+            "repo": {
+              "title": "repo",
+              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+              "type": "string",
+              "minLength": 0
+            },
+            "repository-file": {
+              "title": "repository-file",
+              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "retry-lock": {
+              "title": "retry-lock",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "run-after": {
+              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+            },
+            "run-after-fail": {
+              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+            },
+            "run-before": {
+              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+            },
+            "run-finally": {
+              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+            },
+            "tls-client-cert": {
+              "title": "tls-client-cert",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "user": {
+              "title": "user",
+              "description": "the username for new key [restic \u003e= 0.17.0]",
               "type": "string",
               "minLength": 0
             },
@@ -5266,6 +5735,458 @@
           "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
           "type": "string",
           "minLength": 0
+        },
+        "key-list": {
+          "title": "key-list",
+          "description": "The \"list\" sub-command lists all the keys (passwords) associated with the repository.\nReturns the key ID, username, hostname, created time and if it's the current key being\nused to access the repository.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacert": {
+              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+            },
+            "cache-dir": {
+              "title": "cache-dir",
+              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "type": "string",
+              "minLength": 0
+            },
+            "cleanup-cache": {
+              "title": "cleanup-cache",
+              "description": "auto remove old cache directories",
+              "type": "boolean"
+            },
+            "compression": {
+              "title": "compression",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "insecure-tls": {
+              "title": "insecure-tls",
+              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "key-hint": {
+              "title": "key-hint",
+              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "limit-download": {
+              "title": "limit-download",
+              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "limit-upload": {
+              "title": "limit-upload",
+              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "no-cache": {
+              "title": "no-cache",
+              "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
+            "no-lock": {
+              "title": "no-lock",
+              "description": "do not lock the repository, this allows some operations on read-only repositories",
+              "type": "boolean"
+            },
+            "option": {
+              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "pack-size": {
+              "title": "pack-size",
+              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+              "type": "integer"
+            },
+            "password-command": {
+              "title": "password-command",
+              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+              "type": "string",
+              "minLength": 0
+            },
+            "password-file": {
+              "title": "password-file",
+              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+              "type": "string",
+              "minLength": 0
+            },
+            "quiet": {
+              "title": "quiet",
+              "description": "do not output comprehensive progress report",
+              "type": "boolean"
+            },
+            "repo": {
+              "title": "repo",
+              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+              "type": "string",
+              "minLength": 0
+            },
+            "repository-file": {
+              "title": "repository-file",
+              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "retry-lock": {
+              "title": "retry-lock",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "run-after": {
+              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+            },
+            "run-after-fail": {
+              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+            },
+            "run-before": {
+              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+            },
+            "run-finally": {
+              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+            },
+            "tls-client-cert": {
+              "title": "tls-client-cert",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "verbose": {
+              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+            }
+          }
+        },
+        "key-passwd": {
+          "title": "key-passwd",
+          "description": "The \"passwd\" sub-command creates a new key, validates the key and remove the old key ID.\nReturns the new key ID.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacert": {
+              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+            },
+            "cache-dir": {
+              "title": "cache-dir",
+              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "type": "string",
+              "minLength": 0
+            },
+            "cleanup-cache": {
+              "title": "cleanup-cache",
+              "description": "auto remove old cache directories",
+              "type": "boolean"
+            },
+            "compression": {
+              "title": "compression",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "host": {
+              "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "insecure-tls": {
+              "title": "insecure-tls",
+              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "key-hint": {
+              "title": "key-hint",
+              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "limit-download": {
+              "title": "limit-download",
+              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "limit-upload": {
+              "title": "limit-upload",
+              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "new-insecure-no-password": {
+              "title": "new-insecure-no-password",
+              "description": "add an empty password for the repository (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "new-password-file": {
+              "title": "new-password-file",
+              "description": "file from which to read the new password [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "no-cache": {
+              "title": "no-cache",
+              "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
+            "no-lock": {
+              "title": "no-lock",
+              "description": "do not lock the repository, this allows some operations on read-only repositories",
+              "type": "boolean"
+            },
+            "option": {
+              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "pack-size": {
+              "title": "pack-size",
+              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+              "type": "integer"
+            },
+            "password-command": {
+              "title": "password-command",
+              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+              "type": "string",
+              "minLength": 0
+            },
+            "password-file": {
+              "title": "password-file",
+              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+              "type": "string",
+              "minLength": 0
+            },
+            "quiet": {
+              "title": "quiet",
+              "description": "do not output comprehensive progress report",
+              "type": "boolean"
+            },
+            "repo": {
+              "title": "repo",
+              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+              "type": "string",
+              "minLength": 0
+            },
+            "repository-file": {
+              "title": "repository-file",
+              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "retry-lock": {
+              "title": "retry-lock",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "run-after": {
+              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+            },
+            "run-after-fail": {
+              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+            },
+            "run-before": {
+              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+            },
+            "run-finally": {
+              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+            },
+            "tls-client-cert": {
+              "title": "tls-client-cert",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "user": {
+              "title": "user",
+              "description": "the username for new key [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "verbose": {
+              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+            }
+          }
+        },
+        "key-remove": {
+          "title": "key-remove",
+          "description": "The \"remove\" sub-command removes the selected key ID. The \"remove\" command does not allow\nremoving the current key being used to access the repository.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacert": {
+              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+            },
+            "cache-dir": {
+              "title": "cache-dir",
+              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "type": "string",
+              "minLength": 0
+            },
+            "cleanup-cache": {
+              "title": "cleanup-cache",
+              "description": "auto remove old cache directories",
+              "type": "boolean"
+            },
+            "compression": {
+              "title": "compression",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "insecure-tls": {
+              "title": "insecure-tls",
+              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "key-hint": {
+              "title": "key-hint",
+              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "limit-download": {
+              "title": "limit-download",
+              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "limit-upload": {
+              "title": "limit-upload",
+              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "no-cache": {
+              "title": "no-cache",
+              "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
+            "no-lock": {
+              "title": "no-lock",
+              "description": "do not lock the repository, this allows some operations on read-only repositories",
+              "type": "boolean"
+            },
+            "option": {
+              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "pack-size": {
+              "title": "pack-size",
+              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+              "type": "integer"
+            },
+            "password-command": {
+              "title": "password-command",
+              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+              "type": "string",
+              "minLength": 0
+            },
+            "password-file": {
+              "title": "password-file",
+              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+              "type": "string",
+              "minLength": 0
+            },
+            "quiet": {
+              "title": "quiet",
+              "description": "do not output comprehensive progress report",
+              "type": "boolean"
+            },
+            "repo": {
+              "title": "repo",
+              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+              "type": "string",
+              "minLength": 0
+            },
+            "repository-file": {
+              "title": "repository-file",
+              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "retry-lock": {
+              "title": "retry-lock",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "run-after": {
+              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+            },
+            "run-after-fail": {
+              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+            },
+            "run-before": {
+              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+            },
+            "run-finally": {
+              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+            },
+            "tls-client-cert": {
+              "title": "tls-client-cert",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "verbose": {
+              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+            }
+          }
         },
         "limit-download": {
           "title": "limit-download",
@@ -5308,6 +6229,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -5332,6 +6264,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -5443,11 +6380,22 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-0c8ddafad83236e17c1fe5bedb0bb757"
+              "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "human-readable": {
               "title": "human-readable",
               "description": "print sizes in human readable format [restic \u003e= 0.16.0]",
+              "type": "boolean"
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
               "type": "boolean"
             },
             "insecure-tls": {
@@ -5476,9 +6424,19 @@
               "description": "use a long listing format showing size and mode",
               "type": "boolean"
             },
+            "ncdu": {
+              "title": "ncdu",
+              "description": "output NCDU export format (pipe into 'ncdu -f -') [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -5507,7 +6465,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-aabc881b870c0a99f28a293ea1391847"
+              "$ref": "#/$defs/id-4d5c283f98d0925082ab484d3bdd4d16"
             },
             "quiet": {
               "title": "quiet",
@@ -5589,19 +6547,30 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "force": {
               "title": "force",
               "description": "apply a migration a second time",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5623,6 +6592,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -5739,7 +6713,18 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
+              "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -5770,6 +6755,11 @@
             "no-default-permissions": {
               "title": "no-default-permissions",
               "description": "for 'allow-other', ignore Unix permissions and allow users to read all snapshot files",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -5803,7 +6793,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-355078e8e3fb9047383190d159c6d9bd"
+              "$ref": "#/$defs/id-0dd6bafe51f2901fa7f446e31a3b881d"
             },
             "path-template": {
               "$ref": "#/$defs/id-d00dfc211f97db13bd5f14ea3a21e8e6"
@@ -5874,6 +6864,11 @@
         "no-cache": {
           "title": "no-cache",
           "description": "do not use a local cache",
+          "type": "boolean"
+        },
+        "no-extra-verify": {
+          "title": "no-extra-verify",
+          "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
           "type": "boolean"
         },
         "no-lock": {
@@ -5977,6 +6972,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -6014,6 +7020,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -6222,6 +7233,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -6246,6 +7268,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -6355,6 +7382,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -6379,6 +7417,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -6483,6 +7526,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -6507,6 +7561,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -6611,6 +7670,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -6635,6 +7705,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -6670,6 +7745,150 @@
             "read-all-packs": {
               "title": "read-all-packs",
               "description": "read all pack files to generate new index from scratch [restic \u003e= 0.16.0]",
+              "type": "boolean"
+            },
+            "repo": {
+              "title": "repo",
+              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+              "type": "string",
+              "minLength": 0
+            },
+            "repository-file": {
+              "title": "repository-file",
+              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "retry-lock": {
+              "title": "retry-lock",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "run-after": {
+              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+            },
+            "run-after-fail": {
+              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+            },
+            "run-before": {
+              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+            },
+            "run-finally": {
+              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+            },
+            "tls-client-cert": {
+              "title": "tls-client-cert",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "verbose": {
+              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+            }
+          }
+        },
+        "repair-packs": {
+          "title": "repair-packs",
+          "description": "WARNING: The CLI for this command is experimental and will likely change in the future!\n\nThe \"repair packs\" command extracts intact blobs from the specified pack files, rebuilds\nthe index to remove the damaged pack files and removes the pack files from the repository.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacert": {
+              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+            },
+            "cache-dir": {
+              "title": "cache-dir",
+              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "type": "string",
+              "minLength": 0
+            },
+            "cleanup-cache": {
+              "title": "cleanup-cache",
+              "description": "auto remove old cache directories",
+              "type": "boolean"
+            },
+            "compression": {
+              "title": "compression",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "insecure-tls": {
+              "title": "insecure-tls",
+              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "key-hint": {
+              "title": "key-hint",
+              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "limit-download": {
+              "title": "limit-download",
+              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "limit-upload": {
+              "title": "limit-upload",
+              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "no-cache": {
+              "title": "no-cache",
+              "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
+            "no-lock": {
+              "title": "no-lock",
+              "description": "do not lock the repository, this allows some operations on read-only repositories",
+              "type": "boolean"
+            },
+            "option": {
+              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "pack-size": {
+              "title": "pack-size",
+              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+              "type": "integer"
+            },
+            "password-command": {
+              "title": "password-command",
+              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+              "type": "string",
+              "minLength": 0
+            },
+            "password-file": {
+              "title": "password-file",
+              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+              "type": "string",
+              "minLength": 0
+            },
+            "quiet": {
+              "title": "quiet",
+              "description": "do not output comprehensive progress report",
               "type": "boolean"
             },
             "repo": {
@@ -6755,7 +7974,18 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-f6117b1192ca2bbfd50b31ef03b30ddd"
+              "$ref": "#/$defs/id-069c0c672104098e9e41d7ac3841fd0c"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -6781,6 +8011,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -6809,7 +8044,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-de830c42bbc7a1076b5b56cfb1aa1030"
+              "$ref": "#/$defs/id-3b78ee34ba5fc91fdf9fa51c39062f53"
             },
             "quiet": {
               "title": "quiet",
@@ -6874,7 +8109,7 @@
         },
         "restore": {
           "title": "restore",
-          "description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshot \"latest\" can be used to restore the latest snapshot in the\nrepository.",
+          "description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -6898,8 +8133,21 @@
               "type": "string",
               "minLength": 0
             },
+            "delete": {
+              "title": "delete",
+              "description": "delete files from target directory if they do not exist in snapshot. Use '--dry-run -vv' to check what would be deleted [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
+            "dry-run": {
+              "title": "dry-run",
+              "description": "do not write any data, just show what would be done [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "exclude": {
               "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
+            },
+            "exclude-file": {
+              "$ref": "#/$defs/id-703d64899271340b197b461a1da954f0"
             },
             "extended-status": {
               "title": "extended-status",
@@ -6907,16 +8155,36 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-0c8ddafad83236e17c1fe5bedb0bb757"
+              "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "iexclude": {
-              "$ref": "#/$defs/id-3d131e4cdb38324feb36c3c91bb96398"
+              "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
+            },
+            "iexclude-file": {
+              "$ref": "#/$defs/id-1372d6a4f6961e5e86fd694445a39721"
             },
             "iinclude": {
-              "$ref": "#/$defs/id-c605c7f497d93d2d4142e6b4fc88db4a"
+              "$ref": "#/$defs/id-e85b383c5fe5f267b43cb2035308e933"
+            },
+            "iinclude-file": {
+              "$ref": "#/$defs/id-35e9a66d22a93b5cfbcebc1b8d53c231"
             },
             "include": {
-              "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+              "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
+            },
+            "include-file": {
+              "$ref": "#/$defs/id-a009c428eabb1a0bbd5a6afe6ac4816a"
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -6944,6 +8212,11 @@
               "description": "do not use a local cache",
               "type": "boolean"
             },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
             "no-lock": {
               "title": "no-lock",
               "description": "do not lock the repository, this allows some operations on read-only repositories",
@@ -6951,6 +8224,13 @@
             },
             "option": {
               "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "overwrite": {
+              "title": "overwrite",
+              "default": "always",
+              "description": "overwrite behavior, one of (always|if-changed|if-newer|never) (default: always) [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "pack-size": {
               "title": "pack-size",
@@ -6970,7 +8250,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-aabc881b870c0a99f28a293ea1391847"
+              "$ref": "#/$defs/id-4d5c283f98d0925082ab484d3bdd4d16"
             },
             "quiet": {
               "title": "quiet",
@@ -7039,7 +8319,7 @@
         },
         "retention": {
           "title": "retention",
-          "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-*\" options is applied to each group individually.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
+          "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-\" options is applied to each group individually.\nIf there are not enough snapshots to keep one for each duration related\n\"--keep-{within-,}\" option, the oldest snapshot in the group is kept\nadditionally.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -7083,11 +8363,6 @@
               "description": "do not delete anything, just print what would be done",
               "type": "boolean"
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "group-by": {
               "title": "group-by",
               "default": "host,paths",
@@ -7096,11 +8371,27 @@
               "minLength": 0
             },
             "host": {
-              "$ref": "#/$defs/id-11840c6b8b3cf28d1945e74a49bb2d95"
+              "$ref": "#/$defs/id-9eb097550c08524117d0906abd0d2a05"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -7206,6 +8497,11 @@
               "description": "do not use a local cache",
               "type": "boolean"
             },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
             "no-lock": {
               "title": "no-lock",
               "description": "do not lock the repository, this allows some operations on read-only repositories",
@@ -7232,7 +8528,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-326d159415b9d63d8b28799e1b6cd274"
+              "$ref": "#/$defs/id-65f906f27a87d15f551fa4dc5250b520"
             },
             "prune": {
               "title": "prune",
@@ -7368,6 +8664,11 @@
               "type": "string",
               "minLength": 0
             },
+            "unsafe-allow-remove-all": {
+              "title": "unsafe-allow-remove-all",
+              "description": "allow deleting all snapshots of a snapshot group [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "verbose": {
               "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
             }
@@ -7428,13 +8729,24 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-88ae7e2f5b3fa2e0f432bda54e20778c"
+              "$ref": "#/$defs/id-bcda8b199ef5b0659a200468e2517a9f"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
             },
             "iexclude": {
               "$ref": "#/$defs/id-9358229151687377a80daf4c8fbe8ca2"
             },
             "iexclude-file": {
               "$ref": "#/$defs/id-af6c00e035cdb6af35a7de31dc26023d"
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -7457,9 +8769,26 @@
               "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
               "type": "integer"
             },
+            "new-host": {
+              "title": "new-host",
+              "description": "replace hostname [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "new-time": {
+              "title": "new-time",
+              "description": "replace time of the backup [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -7488,7 +8817,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-7c446eddb6d84a646a7050e5b3706e80"
+              "$ref": "#/$defs/id-754cd1d064baa6520e3f6b581da6308b"
             },
             "quiet": {
               "title": "quiet",
@@ -7594,7 +8923,18 @@
               "minLength": 0
             },
             "host": {
-              "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
+              "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -7633,6 +8973,11 @@
               "description": "do not use a local cache",
               "type": "boolean"
             },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
             "no-lock": {
               "title": "no-lock",
               "description": "do not lock the repository, this allows some operations on read-only repositories",
@@ -7659,7 +9004,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-355078e8e3fb9047383190d159c6d9bd"
+              "$ref": "#/$defs/id-0dd6bafe51f2901fa7f446e31a3b881d"
             },
             "quiet": {
               "title": "quiet",
@@ -7712,7 +9057,7 @@
         },
         "stats": {
           "title": "stats",
-          "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
+          "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -7736,17 +9081,28 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "host": {
-              "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
+              "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -7777,6 +9133,11 @@
               "description": "do not use a local cache",
               "type": "boolean"
             },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+              "type": "boolean"
+            },
             "no-lock": {
               "title": "no-lock",
               "description": "do not lock the repository, this allows some operations on read-only repositories",
@@ -7803,7 +9164,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-29d75b4b4a44869cb20bf5d71db46b7f"
+              "$ref": "#/$defs/id-1e3e4f194a26f596cf3db367ea81cd15"
             },
             "quiet": {
               "title": "quiet",
@@ -7901,7 +9262,18 @@
               "type": "boolean"
             },
             "host": {
-              "$ref": "#/$defs/id-be7c1ad659cb5ea675351ab77d7527c7"
+              "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
             },
             "insecure-tls": {
               "title": "insecure-tls",
@@ -7927,6 +9299,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -7955,7 +9332,7 @@
               "minLength": 0
             },
             "path": {
-              "$ref": "#/$defs/id-355078e8e3fb9047383190d159c6d9bd"
+              "$ref": "#/$defs/id-0dd6bafe51f2901fa7f446e31a3b881d"
             },
             "quiet": {
               "title": "quiet",
@@ -8049,6 +9426,17 @@
               "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
+            "http-user-agent": {
+              "title": "http-user-agent",
+              "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "insecure-no-password": {
+              "title": "insecure-no-password",
+              "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+              "type": "boolean"
+            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
@@ -8073,6 +9461,11 @@
             "no-cache": {
               "title": "no-cache",
               "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-extra-verify": {
+              "title": "no-extra-verify",
+              "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
               "type": "boolean"
             },
             "no-lock": {
@@ -8198,6 +9591,10 @@
             "generate",
             "init",
             "key",
+            "key-add",
+            "key-list",
+            "key-passwd",
+            "key-remove",
             "list",
             "ls",
             "migrate",
@@ -8207,6 +9604,7 @@
             "recover",
             "repair",
             "repair-index",
+            "repair-packs",
             "repair-snapshots",
             "restore",
             "rewrite",

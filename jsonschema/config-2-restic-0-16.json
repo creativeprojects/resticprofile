@@ -2,37 +2,6 @@
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "/resticprofile/jsonschema/config-2-restic-0-16.json",
   "$defs": {
-    "id-02bde6bb35ebd256e80fa0276e2c1c2e": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-a793598d3a991b52440abecb4ef45618"
-        }
-      ]
-    },
     "id-03550d33226c03f7e7c8a6a6fc971333": {
       "title": "snapshot",
       "description": "snapshot id to search in",
@@ -52,39 +21,6 @@
           "uniqueItems": false
         }
       ]
-    },
-    "id-03e384aa3a47fd3d36794a3d9f5c8801": {
-      "title": "path...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "path"
-      ],
-      "items": {
-        "title": "path",
-        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "path"
-            ],
-            "minLength": 0
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
     },
     "id-052a168c104bb25ef25e3e09f86a7c03": {
       "title": "send-before...",
@@ -592,13 +528,13 @@
         }
       ]
     },
-    "id-132953a82d3855b1778d06e995cf9844": {
+    "id-11fa1e23ade12c8149af2d113ea9dbb4": {
       "title": "host",
-      "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the hostname of the system.",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
       "anyOf": [
         {
           "title": "host",
-          "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the hostname of the system.",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
           "anyOf": [
             {
               "type": "boolean",
@@ -620,7 +556,7 @@
           ]
         },
         {
-          "$ref": "#/$defs/id-db1114758e1d6654c768fbf9a4b59645"
+          "$ref": "#/$defs/id-5f7b04a65135156c4a97e9e99ab9ac95"
         }
       ]
     },
@@ -636,7 +572,27 @@
         }
       ]
     },
-    "id-17337fdd5259db938b8743c3552e8878": {
+    "id-17df0ca3125f1db72ebb01d0ff902111": {
+      "title": "exclude-file",
+      "description": "read exclude patterns from a file [restic \u003e= 0.15.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "exclude-file...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-1afd9319fa44f3c2489e2ed69f1a472f": {
       "title": "path...",
       "type": "array",
       "examples": [
@@ -646,7 +602,7 @@
       ],
       "items": {
         "title": "path",
-        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+        "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
         "anyOf": [
           {
             "type": "boolean",
@@ -669,16 +625,16 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-17df0ca3125f1db72ebb01d0ff902111": {
-      "title": "exclude-file",
-      "description": "read exclude patterns from a file [restic \u003e= 0.15.0]",
+    "id-1b525c9f6a0698293ca268ea3866afa4": {
+      "title": "include",
+      "description": "include a pattern",
       "anyOf": [
         {
           "type": "string",
           "minLength": 0
         },
         {
-          "title": "exclude-file...",
+          "title": "include...",
           "type": "array",
           "items": {
             "type": "string",
@@ -792,6 +748,38 @@
         }
       ]
     },
+    "id-2a2f6f7cd1fb61a45eb0eb65cdb60ee4": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-a3339bf04aa7ce8b2de0e4f0182e7ee1"
+        }
+      ]
+    },
     "id-2ca6a44f0bb5aa131cb5f092c9e98d10": {
       "deprecated": true,
       "type": "string",
@@ -824,6 +812,37 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-306fea3abd643f113b3a51bb5886dad4": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-1afd9319fa44f3c2489e2ed69f1a472f"
         }
       ]
     },
@@ -874,7 +893,7 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-3c27b31752706b7884ad2ef8f72d05fc": {
+    "id-3db5e6a13da7efdfe4078d04413a1586": {
       "title": "host...",
       "type": "array",
       "examples": [
@@ -884,7 +903,7 @@
       ],
       "items": {
         "title": "host",
-        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system.",
+        "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
         "anyOf": [
           {
             "type": "boolean",
@@ -907,26 +926,6 @@
       },
       "minItems": 0,
       "uniqueItems": false
-    },
-    "id-3d131e4cdb38324feb36c3c91bb96398": {
-      "title": "iexclude",
-      "description": "same as --exclude but ignores the casing of filenames [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "iexclude...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
     },
     "id-43751bb98b8f27a3043a5cf8114dcc42": {
       "title": "files-from",
@@ -974,6 +973,37 @@
       "minItems": 0,
       "uniqueItems": false
     },
+    "id-50287fc5f0b0ec16f5013bbe833c1100": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-b5477d375908701459f12018dbadbbda"
+        }
+      ]
+    },
     "id-53767a30fc77f3330d1a369be63db148": {
       "title": "schedule-capture-environment...",
       "deprecated": true,
@@ -986,61 +1016,36 @@
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-54517d1f96d560d720efea73a786256d": {
-      "title": "host",
-      "description": "the hostname for new keys.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-      "oneOf": [
+    "id-58170d9ae682165edaf4c818e7b50550": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+      "anyOf": [
         {
-          "type": "boolean",
-          "examples": [
-            true,
-            false
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
           ]
         },
         {
-          "type": "string",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "minLength": 0,
-          "format": "hostname"
+          "$ref": "#/$defs/id-7fe776d1a2c2dd57ebe6cff96c557b7a"
         }
       ]
-    },
-    "id-57f271a0e81f06ae18622ecc7280cf01": {
-      "title": "path...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "path"
-      ],
-      "items": {
-        "title": "path",
-        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "path"
-            ],
-            "minLength": 0
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
     },
     "id-5a30ba75410604c90422365278a6a8c2": {
       "title": "iexclude-file",
@@ -1126,132 +1131,72 @@
         }
       ]
     },
-    "id-60610b8cc3424c27d741f1341bbab768": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-d4e31ee643276a3f10e94bba6ec8605e"
-        }
-      ]
+    "id-5f7b04a65135156c4a97e9e99ab9ac95": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
     },
-    "id-60738906214cb52a74eafacdd10b4ca5": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-73f9aa1eb177a6fd3ee40ec4b6377883"
-        }
-      ]
-    },
-    "id-654756fabcdbea48a17af3e334b174fa": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-e086c1ba1c26403064afda18d971c2a7"
-        }
-      ]
-    },
-    "id-69fb502c96bc12b6aa7cca6a0ec27c06": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-8a855b50c90b22087e65d132470fe10e"
-        }
-      ]
+    "id-6b5642166c912fb9b40f15f5459cb711": {
+      "title": "path...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "path"
+      ],
+      "items": {
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "path"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
     },
     "id-6b767374afe44ab7caa0ae97e251c4ed": {
       "title": "verbose",
@@ -1262,29 +1207,6 @@
         },
         {
           "type": "integer"
-        }
-      ]
-    },
-    "id-6c961a5e7bc2bf9ec9e2c3a9874621c5": {
-      "title": "host",
-      "description": "set the hostname for the snapshot manually. To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system. Defaults to true for config version 2 in \"backup\".",
-      "oneOf": [
-        {
-          "type": "boolean",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        {
-          "type": "string",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "minLength": 0,
-          "format": "hostname"
         }
       ]
     },
@@ -1370,17 +1292,17 @@
         }
       ]
     },
-    "id-73f9aa1eb177a6fd3ee40ec4b6377883": {
-      "title": "path...",
+    "id-7436182a7d8cda9c00cd5d31c743af8b": {
+      "title": "host...",
       "type": "array",
       "examples": [
         true,
         false,
-        "path"
+        "host"
       ],
       "items": {
-        "title": "path",
-        "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the paths from section \"backup\".",
+        "title": "host",
+        "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
         "anyOf": [
           {
             "type": "boolean",
@@ -1394,22 +1316,77 @@
             "examples": [
               true,
               false,
-              "path"
+              "host"
             ],
-            "minLength": 0
+            "minLength": 0,
+            "format": "hostname"
           }
         ]
       },
       "minItems": 0,
       "uniqueItems": false
     },
-    "id-77f32871d9030623776477728c9f69ab": {
+    "id-772a2599841b628f32030d9af183045a": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-783b5260d9a5f4eba741f6448d3a73a0": {
+      "title": "exclude",
+      "description": "exclude a pattern [restic \u003e= 0.15.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "exclude...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-7c2846c9b466517f2dc34573f1b2e932": {
       "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system.",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
       "anyOf": [
         {
           "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system.",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
           "anyOf": [
             {
               "type": "boolean",
@@ -1431,27 +1408,7 @@
           ]
         },
         {
-          "$ref": "#/$defs/id-3c27b31752706b7884ad2ef8f72d05fc"
-        }
-      ]
-    },
-    "id-783b5260d9a5f4eba741f6448d3a73a0": {
-      "title": "exclude",
-      "description": "exclude a pattern [restic \u003e= 0.15.0]",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "exclude...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
+          "$ref": "#/$defs/id-a19527553901cb803d03ed8c04383470"
         }
       ]
     },
@@ -1475,7 +1432,7 @@
         }
       ]
     },
-    "id-7e83a9ee9263a4afc59d64a6f6ff1887": {
+    "id-7fe776d1a2c2dd57ebe6cff96c557b7a": {
       "title": "path...",
       "type": "array",
       "examples": [
@@ -1485,7 +1442,7 @@
       ],
       "items": {
         "title": "path",
-        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
+        "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
         "anyOf": [
           {
             "type": "boolean",
@@ -1532,39 +1489,36 @@
         }
       ]
     },
-    "id-8a855b50c90b22087e65d132470fe10e": {
-      "title": "host...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "host"
-      ],
-      "items": {
-        "title": "host",
-        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "host"
-            ],
-            "minLength": 0,
-            "format": "hostname"
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
+    "id-8c6fe1c84bae67ed9a76d97fe04722fe": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-6b5642166c912fb9b40f15f5459cb711"
+        }
+      ]
     },
     "id-8dc244da59b67cffbcc6e5de402cffb5": {
       "title": "send-after...",
@@ -1598,38 +1552,6 @@
         },
         {
           "$ref": "#/$defs/id-052a168c104bb25ef25e3e09f86a7c03"
-        }
-      ]
-    },
-    "id-8f7c57e978accc119ff69155a4f51994": {
-      "title": "host",
-      "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-ed25fe80c138156966805dc394615936"
         }
       ]
     },
@@ -1755,6 +1677,39 @@
         }
       ]
     },
+    "id-98ec131b3f78cbaced5a3a83f06258da": {
+      "title": "path...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "path"
+      ],
+      "items": {
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "path"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-997692924136270ec7fee7ea4d04a8d6": {
       "title": "files-from-verbatim",
       "description": "read the files to backup from file (can be combined with file args) [restic \u003e= 0.12.0]",
@@ -1772,6 +1727,38 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-9adce3f5946d7ba07e254360f9162b89": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-772a2599841b628f32030d9af183045a"
         }
       ]
     },
@@ -1805,26 +1792,6 @@
       },
       "minItems": 0,
       "uniqueItems": false
-    },
-    "id-9ef1233a753c84edabc29066b234299f": {
-      "title": "include",
-      "description": "include a pattern, exclude everything else",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "include...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
     },
     "id-9f9f3ec835e790da2b62f66ce5e9b1be": {
       "title": "tag...",
@@ -1936,6 +1903,74 @@
         }
       ]
     },
+    "id-a19527553901cb803d03ed8c04383470": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
+    "id-a3339bf04aa7ce8b2de0e4f0182e7ee1": {
+      "title": "host...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "host"
+      ],
+      "items": {
+        "title": "host",
+        "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "host"
+            ],
+            "minLength": 0,
+            "format": "hostname"
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
+    },
     "id-a4563b5e7b4aa37bac3a57c09ef530f3": {
       "title": "remove",
       "description": "tags which will be removed from the existing tags in the format tag[,tag,...]",
@@ -1981,70 +2016,6 @@
               true,
               false,
               "tag"
-            ],
-            "minLength": 0
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
-    },
-    "id-a6e311afe0d4fc6a2f714d2edfcaae4b": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-7e83a9ee9263a4afc59d64a6f6ff1887"
-        }
-      ]
-    },
-    "id-a793598d3a991b52440abecb4ef45618": {
-      "title": "path...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "path"
-      ],
-      "items": {
-        "title": "path",
-        "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "path"
             ],
             "minLength": 0
           }
@@ -2636,37 +2607,6 @@
         }
       }
     },
-    "id-addb502281d13a93076f4d168a602650": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.15.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-57f271a0e81f06ae18622ecc7280cf01"
-        }
-      ]
-    },
     "id-af6c00e035cdb6af35a7de31dc26023d": {
       "title": "iexclude-file",
       "description": "same as --exclude-file but ignores casing of filenames in patterns [restic \u003e= 0.15.0]",
@@ -2698,6 +2638,70 @@
           "$ref": "#/$defs/id-8dc244da59b67cffbcc6e5de402cffb5"
         }
       ]
+    },
+    "id-b362a3e0ccae4b478c4681a4cb296341": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-98ec131b3f78cbaced5a3a83f06258da"
+        }
+      ]
+    },
+    "id-b5477d375908701459f12018dbadbbda": {
+      "title": "path...",
+      "type": "array",
+      "examples": [
+        true,
+        false,
+        "path"
+      ],
+      "items": {
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
+        "anyOf": [
+          {
+            "type": "boolean",
+            "examples": [
+              true,
+              false
+            ]
+          },
+          {
+            "type": "string",
+            "examples": [
+              true,
+              false,
+              "path"
+            ],
+            "minLength": 0
+          }
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": false
     },
     "id-b88443d3eba9c9dfad608c2a71614d0d": {
       "type": "object",
@@ -2789,26 +2793,6 @@
         "Mon..Fri 00:30"
       ],
       "minLength": 0
-    },
-    "id-c605c7f497d93d2d4142e6b4fc88db4a": {
-      "title": "iinclude",
-      "description": "same as --include but ignores the casing of filenames [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "type": "string",
-          "minLength": 0
-        },
-        {
-          "title": "iinclude...",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
     },
     "id-ca6d9f5660f88c82d389d4525551cc7e": {
       "title": "schedule",
@@ -3286,39 +3270,28 @@
         }
       ]
     },
-    "id-d4e31ee643276a3f10e94bba6ec8605e": {
-      "title": "host...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "host"
-      ],
-      "items": {
-        "title": "host",
-        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "host"
-            ],
-            "minLength": 0,
-            "format": "hostname"
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
+    "id-d7af7929542f414971eae9ea31c9fbe3": {
+      "title": "host",
+      "description": "set the hostname for the snapshot manually (default: $RESTIC_HOST). To prevent an expensive rescan use the \"parent\" flag.\nBoolean true is replaced with the hostname of the system. Defaults to true for config version 2 in \"backup\".",
+      "oneOf": [
+        {
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
+        }
+      ]
     },
     "id-d7f8fecbb230b837e9062334f594f0b5": {
       "title": "exclude-file",
@@ -3340,39 +3313,37 @@
         }
       ]
     },
-    "id-db1114758e1d6654c768fbf9a4b59645": {
-      "title": "host...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "host"
-      ],
-      "items": {
-        "title": "host",
-        "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given.\nBoolean true is replaced with the hostname of the system.",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "host"
-            ],
-            "minLength": 0,
-            "format": "hostname"
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
+    "id-d8318aede08ef634d4b20867f5791722": {
+      "title": "host",
+      "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-3db5e6a13da7efdfe4078d04413a1586"
+        }
+      ]
     },
     "id-db71520355d2a9baae090ca906a4bd4f": {
       "title": "add",
@@ -3440,40 +3411,6 @@
           "$ref": "#/$defs/id-53767a30fc77f3330d1a369be63db148"
         }
       ]
-    },
-    "id-e086c1ba1c26403064afda18d971c2a7": {
-      "title": "host...",
-      "type": "array",
-      "examples": [
-        true,
-        false,
-        "host"
-      ],
-      "items": {
-        "title": "host",
-        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-        "anyOf": [
-          {
-            "type": "boolean",
-            "examples": [
-              true,
-              false
-            ]
-          },
-          {
-            "type": "string",
-            "examples": [
-              true,
-              false,
-              "host"
-            ],
-            "minLength": 0,
-            "format": "hostname"
-          }
-        ]
-      },
-      "minItems": 0,
-      "uniqueItems": false
     },
     "id-e53da3b88d470edbc47a4cdd4160ff3f": {
       "title": "option",
@@ -3571,6 +3508,58 @@
         }
       }
     },
+    "id-e85b383c5fe5f267b43cb2035308e933": {
+      "title": "iinclude",
+      "description": "same as --include pattern but ignores the casing of filenames [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "iinclude...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-ea1b70977b0e3cf792d5c3ad1231c8d3": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/id-7436182a7d8cda9c00cd5d31c743af8b"
+        }
+      ]
+    },
     "id-ec2677e78c4ab68f0084eda8fac2205c": {
       "title": "files-from-raw",
       "description": "read the files to backup from file (can be combined with file args) [restic \u003e= 0.12.0]",
@@ -3591,17 +3580,17 @@
         }
       ]
     },
-    "id-ed25fe80c138156966805dc394615936": {
-      "title": "host...",
+    "id-ecad63ddeaf9b6ee3257506b339a3dd4": {
+      "title": "path...",
       "type": "array",
       "examples": [
         true,
         false,
-        "host"
+        "path"
       ],
       "items": {
-        "title": "host",
-        "description": "only consider snapshots for this host.\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+        "title": "path",
+        "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
         "anyOf": [
           {
             "type": "boolean",
@@ -3615,10 +3604,9 @@
             "examples": [
               true,
               false,
-              "host"
+              "path"
             ],
-            "minLength": 0,
-            "format": "hostname"
+            "minLength": 0
           }
         ]
       },
@@ -3729,13 +3717,13 @@
         }
       ]
     },
-    "id-f03b6a4d6bdca6c401677df8f592e453": {
+    "id-f322bd36da6394f27bf8e2a3f5b4c9bf": {
       "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
       "anyOf": [
         {
           "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\".",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.16.0]",
           "anyOf": [
             {
               "type": "boolean",
@@ -3756,38 +3744,7 @@
           ]
         },
         {
-          "$ref": "#/$defs/id-03e384aa3a47fd3d36794a3d9f5c8801"
-        }
-      ]
-    },
-    "id-f625336b5c591d83dd124775402a56e7": {
-      "title": "path",
-      "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
-      "anyOf": [
-        {
-          "title": "path",
-          "description": "only consider snapshots including this (absolute) path.\nBoolean true is replaced with the paths from section \"backup\". Defaults to true in \"retention\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "path"
-              ],
-              "minLength": 0
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/id-17337fdd5259db938b8743c3552e8878"
+          "$ref": "#/$defs/id-ecad63ddeaf9b6ee3257506b339a3dd4"
         }
       ]
     },
@@ -3845,6 +3802,31 @@
       },
       "minItems": 0,
       "uniqueItems": false
+    },
+    "id-ff0dfd3fabc9eefcc415fbef01071197": {
+      "title": "host",
+      "description": "the hostname for new keys.\nBoolean true is replaced with the hostname of the system. [deprecated, removed in 0.17.0, restic \u003e= 0.10.0]",
+      "oneOf": [
+        {
+          "deprecated": true,
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "deprecated": true,
+          "type": "string",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "minLength": 0,
+          "format": "hostname"
+        }
+      ]
     }
   },
   "description": "resticprofile configuration v2",
@@ -3906,6 +3888,10 @@
             "generate",
             "init",
             "key",
+            "key-add",
+            "key-list",
+            "key-passwd",
+            "key-remove",
             "list",
             "ls",
             "migrate",
@@ -3915,6 +3901,7 @@
             "recover",
             "repair",
             "repair-index",
+            "repair-packs",
             "repair-snapshots",
             "restore",
             "rewrite",
@@ -4664,7 +4651,7 @@
                 },
                 "force": {
                   "title": "force",
-                  "description": "force re-reading the target files/directories (overrides the \"parent\" flag)",
+                  "description": "force re-reading the source files/directories (overrides the \"parent\" flag)",
                   "type": "boolean"
                 },
                 "group-by": {
@@ -4675,7 +4662,7 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-6c961a5e7bc2bf9ec9e2c3a9874621c5"
+                  "$ref": "#/$defs/id-d7af7929542f414971eae9ea31c9fbe3"
                 },
                 "iexclude": {
                   "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
@@ -4708,7 +4695,7 @@
                 },
                 "ignore-inode": {
                   "title": "ignore-inode",
-                  "description": "ignore inode number changes when checking for modified files [restic \u003e= 0.10.0]",
+                  "description": "ignore inode number and ctime changes when checking for modified files [restic \u003e= 0.10.0]",
                   "type": "boolean"
                 },
                 "insecure-tls": {
@@ -5388,14 +5375,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5869,13 +5856,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
+                  "$ref": "#/$defs/id-ea1b70977b0e3cf792d5c3ad1231c8d3"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -5939,11 +5926,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "from-key-hint": {
                   "title": "from-key-hint",
                   "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -5975,16 +5957,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
+                  "$ref": "#/$defs/id-ea1b70977b0e3cf792d5c3ad1231c8d3"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
+                  "$ref": "#/$defs/id-ea1b70977b0e3cf792d5c3ad1231c8d3"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
+                  "$ref": "#/$defs/id-ea1b70977b0e3cf792d5c3ad1231c8d3"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-69fb502c96bc12b6aa7cca6a0ec27c06"
+                  "$ref": "#/$defs/id-ea1b70977b0e3cf792d5c3ad1231c8d3"
                 },
                 "initialize": {
                   "title": "initialize",
@@ -6000,6 +5982,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6058,16 +6045,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -6327,7 +6314,7 @@
             },
             "diff": {
               "title": "diff",
-              "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink",
+              "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink\n?  Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n\u0026'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -6535,7 +6522,7 @@
             },
             "dump": {
               "title": "dump",
-              "description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshot \"latest\" can be used to use the latest snapshot in the\nrepository.",
+              "description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -6543,13 +6530,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -6602,26 +6589,26 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6680,16 +6667,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -6825,13 +6812,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -6886,16 +6873,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "human-readable": {
                   "title": "human-readable",
@@ -6995,16 +6982,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -7132,7 +7119,7 @@
             },
             "forget": {
               "title": "forget",
-              "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-*\" options is applied to each group individually.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
+              "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-\" options is applied to each group individually.\nIf there are not enough snapshots to keep one for each duration related\n\"--keep-{within-,}\" option, the oldest snapshot in the group is kept\nadditionally.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -7140,7 +7127,7 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "...keep-tag": {
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
@@ -7149,7 +7136,7 @@
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -7221,16 +7208,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -7384,16 +7371,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "prune": {
                   "title": "prune",
@@ -7651,11 +7638,6 @@
                   "description": "copy chunker parameters from the secondary repository (useful with the copy command) [restic \u003e= 0.10.0]",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "from-key-hint": {
                   "title": "from-key-hint",
                   "description": "key ID of key to try decrypting the source repository first (default: $RESTIC_FROM_KEY_HINT) [restic \u003e= 0.14.0]",
@@ -7689,6 +7671,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7802,7 +7789,7 @@
             },
             "key": {
               "title": "key",
-              "description": "The \"key\" command manages keys (passwords) for accessing the repository.",
+              "description": "The \"key\" command allows you to set multiple access keys or passwords\nper repository.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -7859,7 +7846,7 @@
                   "type": "boolean"
                 },
                 "host": {
-                  "$ref": "#/$defs/id-54517d1f96d560d720efea73a786256d"
+                  "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -7884,7 +7871,8 @@
                 },
                 "new-password-file": {
                   "title": "new-password-file",
-                  "description": "file from which to read the new password",
+                  "deprecated": true,
+                  "description": "file from which to read the new password [deprecated, removed in 0.17.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8009,7 +7997,8 @@
                 },
                 "user": {
                   "title": "user",
-                  "description": "the username for new keys [restic \u003e= 0.10.0]",
+                  "deprecated": true,
+                  "description": "the username for new keys [deprecated, removed in 0.17.0, restic \u003e= 0.10.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -8087,14 +8076,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8253,13 +8242,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -8305,17 +8294,22 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "human-readable": {
                   "title": "human-readable",
@@ -8325,11 +8319,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8393,16 +8382,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -8724,13 +8713,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "...path-template": {
                   "$ref": "#/$defs/id-d00dfc211f97db13bd5f14ea3a21e8e6"
@@ -8784,26 +8773,26 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8872,7 +8861,7 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path-template": {
                   "$ref": "#/$defs/id-d00dfc211f97db13bd5f14ea3a21e8e6"
@@ -8887,13 +8876,13 @@
                   "$ref": "#/$defs/id-d00dfc211f97db13bd5f14ea3a21e8e6"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -9473,14 +9462,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9676,14 +9665,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10044,13 +10033,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                  "$ref": "#/$defs/id-7c2846c9b466517f2dc34573f1b2e932"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                  "$ref": "#/$defs/id-f322bd36da6394f27bf8e2a3f5b4c9bf"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -10101,31 +10090,31 @@
                   "description": "do not do anything, just print what would be done [restic \u003e= 0.16.0]",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "forget": {
                   "title": "forget",
                   "description": "remove original snapshots after creating new ones [restic \u003e= 0.16.0]",
                   "type": "boolean"
                 },
                 "host": {
-                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                  "$ref": "#/$defs/id-7c2846c9b466517f2dc34573f1b2e932"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                  "$ref": "#/$defs/id-7c2846c9b466517f2dc34573f1b2e932"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                  "$ref": "#/$defs/id-7c2846c9b466517f2dc34573f1b2e932"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-8f7c57e978accc119ff69155a4f51994"
+                  "$ref": "#/$defs/id-7c2846c9b466517f2dc34573f1b2e932"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10184,16 +10173,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                  "$ref": "#/$defs/id-f322bd36da6394f27bf8e2a3f5b4c9bf"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                  "$ref": "#/$defs/id-f322bd36da6394f27bf8e2a3f5b4c9bf"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                  "$ref": "#/$defs/id-f322bd36da6394f27bf8e2a3f5b4c9bf"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-02bde6bb35ebd256e80fa0276e2c1c2e"
+                  "$ref": "#/$defs/id-f322bd36da6394f27bf8e2a3f5b4c9bf"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -10306,7 +10295,7 @@
             },
             "restore": {
               "title": "restore",
-              "description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshot \"latest\" can be used to restore the latest snapshot in the\nrepository.",
+              "description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -10317,22 +10306,22 @@
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "...iexclude": {
-                  "$ref": "#/$defs/id-3d131e4cdb38324feb36c3c91bb96398"
+                  "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
                 },
                 "...iinclude": {
-                  "$ref": "#/$defs/id-c605c7f497d93d2d4142e6b4fc88db4a"
+                  "$ref": "#/$defs/id-e85b383c5fe5f267b43cb2035308e933"
                 },
                 "...include": {
-                  "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+                  "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -10390,62 +10379,62 @@
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-132953a82d3855b1778d06e995cf9844"
+                  "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
                 "iexclude": {
-                  "$ref": "#/$defs/id-3d131e4cdb38324feb36c3c91bb96398"
+                  "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
                 },
                 "iexclude...": {
-                  "$ref": "#/$defs/id-3d131e4cdb38324feb36c3c91bb96398"
+                  "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
                 },
                 "iexclude__APPEND": {
-                  "$ref": "#/$defs/id-3d131e4cdb38324feb36c3c91bb96398"
+                  "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
                 },
                 "iexclude__PREPEND": {
-                  "$ref": "#/$defs/id-3d131e4cdb38324feb36c3c91bb96398"
+                  "$ref": "#/$defs/id-31b76762391db3e4e7e8275c1490db64"
                 },
                 "iinclude": {
-                  "$ref": "#/$defs/id-c605c7f497d93d2d4142e6b4fc88db4a"
+                  "$ref": "#/$defs/id-e85b383c5fe5f267b43cb2035308e933"
                 },
                 "iinclude...": {
-                  "$ref": "#/$defs/id-c605c7f497d93d2d4142e6b4fc88db4a"
+                  "$ref": "#/$defs/id-e85b383c5fe5f267b43cb2035308e933"
                 },
                 "iinclude__APPEND": {
-                  "$ref": "#/$defs/id-c605c7f497d93d2d4142e6b4fc88db4a"
+                  "$ref": "#/$defs/id-e85b383c5fe5f267b43cb2035308e933"
                 },
                 "iinclude__PREPEND": {
-                  "$ref": "#/$defs/id-c605c7f497d93d2d4142e6b4fc88db4a"
+                  "$ref": "#/$defs/id-e85b383c5fe5f267b43cb2035308e933"
                 },
                 "include": {
-                  "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+                  "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
                 },
                 "include...": {
-                  "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+                  "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
                 },
                 "include__APPEND": {
-                  "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+                  "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
                 },
                 "include__PREPEND": {
-                  "$ref": "#/$defs/id-9ef1233a753c84edabc29066b234299f"
+                  "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10504,16 +10493,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-60738906214cb52a74eafacdd10b4ca5"
+                  "$ref": "#/$defs/id-b362a3e0ccae4b478c4681a4cb296341"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -10630,7 +10619,7 @@
             },
             "retention": {
               "title": "retention",
-              "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-*\" options is applied to each group individually.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
+              "description": "The \"forget\" command removes snapshots according to a policy. All snapshots are\nfirst divided into groups according to \"--group-by\", and after that the policy\nspecified by the \"--keep-\" options is applied to each group individually.\nIf there are not enough snapshots to keep one for each duration related\n\"--keep-{within-,}\" option, the oldest snapshot in the group is kept\nadditionally.\n\nPlease note that this command really only deletes the snapshot object in the\nrepository, which is a reference to data stored there. In order to remove the\nunreferenced data after \"forget\" was run successfully, see the \"prune\" command.\n\nPlease also read the documentation for \"forget\" to learn about some important\nsecurity considerations.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -10638,7 +10627,7 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
+                  "$ref": "#/$defs/id-9adce3f5946d7ba07e254360f9162b89"
                 },
                 "...keep-tag": {
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
@@ -10647,7 +10636,7 @@
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
+                  "$ref": "#/$defs/id-8c6fe1c84bae67ed9a76d97fe04722fe"
                 },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-dd293c47346951998deea16fba697fb8"
@@ -10717,16 +10706,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
+                  "$ref": "#/$defs/id-9adce3f5946d7ba07e254360f9162b89"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
+                  "$ref": "#/$defs/id-9adce3f5946d7ba07e254360f9162b89"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
+                  "$ref": "#/$defs/id-9adce3f5946d7ba07e254360f9162b89"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-654756fabcdbea48a17af3e334b174fa"
+                  "$ref": "#/$defs/id-9adce3f5946d7ba07e254360f9162b89"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -10880,16 +10869,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
+                  "$ref": "#/$defs/id-8c6fe1c84bae67ed9a76d97fe04722fe"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
+                  "$ref": "#/$defs/id-8c6fe1c84bae67ed9a76d97fe04722fe"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
+                  "$ref": "#/$defs/id-8c6fe1c84bae67ed9a76d97fe04722fe"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f625336b5c591d83dd124775402a56e7"
+                  "$ref": "#/$defs/id-8c6fe1c84bae67ed9a76d97fe04722fe"
                 },
                 "prune": {
                   "title": "prune",
@@ -11074,7 +11063,7 @@
                   "$ref": "#/$defs/id-17df0ca3125f1db72ebb01d0ff902111"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-60610b8cc3424c27d741f1341bbab768"
+                  "$ref": "#/$defs/id-2a2f6f7cd1fb61a45eb0eb65cdb60ee4"
                 },
                 "...iexclude": {
                   "$ref": "#/$defs/id-9358229151687377a80daf4c8fbe8ca2"
@@ -11086,7 +11075,7 @@
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-addb502281d13a93076f4d168a602650"
+                  "$ref": "#/$defs/id-58170d9ae682165edaf4c818e7b50550"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -11161,22 +11150,27 @@
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-783b5260d9a5f4eba741f6448d3a73a0"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "forget": {
                   "title": "forget",
                   "description": "remove original snapshots after creating new ones [restic \u003e= 0.15.0]",
                   "type": "boolean"
                 },
                 "host": {
-                  "$ref": "#/$defs/id-60610b8cc3424c27d741f1341bbab768"
+                  "$ref": "#/$defs/id-2a2f6f7cd1fb61a45eb0eb65cdb60ee4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-60610b8cc3424c27d741f1341bbab768"
+                  "$ref": "#/$defs/id-2a2f6f7cd1fb61a45eb0eb65cdb60ee4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-60610b8cc3424c27d741f1341bbab768"
+                  "$ref": "#/$defs/id-2a2f6f7cd1fb61a45eb0eb65cdb60ee4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-60610b8cc3424c27d741f1341bbab768"
+                  "$ref": "#/$defs/id-2a2f6f7cd1fb61a45eb0eb65cdb60ee4"
                 },
                 "iexclude": {
                   "$ref": "#/$defs/id-9358229151687377a80daf4c8fbe8ca2"
@@ -11205,11 +11199,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -11268,16 +11257,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-addb502281d13a93076f4d168a602650"
+                  "$ref": "#/$defs/id-58170d9ae682165edaf4c818e7b50550"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-addb502281d13a93076f4d168a602650"
+                  "$ref": "#/$defs/id-58170d9ae682165edaf4c818e7b50550"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-addb502281d13a93076f4d168a602650"
+                  "$ref": "#/$defs/id-58170d9ae682165edaf4c818e7b50550"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-addb502281d13a93076f4d168a602650"
+                  "$ref": "#/$defs/id-58170d9ae682165edaf4c818e7b50550"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -11434,13 +11423,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -11503,16 +11492,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -11580,16 +11569,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -11690,7 +11679,7 @@
             },
             "stats": {
               "title": "stats",
-              "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
+              "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -11698,13 +11687,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "...run-after": {
                   "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
@@ -11751,16 +11740,16 @@
                   "minLength": 0
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -11835,16 +11824,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-a6e311afe0d4fc6a2f714d2edfcaae4b"
+                  "$ref": "#/$defs/id-306fea3abd643f113b3a51bb5886dad4"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -11986,13 +11975,13 @@
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
                 "...host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
                 "...path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "...remove": {
                   "$ref": "#/$defs/id-a4563b5e7b4aa37bac3a57c09ef530f3"
@@ -12062,16 +12051,16 @@
                   "type": "boolean"
                 },
                 "host": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host...": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__APPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "host__PREPEND": {
-                  "$ref": "#/$defs/id-77f32871d9030623776477728c9f69ab"
+                  "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
@@ -12134,16 +12123,16 @@
                   "minLength": 0
                 },
                 "path": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path...": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__APPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "path__PREPEND": {
-                  "$ref": "#/$defs/id-f03b6a4d6bdca6c401677df8f592e453"
+                  "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
                 "quiet": {
                   "title": "quiet",
@@ -12325,14 +12314,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
