@@ -110,7 +110,9 @@ func TestCompleter(t *testing.T) {
 			})
 
 			testValues := func(flagName string, expected []string) func(t *testing.T) {
+				//nolint:thelper
 				return func(t *testing.T) {
+
 					t.Run("ReturnsAllValues", func(t *testing.T) {
 						actual := completer.Complete(newArgs(fmt.Sprintf("--%s", flagName), ""))
 						assert.Equal(t, expected, actual)

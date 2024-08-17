@@ -12,7 +12,7 @@ import (
 var (
 	tempDirInitializer sync.Once
 	tempDir            string
-	tempDirErr         error
+	errTempDir         error
 )
 
 const (
@@ -23,18 +23,18 @@ const (
 // TempDir returns the path to a temporary directory that is stable within the same process and cleaned when shutdown.RunHooks is invoked
 func TempDir() (string, error) {
 	tempDirInitializer.Do(func() {
-		tempDir, tempDirErr = createTempDir("")
+		tempDir, errTempDir = createTempDir("")
 
 		if !shutdown.ContainsHook(tempDirHookTag) {
 			shutdown.AddHook(func() {
-				removeTempDir(tempDir, tempDirErr)
+				removeTempDir(tempDir, errTempDir)
 				tempDir = ""
-				tempDirErr = fmt.Errorf("illegal state: temp directory has been removed")
+				errTempDir = fmt.Errorf("illegal state: temp directory has been removed")
 			}, tempDirHookTag)
 		}
 	})
 
-	return tempDir, tempDirErr
+	return tempDir, errTempDir
 }
 
 // MustGetTempDir returns the dir from TempDir or panics if an error occurred
@@ -49,9 +49,9 @@ func MustGetTempDir() string {
 // ClearTempDir removes the temporary directory (if present) and resets the state.
 // This is not safe for concurrent use and is meant for cleanup in unit tests only.
 func ClearTempDir() {
-	removeTempDir(tempDir, tempDirErr)
+	removeTempDir(tempDir, errTempDir)
 	tempDir = ""
-	tempDirErr = nil
+	errTempDir = nil
 	tempDirInitializer = sync.Once{}
 }
 

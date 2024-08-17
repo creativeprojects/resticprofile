@@ -886,7 +886,7 @@ func TestBackupWithResticLockFailureRetried(t *testing.T) {
 		"storage ID c8a44e77" + platform.LineSeparator +
 		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
 	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureRetried.txt")
-	err := os.WriteFile(tempfile, []byte(lockMessage), 0644)
+	err := os.WriteFile(tempfile, []byte(lockMessage), 0o600)
 	require.NoError(t, err)
 	defer os.Remove(tempfile)
 
@@ -922,7 +922,7 @@ func TestBackupWithResticLockFailureCancelled(t *testing.T) {
 		"storage ID c8a44e77" + platform.LineSeparator +
 		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
 	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureCancelled.txt")
-	err := os.WriteFile(tempfile, []byte(lockMessage), 0644)
+	err := os.WriteFile(tempfile, []byte(lockMessage), 0o600)
 	require.NoError(t, err)
 	defer os.Remove(tempfile)
 

@@ -43,7 +43,7 @@ func TestLockRunWithLock(t *testing.T) {
 		return nil
 	}
 	lockfile := filepath.Join(t.TempDir(), "lockfile")
-	err := os.WriteFile(lockfile, []byte{}, 0644)
+	err := os.WriteFile(lockfile, []byte{}, 0o600)
 	assert.NoError(t, err)
 	assert.FileExists(t, lockfile)
 
@@ -60,7 +60,7 @@ func TestLockRunWithLockAndForce(t *testing.T) {
 		return nil
 	}
 	lockfile := filepath.Join(t.TempDir(), "lockfile")
-	err := os.WriteFile(lockfile, []byte{}, 0644)
+	err := os.WriteFile(lockfile, []byte{}, 0o600)
 	assert.NoError(t, err)
 	assert.FileExists(t, lockfile)
 
@@ -77,7 +77,7 @@ func TestLockRunWithLockAndWait(t *testing.T) {
 		return nil
 	}
 	lockfile := filepath.Join(t.TempDir(), "lockfile")
-	err := os.WriteFile(lockfile, []byte{}, 0644)
+	err := os.WriteFile(lockfile, []byte{}, 0o600)
 	assert.NoError(t, err)
 	assert.FileExists(t, lockfile)
 
@@ -101,7 +101,7 @@ func TestLockRunWithLockAndCancel(t *testing.T) {
 		return nil
 	}
 	lockfile := filepath.Join(t.TempDir(), "lockfile")
-	err := os.WriteFile(lockfile, []byte{}, 0644)
+	err := os.WriteFile(lockfile, []byte{}, 0o600)
 	assert.NoError(t, err)
 	assert.FileExists(t, lockfile)
 

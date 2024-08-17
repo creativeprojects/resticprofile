@@ -95,7 +95,7 @@ func TestProgressWarningAsSuccess(t *testing.T) {
 		},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, &monitor.InternalWarning{})
+	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, &monitor.InternalWarningError{})
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestProgressWarningAsError(t *testing.T) {
 		},
 	}
 	p := NewProgress(profile, status)
-	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, &monitor.InternalWarning{})
+	p.Summary(constants.CommandBackup, monitor.Summary{}, stderr, &monitor.InternalWarningError{})
 
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)

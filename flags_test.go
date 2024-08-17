@@ -79,6 +79,8 @@ func TestEnvOverrides(t *testing.T) {
 	}
 
 	load := func(t *testing.T, args ...string) commandLineFlags {
+		t.Helper()
+
 		_, loaded, err := loadFlags(args)
 		assert.NoError(t, err)
 		flags.resticArgs = loaded.resticArgs

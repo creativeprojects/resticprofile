@@ -567,7 +567,7 @@ func (r *resticWrapper) runCommand(command string) error {
 		r.executionTime += summary.Duration
 		r.summary(r.command, summary, stderr, err)
 
-		if err != nil && !r.canSucceedAfterError(command, summary, err) {
+		if err != nil && !r.canSucceedAfterError(command, err) {
 			retry, interruptedError := r.canRetryAfterError(command, summary)
 			if retry {
 				continue
@@ -807,7 +807,7 @@ func (r *resticWrapper) getErrorContext(err error) hook.ErrorContext {
 }
 
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
-func (r *resticWrapper) canSucceedAfterError(command string, summary monitor.Summary, err error) bool {
+func (r *resticWrapper) canSucceedAfterError(command string, err error) bool {
 	if err == nil {
 		return true
 	}

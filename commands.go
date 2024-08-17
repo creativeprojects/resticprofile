@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -601,7 +603,9 @@ func elevated() error {
 	}
 	err = win.RunElevated(remote.GetPort())
 	if err != nil {
-		remote.StopServer()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		remote.StopServer(ctx)
 		return err
 	}
 

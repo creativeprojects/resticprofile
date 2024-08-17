@@ -211,7 +211,7 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
 	}
 
 	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	// stop the service in case it's already running
 	stop := exec.Command(launchctlBin, launchdStop, name)
@@ -245,7 +245,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	if err != nil {
 		return err

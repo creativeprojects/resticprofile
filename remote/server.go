@@ -34,7 +34,8 @@ func StartServer(done chan interface{}) error {
 	clog.Debugf("listening on port %d", port)
 
 	server = &http.Server{
-		Handler: getServeMux(),
+		Handler:           getServeMux(),
+		ReadHeaderTimeout: 30 * time.Second,
 	}
 	go func() {
 		_ = server.Serve(listener)
@@ -50,11 +51,9 @@ func GetPort() int {
 }
 
 // StopServer gracefully asks the http server to shutdown
-func StopServer() {
+func StopServer(ctx context.Context) {
 	if server != nil {
 		// gracefully stop the http server
-		ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
-		defer cancel()
 		_ = server.Shutdown(ctx)
 	}
 	server = nil

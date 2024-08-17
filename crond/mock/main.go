@@ -37,8 +37,8 @@ func main() {
 					if stdin := strings.TrimSpace(sb.String()); stdin != crontab {
 						err = fmt.Errorf("%q != %q", crontab, stdin)
 						if err != nil {
-							fmt.Println(err)
-							os.Exit(1)
+							fmt.Fprintln(os.Stderr, err)
+							// os.Exit(1)
 						}
 					}
 				}

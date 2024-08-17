@@ -29,13 +29,13 @@ var (
 		expr        *regexp.Regexp
 		parseValues []parseFunc
 	}{
-		{regexpFullPattern, []parseFunc{parseWeekday(1), parseYear(2), parseMonth(3), parseDay(4), parseHour(5), parseMinute(6), parseSecond(7)}},
+		{regexpFullPattern, []parseFunc{parseWeekday(), parseYear(2), parseMonth(3), parseDay(4), parseHour(5), parseMinute(6), parseSecond(7)}},
 		{regexpDatePattern, []parseFunc{parseYear(1), parseMonth(2), parseDay(3), setMidnight()}},
 		{regexpTimePattern, []parseFunc{parseHour(1), parseMinute(2), parseSecond(3)}},
 		{regexpDateTimePattern, []parseFunc{parseYear(1), parseMonth(2), parseDay(3), parseHour(4), parseMinute(5), parseSecond(6)}},
-		{regexpWeekdayPattern, []parseFunc{parseWeekday(1), setMidnight()}},
-		{regexpWeekdayDatePattern, []parseFunc{parseWeekday(1), parseYear(2), parseMonth(3), parseDay(4), setMidnight()}},
-		{regexpWeekdayTimePattern, []parseFunc{parseWeekday(1), parseHour(2), parseMinute(3), parseSecond(4)}},
+		{regexpWeekdayPattern, []parseFunc{parseWeekday(), setMidnight()}},
+		{regexpWeekdayDatePattern, []parseFunc{parseWeekday(), parseYear(2), parseMonth(3), parseDay(4), setMidnight()}},
+		{regexpWeekdayTimePattern, []parseFunc{parseWeekday(), parseHour(2), parseMinute(3), parseSecond(4)}},
 	}
 )
 
@@ -130,9 +130,9 @@ func setMidnight() parseFunc {
 	}
 }
 
-func parseWeekday(index int) parseFunc {
+func parseWeekday() parseFunc {
 	return func(e *Event, match []string) error {
-		weekdays := strings.ToLower(match[index])
+		weekdays := strings.ToLower(match[1]) // weekday is always the first match
 		for dayIndex, day := range longWeekDay {
 			weekdays = strings.ReplaceAll(weekdays, day, fmt.Sprintf("%02d", dayIndex))
 		}

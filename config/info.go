@@ -451,7 +451,8 @@ func configurePropertyFromType(p *basicPropertyInfo, valueType reflect.Type) {
 
 // joinEmpty joins strings tokens around an empty token, e.g. ["a", "start", "", "end", "b"] turns to ["a", "start-end", "b"] (glue -)
 // can be used to split strings by a delimiter and allow delimiter escaping by repeating the delimiter
-func joinEmpty(input []string, glue string) (output []string) {
+func joinEmpty(input []string) (output []string) {
+	const glue = ";"
 	add := false
 	output = make([]string, 0, len(input))
 	for i, s := range input {
@@ -479,7 +480,7 @@ func configurePropertyFromTags(p *propertyInfo, field *reflect.StructField) {
 	}
 	// default value tag e.g. `default:"DefaultValue"` or `default:"Item1;Item2;Item3"`
 	if value, found := field.Tag.Lookup("default"); found && len(value) > 0 {
-		p.defaults = joinEmpty(strings.Split(value, ";"), ";")
+		p.defaults = joinEmpty(strings.Split(value, ";"))
 	} else if !found && !p.IsMultiType() && !p.CanBeNil() {
 		if p.CanBeBool() {
 			p.defaults = []string{"false"}
@@ -500,11 +501,11 @@ func configureBasicPropertyFromTags(p *basicPropertyInfo, field *reflect.StructF
 	}
 	// example value tag e.g. `examples:"ExampleValue"` or `examples:"EV1;EV2;EV3"`
 	if value, found := field.Tag.Lookup("examples"); found && len(value) > 0 {
-		p.examples = joinEmpty(strings.Split(value, ";"), ";")
+		p.examples = joinEmpty(strings.Split(value, ";"))
 	}
 	// enum value tag e.g. `enum:"PossibleValue1;PossibleValue2;PossibleValue3"`
 	if value, found := field.Tag.Lookup("enum"); found && len(value) > 0 {
-		p.enum = joinEmpty(strings.Split(value, ";"), ";")
+		p.enum = joinEmpty(strings.Split(value, ";"))
 	}
 	// format tag e.g. `format:"time"`
 	if value, found := field.Tag.Lookup("format"); found && formatPattern.MatchString(value) {

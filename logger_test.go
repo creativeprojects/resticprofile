@@ -17,6 +17,8 @@ import (
 )
 
 func readTail(t *testing.T, filename string, count int) (lines []string) {
+	t.Helper()
+
 	file, e := os.Open(filename)
 	require.NoError(t, e)
 	defer file.Close()

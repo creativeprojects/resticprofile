@@ -71,7 +71,7 @@ func TestGetEnvironmentFileErrors(t *testing.T) {
 	assert.ErrorContains(t, ef.init("n"), fmt.Sprintf("illegal state, file %s already loaded", dotenv))
 
 	// error for invalid content
-	require.NoError(t, os.WriteFile(dotenv, []byte(" + _ ."), 0700))
+	require.NoError(t, os.WriteFile(dotenv, []byte(" + _ ."), 0o600))
 	_, err = GetEnvironmentFile(dotenv)
 	assert.ErrorContains(t, err, `unexpected character "+" in variable name near "+ _ ."`)
 }

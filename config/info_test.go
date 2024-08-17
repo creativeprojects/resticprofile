@@ -117,7 +117,7 @@ func TestJoinByEmpty(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.from, func(t *testing.T) {
-			assert.Equal(t, test.to, strings.Join(joinEmpty(strings.Split(test.from, ";"), ";"), "|"))
+			assert.Equal(t, test.to, strings.Join(joinEmpty(strings.Split(test.from, ";")), "|"))
 		})
 	}
 }

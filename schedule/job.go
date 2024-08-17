@@ -14,7 +14,7 @@ type Job struct {
 	handler Handler
 }
 
-var ErrorJobCanBeRemovedOnly = errors.New("job can be removed only")
+var ErrJobCanBeRemovedOnly = errors.New("job can be removed only")
 
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {
@@ -25,7 +25,7 @@ func (j *Job) Accessible() bool {
 // Create a new job
 func (j *Job) Create() error {
 	if j.RemoveOnly() {
-		return ErrorJobCanBeRemovedOnly
+		return ErrJobCanBeRemovedOnly
 	}
 
 	permission := getSchedulePermission(j.config.Permission)
@@ -80,7 +80,7 @@ func (j *Job) RemoveOnly() bool {
 // Status of a job
 func (j *Job) Status() error {
 	if j.RemoveOnly() {
-		return ErrorJobCanBeRemovedOnly
+		return ErrJobCanBeRemovedOnly
 	}
 
 	schedules, err := j.handler.ParseSchedules(j.config.Schedules)

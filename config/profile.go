@@ -127,10 +127,6 @@ type InitSection struct {
 
 func (i *InitSection) IsEmpty() bool { return i == nil }
 
-func (i *InitSection) resolve(p *Profile) {
-	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
-}
-
 func (i *InitSection) setRootPath(_ *Profile, rootPath string) {
 	i.FromRepositoryFile = fixPath(i.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	i.FromPasswordFile = fixPath(i.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))

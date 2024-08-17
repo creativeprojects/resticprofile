@@ -69,7 +69,7 @@ func TestTempDir(t *testing.T) {
 	t.Run("can-clear", func(t *testing.T) {
 		ClearTempDir()
 		dir := MustGetTempDir()
-		assert.NoError(t, os.WriteFile(filepath.Join(dir, "test.file"), []byte("data"), 0700))
+		assert.NoError(t, os.WriteFile(filepath.Join(dir, "test.file"), []byte("data"), 0o600))
 
 		ClearTempDir()
 		dir2 := MustGetTempDir()

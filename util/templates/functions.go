@@ -125,8 +125,8 @@ func TempFile(name string) (filename string) {
 	return
 }
 
-// NotStrictlyPrivate indicates that a PrivateTempFile was successfully created but the OS reports that it can be accessed by others
-var NotStrictlyPrivate = errors.New("the private temp file is not strictly accessible by owners only")
+// ErrNotStrictlyPrivate indicates that a PrivateTempFile was successfully created but the OS reports that it can be accessed by others
+var ErrNotStrictlyPrivate = errors.New("the private temp file is not strictly accessible by owners only")
 
 // PrivateTempFile is like TempFile but guarantees that the returned file can be accessed by owners only when err is nil
 func PrivateTempFile(name string) (filename string, err error) {
@@ -134,7 +134,7 @@ func PrivateTempFile(name string) (filename string, err error) {
 	const privateMode = os.FileMode(0600)
 	if err = os.Chmod(filename, privateMode); err == nil {
 		if stat, e := os.Stat(filename); e != nil || stat.Mode() != privateMode {
-			err = NotStrictlyPrivate
+			err = ErrNotStrictlyPrivate
 		}
 	}
 	return
@@ -152,7 +152,7 @@ func EnvFileFunc(receiverFunc EnvFileReceiverFunc) map[string]any {
 		if len(envFile) == 0 {
 			var err error
 			envFile, err = PrivateTempFile(fmt.Sprintf("%s.env", profile))
-			if err != nil && !errors.Is(err, NotStrictlyPrivate) {
+			if err != nil && !errors.Is(err, ErrNotStrictlyPrivate) {
 				panic(fmt.Errorf("failed setting permissions for %s: %w", envFile, err))
 			}
 			files[profile] = envFile
