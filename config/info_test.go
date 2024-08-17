@@ -124,6 +124,7 @@ func TestJoinByEmpty(t *testing.T) {
 
 func TestPropertySetFromType(t *testing.T) {
 	type nestedData struct {
+		//nolint:unused
 		i1 string `mapstructure:"nested-string"`
 	}
 

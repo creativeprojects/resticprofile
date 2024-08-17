@@ -21,10 +21,7 @@ func IsWarning(err error) bool {
 	}
 	// so far, internal warning is only used in unit tests
 	warn := &InternalWarning{}
-	if errors.As(err, &warn) {
-		return true
-	}
-	return false
+	return errors.As(err, &warn)
 }
 
 func IsError(err error) bool {

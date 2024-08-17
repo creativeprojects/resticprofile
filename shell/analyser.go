@@ -36,10 +36,10 @@ type OutputAnalyser struct {
 }
 
 var outputAnalyserPatterns = map[string]*regexp.Regexp{
-	"lock-failure,who":    regexp.MustCompile("unable to create lock.+already locked.+?by (.+)$"),
-	"lock-failure,age":    regexp.MustCompile("lock was created at.+\\(([^()]+)\\s+ago\\)"),
-	"lock-failure,stale":  regexp.MustCompile("the\\W+unlock\\W+command can be used to remove stale locks"),
-	"lock-retry,max-wait": regexp.MustCompile("repo already locked, waiting up to (\\S+) for the lock"),
+	"lock-failure,who":    regexp.MustCompile(`unable to create lock.+already locked.+?by (.+)$`),
+	"lock-failure,age":    regexp.MustCompile(`lock was created at.+\(([^()]+)\s+ago\)`),
+	"lock-failure,stale":  regexp.MustCompile(`the\W+unlock\W+command can be used to remove stale locks`),
+	"lock-retry,max-wait": regexp.MustCompile(`repo already locked, waiting up to (\S+) for the lock`),
 }
 
 func NewOutputAnalyser() *OutputAnalyser {

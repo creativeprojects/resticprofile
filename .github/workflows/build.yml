@@ -41,6 +41,9 @@ jobs:
         with:
           node-version: 18
 
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+
       - name: Test
         run: make test-ci
         env:

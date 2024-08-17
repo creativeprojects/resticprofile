@@ -516,7 +516,7 @@ func configureBasicPropertyFromTags(p *basicPropertyInfo, field *reflect.StructF
 	}
 	// value validation tag e.g. `range:"[-6:10]"` (min -6 to max 10) or `range:"[:10|" (min inf - max 10 exclusive)`
 	if value, found := field.Tag.Lookup("range"); found && rangePattern.MatchString(value) {
-		if m := rangePattern.FindStringSubmatch(value); m != nil && len(m) == 5 {
+		if m := rangePattern.FindStringSubmatch(value); len(m) == 5 {
 			if from, err := strconv.ParseFloat(m[2], 64); len(m[2]) > 0 && err == nil {
 				p.from = &from
 			}

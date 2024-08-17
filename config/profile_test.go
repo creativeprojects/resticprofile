@@ -339,7 +339,9 @@ func TestGetEnvironment(t *testing.T) {
 			require.FileExists(t, envFile)
 			assert.Contains(t, profile.EnvironmentFiles, envFile)
 
-			defer os.Truncate(envFile, 0)
+			defer func() {
+				_ = os.Truncate(envFile, 0)
+			}()
 			assert.NoError(t, os.WriteFile(envFile, []byte("K2=V2"), 0600))
 
 			env := profile.GetEnvironment(false)
@@ -1569,9 +1571,8 @@ func TestGetCopyStructFields(t *testing.T) {
 	})
 
 	t.Run("get-init-flags-from-profile", func(t *testing.T) {
-		p := &(*profile)
-		assert.Nil(t, p.GetCopyInitializeFlags())
-		p.Copy = copy
-		assert.Equal(t, copy.getInitFlags(p).GetAll(), p.GetCopyInitializeFlags().GetAll())
+		assert.Nil(t, profile.GetCopyInitializeFlags())
+		profile.Copy = copy
+		assert.Equal(t, copy.getInitFlags(profile).GetAll(), profile.GetCopyInitializeFlags().GetAll())
 	})
 }

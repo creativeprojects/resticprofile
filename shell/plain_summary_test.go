@@ -39,7 +39,7 @@ snapshot 07ab30a5 saved
 		lines := strings.Split(source, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
-			writer.WriteString(line + platform.LineSeparator)
+			_, _ = writer.WriteString(line + platform.LineSeparator)
 		}
 		writer.Close()
 	}()

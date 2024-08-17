@@ -110,7 +110,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	cmd.Stdin = c.Stdin
 
 	cmd.Env = os.Environ()
-	if c.Environ != nil && len(c.Environ) > 0 {
+	if len(c.Environ) > 0 {
 		cmd.Env = append(cmd.Env, c.Environ...)
 	}
 

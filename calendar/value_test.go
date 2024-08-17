@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEmptyValue(t *testing.T) {
@@ -26,7 +27,8 @@ func TestSingleValue(t *testing.T) {
 	max := 10
 	entry := 5
 	value := NewValue(min, max)
-	value.AddValue(entry)
+	err := value.AddValue(entry)
+	require.NoError(t, err)
 	assert.True(t, value.HasValue())
 	assert.True(t, value.HasSingleValue())
 	assert.False(t, value.HasRange())
@@ -43,7 +45,8 @@ func TestSimpleRangeValue(t *testing.T) {
 	entries := []int{min, max}
 	value := NewValue(min, max)
 	for _, entry := range entries {
-		value.AddValue(entry)
+		err := value.AddValue(entry)
+		require.NoError(t, err)
 	}
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -61,7 +64,8 @@ func TestContiguousRangeValue(t *testing.T) {
 	entries := []int{11, 12, 14}
 	value := NewValue(min, max)
 	for _, entry := range entries {
-		value.AddValue(entry)
+		err := value.AddValue(entry)
+		require.NoError(t, err)
 	}
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -79,7 +83,8 @@ func TestComplexContiguousRanges(t *testing.T) {
 	entries := []int{10, 11, 14, 15, 16, 19, 20}
 	value := NewValue(min, max)
 	for _, entry := range entries {
-		value.AddValue(entry)
+		err := value.AddValue(entry)
+		require.NoError(t, err)
 	}
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -96,8 +101,11 @@ func TestAddRanges(t *testing.T) {
 	max := 20
 	entries := []int{11, 12, 15}
 	value := NewValue(min, max)
-	value.AddRange(12, 11) // wrong order on purpose
-	value.AddRange(15, 15)
+	err := value.AddRange(12, 11) // wrong order on purpose
+	require.NoError(t, err)
+	err = value.AddRange(15, 15)
+	require.NoError(t, err)
+
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
 	assert.True(t, value.HasRange())

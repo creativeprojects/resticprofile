@@ -133,7 +133,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 		require.NoError(t, v.ReadInConfig())
 
 		v.SetConfigType("json")
-		filename = filepath.Join(t.TempDir(), fmt.Sprintf(filepath.Base(filename)+".json"))
+		filename = filepath.Join(t.TempDir(), filepath.Base(filename)+".json")
 		require.NoError(t, v.WriteConfigAs(filename))
 		return filename
 	}

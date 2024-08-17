@@ -9,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var ansiColor = func() (c *color.Color) {
@@ -299,12 +300,14 @@ https://creativeprojects.github.io/resticprofile/
 
 func TestDisplayVersionVerbose1(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	displayVersion(buffer, commandContext{Context: Context{flags: commandLineFlags{verbose: true}}})
+	err := displayVersion(buffer, commandContext{Context: Context{flags: commandLineFlags{verbose: true}}})
+	require.NoError(t, err)
 	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
 }
 
 func TestDisplayVersionVerbose2(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	displayVersion(buffer, commandContext{Context: Context{request: Request{arguments: []string{"-v"}}}})
+	err := displayVersion(buffer, commandContext{Context: Context{request: Request{arguments: []string{"-v"}}}})
+	require.NoError(t, err)
 	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
 }

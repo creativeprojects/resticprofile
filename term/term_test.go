@@ -2,6 +2,7 @@ package term
 
 import (
 	"bytes"
+	"log"
 	"os"
 	"testing"
 
@@ -71,7 +72,10 @@ func TestAskYesNo(t *testing.T) {
 
 func ExamplePrint() {
 	SetOutput(os.Stdout)
-	Print("ExamplePrint")
+	_, err := Print("ExamplePrint")
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Output: ExamplePrint
 }
 

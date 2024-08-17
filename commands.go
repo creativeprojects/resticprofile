@@ -167,7 +167,7 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 
 	// Parse requester as first argument. Format "[kind]:v[version]", e.g. "bash:v1"
 	if len(args) > 0 {
-		matcher := regexp.MustCompile("^(bash|zsh):v(\\d+)$")
+		matcher := regexp.MustCompile(`^(bash|zsh):v(\d+)$`)
 		if matches := matcher.FindStringSubmatch(args[0]); matches != nil {
 			requester = matches[1]
 			if v, err := strconv.Atoi(matches[2]); err == nil {

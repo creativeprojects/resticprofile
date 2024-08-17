@@ -33,8 +33,9 @@ func TestMain(m *testing.M) {
 	if output, err := cmd.CombinedOutput(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
 	}
-	m.Run()
+	exitCode := m.Run()
 	_ = os.Remove(mockBinary)
+	os.Exit(exitCode)
 }
 
 func TestRemoveQuotes(t *testing.T) {
@@ -546,8 +547,10 @@ func TestCanAnalyseLockFailure(t *testing.T) {
 
 	file, err := os.CreateTemp(".", "test-restic-lock-failure")
 	require.NoError(t, err)
-	file.Write([]byte(ResticLockFailureOutput))
+	_, err = file.Write([]byte(ResticLockFailureOutput))
+	require.NoError(t, err)
 	file.Close()
+
 	fileName := file.Name()
 	defer os.Remove(fileName)
 

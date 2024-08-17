@@ -31,8 +31,9 @@ func TestMain(m *testing.M) {
 	if err := cmd.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
 	}
-	m.Run()
+	exitCode := m.Run()
 	_ = os.Remove(helperBinary)
+	os.Exit(exitCode)
 }
 
 func getTempfile(t *testing.T) string {

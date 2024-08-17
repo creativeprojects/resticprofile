@@ -37,7 +37,7 @@ func StartServer(done chan interface{}) error {
 		Handler: getServeMux(),
 	}
 	go func() {
-		server.Serve(listener)
+		_ = server.Serve(listener)
 		close(done)
 	}()
 
@@ -55,7 +55,7 @@ func StopServer() {
 		// gracefully stop the http server
 		ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 		defer cancel()
-		server.Shutdown(ctx)
+		_ = server.Shutdown(ctx)
 	}
 	server = nil
 	if listener != nil {

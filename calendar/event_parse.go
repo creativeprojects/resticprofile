@@ -98,7 +98,10 @@ func parseSecond(index int) parseFunc {
 	return func(e *Event, match []string) error {
 		// second can be empty => it means zero
 		if match[index] == "" {
-			e.Second.AddValue(0)
+			err := e.Second.AddValue(0)
+			if err != nil {
+				return fmt.Errorf("cannot parse second: %w", err)
+			}
 			return nil
 		}
 		err := e.Second.Parse(strings.Trim(match[index], ":"))
@@ -111,9 +114,18 @@ func parseSecond(index int) parseFunc {
 
 func setMidnight() parseFunc {
 	return func(e *Event, match []string) error {
-		e.Hour.AddValue(0)
-		e.Minute.AddValue(0)
-		e.Second.AddValue(0)
+		err := e.Hour.AddValue(0)
+		if err != nil {
+			return err
+		}
+		err = e.Minute.AddValue(0)
+		if err != nil {
+			return err
+		}
+		err = e.Second.AddValue(0)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 }

@@ -84,5 +84,4 @@ func removeTempDir(tempDir string, tempDirErr error) {
 			clog.Warningf("failed removing temporary directory %q: %s", tempDir, tempDirErr.Error())
 		}
 	}
-	return
 }

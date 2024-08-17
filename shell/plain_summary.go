@@ -20,7 +20,7 @@ var ScanBackupPlain ScanOutput = func(r io.Reader, summary *monitor.Summary, w i
 	rawBytes, unit, duration := 0.0, "", ""
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		w.Write([]byte(scanner.Text() + eol))
+		_, _ = w.Write([]byte(scanner.Text() + eol))
 		// scan content - it's all right if the line does not match
 		_, _ = fmt.Sscanf(scanner.Text(), "Files: %d new, %d changed, %d unmodified", &summary.FilesNew, &summary.FilesChanged, &summary.FilesUnmodified)
 		_, _ = fmt.Sscanf(scanner.Text(), "Dirs: %d new, %d changed, %d unmodified", &summary.DirsNew, &summary.DirsChanged, &summary.DirsUnmodified)

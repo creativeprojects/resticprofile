@@ -362,7 +362,7 @@ func getCalendarIntervalsFromScheduleTree(tree []*treeElement) []CalendarInterva
 
 func fillInValueFromScheduleTreeElement(currentEntry *CalendarInterval, element *treeElement, entries *[]CalendarInterval) {
 	setCalendarIntervalValueFromType(currentEntry, element.value, element.elementType)
-	if element.subElements == nil || len(element.subElements) == 0 {
+	if len(element.subElements) == 0 {
 		// end of the line, this entry is finished
 		*entries = append(*entries, *currentEntry)
 		return

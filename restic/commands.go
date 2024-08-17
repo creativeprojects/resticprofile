@@ -255,7 +255,7 @@ func ParseCommandsFromManPages(manualDir fs.FS, version string, baseVersion bool
 }
 
 func parseCommandsFromManPagesInto(manualDir fs.FS, version string, baseVersion bool, commands map[string]*command) error {
-	filePattern := regexp.MustCompile("^restic(|-.+)\\.1$")
+	filePattern := regexp.MustCompile(`^restic(|-.+)\.1$`)
 	newCommands := map[string]*command{}
 
 	if files, err := fs.ReadDir(manualDir, "."); err == nil {

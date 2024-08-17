@@ -67,6 +67,9 @@ func showField(stack []string, display *Display, fieldType *reflect.StructField,
 			if getStringer(fieldValue) != nil {
 				// Pass as is. The struct has its own String() implementation
 				err = showKeyValue(stack, display, key, fieldValue)
+				if err != nil {
+					break
+				}
 			}
 
 			if key == ",squash" {

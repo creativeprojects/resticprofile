@@ -307,7 +307,3 @@ func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) 
 
 	return d, lastError
 }
-
-func catch(f func() error) error {
-	return f()
-}

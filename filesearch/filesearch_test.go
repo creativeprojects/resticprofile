@@ -267,7 +267,7 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 	require.NoError(t, err)
 	tempFile.Close()
 	defer func() {
-		fs.Remove(tempFile.Name())
+		_ = fs.Remove(tempFile.Name())
 	}()
 
 	search := filepath.Join("~", filepath.Base(tempFile.Name()))

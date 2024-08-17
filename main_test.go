@@ -39,9 +39,10 @@ func TestMain(m *testing.M) {
 		fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
 	}
 
-	m.Run()
+	exitCode := m.Run()
 	_ = os.Remove(mockBinary)
 	_ = os.Remove(echoBinary)
+	os.Exit(exitCode)
 }
 
 func TestGetProfile(t *testing.T) {
