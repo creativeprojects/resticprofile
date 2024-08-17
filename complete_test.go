@@ -208,7 +208,7 @@ func TestCompleter(t *testing.T) {
 			if !command.hide && !command.hideInCompletion {
 				commands = append(commands, command.name)
 			}
-			for flag, _ := range command.flags {
+			for flag := range command.flags {
 				for _, v := range strings.Split(flag, ",") {
 					v = strings.Split(strings.TrimSpace(v), " ")[0]
 					commandValues[command.name] = append(commandValues[command.name], v)

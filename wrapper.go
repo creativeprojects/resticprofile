@@ -156,28 +156,41 @@ func (r *resticWrapper) getBackupAction() func() error {
 
 	return func() (err error) {
 		// Check before
-		if err == nil && r.profile.Backup != nil && r.profile.Backup.CheckBefore {
+		if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
 			err = r.runCheck()
+			if err != nil {
+				return
+			}
 		}
 
 		// Retention before
-		if err == nil && r.profile.Retention != nil && r.profile.Retention.BeforeBackup.IsTrue() {
+		if r.profile.Retention != nil && r.profile.Retention.BeforeBackup.IsTrue() {
 			err = r.runRetention()
+			if err != nil {
+				return
+			}
 		}
 
 		// Backup command
-		if err == nil {
-			err = backupAction()
+		err = backupAction()
+		if err != nil {
+			return
 		}
 
 		// Retention after
-		if err == nil && r.profile.Retention != nil && r.profile.Retention.AfterBackup.IsTrue() {
+		if r.profile.Retention != nil && r.profile.Retention.AfterBackup.IsTrue() {
 			err = r.runRetention()
+			if err != nil {
+				return
+			}
 		}
 
 		// Check after
-		if err == nil && r.profile.Backup != nil && r.profile.Backup.CheckAfter {
+		if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
 			err = r.runCheck()
+			if err != nil {
+				return
+			}
 		}
 
 		return

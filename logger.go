@@ -262,8 +262,8 @@ func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) 
 		}
 	}
 
-	addPendingData := func(max int) {
-		for ; max > 0; max-- {
+	addPendingData := func(size int) {
+		for ; size > 0; size-- {
 			select {
 			case data, ok := <-d.data:
 				if ok {

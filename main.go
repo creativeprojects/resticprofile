@@ -543,9 +543,8 @@ func runProfile(ctx *Context) error {
 	return nil
 }
 
-func loadScheduledProfile(ctx *Context) error {
+func loadScheduledProfile(ctx *Context) {
 	ctx.schedule, _ = ctx.profile.Schedules()[ctx.command]
-	return nil
 }
 
 // randomBool returns true for Heads and false for Tails

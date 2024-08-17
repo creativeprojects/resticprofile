@@ -570,7 +570,7 @@ func testElevationCommand(_ io.Writer, ctx commandContext) error {
 		return nil
 	}
 
-	return elevated(ctx.flags)
+	return elevated()
 }
 
 func retryElevated(err error, flags commandLineFlags) error {
@@ -580,7 +580,7 @@ func retryElevated(err error, flags commandLineFlags) error {
 	// maybe can find a better way than searching for the word "denied"?
 	if platform.IsWindows() && !flags.isChild && strings.Contains(err.Error(), "denied") {
 		clog.Info("restarting resticprofile in elevated mode...")
-		err := elevated(flags)
+		err := elevated()
 		if err != nil {
 			return err
 		}
@@ -589,7 +589,7 @@ func retryElevated(err error, flags commandLineFlags) error {
 	return err
 }
 
-func elevated(flags commandLineFlags) error {
+func elevated() error {
 	if !platform.IsWindows() {
 		return errors.New("only available on Windows platform")
 	}

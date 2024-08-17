@@ -24,6 +24,7 @@ func (r *resticWrapper) prepareStreamSource() (io.ReadCloser, error) {
 			return r.prepareStdinStreamSource()
 		}
 	}
+	//nolint:nilnil
 	return nil, nil
 }
 

@@ -19,7 +19,7 @@ import (
 func TestFromConfigFileToCommandLine(t *testing.T) {
 	files, err := filepath.Glob("./examples/integration_test.*")
 	require.NoError(t, err)
-	require.Greater(t, len(files), 0)
+	require.NotEmpty(t, files)
 
 	// we can use the same files to test a glob pattern
 	globFiles := "\"" + strings.Join(files, "\" \"") + "\""
