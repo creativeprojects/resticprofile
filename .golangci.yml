@@ -9,6 +9,7 @@ linters:
     - gocheckcompilerdirectives
     - gosec
     # - maintidx
+    - misspell
     - nilnil
     - noctx
     - nolintlint
