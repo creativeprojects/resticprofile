@@ -43,7 +43,10 @@ func (c *Client) LogEntry(logEntry clog.LogEntry) error {
 	}
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
-	_ = encoder.Encode(log)
+	err := encoder.Encode(log)
+	if err != nil {
+		return err
+	}
 	resp, err := c.client.Post(c.baseURL+logPath, "application/json", buffer) //nolint:noctx
 	if err != nil {
 		return err

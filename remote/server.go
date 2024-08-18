@@ -38,7 +38,10 @@ func StartServer(done chan interface{}) error {
 		ReadHeaderTimeout: 30 * time.Second,
 	}
 	go func() {
-		_ = server.Serve(listener)
+		err := server.Serve(listener)
+		if err != http.ErrServerClosed {
+			clog.Errorf("error starting server: %v", err)
+		}
 		close(done)
 	}()
 
@@ -54,7 +57,10 @@ func GetPort() int {
 func StopServer(ctx context.Context) {
 	if server != nil {
 		// gracefully stop the http server
-		_ = server.Shutdown(ctx)
+		err := server.Shutdown(ctx)
+		if err != nil {
+			clog.Warningf("error shutting down server: %v", err)
+		}
 	}
 	server = nil
 	if listener != nil {

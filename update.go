@@ -48,11 +48,14 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 	if debug {
 		selfupdate.SetLogger(clog.NewStandardLogger(clog.LevelDebug, clog.GetDefaultLogger()))
 	}
-	updater, _ := selfupdate.NewUpdater(
+	updater, err := selfupdate.NewUpdater(
 		selfupdate.Config{
 			Validator:  &selfupdate.ChecksumValidator{UniqueFilename: "checksums.txt"},
 			Prerelease: prerelease,
 		})
+	if err != nil {
+		return fmt.Errorf("unable to create updater: %w", err)
+	}
 	latest, found, err := updater.DetectLatest(context.Background(), selfupdate.NewRepositorySlug("creativeprojects", "resticprofile"))
 	if err != nil {
 		return fmt.Errorf("unable to detect latest version: %w", err)
