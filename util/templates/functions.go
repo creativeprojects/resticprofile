@@ -47,7 +47,7 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 	templateFuncs = map[string]any{
 		"contains":   func(search any, src any) bool { return strings.Contains(toString(src), toString(search)) },
 		"matches":    func(ptn string, src any) bool { return mustCompile(ptn).MatchString(toString(src)) },
-		"replace":    func(old, new, src string) string { return strings.ReplaceAll(src, old, new) },
+		"replace":    func(oldStr, newStr, src string) string { return strings.ReplaceAll(src, oldStr, newStr) },
 		"replaceR":   func(ptn, repl, src string) string { return mustCompile(ptn).ReplaceAllString(src, repl) },
 		"lower":      strings.ToLower,
 		"upper":      strings.ToUpper,

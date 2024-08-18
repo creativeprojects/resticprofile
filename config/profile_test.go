@@ -1494,7 +1494,7 @@ func TestGetInitStructFields(t *testing.T) {
 }
 
 func TestGetCopyStructFields(t *testing.T) {
-	copy := &CopySection{
+	copySection := &CopySection{
 		Repository:      NewConfidentialValue("dest-repo"),
 		RepositoryFile:  "dest-repo-file",
 		PasswordFile:    "dest-pw-file",
@@ -1502,7 +1502,7 @@ func TestGetCopyStructFields(t *testing.T) {
 		KeyHint:         "dest-key-hint",
 	}
 
-	copy.OtherFlags = map[string]any{"option": "opt=dest"}
+	copySection.OtherFlags = map[string]any{"option": "opt=dest"}
 
 	profile := NewProfile(nil, "")
 	profile.Repository = NewConfidentialValue("src-repo")
@@ -1531,7 +1531,7 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"src-repo-file"},
 			"password-file":    {"src-pw-file"},
 			"password-command": {"src-pw-command"},
-		}, copy.getCommandFlags(profile).ToMap())
+		}, copySection.getCommandFlags(profile).ToMap())
 
 		// init
 		assert.Equal(t, map[string][]string{
@@ -1549,7 +1549,7 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"dest-repo-file"},
 			"password-file":    {"dest-pw-file"},
 			"password-command": {"dest-pw-command"},
-		}, copy.getInitFlags(profile).ToMap())
+		}, copySection.getInitFlags(profile).ToMap())
 	})
 
 	t.Run("restic>=14", func(t *testing.T) {
@@ -1570,7 +1570,7 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"dest-repo-file"},
 			"password-file":    {"dest-pw-file"},
 			"password-command": {"dest-pw-command"},
-		}, copy.getCommandFlags(profile).ToMap())
+		}, copySection.getCommandFlags(profile).ToMap())
 
 		// init
 		assert.Equal(t, map[string][]string{
@@ -1588,12 +1588,12 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"dest-repo-file"},
 			"password-file":    {"dest-pw-file"},
 			"password-command": {"dest-pw-command"},
-		}, copy.getInitFlags(profile).ToMap())
+		}, copySection.getInitFlags(profile).ToMap())
 	})
 
 	t.Run("get-init-flags-from-profile", func(t *testing.T) {
 		assert.Nil(t, profile.GetCopyInitializeFlags())
-		profile.Copy = copy
-		assert.Equal(t, copy.getInitFlags(profile).GetAll(), profile.GetCopyInitializeFlags().GetAll())
+		profile.Copy = copySection
+		assert.Equal(t, copySection.getInitFlags(profile).GetAll(), profile.GetCopyInitializeFlags().GetAll())
 	})
 }

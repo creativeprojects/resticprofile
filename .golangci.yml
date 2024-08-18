@@ -12,11 +12,10 @@ linters:
     - nilnil
     - noctx
     - nolintlint
-    # - predeclared
+    - predeclared
     - reassign
     - sloglint
     - spancheck
-    # - testifylint
     - unconvert
     - unparam
     - usestdlibvars

@@ -42,40 +42,40 @@ type Value struct {
 }
 
 // NewValue creates a new value
-func NewValue(min, max int) *Value {
+func NewValue(minValue, maxValue int) *Value {
 	return &Value{
-		minRange: min,
-		maxRange: max,
+		minRange: minValue,
+		maxRange: maxValue,
 	}
 }
 
 // NewValueFromType creates a new value from a predefined type
 func NewValueFromType(t TypeValue) *Value {
-	min, max := 0, 0
+	minValue, maxValue := 0, 0
 	switch t {
 	case TypeWeekDay:
-		min = minDay
-		max = maxDay - 1
+		minValue = minDay
+		maxValue = maxDay - 1
 	case TypeYear:
-		min = 2000
-		max = 2200
+		minValue = 2000
+		maxValue = 2200
 	case TypeMonth:
-		min = 1
-		max = 12
+		minValue = 1
+		maxValue = 12
 	case TypeDay:
-		min = 1
-		max = 31
+		minValue = 1
+		maxValue = 31
 	case TypeHour:
-		max = 23
+		maxValue = 23
 	case TypeMinute:
-		max = 59
+		maxValue = 59
 	case TypeSecond:
-		max = 59
+		maxValue = 59
 	}
 	return &Value{
 		definedType: t,
-		minRange:    min,
-		maxRange:    max,
+		minRange:    minValue,
+		maxRange:    maxValue,
 	}
 }
 
@@ -157,8 +157,8 @@ func (v *Value) AddValue(value int) error {
 }
 
 // MustAddRange adds a range of values from min to max and panics if an error occurs
-func (v *Value) MustAddRange(min int, max int) {
-	err := v.AddRange(min, max)
+func (v *Value) MustAddRange(minValue int, maxValue int) {
+	err := v.AddRange(minValue, maxValue)
 	if err != nil {
 		panic(err)
 	}
