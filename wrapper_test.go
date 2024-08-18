@@ -359,6 +359,7 @@ func TestFinallyProfile(t *testing.T) {
 	}
 
 	assertFileEquals := func(t *testing.T, expected string) {
+		t.Helper()
 		content, err := os.ReadFile(testFile)
 		require.NoError(t, err)
 		assert.Equal(t, strings.TrimSpace(string(content)), expected)
@@ -720,6 +721,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 	}
 
 	run := func(t *testing.T, wrapper *resticWrapper) (string, error) {
+		t.Helper()
 		file := path.Join(os.TempDir(), fmt.Sprintf("TestBackupWithStreamSource.%d.txt", rand.Int()))
 		defer os.Remove(file)
 

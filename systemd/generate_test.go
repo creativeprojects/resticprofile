@@ -438,12 +438,14 @@ func TestGenerateOnReadOnlyFs(t *testing.T) {
 }
 
 func assertNoFileExists(t *testing.T, filename string) {
+	t.Helper()
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
 	assert.Falsef(t, exists, "file %q exists", filename)
 }
 
 func requireFileExists(t *testing.T, filename string) {
+	t.Helper()
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
 	require.Truef(t, exists, "file %q does not exist", filename)

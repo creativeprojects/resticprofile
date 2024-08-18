@@ -43,6 +43,8 @@ jobs:
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
+        with:
+          version: 1.60
 
       - name: Test
         run: make test-ci

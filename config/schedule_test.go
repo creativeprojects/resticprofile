@@ -17,6 +17,7 @@ import (
 
 func TestNewSchedule(t *testing.T) {
 	profile := func(t *testing.T, config string) (*Profile, ScheduleConfigOrigin) {
+		t.Helper()
 		if !strings.Contains(config, "[default") {
 			config += "\n[default]"
 		}
@@ -207,6 +208,7 @@ func TestNewSchedule(t *testing.T) {
 
 func TestNewScheduleFromGroup(t *testing.T) {
 	group := func(t *testing.T, config string) (*Group, ScheduleConfigOrigin) {
+		t.Helper()
 		config = "version = \"2\"\n\n" + config
 		if !strings.Contains(config, "profiles =") {
 			config += `

@@ -17,7 +17,7 @@ linters:
     - sloglint
     - spancheck
     # - testifylint
-    # - thelper
+    - thelper
     - unconvert
     - unparam
     - usestdlibvars

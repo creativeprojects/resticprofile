@@ -65,6 +65,7 @@ func TestGetProfile(t *testing.T) {
 	require.NoError(t, err)
 
 	getWd := func(t *testing.T) string {
+		t.Helper()
 		dir, err := os.Getwd()
 		require.NoError(t, err)
 		return filepath.ToSlash(dir)
@@ -73,6 +74,7 @@ func TestGetProfile(t *testing.T) {
 	cwd := getWd(t)
 
 	getProf := func(t *testing.T, name string) (profile *config.Profile, cleanup func()) {
+		t.Helper()
 		var err error
 		profile, cleanup, err = openProfile(c, name)
 		require.NoError(t, err)

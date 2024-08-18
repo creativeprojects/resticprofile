@@ -169,6 +169,7 @@ func TestPropertySetFromType(t *testing.T) {
 	set := propertySetFromType(reflect.TypeOf(testData))
 
 	propertyInfo := func(t *testing.T, propertyName string) (info PropertyInfo) {
+		t.Helper()
 		require.Contains(t, set.Properties(), propertyName)
 		info = set.PropertyInfo(propertyName)
 		require.NotNil(t, info)
@@ -355,7 +356,7 @@ func TestNewProfileInfo(t *testing.T) {
 		info := NewProfileInfo(false)
 		assert.Contains(t, info.Properties(), "insecure-tls")
 
-		for name, _ := range NewProfile(nil, "").AllSections() {
+		for name := range NewProfile(nil, "").AllSections() {
 			si := info.SectionInfo(name)
 			require.NotNil(t, si, "section: %s", name)
 			assert.True(t, si.IsCommandSection(), "section: %s", name)

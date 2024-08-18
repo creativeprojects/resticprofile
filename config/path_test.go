@@ -106,6 +106,7 @@ func TestEvaluateSymlinks(t *testing.T) {
 
 	var rawDir, dir string
 	setup := func(t *testing.T) {
+		t.Helper()
 		var err error
 		rawDir = t.TempDir()
 		dir, err = filepath.EvalSymlinks(rawDir)
@@ -113,6 +114,7 @@ func TestEvaluateSymlinks(t *testing.T) {
 	}
 
 	link := func(t *testing.T, path, linkname string) {
+		t.Helper()
 		_ = os.Mkdir(filepath.Join(rawDir, path), 0700)
 		require.NoError(t, os.Symlink(filepath.Join(rawDir, path), filepath.Join(rawDir, linkname)))
 	}
