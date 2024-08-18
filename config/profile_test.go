@@ -22,12 +22,14 @@ import (
 )
 
 func runForVersions(t *testing.T, runner func(t *testing.T, version, prefix string)) {
+	t.Helper()
 	t.Run("V1", func(t *testing.T) { runner(t, "version=1\n", "") })
 	t.Run("V2", func(t *testing.T) { runner(t, "version=2\n", "profiles.") })
 }
 
 func TestNoProfile(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + ""
 		profile, err := getProfile("toml", testConfig, "profile", "")
 		assert.ErrorIs(t, err, ErrNotFound)
@@ -37,6 +39,7 @@ func TestNoProfile(t *testing.T) {
 
 func TestProfileNotFound(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + "[" + prefix + "profile]\n"
 		profile, err := getProfile("toml", testConfig, "other", "")
 		assert.ErrorIs(t, err, ErrNotFound)
@@ -46,6 +49,7 @@ func TestProfileNotFound(t *testing.T) {
 
 func TestEmptyProfile(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + "[" + prefix + "profile]\n"
 		profile, err := getProfile("toml", testConfig, "profile", "")
 		if err != nil {
@@ -58,6 +62,7 @@ func TestEmptyProfile(t *testing.T) {
 
 func TestNoInitializeValue(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + "[" + prefix + "profile]\n"
 		profile, err := getProfile("toml", testConfig, "profile", "")
 		if err != nil {
@@ -70,6 +75,7 @@ func TestNoInitializeValue(t *testing.T) {
 
 func TestInitializeValueFalse(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `[` + prefix + `profile]
 initialize = false
 `
@@ -84,6 +90,7 @@ initialize = false
 
 func TestInitializeValueTrue(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `[` + prefix + `profile]
 initialize = true
 `
@@ -98,6 +105,7 @@ initialize = true
 
 func TestInheritedInitializeValueTrue(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `[` + prefix + `parent]
 initialize = true
 
@@ -115,6 +123,7 @@ inherit = "parent"
 
 func TestOverriddenInitializeValueFalse(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `[` + prefix + `parent]
 initialize = true
 
@@ -133,6 +142,7 @@ inherit = "parent"
 
 func TestUnknownParent(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `[` + prefix + `profile]
 inherit = "parent"
 `
@@ -143,6 +153,7 @@ inherit = "parent"
 
 func TestMultiInheritance(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `
 [` + prefix + `grand-parent]
 repository = "grand-parent"
@@ -208,6 +219,7 @@ inherit = "parent"
 
 func TestProfileCommonFlags(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		assert := assert.New(t)
 		testConfig := version + `
 [` + prefix + `profile]
@@ -231,6 +243,7 @@ repository = "test"
 
 func TestProfileOtherFlags(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		assert := assert.New(t)
 		testConfig := version + `
 [` + prefix + `profile]
@@ -276,6 +289,7 @@ array2 = ["one", "two"]
 
 func TestEnvironmentInProfileRepo(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `
 		[` + prefix + `profile]
 		repository = "~/$TEST_VAR"
@@ -307,6 +321,7 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 
 func TestGetEnvironment(t *testing.T) {
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `
 			[` + prefix + `profile]
 			# filling description with profile's env file to test auto-append
@@ -339,7 +354,9 @@ func TestGetEnvironment(t *testing.T) {
 			require.FileExists(t, envFile)
 			assert.Contains(t, profile.EnvironmentFiles, envFile)
 
-			defer os.Truncate(envFile, 0)
+			defer func() {
+				_ = os.Truncate(envFile, 0)
+			}()
 			assert.NoError(t, os.WriteFile(envFile, []byte("K2=V2"), 0600))
 
 			env := profile.GetEnvironment(false)
@@ -361,6 +378,7 @@ func TestSetRootInProfileUnix(t *testing.T) {
 		t.SkipNow()
 	}
 	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
 		testConfig := version + `
 [` + prefix + `profile]
 base-dir = "~"
@@ -602,6 +620,7 @@ source = "` + sourcePattern + `"
 
 func TestResolveSourcesWithFlagPrefixInBackup(t *testing.T) {
 	backupSource := func(t *testing.T, source string) []string {
+		t.Helper()
 		testConfig := `
 			[profile.backup]
 			source = "` + source + `"
@@ -693,6 +712,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 	flatBackupTags := func() []string { return []string{strings.Join(backupTags, ",")} }
 
 	testProfileWithBase := func(t *testing.T, version Version, retention, baseDir string) *Profile {
+		t.Helper()
 		prefix := ""
 		if version > Version01 {
 			prefix = "profiles."
@@ -730,11 +750,13 @@ func TestPathAndTagInRetention(t *testing.T) {
 	}
 
 	testProfile := func(t *testing.T, version Version, retention string) *Profile {
+		t.Helper()
 		return testProfileWithBase(t, version, retention, "")
 	}
 
 	flagGetter := func(flagName string) func(t *testing.T, profile *Profile) any {
 		return func(t *testing.T, profile *Profile) any {
+			t.Helper()
 			flags := profile.GetRetentionFlags().ToMap()
 			assert.NotNil(t, flags)
 			return flags[flagName]
@@ -743,6 +765,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 	t.Run("AutoEnable", func(t *testing.T) {
 		retentionDisabled := func(t *testing.T, profile *Profile) {
+			t.Helper()
 			assert.False(t, profile.Retention.BeforeBackup.HasValue())
 			assert.False(t, profile.Retention.AfterBackup.HasValue())
 		}
@@ -1471,7 +1494,7 @@ func TestGetInitStructFields(t *testing.T) {
 }
 
 func TestGetCopyStructFields(t *testing.T) {
-	copy := &CopySection{
+	copySection := &CopySection{
 		Repository:      NewConfidentialValue("dest-repo"),
 		RepositoryFile:  "dest-repo-file",
 		PasswordFile:    "dest-pw-file",
@@ -1479,7 +1502,7 @@ func TestGetCopyStructFields(t *testing.T) {
 		KeyHint:         "dest-key-hint",
 	}
 
-	copy.OtherFlags = map[string]any{"option": "opt=dest"}
+	copySection.OtherFlags = map[string]any{"option": "opt=dest"}
 
 	profile := NewProfile(nil, "")
 	profile.Repository = NewConfidentialValue("src-repo")
@@ -1508,7 +1531,7 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"src-repo-file"},
 			"password-file":    {"src-pw-file"},
 			"password-command": {"src-pw-command"},
-		}, copy.getCommandFlags(profile).ToMap())
+		}, copySection.getCommandFlags(profile).ToMap())
 
 		// init
 		assert.Equal(t, map[string][]string{
@@ -1526,7 +1549,7 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"dest-repo-file"},
 			"password-file":    {"dest-pw-file"},
 			"password-command": {"dest-pw-command"},
-		}, copy.getInitFlags(profile).ToMap())
+		}, copySection.getInitFlags(profile).ToMap())
 	})
 
 	t.Run("restic>=14", func(t *testing.T) {
@@ -1547,7 +1570,7 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"dest-repo-file"},
 			"password-file":    {"dest-pw-file"},
 			"password-command": {"dest-pw-command"},
-		}, copy.getCommandFlags(profile).ToMap())
+		}, copySection.getCommandFlags(profile).ToMap())
 
 		// init
 		assert.Equal(t, map[string][]string{
@@ -1565,13 +1588,12 @@ func TestGetCopyStructFields(t *testing.T) {
 			"repository-file":  {"dest-repo-file"},
 			"password-file":    {"dest-pw-file"},
 			"password-command": {"dest-pw-command"},
-		}, copy.getInitFlags(profile).ToMap())
+		}, copySection.getInitFlags(profile).ToMap())
 	})
 
 	t.Run("get-init-flags-from-profile", func(t *testing.T) {
-		p := &(*profile)
-		assert.Nil(t, p.GetCopyInitializeFlags())
-		p.Copy = copy
-		assert.Equal(t, copy.getInitFlags(p).GetAll(), p.GetCopyInitializeFlags().GetAll())
+		assert.Nil(t, profile.GetCopyInitializeFlags())
+		profile.Copy = copySection
+		assert.Equal(t, copySection.getInitFlags(profile).GetAll(), profile.GetCopyInitializeFlags().GetAll())
 	})
 }

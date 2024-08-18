@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEmptyValue(t *testing.T) {
-	min := 10
-	max := 20
-	value := NewValue(min, max)
+	minValue := 10
+	maxValue := 20
+	value := NewValue(minValue, maxValue)
 	assert.False(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
 	assert.False(t, value.HasRange())
@@ -22,11 +23,12 @@ func TestEmptyValue(t *testing.T) {
 }
 
 func TestSingleValue(t *testing.T) {
-	min := 0
-	max := 10
+	minValue := 0
+	maxValue := 10
 	entry := 5
-	value := NewValue(min, max)
-	value.AddValue(entry)
+	value := NewValue(minValue, maxValue)
+	err := value.AddValue(entry)
+	require.NoError(t, err)
 	assert.True(t, value.HasValue())
 	assert.True(t, value.HasSingleValue())
 	assert.False(t, value.HasRange())
@@ -38,12 +40,13 @@ func TestSingleValue(t *testing.T) {
 }
 
 func TestSimpleRangeValue(t *testing.T) {
-	min := 1
-	max := 9
-	entries := []int{min, max}
-	value := NewValue(min, max)
+	minValue := 1
+	maxValue := 9
+	entries := []int{minValue, maxValue}
+	value := NewValue(minValue, maxValue)
 	for _, entry := range entries {
-		value.AddValue(entry)
+		err := value.AddValue(entry)
+		require.NoError(t, err)
 	}
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -51,17 +54,18 @@ func TestSimpleRangeValue(t *testing.T) {
 	assert.False(t, value.HasContiguousRange())
 	assert.False(t, value.HasLongContiguousRange())
 	assert.ElementsMatch(t, entries, value.GetRangeValues())
-	assert.ElementsMatch(t, []Range{{min, min}, {max, max}}, value.GetRanges())
-	assert.Equal(t, fmt.Sprintf("%02d,%02d", min, max), value.String())
+	assert.ElementsMatch(t, []Range{{minValue, minValue}, {maxValue, maxValue}}, value.GetRanges())
+	assert.Equal(t, fmt.Sprintf("%02d,%02d", minValue, maxValue), value.String())
 }
 
 func TestContiguousRangeValue(t *testing.T) {
-	min := 10
-	max := 20
+	minValue := 10
+	maxValue := 20
 	entries := []int{11, 12, 14}
-	value := NewValue(min, max)
+	value := NewValue(minValue, maxValue)
 	for _, entry := range entries {
-		value.AddValue(entry)
+		err := value.AddValue(entry)
+		require.NoError(t, err)
 	}
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -74,12 +78,13 @@ func TestContiguousRangeValue(t *testing.T) {
 }
 
 func TestComplexContiguousRanges(t *testing.T) {
-	min := 10
-	max := 20
+	minValue := 10
+	maxValue := 20
 	entries := []int{10, 11, 14, 15, 16, 19, 20}
-	value := NewValue(min, max)
+	value := NewValue(minValue, maxValue)
 	for _, entry := range entries {
-		value.AddValue(entry)
+		err := value.AddValue(entry)
+		require.NoError(t, err)
 	}
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
@@ -92,12 +97,15 @@ func TestComplexContiguousRanges(t *testing.T) {
 }
 
 func TestAddRanges(t *testing.T) {
-	min := 10
-	max := 20
+	minValue := 10
+	maxValue := 20
 	entries := []int{11, 12, 15}
-	value := NewValue(min, max)
-	value.AddRange(12, 11) // wrong order on purpose
-	value.AddRange(15, 15)
+	value := NewValue(minValue, maxValue)
+	err := value.AddRange(12, 11) // wrong order on purpose
+	require.NoError(t, err)
+	err = value.AddRange(15, 15)
+	require.NoError(t, err)
+
 	assert.True(t, value.HasValue())
 	assert.False(t, value.HasSingleValue())
 	assert.True(t, value.HasRange())
@@ -109,11 +117,11 @@ func TestAddRanges(t *testing.T) {
 }
 
 func TestAddValueOutOfRange(t *testing.T) {
-	min := 10
-	max := 20
-	entries := []int{min - 1, max + 1}
+	minValue := 10
+	maxValue := 20
+	entries := []int{minValue - 1, maxValue + 1}
 	for _, entry := range entries {
-		value := NewValue(min, max)
+		value := NewValue(minValue, maxValue)
 		assert.Panics(t, func() {
 			value.MustAddValue(entry)
 		})
@@ -121,12 +129,12 @@ func TestAddValueOutOfRange(t *testing.T) {
 }
 
 func TestAddRangeValuesOutOfRange(t *testing.T) {
-	min := 10
-	max := 20
+	minValue := 10
+	maxValue := 20
 
-	value := NewValue(min, max)
+	value := NewValue(minValue, maxValue)
 	assert.Panics(t, func() {
-		value.MustAddRange(min-1, max-1)
+		value.MustAddRange(minValue-1, maxValue-1)
 	})
 
 }

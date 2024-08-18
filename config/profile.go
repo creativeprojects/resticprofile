@@ -127,7 +127,7 @@ type InitSection struct {
 
 func (i *InitSection) IsEmpty() bool { return i == nil }
 
-func (i *InitSection) resolve(p *Profile) {
+func (i *InitSection) resolve(_ *Profile) {
 	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
 }
 
@@ -257,7 +257,7 @@ func (r *RetentionSection) resolve(profile *Profile) {
 	if profile.config != nil && profile.config.version >= Version02 {
 		// Auto-enable "after-backup" if nothing was specified explicitly and any "keep-" was configured
 		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() {
-			for name, _ := range r.OtherFlags {
+			for name := range r.OtherFlags {
 				if strings.HasPrefix(name, "keep-") {
 					r.AfterBackup = maybe.True()
 					break

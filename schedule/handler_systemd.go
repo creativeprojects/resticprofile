@@ -265,13 +265,13 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 	}
 	err := cmd.Run()
 	if command == systemctlStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	if command == systemctlStatus && cmd.ProcessState.ExitCode() == codeStatusNotRunning {
-		return ErrorServiceNotRunning
+		return ErrServiceNotRunning
 	}
 	if command == systemctlStop && cmd.ProcessState.ExitCode() == codeStopUnitNotFound {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	return err
 }

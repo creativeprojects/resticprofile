@@ -1,10 +1,12 @@
 package remote
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/creativeprojects/clog"
 )
@@ -36,7 +38,9 @@ func handlerFuncDone(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	// Just close the http server
-	StopServer()
+	ctx, cancel := context.WithTimeout(r.Context(), timeout*time.Second)
+	defer cancel()
+	StopServer(ctx)
 }
 
 func handlerFuncLog(w http.ResponseWriter, r *http.Request) {

@@ -60,8 +60,8 @@ var (
 	userPassword = ""
 )
 
-// ErrorNotConnected is returned by public functions if Connect was not called, was not successful or Close closed the connection.
-var ErrorNotConnected = errors.New("local task scheduler not connected")
+// ErrNotConnected is returned by public functions if Connect was not called, was not successful or Close closed the connection.
+var ErrNotConnected = errors.New("local task scheduler not connected")
 
 // IsConnected returns whether a connection to the local task scheduler is established
 func IsConnected() bool {
@@ -86,7 +86,7 @@ func Close() {
 // Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config *Config, schedules []*calendar.Event, permission Permission) error {
 	if !IsConnected() {
-		return ErrorNotConnected
+		return ErrNotConnected
 	}
 
 	if permission == SystemAccount {
@@ -514,14 +514,14 @@ func createMonthlyTrigger(task *taskmaster.Definition, schedule *calendar.Event)
 // Delete a task
 func Delete(title, subtitle string) error {
 	if !IsConnected() {
-		return ErrorNotConnected
+		return ErrNotConnected
 	}
 
 	taskName := getTaskPath(title, subtitle)
 	err := taskService.DeleteTask(taskName)
 	if err != nil {
 		if strings.Contains(err.Error(), "doesn't exist") {
-			return fmt.Errorf("%w: %s", ErrorNotRegistered, taskName)
+			return fmt.Errorf("%w: %s", ErrNotRegistered, taskName)
 		}
 		return err
 	}
@@ -531,19 +531,19 @@ func Delete(title, subtitle string) error {
 // Status returns the status of a task
 func Status(title, subtitle string) error {
 	if !IsConnected() {
-		return ErrorNotConnected
+		return ErrNotConnected
 	}
 
 	taskName := getTaskPath(title, subtitle)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
 	if err != nil {
 		// if there's an error here, it is very likely that the task is not registered
-		return fmt.Errorf("%s: %w: %s", taskName, ErrorNotRegistered, err)
+		return fmt.Errorf("%s: %w: %s", taskName, ErrNotRegistered, err)
 	}
 	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintf(writer, "Task:\t %s\n", registeredTask.Path)
 	fmt.Fprintf(writer, "User:\t %s\n", registeredTask.Definition.Principal.UserID)
-	if registeredTask.Definition.Actions != nil && len(registeredTask.Definition.Actions) > 0 {
+	if len(registeredTask.Definition.Actions) > 0 {
 		if action, ok := registeredTask.Definition.Actions[0].(taskmaster.ExecAction); ok {
 			fmt.Fprintf(writer, "Working Dir:\t %v\n", action.WorkingDir)
 			fmt.Fprintf(writer, "Exec:\t %v\n", action.Path+" "+action.Args)

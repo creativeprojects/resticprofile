@@ -39,9 +39,10 @@ func TestMain(m *testing.M) {
 		fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
 	}
 
-	m.Run()
+	exitCode := m.Run()
 	_ = os.Remove(mockBinary)
 	_ = os.Remove(echoBinary)
+	os.Exit(exitCode)
 }
 
 func TestGetProfile(t *testing.T) {
@@ -64,6 +65,7 @@ func TestGetProfile(t *testing.T) {
 	require.NoError(t, err)
 
 	getWd := func(t *testing.T) string {
+		t.Helper()
 		dir, err := os.Getwd()
 		require.NoError(t, err)
 		return filepath.ToSlash(dir)
@@ -72,6 +74,7 @@ func TestGetProfile(t *testing.T) {
 	cwd := getWd(t)
 
 	getProf := func(t *testing.T, name string) (profile *config.Profile, cleanup func()) {
+		t.Helper()
 		var err error
 		profile, cleanup, err = openProfile(c, name)
 		require.NoError(t, err)

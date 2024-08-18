@@ -44,9 +44,9 @@ func TestRemoveOnlyJob(t *testing.T) {
 
 	job := scheduler.NewJob(NewRemoveOnlyConfig(profile, "check"))
 
-	assert.Equal(t, ErrorJobCanBeRemovedOnly, job.Create())
-	assert.Equal(t, ErrorJobCanBeRemovedOnly, job.Status())
+	assert.Equal(t, ErrJobCanBeRemovedOnly, job.Create())
+	assert.Equal(t, ErrJobCanBeRemovedOnly, job.Status())
 	assert.True(t, job.Accessible())
 	assert.True(t, job.RemoveOnly())
-	assert.NotEqual(t, ErrorJobCanBeRemovedOnly, job.Remove())
+	assert.NotEqual(t, ErrJobCanBeRemovedOnly, job.Remove())
 }

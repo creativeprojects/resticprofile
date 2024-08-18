@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 	"path"
@@ -358,6 +359,7 @@ func TestFinallyProfile(t *testing.T) {
 	}
 
 	assertFileEquals := func(t *testing.T, expected string) {
+		t.Helper()
 		content, err := os.ReadFile(testFile)
 		require.NoError(t, err)
 		assert.Equal(t, strings.TrimSpace(string(content)), expected)
@@ -413,7 +415,10 @@ func Example_runProfile() {
 		command: "test",
 	}
 	wrapper := newResticWrapper(ctx)
-	wrapper.runProfile()
+	err := wrapper.runProfile()
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Output: test
 }
 
@@ -716,6 +721,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 	}
 
 	run := func(t *testing.T, wrapper *resticWrapper) (string, error) {
+		t.Helper()
 		file := path.Join(os.TempDir(), fmt.Sprintf("TestBackupWithStreamSource.%d.txt", rand.Int()))
 		defer os.Remove(file)
 
@@ -811,7 +817,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 
 		start := time.Now()
 		_, err := run(t, wrapper)
-		assert.Less(t, time.Now().Sub(start), time.Second*12, "timeout, interrupt not sent to restic")
+		assert.Less(t, time.Since(start), time.Second*12, "timeout, interrupt not sent to restic")
 
 		require.NotNil(t, err)
 		assert.Contains(t, expectedInterruptedError, err.Error())
@@ -831,7 +837,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 		}()
 		start := time.Now()
 		_, err := run(t, wrapper)
-		assert.Less(t, time.Now().Sub(start), time.Second*5, "timeout, interrupt not sent to stdin-command")
+		assert.Less(t, time.Since(start), time.Second*5, "timeout, interrupt not sent to stdin-command")
 
 		require.NotNil(t, err)
 		assert.Error(t, err)
@@ -882,7 +888,7 @@ func TestBackupWithResticLockFailureRetried(t *testing.T) {
 		"storage ID c8a44e77" + platform.LineSeparator +
 		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
 	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureRetried.txt")
-	err := os.WriteFile(tempfile, []byte(lockMessage), 0644)
+	err := os.WriteFile(tempfile, []byte(lockMessage), 0o600)
 	require.NoError(t, err)
 	defer os.Remove(tempfile)
 
@@ -918,7 +924,7 @@ func TestBackupWithResticLockFailureCancelled(t *testing.T) {
 		"storage ID c8a44e77" + platform.LineSeparator +
 		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
 	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureCancelled.txt")
-	err := os.WriteFile(tempfile, []byte(lockMessage), 0644)
+	err := os.WriteFile(tempfile, []byte(lockMessage), 0o600)
 	require.NoError(t, err)
 	defer os.Remove(tempfile)
 
@@ -1023,7 +1029,7 @@ func TestRunShellCommands(t *testing.T) {
 	profile.Forget = &config.SectionWithScheduleAndMonitoring{}
 	profile.Init = &config.InitSection{}
 	profile.Prune = &config.SectionWithScheduleAndMonitoring{}
-	for name, _ := range profile.OtherSections {
+	for name := range profile.OtherSections {
 		profile.OtherSections[name] = new(config.GenericSection)
 	}
 
@@ -1170,17 +1176,20 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 	assert.True(t, mockOutput.ContainsRemoteLockFailure())
 	retry, sleep := wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	// Ignores stale lock when disabled
 	lockedSince = constants.MinResticStaleLockAge
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	// Ignores non-stale lock
 	lockedSince = constants.MinResticStaleLockAge - time.Nanosecond
 	wrapper.global.ResticStaleLockAge = time.Millisecond
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	// Unlocks stale lock
 	lockedSince = constants.MinResticStaleLockAge
@@ -1193,16 +1202,19 @@ func TestCanRetryAfterRemoteStaleLockFailure(t *testing.T) {
 	// Unlock is run only once
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	// Unlock is not run when ForceLock is disabled
 	wrapper.doneTryUnlock = false
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	profile.ForceLock = false
 	wrapper.doneTryUnlock = false
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 }
 
 func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
@@ -1229,6 +1241,7 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.False(t, mockOutput.ContainsRemoteLockFailure())
 	retry, sleep := wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	// No retry when lockWait is nil
 	lockFailure = true
@@ -1246,6 +1259,7 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	wrapper.global.ResticLockRetryAfter = constants.MinResticLockRetryDelay // enable remote lock retry
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
+	assert.Equal(t, time.Duration(0), sleep)
 
 	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryAfter)
 	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)

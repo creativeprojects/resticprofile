@@ -53,6 +53,7 @@ func TestCustomErrorCallback(t *testing.T) {
 	triggerLine := "--TRIGGER_CALLBACK--"
 
 	init := func(t *testing.T, minCount, maxCalls int, stopOnError bool) error {
+		t.Helper()
 		analyser = NewOutputAnalyser()
 		invoked = 0
 		cbError = nil
@@ -64,6 +65,7 @@ func TestCustomErrorCallback(t *testing.T) {
 	}
 
 	writeTrigger := func(t *testing.T) {
+		t.Helper()
 		require.NoError(t, analyser.AnalyseStringLines(triggerLine))
 	}
 

@@ -20,20 +20,17 @@ func IsWarning(err error) bool {
 		return exitErr.ExitCode() == constants.ExitCodeWarning
 	}
 	// so far, internal warning is only used in unit tests
-	warn := &InternalWarning{}
-	if errors.As(err, &warn) {
-		return true
-	}
-	return false
+	warn := &InternalWarningError{}
+	return errors.As(err, &warn)
 }
 
 func IsError(err error) bool {
 	return err != nil && !IsWarning(err)
 }
 
-type InternalWarning struct {
+type InternalWarningError struct {
 }
 
-func (w InternalWarning) Error() string {
+func (w InternalWarningError) Error() string {
 	return "internal warning"
 }

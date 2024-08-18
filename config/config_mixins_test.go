@@ -3,9 +3,10 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"testing"
+
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -119,6 +120,7 @@ func TestMixin(t *testing.T) {
 
 func TestRevolveAppendToListKeys(t *testing.T) {
 	load := func(t *testing.T, config map[string]interface{}) *viper.Viper {
+		t.Helper()
 		v := viper.New()
 		require.NoError(t, v.MergeConfigMap(config))
 		return v
@@ -259,6 +261,7 @@ mixins:
     source: ["${named-source}", "${another-source}"]
 `
 	load := func(t *testing.T, content string) *Config {
+		t.Helper()
 		buffer := bytes.NewBufferString(base + content)
 		cfg, err := Load(buffer, FormatYAML)
 		require.NoError(t, err)

@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+//nolint:unparam
 func configForJob(command string, at ...string) *config.Schedule {
 	origin := config.ScheduleOrigin("profile", command)
 	return config.NewDefaultSchedule(nil, origin, at...)
@@ -137,7 +138,7 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
-		Return(schedule.ErrorServiceNotFound)
+		Return(schedule.ErrServiceNotFound)
 
 	scheduleConfig := configForJob("backup", "sched")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
@@ -151,7 +152,7 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
-		Return(schedule.ErrorServiceNotFound)
+		Return(schedule.ErrServiceNotFound)
 
 	scheduleConfig := configForJob("backup")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})

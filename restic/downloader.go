@@ -53,7 +53,7 @@ func newUpdater(os, arch string, key []byte, source sup.Source) *sup.Updater {
 	return updater
 }
 
-var versionCommandPattern = regexp.MustCompile("restic ([\\d.]+)[ -].+")
+var versionCommandPattern = regexp.MustCompile(`restic ([\d.]+)[ -].+`)
 
 // GetVersion returns the version of the executable
 func GetVersion(executable string) (string, error) {

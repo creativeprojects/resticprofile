@@ -20,6 +20,7 @@ import (
 
 func descriptionIs(expected string) func(t *testing.T, cmd CommandIf, err error) {
 	return func(t *testing.T, cmd CommandIf, err error) {
+		t.Helper()
 		assert.NoError(t, err)
 		assert.Equal(t, expected, cmd.GetDescription())
 	}
@@ -27,6 +28,7 @@ func descriptionIs(expected string) func(t *testing.T, cmd CommandIf, err error)
 
 func optionNotExists(name string) func(t *testing.T, cmd CommandIf, err error) {
 	return func(t *testing.T, cmd CommandIf, err error) {
+		t.Helper()
 		_, found := cmd.Lookup(name)
 		assert.False(t, found)
 		assert.False(t, slices.ContainsFunc(cmd.GetOptions(), func(option Option) bool { return option.Name == name }))
@@ -35,6 +37,7 @@ func optionNotExists(name string) func(t *testing.T, cmd CommandIf, err error) {
 
 func optionIs(name, description, def string, once bool) func(t *testing.T, cmd CommandIf, err error) {
 	return func(t *testing.T, cmd CommandIf, err error) {
+		t.Helper()
 		assert.NoError(t, err)
 		for _, n := range strings.Split(name, ",") {
 			option, found := cmd.Lookup(n)
@@ -54,6 +57,7 @@ func optionIs(name, description, def string, once bool) func(t *testing.T, cmd C
 
 func all(checks ...func(t *testing.T, cmd CommandIf, err error)) func(t *testing.T, cmd CommandIf, err error) {
 	return func(t *testing.T, cmd CommandIf, err error) {
+		t.Helper()
 		require.NotEmpty(t, checks)
 		for _, check := range checks {
 			check(t, cmd, err)
@@ -242,6 +246,7 @@ Ignored line`,
 var fixtures embed.FS
 
 func parseFixtures(t *testing.T) map[string]*command {
+	t.Helper()
 	cmds := map[string]*command{}
 	for i, version := range []string{"0.9", "0.10", "0.14"} {
 		manualDir, err := fs.Sub(fixtures, path.Join("fixtures", version))

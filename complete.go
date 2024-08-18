@@ -137,7 +137,7 @@ func (c *Completer) listProfileNames() (list []string) {
 		if file, err := filesearch.FindConfigurationFile(filename); err == nil {
 			if conf, err := config.LoadFile(file, format); err == nil {
 				list = append(list, conf.GetProfileNames()...)
-				for name, _ := range conf.GetProfileGroups() {
+				for name := range conf.GetProfileGroups() {
 					list = append(list, name)
 				}
 			} else {
@@ -192,7 +192,7 @@ func (c *Completer) completeOwnCommandFlags(name, word string) (completions []st
 
 	for _, command := range c.ownCommands {
 		if command.name == name {
-			for names, _ := range command.flags { // e.g. "-q, --quiet, --size [size|"
+			for names := range command.flags { // e.g. "-q, --quiet, --size [size|"
 				var flagNames []string
 
 				for _, flag := range strings.Split(names, ",") {

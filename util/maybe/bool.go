@@ -25,11 +25,11 @@ func (value Bool) IsTrue() bool {
 }
 
 func (value Bool) IsStrictlyFalse() bool {
-	return value.HasValue() && value.Value() == false
+	return value.HasValue() && !value.Value()
 }
 
 func (value Bool) IsFalseOrUndefined() bool {
-	return !value.HasValue() || value.Value() == false
+	return !value.HasValue() || !value.Value()
 }
 
 func (value Bool) IsUndefined() bool {
@@ -37,7 +37,7 @@ func (value Bool) IsUndefined() bool {
 }
 
 func (value Bool) IsTrueOrUndefined() bool {
-	return !value.HasValue() || value.Value() == true
+	return !value.HasValue() || value.Value()
 }
 
 func BoolFromNilable(value *bool) Bool {

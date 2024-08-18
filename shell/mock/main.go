@@ -73,7 +73,7 @@ func main() {
 				stderr = err.Error()
 				exit = 3
 			} else {
-				io.CopyN(os.Stderr, file, 1024)
+				_, _ = io.CopyN(os.Stderr, file, 1024)
 				file.Close()
 				stderr = ""
 			}

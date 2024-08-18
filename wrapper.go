@@ -156,28 +156,41 @@ func (r *resticWrapper) getBackupAction() func() error {
 
 	return func() (err error) {
 		// Check before
-		if err == nil && r.profile.Backup != nil && r.profile.Backup.CheckBefore {
+		if r.profile.Backup != nil && r.profile.Backup.CheckBefore {
 			err = r.runCheck()
+			if err != nil {
+				return
+			}
 		}
 
 		// Retention before
-		if err == nil && r.profile.Retention != nil && r.profile.Retention.BeforeBackup.IsTrue() {
+		if r.profile.Retention != nil && r.profile.Retention.BeforeBackup.IsTrue() {
 			err = r.runRetention()
+			if err != nil {
+				return
+			}
 		}
 
 		// Backup command
-		if err == nil {
-			err = backupAction()
+		err = backupAction()
+		if err != nil {
+			return
 		}
 
 		// Retention after
-		if err == nil && r.profile.Retention != nil && r.profile.Retention.AfterBackup.IsTrue() {
+		if r.profile.Retention != nil && r.profile.Retention.AfterBackup.IsTrue() {
 			err = r.runRetention()
+			if err != nil {
+				return
+			}
 		}
 
 		// Check after
-		if err == nil && r.profile.Backup != nil && r.profile.Backup.CheckAfter {
+		if r.profile.Backup != nil && r.profile.Backup.CheckAfter {
 			err = r.runCheck()
+			if err != nil {
+				return
+			}
 		}
 
 		return
@@ -554,7 +567,7 @@ func (r *resticWrapper) runCommand(command string) error {
 		r.executionTime += summary.Duration
 		r.summary(r.command, summary, stderr, err)
 
-		if err != nil && !r.canSucceedAfterError(command, summary, err) {
+		if err != nil && !r.canSucceedAfterError(command, err) {
 			retry, interruptedError := r.canRetryAfterError(command, summary)
 			if retry {
 				continue
@@ -794,7 +807,7 @@ func (r *resticWrapper) getErrorContext(err error) hook.ErrorContext {
 }
 
 // canSucceedAfterError returns true if an error reported by running restic in runCommand can be counted as success
-func (r *resticWrapper) canSucceedAfterError(command string, summary monitor.Summary, err error) bool {
+func (r *resticWrapper) canSucceedAfterError(command string, err error) bool {
 	if err == nil {
 		return true
 	}

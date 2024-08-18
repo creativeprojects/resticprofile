@@ -46,6 +46,7 @@ func loadCrontabFile(file string) (content, charset string, err error) {
 	return
 }
 
+//nolint:unparam
 func saveCrontabFile(file, content, charset string) (err error) {
 	if err = verifyCrontabFile(file); err != nil {
 		return

@@ -208,7 +208,7 @@ func TestGenerateCommand(t *testing.T) {
 
 	contextWithArguments := func(args []string) commandContext {
 		t.Helper()
-		return commandContext{Context: Context{request: Request{arguments: args}}} //nolint:exhaustivestruct
+		return commandContext{Context: Context{request: Request{arguments: args}}}
 	}
 
 	t.Run("--bash-completion", func(t *testing.T) {

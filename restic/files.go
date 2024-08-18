@@ -68,7 +68,7 @@ func loadEmbeddedOSExtensions(goos string, cmds map[string]*command) error {
 		var extensions map[string][]Option
 		if extensions, err = loadCommandExtensionsFromReader(file); err == nil {
 			for _, options := range extensions {
-				for i, _ := range options {
+				for i := range options {
 					if !slices.Contains(options[i].OnlyInOS, goos) {
 						options[i].OnlyInOS = append(options[i].OnlyInOS, goos)
 					}

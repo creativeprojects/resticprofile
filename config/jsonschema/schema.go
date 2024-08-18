@@ -79,7 +79,7 @@ func isCompatibleValue(schema SchemaType, value any) (ok bool) {
 func isDefaultValueForType(value any) bool {
 	switch v := value.(type) {
 	case bool:
-		return v == false
+		return !v
 	case int64:
 		return v == 0
 	case float64:

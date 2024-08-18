@@ -85,7 +85,7 @@ func init() {
 			if sectionName == constants.CommandBackup {
 				if propertyName != constants.ParameterHost {
 					info.examples = info.examples[1:] // remove "true" from examples of backup section
-					note = fmt.Sprintf(`Boolean true is unsupported in section "backup".`)
+					note = `Boolean true is unsupported in section "backup".`
 				} else {
 					note += suffixDefaultTrueV2
 				}
@@ -121,7 +121,6 @@ func init() {
 				basic.mayNil = true
 			}
 		}
-		return
 	})
 
 	// Profile or Group: special handling for ConfidentialValue

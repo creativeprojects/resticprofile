@@ -33,8 +33,9 @@ func TestMain(m *testing.M) {
 	if output, err := cmd.CombinedOutput(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
 	}
-	m.Run()
+	exitCode := m.Run()
 	_ = os.Remove(mockBinary)
+	os.Exit(exitCode)
 }
 
 func TestRemoveQuotes(t *testing.T) {
@@ -130,8 +131,8 @@ func TestShellArgumentsComposing(t *testing.T) {
 	t.Parallel()
 
 	exeWithSpace := filepath.Join(t.TempDir(), "some folder", "executable")
-	require.NoError(t, os.MkdirAll(filepath.Dir(exeWithSpace), 0700))
-	require.NoError(t, os.WriteFile(exeWithSpace, []byte{0}, 0700))
+	require.NoError(t, os.MkdirAll(filepath.Dir(exeWithSpace), 0o700))
+	require.NoError(t, os.WriteFile(exeWithSpace, []byte{0}, 0o600))
 
 	tests := []struct {
 		command               string
@@ -376,7 +377,7 @@ func TestInterruptShellCommand(t *testing.T) {
 	// Will ask us to stop in 100ms
 	go func() {
 		time.Sleep(100 * time.Millisecond)
-		sigChan <- syscall.Signal(syscall.SIGINT)
+		sigChan <- syscall.SIGINT
 	}()
 	start := time.Now()
 	_, _, err := cmd.Run()
@@ -546,8 +547,10 @@ func TestCanAnalyseLockFailure(t *testing.T) {
 
 	file, err := os.CreateTemp(".", "test-restic-lock-failure")
 	require.NoError(t, err)
-	file.Write([]byte(ResticLockFailureOutput))
+	_, err = file.Write([]byte(ResticLockFailureOutput))
+	require.NoError(t, err)
 	file.Close()
+
 	fileName := file.Name()
 	defer os.Remove(fileName)
 

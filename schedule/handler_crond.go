@@ -104,7 +104,7 @@ func (h *HandlerCrond) RemoveJob(job *Config, permission string) error {
 		return err
 	}
 	if num == 0 {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	return nil
 }

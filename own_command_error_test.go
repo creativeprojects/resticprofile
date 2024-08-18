@@ -15,6 +15,6 @@ func TestOwnCommandError(t *testing.T) {
 	assert.ErrorIs(t, err, wrap)
 
 	var unwrap *ownCommandError
-	assert.True(t, errors.As(err, &unwrap))
+	assert.ErrorAs(t, err, &unwrap)
 	assert.Equal(t, 10, unwrap.ExitCode())
 }

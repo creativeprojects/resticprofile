@@ -103,6 +103,7 @@ func TestTypeSerialization(t *testing.T) {
 }
 
 func extractType[T any](t *testing.T, st any) *T {
+	t.Helper()
 	require.IsType(t, new(T), st)
 	require.NotNil(t, st)
 	return st.(*T)
@@ -156,6 +157,7 @@ func TestReferences(t *testing.T) {
 
 func TestVerify(t *testing.T) {
 	testBase := func(t *testing.T, base *schemaTypeBase) {
+		t.Helper()
 		require.NotEmpty(t, validTypeNames)
 		require.NotNil(t, base)
 

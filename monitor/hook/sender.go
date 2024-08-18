@@ -2,6 +2,7 @@ package hook
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -46,13 +47,15 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 	if len(certificates) > 0 {
 		transport := http.DefaultTransport.(*http.Transport).Clone()
 		transport.TLSClientConfig = &tls.Config{
-			RootCAs: getRootCAs(certificates),
+			RootCAs:    getRootCAs(certificates),
+			MinVersion: tls.VersionTLS12,
 		}
 		client.Transport = transport
 	}
 
 	// another client for insecure requests
 	transport := http.DefaultTransport.(*http.Transport).Clone()
+	//nolint:gosec
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	insecureClient := &http.Client{
 		Timeout:   timeout,
@@ -94,7 +97,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		bodyReader = bytes.NewBufferString(body)
 	}
 
-	req, err := http.NewRequest(method, url, bodyReader)
+	req, err := http.NewRequestWithContext(context.TODO(), method, url, bodyReader)
 	if err != nil {
 		return err
 	}

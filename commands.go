@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -167,7 +169,7 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 
 	// Parse requester as first argument. Format "[kind]:v[version]", e.g. "bash:v1"
 	if len(args) > 0 {
-		matcher := regexp.MustCompile("^(bash|zsh):v(\\d+)$")
+		matcher := regexp.MustCompile(`^(bash|zsh):v(\d+)$`)
 		if matches := matcher.FindStringSubmatch(args[0]); matches != nil {
 			requester = matches[1]
 			if v, err := strconv.Atoi(matches[2]); err == nil {
@@ -570,7 +572,7 @@ func testElevationCommand(_ io.Writer, ctx commandContext) error {
 		return nil
 	}
 
-	return elevated(ctx.flags)
+	return elevated()
 }
 
 func retryElevated(err error, flags commandLineFlags) error {
@@ -580,7 +582,7 @@ func retryElevated(err error, flags commandLineFlags) error {
 	// maybe can find a better way than searching for the word "denied"?
 	if platform.IsWindows() && !flags.isChild && strings.Contains(err.Error(), "denied") {
 		clog.Info("restarting resticprofile in elevated mode...")
-		err := elevated(flags)
+		err := elevated()
 		if err != nil {
 			return err
 		}
@@ -589,7 +591,7 @@ func retryElevated(err error, flags commandLineFlags) error {
 	return err
 }
 
-func elevated(flags commandLineFlags) error {
+func elevated() error {
 	if !platform.IsWindows() {
 		return errors.New("only available on Windows platform")
 	}
@@ -601,7 +603,9 @@ func elevated(flags commandLineFlags) error {
 	}
 	err = win.RunElevated(remote.GetPort())
 	if err != nil {
-		remote.StopServer()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		remote.StopServer(ctx)
 		return err
 	}
 

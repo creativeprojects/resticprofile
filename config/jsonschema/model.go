@@ -405,8 +405,8 @@ func verifySchemaRegex(pattern string) (err error) {
 // walkTypes walks into all SchemaType items from start, passing them to callback (including start).
 // The callback can return item, nil or a new SchemaType as it would like to continue to walk deeper,
 // stop walking deeper or replace item with a new SchemaType.
-func walkTypes(start SchemaType, callback func(item SchemaType) SchemaType) SchemaType {
-	return internalWalkTypes(make(map[SchemaType]bool), start, callback)
+func walkTypes(start SchemaType, callback func(item SchemaType) SchemaType) {
+	internalWalkTypes(make(map[SchemaType]bool), start, callback)
 }
 
 func internalWalkTypes(into map[SchemaType]bool, current SchemaType, callback func(item SchemaType) SchemaType) SchemaType {

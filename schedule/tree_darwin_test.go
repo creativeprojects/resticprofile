@@ -1,4 +1,5 @@
-//+build darwin
+//go:build darwin
+// +build darwin
 
 package schedule
 
@@ -233,39 +234,5 @@ func TestGenerateTree(t *testing.T) {
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, testItem.expected, generateTreeOfSchedules(event))
 		})
-	}
-}
-
-func BenchmarkManualSliceCopy(b *testing.B) {
-	max := 10000
-	testData := make([]int, max)
-	for i := 0; i < max; i++ {
-		testData[i] = i
-	}
-	b.ResetTimer()
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		newData := make([]int, len(testData))
-		for i := 0; i < len(testData); i++ {
-			newData[i] = testData[i]
-		}
-		assert.Len(b, newData, max)
-	}
-}
-
-// This one performs much better, but notice how the slice should be pre-allocated
-// Also doesn't work with allocation like newData := make([]int, 0, len(testData))
-func BenchmarkBuiltinSliceCopy(b *testing.B) {
-	max := 10000
-	testData := make([]int, max)
-	for i := 0; i < max; i++ {
-		testData[i] = i
-	}
-	b.ResetTimer()
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		newData := make([]int, len(testData))
-		copy(newData, testData)
-		assert.Len(b, newData, max)
 	}
 }

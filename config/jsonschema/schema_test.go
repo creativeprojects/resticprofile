@@ -32,6 +32,7 @@ import (
 //       a pure go solution that is maintained and support required standards
 
 func findNpm(t *testing.T) string {
+	t.Helper()
 	if npm, err := exec.LookPath("npm"); err != nil {
 		t.Log("npm not found, some tests may be skipped")
 		return ""
@@ -44,8 +45,10 @@ func findNpm(t *testing.T) string {
 type npmRunnerFunc func(t *testing.T, args ...string) error
 
 func npmRunner(t *testing.T) npmRunnerFunc {
+	t.Helper()
 	npmExecutable := findNpm(t)
 	return func(t *testing.T, args ...string) (err error) {
+		t.Helper()
 		t.Log(args)
 		if npmExecutable != "" {
 			cmd := exec.Command(npmExecutable, args...)
@@ -69,6 +72,7 @@ func npmRunner(t *testing.T) npmRunnerFunc {
 var npm npmRunnerFunc
 
 func initNpmEnv(t *testing.T) {
+	t.Helper()
 	if npm == nil {
 		npm = npmRunner(&testing.T{})
 		if npm(t, "list", "ajv") != nil {
@@ -79,6 +83,7 @@ func initNpmEnv(t *testing.T) {
 }
 
 func createSchema(t *testing.T, version config.Version) string {
+	t.Helper()
 	file, err := os.Create(path.Join(t.TempDir(), fmt.Sprintf("schema-%d.json", version)))
 	require.NoError(t, err)
 
@@ -125,6 +130,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 	schema2 := createSchema(t, config.Version02)
 
 	rewriteToJson := func(t *testing.T, filename string) string {
+		t.Helper()
 		v := viper.New()
 		v.SetConfigFile(filename)
 		if strings.HasSuffix(filename, ".conf") {
@@ -133,7 +139,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 		require.NoError(t, v.ReadInConfig())
 
 		v.SetConfigType("json")
-		filename = filepath.Join(t.TempDir(), fmt.Sprintf(filepath.Base(filename)+".json"))
+		filename = filepath.Join(t.TempDir(), filepath.Base(filename)+".json")
 		require.NoError(t, v.WriteConfigAs(filename))
 		return filename
 	}
@@ -264,6 +270,7 @@ var propertySetDefaults = map[string]any{
 }
 
 func setupMock(t *testing.T, m *mock.Mock, defs map[string]any) {
+	t.Helper()
 	for method, value := range defs {
 		if !m.IsMethodCallable(t, method) {
 			m.On(method).Return(value).Maybe()
@@ -284,6 +291,7 @@ func TestDescription(t *testing.T) {
 	}
 
 	assertDescription := func(t *testing.T, expected string, info *mocks.PropertyInfo) {
+		t.Helper()
 		assert.Equal(t, expected, getDescription(info))
 		info.AssertExpectations(t)
 	}
@@ -478,6 +486,7 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 
 		// number range
 		{info: np(config.NumericRange{From: util.CopyRef(1.0)}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			n := types[0].(*schemaNumber)
 			assert.Equal(t, util.CopyRef(1.0), n.Minimum)
 			assert.Nil(t, n.Maximum)
@@ -485,6 +494,7 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 			assert.Nil(t, n.ExclusiveMaximum)
 		}},
 		{info: np(config.NumericRange{To: util.CopyRef(1.0)}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			n := types[0].(*schemaNumber)
 			assert.Nil(t, n.Minimum)
 			assert.Equal(t, util.CopyRef(1.0), n.Maximum)
@@ -497,6 +507,7 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 			FromExclusive: true,
 			ToExclusive:   true,
 		}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			n := types[0].(*schemaNumber)
 			assert.Equal(t, util.CopyRef(0.1), n.ExclusiveMinimum)
 			assert.Equal(t, util.CopyRef(1.0), n.ExclusiveMaximum)
@@ -506,20 +517,24 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 
 		// string
 		{info: sp("some-format", ""), types: []any{"string"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			s := types[0].(*schemaString)
 			assert.Equal(t, stringFormat("some-format"), s.Format) // validation is not performed here
 		}},
 		{info: sp("duration", ""), types: []any{"string"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			s := types[0].(*schemaString)
 			assert.Equal(t, stringFormat(""), s.Format)
 			assert.Equal(t, durationPattern, s.Pattern)
 		}},
 		{info: sp("duration", "custom-pattern"), types: []any{"string"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			s := types[0].(*schemaString)
 			assert.Equal(t, stringFormat(""), s.Format)
 			assert.Equal(t, "custom-pattern", s.Pattern)
 		}},
 		{info: sp("", "]some-pattern["), types: []any{"string"}, check: func(t *testing.T, types []SchemaType) {
+			t.Helper()
 			s := types[0].(*schemaString)
 			assert.Equal(t, "]some-pattern[", s.Pattern) // validation is not performed here
 		}},

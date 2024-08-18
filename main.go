@@ -72,7 +72,7 @@ func main() {
 		// so we can see what's going on
 		defer func() {
 			term.Println("\n\nPress the Enter Key to continue...")
-			fmt.Scanln()
+			_, _ = fmt.Scanln()
 		}()
 	}
 
@@ -543,9 +543,8 @@ func runProfile(ctx *Context) error {
 	return nil
 }
 
-func loadScheduledProfile(ctx *Context) error {
-	ctx.schedule, _ = ctx.profile.Schedules()[ctx.command]
-	return nil
+func loadScheduledProfile(ctx *Context) {
+	ctx.schedule = ctx.profile.Schedules()[ctx.command]
 }
 
 // randomBool returns true for Heads and false for Tails

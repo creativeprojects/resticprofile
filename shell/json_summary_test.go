@@ -32,6 +32,7 @@ func TestScanJsonSummary(t *testing.T) {
 
 	// Start writing into the pipe, line by line
 	go func(t *testing.T) {
+		t.Helper()
 		lines := strings.Split(resticOutput, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")
@@ -84,6 +85,7 @@ Is there a repository at the following location?
 
 	// Start writing into the pipe, line by line
 	go func(t *testing.T) {
+		t.Helper()
 		lines := strings.Split(resticOutput, "\n")
 		for _, line := range lines {
 			line = strings.TrimRight(line, "\r")

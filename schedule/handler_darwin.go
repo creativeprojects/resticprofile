@@ -211,7 +211,7 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
 	}
 
 	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	// stop the service in case it's already running
 	stop := exec.Command(launchctlBin, launchdStop, name)
@@ -245,7 +245,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
-		return ErrorServiceNotFound
+		return ErrServiceNotFound
 	}
 	if err != nil {
 		return err
@@ -362,7 +362,7 @@ func getCalendarIntervalsFromScheduleTree(tree []*treeElement) []CalendarInterva
 
 func fillInValueFromScheduleTreeElement(currentEntry *CalendarInterval, element *treeElement, entries *[]CalendarInterval) {
 	setCalendarIntervalValueFromType(currentEntry, element.value, element.elementType)
-	if element.subElements == nil || len(element.subElements) == 0 {
+	if len(element.subElements) == 0 {
 		// end of the line, this entry is finished
 		*entries = append(*entries, *currentEntry)
 		return

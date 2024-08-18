@@ -14,7 +14,7 @@ func TestContextClone(t *testing.T) {
 		binary: "test",
 	}
 	clone := ctx.clone()
-	assert.False(t, ctx == clone) // different pointers
+	assert.NotSame(t, ctx, clone) // different pointers
 	assert.Equal(t, ctx, clone)   // same values
 }
 

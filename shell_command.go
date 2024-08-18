@@ -82,7 +82,7 @@ func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, s
 	}
 
 	shellCmd.Environ = os.Environ()
-	if command.env != nil && len(command.env) > 0 {
+	if len(command.env) > 0 {
 		shellCmd.Environ = append(shellCmd.Environ, command.env...)
 	}
 

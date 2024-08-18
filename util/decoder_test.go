@@ -65,6 +65,7 @@ func TestDecoderOnErrorInput(t *testing.T) {
 func TestMustRewindToStart(t *testing.T) {
 	buf := make([]byte, 1)
 	read := func(t *testing.T, reader io.Reader) byte {
+		t.Helper()
 		n, err := reader.Read(buf)
 		assert.Equal(t, n, 1)
 		assert.NoError(t, err)
