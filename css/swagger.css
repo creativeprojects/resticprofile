@@ -1,7 +1,7 @@
 /* Styles to make Swagger-UI fit into our theme */
 
-@import "fonts.css";
-@import "variant-internal.css";
+@import "fonts.css?1724101447";
+@import "variables.css?1724101447";
 
 body{
     line-height: 1.574;

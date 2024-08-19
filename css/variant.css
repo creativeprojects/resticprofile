@@ -1,4 +1,4 @@
-@import "variant-internal.css";
+@import "variables.css?1724101447";
 
 html {
     color-scheme: only var(--INTERNAL-BROWSER-theme);

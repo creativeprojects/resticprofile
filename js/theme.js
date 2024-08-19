@@ -378,9 +378,9 @@ function initOpenapi( update, attrs ){
     }
     function renderOpenAPI(oc) {
         var relBasePath = window.relearn.relBasePath;
-        var buster = window.themeUseOpenapi.assetsBuster ? '?' + window.themeUseOpenapi.assetsBuster : '';
+        var assetBuster = window.themeUseOpenapi.assetsBuster;
         var print = isPrint || attrs.isPrintPreview ? "PRINT-" : "";
-        var theme = print ? `${relBasePath}/css/theme-relearn-light.css${buster}` : document.querySelector( '#R-variant-style' ).attributes.href.value
+        var theme = print ? `${relBasePath}/css/theme-relearn-light.css${assetBuster}` : document.querySelector( '#R-variant-style' ).attributes.href.value
         var swagger_theme = variants.getColorValue( print + 'OPENAPI-theme' );
         var swagger_code_theme = variants.getColorValue( print + 'OPENAPI-CODE-theme' );
 
@@ -404,8 +404,8 @@ function initOpenapi( update, attrs ){
                 '<head>' +
                     '<link rel="stylesheet" href="' + window.themeUseOpenapi.css + '">' +
                     '<link rel="stylesheet" href="' + theme + '">' +
-                    '<link rel="stylesheet" href="' + relBasePath + '/css/swagger.css' + buster + '">' +
-                    '<link rel="stylesheet" href="' + relBasePath + '/css/swagger-' + swagger_theme + '.css' + buster + '">' +
+                    '<link rel="stylesheet" href="' + relBasePath + '/css/swagger.css' + assetBuster + '">' +
+                    '<link rel="stylesheet" href="' + relBasePath + '/css/swagger-' + swagger_theme + '.css' + assetBuster + '">' +
                 '</head>' +
                 '<body>' +
                     '<a class="relearn-expander" href="" onclick="return relearn_collapse_all()">Collapse all</a>' +

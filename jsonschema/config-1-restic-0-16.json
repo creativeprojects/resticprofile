@@ -2865,7 +2865,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3250,7 +3250,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3270,14 +3270,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3385,7 +3385,7 @@
         },
         "cache-dir": {
           "title": "cache-dir",
-          "description": "set the cache directory\u0026. (default: use system default cache directory)",
+          "description": "set the cache directory. (default: use system default cache directory)",
           "type": "string",
           "minLength": 0
         },
@@ -3400,7 +3400,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3415,14 +3415,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3528,7 +3528,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3543,14 +3543,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3762,7 +3762,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4036,7 +4036,7 @@
         },
         "diff": {
           "title": "diff",
-          "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink\n?  Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n\u0026'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
+          "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n* `+` The item was added\n* `-` The item was removed\n* `U` The metadata (access mode, timestamps, ...) for the item was updated\n* `M` The file's content was modified\n* `T` The type was changed, e.g. a file was made a symlink\n* `?` Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -4045,7 +4045,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4185,7 +4185,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4340,7 +4340,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4354,11 +4354,6 @@
               "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
-            },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
             },
             "host": {
               "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
@@ -4376,6 +4371,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -4527,7 +4527,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4552,6 +4552,11 @@
               "description": "do not delete anything, just print what would be done",
               "type": "boolean"
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "group-by": {
               "title": "group-by",
               "default": "host,paths",
@@ -4565,11 +4570,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -4867,7 +4867,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5035,7 +5035,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5050,17 +5050,17 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "host": {
               "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
             },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5196,7 +5196,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5211,14 +5211,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5330,7 +5330,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5345,6 +5345,11 @@
               "type": "string",
               "minLength": 0
             },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
             "host": {
               "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
             },
@@ -5356,11 +5361,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5482,7 +5482,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5620,7 +5620,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5847,7 +5847,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6097,7 +6097,135 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
+              "type": "string",
+              "minLength": 0
+            },
+            "cleanup-cache": {
+              "title": "cleanup-cache",
+              "description": "auto remove old cache directories",
+              "type": "boolean"
+            },
+            "compression": {
+              "title": "compression",
+              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
+            },
+            "insecure-tls": {
+              "title": "insecure-tls",
+              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "key-hint": {
+              "title": "key-hint",
+              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "limit-download": {
+              "title": "limit-download",
+              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "limit-upload": {
+              "title": "limit-upload",
+              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+              "type": "integer"
+            },
+            "no-cache": {
+              "title": "no-cache",
+              "description": "do not use a local cache",
+              "type": "boolean"
+            },
+            "no-lock": {
+              "title": "no-lock",
+              "description": "do not lock the repository, this allows some operations on read-only repositories",
+              "type": "boolean"
+            },
+            "option": {
+              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+            },
+            "pack-size": {
+              "title": "pack-size",
+              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+              "type": "integer"
+            },
+            "password-command": {
+              "title": "password-command",
+              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+              "type": "string",
+              "minLength": 0
+            },
+            "password-file": {
+              "title": "password-file",
+              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+              "type": "string",
+              "minLength": 0
+            },
+            "quiet": {
+              "title": "quiet",
+              "description": "do not output comprehensive progress report",
+              "type": "boolean"
+            },
+            "repo": {
+              "title": "repo",
+              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+              "type": "string",
+              "minLength": 0
+            },
+            "repository-file": {
+              "title": "repository-file",
+              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "retry-lock": {
+              "title": "retry-lock",
+              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+              "type": "string",
+              "minLength": 0
+            },
+            "run-after": {
+              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+            },
+            "run-after-fail": {
+              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+            },
+            "run-before": {
+              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+            },
+            "run-finally": {
+              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+            },
+            "tls-client-cert": {
+              "title": "tls-client-cert",
+              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+              "type": "string",
+              "minLength": 0
+            },
+            "verbose": {
+              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+            }
+          }
+        },
+        "repair": {
+          "title": "repair",
+          "description": "Repair the repository",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacert": {
+              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+            },
+            "cache-dir": {
+              "title": "cache-dir",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6214,134 +6342,6 @@
             }
           }
         },
-        "repair": {
-          "title": "repair",
-          "description": "Repair the repository",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "cacert": {
-              "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
-            },
-            "cache-dir": {
-              "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
-              "type": "string",
-              "minLength": 0
-            },
-            "cleanup-cache": {
-              "title": "cleanup-cache",
-              "description": "auto remove old cache directories",
-              "type": "boolean"
-            },
-            "compression": {
-              "title": "compression",
-              "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
-              "type": "string",
-              "minLength": 0
-            },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
-            "insecure-tls": {
-              "title": "insecure-tls",
-              "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "key-hint": {
-              "title": "key-hint",
-              "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
-              "type": "string",
-              "minLength": 0
-            },
-            "limit-download": {
-              "title": "limit-download",
-              "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
-              "type": "integer"
-            },
-            "limit-upload": {
-              "title": "limit-upload",
-              "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
-              "type": "integer"
-            },
-            "no-cache": {
-              "title": "no-cache",
-              "description": "do not use a local cache",
-              "type": "boolean"
-            },
-            "no-lock": {
-              "title": "no-lock",
-              "description": "do not lock the repository, this allows some operations on read-only repositories",
-              "type": "boolean"
-            },
-            "option": {
-              "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-            },
-            "pack-size": {
-              "title": "pack-size",
-              "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
-              "type": "integer"
-            },
-            "password-command": {
-              "title": "password-command",
-              "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
-              "type": "string",
-              "minLength": 0
-            },
-            "password-file": {
-              "title": "password-file",
-              "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
-              "type": "string",
-              "minLength": 0
-            },
-            "quiet": {
-              "title": "quiet",
-              "description": "do not output comprehensive progress report",
-              "type": "boolean"
-            },
-            "repo": {
-              "title": "repo",
-              "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
-              "type": "string",
-              "minLength": 0
-            },
-            "repository-file": {
-              "title": "repository-file",
-              "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
-              "type": "string",
-              "minLength": 0
-            },
-            "retry-lock": {
-              "title": "retry-lock",
-              "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
-              "type": "string",
-              "minLength": 0
-            },
-            "run-after": {
-              "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-            },
-            "run-after-fail": {
-              "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-            },
-            "run-before": {
-              "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-            },
-            "run-finally": {
-              "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-            },
-            "tls-client-cert": {
-              "title": "tls-client-cert",
-              "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
-              "type": "string",
-              "minLength": 0
-            },
-            "verbose": {
-              "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
-            }
-          }
-        },
         "repair-index": {
           "title": "repair-index",
           "description": "The \"repair index\" command creates a new index based on the pack files in the\nrepository.",
@@ -6353,7 +6353,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6368,14 +6368,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -6486,7 +6486,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6645,7 +6645,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6820,7 +6820,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7153,7 +7153,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7324,7 +7324,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7344,11 +7344,6 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "group-by": {
               "title": "group-by",
               "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -7361,6 +7356,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -7468,7 +7468,7 @@
         },
         "stats": {
           "title": "stats",
-          "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
+          "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\n* restore-size: (default) Counts the size of the restored files.\n* files-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\n* raw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\n* blobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -7477,7 +7477,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7636,7 +7636,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7785,7 +7785,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7800,14 +7800,14 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {

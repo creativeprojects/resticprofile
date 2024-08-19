@@ -2968,7 +2968,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3379,7 +3379,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3399,11 +3399,6 @@
               "type": "string",
               "minLength": 0
             },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
-            },
             "http-user-agent": {
               "title": "http-user-agent",
               "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -3418,6 +3413,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3530,7 +3530,7 @@
         },
         "cache-dir": {
           "title": "cache-dir",
-          "description": "set the cache directory\u0026. (default: use system default cache directory)",
+          "description": "set the cache directory. (default: use system default cache directory)",
           "type": "string",
           "minLength": 0
         },
@@ -3545,7 +3545,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3559,6 +3559,11 @@
               "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
             },
             "http-user-agent": {
               "title": "http-user-agent",
@@ -3574,11 +3579,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -3689,7 +3689,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3945,7 +3945,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -3988,8 +3988,8 @@
               "type": "string",
               "minLength": 0
             },
-            "from-repo": {
-              "title": "from-repo",
+            "from-repository": {
+              "title": "from-repository",
               "description": "source repository to copy snapshots from (default: $RESTIC_FROM_REPOSITORY) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
@@ -4275,7 +4275,7 @@
         },
         "diff": {
           "title": "diff",
-          "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n+  The item was added\n-  The item was removed\nU  The metadata (access mode, timestamps, ...) for the item was updated\nM  The file's content was modified\nT  The type was changed, e.g. a file was made a symlink\n?  Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n\u0026'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
+          "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n* `+` The item was added\n* `-` The item was removed\n* `U` The metadata (access mode, timestamps, ...) for the item was updated\n* `M` The file's content was modified\n* `T` The type was changed, e.g. a file was made a symlink\n* `?` Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -4284,7 +4284,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4440,7 +4440,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4617,7 +4617,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4820,7 +4820,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -4843,11 +4843,6 @@
             "dry-run": {
               "title": "dry-run",
               "description": "do not delete anything, just print what would be done",
-              "type": "boolean"
-            },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "group-by": {
@@ -4874,6 +4869,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -5187,7 +5187,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5416,7 +5416,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5577,7 +5577,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5591,6 +5591,11 @@
               "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
             },
             "host": {
               "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
@@ -5609,11 +5614,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -5747,7 +5747,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -5891,7 +5891,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6055,7 +6055,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6209,7 +6209,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6359,7 +6359,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6532,7 +6532,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6692,7 +6692,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -6947,7 +6947,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7213,7 +7213,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7362,7 +7362,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7376,11 +7376,6 @@
               "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
-            },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
-              "type": "boolean"
             },
             "http-user-agent": {
               "title": "http-user-agent",
@@ -7396,6 +7391,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -7506,7 +7506,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7650,7 +7650,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7799,7 +7799,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7943,7 +7943,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -7961,11 +7961,6 @@
             "dry-run": {
               "title": "dry-run",
               "description": "do not do anything, just print what would be done [restic \u003e= 0.16.0]",
-              "type": "boolean"
-            },
-            "extended-status": {
-              "title": "extended-status",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "forget": {
@@ -7990,6 +7985,11 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+              "type": "boolean"
+            },
+            "json": {
+              "title": "json",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -8118,7 +8118,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -8338,7 +8338,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -8361,6 +8361,11 @@
             "dry-run": {
               "title": "dry-run",
               "description": "do not delete anything, just print what would be done",
+              "type": "boolean"
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "group-by": {
@@ -8387,11 +8392,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "keep-daily": {
@@ -8692,7 +8692,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -8891,7 +8891,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -9057,7 +9057,7 @@
         },
         "stats": {
           "title": "stats",
-          "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\nrestore-size: (default) Counts the size of the restored files.\nfiles-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\nraw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\nblobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
+          "description": "The \"stats\" command walks one or multiple snapshots in a repository\nand accumulates statistics about the data stored therein. It reports\non the number of unique files and their sizes, according to one of\nthe counting modes as given by the --mode flag.\n\nIt operates on all snapshots matching the selection criteria or all\nsnapshots if nothing is specified. The special snapshot ID \"latest\"\nis also supported. Some modes make more sense over\njust a single snapshot, while others are useful across all snapshots,\ndepending on what you are trying to calculate.\n\nThe modes are:\n\n* restore-size: (default) Counts the size of the restored files.\n* files-by-contents: Counts total size of unique files, where a file is\nconsidered unique if it has unique contents.\n* raw-data: Counts the size of blobs in the repository, regardless of\nhow many files reference them.\n* blobs-per-file: A combination of files-by-contents and raw-data.\n\n\nRefer to the online manual for more details about each mode.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -9066,7 +9066,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -9080,6 +9080,11 @@
               "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
               "type": "string",
               "minLength": 0
+            },
+            "extended-status": {
+              "title": "extended-status",
+              "description": "set output mode to JSON for commands that support it",
+              "type": "boolean"
             },
             "host": {
               "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
@@ -9098,11 +9103,6 @@
             "insecure-tls": {
               "title": "insecure-tls",
               "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-              "type": "boolean"
-            },
-            "json": {
-              "title": "json",
-              "description": "set output mode to JSON for commands that support it",
               "type": "boolean"
             },
             "key-hint": {
@@ -9241,7 +9241,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
@@ -9406,7 +9406,7 @@
             },
             "cache-dir": {
               "title": "cache-dir",
-              "description": "set the cache directory\u0026. (default: use system default cache directory)",
+              "description": "set the cache directory. (default: use system default cache directory)",
               "type": "string",
               "minLength": 0
             },
