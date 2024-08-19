@@ -103,6 +103,16 @@ Next paragraph
 		},
 
 		{
+			name: "parse description with dummy escape sequence",
+			source: `
+.SH DESCRIPTION
+.PP
+Metadata comparison will likely not work if a backup was created using the
+\&'--ignore-inode' or '--ignore-ctime' option.`,
+			validation: descriptionIs("Metadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option."),
+		},
+
+		{
 			name: "merge description sections",
 			source: `
 .SH DESCRIPTION
@@ -128,6 +138,28 @@ Second Line`,
 		},
 
 		{
+			name: "parse a list of flags for the diff command",
+			source: `
+.SH DESCRIPTION
+.RS
+.IP \(bu 2
++  added
+.IP \(bu 2
+-  removed
+.IP \(bu 2
+U  updated
+.IP \(bu 2
+M  modified
+.IP \(bu 2
+T  type changed
+.IP \(bu 2
+?  bitrot
+
+.RE`,
+			validation: descriptionIs("* `+` added\n* `-` removed\n* `U` updated\n* `M` modified\n* `T` type changed\n* `?` bitrot"),
+		},
+
+		{
 			name: "parse option",
 			source: `
 .SH DESCRIPTION
@@ -149,6 +181,30 @@ Desc 2
 					"copy-chunker-params",
 					"copy chunker parameters from the secondary repository (useful with the copy command)",
 					"false",
+					true,
+				),
+			),
+		},
+
+		{
+			name: "parse option with double backticks bug",
+			source: `
+.SH DESCRIPTION
+.PP
+Desc
+
+.SH OPTIONS
+.PP
+\fB-v\fP, \fB--verbose\fP[=0]
+	be verbose (specify multiple times or a level using --verbose=n` + "``" + `, max level/times is 2)
+
+`,
+			validation: all(
+				descriptionIs("Desc"),
+				optionIs(
+					"verbose",
+					"be verbose (specify multiple times or a level using --verbose=n, max level/times is 2)",
+					"0",
 					true,
 				),
 			),

@@ -149,7 +149,9 @@ var (
 
 	manSectionStart   = regexp.MustCompile(`^\.SH ([A-Z 0-9]+)$`)
 	manParagraphStart = regexp.MustCompile(`^\.PP$`)
-	manEscapeSequence = regexp.MustCompile(`(\\f[A-Z]|\\)`)
+	manBulletPoint    = regexp.MustCompile(`^\.IP \\\(bu \d+$`)
+	manEscapeSequence = regexp.MustCompile(`(\\f[A-Z]|\\&|\\)`)
+	diffCode          = regexp.MustCompile(`^([+-UMT?])  `)
 	lineCleanup       = regexp.MustCompile("([`]{2,})")
 )
 
@@ -158,6 +160,8 @@ func parseStream(input io.Reader, commandName string) (cmd *command, err error) 
 	if len(commandName) == 0 {
 		commandName = DefaultCommand
 	}
+
+	bulletPoint := false
 
 	cmd = &command{Name: commandName}
 
@@ -180,6 +184,10 @@ func parseStream(input io.Reader, commandName string) (cmd *command, err error) 
 				section = m[1]
 			} else if manParagraphStart.MatchString(line) {
 				addOption()
+			} else if manBulletPoint.MatchString(line) {
+				bulletPoint = true
+			} else {
+				bulletPoint = false
 			}
 		} else {
 			line = manEscapeSequence.ReplaceAllString(line, "")
@@ -189,6 +197,11 @@ func parseStream(input io.Reader, commandName string) (cmd *command, err error) 
 			case "DESCRIPTION":
 				if len(cmd.Description) > 0 {
 					cmd.Description += "\n"
+				}
+				if bulletPoint {
+					cmd.Description += "* "
+					bulletPoint = false
+					line = diffCode.ReplaceAllString(line, "`$1` ")
 				}
 				cmd.Description += line
 			case "OPTIONS":
