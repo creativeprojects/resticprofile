@@ -278,10 +278,12 @@ generate-config-reference: build
 	LAYOUT_UPLINK="[go to top](#reference)" \
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
+.PHONY: documentation
 documentation: generate-jsonschema generate-config-reference
 	@echo "[*] $@"
 	cd docs && hugo --minify
 
+.PHONY: syslog-ng
 syslog-ng:
 	@echo "[*] $@"
 	docker run -d \
@@ -300,6 +302,14 @@ checkdoc:
 	@echo "[*] $@"
 	$(GOCMD) run ./config/checkdoc -r docs/content
 
+.PHONY: checklinks
 checklinks:
 	@echo "[*] $@"
 	muffet -b 8192 --exclude="(linux.die.net|stackoverflow.com)" http://localhost:1313/resticprofile/
+
+.PHONY: lint
+lint:
+	@echo "[*] $@"
+	GOOS=darwin golangci-lint run
+	GOOS=linux golangci-lint run
+	GOOS=windows golangci-lint run

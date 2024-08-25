@@ -71,9 +71,9 @@ func getIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
 	if errno != 0 {
 		return 0, 0, errnoToError(errno)
 	}
-	class := r1 >> IOPrioClassShift
-	value := r1 & IOPrioMask
-	return IOPrioClass(class), int(value), nil
+	class := IOPrioClass(r1 >> IOPrioClassShift) //nolint:gosec
+	value := int(r1 & IOPrioMask)                //nolint:gosec
+	return class, value, nil
 }
 
 func setIOPrio(who IOPrioWho, class IOPrioClass, value int) error {
