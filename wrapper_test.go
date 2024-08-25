@@ -1728,3 +1728,18 @@ func TestCopySnapshot(t *testing.T) {
 	cmd := wrapper.prepareCommand("copy", args, false)
 	assert.Equal(t, []string{"copy", "snapshot1", "snapshot2"}, cmd.args)
 }
+
+func TestPrepareCommandShouldEscapeBinary(t *testing.T) {
+	t.Parallel()
+
+	profile := config.NewProfile(&config.Config{}, "name")
+	ctx := &Context{
+		binary:  "/full path to/restic",
+		profile: profile,
+		command: "backup",
+	}
+	wrapper := newResticWrapper(ctx)
+	args := shell.NewArgs()
+	cmd := wrapper.prepareCommand("backup", args, false)
+	assert.Equal(t, `/full\ path\ to/restic`, cmd.command)
+}
