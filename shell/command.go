@@ -177,7 +177,8 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	return summary, errorText, err
 }
 
-// GetShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe)
+// GetShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe).
+// This method doesn't escape any argument containing spaces, it should have been dealt with before.
 func (c *Command) GetShellCommand() (shell string, arguments []string, err error) {
 	var searchList []string
 	for _, sh := range c.Shell {

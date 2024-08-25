@@ -61,7 +61,7 @@ func TestRemoveQuotes(t *testing.T) {
 func TestShellCommandWithArguments(t *testing.T) {
 	t.Parallel()
 
-	testCommand := "/bin/restic"
+	testCommand := `"/bin/with space/restic"`
 	testArgs := []string{
 		`-v`,
 		`--exclude-file`,
@@ -82,7 +82,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			`/V:ON`, `/C`,
-			`/bin/restic`,
+			`"/bin/with space/restic"`,
 			`-v`,
 			`--exclude-file`,
 			`excludes`,
@@ -95,7 +95,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/(ba)?sh"), command)
 		assert.Equal(t, []string{
 			"-c",
-			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
+			"\"/bin/with space/restic\" -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	}
 }
@@ -103,7 +103,7 @@ func TestShellCommandWithArguments(t *testing.T) {
 func TestShellCommand(t *testing.T) {
 	t.Parallel()
 
-	testCommand := "/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup ."
+	testCommand := "\"/bin/with space/restic\" -v --exclude-file \"excludes\" --repo \"/path/with space\" backup ."
 	testArgs := []string{}
 	c := &Command{
 		Command:   testCommand,
@@ -116,13 +116,13 @@ func TestShellCommand(t *testing.T) {
 		assert.Equal(t, `c:\windows\system32\cmd.exe`, strings.ToLower(command))
 		assert.Equal(t, []string{
 			"/V:ON", "/C",
-			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
+			"\"/bin/with space/restic\" -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	} else {
 		assert.Regexp(t, regexp.MustCompile("(/usr)?/bin/(ba)?sh"), command)
 		assert.Equal(t, []string{
 			"-c",
-			"/bin/restic -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
+			"\"/bin/with space/restic\" -v --exclude-file \"excludes\" --repo \"/path/with space\" backup .",
 		}, args)
 	}
 }
