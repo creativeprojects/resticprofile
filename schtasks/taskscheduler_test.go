@@ -4,6 +4,7 @@ package schtasks
 
 import (
 	"bytes"
+	"math"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -37,6 +38,48 @@ func TestConversionWeekdaysToBitmap(t *testing.T) {
 
 	for _, testItem := range testData {
 		assert.Equal(t, testItem.bitmap, convertWeekdaysToBitmap(testItem.weekdays))
+	}
+}
+
+func TestConversionMonthsToBitmap(t *testing.T) {
+	testData := []struct {
+		months []int
+		bitmap uint16
+	}{
+		{nil, 0},
+		{[]int{}, 4095}, // every month
+		{[]int{0}, 0},
+		{[]int{1}, 1},
+		{[]int{2}, 2},
+		{[]int{7}, 64},
+		{[]int{1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{0, 1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{1, 2, 3, 4, 5, 6}, 63},
+	}
+
+	for _, testItem := range testData {
+		assert.Equal(t, testItem.bitmap, convertMonthsToBitmap(testItem.months))
+	}
+}
+
+func TestConversionDaysToBitmap(t *testing.T) {
+	testData := []struct {
+		days   []int
+		bitmap uint32
+	}{
+		{nil, 0},
+		{[]int{}, math.MaxInt32}, // every day
+		{[]int{0}, 0},
+		{[]int{1}, 1},
+		{[]int{2}, 2},
+		{[]int{7}, 64},
+		{[]int{1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{0, 1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{1, 2, 3, 4, 5, 6}, 63},
+	}
+
+	for _, testItem := range testData {
+		assert.Equal(t, testItem.bitmap, convertDaysToBitmap(testItem.days))
 	}
 }
 

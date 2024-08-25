@@ -5,7 +5,6 @@ package schtasks
 import (
 	"errors"
 	"fmt"
-	"math"
 	"os/user"
 	"strings"
 	"text/tabwriter"
@@ -629,11 +628,13 @@ func convertMonthsToBitmap(months []int) uint16 {
 	}
 	if len(months) == 0 {
 		// all values
-		return uint16(math.Exp2(12)) - 1
+		return (1 << 12) - 1
 	}
 	var bitmap uint16
 	for _, month := range months {
-		bitmap |= uint16(math.Exp2(float64(month - 1)))
+		if month > 0 && month <= 12 {
+			bitmap |= 1 << (month - 1)
+		}
 	}
 	return bitmap
 }
@@ -644,11 +645,13 @@ func convertDaysToBitmap(days []int) uint32 {
 	}
 	if len(days) == 0 {
 		// every day
-		return uint32(math.Exp2(31)) - 1
+		return (1 << 31) - 1
 	}
 	var bitmap uint32
 	for _, day := range days {
-		bitmap |= uint32(math.Exp2(float64(day - 1)))
+		if day > 0 && day <= 31 {
+			bitmap |= 1 << (day - 1)
+		}
 	}
 	return bitmap
 }

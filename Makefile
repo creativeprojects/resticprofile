@@ -313,3 +313,12 @@ lint:
 	GOOS=darwin golangci-lint run
 	GOOS=linux golangci-lint run
 	GOOS=windows golangci-lint run
+
+.PHONY: fix
+fix:
+	@echo "[*] $@"
+	$(GOCMD) mod tidy
+	$(GOCMD) fix ./...
+	GOOS=darwin golangci-lint run --fix
+	GOOS=linux golangci-lint run --fix
+	GOOS=windows golangci-lint run --fix
