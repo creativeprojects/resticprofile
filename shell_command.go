@@ -30,7 +30,7 @@ type shellCommandDefinition struct {
 }
 
 // newShellCommand creates a new shell command definition
-func newShellCommand(command string, args, env, shell []string, dryRun bool, sigChan chan os.Signal, setPID func(pid int)) shellCommandDefinition {
+func newShellCommand(command string, args, env, shell []string, dryRun bool, sigChan chan os.Signal, setPID func(pid int32)) shellCommandDefinition {
 	if env == nil {
 		env = make([]string, 0)
 	}

@@ -90,7 +90,7 @@ func TestTemplateFuncs(t *testing.T) {
 	})
 
 	t.Run("envFileFunc", func(t *testing.T) {
-		profileKey := fmt.Sprintf("prof-%d", int(rand.Uint64()))
+		profileKey := fmt.Sprintf("prof-%x", rand.Uint64())
 		expectedFile := TempFile(fmt.Sprintf("%s.env", profileKey))
 
 		var received []string

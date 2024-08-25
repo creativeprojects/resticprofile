@@ -4,6 +4,7 @@ package schtasks
 
 import (
 	"bytes"
+	"math"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -22,7 +23,7 @@ import (
 func TestConversionWeekdaysToBitmap(t *testing.T) {
 	testData := []struct {
 		weekdays []int
-		bitmap   int
+		bitmap   uint16
 	}{
 		{nil, 0},
 		{[]int{}, 0},
@@ -37,6 +38,48 @@ func TestConversionWeekdaysToBitmap(t *testing.T) {
 
 	for _, testItem := range testData {
 		assert.Equal(t, testItem.bitmap, convertWeekdaysToBitmap(testItem.weekdays))
+	}
+}
+
+func TestConversionMonthsToBitmap(t *testing.T) {
+	testData := []struct {
+		months []int
+		bitmap uint16
+	}{
+		{nil, 0},
+		{[]int{}, 4095}, // every month
+		{[]int{0}, 0},
+		{[]int{1}, 1},
+		{[]int{2}, 2},
+		{[]int{7}, 64},
+		{[]int{1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{0, 1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{1, 2, 3, 4, 5, 6}, 63},
+	}
+
+	for _, testItem := range testData {
+		assert.Equal(t, testItem.bitmap, convertMonthsToBitmap(testItem.months))
+	}
+}
+
+func TestConversionDaysToBitmap(t *testing.T) {
+	testData := []struct {
+		days   []int
+		bitmap uint32
+	}{
+		{nil, 0},
+		{[]int{}, math.MaxInt32}, // every day
+		{[]int{0}, 0},
+		{[]int{1}, 1},
+		{[]int{2}, 2},
+		{[]int{7}, 64},
+		{[]int{1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{0, 1, 2, 3, 4, 5, 6, 7}, 127},
+		{[]int{1, 2, 3, 4, 5, 6}, 63},
+	}
+
+	for _, testItem := range testData {
+		assert.Equal(t, testItem.bitmap, convertDaysToBitmap(testItem.days))
 	}
 }
 
@@ -111,7 +154,7 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	// 3rd task will be a weekly recurring
 	weeklyEvent, ok := task.Triggers[2].(taskmaster.WeeklyTrigger)
 	require.True(t, ok)
-	assert.Equal(t, getWeekdayBit(int(time.Saturday))+getWeekdayBit(int(time.Sunday)), int(weeklyEvent.DaysOfWeek))
+	assert.Equal(t, getWeekdayBit(int(time.Saturday))+getWeekdayBit(int(time.Sunday)), uint16(weeklyEvent.DaysOfWeek))
 
 	// 4th task will be a monthly recurring
 	monthlyEvent, ok := task.Triggers[3].(taskmaster.MonthlyTrigger)

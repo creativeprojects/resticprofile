@@ -5,7 +5,6 @@ package schtasks
 import (
 	"errors"
 	"fmt"
-	"math"
 	"os/user"
 	"strings"
 	"text/tabwriter"
@@ -589,18 +588,18 @@ func compileDifferences(recurrences []time.Time) ([]time.Duration, []time.Durati
 	return differences, compactDifferences
 }
 
-func convertWeekdaysToBitmap(weekdays []int) int {
+func convertWeekdaysToBitmap(weekdays []int) uint16 {
 	if len(weekdays) == 0 {
 		return 0
 	}
-	bitmap := 0
+	var bitmap uint16
 	for _, weekday := range weekdays {
 		bitmap |= getWeekdayBit(weekday)
 	}
 	return bitmap
 }
 
-func getWeekdayBit(weekday int) int {
+func getWeekdayBit(weekday int) uint16 {
 	switch weekday {
 	case 0:
 		return 1
@@ -623,32 +622,36 @@ func getWeekdayBit(weekday int) int {
 	return 0
 }
 
-func convertMonthsToBitmap(months []int) int {
+func convertMonthsToBitmap(months []int) uint16 {
 	if months == nil {
 		return 0
 	}
 	if len(months) == 0 {
 		// all values
-		return int(math.Exp2(12)) - 1
+		return (1 << 12) - 1
 	}
-	bitmap := 0
+	var bitmap uint16
 	for _, month := range months {
-		bitmap |= int(math.Exp2(float64(month - 1)))
+		if month > 0 && month <= 12 {
+			bitmap |= 1 << (month - 1)
+		}
 	}
 	return bitmap
 }
 
-func convertDaysToBitmap(days []int) int {
+func convertDaysToBitmap(days []int) uint32 {
 	if days == nil {
 		return 0
 	}
 	if len(days) == 0 {
 		// every day
-		return int(math.Exp2(31)) - 1
+		return (1 << 31) - 1
 	}
-	bitmap := 0
+	var bitmap uint32
 	for _, day := range days {
-		bitmap |= int(math.Exp2(float64(day - 1)))
+		if day > 0 && day <= 31 {
+			bitmap |= 1 << (day - 1)
+		}
 	}
 	return bitmap
 }

@@ -37,7 +37,7 @@ type resticWrapper struct {
 	command  string
 	moreArgs []string
 	sigChan  chan os.Signal
-	setPID   func(pid int)
+	setPID   func(pid int32)
 	stdin    io.ReadCloser
 	progress []monitor.Receiver
 	sender   *hook.Sender

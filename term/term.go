@@ -58,7 +58,7 @@ func AskYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
 
 // ReadPassword reads a password without echoing it to the terminal.
 func ReadPassword() (string, error) {
-	stdin := int(os.Stdin.Fd())
+	stdin := fdToInt(os.Stdin.Fd())
 	if !term.IsTerminal(stdin) {
 		return ReadLine()
 	}
@@ -82,19 +82,23 @@ func ReadLine() (string, error) {
 
 // OsStdoutIsTerminal returns true as os.Stdout is a terminal session
 func OsStdoutIsTerminal() bool {
-	fd := int(os.Stdout.Fd())
+	fd := fdToInt(os.Stdout.Fd())
 	return term.IsTerminal(fd)
 }
 
 // OsStdoutIsTerminal returns true as os.Stdout is a terminal session
 func OsStdoutTerminalSize() (width, height int) {
-	fd := int(os.Stdout.Fd())
+	fd := fdToInt(os.Stdout.Fd())
 	var err error
 	width, height, err = term.GetSize(fd)
 	if err != nil {
 		width, height = 0, 0
 	}
 	return
+}
+
+func fdToInt(fd uintptr) int {
+	return int(fd) //nolint:gosec
 }
 
 type LockedWriter struct {
