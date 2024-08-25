@@ -205,7 +205,7 @@ rest-server:
 
 nightly: $(GOBIN)/goreleaser
 	@echo "[*] $@"
-	GITLAB_TOKEN= goreleaser --snapshot --skip-publish --clean --debug
+	GITLAB_TOKEN= goreleaser --snapshot --skip=publish --clean
 
 toc: $(GOBIN)/github-markdown-toc.go
 	@echo "[*] $@"
