@@ -22,7 +22,7 @@ import (
 func TestConversionWeekdaysToBitmap(t *testing.T) {
 	testData := []struct {
 		weekdays []int
-		bitmap   int
+		bitmap   uint16
 	}{
 		{nil, 0},
 		{[]int{}, 0},
@@ -111,7 +111,7 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	// 3rd task will be a weekly recurring
 	weeklyEvent, ok := task.Triggers[2].(taskmaster.WeeklyTrigger)
 	require.True(t, ok)
-	assert.Equal(t, getWeekdayBit(int(time.Saturday))+getWeekdayBit(int(time.Sunday)), int(weeklyEvent.DaysOfWeek))
+	assert.Equal(t, getWeekdayBit(int(time.Saturday))+getWeekdayBit(int(time.Sunday)), uint16(weeklyEvent.DaysOfWeek))
 
 	// 4th task will be a monthly recurring
 	monthlyEvent, ok := task.Triggers[3].(taskmaster.MonthlyTrigger)
