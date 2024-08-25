@@ -27,7 +27,7 @@ const (
 )
 
 // SetPID is a callback to send the PID of the current child process
-type SetPID func(pid int)
+type SetPID func(pid int32)
 
 // ScanOutput is a callback to scan the default output of the command
 // The implementation is expected to send everything read from the reader back to the writer
@@ -124,7 +124,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	}
 	if c.SetPID != nil {
 		// send the PID back (to write down in a lockfile)
-		c.SetPID(cmd.Process.Pid)
+		c.SetPID(int32(cmd.Process.Pid)) //nolint:gosec
 	}
 	// setup the OS signalling if we need it (typically used for unixes but not windows)
 	if c.sigChan != nil {

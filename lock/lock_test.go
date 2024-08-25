@@ -130,16 +130,16 @@ func TestSetMorePID(t *testing.T) {
 func TestProcessPID(t *testing.T) {
 	t.Parallel()
 
-	childPID := 0
+	var childPID int32
 	buffer := &bytes.Buffer{}
 
 	// use the lock helper binary (we only need to wait for some time, we don't need the locking part)
 	cmd := shell.NewCommand(helperBinary, []string{"-wait", "200", "-lock", filepath.Join(t.TempDir(), t.Name())})
 	cmd.Stdout = buffer
 	// SetPID method is called right after we forked and have a PID available
-	cmd.SetPID = func(pid int) {
+	cmd.SetPID = func(pid int32) {
 		childPID = pid
-		running, err := process.PidExists(int32(childPID))
+		running, err := process.PidExists(childPID)
 		assert.NoError(t, err)
 		assert.True(t, running)
 	}
@@ -147,7 +147,7 @@ func TestProcessPID(t *testing.T) {
 	require.NoError(t, err)
 
 	// at that point, the child process should be finished
-	running, err := process.PidExists(int32(childPID))
+	running, err := process.PidExists(childPID)
 	assert.NoError(t, err)
 	assert.False(t, running)
 }
@@ -220,7 +220,7 @@ func TestForceLockWithRunningPID(t *testing.T) {
 
 	// user the lock helper binary (we only need to wait for some time, we don't need the locking part)
 	cmd := shell.NewCommand(helperBinary, []string{"-wait", "100", "-lock", filepath.Join(t.TempDir(), t.Name())})
-	cmd.SetPID = func(pid int) {
+	cmd.SetPID = func(pid int32) {
 		lock.SetPID(pid)
 		// make sure we cannot break the lock right now
 		other := NewLock(tempfile)

@@ -314,7 +314,7 @@ func TestShellExpand(t *testing.T) {
 func TestFindConfigurationIncludes(t *testing.T) {
 	t.Parallel()
 
-	testID := fmt.Sprintf("%d", uint32(time.Now().UnixNano()))
+	testID := fmt.Sprintf("%x", time.Now().UnixNano())
 	tempDir := os.TempDir()
 	files := []string{
 		filepath.Join(tempDir, "base."+testID+".conf"),
