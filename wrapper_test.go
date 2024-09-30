@@ -1741,5 +1741,5 @@ func TestPrepareCommandShouldEscapeBinary(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	args := shell.NewArgs()
 	cmd := wrapper.prepareCommand("backup", args, false)
-	assert.Equal(t, `/full\ path\ to/restic`, cmd.command)
+	assert.Equal(t, `/full\ path\ to/restic`, cmd.command) // TODO does not work on Windows
 }
