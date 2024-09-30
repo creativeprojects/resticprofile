@@ -398,7 +398,7 @@ func startProfileOrGroup(ctx *Context) error {
 				ctx = ctx.WithProfile(profileName).WithGroup(groupName)
 				err = runProfile(ctx)
 				if err != nil {
-					if ctx.global.GroupContinueOnError && group.ContinueOnError.IsTrueOrUndefined() {
+					if (ctx.global.GroupContinueOnError && group.ContinueOnError.IsTrueOrUndefined()) || group.ContinueOnError.IsTrue() {
 						// keep going to the next profile
 						clog.Error(err)
 						continue
