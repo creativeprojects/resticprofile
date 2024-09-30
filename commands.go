@@ -552,7 +552,7 @@ func prepareScheduledProfile(ctx *Context) {
 }
 
 func runSchedule(_ io.Writer, cmdCtx commandContext) error {
-	err := startProfileOrGroup(&cmdCtx.Context)
+	err := startProfileOrGroup(&cmdCtx.Context, runProfile)
 	if err != nil {
 		return err
 	}
