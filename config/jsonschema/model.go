@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -16,9 +17,10 @@ import (
 const (
 	// for best compatibility the schema is mostly "draft-07", but some new vocabulary of 2019-09 is used
 	jsonSchemaVersion    = "https://json-schema.org/draft/2019-09/schema"
-	schemaUrlTemplate    = "/resticprofile/jsonschema/config-%d%s.json"
+	schemaUrlTemplate    = "%sconfig-%d%s.json"
 	referenceUrlTemplate = "#/$defs/%s"
 	arrayTitleSuffix     = "..."
+	defaultBaseURL       = "https://creativeprojects.github.io/resticprofile/jsonschema/"
 )
 
 type schemaRoot struct {
@@ -47,9 +49,13 @@ func newSchema(version config.Version, id string, content *schemaObject) (root *
 		if len(id) > 0 {
 			id = fmt.Sprintf("-restic-%s", strings.ReplaceAll(id, ".", "-"))
 		}
+		baseURL := os.Getenv("SCHEMA_BASE_URL")
+		if len(baseURL) == 0 {
+			baseURL = defaultBaseURL
+		}
 		root = &schemaRoot{
 			Schema:       jsonSchemaVersion,
-			Id:           fmt.Sprintf(schemaUrlTemplate, version, id),
+			Id:           fmt.Sprintf(schemaUrlTemplate, baseURL, version, id),
 			Defs:         make(map[string]SchemaType),
 			schemaObject: *content,
 		}

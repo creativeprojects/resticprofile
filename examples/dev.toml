@@ -1,3 +1,6 @@
+#:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+
+version = "1"
 
 [default]
   initialize = false
