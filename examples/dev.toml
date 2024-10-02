@@ -2,6 +2,11 @@
 
 version = "1"
 
+[global]
+  default-command = "snapshots"
+  initialize = false
+  priority = "low"
+
 [default]
   initialize = false
   password-file = "key"
@@ -19,11 +24,6 @@ version = "1"
 
   [documents.snapshots]
     tag = ["documents"]
-
-[global]
-  default-command = "version"
-  initialize = false
-  priority = "low"
 
 [groups]
   full-backup = ["root","src"]
