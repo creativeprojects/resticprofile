@@ -243,26 +243,13 @@ generate-jsonschema: build
 
 	mkdir -p $(JSONSCHEMA_DIR) || echo "$(JSONSCHEMA_DIR) exists"
 
-	$(abspath $(BINARY)) generate --json-schema v1 > $(JSONSCHEMA_DIR)/config-1.json
-	$(abspath $(BINARY)) generate --json-schema v2 > $(JSONSCHEMA_DIR)/config-2.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.9 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-9.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.9 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-9.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.10 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-10.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.10 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-10.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.11 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-11.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.11 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-11.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.12 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-12.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.12 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-12.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.13 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-13.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.13 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-13.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.14 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-14.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.14 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-14.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.15 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-15.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.15 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-15.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.16 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-16.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.16 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-16.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.17 v1 > $(JSONSCHEMA_DIR)/config-1-restic-0-17.json
-	$(abspath $(BINARY)) generate --json-schema --version 0.17 v2 > $(JSONSCHEMA_DIR)/config-2-restic-0-17.json
+	for config_version in 1 2 ; do \
+		$(abspath $(BINARY)) generate --json-schema v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version.json ; \
+		for restic_version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 ; do \
+			name=$$(echo $$restic_version | sed 's/\./-/g') ; \
+			$(abspath $(BINARY)) generate --json-schema --version $$restic_version v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version-restic-$$name.json ; \
+		done ; \
+	done
 
 generate-config-reference: build
 	@echo "[*] $@"

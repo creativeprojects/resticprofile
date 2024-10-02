@@ -8,6 +8,7 @@ ignore:
   - systemd.go
   - update.go
   - main.go
+  - run_profile.go
   - syslog.go
   - syslog_windows.go
 
