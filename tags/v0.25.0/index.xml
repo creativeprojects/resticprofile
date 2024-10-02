@@ -5,4 +5,4 @@ resticprofile --name profile schedule resticprofile --name group schedule restic
 User systemd units are created under the user’s systemd profile (~/.config/systemd/user).
 System units are created in /etc/systemd/system
 systemd calendars resticprofile uses systemd OnCalendar format to schedule events.
-Testing systemd calendars can be done with the systemd-analyze application.</description></item></channel></rss>
+Testing systemd calendars can be done with the systemd-analyze application. systemd-analyze will display when the next trigger will happen:</description></item></channel></rss>
