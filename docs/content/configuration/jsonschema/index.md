@@ -28,9 +28,11 @@ These schemas contain only flags and commands of a specific *restic* version. Th
 validate a config only when flags are used that the selected *restic* version supports 
 according to its manual pages.
 
-{{% notice style="hint" %}}
+{{% notice style="info" %}}
 As an alternative to URLs, schemas can be generated locally with: 
 `resticprofile generate --json-schema [--version RESTIC_VERSION] [v2|v1]`
+
+You can prefix the command with the environment variable `SCHEMA_BASE_URL` to change the base URL (defaults to `https://creativeprojects.github.io/resticprofile/jsonschema/`)
 {{% /notice %}}
 
 ## Usage (vscode)
@@ -64,7 +66,7 @@ version: "2"
 {{% /tab %}}
 {{< /tabs >}}
 
-{{% notice style="hint" %}}
+{{% notice style="info" %}}
 YAML & TOML validation with JSON schema is not supported out of the box. Additional extensions are required.
 {{% /notice %}}
 

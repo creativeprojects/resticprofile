@@ -243,12 +243,12 @@ generate-jsonschema: build
 
 	mkdir -p $(JSONSCHEMA_DIR) || echo "$(JSONSCHEMA_DIR) exists"
 
-	$(abspath $(BINARY)) generate --json-schema v1 > $(JSONSCHEMA_DIR)/config-1.json
-	$(abspath $(BINARY)) generate --json-schema v2 > $(JSONSCHEMA_DIR)/config-2.json
-	for version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 ; do \
-		name=$$(echo $$version | sed 's/\./-/g') ; \
-		$(abspath $(BINARY)) generate --json-schema --version $$version v1 > $(JSONSCHEMA_DIR)/config-1-restic-$$name.json ; \
-		$(abspath $(BINARY)) generate --json-schema --version $$version v2 > $(JSONSCHEMA_DIR)/config-2-restic-$$name.json ; \
+	for config_version in 1 2 ; do \
+		$(abspath $(BINARY)) generate --json-schema v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version.json ; \
+		for restic_version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 ; do \
+			name=$$(echo $$restic_version | sed 's/\./-/g') ; \
+			$(abspath $(BINARY)) generate --json-schema --version $$restic_version v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version-restic-$$name.json ; \
+		done ; \
 	done
 
 generate-config-reference: build
