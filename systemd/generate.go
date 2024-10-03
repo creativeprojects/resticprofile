@@ -31,7 +31,14 @@ Description={{ .JobDescription }}
 Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
-{{ if .Nice }}Nice={{ .Nice }}{{ end }}
+{{ if .Nice }}Nice={{ .Nice }}
+{{ end -}}
+{{ if .CPUSchedulingPolicy }}CPUSchedulingPolicy={{ .CPUSchedulingPolicy }}
+{{ end -}}
+{{ if .IOSchedulingClass }}IOSchedulingClass={{ .IOSchedulingClass }}
+{{ end -}}
+{{ if .IOSchedulingPriority }}IOSchedulingPriority={{ .IOSchedulingPriority }}
+{{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"
 {{ end -}}
@@ -66,15 +73,18 @@ var fs afero.Fs
 // templateInfo to create systemd unit
 type templateInfo struct {
 	templates.DefaultData
-	JobDescription     string
-	TimerDescription   string
-	WorkingDirectory   string
-	CommandLine        string
-	OnCalendar         []string
-	SystemdProfile     string
-	Nice               int
-	Environment        []string
-	AfterNetworkOnline bool
+	JobDescription       string
+	TimerDescription     string
+	WorkingDirectory     string
+	CommandLine          string
+	OnCalendar           []string
+	SystemdProfile       string
+	Nice                 int
+	Environment          []string
+	AfterNetworkOnline   bool
+	CPUSchedulingPolicy  string
+	IOSchedulingClass    int
+	IOSchedulingPriority int
 }
 
 // Config for generating systemd unit and timer files
@@ -88,11 +98,12 @@ type Config struct {
 	TimerDescription   string
 	Schedules          []string
 	UnitType           UnitType
-	Priority           string
+	Priority           string // standard or background
 	UnitFile           string
 	TimerFile          string
 	DropInFiles        []string
 	AfterNetworkOnline bool
+	Nice               int
 }
 
 func init() {
@@ -123,22 +134,23 @@ func Generate(config Config) error {
 		environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
 	}
 
-	nice := constants.DefaultBackgroundNiceFlag
-	if config.Priority == constants.SchedulePriorityStandard {
-		nice = constants.DefaultStandardNiceFlag
+	policy := ""
+	if config.Priority == constants.SchedulePriorityBackground {
+		policy = "idle"
 	}
 
 	info := templateInfo{
-		DefaultData:        templates.NewDefaultData(nil),
-		JobDescription:     config.JobDescription,
-		TimerDescription:   config.TimerDescription,
-		WorkingDirectory:   config.WorkingDirectory,
-		CommandLine:        config.CommandLine,
-		OnCalendar:         config.Schedules,
-		AfterNetworkOnline: config.AfterNetworkOnline,
-		SystemdProfile:     systemdProfile,
-		Nice:               nice,
-		Environment:        environment,
+		DefaultData:         templates.NewDefaultData(nil),
+		JobDescription:      config.JobDescription,
+		TimerDescription:    config.TimerDescription,
+		WorkingDirectory:    config.WorkingDirectory,
+		CommandLine:         config.CommandLine,
+		OnCalendar:          config.Schedules,
+		AfterNetworkOnline:  config.AfterNetworkOnline,
+		SystemdProfile:      systemdProfile,
+		Nice:                config.Nice,
+		Environment:         environment,
+		CPUSchedulingPolicy: policy,
 	}
 
 	var data bytes.Buffer

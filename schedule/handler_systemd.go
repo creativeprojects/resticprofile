@@ -121,6 +121,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		TimerFile:          h.config.TimerTemplate,
 		AfterNetworkOnline: job.AfterNetworkOnline,
 		DropInFiles:        job.SystemdDropInFiles,
+		Nice:               job.Nice,
 	})
 	if err != nil {
 		return err

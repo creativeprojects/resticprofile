@@ -219,12 +219,18 @@ Here are the defaults if you don't specify your own (which I recommend to use as
 Description={{ .JobDescription }}
 {{ if .AfterNetworkOnline }}After=network-online.target
 {{ end }}
-
 [Service]
 Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
-{{ if .Nice }}Nice={{ .Nice }}{{ end }}
+{{ if .Nice }}Nice={{ .Nice }}
+{{ end -}}
+{{ if .CPUSchedulingPolicy }}CPUSchedulingPolicy={{ .CPUSchedulingPolicy }}
+{{ end -}}
+{{ if .IOSchedulingClass }}IOSchedulingClass={{ .IOSchedulingClass }}
+{{ end -}}
+{{ if .IOSchedulingPriority }}IOSchedulingPriority={{ .IOSchedulingPriority }}
+{{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"
 {{ end -}}
