@@ -52,6 +52,9 @@ func (s SchedulerCrond) Convert(_ string) SchedulerConfig { return s }
 type SchedulerSystemd struct {
 	UnitTemplate  string
 	TimerTemplate string
+	Nice          int
+	IONiceClass   int
+	IONiceLevel   int
 }
 
 func (s SchedulerSystemd) Type() string                     { return constants.SchedulerSystemd }
@@ -88,10 +91,16 @@ func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 	case constants.SchedulerLaunchd:
 		return SchedulerLaunchd{}
 	case constants.SchedulerSystemd:
-		return SchedulerSystemd{
+		scheduler := SchedulerSystemd{
 			UnitTemplate:  global.SystemdUnitTemplate,
 			TimerTemplate: global.SystemdTimerTemplate,
+			Nice:          global.Nice,
 		}
+		if global.IONice {
+			scheduler.IONiceClass = global.IONiceClass
+			scheduler.IONiceLevel = global.IONiceLevel
+		}
+		return scheduler
 	case constants.SchedulerWindows:
 		return SchedulerWindows{}
 	default:

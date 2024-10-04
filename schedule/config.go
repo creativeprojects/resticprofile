@@ -25,7 +25,6 @@ type Config struct {
 	IgnoreOnBatteryLessThan int
 	AfterNetworkOnline      bool
 	SystemdDropInFiles      []string
-	Nice                    int
 	removeOnly              bool
 }
 

@@ -107,21 +107,23 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 	}
 
 	err := systemd.Generate(systemd.Config{
-		CommandLine:        job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
-		Environment:        job.Environment,
-		WorkingDirectory:   job.WorkingDirectory,
-		Title:              job.ProfileName,
-		SubTitle:           job.CommandName,
-		JobDescription:     job.JobDescription,
-		TimerDescription:   job.TimerDescription,
-		Schedules:          job.Schedules,
-		UnitType:           unitType,
-		Priority:           job.GetPriority(),
-		UnitFile:           h.config.UnitTemplate,
-		TimerFile:          h.config.TimerTemplate,
-		AfterNetworkOnline: job.AfterNetworkOnline,
-		DropInFiles:        job.SystemdDropInFiles,
-		Nice:               job.Nice,
+		CommandLine:          job.Command + " --no-prio " + strings.Join(job.Arguments, " "),
+		Environment:          job.Environment,
+		WorkingDirectory:     job.WorkingDirectory,
+		Title:                job.ProfileName,
+		SubTitle:             job.CommandName,
+		JobDescription:       job.JobDescription,
+		TimerDescription:     job.TimerDescription,
+		Schedules:            job.Schedules,
+		UnitType:             unitType,
+		Priority:             job.GetPriority(),
+		UnitFile:             h.config.UnitTemplate,
+		TimerFile:            h.config.TimerTemplate,
+		AfterNetworkOnline:   job.AfterNetworkOnline,
+		DropInFiles:          job.SystemdDropInFiles,
+		Nice:                 h.config.Nice,
+		IOSchedulingClass:    h.config.IONiceClass,
+		IOSchedulingPriority: h.config.IONiceLevel,
 	})
 	if err != nil {
 		return err

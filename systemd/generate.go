@@ -89,21 +89,24 @@ type templateInfo struct {
 
 // Config for generating systemd unit and timer files
 type Config struct {
-	CommandLine        string
-	Environment        []string
-	WorkingDirectory   string
-	Title              string
-	SubTitle           string
-	JobDescription     string
-	TimerDescription   string
-	Schedules          []string
-	UnitType           UnitType
-	Priority           string // standard or background
-	UnitFile           string
-	TimerFile          string
-	DropInFiles        []string
-	AfterNetworkOnline bool
-	Nice               int
+	CommandLine          string
+	Environment          []string
+	WorkingDirectory     string
+	Title                string
+	SubTitle             string
+	JobDescription       string
+	TimerDescription     string
+	Schedules            []string
+	UnitType             UnitType
+	Priority             string // standard or background
+	UnitFile             string
+	TimerFile            string
+	DropInFiles          []string
+	AfterNetworkOnline   bool
+	Nice                 int
+	CPUSchedulingPolicy  string
+	IOSchedulingClass    int
+	IOSchedulingPriority int
 }
 
 func init() {
@@ -140,17 +143,19 @@ func Generate(config Config) error {
 	}
 
 	info := templateInfo{
-		DefaultData:         templates.NewDefaultData(nil),
-		JobDescription:      config.JobDescription,
-		TimerDescription:    config.TimerDescription,
-		WorkingDirectory:    config.WorkingDirectory,
-		CommandLine:         config.CommandLine,
-		OnCalendar:          config.Schedules,
-		AfterNetworkOnline:  config.AfterNetworkOnline,
-		SystemdProfile:      systemdProfile,
-		Nice:                config.Nice,
-		Environment:         environment,
-		CPUSchedulingPolicy: policy,
+		DefaultData:          templates.NewDefaultData(nil),
+		JobDescription:       config.JobDescription,
+		TimerDescription:     config.TimerDescription,
+		WorkingDirectory:     config.WorkingDirectory,
+		CommandLine:          config.CommandLine,
+		OnCalendar:           config.Schedules,
+		AfterNetworkOnline:   config.AfterNetworkOnline,
+		SystemdProfile:       systemdProfile,
+		Nice:                 config.Nice,
+		Environment:          environment,
+		CPUSchedulingPolicy:  policy,
+		IOSchedulingClass:    config.IOSchedulingClass,
+		IOSchedulingPriority: config.IOSchedulingPriority,
 	}
 
 	var data bytes.Buffer

@@ -49,7 +49,6 @@ After=network-online.target
 Type=notify
 WorkingDirectory=workdir
 ExecStart=commandLine
-Nice=5
 Environment="HOME=%s"
 `
 
@@ -94,7 +93,6 @@ Description=job description
 Type=notify
 WorkingDirectory=workdir
 ExecStart=commandLine
-Nice=5
 Environment="HOME=%s"
 `
 	const expectedTimer = `[Unit]
@@ -435,6 +433,113 @@ func TestGenerateOnReadOnlyFs(t *testing.T) {
 		Priority:         "low",
 	})
 	require.Error(t, err)
+}
+
+func TestGeneratePriorityFields(t *testing.T) {
+	jobName := "name"
+	jobCommand := "backup"
+	testCases := []struct {
+		config      Config
+		contains    []string
+		notContains []string
+	}{
+		{
+			config: Config{
+				CommandLine:      "commandLine",
+				WorkingDirectory: "workdir",
+				Title:            jobName,
+				SubTitle:         jobCommand,
+				Schedules:        []string{"daily"},
+				UnitType:         SystemUnit,
+				Priority:         "",
+			},
+			contains:    []string{"ExecStart=commandLine\n"},
+			notContains: []string{"CPUSchedulingPolicy=", "Nice=", "IOSchedulingClass=", "IOSchedulingPriority="},
+		},
+		{
+			config: Config{
+				CommandLine:      "commandLine",
+				WorkingDirectory: "workdir",
+				Title:            jobName,
+				SubTitle:         jobCommand,
+				Schedules:        []string{"daily"},
+				UnitType:         SystemUnit,
+				Priority:         "standard",
+			},
+			contains:    []string{"ExecStart=commandLine\n"},
+			notContains: []string{"CPUSchedulingPolicy=", "Nice=", "IOSchedulingClass=", "IOSchedulingPriority="},
+		},
+		{
+			config: Config{
+				CommandLine:      "commandLine",
+				WorkingDirectory: "workdir",
+				Title:            jobName,
+				SubTitle:         jobCommand,
+				Schedules:        []string{"daily"},
+				UnitType:         SystemUnit,
+				Priority:         "background",
+			},
+			contains:    []string{"CPUSchedulingPolicy=idle\n"},
+			notContains: []string{"Nice=", "IOSchedulingClass=", "IOSchedulingPriority="},
+		},
+		{
+			config: Config{
+				CommandLine:      "commandLine",
+				WorkingDirectory: "workdir",
+				Title:            jobName,
+				SubTitle:         jobCommand,
+				Schedules:        []string{"daily"},
+				UnitType:         SystemUnit,
+				Priority:         "standard",
+				Nice:             10,
+			},
+			contains:    []string{"Nice=10\n"},
+			notContains: []string{"CPUSchedulingPolicy=", "IOSchedulingClass=", "IOSchedulingPriority="},
+		},
+		{
+			config: Config{
+				CommandLine:          "commandLine",
+				WorkingDirectory:     "workdir",
+				Title:                jobName,
+				SubTitle:             jobCommand,
+				Schedules:            []string{"daily"},
+				UnitType:             SystemUnit,
+				IOSchedulingClass:    2,
+				IOSchedulingPriority: 7,
+			},
+			contains:    []string{"IOSchedulingClass=2\n", "IOSchedulingPriority=7\n"},
+			notContains: []string{"CPUSchedulingPolicy=", "Nice="},
+		},
+	}
+
+	systemdDir := GetSystemDir()
+	baseFile := fmt.Sprintf("resticprofile-%s@profile-%s", jobCommand, jobName)
+	serviceFile := filepath.Join(systemdDir, baseFile+".service")
+
+	for _, testCase := range testCases {
+		fs = afero.NewMemMapFs()
+
+		assertNoFileExists(t, serviceFile)
+
+		err := Generate(testCase.config)
+		require.NoError(t, err)
+
+		requireFileExists(t, serviceFile)
+
+		contents, err := afero.ReadFile(fs, serviceFile)
+		require.NoError(t, err)
+
+		if len(testCase.contains) > 0 {
+			for _, c := range testCase.contains {
+				assert.Contains(t, string(contents), c)
+			}
+		}
+		if len(testCase.notContains) > 0 {
+			for _, c := range testCase.notContains {
+				assert.NotContains(t, string(contents), c)
+			}
+		}
+	}
 }
 
 func assertNoFileExists(t *testing.T, filename string) {
