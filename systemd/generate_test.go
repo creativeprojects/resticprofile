@@ -510,6 +510,22 @@ func TestGeneratePriorityFields(t *testing.T) {
 			contains:    []string{"IOSchedulingClass=2\n", "IOSchedulingPriority=7\n"},
 			notContains: []string{"CPUSchedulingPolicy=", "Nice="},
 		},
+		{
+			config: Config{
+				CommandLine:          "commandLine",
+				WorkingDirectory:     "workdir",
+				Title:                jobName,
+				SubTitle:             jobCommand,
+				Schedules:            []string{"daily"},
+				UnitType:             SystemUnit,
+				Priority:             "background",
+				Nice:                 11,
+				IOSchedulingClass:    3,
+				IOSchedulingPriority: 7,
+			},
+			contains:    []string{"CPUSchedulingPolicy=idle\n", "Nice=11\n", "IOSchedulingClass=3\n", "IOSchedulingPriority=7\n"},
+			notContains: []string{},
+		},
 	}
 
 	systemdDir := GetSystemDir()
