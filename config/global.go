@@ -10,8 +10,8 @@ import (
 // Global holds the configuration from the global section
 type Global struct {
 	IONice               bool                `mapstructure:"ionice" default:"false" description:"Enables setting the unix IO priority class and level for resticprofile and child processes (only on unix OS)."`
-	IONiceClass          int                 `mapstructure:"ionice-class" default:"2" range:"[1:3]" description:"Sets the unix \"ionice-class\" to apply when \"ionice\" is enabled (1=realtime, 2=best-effort, 3=idle)"`
-	IONiceLevel          int                 `mapstructure:"ionice-level" default:"0" range:"[0:7]" description:"Sets the unix \"ionice-level\" to apply when \"ionice\" is enabled (0=highest priority, 7=lowest priority)"`
+	IONiceClass          int                 `mapstructure:"ionice-class" default:"2" range:"[1:3]" description:"Sets the unix \"ionice-class\" (I/O scheduling class) to apply when \"ionice\" is enabled (1=realtime, 2=best-effort, 3=idle)"`
+	IONiceLevel          int                 `mapstructure:"ionice-level" default:"0" range:"[0:7]" description:"Sets the unix \"ionice-level\" (I/O priority within the scheduling class) to apply when \"ionice\" is enabled (0=highest priority, 7=lowest priority)"`
 	Nice                 int                 `mapstructure:"nice" default:"0" range:"[-20:19]" description:"Sets the unix \"nice\" value for resticprofile and child processes (on any OS)"`
 	Priority             string              `mapstructure:"priority" default:"normal" enum:"idle;background;low;normal;high;highest" description:"Sets process priority class for resticprofile and child processes (on any OS)"`
 	DefaultCommand       string              `mapstructure:"default-command" default:"snapshots" description:"The restic or resticprofile command to use when no command was specified"`

@@ -533,28 +533,30 @@ func TestGeneratePriorityFields(t *testing.T) {
 	serviceFile := filepath.Join(systemdDir, baseFile+".service")
 
 	for _, testCase := range testCases {
-		fs = afero.NewMemMapFs()
+		t.Run("", func(t *testing.T) {
+			fs = afero.NewMemMapFs()
 
-		assertNoFileExists(t, serviceFile)
+			assertNoFileExists(t, serviceFile)
 
-		err := Generate(testCase.config)
-		require.NoError(t, err)
+			err := Generate(testCase.config)
+			require.NoError(t, err)
 
-		requireFileExists(t, serviceFile)
+			requireFileExists(t, serviceFile)
 
-		contents, err := afero.ReadFile(fs, serviceFile)
-		require.NoError(t, err)
+			contents, err := afero.ReadFile(fs, serviceFile)
+			require.NoError(t, err)
 
-		if len(testCase.contains) > 0 {
-			for _, c := range testCase.contains {
-				assert.Contains(t, string(contents), c)
+			if len(testCase.contains) > 0 {
+				for _, c := range testCase.contains {
+					assert.Contains(t, string(contents), c)
+				}
 			}
-		}
-		if len(testCase.notContains) > 0 {
-			for _, c := range testCase.notContains {
-				assert.NotContains(t, string(contents), c)
+			if len(testCase.notContains) > 0 {
+				for _, c := range testCase.notContains {
+					assert.NotContains(t, string(contents), c)
+				}
 			}
-		}
+		})
 	}
 }
 
