@@ -1,7 +1,7 @@
 ---
 title: "Systemd"
 weight: 105
-tags: ["v0.25.0"]
+tags: ["v0.25.0", "v0.29.0"]
 ---
 
 
@@ -47,6 +47,7 @@ When you schedule a profile with the `schedule` command, under the hood resticpr
 Specifying the profile option `schedule-after-network-online: true` means that the scheduled services will wait
 for a network connection before running.
 This is done via an [After=network-online.target](https://systemd.io/NETWORK_ONLINE/) entry in the service.
+
 
 ## systemd drop-in files
 
@@ -157,6 +158,22 @@ user = restic
 pass = $(systemd-ask-password -n "smb restic user password" | rclone obscure -)
 EOF
 ```
+
+## Priority and CPU scheduling
+
+resticprofile allows you to set the `nice` value, the CPU scheduling policy and IO nice values for the systemd service.
+This is only working properly for resticprofile >= 0.29.0.
+
+| systemd unit option  | resticprofile option |
+|----------------------|----------------------|
+| CPUSchedulingPolicy  | set to `idle` if schedule `priority` = `background` , otherwise default to standard policy |
+| Nice                 | `nice` from `global` section |
+| IOSchedulingClass    | `ionice-class` from `global` section |
+| IOSchedulingPriority | `ionice-level` from `global` section |
+
+{{% notice note %}}
+When setting the `CPUSchedulingPolicy` to `idle` (by setting `priority` to `background`), the backup might never execute if all your CPU cores are always busy.
+{{% /notice %}}
 
 ## How to change the default systemd unit and timer file using a template
 
