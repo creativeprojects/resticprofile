@@ -309,3 +309,17 @@ fix:
 	GOOS=darwin golangci-lint run --fix
 	GOOS=linux golangci-lint run --fix
 	GOOS=windows golangci-lint run --fix
+
+.PHONY: deploy-current
+deploy-current: build-linux build-pi
+	@echo "[*] $@"
+	for server in $$(cat targets_amd64.txt); do \
+		echo "Deploying to $$server" ; \
+		rsync -avz --progress $(BINARY_LINUX_AMD64) $$server: ; \
+		ssh $$server "sudo -S install $(BINARY_LINUX_AMD64) /usr/local/bin/resticprofile" ; \
+	done
+	for server in $$(cat targets_armv6.txt); do \
+		echo "Deploying to $$server" ; \
+		rsync -avz --progress $(BINARY_PI) $$server: ; \
+		ssh $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
+	done

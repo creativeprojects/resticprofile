@@ -6,7 +6,14 @@ OnFailure=unit-status-mail@%n.service
 Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
 ExecStart={{ .CommandLine }}
-{{ if .Nice }}Nice={{ .Nice }}{{ end }}
+{{ if .Nice }}Nice={{ .Nice }}
+{{ end -}}
+{{ if .CPUSchedulingPolicy }}CPUSchedulingPolicy={{ .CPUSchedulingPolicy }}
+{{ end -}}
+{{ if .IOSchedulingClass }}IOSchedulingClass={{ .IOSchedulingClass }}
+{{ end -}}
+{{ if .IOSchedulingPriority }}IOSchedulingPriority={{ .IOSchedulingPriority }}
+{{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"
 {{ end -}}

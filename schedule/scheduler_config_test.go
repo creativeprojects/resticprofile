@@ -24,12 +24,53 @@ func TestOsDefaultConfig(t *testing.T) {
 }
 
 func TestSystemdConfig(t *testing.T) {
-	g := &config.Global{
-		Scheduler:            constants.SchedulerSystemd,
-		SystemdTimerTemplate: "timer.tpl",
-		SystemdUnitTemplate:  "unit.tpl",
+	testCases := []struct {
+		global   *config.Global
+		expected SchedulerSystemd
+	}{
+		{
+			global: &config.Global{
+				Scheduler:            constants.SchedulerSystemd,
+				SystemdTimerTemplate: "timer.tpl",
+				SystemdUnitTemplate:  "unit.tpl",
+			},
+			expected: SchedulerSystemd{TimerTemplate: "timer.tpl", UnitTemplate: "unit.tpl"},
+		},
+		{
+			global: &config.Global{
+				Scheduler:            constants.SchedulerSystemd,
+				SystemdTimerTemplate: "timer.tpl",
+				SystemdUnitTemplate:  "unit.tpl",
+				IONiceClass:          3,
+				IONiceLevel:          5,
+			},
+			expected: SchedulerSystemd{TimerTemplate: "timer.tpl", UnitTemplate: "unit.tpl"},
+		},
+		{
+			global: &config.Global{
+				Scheduler:            constants.SchedulerSystemd,
+				SystemdTimerTemplate: "timer.tpl",
+				SystemdUnitTemplate:  "unit.tpl",
+				IONice:               true,
+				IONiceClass:          3,
+				IONiceLevel:          5,
+			},
+			expected: SchedulerSystemd{TimerTemplate: "timer.tpl", UnitTemplate: "unit.tpl", IONiceClass: 3, IONiceLevel: 5},
+		},
+		{
+			global: &config.Global{
+				Scheduler:            constants.SchedulerSystemd,
+				SystemdTimerTemplate: "timer.tpl",
+				SystemdUnitTemplate:  "unit.tpl",
+				Nice:                 12,
+			},
+			expected: SchedulerSystemd{TimerTemplate: "timer.tpl", UnitTemplate: "unit.tpl", Nice: 12},
+		},
 	}
-	assert.Equal(t, SchedulerSystemd{TimerTemplate: "timer.tpl", UnitTemplate: "unit.tpl"}, NewSchedulerConfig(g))
+
+	for _, tc := range testCases {
+		assert.Equal(t, tc.expected, NewSchedulerConfig(tc.global))
+	}
 }
 
 func TestCrondConfig(t *testing.T) {

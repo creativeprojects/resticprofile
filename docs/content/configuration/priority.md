@@ -10,7 +10,7 @@ You can lower the priority of restic to avoid slowing down other processes. This
 
 ## Nice
 
-You can use these values for the `priority` parameter:
+You can use these values for the `priority` parameter, string or numeric values are both valid:
 
 | String value | "nice" equivalent on unixes | Notes |
 |--------------|-----------------------------|------|

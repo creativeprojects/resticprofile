@@ -288,7 +288,7 @@ func TestUseCrontabBinary(t *testing.T) {
 	binary := platform.Executable("./crontab")
 	defer func() { _ = os.Remove(binary) }()
 
-	cmd := exec.Command("go", "build", "-o", binary, "./mock")
+	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", binary, "./mock")
 	require.NoError(t, cmd.Run())
 
 	crontab := NewCrontab(nil)

@@ -52,6 +52,9 @@ func (s SchedulerCrond) Convert(_ string) SchedulerConfig { return s }
 type SchedulerSystemd struct {
 	UnitTemplate  string
 	TimerTemplate string
+	Nice          int
+	IONiceClass   int
+	IONiceLevel   int
 }
 
 func (s SchedulerSystemd) Type() string                     { return constants.SchedulerSystemd }
@@ -70,6 +73,7 @@ func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 		} else {
 			return SchedulerCrond{}
 		}
+
 	case constants.SchedulerCrontab:
 		if len(resource) > 0 {
 			if user, location, found := strings.Cut(resource, ":"); found {
@@ -85,25 +89,36 @@ func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 		} else {
 			panic(fmt.Errorf("invalid schedule %q, no crontab file was specified, expecting \"%s: filename\"", scheduler, scheduler))
 		}
+
 	case constants.SchedulerLaunchd:
 		return SchedulerLaunchd{}
+
 	case constants.SchedulerSystemd:
-		return SchedulerSystemd{
-			UnitTemplate:  global.SystemdUnitTemplate,
-			TimerTemplate: global.SystemdTimerTemplate,
-		}
+		return getSchedulerSystemdDefaultConfig(global)
+
 	case constants.SchedulerWindows:
 		return SchedulerWindows{}
+
 	default:
 		return SchedulerDefaultOS{
 			defaults: []SchedulerConfig{
-				SchedulerSystemd{
-					UnitTemplate:  global.SystemdUnitTemplate,
-					TimerTemplate: global.SystemdTimerTemplate,
-				},
+				getSchedulerSystemdDefaultConfig(global),
 			},
 		}
 	}
+}
+
+func getSchedulerSystemdDefaultConfig(global *config.Global) SchedulerSystemd {
+	scheduler := SchedulerSystemd{
+		UnitTemplate:  global.SystemdUnitTemplate,
+		TimerTemplate: global.SystemdTimerTemplate,
+		Nice:          global.Nice,
+	}
+	if global.IONice {
+		scheduler.IONiceClass = global.IONiceClass
+		scheduler.IONiceLevel = global.IONiceLevel
+	}
+	return scheduler
 }
 
 var (
