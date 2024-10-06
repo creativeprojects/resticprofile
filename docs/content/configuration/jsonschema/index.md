@@ -72,7 +72,7 @@ These universal schemas contain all flags and commands of all known *restic* ver
 may allow to set flags that are not supported by a particular *restic* version. Descriptions 
 and deprecation markers indicate what is supported and what should no longer be used.
 
-JSON schema URLs for a **specific** *restic* version (list of [available URLs]({{< ref "reference/#json-schema" >}})):
+JSON schema URLs for a **specific** *restic* version (list of [available URLs]({{% relref "reference/json-schema" %}})):
 
 * `.../config-1-restic-{MAJOR}-{MINOR}.json`
 * `.../config-2-restic-{MAJOR}-{MINOR}.json`
@@ -81,7 +81,7 @@ These schemas contain only flags and commands of a specific *restic* version. Th
 validate a config only when flags are used that the selected *restic* version supports 
 according to its manual pages.
 
-{{% notice style="hint" %}}
+{{% notice style="tip" %}}
 As an alternative to URLs, schemas can be generated locally with: 
-`resticprofile generate --json-schema [--version RESTIC_VERSION] [v2|v1]`
+`resticprofile generate --json-schema [--version RESTIC_VERSION] [global|v1|v2]`
 {{% /notice %}}
