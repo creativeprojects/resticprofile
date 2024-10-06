@@ -74,7 +74,11 @@ func generateConfigReference(output io.Writer, args []string) error {
 	}
 
 	data := config.NewTemplateInfoData(resticVersion)
-	tpl := templates.New("config-reference", data.GetFuncs())
+	name := "config-reference"
+	if len(args) > 0 {
+		name = filepath.Base(args[0])
+	}
+	tpl := templates.New(name, data.GetFuncs())
 	templates, err := fs.Sub(configReferenceTemplates, "contrib/templates")
 	if err != nil {
 		return fmt.Errorf("cannot load templates: %w", err)

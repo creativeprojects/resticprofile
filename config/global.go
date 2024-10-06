@@ -18,7 +18,7 @@ type Global struct {
 	Initialize           bool                `mapstructure:"initialize" default:"false" description:"Initialize a repository if missing"`
 	NoAutoRepositoryFile maybe.Bool          `mapstructure:"prevent-auto-repository-file" default:"false" description:"Prevents using a repository file for repository definitions containing a password"`
 	ResticBinary         string              `mapstructure:"restic-binary" description:"Full path of the restic executable (detected if not set)"`
-	ResticVersion        string              // not configurable at the moment. To be set after ResticBinary is known.
+	ResticVersion        string              `mapstructure:"restic-version" pattern:"^(|[0-9]+\\.[0-9]+(\\.[0-9]+)?)$" description:"Sets the restic version (detected if not set)"`
 	FilterResticFlags    bool                `mapstructure:"restic-arguments-filter" default:"true" description:"Remove unknown flags instead of passing all configured flags to restic"`
 	ResticLockRetryAfter time.Duration       `mapstructure:"restic-lock-retry-after" default:"1m" description:"Time to wait before trying to get a lock on a restic repository - see https://creativeprojects.github.io/resticprofile/usage/locks/"`
 	ResticStaleLockAge   time.Duration       `mapstructure:"restic-stale-lock-age" default:"1h" description:"The age an unused lock on a restic repository must have at least before resticprofile attempts to unlock - see https://creativeprojects.github.io/resticprofile/usage/locks/"`
