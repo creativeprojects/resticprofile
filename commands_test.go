@@ -249,6 +249,16 @@ func TestGenerateCommand(t *testing.T) {
 		assert.Contains(t, content, `$schema`)
 	})
 
+	t.Run("--json-schema no-option", func(t *testing.T) {
+		buffer.Reset()
+		assert.Error(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema"})))
+	})
+
+	t.Run("--json-schema invalid-option", func(t *testing.T) {
+		buffer.Reset()
+		assert.Error(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "_invalid_"})))
+	})
+
 	t.Run("--json-schema v1", func(t *testing.T) {
 		buffer.Reset()
 		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "v1"})))
