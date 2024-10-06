@@ -24,6 +24,9 @@ weight: 30
 {{- end }}
 
 {{- $webBaseUrl := "https://creativeprojects.github.io/resticprofile" -}}
+{{- if .Env.WEB_BASE_URL -}}
+    {{- $webBaseUrl = .Env.WEB_BASE_URL -}}
+{{- end -}}
 {{- $configWebUrl := "{base}/configuration" | replace "{base}" $webBaseUrl -}}
 
 resticprofile provides a JSON schema for v1 & v2 configuration files. The schema may be
