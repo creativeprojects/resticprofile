@@ -35,7 +35,6 @@ RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
 RESTIC_CMD=$(BUILD)restic-commands.json
 
-CONTRIB_DIR=contrib
 JSONSCHEMA_DIR=docs/static/jsonschema
 CONFIG_REFERENCE_DIR=docs/content/reference
 
