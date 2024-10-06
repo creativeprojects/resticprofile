@@ -244,7 +244,7 @@ generate-jsonschema: build
 
 	mkdir -p $(JSONSCHEMA_DIR) || echo "$(JSONSCHEMA_DIR) exists"
 
-	$(abspath $(BINARY)) generate --config-reference $(CONTRIB_DIR)/templates/config-schema.gojson > $(JSONSCHEMA_DIR)/config.json
+	$(abspath $(BINARY)) generate --json-schema global > $(JSONSCHEMA_DIR)/config.json
 
 	for config_version in 1 2 ; do \
 		$(abspath $(BINARY)) generate --json-schema v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version.json ; \

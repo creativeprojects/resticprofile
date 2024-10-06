@@ -235,9 +235,9 @@ func TestGenerateCommand(t *testing.T) {
 		assert.Contains(t, ref, "generating nested section")
 	})
 
-	t.Run("--config-reference config-schema.gojson", func(t *testing.T) {
+	t.Run("--json-schema global", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--config-reference", "contrib/templates/config-schema.gojson"})))
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "global"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, `"$schema"`)
 		assert.Contains(t, ref, "/jsonschema/config-1.json")
@@ -249,19 +249,19 @@ func TestGenerateCommand(t *testing.T) {
 		assert.Contains(t, content, `$schema`)
 	})
 
-	t.Run("--json-schema", func(t *testing.T) {
-		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema"})))
-		ref := buffer.String()
-		assert.Contains(t, ref, "\"profiles\":")
-		assert.Contains(t, ref, "/jsonschema/config-2.json")
-	})
-
 	t.Run("--json-schema v1", func(t *testing.T) {
 		buffer.Reset()
 		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "v1"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1.json")
+	})
+
+	t.Run("--json-schema v2", func(t *testing.T) {
+		buffer.Reset()
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "v2"})))
+		ref := buffer.String()
+		assert.Contains(t, ref, "\"profiles\":")
+		assert.Contains(t, ref, "/jsonschema/config-2.json")
 	})
 
 	t.Run("--json-schema --version 0.13 v1", func(t *testing.T) {

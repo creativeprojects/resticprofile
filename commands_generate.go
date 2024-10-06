@@ -18,6 +18,8 @@ import (
 	"github.com/creativeprojects/resticprofile/util/templates"
 )
 
+const pathTemplates = "contrib/templates"
+
 //go:embed contrib/completion/bash-completion.sh
 var bashCompletionScript string
 
@@ -74,12 +76,8 @@ func generateConfigReference(output io.Writer, args []string) error {
 	}
 
 	data := config.NewTemplateInfoData(resticVersion)
-	name := "config-reference"
-	if len(args) > 0 {
-		name = filepath.Base(args[0])
-	}
-	tpl := templates.New(name, data.GetFuncs())
-	templates, err := fs.Sub(configReferenceTemplates, "contrib/templates")
+	tpl := templates.New("config-reference", data.GetFuncs())
+	templates, err := fs.Sub(configReferenceTemplates, pathTemplates)
 	if err != nil {
 		return fmt.Errorf("cannot load templates: %w", err)
 	}
@@ -109,7 +107,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 
 	for _, staticPage := range staticPages {
 		fmt.Fprintf(output, "generating %s...\n", staticPage.templateName)
-		err = generatePage(tpl, data, filepath.Join(destination, staticPage.fileName), staticPage.templateName)
+		err = generateFileFromTemplate(tpl, data, filepath.Join(destination, staticPage.fileName), staticPage.templateName)
 		if err != nil {
 			return fmt.Errorf("unable to generate page %s: %w", staticPage.fileName, err)
 		}
@@ -123,7 +121,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 			Section:     profileSection,
 			Weight:      weight,
 		}
-		err = generatePage(tpl, sectionData, filepath.Join(destination, "profile", profileSection.Name()+".md"), "profile.sub-section.gomd")
+		err = generateFileFromTemplate(tpl, sectionData, filepath.Join(destination, "profile", profileSection.Name()+".md"), "profile.sub-section.gomd")
 		if err != nil {
 			return fmt.Errorf("unable to generate profile section %s: %w", profileSection.Name(), err)
 		}
@@ -138,7 +136,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 			Section:     nestedSection,
 			Weight:      weight,
 		}
-		err = generatePage(tpl, sectionData, filepath.Join(destination, "nested", nestedSection.Name()+".md"), "profile.nested-section.gomd")
+		err = generateFileFromTemplate(tpl, sectionData, filepath.Join(destination, "nested", nestedSection.Name()+".md"), "profile.nested-section.gomd")
 		if err != nil {
 			return fmt.Errorf("unable to generate nested section %s: %w", nestedSection.Name(), err)
 		}
@@ -147,7 +145,7 @@ func generateConfigReference(output io.Writer, args []string) error {
 	return nil
 }
 
-func generatePage(tpl *template.Template, data any, fileName, templateName string) error {
+func generateFileFromTemplate(tpl *template.Template, data any, fileName, templateName string) error {
 	err := os.MkdirAll(filepath.Dir(fileName), 0o755)
 	if err != nil {
 		return fmt.Errorf("cannot create directory: %w", err)
@@ -175,12 +173,34 @@ func generateJsonSchema(output io.Writer, args []string) (err error) {
 		}
 	}
 
-	version := config.Version02
-	if len(args) > 0 && args[0] == "v1" {
-		version = config.Version01
+	if len(args) == 0 {
+		return fmt.Errorf("missing type of json schema to generate (global, v1, v2)")
 	}
 
-	return jsonschema.WriteJsonSchema(version, resticVersion, output)
+	switch args[0] {
+	case "global":
+		data := config.NewTemplateInfoData(resticVersion)
+		tpl := templates.New("", data.GetFuncs())
+		templates, err := fs.Sub(configReferenceTemplates, pathTemplates)
+		if err != nil {
+			return fmt.Errorf("cannot load templates: %w", err)
+		}
+		tpl, err = tpl.ParseFS(templates, "config-schema.gojson")
+		if err != nil {
+			return fmt.Errorf("parsing failed: %w", err)
+		}
+		err = tpl.ExecuteTemplate(output, "config-schema.gojson", data)
+		if err != nil {
+			return fmt.Errorf("cannot execute template: %w", err)
+		}
+		return nil
+	case "v1":
+		return jsonschema.WriteJsonSchema(config.Version01, resticVersion, output)
+	case "v2":
+		return jsonschema.WriteJsonSchema(config.Version02, resticVersion, output)
+	default:
+		return fmt.Errorf("unknown json schema type: %s", args[0])
+	}
 }
 
 // SectionInfoData is used as data for go templates that render profile section references
