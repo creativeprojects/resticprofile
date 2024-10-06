@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config.json
 
 version: "1"
 
