@@ -100,11 +100,14 @@ self:
     backup:
         extended-status: true
         source: ./
+        exclude-file:
+            - root-excludes
+            - excludes
     copy:
         initialize: true
         schedule-permission: user
         schedule:
-          - "*:45"
+            - "*:45"
 
 src:
     inherit: default
@@ -113,18 +116,17 @@ src:
     backup:
         check-before: true
         exclude:
-        - /**/.git
+            - /**/.git
         exclude-caches: true
         one-file-system: false
         run-after: echo All Done!
         run-before:
-        - echo Starting!
-        - ls -al ~/go
+            - echo Starting!
         source:
-        - ~/go
+            - ~/go/src/github.com/creativeprojects/resticprofile
         tag:
-        - test
-        - dev
+            - test
+            - dev
     retention:
         after-backup: true
         before-backup: false
@@ -133,8 +135,8 @@ src:
         prune: true
     snapshots:
         tag:
-        - test
-        - dev
+            - test
+            - dev
         
 stdin:
     inherit: default
