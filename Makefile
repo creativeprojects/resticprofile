@@ -260,9 +260,9 @@ generate-config-reference: build
 	META_WEIGHT="6" \
 	LAYOUT_NO_HEADLINE="1" \
 	LAYOUT_HEADINGS_START="#" \
-	LAYOUT_NOTICE_START="{{% notice note %}}" \
+	LAYOUT_NOTICE_START='{{% notice style="note" %}}' \
 	LAYOUT_NOTICE_END="{{% /notice %}}" \
-	LAYOUT_HINT_START="{{% notice hint %}}" \
+	LAYOUT_HINT_START='{{% notice style="tip" %}}' \
 	LAYOUT_HINT_END="{{% /notice %}}" \
 	LAYOUT_UPLINK="[go to top](#reference)" \
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)

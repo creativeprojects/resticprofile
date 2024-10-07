@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config.json
+
+# {{ $databases := .Env.databases | split " " }}
+
+version: "2"
+
+global:
+  initialize: true
+
+groups:
+  mysql:
+    profiles:
+# {{ range $db := $databases }}
+      - stdin-{{ $db }}
+# {{ end }}
+
+profiles:
+  base:
+    description: "Read from stdin"
+    repository: "/Volumes/RAMDisk/example"
+    password-file: key
+
+# {{ range $db := $databases }}
+  stdin-{{ $db }}:
+    inherit: base
+    description: "Database {{ $db }}"
+    backup:
+      stdin-command: "mysqldump --complete-insert --routines --triggers --single-transaction --no-tablespaces --databases {{ $db }}"
+      stdin-filename: "{{ $db }}.gz"
+      tag:
+        - "{{ $db }}"
+# {{ end }}
