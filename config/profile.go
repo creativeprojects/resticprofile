@@ -970,6 +970,10 @@ func (p *Profile) GetMonitoringSections(command string) (monitoring SendMonitori
 	return
 }
 
+func (o *Profile) Kind() string {
+	return "profile"
+}
+
 // GetDeclaredSectionsWith returns all sections that implement a certain interface (including nil values)
 func GetDeclaredSectionsWith[T any](p *Profile) (sections map[string]T) {
 	sections = make(map[string]T)

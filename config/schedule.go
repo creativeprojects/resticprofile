@@ -142,11 +142,14 @@ func (o ScheduleConfigOrigin) Compare(other ScheduleConfigOrigin) (c int) {
 }
 
 func (o ScheduleConfigOrigin) String() string {
-	kind := ""
+	return fmt.Sprintf("%s@%s", o.Command, o.Name)
+}
+
+func (o ScheduleConfigOrigin) Kind() string {
 	if o.Type == ScheduleOriginGroup {
-		kind = "g:"
+		return "group"
 	}
-	return fmt.Sprintf("%s%s@%s", kind, o.Command, o.Name)
+	return "profile"
 }
 
 // ScheduleOrigin returns a origin for the specified name command and optional type (defaulting to ScheduleOriginProfile)
@@ -252,6 +255,8 @@ func (s *ScheduleConfig) ScheduleOrigin() ScheduleConfigOrigin {
 type Schedulable interface {
 	// Schedules returns a command to schedule map
 	Schedules() map[string]*Schedule
+	// Kind returns the kind of the schedule origin (profile or group)
+	Kind() string
 }
 
 // Schedule is the configuration used in profiles and groups for passing the user config to the scheduler system.

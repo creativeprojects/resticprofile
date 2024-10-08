@@ -42,5 +42,9 @@ func (g *Group) Schedules() map[string]*Schedule {
 	return schedules
 }
 
+func (g *Group) Kind() string {
+	return "group"
+}
+
 // Implements Schedulable
 var _ Schedulable = new(Group)
