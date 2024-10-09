@@ -333,7 +333,7 @@ func TestScheduleForProfileEnforcesOrigin(t *testing.T) {
 	profile := NewProfile(nil, "profile")
 	config := NewDefaultScheduleConfig(nil, ScheduleOrigin(profile.Name, "backup", ScheduleOriginGroup))
 
-	assert.PanicsWithError(t, "invalid use of newScheduleForProfile(profile, g:backup@profile)", func() {
+	assert.PanicsWithError(t, "invalid use of newScheduleForProfile(profile, backup@profile)", func() {
 		newScheduleForProfile(profile, config)
 	})
 
@@ -346,7 +346,7 @@ func TestScheduleBuiltinDefaults(t *testing.T) {
 	require.Equal(t, scheduleBaseConfigDefaults, s.ScheduleBaseConfig)
 
 	assert.Equal(t, "auto", s.Permission)
-	assert.Equal(t, "background", s.Priority)
+	assert.Equal(t, "standard", s.Priority)
 	assert.Equal(t, "default", s.LockMode)
 	assert.Equal(t, []string{"RESTIC_*"}, s.EnvCapture)
 	assert.Equal(t, ScheduleLockModeDefault, s.GetLockMode())

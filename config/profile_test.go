@@ -996,7 +996,7 @@ func TestSchedules(t *testing.T) {
 	}
 
 	sections := NewProfile(nil, "").SchedulableCommands()
-	require.GreaterOrEqual(t, len(sections), 6)
+	require.GreaterOrEqual(t, len(sections), 6) // backup, check, forget, prune, copy, retention
 
 	require.NoError(t, os.Setenv("RESTIC_ANY1", "xyz"))
 	require.NoError(t, os.Setenv("RESTIC_ANY2", "xyz"))

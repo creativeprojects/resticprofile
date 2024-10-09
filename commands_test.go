@@ -54,7 +54,7 @@ schedule = "daily"
 
 	// Test that errors from getScheduleJobs are passed through
 	_, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "non-existent"})
-	assert.EqualError(t, notFoundErr, "profile 'non-existent' not found")
+	assert.ErrorIs(t, notFoundErr, config.ErrNotFound)
 
 	// Test that declared and declarable job configs are returned
 	_, schedules, err := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "default"})
@@ -136,26 +136,33 @@ _ = 0
 _ = 0
 `
 	allProfiles := []string{"default", "2nd", "3rd"}
+	allGroups := []string{"others", "default"}
+	allProfilesAndGroups := append(allProfiles, allGroups...)
 
 	cfg, err := config.Load(bytes.NewBufferString(testConfig), "toml")
 	assert.Nil(t, err)
 	for _, p := range allProfiles {
 		assert.True(t, cfg.HasProfile(p))
 	}
+	for _, g := range allGroups {
+		assert.True(t, cfg.HasProfileGroup(g))
+	}
 
 	// Select --all
-	assert.ElementsMatch(t, allProfiles, selectProfiles(cfg, commandLineFlags{}, []string{"--all"}))
-
-	// Select profiles of group
-	assert.ElementsMatch(t, []string{"2nd", "3rd"}, selectProfiles(cfg, commandLineFlags{name: "others"}, nil))
+	assert.ElementsMatch(t, allProfilesAndGroups, selectProfilesAndGroups(cfg, commandLineFlags{}, []string{"--all"}))
 
 	// Select profiles by name
 	for _, p := range allProfiles {
-		assert.ElementsMatch(t, []string{p}, selectProfiles(cfg, commandLineFlags{name: p}, nil))
+		assert.ElementsMatch(t, []string{p}, selectProfilesAndGroups(cfg, commandLineFlags{name: p}, nil))
+	}
+
+	// Select groups by name
+	for _, g := range allGroups {
+		assert.ElementsMatch(t, []string{g}, selectProfilesAndGroups(cfg, commandLineFlags{name: g}, nil))
 	}
 
 	// Select non-existing profile or group
-	assert.ElementsMatch(t, []string{"non-existing"}, selectProfiles(cfg, commandLineFlags{name: "non-existing"}, nil))
+	assert.ElementsMatch(t, []string{"non-existing"}, selectProfilesAndGroups(cfg, commandLineFlags{name: "non-existing"}, nil))
 }
 
 func TestFlagsForProfile(t *testing.T) {
@@ -313,7 +320,7 @@ schedule backup@default:
     at:                   daily
     permission:           auto
     command-output:       auto
-    priority:             background
+    priority:             standard
     lock-mode:            default
     capture-environment:  RESTIC_*
 
@@ -321,7 +328,7 @@ schedule check@default:
     at:                   weekly
     permission:           auto
     command-output:       auto
-    priority:             background
+    priority:             standard
     lock-mode:            default
     capture-environment:  RESTIC_*
 `)

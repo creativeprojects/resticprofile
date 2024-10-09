@@ -309,36 +309,6 @@ func randomKey(output io.Writer, ctx commandContext) error {
 	return err
 }
 
-// selectProfiles returns a list with length >= 1, containing profile names that have been selected in flags or extra args.
-// With "--all" set in args names of all profiles are returned, else profile or profile group referenced in flags.name returns names.
-// If no match, flags.name is returned as-is.
-func selectProfiles(c *config.Config, flags commandLineFlags, args []string) []string {
-	profiles := make([]string, 0, 1)
-
-	// Check for --all or groups
-	if slices.Contains(args, "--all") {
-		profiles = c.GetProfileNames()
-
-	} else if !c.HasProfile(flags.name) {
-		if names, err := c.GetProfileGroup(flags.name); err == nil && names != nil {
-			profiles = names.Profiles
-		}
-	}
-
-	// Fallback add profile name from flags
-	if len(profiles) == 0 {
-		profiles = append(profiles, flags.name)
-	}
-
-	return profiles
-}
-
-// flagsForProfile returns a copy of flags with name set to profileName.
-func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlags {
-	flags.name = profileName
-	return flags
-}
-
 func testElevationCommand(_ io.Writer, ctx commandContext) error {
 	if ctx.flags.isChild {
 		client := remote.NewClient(ctx.flags.parentPort)
