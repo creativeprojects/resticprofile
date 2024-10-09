@@ -34,6 +34,7 @@ With resticprofile:
 * **[new for v0.19.0]** Preventing your system from idle sleeping
 * **[new for v0.21.0]** See the help from both restic and resticprofile via the `help` command or `-h` flag
 * **[new for v0.24.0]** Don't schedule a job when the system is running on battery
+* **[new for v0.29.0]** Scheduling a group of profiles is finally available (configuration `v2` only)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0

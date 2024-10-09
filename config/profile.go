@@ -308,7 +308,7 @@ type ScheduleBaseSection struct {
 	Schedule                        any            `mapstructure:"schedule" show:"noshow" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure"`
 	SchedulePermission              string         `mapstructure:"schedule-permission" show:"noshow" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	ScheduleLog                     string         `mapstructure:"schedule-log" show:"noshow" examples:"/resticprofile.log;syslog-tcp://syslog-server:514;syslog:server;syslog:" description:"Redirect the output into a log file or to syslog when running on schedule"`
-	SchedulePriority                string         `mapstructure:"schedule-priority" show:"noshow" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
+	SchedulePriority                string         `mapstructure:"schedule-priority" show:"noshow" default:"standard" enum:"background;standard" description:"Set the priority at which the schedule is run"`
 	ScheduleLockMode                string         `mapstructure:"schedule-lock-mode" show:"noshow" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	ScheduleLockWait                maybe.Duration `mapstructure:"schedule-lock-wait" show:"noshow" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
 	ScheduleEnvCapture              []string       `mapstructure:"schedule-capture-environment" show:"noshow" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
@@ -935,7 +935,6 @@ func (p *Profile) GetEnvironment(withOs bool) (env *util.Environment) {
 }
 
 // Schedules returns a map of command -> Schedule, for all the commands that have a schedule configuration
-// Only v1 configuration have schedules inside the profile
 func (p *Profile) Schedules() map[string]*Schedule {
 	// All SectionWithSchedule (backup, check, prune, etc.)
 	sections := GetSectionsWith[scheduling](p)
@@ -968,6 +967,10 @@ func (p *Profile) GetMonitoringSections(command string) (monitoring SendMonitori
 		monitoring = *section.GetSendMonitoring()
 	}
 	return
+}
+
+func (o *Profile) Kind() string {
+	return constants.SchedulableKindProfile
 }
 
 // GetDeclaredSectionsWith returns all sections that implement a certain interface (including nil values)

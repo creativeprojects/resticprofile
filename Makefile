@@ -73,8 +73,7 @@ endif
 
 $(GOBIN)/eget: verify
 	@echo "[*] $@"
-	GOBIN="$(GOBIN)" \
-	$(GOCMD) install -v github.com/zyedidia/eget@latest
+	GOBIN="$(GOBIN)" $(GOCMD) install -v github.com/zyedidia/eget@v1.3.4
 
 $(GOBIN)/goreleaser: verify $(GOBIN)/eget
 	@echo "[*] $@"

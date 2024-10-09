@@ -134,7 +134,7 @@ self:
         group-by: host
     forget:
         schedule: "weekly"
-        schedule-priority: standard
+        schedule-priority: background
     copy:
         initialize: true
         snapshot: latest

@@ -37,7 +37,7 @@ type ScheduleBaseConfig struct {
 	Permission              string         `mapstructure:"permission" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	Log                     string         `mapstructure:"log" examples:"/resticprofile.log;syslog-tcp://syslog-server:514;syslog:server;syslog:" description:"Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
 	CommandOutput           string         `mapstructure:"command-output" default:"auto" enum:"auto;log;console;all" description:"Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
-	Priority                string         `mapstructure:"priority" default:"background" enum:"background;standard" description:"Set the priority at which the schedule is run"`
+	Priority                string         `mapstructure:"priority" default:"standard" enum:"background;standard" description:"Set the priority at which the schedule is run"`
 	LockMode                string         `mapstructure:"lock-mode" default:"default" enum:"default;fail;ignore" description:"Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
 	LockWait                maybe.Duration `mapstructure:"lock-wait" examples:"150s;15m;30m;45m;1h;2h30m" description:"Set the maximum time to wait for acquiring locks when running on schedule"`
 	EnvCapture              []string       `mapstructure:"capture-environment" default:"RESTIC_*" description:"Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")"`
@@ -51,7 +51,7 @@ type ScheduleBaseConfig struct {
 var scheduleBaseConfigDefaults = ScheduleBaseConfig{
 	Permission:    "auto",
 	CommandOutput: constants.DefaultCommandOutput,
-	Priority:      "background",
+	Priority:      "standard",
 	LockMode:      "default",
 	EnvCapture:    []string{"RESTIC_*"},
 }
@@ -142,11 +142,7 @@ func (o ScheduleConfigOrigin) Compare(other ScheduleConfigOrigin) (c int) {
 }
 
 func (o ScheduleConfigOrigin) String() string {
-	kind := ""
-	if o.Type == ScheduleOriginGroup {
-		kind = "g:"
-	}
-	return fmt.Sprintf("%s%s@%s", kind, o.Command, o.Name)
+	return fmt.Sprintf("%s@%s", o.Command, o.Name)
 }
 
 // ScheduleOrigin returns a origin for the specified name command and optional type (defaulting to ScheduleOriginProfile)
@@ -252,6 +248,10 @@ func (s *ScheduleConfig) ScheduleOrigin() ScheduleConfigOrigin {
 type Schedulable interface {
 	// Schedules returns a command to schedule map
 	Schedules() map[string]*Schedule
+	// SchedulableCommands returns a list of commands that can be scheduled
+	SchedulableCommands() []string
+	// Kind returns the kind of the schedule origin (profile or group)
+	Kind() string
 }
 
 // Schedule is the configuration used in profiles and groups for passing the user config to the scheduler system.
