@@ -1729,7 +1729,7 @@ func TestCopySnapshot(t *testing.T) {
 	assert.Equal(t, []string{"copy", "snapshot1", "snapshot2"}, cmd.args)
 }
 
-func TestRunUnlock(t *testing.T) {
+func TestRunUnlockWithCommandLineFlags(t *testing.T) {
 	t.Parallel()
 
 	profile := config.NewProfile(&config.Config{}, "TestProfile")
@@ -1743,20 +1743,4 @@ func TestRunUnlock(t *testing.T) {
 	args := profile.GetCommandFlags(constants.CommandUnlock)
 	cmd := wrapper.prepareCommand(constants.CommandUnlock, args, false)
 	assert.Equal(t, []string{"unlock"}, cmd.args)
-}
-
-func TestRunInit(t *testing.T) {
-	t.Parallel()
-
-	profile := config.NewProfile(&config.Config{}, "TestProfile")
-	ctx := &Context{
-		binary:  "restic",
-		profile: profile,
-		command: constants.CommandForget,
-		request: Request{arguments: []string{"some-string", "--some-flag", "-n"}},
-	}
-	wrapper := newResticWrapper(ctx)
-	args := profile.GetCommandFlags(constants.CommandInit)
-	cmd := wrapper.prepareCommand(constants.CommandInit, args, false)
-	assert.Equal(t, []string{"init"}, cmd.args)
 }

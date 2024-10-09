@@ -9,5 +9,5 @@ import (
 func TestGroupSchedulableCommands(t *testing.T) {
 	group := NewGroup(nil, "test")
 	commands := group.SchedulableCommands()
-	assert.GreaterOrEqual(t, len(commands), 5)
+	assert.ElementsMatch(t, commands, []string{"backup", "check", "forget", "prune", "copy"})
 }

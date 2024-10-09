@@ -40,9 +40,6 @@ Also if you use the `--all` flag to schedule all your profiles at once, make sur
 resticprofile **does not keep a state** of the schedule and unschedule commands. If you need to do many changes in your profiles (like moving, renaming, deleting etc.) **it's recommended to unschedule everything using the `--all` flag before changing your profiles.**
 {{% /notice %}}
 
-{{% notice style="info" %}}
-{{% /notice %}}
-
 ### unschedule command
 
 Remove all the schedules defined on the selected profile or profiles.

@@ -60,7 +60,7 @@ schedule = "daily"
 	_, schedules, err := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "default"})
 	assert.Nil(t, err)
 	assert.NotEmpty(t, schedules)
-	// assert.Len(t, schedules, len(profile.SchedulableCommands()))
+	assert.Len(t, schedules, len(config.NewProfile(parsedConfig, "test").SchedulableCommands()))
 
 	declaredCount := 0
 

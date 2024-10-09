@@ -353,14 +353,13 @@ func (c *Config) DisplayConfigurationIssues() {
 		}
 	}
 
+	allNames := make(map[string]bool)
 	duplicates := make([]string, 0)
-	allProfiles := c.GetProfileNames()
-	allGroups := c.GetGroupNames()
-	for _, profileName := range allProfiles {
-		for _, groupName := range allGroups {
-			if profileName == groupName {
-				duplicates = append(duplicates, profileName)
-			}
+	for _, name := range append(c.GetProfileNames(), c.GetGroupNames()...) {
+		if allNames[name] {
+			duplicates = append(duplicates, name)
+		} else {
+			allNames[name] = true
 		}
 	}
 	if len(duplicates) > 0 {

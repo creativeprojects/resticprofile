@@ -213,28 +213,20 @@ func showProfileOrGroup(output io.Writer, ctx commandContext) error {
 		profile, cleanup, err := openProfile(c, flags.name)
 		defer cleanup()
 		if err != nil {
-			if errors.Is(err, config.ErrNotFound) {
-				return fmt.Errorf("profile '%s' not found", flags.name)
-			}
-			if profile == nil {
-				return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-			} else {
-				clog.Errorf("failed loading profile '%s': %s", flags.name, err)
-			}
+			return fmt.Errorf("profile '%s': %w", flags.name, err)
+		}
+		if profile == nil {
+			return fmt.Errorf("cannot load profile '%s'", flags.name)
 		}
 		profileOrGroup = profile
 
 	} else if c.HasProfileGroup(flags.name) {
 		group, err := c.GetProfileGroup(flags.name)
 		if err != nil {
-			if errors.Is(err, config.ErrNotFound) {
-				return fmt.Errorf("profile '%s' not found", flags.name)
-			}
-			if group == nil {
-				return fmt.Errorf("cannot load group '%s': %w", flags.name, err)
-			} else {
-				clog.Errorf("failed loading group '%s': %s", flags.name, err)
-			}
+			return fmt.Errorf("group '%s': %w", flags.name, err)
+		}
+		if group == nil {
+			return fmt.Errorf("cannot load group '%s'", flags.name)
 		}
 		profileOrGroup = group
 
