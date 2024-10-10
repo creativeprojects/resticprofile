@@ -1002,6 +1002,10 @@ func TestSchedules(t *testing.T) {
 
 	require.NoError(t, os.Setenv("RESTIC_ANY1", "xyz"))
 	require.NoError(t, os.Setenv("RESTIC_ANY2", "xyz"))
+	t.Cleanup(func() {
+		_ = os.Unsetenv("RESTIC_ANY1")
+		_ = os.Unsetenv("RESTIC_ANY2")
+	})
 
 	for _, command := range sections {
 		t.Run(command, func(t *testing.T) {
