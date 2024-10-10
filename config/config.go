@@ -353,6 +353,19 @@ func (c *Config) DisplayConfigurationIssues() {
 		}
 	}
 
+	allNames := make(map[string]bool)
+	duplicates := make([]string, 0)
+	for _, name := range append(c.GetProfileNames(), c.GetGroupNames()...) {
+		if allNames[name] {
+			duplicates = append(duplicates, name)
+		} else {
+			allNames[name] = true
+		}
+	}
+	if len(duplicates) > 0 {
+		clog.Errorf("Duplicate profile and group names found: %s. This could lead to unpredictable behaviour.", strings.Join(duplicates, ", "))
+	}
+
 	// Reset issues
 	c.ClearConfigurationIssues()
 }
@@ -519,7 +532,7 @@ func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 
 	group, ok := c.cached.groups[groupKey]
 	if !ok {
-		return nil, fmt.Errorf("group '%s' not found", groupKey)
+		return nil, ErrNotFound
 	}
 	return group, nil
 }

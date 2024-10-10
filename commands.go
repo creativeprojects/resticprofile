@@ -18,7 +18,6 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/win"
 	"golang.org/x/exp/maps"
@@ -87,45 +86,45 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "show",
-			description:       "show all the details of the current profile",
-			longDescription:   "The \"show\" command prints the effective configuration of the selected profile.\n\nThe effective profile configuration is built by loading all includes, applying inheritance, mixins, templates and variables and parsing the result.",
-			action:            showProfile,
+			description:       "show all the details of the current profile or group",
+			longDescription:   "The \"show\" command prints the effective configuration of the selected profile or group.\n\nThe effective profile or group configuration is built by loading all includes, applying inheritance, mixins, templates and variables and parsing the result.",
+			action:            showProfileOrGroup,
 			needConfiguration: true,
 		},
 		{
 			name:              "schedule",
-			description:       "schedule jobs from a profile (or of all profiles)",
-			longDescription:   "The \"schedule\" command registers declared schedules of the selected profile (or of all profiles) as scheduled jobs within the scheduling service of the operating system",
+			description:       "schedule jobs from a profile or group (or of all profiles and groups)",
+			longDescription:   "The \"schedule\" command registers declared schedules of the selected profile or group (or of all profiles and groups) as scheduled jobs within the scheduling service of the operating system",
 			action:            createSchedule,
 			needConfiguration: true,
 			hide:              false,
 			flags: map[string]string{
 				"--no-start": "don't start the timer/service (systemd/launch only)",
-				"--all":      "add all scheduled jobs of all profiles",
+				"--all":      "add all scheduled jobs of all profiles and groups",
 			},
 		},
 		{
 			name:              "unschedule",
-			description:       "remove scheduled jobs of a profile (or of all profiles)",
-			longDescription:   "The \"unschedule\" command removes scheduled jobs from the scheduling service of the operating system. The command removes jobs for schedules declared in the selected profile (or of all profiles)",
+			description:       "remove scheduled jobs of a profile or group (or of all profiles and groups)",
+			longDescription:   "The \"unschedule\" command removes scheduled jobs from the scheduling service of the operating system. The command removes jobs for schedules declared in the selected profile or group (or of all profiles and groups)",
 			action:            removeSchedule,
 			needConfiguration: true,
 			hide:              false,
-			flags:             map[string]string{"--all": "remove all scheduled jobs of all profiles"},
+			flags:             map[string]string{"--all": "remove all scheduled jobs of all profiles and groups"},
 		},
 		{
 			name:              "status",
-			description:       "display the status of scheduled jobs of a profile (or of all profiles)",
-			longDescription:   "The \"status\" command prints all declared schedules of the selected profile (or of all profiles) and shows the status of related scheduled jobs in the scheduling service of the operating system",
+			description:       "display the status of scheduled jobs of a profile or group (or of all profiles and groups)",
+			longDescription:   "The \"status\" command prints all declared schedules of the selected profile or group (or of all profiles and groups) and shows the status of related scheduled jobs in the scheduling service of the operating system",
 			action:            statusSchedule,
 			needConfiguration: true,
 			hide:              false,
-			flags:             map[string]string{"--all": "display the status of all scheduled jobs of all profiles"},
+			flags:             map[string]string{"--all": "display the status of all scheduled jobs of all profiles and groups"},
 		},
 		{
 			name:              "run-schedule",
 			description:       "runs a scheduled job. This command should only be called by the scheduling service",
-			longDescription:   "The \"run-schedule\" command loads the scheduled job configuration from the name in parameter and runs the restic command with the arguments defined in the profile. The name in parameter is <command>@<profile-name> for the configuration file v1, and the schedule name for the configuration file v2+.",
+			longDescription:   "The \"run-schedule\" command loads the scheduled job configuration from the name in parameter and runs the restic command with the arguments defined in the profile or group. The name in parameter is <command>@<profile-or-group-name>.",
 			pre:               preRunSchedule,
 			action:            runSchedule,
 			needConfiguration: true,
@@ -198,7 +197,7 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 	return nil
 }
 
-func showProfile(output io.Writer, ctx commandContext) error {
+func showProfileOrGroup(output io.Writer, ctx commandContext) error {
 	c := ctx.config
 	flags := ctx.flags
 
@@ -208,18 +207,31 @@ func showProfile(output io.Writer, ctx commandContext) error {
 		return fmt.Errorf("cannot load global section: %w", err)
 	}
 
-	// Load profile
-	profile, cleanup, err := openProfile(c, flags.name)
-	defer cleanup()
-	if err != nil {
-		if errors.Is(err, config.ErrNotFound) {
-			return fmt.Errorf("profile '%s' not found", flags.name)
+	var profileOrGroup config.Schedulable
+	if c.HasProfile(flags.name) {
+		// Load profile
+		profile, cleanup, err := openProfile(c, flags.name)
+		defer cleanup()
+		if err != nil {
+			return fmt.Errorf("profile '%s': %w", flags.name, err)
 		}
 		if profile == nil {
-			return fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-		} else {
-			clog.Errorf("failed loading profile '%s': %s", flags.name, err)
+			return fmt.Errorf("cannot load profile '%s'", flags.name)
 		}
+		profileOrGroup = profile
+
+	} else if c.HasProfileGroup(flags.name) {
+		group, err := c.GetProfileGroup(flags.name)
+		if err != nil {
+			return fmt.Errorf("group '%s': %w", flags.name, err)
+		}
+		if group == nil {
+			return fmt.Errorf("cannot load group '%s'", flags.name)
+		}
+		profileOrGroup = group
+
+	} else {
+		return fmt.Errorf("profile or group '%s': %w", flags.name, config.ErrNotFound)
 	}
 
 	// Show global
@@ -229,18 +241,20 @@ func showProfile(output io.Writer, ctx commandContext) error {
 	}
 	_, _ = fmt.Fprintln(output)
 
-	// Show profile
-	err = config.ShowStruct(output, profile, "profile "+flags.name)
+	// Show profile or group
+	err = config.ShowStruct(output, profileOrGroup, profileOrGroup.Kind()+" "+flags.name)
 	if err != nil {
-		clog.Errorf("cannot show profile '%s': %s", flags.name, err.Error())
+		clog.Errorf("cannot show profile or group '%s': %s", flags.name, err.Error())
 	}
 	_, _ = fmt.Fprintln(output)
 
 	// Show schedules
-	showSchedules(output, maps.Values(profile.Schedules()))
+	showSchedules(output, maps.Values(profileOrGroup.Schedules()))
 
-	// Show deprecation notice
-	displayProfileDeprecationNotices(profile)
+	if profile, ok := profileOrGroup.(*config.Profile); ok {
+		// Show deprecation notice
+		displayDeprecationNotices(profile)
+	}
 
 	// Show config issues
 	c.DisplayConfigurationIssues()
@@ -285,278 +299,6 @@ func randomKey(output io.Writer, ctx commandContext) error {
 	encoder.Close()
 	fmt.Fprintln(output, "")
 	return err
-}
-
-// selectProfiles returns a list with length >= 1, containing profile names that have been selected in flags or extra args.
-// With "--all" set in args names of all profiles are returned, else profile or profile group referenced in flags.name returns names.
-// If no match, flags.name is returned as-is.
-func selectProfiles(c *config.Config, flags commandLineFlags, args []string) []string {
-	profiles := make([]string, 0, 1)
-
-	// Check for --all or groups
-	if slices.Contains(args, "--all") {
-		profiles = c.GetProfileNames()
-
-	} else if !c.HasProfile(flags.name) {
-		if names, err := c.GetProfileGroup(flags.name); err == nil && names != nil {
-			profiles = names.Profiles
-		}
-	}
-
-	// Fallback add profile name from flags
-	if len(profiles) == 0 {
-		profiles = append(profiles, flags.name)
-	}
-
-	return profiles
-}
-
-// flagsForProfile returns a copy of flags with name set to profileName.
-func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlags {
-	flags.name = profileName
-	return flags
-}
-
-// createSchedule accepts one argument from the commandline: --no-start
-func createSchedule(_ io.Writer, ctx commandContext) error {
-	c := ctx.config
-	flags := ctx.flags
-	args := ctx.request.arguments
-
-	defer c.DisplayConfigurationIssues()
-
-	type profileJobs struct {
-		scheduler schedule.SchedulerConfig
-		profile   string
-		jobs      []*config.Schedule
-	}
-
-	allJobs := make([]profileJobs, 0, 1)
-
-	// Step 1: Collect all jobs of all selected profiles
-	for _, profileName := range selectProfiles(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-
-		scheduler, profile, jobs, err := getScheduleJobs(c, profileFlags)
-		if err == nil {
-			err = requireScheduleJobs(jobs, profileFlags)
-
-			// Skip profile with no schedules when "--all" option is set.
-			if err != nil && slices.Contains(args, "--all") {
-				continue
-			}
-		}
-		if err != nil {
-			return err
-		}
-
-		displayProfileDeprecationNotices(profile)
-
-		// add the no-start flag to all the jobs
-		if slices.Contains(args, "--no-start") {
-			for id := range jobs {
-				jobs[id].SetFlag("no-start", "")
-			}
-		}
-
-		allJobs = append(allJobs, profileJobs{scheduler: scheduler, profile: profileName, jobs: jobs})
-	}
-
-	// Step 2: Schedule all collected jobs
-	for _, j := range allJobs {
-		err := scheduleJobs(schedule.NewHandler(j.scheduler), j.profile, j.jobs)
-		if err != nil {
-			return retryElevated(err, flags)
-		}
-	}
-
-	return nil
-}
-
-func removeSchedule(_ io.Writer, ctx commandContext) error {
-	c := ctx.config
-	flags := ctx.flags
-	args := ctx.request.arguments
-
-	// Unschedule all jobs of all selected profiles
-	for _, profileName := range selectProfiles(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-
-		scheduler, _, jobs, err := getRemovableScheduleJobs(c, profileFlags)
-		if err != nil {
-			return err
-		}
-
-		err = removeJobs(schedule.NewHandler(scheduler), profileName, jobs)
-		if err != nil {
-			return retryElevated(err, flags)
-		}
-	}
-
-	return nil
-}
-
-func statusSchedule(w io.Writer, ctx commandContext) error {
-	c := ctx.config
-	flags := ctx.flags
-	args := ctx.request.arguments
-
-	defer c.DisplayConfigurationIssues()
-
-	if !slices.Contains(args, "--all") {
-		// simple case of displaying status for one profile
-		scheduler, profile, schedules, err := getScheduleJobs(c, flags)
-		if err != nil {
-			return err
-		}
-		if len(schedules) == 0 {
-			clog.Warningf("profile %s has no schedule", flags.name)
-			return nil
-		}
-		return statusScheduleProfile(scheduler, profile, schedules, flags)
-	}
-
-	for _, profileName := range selectProfiles(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-		scheduler, profile, schedules, err := getScheduleJobs(c, profileFlags)
-		if err != nil {
-			return err
-		}
-		// it's all fine if this profile has no schedule
-		if len(schedules) == 0 {
-			continue
-		}
-		clog.Infof("Profile %q:", profileName)
-		err = statusScheduleProfile(scheduler, profile, schedules, profileFlags)
-		if err != nil {
-			// display the error but keep going with the other profiles
-			clog.Error(err)
-		}
-	}
-	return nil
-}
-
-func statusScheduleProfile(scheduler schedule.SchedulerConfig, profile *config.Profile, schedules []*config.Schedule, flags commandLineFlags) error {
-	displayProfileDeprecationNotices(profile)
-
-	err := statusJobs(schedule.NewHandler(scheduler), flags.name, schedules)
-	if err != nil {
-		return retryElevated(err, flags)
-	}
-	return nil
-}
-
-func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
-	global, err := c.GetGlobalSection()
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("cannot load global section: %w", err)
-	}
-
-	profile, err := c.GetProfile(flags.name)
-	if err != nil {
-		if errors.Is(err, config.ErrNotFound) {
-			return nil, nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
-		}
-		return nil, nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
-	}
-
-	return schedule.NewSchedulerConfig(global), profile, maps.Values(profile.Schedules()), nil
-}
-
-func requireScheduleJobs(schedules []*config.Schedule, flags commandLineFlags) error {
-	if len(schedules) == 0 {
-		return fmt.Errorf("no schedule found for profile '%s'", flags.name)
-	}
-	return nil
-}
-
-func getRemovableScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.SchedulerConfig, *config.Profile, []*config.Schedule, error) {
-	scheduler, profile, schedules, err := getScheduleJobs(c, flags)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	// Add all undeclared schedules as remove-only configs
-	for _, command := range profile.SchedulableCommands() {
-		declared := false
-		for _, s := range schedules {
-			if declared = s.ScheduleOrigin().Command == command; declared {
-				break
-			}
-		}
-		if !declared {
-			origin := config.ScheduleOrigin(profile.Name, command)
-			schedules = append(schedules, config.NewDefaultSchedule(c, origin))
-		}
-	}
-
-	return scheduler, profile, schedules, nil
-}
-
-func preRunSchedule(ctx *Context) error {
-	if len(ctx.request.arguments) < 1 {
-		return errors.New("run-schedule command expects one argument: schedule name")
-	}
-	scheduleName := ctx.request.arguments[0]
-	// temporarily allow v2 configuration to run v1 schedules
-	// if ctx.config.GetVersion() < config.Version02
-	{
-		// schedule name is in the form "command@profile"
-		commandName, profileName, ok := strings.Cut(scheduleName, "@")
-		if !ok {
-			return errors.New("the expected format of the schedule name is <command>@<profile-name>")
-		}
-		ctx.request.profile = profileName
-		ctx.request.schedule = scheduleName
-		ctx.command = commandName
-		// remove the parameter from the arguments
-		ctx.request.arguments = ctx.request.arguments[1:]
-
-		// don't save the profile in the context now, it's only loaded but not prepared
-		profile, err := ctx.config.GetProfile(profileName)
-		if err != nil || profile == nil {
-			return fmt.Errorf("cannot load profile '%s': %w", profileName, err)
-		}
-		// get the list of all scheduled commands to find the current command
-		if ctx.schedule, ok = profile.Schedules()[ctx.command]; ok {
-			prepareScheduledProfile(ctx)
-		}
-	}
-	return nil
-}
-
-func prepareScheduledProfile(ctx *Context) {
-	clog.Debugf("preparing scheduled profile %q", ctx.request.schedule)
-	s := ctx.schedule
-	// log file
-	if len(s.Log) > 0 {
-		ctx.logTarget = s.Log
-	}
-	if len(s.CommandOutput) > 0 {
-		ctx.commandOutput = s.CommandOutput
-	}
-	// battery
-	if s.IgnoreOnBatteryLessThan > 0 && !s.IgnoreOnBattery.IsStrictlyFalse() {
-		ctx.stopOnBattery = s.IgnoreOnBatteryLessThan
-	} else if s.IgnoreOnBattery.IsTrue() {
-		ctx.stopOnBattery = 100
-	}
-	// lock
-	if s.GetLockMode() == config.ScheduleLockModeDefault {
-		if duration := s.GetLockWait(); duration > 0 {
-			ctx.lockWait = duration
-		}
-	} else if s.GetLockMode() == config.ScheduleLockModeIgnore {
-		ctx.noLock = true
-	}
-}
-
-func runSchedule(_ io.Writer, cmdCtx commandContext) error {
-	err := startProfileOrGroup(&cmdCtx.Context, runProfile)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func testElevationCommand(_ io.Writer, ctx commandContext) error {

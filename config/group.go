@@ -1,6 +1,9 @@
 package config
 
-import "github.com/creativeprojects/resticprofile/util/maybe"
+import (
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util/maybe"
+)
 
 // Group of profiles
 type Group struct {
@@ -9,7 +12,7 @@ type Group struct {
 	Description      string                     `mapstructure:"description" description:"Describe the group"`
 	Profiles         []string                   `mapstructure:"profiles" description:"Names of the profiles belonging to this group"`
 	ContinueOnError  maybe.Bool                 `mapstructure:"continue-on-error" default:"auto" description:"Continue with the next profile on a failure, overrides \"global.group-continue-on-error\""`
-	CommandSchedules map[string]*ScheduleConfig `mapstructure:"schedules" description:"Allows to run the group on schedule for the specified command name."`
+	CommandSchedules map[string]*ScheduleConfig `mapstructure:"schedules" show:"noshow" description:"Allows to run the group on schedule for the specified command name (backup, copy, check, forget, prune)."`
 }
 
 func NewGroup(c *Config, name string) (g *Group) {
@@ -40,6 +43,23 @@ func (g *Group) Schedules() map[string]*Schedule {
 		}
 	}
 	return schedules
+}
+
+// SchedulableCommands returns the list of commands that can be scheduled (whether they have schedules or not)
+func (g Group) SchedulableCommands() []string {
+	// once the deprecated retention schedule is removed, we can use the list from profiles
+	// return NewProfile(g.config, "").SchedulableCommands()
+	return []string{
+		constants.CommandBackup,
+		constants.CommandCheck,
+		constants.CommandForget,
+		constants.CommandPrune,
+		constants.CommandCopy,
+	}
+}
+
+func (g *Group) Kind() string {
+	return constants.SchedulableKindGroup
 }
 
 // Implements Schedulable

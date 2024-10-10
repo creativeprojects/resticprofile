@@ -333,7 +333,7 @@ func TestScheduleForProfileEnforcesOrigin(t *testing.T) {
 	profile := NewProfile(nil, "profile")
 	config := NewDefaultScheduleConfig(nil, ScheduleOrigin(profile.Name, "backup", ScheduleOriginGroup))
 
-	assert.PanicsWithError(t, "invalid use of newScheduleForProfile(profile, g:backup@profile)", func() {
+	assert.PanicsWithError(t, "invalid use of newScheduleForProfile(profile, backup@profile)", func() {
 		newScheduleForProfile(profile, config)
 	})
 
@@ -346,7 +346,7 @@ func TestScheduleBuiltinDefaults(t *testing.T) {
 	require.Equal(t, scheduleBaseConfigDefaults, s.ScheduleBaseConfig)
 
 	assert.Equal(t, "auto", s.Permission)
-	assert.Equal(t, "background", s.Priority)
+	assert.Equal(t, "standard", s.Priority)
 	assert.Equal(t, "default", s.LockMode)
 	assert.Equal(t, []string{"RESTIC_*"}, s.EnvCapture)
 	assert.Equal(t, ScheduleLockModeDefault, s.GetLockMode())
@@ -389,4 +389,103 @@ func TestScheduleFlags(t *testing.T) {
 	flag, found = schedule.GetFlag("unit")
 	assert.Equal(t, "test", flag)
 	assert.True(t, found)
+}
+
+func TestScheduleKind(t *testing.T) {
+	profile := NewProfile(nil, "profile")
+	assert.Equal(t, "profile", profile.Kind())
+
+	group := NewGroup(nil, "group")
+	assert.Equal(t, "group", group.Kind())
+}
+
+func TestScheduleVersion2(t *testing.T) {
+	const content = `
+version: "2"
+
+groups:
+  two-profiles:
+    profiles:
+      - profile-schedule-inline
+      - profile-schedule-struct
+
+profiles:
+  default-inline:
+    backup:
+      schedule-permission: "user"
+
+  default-struct:
+    backup:
+      schedule:
+        permission: "user"
+
+  profile-schedule-inline:
+    backup:
+      schedule: daily
+
+  profile-schedule-struct:
+    backup:
+      schedule:
+        at: weekly
+
+`
+	cfg, err := Load(bytes.NewBufferString(content), FormatYAML)
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
+
+	testCases := []struct {
+		name      string
+		err       error
+		schedules map[string]*Schedule
+	}{
+		{
+			name:      "",
+			err:       ErrNotFound,
+			schedules: map[string]*Schedule{},
+		},
+		{
+			name: "profile-schedule-inline",
+			schedules: map[string]*Schedule{
+				"backup": {
+					ScheduleConfig: ScheduleConfig{
+						normalized:         true,
+						origin:             ScheduleOrigin("profile-schedule-inline", constants.CommandBackup),
+						Schedules:          []string{"daily"},
+						ScheduleBaseConfig: scheduleBaseConfigDefaults,
+					},
+					Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-schedule-inline"},
+				},
+			},
+		},
+		{
+			name: "profile-schedule-struct",
+			schedules: map[string]*Schedule{
+				"backup": {
+					ScheduleConfig: ScheduleConfig{
+						normalized:         true,
+						origin:             ScheduleOrigin("profile-schedule-struct", constants.CommandBackup),
+						Schedules:          []string{"weekly"},
+						ScheduleBaseConfig: scheduleBaseConfigDefaults,
+					},
+					Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-schedule-struct"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			profile, err := cfg.GetProfile(tc.name)
+			if tc.err != nil {
+				assert.Nil(t, profile)
+				assert.ErrorIs(t, err, tc.err)
+				return
+			}
+			assert.NotNil(t, profile)
+			assert.NoError(t, err)
+
+			schedules := profile.Schedules()
+			assert.Equal(t, tc.schedules, schedules)
+		})
+	}
 }
