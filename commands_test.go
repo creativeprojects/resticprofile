@@ -92,7 +92,7 @@ schedule = "daily"
 
 	// Test that non-existent profiles causes an error
 	_, _, notFoundErr := getProfileScheduleJobs(cfg, commandLineFlags{name: "non-existent"})
-	assert.EqualError(t, notFoundErr, "profile 'non-existent' not found")
+	assert.ErrorIs(t, notFoundErr, config.ErrNotFound)
 
 	// Test that non-existent schedule causes no error at first
 	{

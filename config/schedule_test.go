@@ -390,3 +390,11 @@ func TestScheduleFlags(t *testing.T) {
 	assert.Equal(t, "test", flag)
 	assert.True(t, found)
 }
+
+func TestScheduleKind(t *testing.T) {
+	profile := NewProfile(nil, "profile")
+	assert.Equal(t, "profile", profile.Kind())
+
+	group := NewGroup(nil, "group")
+	assert.Equal(t, "group", group.Kind())
+}

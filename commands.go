@@ -94,7 +94,7 @@ func getOwnCommands() []ownCommand {
 		{
 			name:              "schedule",
 			description:       "schedule jobs from a profile or group (or of all profiles and groups)",
-			longDescription:   "The \"schedule\" command registers declared schedules of the selected profile (or of all profiles) as scheduled jobs within the scheduling service of the operating system",
+			longDescription:   "The \"schedule\" command registers declared schedules of the selected profile or group (or of all profiles and groups) as scheduled jobs within the scheduling service of the operating system",
 			action:            createSchedule,
 			needConfiguration: true,
 			hide:              false,
@@ -114,7 +114,7 @@ func getOwnCommands() []ownCommand {
 		},
 		{
 			name:              "status",
-			description:       "display the status of scheduled jobs of a profile (or of all profiles)",
+			description:       "display the status of scheduled jobs of a profile or group (or of all profiles and groups)",
 			longDescription:   "The \"status\" command prints all declared schedules of the selected profile or group (or of all profiles and groups) and shows the status of related scheduled jobs in the scheduling service of the operating system",
 			action:            statusSchedule,
 			needConfiguration: true,
@@ -231,7 +231,7 @@ func showProfileOrGroup(output io.Writer, ctx commandContext) error {
 		profileOrGroup = group
 
 	} else {
-		return fmt.Errorf("profile or group '%s' not found", flags.name)
+		return fmt.Errorf("profile or group '%s': %w", flags.name, config.ErrNotFound)
 	}
 
 	// Show global

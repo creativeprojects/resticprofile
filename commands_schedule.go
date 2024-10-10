@@ -197,7 +197,7 @@ func getProfileScheduleJobs(c *config.Config, flags commandLineFlags) (*config.P
 	profile, err := c.GetProfile(flags.name)
 	if err != nil {
 		if errors.Is(err, config.ErrNotFound) {
-			return nil, nil, fmt.Errorf("profile '%s' not found", flags.name)
+			return nil, nil, fmt.Errorf("profile '%s': %w", flags.name, err)
 		}
 		return nil, nil, fmt.Errorf("cannot load profile '%s': %w", flags.name, err)
 	}

@@ -363,7 +363,7 @@ func (c *Config) DisplayConfigurationIssues() {
 		}
 	}
 	if len(duplicates) > 0 {
-		clog.Errorf("Duplicate profile and group names found: %s", strings.Join(duplicates, ", ")+". This could lead to some random behaviour.")
+		clog.Errorf("Duplicate profile and group names found: %s. This could lead to unpredictable behaviour.", strings.Join(duplicates, ", "))
 	}
 
 	// Reset issues
