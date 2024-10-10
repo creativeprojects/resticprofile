@@ -189,7 +189,7 @@ func getScheduleJobs(c *config.Config, flags commandLineFlags) (schedule.Schedul
 		return schedule.NewSchedulerConfig(global), schedules, group, nil
 
 	} else {
-		return nil, nil, nil, fmt.Errorf("profile or group %s: %w", flags.name, config.ErrNotFound)
+		return nil, nil, nil, fmt.Errorf("profile or group '%s': %w", flags.name, config.ErrNotFound)
 	}
 }
 
