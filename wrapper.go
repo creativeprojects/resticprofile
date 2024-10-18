@@ -435,7 +435,10 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 		return fmt.Sprintf("starting command: %s %s%s", r.ctx.binary, strings.Join(publicArguments, " "), wd)
 	})
 
-	rCommand := newShellCommand(r.ctx.binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
+	// creates an argument to escape the path properly
+	binary := shell.NewArg(r.ctx.binary, shell.ArgConfigEscape).String()
+
+	rCommand := newShellCommand(binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = term.GetOutput()
