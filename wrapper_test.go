@@ -1730,6 +1730,9 @@ func TestCopySnapshot(t *testing.T) {
 }
 
 func TestPrepareCommandShouldEscapeBinary(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("not supported on Windows")
+	}
 	t.Parallel()
 
 	profile := config.NewProfile(&config.Config{}, "name")
@@ -1741,5 +1744,5 @@ func TestPrepareCommandShouldEscapeBinary(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	args := shell.NewArgs()
 	cmd := wrapper.prepareCommand("backup", args, false)
-	assert.Equal(t, `/full\ path\ to/restic`, cmd.command) // TODO does not work on Windows
+	assert.Equal(t, `/full\ path\ to/restic`, cmd.command)
 }
