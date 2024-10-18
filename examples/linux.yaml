@@ -1,13 +1,17 @@
-# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config.json
 
 version: "1"
 
 global:
-    default-command: version
+    default-command: snapshots
     initialize: false
     priority: low
     systemd-unit-template: sample.service
     prevent-sleep: false
+    ionice: true
+    ionice-class: 3
+    ionice-level: 7
+    nice: 19
 
 default:
     password-file: key
@@ -57,12 +61,12 @@ test2:
     backup:
         source: ./
         schedule: "*:05,20,35,50"
-        schedule-permission: system
+        schedule-permission: user
         schedule-log: backup-test2.log
         run-after: "chown -R $SUDO_USER $HOME/.cache/restic /tmp/backup"
     check:
         schedule: "*-*-2"
-        schedule-permission: system
+        schedule-permission: user
         schedule-log: check-test2.log
 
 test3:

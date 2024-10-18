@@ -357,9 +357,9 @@ func TestSchemaForPropertySet(t *testing.T) {
 
 	t.Run("AdditionalProperties", func(t *testing.T) {
 		s := schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) { m.EXPECT().IsClosed().Return(false) }))
-		assert.True(t, s.AdditionalProperties)
+		assert.Equal(t, true, s.AdditionalProperties)
 		s = schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) { m.EXPECT().IsClosed().Return(true) }))
-		assert.False(t, s.AdditionalProperties)
+		assert.Equal(t, false, s.AdditionalProperties)
 	})
 
 	t.Run("TypedAdditionalProperty", func(t *testing.T) {
@@ -374,7 +374,7 @@ func TestSchemaForPropertySet(t *testing.T) {
 			m.EXPECT().OtherPropertyInfo().Return(pi)
 		}))
 
-		assert.False(t, s.AdditionalProperties)
+		assert.Equal(t, false, s.AdditionalProperties)
 		assert.Equal(t, newSchemaString(), s.PatternProperties[matchAll])
 	})
 

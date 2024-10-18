@@ -221,6 +221,12 @@ func TestVerify(t *testing.T) {
 		obj.Properties["first"] = newSchemaString()
 		assert.NoError(t, obj.verify())
 
+		assert.Equal(t, false, obj.AdditionalProperties)
+		obj.AdditionalProperties = "-"
+		assert.ErrorContains(t, obj.verify(), `additionalProperties must be nil, boolean or SchemaType`)
+		obj.AdditionalProperties = newSchemaString()
+		assert.NoError(t, obj.verify())
+
 		testBase(t, obj.base())
 	})
 

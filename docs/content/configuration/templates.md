@@ -616,7 +616,7 @@ The following functions can be used to encode data (e.g. when dealing with arbit
 * `{{ "plain" | base64 }}` => `cGxhaW4=` - Base64 encoded input
 * `{{ "plain" | hex }}` => `706c61696e` - Hexadecimal encoded input
 
-{{% notice hint %}}
+{{% notice style="tip" %}}
 Encode with `js` when creating **strings** in *YAML*, *TOML* or *JSON* configuration files, e.g.: `"{{ .Env.MY_VAR | js }}"`. 
 This ensures the markup remains correct and can be parsed regardless of the input data.
 {{% /notice %}}

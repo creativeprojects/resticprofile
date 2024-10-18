@@ -2,6 +2,8 @@ version: 2
 
 project_name: resticprofile
 
+version: 2
+
 before:
   hooks:
     - go mod download

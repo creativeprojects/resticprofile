@@ -592,6 +592,6 @@ default {
 {{% /tab %}}
 {{< /tabs >}}
 
-{{% notice style="hint" %}}
+{{% notice style="tip" %}}
 Use `$$` to escape a single `$` in configuration values that support variable expansion. E.g. on Windows you might want to exclude `$RECYCLE.BIN`. Specify it as: `exclude = ["$$RECYCLE.BIN"]`.
 {{% /notice %}}

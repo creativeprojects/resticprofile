@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -16,9 +17,10 @@ import (
 const (
 	// for best compatibility the schema is mostly "draft-07", but some new vocabulary of 2019-09 is used
 	jsonSchemaVersion    = "https://json-schema.org/draft/2019-09/schema"
-	schemaUrlTemplate    = "/resticprofile/jsonschema/config-%d%s.json"
+	schemaUrlTemplate    = "%sconfig-%d%s.json"
 	referenceUrlTemplate = "#/$defs/%s"
 	arrayTitleSuffix     = "..."
+	defaultBaseURL       = "https://creativeprojects.github.io/resticprofile/jsonschema/"
 )
 
 type schemaRoot struct {
@@ -47,9 +49,13 @@ func newSchema(version config.Version, id string, content *schemaObject) (root *
 		if len(id) > 0 {
 			id = fmt.Sprintf("-restic-%s", strings.ReplaceAll(id, ".", "-"))
 		}
+		baseURL := os.Getenv("SCHEMA_BASE_URL")
+		if len(baseURL) == 0 {
+			baseURL = defaultBaseURL
+		}
 		root = &schemaRoot{
 			Schema:       jsonSchemaVersion,
-			Id:           fmt.Sprintf(schemaUrlTemplate, version, id),
+			Id:           fmt.Sprintf(schemaUrlTemplate, baseURL, version, id),
 			Defs:         make(map[string]SchemaType),
 			schemaObject: *content,
 		}
@@ -259,7 +265,7 @@ func newSchemaBool() *schemaTypeBase {
 
 type schemaObject struct {
 	schemaTypeBase
-	AdditionalProperties bool                  `json:"additionalProperties"`
+	AdditionalProperties any                   `json:"additionalProperties,omitempty"`
 	PatternProperties    map[string]SchemaType `json:"patternProperties,omitempty"`
 	Properties           map[string]SchemaType `json:"properties,omitempty"`
 	Required             []string              `json:"required,omitempty"`
@@ -268,9 +274,10 @@ type schemaObject struct {
 
 func newSchemaObject() *schemaObject {
 	return withBaseType(&schemaObject{
-		PatternProperties: make(map[string]SchemaType),
-		Properties:        make(map[string]SchemaType),
-		DependentRequired: make(map[string][]string),
+		AdditionalProperties: false,
+		PatternProperties:    make(map[string]SchemaType),
+		Properties:           make(map[string]SchemaType),
+		DependentRequired:    make(map[string][]string),
 	}, "object")
 }
 
@@ -289,6 +296,15 @@ func (s *schemaObject) verify() (err error) {
 			break
 		} else if st == nil {
 			err = fmt.Errorf("type of %q in properties is undefined", name)
+		}
+	}
+	if err == nil {
+		switch s.AdditionalProperties.(type) {
+		case nil:
+		case bool:
+		case SchemaType:
+		default:
+			err = fmt.Errorf("additionalProperties must be nil, boolean or SchemaType")
 		}
 	}
 	if err == nil {
@@ -431,6 +447,9 @@ func internalWalkTypes(into map[SchemaType]bool, current SchemaType, callback fu
 			}
 			for name, property := range t.PatternProperties {
 				t.PatternProperties[name] = internalWalkTypes(into, property, callback)
+			}
+			if item, ok := t.AdditionalProperties.(SchemaType); ok {
+				t.AdditionalProperties = internalWalkTypes(into, item, callback)
 			}
 		case *schemaArray:
 			t.Items = internalWalkTypes(into, t.Items, callback)
