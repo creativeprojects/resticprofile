@@ -23,7 +23,7 @@ func RunElevated(port int) error {
 		constants.FlagAsChild,
 		constants.FlagPort,
 		port,
-		strings.Join(os.Args[1:], " "),
+		parseArguments(os.Args[1:]),
 	)
 
 	verbPtr, _ := syscall.UTF16PtrFromString(verb)
@@ -48,4 +48,19 @@ func GetConsoleWindow() windows.Handle {
 	getConsoleWindow := kernel32.NewProc("GetConsoleWindow")
 	ret, _, _ := getConsoleWindow.Call()
 	return windows.Handle(ret)
+}
+
+// parseArguments takes a slice of strings as input and returns a single string.
+// It processes each argument, and if an argument contains a space, it wraps it in double quotes.
+// Finally, it joins all the processed arguments into a single string separated by spaces.
+func parseArguments(args []string) string {
+	output := make([]string, len(args))
+	for i, arg := range args {
+		if strings.Contains(arg, " ") {
+			output[i] = `"` + arg + `"`
+			continue
+		}
+		output[i] = arg
+	}
+	return strings.Join(output, " ")
 }
