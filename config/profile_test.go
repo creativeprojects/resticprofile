@@ -996,10 +996,16 @@ func TestSchedules(t *testing.T) {
 	}
 
 	sections := NewProfile(nil, "").SchedulableCommands()
-	require.GreaterOrEqual(t, len(sections), 6)
+	for _, command := range []string{"backup", "check", "forget", "prune", "copy"} {
+		assert.Contains(t, sections, command)
+	}
 
 	require.NoError(t, os.Setenv("RESTIC_ANY1", "xyz"))
 	require.NoError(t, os.Setenv("RESTIC_ANY2", "xyz"))
+	t.Cleanup(func() {
+		_ = os.Unsetenv("RESTIC_ANY1")
+		_ = os.Unsetenv("RESTIC_ANY2")
+	})
 
 	for _, command := range sections {
 		t.Run(command, func(t *testing.T) {

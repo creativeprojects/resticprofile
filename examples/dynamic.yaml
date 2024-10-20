@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=http://localhost:1313/resticprofile/jsonschema/config.json
 
-# {{ $databases := .Env.databases | split " " }}
+# {{ $databases := list }}
+# {{ if .Env.databases }}
+#   {{ $databases = .Env.databases | split " " }}
+# {{ end }}
 
 version: "2"
 

@@ -129,7 +129,7 @@ func runProfile(ctx *Context) error {
 	}
 	ctx.profile = profile
 
-	displayProfileDeprecationNotices(profile)
+	displayDeprecationNotices(profile)
 	ctx.config.DisplayConfigurationIssues()
 
 	// Send the quiet/verbose down to restic as well (override profile configuration)
