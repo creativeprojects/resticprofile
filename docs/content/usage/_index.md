@@ -1,11 +1,10 @@
-+++
-archetype = "chapter"
-pre = "<b>3. </b>"
-title = "Using resticprofile"
-weight = 3
-tags = ["v0.17.0"]
-+++
-
+---
+archetype: "chapter"
+pre: "<b>3. </b>"
+title: "Using resticprofile"
+weight: 3
+# tags: ["v0.17.0"]
+---
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
 

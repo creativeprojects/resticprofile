@@ -1,23 +1,37 @@
 <style>
-    a#logo {
-      color: #282828;
-      color: var(--MENU-SECTIONS-BG-color);
-      font-family: 'Work Sans', 'Helvetica', 'Tahoma', 'Geneva', 'Arial', sans-serif;
-      font-size: 30px;
-      font-weight: 300;
-      margin-top: -13px;
-      text-transform: uppercase;
-      white-space: nowrap;
+  a#R-logo {
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease;
+  }
+
+  a#R-logo img {
+    max-width: min(40%, 100px);
+    height: auto;
+    margin-right: 10px;
+  }
+
+  @media (max-width: 768px) {
+    a#R-logo img {
+      max-width: 30%;
     }
-    a#logo:hover {
-      color: #282828;
-      color: var(--MENU-SECTIONS-BG-color);
-    }
-    @media only all and (max-width: 59.938em) {
-      a#logo {
-        font-size: 25px;
-        margin-top: -3px;
-      }
-    }
+  }
+
+  a#R-logo span {
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a#R-logo .restic {
+    font-weight: bold;
+  }
 </style>
-<a id="logo" href="{{ .Site.Params.landingPageURL | default "/" | relLangURL }}">Resticprofile</a>
+<a id="R-logo" class="R-default" href="{{ partial "permalink.gotmpl" (dict "to" .Site.Home) }}">
+  <img src="/images/logo.png" alt="ResticProfile Logo" />
+  <span>
+    <span class="restic">Restic</span>
+    <span class="profile">Profile</span>
+  </span>
+</a>

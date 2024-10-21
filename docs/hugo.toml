@@ -8,18 +8,23 @@ publishdir = "../public/"
 
 # For search functionality
 [outputs]
-  home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
+  home = [ "html", "rss" ]
 
 [params]
-  themeVariant = [ "relearn-dark", "relearn-light"  ]
+  # themeVariant = [ "relearn-dark", "relearn-light"  ]
+  themeVariant = [
+    { identifier = 'relearn-auto',  name = 'Relearn Light/Dark', auto = [] },
+    { identifier = 'relearn-light'  },
+    { identifier = 'relearn-dark'   },
+  ]
   collapsibleMenu = true
   externalLinkTarget = "_blank"
   ordersectionsby = "weight"
 
-[[menu.shortcuts]]
-  name = "<i class='fas fa-tags'></i> Tags"
-  url = "/tags"
-  weight = 10
+# [[menu.shortcuts]]
+#   name = "<i class='fas fa-tags'></i> Tags"
+#   url = "/tags"
+#   weight = 10
 
 [[menu.shortcuts]]
   name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
