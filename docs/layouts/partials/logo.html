@@ -1,23 +1,14 @@
 <style>
-    a#logo {
-      color: #282828;
-      color: var(--MENU-SECTIONS-BG-color);
-      font-family: 'Work Sans', 'Helvetica', 'Tahoma', 'Geneva', 'Arial', sans-serif;
-      font-size: 30px;
-      font-weight: 300;
-      margin-top: -13px;
-      text-transform: uppercase;
-      white-space: nowrap;
+    a#R-logo {
+      display: flex;
+      vertical-align: middle;
     }
-    a#logo:hover {
-      color: #282828;
-      color: var(--MENU-SECTIONS-BG-color);
-    }
-    @media only all and (max-width: 59.938em) {
-      a#logo {
-        font-size: 25px;
-        margin-top: -3px;
-      }
+    a#R-logo img {
+      max-width: 40%;
+      max-height: 40%;
     }
 </style>
-<a id="logo" href="{{ .Site.Params.landingPageURL | default "/" | relLangURL }}"><img src="/images/logo.png" width="50%" height="50%"/></a>
+<a id="R-logo" class="R-default" href="{{ partial "permalink.gotmpl" (dict "to" .Site.Home) }}">
+  <img src="/images/logo.png" />
+  Restic<br />Profile
+</a>
