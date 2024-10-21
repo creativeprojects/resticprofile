@@ -2,6 +2,8 @@ module github.com/creativeprojects/resticprofile
 
 go 1.23.0
 
+replace github.com/mitchellh/mapstructure => github.com/go-viper/mapstructure v1.6.0
+
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/adrg/xdg v0.5.0
