@@ -73,6 +73,8 @@ func startProfileOrGroup(ctx *Context, runProfile func(ctx *Context) error) erro
 	return nil
 }
 
+// openProfile loads a profile from the configuration.
+// Please note a cleanup function is always provided, even on returning a error.
 func openProfile(c *config.Config, profileName string) (profile *config.Profile, cleanup func(), err error) {
 	done := false
 	for attempts := 3; attempts > 0 && !done; attempts-- {

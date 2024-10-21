@@ -252,6 +252,8 @@ func deleteLine(crontab string, entry Entry) (string, bool, error) {
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
 	// or a line like:
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile
+	// also with quotes around the config file:
+	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config "config.yaml" run-schedule backup@profile
 	legacy := fmt.Sprintf(`--name %s[^\n]* %s`,
 		regexp.QuoteMeta(entry.profileName),
 		regexp.QuoteMeta(entry.commandName),
@@ -260,7 +262,7 @@ func deleteLine(crontab string, entry Entry) (string, bool, error) {
 		regexp.QuoteMeta(entry.commandName),
 		regexp.QuoteMeta(entry.profileName),
 	)
-	search := fmt.Sprintf(`(?m)^[^#][^\n]+resticprofile[^\n]+--config %s (%s|%s)\n`,
+	search := fmt.Sprintf(`(?m)^[^#][^\n]+resticprofile[^\n]+--config ["]?%s["]? (%s|%s)\n`,
 		regexp.QuoteMeta(entry.configFile), legacy, runSchedule)
 
 	pattern, err := regexp.Compile(search)
@@ -268,7 +270,7 @@ func deleteLine(crontab string, entry Entry) (string, bool, error) {
 		return crontab, false, err
 	}
 	if pattern.MatchString(crontab) {
-		// al least one was found
+		// at least one was found
 		return pattern.ReplaceAllString(crontab, ""), true, nil
 	}
 	return crontab, false, nil

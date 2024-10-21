@@ -72,7 +72,10 @@ func TestDeleteLine(t *testing.T) {
 		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup\n", true},
 		{"#\n#\n#\n# 00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", false},
 		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
+		{"#\n#\n#\n# 00,30 * * * *	/home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n00,30 * * * *	/home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
 		{"#\n#\n#\n00,30 * * * *	user	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
+		{"#\n#\n#\n00,30 * * * *	user	/home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
 	}
 
 	for _, testRun := range testData {
