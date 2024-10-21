@@ -1,14 +1,37 @@
 <style>
-    a#R-logo {
-      display: flex;
-      vertical-align: middle;
-    }
+  a#R-logo {
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease;
+  }
+
+  a#R-logo img {
+    max-width: min(40%, 100px);
+    height: auto;
+    margin-right: 10px;
+  }
+
+  @media (max-width: 768px) {
     a#R-logo img {
-      max-width: 40%;
-      max-height: 40%;
+      max-width: 30%;
     }
+  }
+
+  a#R-logo span {
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a#R-logo .restic {
+    font-weight: bold;
+  }
 </style>
 <a id="R-logo" class="R-default" href="{{ partial "permalink.gotmpl" (dict "to" .Site.Home) }}">
-  <img src="/images/logo.png" />
-  Restic<br />Profile
+  <img src="/images/logo.png" alt="ResticProfile Logo" />
+  <span>
+    <span class="restic">Restic</span>
+    <span class="profile">Profile</span>
+  </span>
 </a>

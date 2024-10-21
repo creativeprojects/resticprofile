@@ -1,5 +1,7 @@
 ---
 archetype: "home"
+title: resticprofile
+description: Configuration profiles manager for restic backup
 ---
 
 Configuration profiles manager for [restic backup](https://restic.net/)

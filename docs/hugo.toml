@@ -8,7 +8,7 @@ publishdir = "../public/"
 
 # For search functionality
 [outputs]
-  home = [ "html", "rss", "print" ]
+  home = [ "html", "rss" ]
 
 [params]
   # themeVariant = [ "relearn-dark", "relearn-light"  ]
@@ -21,10 +21,10 @@ publishdir = "../public/"
   externalLinkTarget = "_blank"
   ordersectionsby = "weight"
 
-[[menu.shortcuts]]
-  name = "<i class='fas fa-tags'></i> Tags"
-  url = "/tags"
-  weight = 10
+# [[menu.shortcuts]]
+#   name = "<i class='fas fa-tags'></i> Tags"
+#   url = "/tags"
+#   weight = 10
 
 [[menu.shortcuts]]
   name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
