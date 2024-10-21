@@ -1,7 +1,7 @@
 ---
 title: "Schedule Commands"
 weight: 20
-tags: ["v0.25.0"]
+tags: ["v0.25.0", "v0.29.0"]
 ---
 
 
@@ -10,7 +10,13 @@ resticprofile accepts these internal commands:
 - **unschedule**
 - **status**
 
-These resticprofile commands either operate on the profile selected by `--name`, on the profiles selected by a group, or on all profiles when the flag `--all` is passed on the command line.
+These resticprofile commands either operate on the profile selected by `--name`, on the profiles selected by a group (before `v0.29.0`), on groups (from v0.29.0), or on all profiles when the flag `--all` is passed on the command line.
+
+{{% notice style="warning" %}}
+Before version `0.29.0`, the `--name` flag on a group was used to select all profiles in the group for scheduling them. It was similar to running the schedule commands on each profile individually.
+
+Version `0.29.0` introduced group scheduling: The group schedule works at the group level (and will run all profiles one by one when the group schedule is triggered).
+{{% /notice %}}
 
 Examples:
 ```shell
@@ -30,10 +36,15 @@ Please note on systemd, we need to `start` the timer once to enable it. Otherwis
 Also if you use the `--all` flag to schedule all your profiles at once, make sure you use only the `user` mode or `system` mode. A combination of both would not schedule the tasks properly:
 - if the user is not privileged, only the `user` tasks will be scheduled
 - if the user **is** privileged, **all schedule will end-up as a `system` schedule**
+{{% notice style=tip %}}
+resticprofile **does not keep a state** of the schedule and unschedule commands. If you need to make many changes in your profiles (like moving, renaming, deleting etc.) **it's recommended to unschedule everything using the `--all` flag before changing your profiles.**
+{{% /notice %}}
 
 ### unschedule command
 
 Remove all the schedules defined on the selected profile or profiles.
+
+Please note, using the `--all` flag won't remove schedules on deleted (or renamed) profiles. **resticprofile does not keep a state of the schedules.**
 
 ### status command
 

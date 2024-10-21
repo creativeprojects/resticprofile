@@ -73,6 +73,8 @@ func startProfileOrGroup(ctx *Context, runProfile func(ctx *Context) error) erro
 	return nil
 }
 
+// openProfile loads a profile from the configuration.
+// Please note a cleanup function is always provided, even on returning a error.
 func openProfile(c *config.Config, profileName string) (profile *config.Profile, cleanup func(), err error) {
 	done := false
 	for attempts := 3; attempts > 0 && !done; attempts-- {
@@ -129,7 +131,7 @@ func runProfile(ctx *Context) error {
 	}
 	ctx.profile = profile
 
-	displayProfileDeprecationNotices(profile)
+	displayDeprecationNotices(profile)
 	ctx.config.DisplayConfigurationIssues()
 
 	// Send the quiet/verbose down to restic as well (override profile configuration)

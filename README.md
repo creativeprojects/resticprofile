@@ -40,6 +40,8 @@ With resticprofile:
 * **[new for v0.18.0]** Send resticprofile logs to a syslog server
 * **[new for v0.19.0]** Preventing your system from idle sleeping
 * **[new for v0.21.0]** See the help from both restic and resticprofile via the `help` command or `-h` flag
+* **[new for v0.24.0]** Don't schedule a job when the system is running on battery
+* **[new for v0.29.0]** Scheduling a group of profiles is finally available (configuration `v2` only)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0
@@ -58,3 +60,9 @@ We recommend you start by reading the [getting started](https://creativeprojects
 # Using resticprofile
 
 The full documentation has been moved to [creativeprojects.github.io](https://creativeprojects.github.io/resticprofile/)
+
+# Survey
+
+What are your most important features?
+Please fill in the [survey](https://github.com/creativeprojects/resticprofile/issues/415)
+

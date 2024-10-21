@@ -53,15 +53,14 @@ schedule = "daily"
 	assert.Nil(t, err)
 
 	// Test that errors from getScheduleJobs are passed through
-	_, _, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "non-existent"})
-	assert.EqualError(t, notFoundErr, "profile 'non-existent' not found")
+	_, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "non-existent"})
+	assert.ErrorIs(t, notFoundErr, config.ErrNotFound)
 
 	// Test that declared and declarable job configs are returned
-	_, profile, schedules, err := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "default"})
+	_, schedules, err := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "default"})
 	assert.Nil(t, err)
-	assert.NotNil(t, profile)
 	assert.NotEmpty(t, schedules)
-	assert.Len(t, schedules, len(profile.SchedulableCommands()))
+	assert.Len(t, schedules, len(config.NewProfile(parsedConfig, "test").SchedulableCommands()))
 
 	declaredCount := 0
 
@@ -92,13 +91,13 @@ schedule = "daily"
 	assert.Nil(t, err)
 
 	// Test that non-existent profiles causes an error
-	_, _, _, notFoundErr := getScheduleJobs(cfg, commandLineFlags{name: "non-existent"})
-	assert.EqualError(t, notFoundErr, "profile 'non-existent' not found")
+	_, _, notFoundErr := getProfileScheduleJobs(cfg, commandLineFlags{name: "non-existent"})
+	assert.ErrorIs(t, notFoundErr, config.ErrNotFound)
 
 	// Test that non-existent schedule causes no error at first
 	{
 		flags := commandLineFlags{name: "other"}
-		_, _, schedules, err := getScheduleJobs(cfg, flags)
+		_, schedules, err := getProfileScheduleJobs(cfg, flags)
 		assert.Nil(t, err)
 
 		err = requireScheduleJobs(schedules, flags)
@@ -108,7 +107,7 @@ schedule = "daily"
 	// Test that only declared job configs are returned
 	{
 		flags := commandLineFlags{name: "default"}
-		_, profile, schedules, err := getScheduleJobs(cfg, flags)
+		profile, schedules, err := getProfileScheduleJobs(cfg, flags)
 		assert.Nil(t, err)
 
 		err = requireScheduleJobs(schedules, flags)
@@ -137,26 +136,33 @@ _ = 0
 _ = 0
 `
 	allProfiles := []string{"default", "2nd", "3rd"}
+	allGroups := []string{"others", "default"}
+	allProfilesAndGroups := append(allProfiles, allGroups...)
 
 	cfg, err := config.Load(bytes.NewBufferString(testConfig), "toml")
 	assert.Nil(t, err)
 	for _, p := range allProfiles {
 		assert.True(t, cfg.HasProfile(p))
 	}
+	for _, g := range allGroups {
+		assert.True(t, cfg.HasProfileGroup(g))
+	}
 
 	// Select --all
-	assert.ElementsMatch(t, allProfiles, selectProfiles(cfg, commandLineFlags{}, []string{"--all"}))
-
-	// Select profiles of group
-	assert.ElementsMatch(t, []string{"2nd", "3rd"}, selectProfiles(cfg, commandLineFlags{name: "others"}, nil))
+	assert.ElementsMatch(t, allProfilesAndGroups, selectProfilesAndGroups(cfg, commandLineFlags{}, []string{"--all"}))
 
 	// Select profiles by name
 	for _, p := range allProfiles {
-		assert.ElementsMatch(t, []string{p}, selectProfiles(cfg, commandLineFlags{name: p}, nil))
+		assert.ElementsMatch(t, []string{p}, selectProfilesAndGroups(cfg, commandLineFlags{name: p}, nil))
+	}
+
+	// Select groups by name
+	for _, g := range allGroups {
+		assert.ElementsMatch(t, []string{g}, selectProfilesAndGroups(cfg, commandLineFlags{name: g}, nil))
 	}
 
 	// Select non-existing profile or group
-	assert.ElementsMatch(t, []string{"non-existing"}, selectProfiles(cfg, commandLineFlags{name: "non-existing"}, nil))
+	assert.ElementsMatch(t, []string{"non-existing"}, selectProfilesAndGroups(cfg, commandLineFlags{name: "non-existing"}, nil))
 }
 
 func TestFlagsForProfile(t *testing.T) {
@@ -314,7 +320,7 @@ schedule backup@default:
     at:                   daily
     permission:           auto
     command-output:       auto
-    priority:             background
+    priority:             standard
     lock-mode:            default
     capture-environment:  RESTIC_*
 
@@ -322,7 +328,7 @@ schedule check@default:
     at:                   weekly
     permission:           auto
     command-output:       auto
-    priority:             background
+    priority:             standard
     lock-mode:            default
     capture-environment:  RESTIC_*
 `)
