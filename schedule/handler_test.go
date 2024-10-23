@@ -1,14 +1,14 @@
 package schedule
 
 import (
-	"runtime"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLookupExistingBinary(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		t.Skip()
 	}
 	err := lookupBinary("sh", "sh")
@@ -16,7 +16,7 @@ func TestLookupExistingBinary(t *testing.T) {
 }
 
 func TestLookupNonExistingBinary(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		t.Skip()
 	}
 	err := lookupBinary("something", "almost_certain_not_to_be_available")

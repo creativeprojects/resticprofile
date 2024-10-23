@@ -144,7 +144,6 @@ Do you want to start it now?`
 
 func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *LaunchdJob {
 	name := getJobName(job.ProfileName, job.CommandName)
-	args := job.Arguments
 	// we always set the log file in the job settings as a default
 	// if changed in the configuration via schedule-log the standard output will be empty anyway
 	logfile := name + ".log"
@@ -165,7 +164,7 @@ func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event)
 	launchdJob := &LaunchdJob{
 		Label:                 name,
 		Program:               job.Command,
-		ProgramArguments:      append([]string{job.Command, "--no-prio"}, args...),
+		ProgramArguments:      append([]string{job.Command, "--no-prio"}, job.Arguments.RawArgs()...),
 		StandardOutPath:       logfile,
 		StandardErrorPath:     logfile,
 		WorkingDirectory:      job.WorkingDirectory,

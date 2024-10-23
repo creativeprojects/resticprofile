@@ -14,7 +14,7 @@ type Config struct {
 	Permission              string
 	WorkingDirectory        string
 	Command                 string // path to resticprofile executable
-	Arguments               []string
+	Arguments               CommandArguments
 	Environment             []string
 	JobDescription          string
 	TimerDescription        string
@@ -37,10 +37,12 @@ func NewRemoveOnlyConfig(profileName, commandName string) *Config {
 	}
 }
 
+// SetCommand sets the command details for scheduling. Arguments are automatically
+// processed to ensure proper handling of paths with spaces and special characters.
 func (s *Config) SetCommand(wd, command string, args []string) {
 	s.WorkingDirectory = wd
 	s.Command = command
-	s.Arguments = args
+	s.Arguments = NewCommandArguments(args)
 }
 
 // Priority is either "background" or "standard"

@@ -1,8 +1,6 @@
 package schedule
 
 import (
-	"strings"
-
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
@@ -68,7 +66,7 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 			job.ConfigFile,
 			job.ProfileName,
 			job.CommandName,
-			job.Command+" "+strings.Join(job.Arguments, " "),
+			job.Command+" "+job.Arguments.String(),
 			job.WorkingDirectory,
 		)
 		if h.config.Username != "" {
@@ -92,7 +90,7 @@ func (h *HandlerCrond) RemoveJob(job *Config, permission string) error {
 			job.ConfigFile,
 			job.ProfileName,
 			job.CommandName,
-			job.Command+" "+strings.Join(job.Arguments, " "),
+			job.Command+" "+job.Arguments.String(),
 			job.WorkingDirectory,
 		),
 	}

@@ -349,7 +349,7 @@ func TestCreationOfTasks(t *testing.T) {
 				ProfileName:      "test",
 				CommandName:      strconv.Itoa(count),
 				Command:          "echo",
-				Arguments:        []string{"hello"},
+				Arguments:        "hello there",
 				WorkingDirectory: "C:\\",
 				JobDescription:   fixture.description,
 			}

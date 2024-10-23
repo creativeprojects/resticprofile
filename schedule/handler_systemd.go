@@ -107,7 +107,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 	}
 
 	err := systemd.Generate(systemd.Config{
-		CommandLine:          job.Command + " " + strings.Join(append([]string{"--no-prio"}, job.Arguments...), " "),
+		CommandLine:          job.Command + " " + strings.Join(append([]string{"--no-prio"}, job.Arguments.RawArgs()...), " "),
 		Environment:          job.Environment,
 		WorkingDirectory:     job.WorkingDirectory,
 		Title:                job.ProfileName,

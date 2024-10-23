@@ -33,7 +33,7 @@ func scheduleJobs(handler schedule.Handler, profileName string, configs []*confi
 		args := []string{
 			"--no-ansi",
 			"--config",
-			`"` + scheduleConfig.ConfigFile + `"`,
+			scheduleConfig.ConfigFile,
 			"run-schedule",
 			scheduleName,
 		}
@@ -141,7 +141,7 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		Permission:              sched.Permission,
 		WorkingDirectory:        "",
 		Command:                 "",
-		Arguments:               []string{},
+		Arguments:               schedule.NewCommandArguments(nil),
 		Environment:             sched.Environment,
 		JobDescription:          "",
 		TimerDescription:        "",
