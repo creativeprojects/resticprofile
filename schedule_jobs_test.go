@@ -42,12 +42,13 @@ func TestSimpleScheduleJob(t *testing.T) {
 		mock.AnythingOfType("[]*calendar.Event"),
 		mock.AnythingOfType("string")).
 		RunAndReturn(func(scheduleConfig *schedule.Config, events []*calendar.Event, permission string) error {
-			assert.Equal(t, []string{"--no-ansi", "--config", `"config.file"`, "run-schedule", "backup@profile"}, scheduleConfig.Arguments)
+			assert.Equal(t, []string{"--no-ansi", "--config", `config file`, "run-schedule", "backup@profile"}, scheduleConfig.Arguments.RawArgs())
+			assert.Equal(t, `--no-ansi --config "config file" run-schedule backup@profile`, scheduleConfig.Arguments.String())
 			return nil
 		})
 
 	scheduleConfig := configForJob("backup", "sched")
-	scheduleConfig.ConfigFile = "config.file"
+	scheduleConfig.ConfigFile = "config file"
 	err := scheduleJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
