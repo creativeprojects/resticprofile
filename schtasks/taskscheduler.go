@@ -114,7 +114,7 @@ func createUserTask(config *Config, schedules []*calendar.Event) error {
 	task := taskService.NewTaskDefinition()
 	task.AddAction(taskmaster.ExecAction{
 		Path:       config.Command,
-		Args:       strings.Join(config.Arguments, " "),
+		Args:       config.Arguments,
 		WorkingDir: config.WorkingDirectory,
 	})
 	task.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
@@ -154,7 +154,7 @@ func updateUserTask(task taskmaster.RegisteredTask, config *Config, schedules []
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
 	task.Definition.AddAction(taskmaster.ExecAction{
 		Path:       config.Command,
-		Args:       strings.Join(config.Arguments, " "),
+		Args:       config.Arguments,
 		WorkingDir: config.WorkingDirectory,
 	})
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_PASSWORD
@@ -210,7 +210,7 @@ func createUserLoggedOnTask(config *Config, schedules []*calendar.Event) error {
 	task := taskService.NewTaskDefinition()
 	task.AddAction(taskmaster.ExecAction{
 		Path:       config.Command,
-		Args:       strings.Join(config.Arguments, " "),
+		Args:       config.Arguments,
 		WorkingDir: config.WorkingDirectory,
 	})
 	task.Principal.LogonType = taskmaster.TASK_LOGON_INTERACTIVE_TOKEN
@@ -244,7 +244,7 @@ func updateUserLoggedOnTask(task taskmaster.RegisteredTask, config *Config, sche
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
 	task.Definition.AddAction(taskmaster.ExecAction{
 		Path:       config.Command,
-		Args:       strings.Join(config.Arguments, " "),
+		Args:       config.Arguments,
 		WorkingDir: config.WorkingDirectory,
 	})
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_INTERACTIVE_TOKEN
@@ -278,7 +278,7 @@ func createSystemTask(config *Config, schedules []*calendar.Event) error {
 	task := taskService.NewTaskDefinition()
 	task.AddAction(taskmaster.ExecAction{
 		Path:       config.Command,
-		Args:       strings.Join(config.Arguments, " "),
+		Args:       config.Arguments,
 		WorkingDir: config.WorkingDirectory,
 	})
 	task.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT
@@ -307,7 +307,7 @@ func updateSystemTask(task taskmaster.RegisteredTask, config *Config, schedules 
 	task.Definition.Actions = make([]taskmaster.Action, 0, 1)
 	task.Definition.AddAction(taskmaster.ExecAction{
 		Path:       config.Command,
-		Args:       strings.Join(config.Arguments, " "),
+		Args:       config.Arguments,
 		WorkingDir: config.WorkingDirectory,
 	})
 	task.Definition.Principal.LogonType = taskmaster.TASK_LOGON_SERVICE_ACCOUNT

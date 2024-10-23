@@ -58,7 +58,7 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 		ProfileName:      job.ProfileName,
 		CommandName:      job.CommandName,
 		Command:          job.Command,
-		Arguments:        job.Arguments,
+		Arguments:        job.Arguments.String(),
 		WorkingDirectory: job.WorkingDirectory,
 		JobDescription:   job.JobDescription,
 	}
