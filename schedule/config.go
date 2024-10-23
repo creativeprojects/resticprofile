@@ -37,6 +37,8 @@ func NewRemoveOnlyConfig(profileName, commandName string) *Config {
 	}
 }
 
+// SetCommand sets the command details for scheduling. Arguments are automatically
+// processed to ensure proper handling of paths with spaces and special characters.
 func (s *Config) SetCommand(wd, command string, args []string) {
 	s.WorkingDirectory = wd
 	s.Command = command

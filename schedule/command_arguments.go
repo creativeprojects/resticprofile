@@ -13,7 +13,9 @@ func NewCommandArguments(args []string) CommandArguments {
 }
 
 func (ca CommandArguments) RawArgs() []string {
-	return ca.args
+	result := make([]string, len(ca.args))
+	copy(result, ca.args)
+	return result
 }
 
 // String returns the arguments as a string, with quotes around arguments that contain spaces
@@ -24,7 +26,7 @@ func (ca CommandArguments) String() string {
 
 	var n int
 	for _, elem := range ca.args {
-		n += len(elem) + 2 // add 2 if quotes are needed
+		n += len(elem) + 3 // add 2 if quotes are needed, plus 1 for the space
 	}
 
 	b := new(strings.Builder)

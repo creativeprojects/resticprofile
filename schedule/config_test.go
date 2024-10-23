@@ -36,6 +36,7 @@ func TestScheduleProperties(t *testing.T) {
 	assert.Equal(t, "command", schedule.Command)
 	assert.Equal(t, "home", schedule.WorkingDirectory)
 	assert.ElementsMatch(t, []string{"1", "2"}, schedule.Arguments.RawArgs())
+	assert.Equal(t, `1 2`, schedule.Arguments.String())
 	assert.Equal(t, []string{"test=dev"}, schedule.Environment)
 	assert.Equal(t, "background", schedule.GetPriority()) // default value
 }
