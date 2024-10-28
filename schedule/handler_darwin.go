@@ -117,26 +117,16 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	if _, noStart := job.GetFlag("no-start"); !noStart {
-		// ask the user if he wants to start the service now
+	if _, start := job.GetFlag("start"); start {
 		name := getJobName(job.ProfileName, job.CommandName)
-		message := `
-By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
-You have to start it manually the first time to accept the requests for access:
 
-%% %s %s %s
-
-Do you want to start it now?`
-		answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, launchdStart, name), true)
-		if answer {
-			// start the service
-			cmd := exec.Command(launchctlBin, launchdStart, name)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err = cmd.Run()
-			if err != nil {
-				return err
-			}
+		// start the service
+		cmd := exec.Command(launchctlBin, launchdStart, name)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			return err
 		}
 	}
 	return nil

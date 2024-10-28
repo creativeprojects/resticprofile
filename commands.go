@@ -101,7 +101,8 @@ func getOwnCommands() []ownCommand {
 			needConfiguration: true,
 			hide:              false,
 			flags: map[string]string{
-				"--no-start": "don't start the timer/service (systemd/launch only)",
+				"--no-start": "don't start the job after installing (systemd/launch only)",
+				"--start":    "start the job after installing (systemd/launch only)",
 				"--all":      "add all scheduled jobs of all profiles and groups",
 			},
 		},
