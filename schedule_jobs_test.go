@@ -140,7 +140,7 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
-		Return(schedule.ErrServiceNotFound)
+		Return(schedule.ErrScheduledJobNotFound)
 
 	scheduleConfig := configForJob("backup", "sched")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
@@ -154,7 +154,7 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
-		Return(schedule.ErrServiceNotFound)
+		Return(schedule.ErrScheduledJobNotFound)
 
 	scheduleConfig := configForJob("backup")
 	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})

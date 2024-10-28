@@ -74,7 +74,7 @@ func (h *HandlerWindows) RemoveJob(job *Config, permission string) error {
 	err := schtasks.Delete(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrNotRegistered) {
-			return ErrServiceNotFound
+			return ErrScheduledJobNotFound
 		}
 		return err
 	}
@@ -86,7 +86,7 @@ func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 	err := schtasks.Status(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrNotRegistered) {
-			return ErrServiceNotFound
+			return ErrScheduledJobNotFound
 		}
 		return err
 	}

@@ -77,10 +77,10 @@ func removeJobs(handler schedule.Handler, profileName string, configs []*config.
 		// Try to remove the job
 		err := job.Remove()
 		if err != nil {
-			if errors.Is(err, schedule.ErrServiceNotFound) {
+			if errors.Is(err, schedule.ErrScheduledJobNotFound) {
 				// Display a warning and keep going. Skip message for RemoveOnly jobs since they may not exist
 				if !job.RemoveOnly() {
-					clog.Warningf("service %s/%s not found", scheduleConfig.ProfileName, scheduleConfig.CommandName)
+					clog.Warningf("scheduled job %s/%s not found", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 				}
 				continue
 			}
@@ -108,14 +108,14 @@ func statusJobs(handler schedule.Handler, profileName string, configs []*config.
 		job := scheduler.NewJob(scheduleConfig)
 		err := job.Status()
 		if err != nil {
-			if errors.Is(err, schedule.ErrServiceNotFound) {
+			if errors.Is(err, schedule.ErrScheduledJobNotFound) {
 				// Display a warning and keep going
-				clog.Warningf("service %s/%s not found", scheduleConfig.ProfileName, scheduleConfig.CommandName)
+				clog.Warningf("scheduled job %s/%s not found", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 				continue
 			}
-			if errors.Is(err, schedule.ErrServiceNotRunning) {
+			if errors.Is(err, schedule.ErrScheduledJobNotRunning) {
 				// Display a warning and keep going
-				clog.Warningf("service %s/%s is not running", scheduleConfig.ProfileName, scheduleConfig.CommandName)
+				clog.Warningf("scheduled job %s/%s is not running", scheduleConfig.ProfileName, scheduleConfig.CommandName)
 				continue
 			}
 			return fmt.Errorf("error querying status of job %s/%s: %w",
