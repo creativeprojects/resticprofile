@@ -116,7 +116,7 @@ function initLunrJs() {
         js.src = index_js_url;
         js.setAttribute("async", "");
         js.onload = function(){
-            initLunrIndex(relearn_search_index);
+            initLunrIndex(relearn_searchindex);
         };
         js.onerror = function(e){
             console.error('Error getting Hugo index file');

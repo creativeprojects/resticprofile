@@ -1,5 +1,5 @@
-@import "theme-relearn-light.css?1727901534";
-@import "chroma-relearn-light.css?1727901534";
+@import "theme-relearn-light.css?1730131532";
+@import "chroma-relearn-light.css?1730131532";
 
 #R-sidebar {
     display: none;
@@ -136,7 +136,7 @@ h1 + .footline{
 #R-body .topbar-sidebar-divider {
     border-width: 0;
 }
-.term-list {
+article .R-taxonomy {
     display: none;
 }
 mark.search {
@@ -169,6 +169,6 @@ div.box > .box-content {
 article {
     break-before: page;
 }
-#R-body-inner > * > article:first-of-type {
+#R-body-inner article:first-of-type {
     break-before: avoid;
 }

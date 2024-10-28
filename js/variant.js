@@ -511,18 +511,18 @@ var variants = {
 		{ name: 'MAIN-TEXT-color',                       group: 'content',        default: '#101010',                     tooltip: 'text color of content and h1 titles', },
 
 		{ name: 'MAIN-TITLES-TEXT-color',                group: 'headings',      fallback: 'MAIN-TEXT-color',             tooltip: 'text color of h2-h6 titles and transparent box titles', },
-		{ name: 'MAIN-TITLES-H1-color',                  group: 'headings',      fallback: 'MAIN-TEXT-color',             tooltip: 'text color of h1 titles', },
-		{ name: 'MAIN-TITLES-H2-color',                  group: 'headings',      fallback: 'MAIN-TITLES-TEXT-color',      tooltip: 'text color of h2-h6 titles', },
-		{ name: 'MAIN-TITLES-H3-color',                  group: 'headings',      fallback: 'MAIN-TITLES-H2-color',        tooltip: 'text color of h3-h6 titles', },
-		{ name: 'MAIN-TITLES-H4-color',                  group: 'headings',      fallback: 'MAIN-TITLES-H3-color',        tooltip: 'text color of h4-h6 titles', },
-		{ name: 'MAIN-TITLES-H5-color',                  group: 'headings',      fallback: 'MAIN-TITLES-H4-color',        tooltip: 'text color of h5-h6 titles', },
-		{ name: 'MAIN-TITLES-H6-color',                  group: 'headings',      fallback: 'MAIN-TITLES-H5-color',        tooltip: 'text color of h6 titles', },
+		{ name: 'MAIN-TITLES-H1-TEXT-color',             group: 'headings',      fallback: 'MAIN-TEXT-color',             tooltip: 'text color of h1 titles', },
+		{ name: 'MAIN-TITLES-H2-TEXT-color',             group: 'headings',      fallback: 'MAIN-TITLES-TEXT-color',      tooltip: 'text color of h2-h6 titles', },
+		{ name: 'MAIN-TITLES-H3-TEXT-color',             group: 'headings',      fallback: 'MAIN-TITLES-H2-TEXT-color',   tooltip: 'text color of h3-h6 titles', },
+		{ name: 'MAIN-TITLES-H4-TEXT-color',             group: 'headings',      fallback: 'MAIN-TITLES-H3-TEXT-color',   tooltip: 'text color of h4-h6 titles', },
+		{ name: 'MAIN-TITLES-H5-TEXT-color',             group: 'headings',      fallback: 'MAIN-TITLES-H4-TEXT-color',   tooltip: 'text color of h5-h6 titles', },
+		{ name: 'MAIN-TITLES-H6-TEXT-color',             group: 'headings',      fallback: 'MAIN-TITLES-H5-TEXT-color',   tooltip: 'text color of h6 titles', },
 
-		{ name: 'MAIN-font',                             group: 'content',        default: '"Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif', tooltip: 'text font of content and h1 titles', },
+		{ name: 'MAIN-font',                             group: 'content',        default: '"Roboto Flex", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif', tooltip: 'text font of content and h1 titles', },
 
-		{ name: 'MAIN-TITLES-TEXT-font',                 group: 'headings',      fallback: 'MAIN-font',                   tooltip: 'text font of h2-h6 titles and transparent box titles', },
+		{ name: 'MAIN-TITLES-font',                      group: 'headings',      fallback: 'MAIN-font',                   tooltip: 'text font of h2-h6 titles and transparent box titles', },
 		{ name: 'MAIN-TITLES-H1-font',                   group: 'headings',      fallback: 'MAIN-font',                   tooltip: 'text font of h1 titles', },
-		{ name: 'MAIN-TITLES-H2-font',                   group: 'headings',      fallback: 'MAIN-TITLES-TEXT-font',       tooltip: 'text font of h2-h6 titles', },
+		{ name: 'MAIN-TITLES-H2-font',                   group: 'headings',      fallback: 'MAIN-TITLES-font',            tooltip: 'text font of h2-h6 titles', },
 		{ name: 'MAIN-TITLES-H3-font',                   group: 'headings',      fallback: 'MAIN-TITLES-H2-font',         tooltip: 'text font of h3-h6 titles', },
 		{ name: 'MAIN-TITLES-H4-font',                   group: 'headings',      fallback: 'MAIN-TITLES-H3-font',         tooltip: 'text font of h4-h6 titles', },
 		{ name: 'MAIN-TITLES-H5-font',                   group: 'headings',      fallback: 'MAIN-TITLES-H4-font',         tooltip: 'text font of h5-h6 titles', },
@@ -573,6 +573,11 @@ var variants = {
 		{ name: 'BOX-BLUE-TEXT-color',                   group: 'colored boxes', fallback: 'BOX-TEXT-color',              tooltip: 'text color of blue boxes', },
 		{ name: 'BOX-INFO-TEXT-color',                   group: 'colored boxes', fallback: 'BOX-BLUE-TEXT-color',         tooltip: 'text color of info boxes', },
 
+		{ name: 'BOX-CYAN-color',                        group: 'colored boxes',  default: 'rgba( 45, 190, 200, 1 )',     tooltip: 'background color of cyan boxes', },
+		{ name: 'BOX-IMPORTANT-color',                   group: 'colored boxes', fallback: 'BOX-CYAN-color',              tooltip: 'background color of info boxes', },
+		{ name: 'BOX-CYAN-TEXT-color',                   group: 'colored boxes', fallback: 'BOX-TEXT-color',              tooltip: 'text color of cyan boxes', },
+		{ name: 'BOX-IMPORTANT-TEXT-color',              group: 'colored boxes', fallback: 'BOX-CYAN-TEXT-color',         tooltip: 'text color of info boxes', },
+
 		{ name: 'BOX-GREEN-color',                       group: 'colored boxes',  default: 'rgba( 42, 178, 24, 1 )',      tooltip: 'background color of green boxes', },
 		{ name: 'BOX-TIP-color',                         group: 'colored boxes', fallback: 'BOX-GREEN-color',             tooltip: 'background color of tip boxes', },
 		{ name: 'BOX-GREEN-TEXT-color',                  group: 'colored boxes', fallback: 'BOX-TEXT-color',              tooltip: 'text color of green boxes', },
@@ -582,6 +587,11 @@ var variants = {
 		{ name: 'BOX-NEUTRAL-color',                     group: 'colored boxes', fallback: 'BOX-GREY-color',              tooltip: 'background color of neutral boxes', },
 		{ name: 'BOX-GREY-TEXT-color',                   group: 'colored boxes', fallback: 'BOX-TEXT-color',              tooltip: 'text color of grey boxes', },
 		{ name: 'BOX-NEUTRAL-TEXT-color',                group: 'colored boxes', fallback: 'BOX-GREY-TEXT-color',         tooltip: 'text color of neutral boxes', },
+
+		{ name: 'BOX-MAGENTA-color',                     group: 'colored boxes',  default: 'rgba( 229, 50, 210, 1 )',     tooltip: 'background color of magenta boxes', },
+		{ name: 'BOX-CAUTION-color',                     group: 'colored boxes', fallback: 'BOX-MAGENTA-color',           tooltip: 'background color of info boxes', },
+		{ name: 'BOX-MAGENTA-TEXT-color',                group: 'colored boxes', fallback: 'BOX-TEXT-color',              tooltip: 'text color of magenta boxes', },
+		{ name: 'BOX-CAUTION-TEXT-color',                group: 'colored boxes', fallback: 'BOX-MAGENTA-TEXT-color',      tooltip: 'text color of info boxes', },
 
 		{ name: 'BOX-ORANGE-color',                      group: 'colored boxes',  default: 'rgba( 237, 153, 9, 1 )',      tooltip: 'background color of orange boxes', },
 		{ name: 'BOX-NOTE-color',                        group: 'colored boxes', fallback: 'BOX-ORANGE-color',            tooltip: 'background color of note boxes', },

@@ -87,7 +87,7 @@ select:-webkit-autofill {
 
 /* Variables Style */
 :root {
-   --darkreader-neutral-background-relearn: var(--INTERNAL-MAIN-font);
+   --darkreader-neutral-background-relearn: var(--INTERNAL-MAIN-BG-color);
    --darkreader-neutral-text-relearn: var(--INTERNAL-MAIN-TEXT-color);
    --darkreader-selection-background: #004daa;
    --darkreader-selection-text-relearn: var(--INTERNAL-MAIN-TEXT-color);
@@ -1416,17 +1416,21 @@ select:-webkit-autofill {
     background-image: initial;
     background-color: rgba(24, 149, 128, 0.1);
     border-color: rgb(22, 140, 114);
+    border-color-relearn: var(--INTERNAL-BOX-CYAN-color);
 }
 .swagger-ui .opblock.opblock-patch .opblock-summary-method {
     background-image: initial;
     background-color: rgb(24, 149, 128);
+    background-color-relearn: var(--INTERNAL-BOX-CYAN-color);
 }
 .swagger-ui .opblock.opblock-patch .opblock-summary {
     border-color: rgb(22, 140, 114);
+    border-color-relearn: var(--INTERNAL-BOX-CYAN-color);
 }
 .swagger-ui .opblock.opblock-patch .tab-header .tab-item.active h4 span::after {
     background-image: initial;
     background-color: rgb(24, 149, 128);
+    background-color-relearn: var(--INTERNAL-BOX-CYAN-color);
 }
 .swagger-ui .opblock.opblock-head {
     background-image: initial;
@@ -1448,17 +1452,21 @@ select:-webkit-autofill {
     background-image: initial;
     background-color: rgba(10, 72, 134, 0.1);
     border-color: rgb(15, 101, 186);
+    border-color-relearn: var(--INTERNAL-BOX-MAGENTA-color);
 }
 .swagger-ui .opblock.opblock-options .opblock-summary-method {
     background-image: initial;
     background-color: rgb(10, 72, 134);
+    background-color-relearn: var(--INTERNAL-BOX-MAGENTA-color);
 }
 .swagger-ui .opblock.opblock-options .opblock-summary {
     border-color: rgb(15, 101, 186);
+    border-color-relearn: var(--INTERNAL-BOX-MAGENTA-color);
 }
 .swagger-ui .opblock.opblock-options .tab-header .tab-item.active h4 span::after {
     background-image: initial;
     background-color: rgb(10, 72, 134);
+    background-color-relearn: var(--INTERNAL-BOX-MAGENTA-color);
 }
 .swagger-ui .opblock.opblock-deprecated {
     background-image: initial;

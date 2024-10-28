@@ -1,0 +1,999 @@
+{
+    "$id": "https://creativeprojects.github.io/resticprofile/jsonschema/config.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$defs": {
+        "version-1": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "version": {
+                            "type": "string",
+                            "const": "1"
+                        }
+                    },
+                    "required": [
+                        "version"
+                    ]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "version": {
+                            "type": "string",
+                            "maxLength": 0
+                        }
+                    },
+                    "required": [
+                        "version"
+                    ]
+                }
+            ]
+        },
+        "version-2": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string",
+                    "const": "2"
+                }
+            },
+            "required": [
+                "version"
+            ]
+        },
+        "no-version": {
+            "not": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                    }
+                },
+                "required": [
+                    "version"
+                ]
+            }
+        },
+        "no-restic-version": {
+            "type": "object",
+            "properties": {
+                "global": {
+                    "not": {
+                        "type": "object",
+                        "properties": {
+                            "restic-version": {
+                            }
+                        },
+                        "required": [
+                            "restic-version"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "if": {
+        "$ref": "#/$defs/no-version"
+    },
+    "then": {
+        "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json"
+    },
+    "else": {
+        "if": {
+            "$ref": "#/$defs/no-restic-version"
+        },
+        "then": {
+            "oneOf": [
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2.json"
+                        }
+                    ]
+                    
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json"
+                        }
+                    ]
+                    
+                }
+            ]
+        },
+        "else": {
+            "oneOf": [
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.17.*",
+                                                    "default": "0.17",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.17"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-17.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.17.*",
+                                                    "default": "0.17",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.17"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-17.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.16.*",
+                                                    "default": "0.16",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.16"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-16.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.16.*",
+                                                    "default": "0.16",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.16"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-16.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.16.*",
+                                                    "default": "0.16",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.16"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-16.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.16.*",
+                                                    "default": "0.16",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.16"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-16.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.16.*",
+                                                    "default": "0.16",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.16"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-16.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.16.*",
+                                                    "default": "0.16",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.16"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-16.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.15.*",
+                                                    "default": "0.15",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.15"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-15.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.15.*",
+                                                    "default": "0.15",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.15"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-15.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.14.*",
+                                                    "default": "0.14",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.14"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-14.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.14.*",
+                                                    "default": "0.14",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.14"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-14.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.13.*",
+                                                    "default": "0.13",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.13"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-13.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.13.*",
+                                                    "default": "0.13",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.13"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-13.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.12.*",
+                                                    "default": "0.12",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.12"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-12.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.12.*",
+                                                    "default": "0.12",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.12"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-12.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.11.*",
+                                                    "default": "0.11",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.11"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-11.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.11.*",
+                                                    "default": "0.11",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.11"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-11.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.10.*",
+                                                    "default": "0.10",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.10"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-10.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.10.*",
+                                                    "default": "0.10",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.10"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-10.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.9.*",
+                                                    "default": "0.9",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.9"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-9.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.9.*",
+                                                    "default": "0.9",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.9"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-9.json"
+                        }
+                    ]
+                }
+                
+            ]
+        }
+    },
+    "title": "resticprofile configuration",
+    "type": "object"
+}

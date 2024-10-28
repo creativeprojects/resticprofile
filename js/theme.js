@@ -157,6 +157,11 @@ function initMermaid( update, attrs ) {
         txt.innerHTML = html;
         return txt.value;
     };
+    var encodeHTML = function( text ){
+        var html = document.createElement( 'textarea' );
+        html.textContent = text;
+        return html.innerHTML;
+    };
 
     var parseGraph = function( graph ){
         // See https://github.com/mermaid-js/mermaid/blob/9a080bb975b03b2b1d4ef6b7927d09e6b6b62760/packages/mermaid/src/diagram-api/frontmatter.ts#L10
@@ -207,7 +212,7 @@ function initMermaid( update, attrs ) {
             }
             is_initialized = true;
 
-            var graph = serializeGraph( parse );
+            var graph = encodeHTML( serializeGraph( parse ) );
             var new_element = document.createElement( 'div' );
             Array.from( element.attributes ).forEach( function( attr ){
                 new_element.setAttribute( attr.name, attr.value );
@@ -253,7 +258,7 @@ function initMermaid( update, attrs ) {
             is_initialized = true;
 
             parse.yaml.theme = theme;
-            var graph = serializeGraph( parse );
+            var graph = encodeHTML( serializeGraph( parse ) );
             element.removeAttribute('data-processed');
             element.innerHTML = graph;
             code.innerHTML = graph;
@@ -403,9 +408,9 @@ function initOpenapi( update, attrs ){
             '<html lang="' + lang + '" dir="' + (isRtl ? 'rtl' : 'ltr') + '">' +
                 '<head>' +
                     '<link rel="stylesheet" href="' + window.themeUseOpenapi.css + '">' +
-                    '<link rel="stylesheet" href="' + theme + '">' +
                     '<link rel="stylesheet" href="' + relBasePath + '/css/swagger.css' + assetBuster + '">' +
                     '<link rel="stylesheet" href="' + relBasePath + '/css/swagger-' + swagger_theme + '.css' + assetBuster + '">' +
+                    '<link rel="stylesheet" href="' + theme + '">' +
                 '</head>' +
                 '<body>' +
                     '<a class="relearn-expander" href="" onclick="return relearn_collapse_all()">Collapse all</a>' +
@@ -528,31 +533,55 @@ function initOpenapi( update, attrs ){
 }
 
 function initAnchorClipboard(){
+    if( window.relearn.disableAnchorCopy && window.relearn.disableAnchorScrolling ){
+        return;
+    }
+
     document.querySelectorAll( 'h1~h2,h1~h3,h1~h4,h1~h5,h1~h6').forEach( function( element ){
         var url = encodeURI( (document.location.origin == "null" ? (document.location.protocol + "//" + document.location.host) : document.location.origin )+ document.location.pathname);
         var link = url + "#" + element.id;
         var new_element = document.createElement( 'span' );
         new_element.classList.add( 'anchor' );
-        new_element.setAttribute( 'title', window.T_Copy_link_to_clipboard );
+        if( !window.relearn.disableAnchorCopy ){
+            new_element.setAttribute( 'title', window.T_Copy_link_to_clipboard );
+        }
         new_element.setAttribute( 'data-clipboard-text', link );
         new_element.innerHTML = '<i class="fas fa-link fa-lg"></i>';
         element.appendChild( new_element );
     });
 
     var anchors = document.querySelectorAll( '.anchor' );
-    for( var i = 0; i < anchors.length; i++ ) {
-      anchors[i].addEventListener( 'mouseleave', function( e ){
-        this.removeAttribute( 'aria-label' );
-        this.classList.remove( 'tooltipped', 'tooltipped-se', 'tooltipped-sw' );
-      });
-    }
+    if( !window.relearn.disableAnchorCopy ){
+        for( var i = 0; i < anchors.length; i++ ) {
+            anchors[i].addEventListener( 'mouseleave', function( e ){
+                this.removeAttribute( 'aria-label' );
+                this.classList.remove( 'tooltipped', 'tooltipped-se', 'tooltipped-sw' );
+            });
+        }
 
-    var clip = new ClipboardJS( '.anchor' );
-    clip.on( 'success', function( e ){
-        e.clearSelection();
-        e.trigger.setAttribute( 'aria-label', window.T_Link_copied_to_clipboard );
-        e.trigger.classList.add( 'tooltipped', 'tooltipped-s'+(isRtl?'e':'w') );
-    });
+        var clip = new ClipboardJS( '.anchor' );
+        clip.on( 'success', function( e ){
+            e.clearSelection();
+            e.trigger.setAttribute( 'aria-label', window.T_Link_copied_to_clipboard );
+            e.trigger.classList.add( 'tooltipped', 'tooltipped-s'+(isRtl?'e':'w') );
+            if( !window.relearn.disableAnchorScrolling ){
+                e.trigger.parentElement.scrollIntoView({ behavior: 'smooth' });
+                var state = window.history.state || {};
+                state = Object.assign( {}, ( typeof state === 'object' ) ? state : {} );
+                history.replaceState( {}, '', e.text );
+            }
+        });
+    }
+    else if ( !window.relearn.disableAnchorScrolling ){
+        for( var i = 0; i < anchors.length; i++ ) {
+            anchors[i].addEventListener( 'click', function( e ){
+                e.target.parentElement.parentElement.scrollIntoView({ behavior: 'smooth' });
+                var state = window.history.state || {};
+                state = Object.assign( {}, ( typeof state === 'object' ) ? state : {} );
+                history.replaceState( {}, '', e.text );
+            });
+        }
+    }
 }
 
 function initCodeClipboard(){
@@ -583,6 +612,44 @@ function initCodeClipboard(){
         }
         return actionMsg;
     }
+
+    document.addEventListener( 'copy', function( ev ){
+        // shabby FF generates empty lines on cursor selection that we need to filter out; see #925
+        var selection = document.getSelection();
+        var node = selection.anchorNode;
+
+        // in case of GC, it works without this handler;
+        // instead GC fails if this handler is active, because it still contains
+        // the line number nodes with class 'ln' in the selection, although
+        // they are flagged with 'user-select: none;' see https://issues.chromium.org/issues/41393366;
+        // so in case of GC we don't want to do anything and bail out early in below code
+        function selectionContainsLnClass( selection ) {
+            for (var i = 0; i < selection.rangeCount; i++) {
+                var range = selection.getRangeAt(i);
+                var fragment = range.cloneContents();
+                if (fragment.querySelector('.ln')) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if( !selectionContainsLnClass( selection ) ){
+            while( node ){
+                // selection could start in a text node, so account for this as it
+                // obviously does not support `classList`
+                if( node.nodeType === Node.ELEMENT_NODE && node.classList.contains( 'highlight' ) ){
+                    // only do this if we are inside of a code highlight node;
+                    // now fix FFs selection by calculating the text ourself
+                    var text = selection.toString();
+                    ev.clipboardData.setData( 'text/plain', text );
+                    ev.preventDefault();
+                    break;
+                }
+                node = node.parentNode;
+            }
+        }
+    });
 
     var codeElements = document.querySelectorAll( 'code' );
     for( var i = 0; i < codeElements.length; i++ ){
@@ -758,6 +825,10 @@ function initArrowHorizontalNav(){
     var scrollEnd = 0;
     document.addEventListener('keydown', function(event){
         if( !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey ){
+            var f = event.target.matches( formelements );
+            if( f ){
+                return;
+            }
             if( event.which == dir_key_start ){
                 if( !scrollStart && +el.scrollLeft.toFixed()*dir_scroll <= 0 ){
                     prev && prev.click();
@@ -780,6 +851,10 @@ function initArrowHorizontalNav(){
     });
     document.addEventListener('keyup', function(event){
         if( !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey ){
+            var f = event.target.matches( formelements );
+            if( f ){
+                return;
+            }
             if( event.which == dir_key_start ){
                 // check for false indication if keyup is delayed after navigation
                 if( scrollStart == -1 ){
@@ -792,15 +867,6 @@ function initArrowHorizontalNav(){
                 }
             }
         }
-    });
-
-    // avoid keyboard navigation for input fields
-    document.querySelectorAll( formelements ).forEach( function( e ){
-        e.addEventListener( 'keydown', function( event ){
-            if( event.which == dir_key_start || event.which == dir_key_end ){
-                event.stopPropagation();
-            }
-        });
     });
 }
 
@@ -1267,7 +1333,7 @@ function scrollToPositions() {
         var found = elementContains( search, elc );
         var searchedElem = found.length && found[ 0 ];
         if( searchedElem ){
-            searchedElem.scrollIntoView( true );
+            searchedElem.scrollIntoView();
             var scrolledY = window.scrollY;
             if( scrolledY ){
                 window.scroll( 0, scrolledY - 125 );
@@ -1281,9 +1347,7 @@ function scrollToPositions() {
             try{
                 var e = document.querySelector( window.location.hash );
                 if( e && e.scrollIntoView ){
-                    e.scrollIntoView({
-                        block: 'start',
-                    });
+                    e.scrollIntoView();
                 }
             } catch( e ){}
         }, 10 );
