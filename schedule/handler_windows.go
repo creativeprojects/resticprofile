@@ -30,13 +30,13 @@ func (h *HandlerWindows) ParseSchedules(schedules []string) ([]*calendar.Event, 
 	return parseSchedules(schedules)
 }
 
-// DisplayParsedSchedules via term output
-func (h *HandlerWindows) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	displayParsedSchedules(command, events)
-}
-
-// DisplaySchedules does nothing on windows
-func (h *HandlerWindows) DisplaySchedules(command string, schedules []string) error {
+// DisplaySchedules via term output
+func (h *HandlerWindows) DisplaySchedules(profile, command string, schedules []string) error {
+	events, err := parseSchedules(schedules)
+	if err != nil {
+		return err
+	}
+	displayParsedSchedules(profile, command, events)
 	return nil
 }
 

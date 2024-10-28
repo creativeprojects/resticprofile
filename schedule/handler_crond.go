@@ -43,12 +43,12 @@ func (h *HandlerCrond) ParseSchedules(schedules []string) ([]*calendar.Event, er
 	return parseSchedules(schedules)
 }
 
-func (h *HandlerCrond) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	displayParsedSchedules(command, events)
-}
-
-// DisplaySchedules does nothing with crond
-func (h *HandlerCrond) DisplaySchedules(command string, schedules []string) error {
+func (h *HandlerCrond) DisplaySchedules(profile, command string, schedules []string) error {
+	events, err := parseSchedules(schedules)
+	if err != nil {
+		return err
+	}
+	displayParsedSchedules(profile, command, events)
 	return nil
 }
 

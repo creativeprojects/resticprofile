@@ -12,8 +12,7 @@ type Handler interface {
 	Init() error
 	Close()
 	ParseSchedules(schedules []string) ([]*calendar.Event, error)
-	DisplayParsedSchedules(command string, events []*calendar.Event)
-	DisplaySchedules(command string, schedules []string) error
+	DisplaySchedules(profile, command string, schedules []string) error
 	DisplayStatus(profileName string) error
 	CreateJob(job *Config, schedules []*calendar.Event, permission string) error
 	RemoveJob(job *Config, permission string) error

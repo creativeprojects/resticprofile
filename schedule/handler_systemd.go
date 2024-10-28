@@ -66,12 +66,9 @@ func (h *HandlerSystemd) ParseSchedules(schedules []string) ([]*calendar.Event, 
 	return nil, nil
 }
 
-// DisplayParsedSchedules does nothing with systemd
-func (h *HandlerSystemd) DisplayParsedSchedules(command string, events []*calendar.Event) {}
-
 // DisplaySchedules displays the schedules through the systemd-analyze command
-func (h *HandlerSystemd) DisplaySchedules(command string, schedules []string) error {
-	return displaySystemdSchedules(command, schedules)
+func (h *HandlerSystemd) DisplaySchedules(profile, command string, schedules []string) error {
+	return displaySystemdSchedules(profile, command, schedules)
 }
 
 func (h *HandlerSystemd) DisplayStatus(profileName string) error {

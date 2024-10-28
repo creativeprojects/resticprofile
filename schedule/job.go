@@ -34,22 +34,16 @@ func (j *Job) Create() error {
 		return permissionError("create")
 	}
 
+	if err := j.handler.DisplaySchedules(j.config.ProfileName, j.config.CommandName, j.config.Schedules); err != nil {
+		return err
+	}
+
 	schedules, err := j.handler.ParseSchedules(j.config.Schedules)
 	if err != nil {
 		return err
 	}
 
-	if len(schedules) > 0 {
-		j.handler.DisplayParsedSchedules(j.config.CommandName, schedules)
-	} else {
-		err := j.handler.DisplaySchedules(j.config.CommandName, j.config.Schedules)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = j.handler.CreateJob(j.config, schedules, permission)
-	if err != nil {
+	if err = j.handler.CreateJob(j.config, schedules, permission); err != nil {
 		return err
 	}
 
@@ -83,21 +77,11 @@ func (j *Job) Status() error {
 		return ErrJobCanBeRemovedOnly
 	}
 
-	schedules, err := j.handler.ParseSchedules(j.config.Schedules)
-	if err != nil {
+	if err := j.handler.DisplaySchedules(j.config.ProfileName, j.config.CommandName, j.config.Schedules); err != nil {
 		return err
 	}
 
-	if len(schedules) > 0 {
-		j.handler.DisplayParsedSchedules(j.config.CommandName, schedules)
-	} else {
-		if err := j.handler.DisplaySchedules(j.config.CommandName, j.config.Schedules); err != nil {
-			return err
-		}
-	}
-
-	err = j.handler.DisplayJobStatus(j.config)
-	if err != nil {
+	if err := j.handler.DisplayJobStatus(j.config); err != nil {
 		return err
 	}
 	return nil

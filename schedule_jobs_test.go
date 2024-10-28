@@ -36,7 +36,7 @@ func TestSimpleScheduleJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
-	handler.EXPECT().DisplayParsedSchedules("backup", []*calendar.Event{{}})
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().CreateJob(
 		mock.AnythingOfType("*schedule.Config"),
 		mock.AnythingOfType("[]*calendar.Event"),
@@ -60,7 +60,7 @@ func TestFailScheduleJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
-	handler.EXPECT().DisplayParsedSchedules("backup", []*calendar.Event{{}})
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().CreateJob(
 		mock.AnythingOfType("*schedule.Config"),
 		mock.AnythingOfType("[]*calendar.Event"),
@@ -179,8 +179,7 @@ func TestStatusJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
-	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
-	handler.EXPECT().DisplayParsedSchedules("backup", []*calendar.Event{{}})
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().DisplayJobStatus(mock.AnythingOfType("*schedule.Config")).Return(nil)
 	handler.EXPECT().DisplayStatus("profile").Return(nil)
 

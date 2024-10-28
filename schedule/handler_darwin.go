@@ -84,12 +84,12 @@ func (h *HandlerLaunchd) ParseSchedules(schedules []string) ([]*calendar.Event, 
 	return parseSchedules(schedules)
 }
 
-func (h *HandlerLaunchd) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	displayParsedSchedules(command, events)
-}
-
-// DisplaySchedules does nothing with launchd
-func (h *HandlerLaunchd) DisplaySchedules(command string, schedules []string) error {
+func (h *HandlerLaunchd) DisplaySchedules(profile, command string, schedules []string) error {
+	events, err := parseSchedules(schedules)
+	if err != nil {
+		return err
+	}
+	displayParsedSchedules(profile, command, events)
 	return nil
 }
 
