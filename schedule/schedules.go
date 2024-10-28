@@ -52,7 +52,7 @@ func displayParsedSchedules(profile, command string, events []*calendar.Event) {
 		term.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
 		term.Printf("       From now: %s left\n", next.Sub(now))
 	}
-	term.Print("\n")
+	term.Print(platform.LineSeparator)
 }
 
 func displaySystemdSchedules(profile, command string, schedules []string) error {
@@ -69,6 +69,6 @@ func displaySystemdSchedules(profile, command string, schedules []string) error 
 			return err
 		}
 	}
-	term.Print("\n")
+	term.Print(platform.LineSeparator)
 	return nil
 }
