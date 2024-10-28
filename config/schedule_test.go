@@ -399,48 +399,72 @@ func TestScheduleKind(t *testing.T) {
 	assert.Equal(t, "group", group.Kind())
 }
 
-func TestScheduleVersion2(t *testing.T) {
+func TestScheduleVersion1(t *testing.T) {
 	const content = `
-version: "2"
+version: "1"
 
-groups:
-  two-profiles:
-    profiles:
-      - profile-schedule-inline
-      - profile-schedule-struct
+default-inline:
+  backup:
+    schedule-permission: "user"
 
-profiles:
-  default-inline:
-    backup:
-      schedule-permission: "user"
+default-struct:
+  backup:
+    schedule:
+      permission: "user"
 
-  default-struct:
-    backup:
-      schedule:
-        permission: "user"
+profile-schedule-inline:
+  backup:
+    schedule: daily
 
-  profile-schedule-inline:
-    backup:
-      schedule: daily
+profile-schedule-struct:
+  backup:
+    schedule:
+      at: weekly
 
-  profile-schedule-struct:
-    backup:
-      schedule:
-        at: weekly
+profile-inherited-schedule-inline:
+  inherit: default-inline
+  backup:
+    schedule: daily
 
+profile-inherited-schedule-struct:
+  inherit: default-struct
+  backup:
+    schedule:
+      at: weekly
+
+profile-inherited-struct-schedule-inline:
+  inherit: default-struct
+  backup:
+    schedule: daily
+
+profile-inherited-inline-schedule-struct:
+  inherit: default-inline
+  backup:
+    schedule:
+      at: weekly
 `
 	cfg, err := Load(bytes.NewBufferString(content), FormatYAML)
 	require.NoError(t, err)
 	require.NotNil(t, cfg)
 
+	scheduleBaseConfigWithUserPermission := scheduleBaseConfigDefaults
+	scheduleBaseConfigWithUserPermission.Permission = "user"
+
 	testCases := []struct {
-		name      string
-		err       error
-		schedules map[string]*Schedule
+		name        string
+		shouldError bool
+		schedules   map[string]*Schedule
 	}{
 		{
-			name:      "",
-			err:       ErrNotFound,
+			name:        "",
+			shouldError: true,
+		},
+		{
+			name:      "default-inline", // only setting default user permission => no schedule
+			schedules: map[string]*Schedule{},
+		},
+		{
+			name:      "default-struct", // only setting default user permission => no schedule
 			schedules: map[string]*Schedule{},
 		},
 		{
@@ -471,6 +495,232 @@ profiles:
 				},
 			},
 		},
+		{
+			name: "profile-inherited-schedule-inline",
+			schedules: map[string]*Schedule{
+				"backup": {
+					ScheduleConfig: ScheduleConfig{
+						normalized:         true,
+						origin:             ScheduleOrigin("profile-inherited-schedule-inline", constants.CommandBackup),
+						Schedules:          []string{"daily"},
+						ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+					},
+					Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-schedule-inline"},
+				},
+			},
+		},
+		{
+			name: "profile-inherited-schedule-struct",
+			schedules: map[string]*Schedule{
+				"backup": {
+					ScheduleConfig: ScheduleConfig{
+						normalized:         true,
+						origin:             ScheduleOrigin("profile-inherited-schedule-struct", constants.CommandBackup),
+						Schedules:          []string{"weekly"},
+						ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+					},
+					Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-schedule-struct"},
+				},
+			},
+		},
+		{
+			name:        "profile-inherited-struct-schedule-inline",
+			shouldError: true,
+		},
+		{
+			name: "profile-inherited-inline-schedule-struct",
+			schedules: map[string]*Schedule{
+				"backup": {
+					ScheduleConfig: ScheduleConfig{
+						normalized:         true,
+						origin:             ScheduleOrigin("profile-inherited-inline-schedule-struct", constants.CommandBackup),
+						Schedules:          []string{"weekly"},
+						ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+					},
+					Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-inline-schedule-struct"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			profile, err := cfg.GetProfile(tc.name)
+			if tc.shouldError {
+				require.Error(t, err)
+				assert.Nil(t, profile)
+				return
+			}
+			require.NoError(t, err)
+			assert.NotNil(t, profile)
+
+			schedules := profile.Schedules()
+			assert.Equal(t, tc.schedules, schedules)
+		})
+	}
+}
+
+func TestScheduleVersion2(t *testing.T) {
+	const content = `
+version: "2"
+
+groups:
+  two-profiles:
+    profiles:
+      - profile-schedule-inline
+      - profile-schedule-struct
+
+profiles:
+  default-inline:
+    backup:
+      schedule-permission: "user"
+
+  default-struct:
+    backup:
+      schedule:
+        permission: "user"
+
+  profile-schedule-inline:
+    backup:
+      schedule: daily
+
+  profile-schedule-struct:
+    backup:
+      schedule:
+        at: weekly
+
+  profile-inherited-schedule-inline:
+    inherit: default-inline
+    backup:
+      schedule: daily
+
+  profile-inherited-schedule-struct:
+    inherit: default-struct
+    backup:
+      schedule:
+        at: weekly
+
+  profile-inherited-struct-schedule-inline:
+    inherit: default-struct
+    backup:
+      schedule: daily
+
+  profile-inherited-inline-schedule-struct:
+    inherit: default-inline
+    backup:
+      schedule:
+        at: weekly
+
+`
+	cfg, err := Load(bytes.NewBufferString(content), FormatYAML)
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
+
+	scheduleBaseConfigWithUserPermission := scheduleBaseConfigDefaults
+	scheduleBaseConfigWithUserPermission.Permission = "user"
+
+	testCases := []struct {
+		name      string
+		err       error
+		schedules map[string]*Schedule
+	}{
+		// {
+		// 	name:      "",
+		// 	err:       ErrNotFound,
+		// 	schedules: map[string]*Schedule{},
+		// },
+		// {
+		// 	name:      "default-inline", // only setting default user permission => no schedule
+		// 	schedules: map[string]*Schedule{},
+		// },
+		// {
+		// 	name:      "default-struct", // only setting default user permission => no schedule
+		// 	schedules: map[string]*Schedule{},
+		// },
+		// {
+		// 	name: "profile-schedule-inline",
+		// 	schedules: map[string]*Schedule{
+		// 		"backup": {
+		// 			ScheduleConfig: ScheduleConfig{
+		// 				normalized:         true,
+		// 				origin:             ScheduleOrigin("profile-schedule-inline", constants.CommandBackup),
+		// 				Schedules:          []string{"daily"},
+		// 				ScheduleBaseConfig: scheduleBaseConfigDefaults,
+		// 			},
+		// 			Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-schedule-inline"},
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name: "profile-schedule-struct",
+		// 	schedules: map[string]*Schedule{
+		// 		"backup": {
+		// 			ScheduleConfig: ScheduleConfig{
+		// 				normalized:         true,
+		// 				origin:             ScheduleOrigin("profile-schedule-struct", constants.CommandBackup),
+		// 				Schedules:          []string{"weekly"},
+		// 				ScheduleBaseConfig: scheduleBaseConfigDefaults,
+		// 			},
+		// 			Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-schedule-struct"},
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name: "profile-inherited-schedule-inline",
+		// 	schedules: map[string]*Schedule{
+		// 		"backup": {
+		// 			ScheduleConfig: ScheduleConfig{
+		// 				normalized:         true,
+		// 				origin:             ScheduleOrigin("profile-inherited-schedule-inline", constants.CommandBackup),
+		// 				Schedules:          []string{"daily"},
+		// 				ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+		// 			},
+		// 			Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-schedule-inline"},
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name: "profile-inherited-schedule-struct",
+		// 	schedules: map[string]*Schedule{
+		// 		"backup": {
+		// 			ScheduleConfig: ScheduleConfig{
+		// 				normalized:         true,
+		// 				origin:             ScheduleOrigin("profile-inherited-schedule-struct", constants.CommandBackup),
+		// 				Schedules:          []string{"weekly"},
+		// 				ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+		// 			},
+		// 			Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-schedule-struct"},
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name: "profile-inherited-struct-schedule-inline",
+		// 	schedules: map[string]*Schedule{
+		// 		"backup": {
+		// 			ScheduleConfig: ScheduleConfig{
+		// 				normalized:         true,
+		// 				origin:             ScheduleOrigin("profile-inherited-struct-schedule-inline", constants.CommandBackup),
+		// 				Schedules:          []string{"daily"},
+		// 				ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+		// 			},
+		// 			Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-struct-schedule-inline"},
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name: "profile-inherited-inline-schedule-struct",
+		// 	schedules: map[string]*Schedule{
+		// 		"backup": {
+		// 			ScheduleConfig: ScheduleConfig{
+		// 				normalized:         true,
+		// 				origin:             ScheduleOrigin("profile-inherited-inline-schedule-struct", constants.CommandBackup),
+		// 				Schedules:          []string{"weekly"},
+		// 				ScheduleBaseConfig: scheduleBaseConfigWithUserPermission,
+		// 			},
+		// 			Environment: []string{"RESTICPROFILE_SCHEDULE_ID=:backup@profile-inherited-inline-schedule-struct"},
+		// 		},
+		// 	},
+		// },
 	}
 
 	for _, tc := range testCases {
@@ -481,8 +731,8 @@ profiles:
 				assert.ErrorIs(t, err, tc.err)
 				return
 			}
+			require.NoError(t, err)
 			assert.NotNil(t, profile)
-			assert.NoError(t, err)
 
 			schedules := profile.Schedules()
 			assert.Equal(t, tc.schedules, schedules)

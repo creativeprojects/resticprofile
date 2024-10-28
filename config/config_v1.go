@@ -86,14 +86,16 @@ func (c *Config) loadGroupsV1() (err error) {
 // getProfileV1 from version 1 configuration. If the profile is not found, it returns errNotFound
 func (c *Config) getProfileV1(profileKey string) (profile *Profile, err error) {
 	c.requireVersion(Version01)
+	profilePath := c.getProfilePath(profileKey)
 
-	if !c.IsSet(c.getProfilePath(profileKey)) {
+	if !c.IsSet(profilePath) {
 		// profile key not found
 		return nil, ErrNotFound
 	}
 
 	profile = NewProfile(c, profileKey)
-	err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
+	c.upgradeProfile(profilePath)
+	err = c.unmarshalKey(profilePath, profile)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +113,7 @@ func (c *Config) getProfileV1(profileKey string) (profile *Profile, err error) {
 		// It doesn't make sense to inherit the Description field
 		profile.Description = ""
 		// Reload this profile onto the inherited one
-		err = c.unmarshalKey(c.getProfilePath(profileKey), profile)
+		err = c.unmarshalKey(profilePath, profile)
 		if err != nil {
 			return nil, err
 		}

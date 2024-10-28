@@ -743,6 +743,15 @@ func (c *Config) newUnmarshaller(output any) (*mapstructure.Decoder, error) {
 	return mapstructure.NewDecoder(conf)
 }
 
+// upgrade legacy parameters into their current version
+// (the configuration is staying in its current version)
+func (c *Config) upgradeProfile(key string) {
+	err := new(UpgradeSchedule).Upgrade(key, c)
+	if err != nil {
+		clog.Warning(err)
+	}
+}
+
 // traceConfig sends a log of level trace to show the resulting configuration after resolving the template
 func traceConfig(profileName, name string, replace bool, config *bytes.Buffer) {
 	clog.Trace(func() string {
