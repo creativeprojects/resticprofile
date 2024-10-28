@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -25,6 +26,7 @@ import (
 
 var (
 	ownCommands = NewOwnCommands()
+	elevation   sync.Once
 )
 
 func init() {
@@ -323,8 +325,11 @@ func retryElevated(err error, flags commandLineFlags) error {
 	}
 	// maybe can find a better way than searching for the word "denied"?
 	if platform.IsWindows() && !flags.isChild && strings.Contains(err.Error(), "denied") {
-		clog.Info("restarting resticprofile in elevated mode...")
-		err := elevated()
+		// we try only once, otherwise we return the original error
+		elevation.Do(func() {
+			clog.Info("restarting resticprofile in elevated mode...")
+			err = elevated()
+		})
 		if err != nil {
 			return err
 		}

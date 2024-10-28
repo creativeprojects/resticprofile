@@ -85,7 +85,11 @@ func removeSchedule(_ io.Writer, ctx commandContext) error {
 
 		err = removeJobs(schedule.NewHandler(scheduler), profileName, jobs)
 		if err != nil {
-			return retryElevated(err, flags)
+			err = retryElevated(err, flags)
+		}
+		if err != nil {
+			// we keep trying to remove the other jobs
+			clog.Error(err)
 		}
 	}
 
@@ -99,6 +103,7 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	defer c.DisplayConfigurationIssues()
 
+	// single profile or group
 	if !slices.Contains(args, "--all") {
 		scheduler, schedules, _, err := getScheduleJobs(c, flags)
 		if err != nil {
@@ -112,8 +117,10 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 		if err != nil {
 			return err
 		}
+		return nil
 	}
 
+	// all profiles and groups
 	for _, profileName := range selectProfilesAndGroups(c, flags, args) {
 		profileFlags := flagsForProfile(flags, profileName)
 		scheduler, schedules, schedulable, err := getScheduleJobs(c, profileFlags)
