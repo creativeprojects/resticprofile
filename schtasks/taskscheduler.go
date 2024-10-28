@@ -519,7 +519,7 @@ func Delete(title, subtitle string) error {
 	taskName := getTaskPath(title, subtitle)
 	err := taskService.DeleteTask(taskName)
 	if err != nil {
-		if strings.Contains(err.Error(), "doesn't exist") {
+		if strings.Contains(err.Error(), "doesn't exist") || strings.Contains(err.Error(), "cannot find") {
 			return fmt.Errorf("%w: %s", ErrNotRegistered, taskName)
 		}
 		return err
