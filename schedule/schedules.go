@@ -14,7 +14,10 @@ import (
 
 func displayHeader(profile, command string, index, total int) {
 	term.Print(platform.LineSeparator)
-	header := fmt.Sprintf("Profile (or Group) %s: %s schedule %d/%d", profile, command, index, total)
+	header := fmt.Sprintf("Profile (or Group) %s: %s schedule", profile, command)
+	if total > 1 {
+		header += fmt.Sprintf(" %d/%d", index, total)
+	}
 	term.Print(header)
 	term.Print(platform.LineSeparator)
 	term.Print(strings.Repeat("=", len(header)))
