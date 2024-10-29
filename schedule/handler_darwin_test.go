@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -179,4 +180,61 @@ func TestCreateSystemPlist(t *testing.T) {
 
 	_, err = handler.fs.Stat(filename)
 	assert.NoError(t, err)
+}
+
+func TestReadingScheduled(t *testing.T) {
+	testCases := []struct {
+		job       Config
+		schedules []*calendar.Event
+	}{
+		{
+			job: Config{
+				ProfileName:      "testscheduled",
+				CommandName:      "backup",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       constants.SchedulePermissionSystem,
+			},
+			schedules: []*calendar.Event{},
+		},
+		{
+			job: Config{
+				ProfileName:      "test.scheduled",
+				CommandName:      "backup",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "config file.yaml", "--name", "self", "backup"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       constants.SchedulePermissionSystem,
+			},
+			schedules: []*calendar.Event{},
+		},
+		{
+			job: Config{
+				ProfileName:      "testscheduled",
+				CommandName:      "backup",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       constants.SchedulePermissionUser,
+			},
+			schedules: []*calendar.Event{},
+		},
+	}
+
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
+	handler.fs = afero.NewMemMapFs()
+
+	expectedJobs := []Config{}
+	for _, testCase := range testCases {
+		expectedJobs = append(expectedJobs, testCase.job)
+
+		_, err := handler.createPlistFile(handler.getLaunchdJob(&testCase.job, testCase.schedules), testCase.job.Permission)
+		require.NoError(t, err)
+	}
+
+	scheduled, err := handler.Scheduled("")
+	require.NoError(t, err)
+
+	assert.ElementsMatch(t, expectedJobs, scheduled)
 }

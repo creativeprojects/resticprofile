@@ -88,8 +88,8 @@ func TestDisplaySystemdSchedules(t *testing.T) {
 }
 
 func TestDisplaySystemdSchedulesError(t *testing.T) {
-	if platform.IsWindows() || platform.IsDarwin() {
-		t.Skip("test only runs on linux")
+	if !platform.IsWindows() && !platform.IsDarwin() {
+		t.Skip()
 	}
 	err := displaySystemdSchedules("profile", "command", []string{"daily"})
 	require.Error(t, err)

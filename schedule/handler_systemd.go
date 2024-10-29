@@ -3,10 +3,13 @@
 package schedule
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -71,6 +74,12 @@ func (h *HandlerSystemd) DisplaySchedules(profile, command string, schedules []s
 	return displaySystemdSchedules(profile, command, schedules)
 }
 
+// Timers summary
+// ===============
+// NEXT                        LEFT       LAST                        PASSED  UNIT                                  ACTIVATES
+// Tue 2024-10-29 18:45:00 GMT 28min left Tue 2024-10-29 18:16:09 GMT 38s ago resticprofile-copy@profile-self.timer resticprofile-copy@profile-self.service
+//
+// 1 timers listed.
 func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 	var (
 		status string
@@ -83,7 +92,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 		// otherwise user timers
 		status, err = getSystemdStatus(profileName, systemd.UserUnit)
 	}
-	if err != nil || status == "" || strings.HasPrefix(status, "0 timers") {
+	if err != nil || status == "" || strings.Contains(status, "0 timers") {
 		// fail silently
 		return nil
 	}
@@ -126,15 +135,10 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	if unitType == systemd.SystemUnit {
-		// tell systemd we've changed some system configuration files
-		cmd := exec.Command(systemctlBinary, systemctlReload)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
+	// tell systemd we've changed some system configuration files
+	err = runSystemctlReload(unitType)
+	if err != nil {
+		return err
 	}
 
 	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
@@ -167,6 +171,15 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 		unitType = systemd.SystemUnit
 	}
 	var err error
+	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
+	unitLoaded, err := unitLoaded(serviceFile, unitType)
+	if err != nil {
+		return err
+	}
+	if !unitLoaded {
+		return ErrScheduledJobNotFound
+	}
+
 	timerFile := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 
 	// stop the job
@@ -189,7 +202,6 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 		}
 	}
 
-	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	dropInDir := systemd.GetServiceFileDropInDir(job.ProfileName, job.CommandName)
 	timerDropInDir := systemd.GetTimerFileDropInDir(job.ProfileName, job.CommandName)
 
@@ -205,25 +217,30 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 			clog.Errorf("failed removing %q, error: %s. Please remove this path", pathToRemove, err.Error())
 		}
 	}
+
+	// tell systemd we've changed some system configuration files
+	_ = runSystemctlReload(unitType)
 	return nil
 }
 
 // DisplayJobStatus displays information of a systemd service/timer
 func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
+	serviceName := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 	permission := getSchedulePermission(job.Permission)
+	systemdType := systemd.UserUnit
 	if permission == constants.SchedulePermissionSystem {
-		err := runJournalCtlCommand(timerName, systemd.SystemUnit)
-		if err != nil {
-			clog.Warningf("cannot read system logs: %v", err)
-		}
-		return runSystemctlCommand(timerName, systemctlStatus, systemd.SystemUnit, false)
+		systemdType = systemd.SystemUnit
 	}
-	err := runJournalCtlCommand(timerName, systemd.UserUnit)
+	unitLoaded, err := unitLoaded(serviceName, systemdType)
 	if err != nil {
-		clog.Warningf("cannot read user logs: %v", err)
+		return err
 	}
-	return runSystemctlCommand(timerName, systemctlStatus, systemd.UserUnit, false)
+	if !unitLoaded {
+		return ErrScheduledJobNotFound
+	}
+	_ = runJournalCtlCommand(timerName, systemdType)
+	return runSystemctlCommand(timerName, systemctlStatus, systemdType, false)
 }
 
 var (
@@ -290,6 +307,62 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	err := cmd.Run()
 	fmt.Println("")
 	return err
+}
+
+func runSystemctlReload(unitType systemd.UnitType) error {
+	args := []string{systemctlReload}
+	if unitType == systemd.UserUnit {
+		args = append(args, flagUserUnit)
+	}
+	clog.Debugf("starting command \"%s %s\"", journalctlBinary, strings.Join(args, " "))
+	cmd := exec.Command(systemctlBinary, args...)
+	cmd.Stdout = term.GetOutput()
+	cmd.Stderr = term.GetErrorOutput()
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error) {
+	if profile == "" {
+		profile = "*"
+	}
+	pattern := fmt.Sprintf("resticprofile-*@profile-%s.service", profile)
+	args := []string{"list-units", "--all", flagNoPager, "--output", "json"}
+	if unitType == systemd.UserUnit {
+		args = append(args, flagUserUnit)
+	}
+	args = append(args, pattern)
+
+	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	cmd := exec.Command(systemctlBinary, args...)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err := cmd.Run()
+	if err != nil {
+		return nil, fmt.Errorf("error running command: %w\n%s", err, stderr.String())
+	}
+	var units []SystemdUnit
+	decoder := json.NewDecoder(stdout)
+	err = decoder.Decode(&units)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding JSON: %w\n%s", err, stdout.String())
+	}
+	return units, err
+}
+
+func unitLoaded(serviceName string, unitType systemd.UnitType) (bool, error) {
+	units, err := listUnits("", unitType)
+	if err != nil {
+		return false, err
+	}
+	return slices.ContainsFunc(units, func(unit SystemdUnit) bool {
+		return unit.Unit == serviceName && unit.Load != "not-found"
+	}), nil
 }
 
 // init registers HandlerSystemd

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
@@ -36,7 +37,7 @@ const (
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 
-	namePrefix      = "local.resticprofile"
+	namePrefix      = "local.resticprofile."
 	agentExtension  = ".agent.plist"
 	daemonExtension = ".plist"
 
@@ -132,65 +133,6 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 	return nil
 }
 
-func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *LaunchdJob {
-	name := getJobName(job.ProfileName, job.CommandName)
-	// we always set the log file in the job settings as a default
-	// if changed in the configuration via schedule-log the standard output will be empty anyway
-	logfile := name + ".log"
-
-	// Format schedule env, adding PATH if not yet provided by the schedule config
-	env := util.NewDefaultEnvironment(job.Environment...)
-	if !env.Has("PATH") {
-		env.Put("PATH", os.Getenv("PATH"))
-	}
-
-	lowPriorityIO := true
-	nice := constants.DefaultBackgroundNiceFlag
-	if job.GetPriority() == constants.SchedulePriorityStandard {
-		lowPriorityIO = false
-		nice = constants.DefaultStandardNiceFlag
-	}
-
-	launchdJob := &LaunchdJob{
-		Label:                 name,
-		Program:               job.Command,
-		ProgramArguments:      append([]string{job.Command, "--no-prio"}, job.Arguments.RawArgs()...),
-		StandardOutPath:       logfile,
-		StandardErrorPath:     logfile,
-		WorkingDirectory:      job.WorkingDirectory,
-		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
-		EnvironmentVariables:  env.ValuesAsMap(),
-		Nice:                  nice,
-		ProcessType:           priorityValues[job.GetPriority()],
-		LowPriorityIO:         lowPriorityIO,
-	}
-	return launchdJob
-}
-
-func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission string) (string, error) {
-	filename, err := getFilename(launchdJob.Label, permission)
-	if err != nil {
-		return "", err
-	}
-	if permission != constants.SchedulePermissionSystem {
-		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
-		_ = h.fs.MkdirAll(path.Dir(filename), 0o700)
-	}
-	file, err := h.fs.Create(filename)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	encoder := plist.NewEncoder(file)
-	encoder.Indent("\t")
-	err = encoder.Encode(launchdJob)
-	if err != nil {
-		return filename, err
-	}
-	return filename, nil
-}
-
 // RemoveJob stops and unloads the agent from launchd, then removes the configuration file
 func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
 	name := getJobName(job.ProfileName, job.CommandName)
@@ -260,6 +202,150 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	return nil
 }
 
+func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
+	jobs := make([]Config, 0)
+	if profileName == "" {
+		profileName = "*"
+	} else {
+		profileName = strings.ToLower(profileName)
+	}
+	// system jobs
+	prefix := path.Join(GlobalDaemons, namePrefix)
+	matches, err := afero.Glob(h.fs, fmt.Sprintf("%s%s.*%s", prefix, profileName, daemonExtension))
+	if err != nil {
+		clog.Warningf("Error while listing system jobs: %s", err)
+	}
+	for _, match := range matches {
+		extract := strings.TrimSuffix(strings.TrimPrefix(match, prefix), daemonExtension)
+		job, err := h.getJobConfig(match, extract)
+		if err != nil {
+			clog.Warning(err)
+			continue
+		}
+		if job != nil {
+			job.Permission = constants.SchedulePermissionSystem
+			jobs = append(jobs, *job)
+		}
+	}
+	// user jobs
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	prefix = path.Join(home, UserAgentPath, namePrefix)
+	matches, err = afero.Glob(h.fs, fmt.Sprintf("%s%s.*%s", prefix, profileName, agentExtension))
+	if err != nil {
+		clog.Warningf("Error while listing user jobs: %s", err)
+	}
+	for _, match := range matches {
+		extract := strings.TrimSuffix(strings.TrimPrefix(match, prefix), agentExtension)
+		job, err := h.getJobConfig(match, extract)
+		if err != nil {
+			clog.Warning(err)
+			continue
+		}
+		if job != nil {
+			job.Permission = constants.SchedulePermissionUser
+			jobs = append(jobs, *job)
+		}
+	}
+	return jobs, nil
+}
+
+func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *LaunchdJob {
+	name := getJobName(job.ProfileName, job.CommandName)
+	// we always set the log file in the job settings as a default
+	// if changed in the configuration via schedule-log the standard output will be empty anyway
+	logfile := name + ".log"
+
+	// Format schedule env, adding PATH if not yet provided by the schedule config
+	env := util.NewDefaultEnvironment(job.Environment...)
+	if !env.Has("PATH") {
+		env.Put("PATH", os.Getenv("PATH"))
+	}
+
+	lowPriorityIO := true
+	nice := constants.DefaultBackgroundNiceFlag
+	if job.GetPriority() == constants.SchedulePriorityStandard {
+		lowPriorityIO = false
+		nice = constants.DefaultStandardNiceFlag
+	}
+
+	launchdJob := &LaunchdJob{
+		Label:                 name,
+		Program:               job.Command,
+		ProgramArguments:      append([]string{job.Command, "--no-prio"}, job.Arguments.RawArgs()...),
+		StandardOutPath:       logfile,
+		StandardErrorPath:     logfile,
+		WorkingDirectory:      job.WorkingDirectory,
+		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
+		EnvironmentVariables:  env.ValuesAsMap(),
+		Nice:                  nice,
+		ProcessType:           priorityValues[job.GetPriority()],
+		LowPriorityIO:         lowPriorityIO,
+	}
+	return launchdJob
+}
+
+func (h *HandlerLaunchd) getJobConfig(filename, name string) (*Config, error) {
+	parts := strings.Split(name, ".")
+	commandName := parts[len(parts)-1]
+	profileName := strings.Join(parts[:len(parts)-1], ".")
+
+	launchdJob, err := h.readPlistFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("error reading plist file: %w", err)
+	}
+	job := &Config{
+		ProfileName:      profileName,
+		CommandName:      commandName,
+		Command:          launchdJob.Program,
+		Arguments:        NewCommandArguments(launchdJob.ProgramArguments[2:]), // first is binary, second is --no-prio
+		WorkingDirectory: launchdJob.WorkingDirectory,
+	}
+	return job, nil
+}
+
+func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission string) (string, error) {
+	filename, err := getFilename(launchdJob.Label, permission)
+	if err != nil {
+		return "", err
+	}
+	if permission != constants.SchedulePermissionSystem {
+		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
+		_ = h.fs.MkdirAll(path.Dir(filename), 0o700)
+	}
+	file, err := h.fs.Create(filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	encoder := plist.NewEncoder(file)
+	encoder.Indent("\t")
+	err = encoder.Encode(launchdJob)
+	if err != nil {
+		return filename, err
+	}
+	return filename, nil
+}
+
+func (h *HandlerLaunchd) readPlistFile(filename string) (*LaunchdJob, error) {
+	file, err := h.fs.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	decoder := plist.NewDecoder(file)
+	launchdJob := new(LaunchdJob)
+	err = decoder.Decode(launchdJob)
+	if err != nil {
+		return nil, err
+	}
+	return launchdJob, nil
+}
+
 var (
 	_ Handler = &HandlerLaunchd{}
 )
@@ -289,7 +375,7 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 }
 
 func getJobName(profileName, command string) string {
-	return fmt.Sprintf("%s.%s.%s", namePrefix, strings.ToLower(profileName), command)
+	return fmt.Sprintf("%s%s.%s", namePrefix, strings.ToLower(profileName), command)
 }
 
 func getFilename(name, permission string) (string, error) {
