@@ -112,6 +112,11 @@ func (h *HandlerCrond) DisplayJobStatus(job *Config) error {
 	return nil
 }
 
+func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
+	configs := []Config{}
+	return configs, nil
+}
+
 // init registers HandlerCrond
 func init() {
 	AddHandlerProvider(func(config SchedulerConfig, fallback bool) (hr Handler) {
