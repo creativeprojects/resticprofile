@@ -24,7 +24,7 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 		return nil, err
 	}
 	currentSection := ""
-	sections := make(map[string][]string, 3)
+	sections := make(map[string]map[string][]string, 3)
 	lines := bytes.Split(content, []byte("\n"))
 	for _, line := range lines {
 		line = bytes.TrimSpace(line)
@@ -36,17 +36,24 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 			currentSection = string(bytes.TrimSpace(line[1 : len(line)-1]))
 			continue
 		}
-		if sections[currentSection] == nil {
-			sections[currentSection] = []string{string(line)}
-		} else {
-			sections[currentSection] = append(sections[currentSection], string(line))
+		if key, value, found := strings.Cut(string(line), "="); found {
+			value = strings.Trim(value, `"`)
+			if sections[currentSection] == nil {
+				sections[currentSection] = map[string][]string{
+					key: {value},
+				}
+			} else if sections[currentSection][key] == nil {
+				sections[currentSection][key] = []string{value}
+			} else {
+				sections[currentSection][key] = append(sections[currentSection][key], value)
+			}
 		}
 	}
-	unitSection, serviceSection := sections["Unit"], sections["Service"]
-	description := getValue(unitSection, "Description")
-	workdir := getValue(serviceSection, "WorkingDirectory")
-	commandLine := getValue(serviceSection, "ExecStart")
-	profileName, commandName := parseServiceFile(unit)
+	description := getSingleValue(sections, "Unit", "Description")
+	workdir := getSingleValue(sections, "Service", "WorkingDirectory")
+	commandLine := getSingleValue(sections, "Service", "ExecStart")
+	environment := getValues(sections, "Service", "Environment")
+	profileName, commandName := parseServiceFileName(unit)
 	cfg := &Config{
 		Title:            profileName,
 		SubTitle:         commandName,
@@ -54,28 +61,34 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 		WorkingDirectory: workdir,
 		CommandLine:      commandLine,
 		UnitType:         unitType,
+		Environment:      environment,
 	}
 	return cfg, nil
 }
 
-func getValue(lines []string, key string) string {
-	if len(lines) == 0 {
-		return ""
-	}
-	for _, line := range lines {
-		if k, v, found := strings.Cut(line, "="); found {
-			k = strings.TrimSpace(k)
-			if k == key {
-				return strings.TrimSpace(v)
+func getSingleValue(from map[string]map[string][]string, section, key string) string {
+	if section, found := from[section]; found {
+		if values, found := section[key]; found {
+			if len(values) > 0 {
+				return values[0]
 			}
 		}
 	}
 	return ""
 }
 
-// parseServiceFile to detect profile and command names.
+func getValues(from map[string]map[string][]string, section, key string) []string {
+	if section, found := from[section]; found {
+		if values, found := section[key]; found {
+			return values
+		}
+	}
+	return nil
+}
+
+// parseServiceFileName to detect profile and command names from the file name.
 // format is: `resticprofile-backup@profile-name.service`
-func parseServiceFile(filename string) (profileName, commandName string) {
+func parseServiceFileName(filename string) (profileName, commandName string) {
 	filename = strings.TrimPrefix(filename, "resticprofile-")
 	filename = strings.TrimSuffix(filename, ".service")
 	commandName, profileName, _ = strings.Cut(filename, "@")

@@ -4,11 +4,39 @@ package systemd
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	testServiceUnit = `[Unit]
+Description=resticprofile copy for profile self in examples/linux.yaml
+OnFailure=unit-status-mail@%n.service
+
+[Service]
+Type=notify
+WorkingDirectory=/home/linux/go/src/github.com/creativeprojects/resticprofile
+ExecStart=/tmp/go-build982790897/b001/exe/resticprofile --no-prio --no-ansi --config examples/linux.yaml run-schedule copy@self
+Nice=19
+IOSchedulingClass=3
+IOSchedulingPriority=7
+Environment="RESTICPROFILE_SCHEDULE_ID=examples/linux.yaml:copy@self"
+Environment="HOME=/home/linux"
+`
+	testTimerUnit = `[Unit]
+Description=copy timer for profile self in examples/linux.yaml
+
+[Timer]
+OnCalendar=*:45
+Unit=resticprofile-copy@profile-self.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target`
 )
 
 func TestReadSystemUnit(t *testing.T) {
@@ -34,11 +62,14 @@ func TestReadSystemUnit(t *testing.T) {
 				WorkingDirectory: "/workdir",
 				Title:            "profile2",
 				SubTitle:         "check",
-				JobDescription:   "job description",
+				JobDescription:   "",
 				TimerDescription: "timer description",
-				Schedules:        []string{"weekly"},
+				Schedules:        []string{"daily", "weekly"},
 				UnitType:         UserUnit,
 				Priority:         "low",
+				Environment: []string{
+					"TMP=/tmp",
+				},
 			},
 		},
 	}
@@ -57,6 +88,9 @@ func TestReadSystemUnit(t *testing.T) {
 			require.NoError(t, err)
 			assert.NotNil(t, readCfg)
 
+			home, err := os.UserHomeDir()
+			require.NoError(t, err)
+
 			expected := &Config{
 				Title:            tc.config.Title,
 				SubTitle:         tc.config.SubTitle,
@@ -64,6 +98,7 @@ func TestReadSystemUnit(t *testing.T) {
 				WorkingDirectory: tc.config.WorkingDirectory,
 				CommandLine:      tc.config.CommandLine,
 				UnitType:         tc.config.UnitType,
+				Environment:      append(tc.config.Environment, "HOME="+home),
 			}
 			assert.Equal(t, expected, readCfg)
 		})
