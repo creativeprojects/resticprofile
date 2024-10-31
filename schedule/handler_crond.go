@@ -1,10 +1,14 @@
 package schedule
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/spf13/afero"
 )
 
 var crontabBinary = "crontab"
@@ -12,6 +16,7 @@ var crontabBinary = "crontab"
 // HandlerCrond is a handler for crond scheduling
 type HandlerCrond struct {
 	config SchedulerCrond
+	fs     afero.Fs
 }
 
 // NewHandlerCrond creates a new handler for crond scheduling
@@ -113,17 +118,68 @@ func (h *HandlerCrond) DisplayJobStatus(job *Config) error {
 }
 
 func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
-	configs := []Config{}
+	crontab := crond.NewCrontab(nil)
+	crontab.SetFile(h.config.CrontabFile)
+	crontab.SetBinary(h.config.CrontabBinary)
+	entries, err := crontab.GetEntries()
+	if err != nil {
+		return nil, err
+	}
+	configs := make([]Config, 0, len(entries))
+	for _, entry := range entries {
+		profileName := entry.ProfileName()
+		commandName := entry.CommandName()
+		configFile := entry.ConfigFile()
+		if index := slices.IndexFunc(configs, func(cfg Config) bool {
+			return cfg.ProfileName == profileName && cfg.CommandName == commandName && cfg.ConfigFile == configFile
+		}); index >= 0 {
+			configs[index].Schedules = append(configs[index].Schedules, entry.Event().String())
+		} else {
+			commandLine := entry.CommandLine()
+			args := splitArguments(commandLine)
+			configs = append(configs, Config{
+				ProfileName:      profileName,
+				CommandName:      commandName,
+				ConfigFile:       configFile,
+				Schedules:        []string{entry.Event().String()},
+				Command:          args[0],
+				Arguments:        NewCommandArguments(args[1:]),
+				WorkingDirectory: entry.WorkDir(),
+			})
+		}
+	}
 	return configs, nil
+}
+
+func splitArguments(commandLine string) []string {
+	args := make([]string, 0)
+	sb := &strings.Builder{}
+	quoted := false
+	for _, r := range commandLine {
+		if r == '"' {
+			quoted = !quoted
+		} else if !quoted && r == ' ' {
+			args = append(args, sb.String())
+			sb.Reset()
+		} else {
+			sb.WriteRune(r)
+		}
+	}
+	if sb.Len() > 0 {
+		args = append(args, sb.String())
+	}
+	return args
 }
 
 // init registers HandlerCrond
 func init() {
-	AddHandlerProvider(func(config SchedulerConfig, fallback bool) (hr Handler) {
+	AddHandlerProvider(func(config SchedulerConfig, fallback bool) Handler {
 		if config.Type() == constants.SchedulerCrond ||
 			(fallback && config.Type() == constants.SchedulerOSDefault) {
-			hr = NewHandlerCrond(config.Convert(constants.SchedulerCrond))
+			handler := NewHandlerCrond(config.Convert(constants.SchedulerCrond))
+			handler.fs = afero.NewOsFs()
+			return handler
 		}
-		return
+		return nil
 	})
 }

@@ -6,6 +6,8 @@ import (
 	"os/user"
 	"regexp"
 	"strings"
+
+	"github.com/creativeprojects/resticprofile/calendar"
 )
 
 const (
@@ -332,6 +334,7 @@ func parseEntry(line string) *Entry {
 	matches := legacyPattern.FindStringSubmatch(line)
 	if len(matches) == 10 {
 		return &Entry{
+			event:       parseEvent(matches[1]),
 			user:        getUserValue(matches[3]),
 			workDir:     getWorkdirValue(matches[4]),
 			commandLine: matches[5],
@@ -344,6 +347,7 @@ func parseEntry(line string) *Entry {
 	matches = runSchedulePattern.FindStringSubmatch(line)
 	if len(matches) == 9 {
 		return &Entry{
+			event:       parseEvent(matches[1]),
 			user:        getUserValue(matches[3]),
 			workDir:     getWorkdirValue(matches[4]),
 			commandLine: matches[5],
@@ -353,6 +357,11 @@ func parseEntry(line string) *Entry {
 		}
 	}
 	return nil
+}
+
+func parseEvent(_ string) *calendar.Event {
+	event := calendar.NewEvent()
+	return event
 }
 
 func getUserValue(user string) string {

@@ -403,6 +403,7 @@ func TestParseEntry(t *testing.T) {
 	for _, testRun := range testData {
 		t.Run("", func(t *testing.T) {
 			entry := parseEntry(testRun.source)
+			testRun.expectEntry.event = calendar.NewEvent()
 			assert.Equal(t, testRun.expectEntry, entry)
 		})
 	}

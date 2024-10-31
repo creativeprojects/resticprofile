@@ -182,7 +182,7 @@ func TestCreateSystemPlist(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestReadingScheduled(t *testing.T) {
+func TestReadingLaunchdScheduled(t *testing.T) {
 	testCases := []struct {
 		job       Config
 		schedules []*calendar.Event
