@@ -93,6 +93,10 @@ func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 	return nil
 }
 
+func (h *HandlerWindows) Scheduled(profileName string) ([]Config, error) {
+	return nil, errors.New("not implemented")
+}
+
 // init registers HandlerWindows
 func init() {
 	AddHandlerProvider(func(config SchedulerConfig, _ bool) (hr Handler) {

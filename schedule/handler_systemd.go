@@ -243,6 +243,27 @@ func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	return runSystemctlCommand(timerName, systemctlStatus, systemdType, false)
 }
 
+func (h *HandlerSystemd) Scheduled(profileName string) ([]Config, error) {
+	configs := []Config{}
+
+	cfgs, err := getConfigs(profileName, systemd.SystemUnit)
+	if err != nil {
+		clog.Errorf("cannot list system units: %s", err)
+	}
+	if len(cfgs) > 0 {
+		configs = append(configs, cfgs...)
+	}
+
+	cfgs, err = getConfigs(profileName, systemd.UserUnit)
+	if err != nil {
+		clog.Errorf("cannot list user units: %s", err)
+	}
+	if len(cfgs) > 0 {
+		configs = append(configs, cfgs...)
+	}
+	return configs, nil
+}
+
 var (
 	_ Handler = &HandlerSystemd{}
 )
@@ -363,6 +384,35 @@ func unitLoaded(serviceName string, unitType systemd.UnitType) (bool, error) {
 	return slices.ContainsFunc(units, func(unit SystemdUnit) bool {
 		return unit.Unit == serviceName && unit.Load != "not-found"
 	}), nil
+}
+
+func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error) {
+	units, err := listUnits(profileName, unitType)
+	if err != nil {
+		return nil, err
+	}
+	configs := make([]Config, 0, len(units))
+	for _, unit := range units {
+		cfg, err := systemd.Read(unit.Unit, systemd.SystemUnit)
+		if err != nil {
+			clog.Errorf("cannot read information from unit %q: %s", unit.Unit, err)
+			continue
+		}
+		if cfg == nil {
+			continue
+		}
+		configs = append(configs, toScheduleConfig(*cfg))
+	}
+	return configs, nil
+}
+
+func toScheduleConfig(systemdConfig systemd.Config) Config {
+	cfg := Config{
+		ProfileName:      systemdConfig.Title,
+		CommandName:      systemdConfig.SubTitle,
+		WorkingDirectory: systemdConfig.WorkingDirectory,
+	}
+	return cfg
 }
 
 // init registers HandlerSystemd

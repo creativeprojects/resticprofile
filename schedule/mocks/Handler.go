@@ -392,6 +392,64 @@ func (_c *Handler_RemoveJob_Call) RunAndReturn(run func(*schedule.Config, string
 	return _c
 }
 
+// Scheduled provides a mock function with given fields: profileName
+func (_m *Handler) Scheduled(profileName string) ([]schedule.Config, error) {
+	ret := _m.Called(profileName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Scheduled")
+	}
+
+	var r0 []schedule.Config
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) ([]schedule.Config, error)); ok {
+		return rf(profileName)
+	}
+	if rf, ok := ret.Get(0).(func(string) []schedule.Config); ok {
+		r0 = rf(profileName)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]schedule.Config)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(profileName)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Handler_Scheduled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Scheduled'
+type Handler_Scheduled_Call struct {
+	*mock.Call
+}
+
+// Scheduled is a helper method to define mock.On call
+//   - profileName string
+func (_e *Handler_Expecter) Scheduled(profileName interface{}) *Handler_Scheduled_Call {
+	return &Handler_Scheduled_Call{Call: _e.mock.On("Scheduled", profileName)}
+}
+
+func (_c *Handler_Scheduled_Call) Run(run func(profileName string)) *Handler_Scheduled_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *Handler_Scheduled_Call) Return(_a0 []schedule.Config, _a1 error) *Handler_Scheduled_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Handler_Scheduled_Call) RunAndReturn(run func(string) ([]schedule.Config, error)) *Handler_Scheduled_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewHandler creates a new instance of Handler. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewHandler(t interface {

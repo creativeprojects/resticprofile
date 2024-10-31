@@ -17,6 +17,7 @@ type Handler interface {
 	CreateJob(job *Config, schedules []*calendar.Event, permission string) error
 	RemoveJob(job *Config, permission string) error
 	DisplayJobStatus(job *Config) error
+	Scheduled(profileName string) ([]Config, error)
 }
 
 // FindHandler creates a schedule handler depending on the configuration or nil if the config is not supported
