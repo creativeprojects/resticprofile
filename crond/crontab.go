@@ -1,7 +1,6 @@
 package crond
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os/user"
@@ -212,11 +211,7 @@ func (c *Crontab) GetEntries() ([]Entry, error) {
 		return nil, nil
 	}
 
-	entries, err := parseEntries(ownSection)
-	if err != nil {
-		return nil, err
-	}
-
+	entries := parseEntries(ownSection)
 	return entries, nil
 }
 
@@ -308,7 +303,7 @@ func deleteLine(crontab string, entry Entry) (string, bool, error) {
 	return crontab, false, nil
 }
 
-func parseEntries(crontab string) ([]Entry, error) {
+func parseEntries(crontab string) []Entry {
 	lines := strings.Split(crontab, "\n")
 	entries := make([]Entry, 0, len(lines))
 	for _, line := range lines {
@@ -316,16 +311,16 @@ func parseEntries(crontab string) ([]Entry, error) {
 		if len(line) == 0 || strings.HasPrefix(line, "#") {
 			continue
 		}
-		entry, err := parseEntry(line)
-		if err != nil {
-			return nil, err
+		entry := parseEntry(line)
+		if entry == nil {
+			continue
 		}
 		entries = append(entries, *entry)
 	}
-	return entries, nil
+	return entries
 }
 
-func parseEntry(line string) (*Entry, error) {
+func parseEntry(line string) *Entry {
 	// should match lines like:
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
 	// 00,15,30,45 * * * *	cd /workdir && /home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
@@ -333,27 +328,38 @@ func parseEntry(line string) (*Entry, error) {
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile
 	// also with quotes around the config file:
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config "config.yaml" run-schedule backup@profile
+
+	// try legacy pattern first
 	matches := legacyPattern.FindStringSubmatch(line)
 	if len(matches) == 10 {
 		return &Entry{
-			user:        strings.TrimSpace(matches[3]),
-			workDir:     strings.TrimSuffix(strings.TrimPrefix(matches[4], "cd "), " && "),
+			user:        getUserValue(matches[3]),
+			workDir:     getWorkdirValue(matches[4]),
 			commandLine: matches[5],
 			configFile:  matches[6],
 			profileName: matches[7],
 			commandName: matches[9],
-		}, nil
+		}
 	}
+	// then try the current pattern
 	matches = runSchedulePattern.FindStringSubmatch(line)
 	if len(matches) == 9 {
 		return &Entry{
-			user:        strings.TrimSpace(matches[3]),
-			workDir:     strings.TrimSuffix(strings.TrimPrefix(matches[4], "cd "), " && "),
+			user:        getUserValue(matches[3]),
+			workDir:     getWorkdirValue(matches[4]),
 			commandLine: matches[5],
 			configFile:  matches[6],
 			commandName: matches[7],
 			profileName: matches[8],
-		}, nil
+		}
 	}
-	return nil, errors.New("invalid crontab entry")
+	return nil
+}
+
+func getUserValue(user string) string {
+	return strings.TrimSpace(user)
+}
+
+func getWorkdirValue(workdir string) string {
+	return strings.TrimSuffix(strings.TrimPrefix(workdir, "cd "), " && ")
 }

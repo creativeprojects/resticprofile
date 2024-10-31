@@ -402,12 +402,7 @@ func TestParseEntry(t *testing.T) {
 
 	for _, testRun := range testData {
 		t.Run("", func(t *testing.T) {
-			entry, err := parseEntry(testRun.source)
-			if testRun.expectEntry == nil {
-				assert.Nil(t, entry)
-				require.Error(t, err)
-			}
-			require.NoError(t, err)
+			entry := parseEntry(testRun.source)
 			assert.Equal(t, testRun.expectEntry, entry)
 		})
 	}
