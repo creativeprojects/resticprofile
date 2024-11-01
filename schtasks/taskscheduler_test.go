@@ -114,8 +114,8 @@ func TestCompileDifferences(t *testing.T) {
 		require.NoError(t, err)
 		start := event.Next(ref)
 		diff, uniques := compileDifferences(event.GetAllInBetween(start, start.Add(24*time.Hour)))
-		assert.ElementsMatch(t, testItem.differences, diff)
-		assert.ElementsMatch(t, testItem.unique, uniques)
+		assert.ElementsMatch(t, testItem.differences, diff, "duration between triggers")
+		assert.ElementsMatch(t, testItem.unique, uniques, "unique set of durations between triggers")
 	}
 }
 
