@@ -8,6 +8,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
+	"github.com/creativeprojects/resticprofile/shell"
 )
 
 // HandlerWindows is using windows task manager
@@ -94,7 +95,24 @@ func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 }
 
 func (h *HandlerWindows) Scheduled(profileName string) ([]Config, error) {
-	return nil, errors.New("not implemented")
+	tasks, err := schtasks.Registered()
+	if err != nil {
+		return nil, err
+	}
+	configs := make([]Config, 0, len(tasks))
+	for _, task := range tasks {
+		if profileName == "" || task.ProfileName == profileName {
+			configs = append(configs, Config{
+				ProfileName:      task.ProfileName,
+				CommandName:      task.CommandName,
+				Command:          task.Command,
+				Arguments:        NewCommandArguments(shell.SplitArguments(task.Arguments)),
+				WorkingDirectory: task.WorkingDirectory,
+				JobDescription:   task.JobDescription,
+			})
+		}
+	}
+	return configs, nil
 }
 
 // init registers HandlerWindows

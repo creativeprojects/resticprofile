@@ -161,16 +161,23 @@ func TestNextTrigger(t *testing.T) {
 	// the base time is the example in the Go documentation https://golang.org/pkg/time/
 	ref, err := time.Parse(time.ANSIC, "Mon Jan 2 15:04:05 2006")
 	require.NoError(t, err)
+	refNoSecond, err := time.Parse(time.ANSIC, "Mon Jan 2 15:04:00 2006")
+	require.NoError(t, err)
 
-	testData := []struct{ event, trigger string }{
-		{"*:*:*", "2006-01-02 15:05:00"}, // seconds are zeroed out => take next minute
-		{"03-*", "2006-03-01 00:00:00"},
-		{"*-01", "2006-02-01 00:00:00"},
-		{"*:*:11", "2006-01-02 15:05:00"}, // again, seconds are zeroed out
-		{"*:11:*", "2006-01-02 15:11:00"},
-		{"11:*:*", "2006-01-03 11:00:00"},
-		{"tue", "2006-01-03 00:00:00"},
-		{"2003-*-*", "0001-01-01 00:00:00"},
+	testData := []struct {
+		event, trigger string
+		ref            time.Time
+	}{
+		{"*:*:*", "2006-01-02 15:04:00", refNoSecond}, // at the exact same second
+		{"*:*:*", "2006-01-02 15:05:00", ref},         // seconds are zeroed out => take next minute
+		{"03-*", "2006-03-01 00:00:00", ref},
+		{"*-01", "2006-02-01 00:00:00", ref},
+		{"*:*:11", "2006-01-02 15:04:00", refNoSecond}, // at the exact same second
+		{"*:*:11", "2006-01-02 15:05:00", ref},         // seconds are zeroed out => take next minute
+		{"*:11:*", "2006-01-02 15:11:00", ref},
+		{"11:*:*", "2006-01-03 11:00:00", ref},
+		{"tue", "2006-01-03 00:00:00", ref},
+		{"2003-*-*", "0001-01-01 00:00:00", ref},
 	}
 
 	for _, testItem := range testData {
@@ -178,7 +185,7 @@ func TestNextTrigger(t *testing.T) {
 			event := NewEvent()
 			err = event.Parse(testItem.event)
 			assert.NoError(t, err)
-			assert.Equal(t, testItem.trigger, event.Next(ref).String()[0:len(testItem.trigger)])
+			assert.Equal(t, testItem.trigger, event.Next(testItem.ref).String()[0:len(testItem.trigger)])
 		})
 	}
 }

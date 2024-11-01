@@ -2,12 +2,12 @@ package schedule
 
 import (
 	"slices"
-	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/spf13/afero"
 )
 
@@ -136,7 +136,7 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 			configs[index].Schedules = append(configs[index].Schedules, entry.Event().String())
 		} else {
 			commandLine := entry.CommandLine()
-			args := splitArguments(commandLine)
+			args := shell.SplitArguments(commandLine)
 			configs = append(configs, Config{
 				ProfileName:      profileName,
 				CommandName:      commandName,
@@ -149,26 +149,6 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 		}
 	}
 	return configs, nil
-}
-
-func splitArguments(commandLine string) []string {
-	args := make([]string, 0)
-	sb := &strings.Builder{}
-	quoted := false
-	for _, r := range commandLine {
-		if r == '"' {
-			quoted = !quoted
-		} else if !quoted && r == ' ' {
-			args = append(args, sb.String())
-			sb.Reset()
-		} else {
-			sb.WriteRune(r)
-		}
-	}
-	if sb.Len() > 0 {
-		args = append(args, sb.String())
-	}
-	return args
 }
 
 // init registers HandlerCrond
