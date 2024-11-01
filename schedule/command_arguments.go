@@ -39,6 +39,21 @@ func (ca CommandArguments) String() string {
 	return b.String()
 }
 
+// ConfigFile returns the value of the --config argument, if present
+func (ca CommandArguments) ConfigFile() string {
+	if len(ca.args) == 0 {
+		return ""
+	}
+	for i, arg := range ca.args {
+		if arg == "--config" {
+			if i+1 < len(ca.args) {
+				return ca.args[i+1]
+			}
+		}
+	}
+	return ""
+}
+
 func (ca CommandArguments) writeString(b *strings.Builder, str string) {
 	if strings.Contains(str, " ") {
 		b.WriteString(`"`)

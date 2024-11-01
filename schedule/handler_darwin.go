@@ -296,11 +296,13 @@ func (h *HandlerLaunchd) getJobConfig(filename, name string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading plist file: %w", err)
 	}
+	args := NewCommandArguments(launchdJob.ProgramArguments[2:]) // first is binary, second is --no-prio
 	job := &Config{
 		ProfileName:      profileName,
 		CommandName:      commandName,
 		Command:          launchdJob.Program,
-		Arguments:        NewCommandArguments(launchdJob.ProgramArguments[2:]), // first is binary, second is --no-prio
+		ConfigFile:       args.ConfigFile(),
+		Arguments:        args,
 		WorkingDirectory: launchdJob.WorkingDirectory,
 	}
 	return job, nil

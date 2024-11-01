@@ -15,6 +15,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/creativeprojects/resticprofile/term"
 )
@@ -407,10 +408,21 @@ func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error)
 }
 
 func toScheduleConfig(systemdConfig systemd.Config) Config {
+	var command string
+	cmdLine := shell.SplitArguments(systemdConfig.CommandLine)
+	if len(cmdLine) > 0 {
+		command = cmdLine[0]
+	}
+	args := NewCommandArguments(cmdLine[1:])
+
 	cfg := Config{
 		ProfileName:      systemdConfig.Title,
 		CommandName:      systemdConfig.SubTitle,
 		WorkingDirectory: systemdConfig.WorkingDirectory,
+		Command:          command,
+		Arguments:        args,
+		JobDescription:   systemdConfig.JobDescription,
+		Environment:      systemdConfig.Environment,
 	}
 	return cfg
 }
