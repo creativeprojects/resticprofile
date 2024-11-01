@@ -22,6 +22,7 @@ func TestCreateJobHappyPath(t *testing.T) {
 		ProfileName: "profile",
 		CommandName: "backup",
 		Schedules:   []string{},
+		Permission:  "user",
 	})
 
 	err := job.Create()
@@ -70,6 +71,7 @@ func TestCreateJobErrorCreate(t *testing.T) {
 		ProfileName: "profile",
 		CommandName: "backup",
 		Schedules:   []string{},
+		Permission:  "user",
 	})
 
 	err := job.Create()
