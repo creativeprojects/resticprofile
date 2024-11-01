@@ -1,6 +1,9 @@
 package schedule
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 type CommandArguments struct {
 	args []string
@@ -10,6 +13,18 @@ func NewCommandArguments(args []string) CommandArguments {
 	return CommandArguments{
 		args: args,
 	}
+}
+
+// Trim returns a new CommandArguments with the specified flags removed from the arguments
+func (ca CommandArguments) Trim(removeArgs []string) CommandArguments {
+	args := make([]string, 0, len(ca.args))
+	for _, arg := range ca.args {
+		if slices.Contains(removeArgs, arg) {
+			continue
+		}
+		args = append(args, arg)
+	}
+	return NewCommandArguments(args)
 }
 
 func (ca CommandArguments) RawArgs() []string {

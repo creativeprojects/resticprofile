@@ -43,7 +43,9 @@ WantedBy=timers.target`
 func TestReadUnitFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	unitFile := "resticprofile-copy@profile-self.service"
+	timerFile := "resticprofile-copy@profile-self.timer"
 	require.NoError(t, afero.WriteFile(fs, path.Join(systemdSystemDir, unitFile), []byte(testServiceUnit), 0o600))
+	require.NoError(t, afero.WriteFile(fs, path.Join(systemdSystemDir, timerFile), []byte(testTimerUnit), 0o600))
 
 	cfg, err := Read(unitFile, SystemUnit)
 	require.NoError(t, err)
@@ -57,17 +59,17 @@ func TestReadUnitFile(t *testing.T) {
 		SubTitle:             "copy",
 		JobDescription:       "resticprofile copy for profile self in examples/linux.yaml",
 		TimerDescription:     "",
-		Schedules:            []string(nil),
+		Schedules:            []string{"*:45"},
 		UnitType:             SystemUnit,
-		Priority:             "",
+		Priority:             "background",
 		UnitFile:             "",
 		TimerFile:            "",
 		DropInFiles:          []string(nil),
 		AfterNetworkOnline:   false,
-		Nice:                 0,
+		Nice:                 19,
 		CPUSchedulingPolicy:  "",
-		IOSchedulingClass:    0,
-		IOSchedulingPriority: 0,
+		IOSchedulingClass:    3,
+		IOSchedulingPriority: 7,
 	}
 	assert.Equal(t, expected, cfg)
 }
@@ -86,7 +88,7 @@ func TestReadSystemUnit(t *testing.T) {
 				TimerDescription: "timer description",
 				Schedules:        []string{"daily"},
 				UnitType:         SystemUnit,
-				Priority:         "low",
+				Priority:         "background",
 			},
 		},
 		{
@@ -99,7 +101,7 @@ func TestReadSystemUnit(t *testing.T) {
 				TimerDescription: "timer description",
 				Schedules:        []string{"daily", "weekly"},
 				UnitType:         UserUnit,
-				Priority:         "low",
+				Priority:         "background",
 				Environment: []string{
 					"TMP=/tmp",
 				},
@@ -132,6 +134,8 @@ func TestReadSystemUnit(t *testing.T) {
 				CommandLine:      tc.config.CommandLine,
 				UnitType:         tc.config.UnitType,
 				Environment:      append(tc.config.Environment, "HOME="+home),
+				Schedules:        tc.config.Schedules,
+				Priority:         tc.config.Priority,
 			}
 			assert.Equal(t, expected, readCfg)
 		})

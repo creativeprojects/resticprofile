@@ -3,6 +3,7 @@
 package schedule
 
 import (
+	"os"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -48,23 +49,37 @@ func TestReadingSystemdScheduled(t *testing.T) {
 			schedules: []*calendar.Event{event},
 		},
 	}
+	userHome, err := os.UserHomeDir()
+	require.NoError(t, err)
 
 	handler := NewHandler(SchedulerSystemd{}).(*HandlerSystemd)
 
 	expectedJobs := []Config{}
 	for _, testCase := range testCases {
-		expectedJobs = append(expectedJobs, testCase.job)
-		toRemove := &testCase.job
+		job := testCase.job
+		err := handler.CreateJob(&job, testCase.schedules, schedulePermission)
 
-		err := handler.CreateJob(&testCase.job, testCase.schedules, schedulePermission)
+		toRemove := &job
 		t.Cleanup(func() {
 			_ = handler.RemoveJob(toRemove, schedulePermission)
 		})
 		require.NoError(t, err)
+
+		job.Environment = []string{"HOME=" + userHome}
+		expectedJobs = append(expectedJobs, job)
 	}
 
 	scheduled, err := handler.Scheduled("")
 	require.NoError(t, err)
 
-	assert.ElementsMatch(t, expectedJobs, scheduled)
+	testScheduled := make([]Config, 0, len(scheduled))
+	for _, s := range scheduled {
+		if s.ConfigFile != "config file.yaml" && s.ConfigFile != "examples/dev.yaml" {
+			t.Logf("Ignoring config file %s", s.ConfigFile)
+			continue
+		}
+		testScheduled = append(testScheduled, s)
+	}
+
+	assert.ElementsMatch(t, expectedJobs, testScheduled)
 }

@@ -114,7 +114,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 	}
 
 	err := systemd.Generate(systemd.Config{
-		CommandLine:          job.Command + " " + strings.Join(append([]string{"--no-prio"}, job.Arguments.RawArgs()...), " "),
+		CommandLine:          job.Command + " --no-prio " + job.Arguments.String(),
 		Environment:          job.Environment,
 		WorkingDirectory:     job.WorkingDirectory,
 		Title:                job.ProfileName,
@@ -402,12 +402,12 @@ func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error)
 		if cfg == nil {
 			continue
 		}
-		configs = append(configs, toScheduleConfig(*cfg))
+		configs = append(configs, toScheduleConfig(*cfg, unitType))
 	}
 	return configs, nil
 }
 
-func toScheduleConfig(systemdConfig systemd.Config) Config {
+func toScheduleConfig(systemdConfig systemd.Config, unitType systemd.UnitType) Config {
 	var command string
 	cmdLine := shell.SplitArguments(systemdConfig.CommandLine)
 	if len(cmdLine) > 0 {
@@ -415,14 +415,23 @@ func toScheduleConfig(systemdConfig systemd.Config) Config {
 	}
 	args := NewCommandArguments(cmdLine[1:])
 
+	permission := constants.SchedulePermissionUser
+	if unitType == systemd.SystemUnit {
+		permission = constants.SchedulePermissionSystem
+	}
+
 	cfg := Config{
+		ConfigFile:       args.ConfigFile(),
 		ProfileName:      systemdConfig.Title,
 		CommandName:      systemdConfig.SubTitle,
 		WorkingDirectory: systemdConfig.WorkingDirectory,
 		Command:          command,
-		Arguments:        args,
+		Arguments:        args.Trim([]string{"--no-prio"}),
 		JobDescription:   systemdConfig.JobDescription,
 		Environment:      systemdConfig.Environment,
+		Permission:       permission,
+		Schedules:        systemdConfig.Schedules,
+		Priority:         systemdConfig.Priority,
 	}
 	return cfg
 }

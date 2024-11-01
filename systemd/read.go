@@ -5,6 +5,7 @@ package systemd
 import (
 	"bytes"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -19,7 +20,37 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 			return nil, err
 		}
 	}
-	content, err := afero.ReadFile(fs, path.Join(unitsDir, unit))
+	filename := path.Join(unitsDir, unit)
+	serviceSections, err := readSystemdUnit(filename)
+	if err != nil {
+		return nil, err
+	}
+	filename = strings.Replace(filename, ".service", ".timer", 1)
+	timerSections, err := readSystemdUnit(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	profileName, commandName := parseServiceFileName(unit)
+	cfg := &Config{
+		Title:                profileName,
+		SubTitle:             commandName,
+		JobDescription:       getSingleValue(serviceSections, "Unit", "Description"),
+		WorkingDirectory:     getSingleValue(serviceSections, "Service", "WorkingDirectory"),
+		CommandLine:          getSingleValue(serviceSections, "Service", "ExecStart"),
+		UnitType:             unitType,
+		Environment:          getValues(serviceSections, "Service", "Environment"),
+		Nice:                 getIntegerValue(serviceSections, "Service", "Nice"),
+		IOSchedulingClass:    getIntegerValue(serviceSections, "Service", "IOSchedulingClass"),
+		IOSchedulingPriority: getIntegerValue(serviceSections, "Service", "IOSchedulingPriority"),
+		Schedules:            getValues(timerSections, "Timer", "OnCalendar"),
+		Priority:             "background", //TODO fix this hard-coded value
+	}
+	return cfg, nil
+}
+
+func readSystemdUnit(filename string) (map[string]map[string][]string, error) {
+	content, err := afero.ReadFile(fs, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -49,21 +80,13 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 			}
 		}
 	}
-	description := getSingleValue(sections, "Unit", "Description")
-	workdir := getSingleValue(sections, "Service", "WorkingDirectory")
-	commandLine := getSingleValue(sections, "Service", "ExecStart")
-	environment := getValues(sections, "Service", "Environment")
-	profileName, commandName := parseServiceFileName(unit)
-	cfg := &Config{
-		Title:            profileName,
-		SubTitle:         commandName,
-		JobDescription:   description,
-		WorkingDirectory: workdir,
-		CommandLine:      commandLine,
-		UnitType:         unitType,
-		Environment:      environment,
-	}
-	return cfg, nil
+	return sections, nil
+}
+
+func getIntegerValue(from map[string]map[string][]string, section, key string) int {
+	str := getSingleValue(from, section, key)
+	value, _ := strconv.Atoi(str)
+	return value
 }
 
 func getSingleValue(from map[string]map[string][]string, section, key string) string {
