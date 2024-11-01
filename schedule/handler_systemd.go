@@ -394,7 +394,7 @@ func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error)
 	}
 	configs := make([]Config, 0, len(units))
 	for _, unit := range units {
-		cfg, err := systemd.Read(unit.Unit, systemd.SystemUnit)
+		cfg, err := systemd.Read(unit.Unit, unitType)
 		if err != nil {
 			clog.Errorf("cannot read information from unit %q: %s", unit.Unit, err)
 			continue

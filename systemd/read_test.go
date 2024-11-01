@@ -5,6 +5,7 @@ package systemd
 import (
 	"fmt"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -38,6 +39,38 @@ Persistent=true
 [Install]
 WantedBy=timers.target`
 )
+
+func TestReadUnitFile(t *testing.T) {
+	fs = afero.NewMemMapFs()
+	unitFile := "resticprofile-copy@profile-self.service"
+	require.NoError(t, afero.WriteFile(fs, path.Join(systemdSystemDir, unitFile), []byte(testServiceUnit), 0o600))
+
+	cfg, err := Read(unitFile, SystemUnit)
+	require.NoError(t, err)
+	assert.NotNil(t, cfg)
+
+	expected := &Config{
+		CommandLine:          "/tmp/go-build982790897/b001/exe/resticprofile --no-prio --no-ansi --config examples/linux.yaml run-schedule copy@self",
+		Environment:          []string{"RESTICPROFILE_SCHEDULE_ID=examples/linux.yaml:copy@self", "HOME=/home/linux"},
+		WorkingDirectory:     "/home/linux/go/src/github.com/creativeprojects/resticprofile",
+		Title:                "self",
+		SubTitle:             "copy",
+		JobDescription:       "resticprofile copy for profile self in examples/linux.yaml",
+		TimerDescription:     "",
+		Schedules:            []string(nil),
+		UnitType:             SystemUnit,
+		Priority:             "",
+		UnitFile:             "",
+		TimerFile:            "",
+		DropInFiles:          []string(nil),
+		AfterNetworkOnline:   false,
+		Nice:                 0,
+		CPUSchedulingPolicy:  "",
+		IOSchedulingClass:    0,
+		IOSchedulingPriority: 0,
+	}
+	assert.Equal(t, expected, cfg)
+}
 
 func TestReadSystemUnit(t *testing.T) {
 	testCases := []struct {
