@@ -562,6 +562,45 @@ func getTaskPath(profileName, commandName string) string {
 	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
 }
 
+func Registered() ([]Config, error) {
+	if !IsConnected() {
+		return nil, ErrNotConnected
+	}
+
+	tasks, err := taskService.GetRegisteredTasks()
+	if err != nil {
+		return nil, err
+	}
+	configs := make([]Config, 0, len(tasks))
+	for _, task := range tasks {
+		if !strings.HasPrefix(task.Path, tasksPath) {
+			continue
+		}
+		taskPath := strings.TrimPrefix(task.Path, tasksPath)
+		parts := strings.Split(taskPath, " ")
+		if len(parts) < 2 {
+			clog.Warningf("cannot parse task path: %s", task.Path)
+			continue
+		}
+		profileName := strings.Join(parts[:len(parts)-1], " ")
+		commandName := parts[len(parts)-1]
+		cfg := Config{
+			ProfileName:    profileName,
+			CommandName:    commandName,
+			JobDescription: task.Definition.RegistrationInfo.Description,
+		}
+		if len(task.Definition.Actions) > 0 {
+			if action, ok := task.Definition.Actions[0].(taskmaster.ExecAction); ok {
+				cfg.WorkingDirectory = action.WorkingDir
+				cfg.Command = action.Path
+				cfg.Arguments = action.Args
+			}
+		}
+		configs = append(configs, cfg)
+	}
+	return configs, nil
+}
+
 // compileDifferences is creating two slices: the first one is the duration between each trigger,
 // the second one is a list of all the differences in between
 //
