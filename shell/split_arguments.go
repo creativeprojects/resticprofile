@@ -6,18 +6,19 @@ func SplitArguments(commandLine string) []string {
 	args := make([]string, 0)
 	sb := &strings.Builder{}
 	quoted := false
+	escaped := false
 	for _, r := range commandLine {
-		escape := false
-		if r == '\\' {
-			sb.WriteRune(r)
-			escape = true
-		} else if r == '"' && !escape {
+		if r == '\\' && !escaped {
+			escaped = true
+		} else if r == '"' && !escaped {
 			quoted = !quoted
-		} else if !quoted && r == ' ' {
+			escaped = false
+		} else if !quoted && !escaped && r == ' ' {
 			args = append(args, sb.String())
 			sb.Reset()
 		} else {
 			sb.WriteRune(r)
+			escaped = false
 		}
 	}
 	if sb.Len() > 0 {

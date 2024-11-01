@@ -43,6 +43,10 @@ func TestSplitArguments(t *testing.T) {
 			commandLine:  `cmd "arg \"with\" spaces"`,
 			expectedArgs: []string{"cmd", "arg \"with\" spaces"},
 		},
+		{
+			commandLine:  `cmd arg\ with\ spaces`,
+			expectedArgs: []string{"cmd", "arg with spaces"},
+		},
 	}
 
 	for _, testCase := range testCases {
