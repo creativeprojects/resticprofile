@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/spf13/afero"
 )
 
 const (
@@ -15,55 +17,11 @@ const (
 	defaultCrontabFilePerms = fs.FileMode(0644)
 )
 
-func verifyCrontabFile(file string) error {
-	if file == "" {
-		return fmt.Errorf("no contrab file was specified")
-	}
-	return nil
-}
+var (
+	ErrNoCrontabFile = errors.New("no crontab file was specified")
+)
 
-func loadCrontabFile(file string) (content, charset string, err error) {
-	if err = verifyCrontabFile(file); err != nil {
-		return
-	}
-	var f *os.File
-	if f, err = os.Open(file); err == nil {
-		defer func() { _ = f.Close() }()
-
-		var bytes []byte
-		bytes, err = io.ReadAll(io.LimitReader(f, maxCrontabFileSize))
-		if err == nil && len(bytes) == maxCrontabFileSize {
-			err = fmt.Errorf("max file size of %d bytes exceeded in %q", maxCrontabFileSize, file)
-		}
-		if err == nil {
-			// TODO: handle charsets
-			charset = ""
-			content = string(bytes)
-		}
-	} else if errors.Is(err, os.ErrNotExist) {
-		err = nil
-	}
-	return
-}
-
-//nolint:unparam
-func saveCrontabFile(file, content, charset string) (err error) {
-	if err = verifyCrontabFile(file); err != nil {
-		return
-	}
-
-	// TODO: handle charsets
-	bytes := []byte(content)
-
-	if len(bytes) >= maxCrontabFileSize {
-		err = fmt.Errorf("max file size of %d bytes exceeded in new %q", maxCrontabFileSize, file)
-	} else {
-		err = os.WriteFile(file, bytes, defaultCrontabFilePerms)
-	}
-	return
-}
-
-func loadCrontab(file, crontabBinary string) (content, charset string, err error) {
+func loadCrontab(fs afero.Fs, file, crontabBinary string) (content, charset string, err error) {
 	if file == "" && crontabBinary != "" {
 		buffer := new(strings.Builder)
 		{
@@ -85,18 +43,66 @@ func loadCrontab(file, crontabBinary string) (content, charset string, err error
 		}
 		return
 	} else {
-		return loadCrontabFile(file)
+		return loadCrontabFile(fs, file)
 	}
 }
 
-func saveCrontab(file, content, charset, crontabBinary string) (err error) {
+func saveCrontab(fs afero.Fs, file, content, charset, crontabBinary string) (err error) {
 	if file == "" && crontabBinary != "" {
 		cmd := exec.Command(crontabBinary, "-")
 		cmd.Stdin = strings.NewReader(content)
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
 	} else {
-		err = saveCrontabFile(file, content, charset)
+		err = saveCrontabFile(fs, file, content, charset)
+	}
+	return
+}
+
+func verifyCrontabFile(file string) error {
+	if file == "" {
+		return ErrNoCrontabFile
+	}
+	return nil
+}
+
+func loadCrontabFile(fs afero.Fs, file string) (content, charset string, err error) {
+	if err = verifyCrontabFile(file); err != nil {
+		return
+	}
+	var f afero.File
+	if f, err = fs.Open(file); err == nil {
+		defer func() { _ = f.Close() }()
+
+		var bytes []byte
+		bytes, err = io.ReadAll(io.LimitReader(f, maxCrontabFileSize))
+		if err == nil && len(bytes) == maxCrontabFileSize {
+			err = fmt.Errorf("max file size of %d bytes exceeded in %q", maxCrontabFileSize, file)
+		}
+		if err == nil {
+			// TODO: handle charsets
+			charset = ""
+			content = string(bytes)
+		}
+	} else if errors.Is(err, os.ErrNotExist) {
+		err = nil
+	}
+	return
+}
+
+//nolint:unparam
+func saveCrontabFile(fs afero.Fs, file, content, charset string) (err error) {
+	if err = verifyCrontabFile(file); err != nil {
+		return
+	}
+
+	// TODO: handle charsets
+	bytes := []byte(content)
+
+	if len(bytes) >= maxCrontabFileSize {
+		err = fmt.Errorf("max file size of %d bytes exceeded in new %q", maxCrontabFileSize, file)
+	} else {
+		err = afero.WriteFile(fs, file, bytes, defaultCrontabFilePerms)
 	}
 	return
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/spf13/afero"
 )
 
 const (
@@ -29,10 +30,14 @@ var (
 type Crontab struct {
 	file, binary, charset, user string
 	entries                     []Entry
+	fs                          afero.Fs
 }
 
 func NewCrontab(entries []Entry) (c *Crontab) {
-	c = &Crontab{entries: entries}
+	c = &Crontab{
+		entries: entries,
+		fs:      afero.NewOsFs(),
+	}
 
 	for i, entry := range c.entries {
 		if entry.NeedsUser() {
@@ -44,13 +49,22 @@ func NewCrontab(entries []Entry) (c *Crontab) {
 }
 
 // SetBinary sets the crontab binary to use for reading and writing the crontab (if empty, SetFile must be used)
-func (c *Crontab) SetBinary(crontabBinary string) {
+func (c *Crontab) SetBinary(crontabBinary string) *Crontab {
 	c.binary = crontabBinary
+	return c
 }
 
 // SetFile toggles whether to read & write a crontab file instead of using the crontab binary
-func (c *Crontab) SetFile(file string) {
+func (c *Crontab) SetFile(file string) *Crontab {
 	c.file = file
+	return c
+}
+
+// SetFs sets the filesystem to use for reading and writing the crontab file.
+// If not set, it will use the default filesystem.
+func (c *Crontab) SetFs(fs afero.Fs) *Crontab {
+	c.fs = fs
+	return c
 }
 
 // update crontab entries:
@@ -105,7 +119,7 @@ func (c *Crontab) update(source string, addEntries bool, w io.StringWriter) (int
 	}
 
 	if addEntries {
-		err = c.Generate(w)
+		err = c.generate(w)
 		if err != nil {
 			return deleted, err
 		}
@@ -125,7 +139,7 @@ func (c *Crontab) update(source string, addEntries bool, w io.StringWriter) (int
 	return deleted, nil
 }
 
-func (c *Crontab) Generate(w io.StringWriter) error {
+func (c *Crontab) generate(w io.StringWriter) error {
 	var err error
 	if len(c.entries) > 0 {
 		for _, entry := range c.entries {
@@ -139,7 +153,7 @@ func (c *Crontab) Generate(w io.StringWriter) error {
 }
 
 func (c *Crontab) LoadCurrent() (content string, err error) {
-	content, c.charset, err = loadCrontab(c.file, c.binary)
+	content, c.charset, err = loadCrontab(c.fs, c.file, c.binary)
 	if err == nil {
 		if cleaned := cleanupCrontab(content); cleaned != content {
 			if len(c.file) == 0 {
@@ -184,7 +198,7 @@ func (c *Crontab) Rewrite() error {
 		return err
 	}
 
-	return saveCrontab(c.file, buffer.String(), c.charset, c.binary)
+	return saveCrontab(c.fs, c.file, buffer.String(), c.charset, c.binary)
 }
 
 func (c *Crontab) Remove() (int, error) {
@@ -196,7 +210,7 @@ func (c *Crontab) Remove() (int, error) {
 	buffer := new(strings.Builder)
 	num, err := c.update(crontab, false, buffer)
 	if err == nil {
-		err = saveCrontab(c.file, buffer.String(), c.charset, c.binary)
+		err = saveCrontab(c.fs, c.file, buffer.String(), c.charset, c.binary)
 	}
 	return num, err
 }

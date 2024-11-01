@@ -78,9 +78,10 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 			entries[i] = entries[i].WithUser(h.config.Username)
 		}
 	}
-	crontab := crond.NewCrontab(entries)
-	crontab.SetFile(h.config.CrontabFile)
-	crontab.SetBinary(h.config.CrontabBinary)
+	crontab := crond.NewCrontab(entries).
+		SetFile(h.config.CrontabFile).
+		SetBinary(h.config.CrontabBinary).
+		SetFs(h.fs)
 	err := crontab.Rewrite()
 	if err != nil {
 		return err
@@ -99,9 +100,10 @@ func (h *HandlerCrond) RemoveJob(job *Config, permission string) error {
 			job.WorkingDirectory,
 		),
 	}
-	crontab := crond.NewCrontab(entries)
-	crontab.SetFile(h.config.CrontabFile)
-	crontab.SetBinary(h.config.CrontabBinary)
+	crontab := crond.NewCrontab(entries).
+		SetFile(h.config.CrontabFile).
+		SetBinary(h.config.CrontabBinary).
+		SetFs(h.fs)
 	num, err := crontab.Remove()
 	if err != nil {
 		return err
@@ -118,9 +120,10 @@ func (h *HandlerCrond) DisplayJobStatus(job *Config) error {
 }
 
 func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
-	crontab := crond.NewCrontab(nil)
-	crontab.SetFile(h.config.CrontabFile)
-	crontab.SetBinary(h.config.CrontabBinary)
+	crontab := crond.NewCrontab(nil).
+		SetFile(h.config.CrontabFile).
+		SetBinary(h.config.CrontabBinary).
+		SetFs(h.fs)
 	entries, err := crontab.GetEntries()
 	if err != nil {
 		return nil, err
