@@ -210,45 +210,11 @@ func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
 		profileName = strings.ToLower(profileName)
 	}
 	// system jobs
-	prefix := path.Join(GlobalDaemons, namePrefix)
-	matches, err := afero.Glob(h.fs, fmt.Sprintf("%s%s.*%s", prefix, profileName, daemonExtension))
-	if err != nil {
-		clog.Warningf("Error while listing system jobs: %s", err)
-	}
-	for _, match := range matches {
-		extract := strings.TrimSuffix(strings.TrimPrefix(match, prefix), daemonExtension)
-		job, err := h.getJobConfig(match, extract)
-		if err != nil {
-			clog.Warning(err)
-			continue
-		}
-		if job != nil {
-			job.Permission = constants.SchedulePermissionSystem
-			jobs = append(jobs, *job)
-		}
-	}
+	systemJobs := h.getScheduledJob(profileName, constants.SchedulePermissionSystem)
+	jobs = append(jobs, systemJobs...)
 	// user jobs
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	prefix = path.Join(home, UserAgentPath, namePrefix)
-	matches, err = afero.Glob(h.fs, fmt.Sprintf("%s%s.*%s", prefix, profileName, agentExtension))
-	if err != nil {
-		clog.Warningf("Error while listing user jobs: %s", err)
-	}
-	for _, match := range matches {
-		extract := strings.TrimSuffix(strings.TrimPrefix(match, prefix), agentExtension)
-		job, err := h.getJobConfig(match, extract)
-		if err != nil {
-			clog.Warning(err)
-			continue
-		}
-		if job != nil {
-			job.Permission = constants.SchedulePermissionUser
-			jobs = append(jobs, *job)
-		}
-	}
+	userJobs := h.getScheduledJob(profileName, constants.SchedulePermissionUser)
+	jobs = append(jobs, userJobs...)
 	return jobs, nil
 }
 
@@ -287,10 +253,51 @@ func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event)
 	return launchdJob
 }
 
-func (h *HandlerLaunchd) getJobConfig(filename, name string) (*Config, error) {
-	parts := strings.Split(name, ".")
-	commandName := parts[len(parts)-1]
-	profileName := strings.Join(parts[:len(parts)-1], ".")
+func (h *HandlerLaunchd) getScheduledJob(profileName, permission string) []Config {
+	matches, err := afero.Glob(h.fs, getSchedulePattern(profileName, permission))
+	if err != nil {
+		clog.Warningf("Error while listing %s jobs: %s", permission, err)
+	}
+	jobs := make([]Config, 0, len(matches))
+	for _, match := range matches {
+		job, err := h.getJobConfig(match)
+		if err != nil {
+			clog.Warning(err)
+			continue
+		}
+		if job != nil {
+			job.Permission = permission
+			jobs = append(jobs, *job)
+		}
+	}
+	return jobs
+}
+
+func getSchedulePattern(profileName, permission string) string {
+	pattern := "%s%s.*%s"
+	if permission == constants.SchedulePermissionSystem {
+		return fmt.Sprintf(pattern, path.Join(GlobalDaemons, namePrefix), profileName, daemonExtension)
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf(pattern, path.Join(home, UserAgentPath, namePrefix), profileName, agentExtension)
+}
+
+func getCommandAndProfileFromFilename(filename string) (command string, profile string) {
+	// try removing both daemon and agent extensions
+	filename = strings.TrimSuffix(filename, agentExtension)  // longer one
+	filename = strings.TrimSuffix(filename, daemonExtension) // shorter one
+	filename = strings.TrimPrefix(path.Base(filename), namePrefix)
+	parts := strings.Split(filename, ".")
+	command = parts[len(parts)-1]
+	profile = strings.Join(parts[:len(parts)-1], ".")
+	return
+}
+
+func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
+	commandName, profileName := getCommandAndProfileFromFilename(filename)
 
 	launchdJob, err := h.readPlistFile(filename)
 	if err != nil {
