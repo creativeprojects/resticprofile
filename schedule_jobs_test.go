@@ -199,3 +199,72 @@ func TestStatusRemoveOnlyJob(t *testing.T) {
 	err := statusJobs(handler, "profile", []*config.Schedule{scheduleConfig})
 	assert.Error(t, err)
 }
+
+func TestRemoveScheduledJobs(t *testing.T) {
+	testCases := []struct {
+		removeProfileName string
+		fromConfigFile    string
+		scheduledConfigs  []schedule.Config
+		removedConfigs    []schedule.Config
+		permission        string
+	}{
+		{
+			removeProfileName: "profile_no_config",
+			fromConfigFile:    "configFile",
+			scheduledConfigs:  []schedule.Config{},
+			removedConfigs:    []schedule.Config{},
+			permission:        "user",
+		},
+		{
+			removeProfileName: "profile_one_config_to_remove",
+			fromConfigFile:    "configFile",
+			scheduledConfigs: []schedule.Config{
+				{
+					ProfileName: "profile_one_config_to_remove",
+					CommandName: "backup",
+					ConfigFile:  "configFile",
+					Permission:  "user",
+				},
+			},
+			removedConfigs: []schedule.Config{
+				{
+					ProfileName: "profile_one_config_to_remove",
+					CommandName: "backup",
+					ConfigFile:  "configFile",
+					Permission:  "user",
+				},
+			},
+			permission: "user",
+		},
+		{
+			removeProfileName: "profile_different_config_file",
+			fromConfigFile:    "configFile",
+			scheduledConfigs: []schedule.Config{
+				{
+					ProfileName: "profile_different_config_file",
+					CommandName: "backup",
+					ConfigFile:  "other_configFile",
+					Permission:  "user",
+				},
+			},
+			removedConfigs: []schedule.Config{},
+			permission:     "user",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.removeProfileName, func(t *testing.T) {
+			handler := mocks.NewHandler(t)
+			handler.EXPECT().Init().Return(nil)
+			handler.EXPECT().Close()
+
+			handler.EXPECT().Scheduled(tc.removeProfileName).Return(tc.scheduledConfigs, nil)
+			for _, cfg := range tc.removedConfigs {
+				handler.EXPECT().RemoveJob(&cfg, tc.permission).Return(nil)
+			}
+
+			err := removeScheduledJobs(handler, tc.fromConfigFile, tc.removeProfileName)
+			assert.NoError(t, err)
+		})
+	}
+}

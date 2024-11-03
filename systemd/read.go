@@ -44,7 +44,7 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 		IOSchedulingClass:    getIntegerValue(serviceSections, "Service", "IOSchedulingClass"),
 		IOSchedulingPriority: getIntegerValue(serviceSections, "Service", "IOSchedulingPriority"),
 		Schedules:            getValues(timerSections, "Timer", "OnCalendar"),
-		Priority:             "background", //TODO fix this hard-coded value
+		Priority:             "background", // TODO fix this hard-coded value
 	}
 	return cfg, nil
 }

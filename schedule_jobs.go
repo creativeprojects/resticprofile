@@ -93,6 +93,36 @@ func removeJobs(handler schedule.Handler, configs []*config.Schedule) error {
 	return nil
 }
 
+func removeScheduledJobs(handler schedule.Handler, configFile, profileName string) error {
+	err := handler.Init()
+	if err != nil {
+		return err
+	}
+	defer handler.Close()
+
+	clog.Debugf("looking up schedules from configuration file %s", configFile)
+	configs, err := handler.Scheduled(profileName)
+	if err != nil {
+		return err
+	}
+	if len(configs) == 0 {
+		clog.Info("no scheduled jobs found")
+		return nil
+	}
+	for _, cfg := range configs {
+		if cfg.ConfigFile != configFile {
+			clog.Debugf("skipping job %s/%s from configuration file %s", cfg.ProfileName, cfg.CommandName, cfg.ConfigFile)
+			continue
+		}
+		err = handler.RemoveJob(&cfg, cfg.Permission)
+		if err != nil {
+			clog.Error(err)
+		}
+		clog.Infof("scheduled job %s/%s removed", cfg.ProfileName, cfg.CommandName)
+	}
+	return nil
+}
+
 func statusJobs(handler schedule.Handler, profileName string, configs []*config.Schedule) error {
 	err := handler.Init()
 	if err != nil {
