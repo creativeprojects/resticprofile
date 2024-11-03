@@ -418,3 +418,45 @@ func TestParseEntry(t *testing.T) {
 		})
 	}
 }
+
+func TestGetEntries(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	file := "/var/spool/cron/crontabs/user"
+
+	t.Run("no crontab file", func(t *testing.T) {
+		crontab := NewCrontab(nil).SetFile(file).SetFs(fs)
+		entries, err := crontab.GetEntries()
+		require.NoError(t, err)
+		assert.Nil(t, entries)
+	})
+
+	t.Run("empty crontab file", func(t *testing.T) {
+		require.NoError(t, afero.WriteFile(fs, file, []byte(""), 0600))
+		crontab := NewCrontab(nil).SetFile(file).SetFs(fs)
+		entries, err := crontab.GetEntries()
+		require.NoError(t, err)
+		assert.Nil(t, entries)
+	})
+
+	t.Run("crontab with no own section", func(t *testing.T) {
+		require.NoError(t, afero.WriteFile(fs, file, []byte("some other content\n"), 0600))
+		crontab := NewCrontab(nil).SetFile(file).SetFs(fs)
+		entries, err := crontab.GetEntries()
+		require.NoError(t, err)
+		assert.Nil(t, entries)
+	})
+
+	t.Run("crontab with own section", func(t *testing.T) {
+		content := "some other content\n" + startMarker + "00,30 * * * *\tcd workdir && /some/bin/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n" + endMarker + "more content\n"
+		require.NoError(t, afero.WriteFile(fs, file, []byte(content), 0600))
+		crontab := NewCrontab(nil).SetFile(file).SetFs(fs)
+		entries, err := crontab.GetEntries()
+		require.NoError(t, err)
+		require.Len(t, entries, 1)
+		assert.Equal(t, "config.yaml", entries[0].configFile)
+		assert.Equal(t, "profile", entries[0].profileName)
+		assert.Equal(t, "backup", entries[0].commandName)
+		assert.Equal(t, "workdir", entries[0].workDir)
+		assert.Equal(t, "/some/bin/resticprofile --no-ansi --config config.yaml run-schedule backup@profile", entries[0].commandLine)
+	})
+}

@@ -7,12 +7,19 @@ global:
   priority: low
   # restic-binary: ~/fake_restic
   # legacy-arguments: true
+  scheduler: crontab:*:/tmp/crontab
+
 groups:
   full-backup:
     description: Full Backup
+    continue-on-error: true
     profiles:
       - root
-      - src
+      - self
+    schedules:
+      backup:
+        at: "*:*"
+
 profiles:
   default:
     description: Contains default parameters like repository and password file
@@ -26,11 +33,13 @@ profiles:
     copy:
       password-file: key
       repository: "/Volumes/RAMDisk/{{ .Profile.Name }}-copy"
+
   space:
     description: Repository contains space
     initialize: false
     password-file: key
     repository: "/Volumes/RAMDisk/with space"
+    
   documents:
     inherit: default
     backup:
@@ -41,6 +50,7 @@ profiles:
       tag:
         - dev
         - "{{ .Profile.Name }}"
+
   root:
     backup:
       schedule: "*:0,15,30,45"
@@ -89,6 +99,7 @@ profiles:
       tag:
         - dev
         - "{{ .Profile.Name }}"
+
   self:
     force-inactive-lock: true
     initialize: true
@@ -123,6 +134,7 @@ profiles:
       initialize: true
       schedule:
         - "*:45"
+
   prom:
     force-inactive-lock: true
     initialize: true
@@ -142,6 +154,7 @@ profiles:
         - "{{ .Profile.Name }}"
         # exclude:
         #   - examples/private
+
   system:
     initialize: true
     no-cache: true
@@ -153,6 +166,7 @@ profiles:
       schedule-permission: system
     forget:
       schedule: "weekly"
+
   src:
     backup:
       check-before: true
@@ -183,11 +197,13 @@ profiles:
       tag:
         - dev
         - "{{ .Profile.Name }}"
+
   home:
     inherit: default
     # cache-dir: "${TMPDIR}.restic/"
     backup:
       source: "${HOME}/Projects"
+      
   stdin:
     backup:
       stdin: true
@@ -200,6 +216,7 @@ profiles:
       tag:
         - dev
         - "{{ .Profile.Name }}"
+
   dropbox:
     initialize: false
     inherit: default
@@ -208,6 +225,7 @@ profiles:
       check-before: false
       no-error-on-warning: true
       source: "../../../../../Dropbox"
+
   escape:
     initialize: true
     inherit: default
