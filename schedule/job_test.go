@@ -17,8 +17,7 @@ func TestCreateJobHappyPath(t *testing.T) {
 	handler.EXPECT().ParseSchedules([]string{}).Return([]*calendar.Event{}, nil)
 	handler.EXPECT().CreateJob(mock.AnythingOfType("*schedule.Config"), []*calendar.Event{}, "user").Return(nil)
 
-	scheduler := schedule.NewScheduler(handler, "profile")
-	job := scheduler.NewJob(&schedule.Config{
+	job := schedule.NewJob(handler, &schedule.Config{
 		ProfileName: "profile",
 		CommandName: "backup",
 		Schedules:   []string{},
@@ -34,8 +33,7 @@ func TestCreateJobErrorParseSchedules(t *testing.T) {
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
 	handler.EXPECT().ParseSchedules([]string{}).Return(nil, errors.New("test!"))
 
-	scheduler := schedule.NewScheduler(handler, "profile")
-	job := scheduler.NewJob(&schedule.Config{
+	job := schedule.NewJob(handler, &schedule.Config{
 		ProfileName: "profile",
 		CommandName: "backup",
 		Schedules:   []string{},
@@ -49,8 +47,7 @@ func TestCreateJobErrorDisplaySchedules(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(errors.New("test!"))
 
-	scheduler := schedule.NewScheduler(handler, "profile")
-	job := scheduler.NewJob(&schedule.Config{
+	job := schedule.NewJob(handler, &schedule.Config{
 		ProfileName: "profile",
 		CommandName: "backup",
 		Schedules:   []string{},
@@ -66,8 +63,7 @@ func TestCreateJobErrorCreate(t *testing.T) {
 	handler.EXPECT().ParseSchedules([]string{}).Return([]*calendar.Event{}, nil)
 	handler.EXPECT().CreateJob(mock.AnythingOfType("*schedule.Config"), []*calendar.Event{}, "user").Return(errors.New("test!"))
 
-	scheduler := schedule.NewScheduler(handler, "profile")
-	job := scheduler.NewJob(&schedule.Config{
+	job := schedule.NewJob(handler, &schedule.Config{
 		ProfileName: "profile",
 		CommandName: "backup",
 		Schedules:   []string{},

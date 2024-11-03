@@ -8,13 +8,20 @@ import (
 // Job: common code for all scheduling systems
 //
 
+var ErrJobCanBeRemovedOnly = errors.New("job can be removed only")
+
 // Job scheduler
 type Job struct {
 	config  *Config
 	handler Handler
 }
 
-var ErrJobCanBeRemovedOnly = errors.New("job can be removed only")
+func NewJob(handler Handler, config *Config) *Job {
+	return &Job{
+		config:  config,
+		handler: handler,
+	}
+}
 
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {

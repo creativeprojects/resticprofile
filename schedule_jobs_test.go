@@ -25,7 +25,7 @@ func TestScheduleNilJobs(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 
-	err := scheduleJobs(handler, "profile", nil)
+	err := scheduleJobs(handler, nil)
 	assert.NoError(t, err)
 }
 
@@ -49,7 +49,7 @@ func TestSimpleScheduleJob(t *testing.T) {
 
 	scheduleConfig := configForJob("backup", "sched")
 	scheduleConfig.ConfigFile = "config file"
-	err := scheduleJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := scheduleJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
 
@@ -68,7 +68,7 @@ func TestFailScheduleJob(t *testing.T) {
 		Return(errors.New("error creating job"))
 
 	scheduleConfig := configForJob("backup", "sched")
-	err := scheduleJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := scheduleJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.Error(t, err)
 }
 
@@ -79,7 +79,7 @@ func TestRemoveNilJobs(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 
-	err := removeJobs(handler, "profile", nil)
+	err := removeJobs(handler, nil)
 	assert.NoError(t, err)
 }
 
@@ -97,7 +97,7 @@ func TestRemoveJob(t *testing.T) {
 		})
 
 	scheduleConfig := configForJob("backup", "sched")
-	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := removeJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
 
@@ -115,7 +115,7 @@ func TestRemoveJobNoConfig(t *testing.T) {
 		})
 
 	scheduleConfig := configForJob("backup")
-	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := removeJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
 
@@ -129,7 +129,7 @@ func TestFailRemoveJob(t *testing.T) {
 		Return(errors.New("error removing job"))
 
 	scheduleConfig := configForJob("backup", "sched")
-	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := removeJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.Error(t, err)
 }
 
@@ -143,7 +143,7 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 		Return(schedule.ErrScheduledJobNotFound)
 
 	scheduleConfig := configForJob("backup", "sched")
-	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := removeJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
 
@@ -157,7 +157,7 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 		Return(schedule.ErrScheduledJobNotFound)
 
 	scheduleConfig := configForJob("backup")
-	err := removeJobs(handler, "profile", []*config.Schedule{scheduleConfig})
+	err := removeJobs(handler, []*config.Schedule{scheduleConfig})
 	assert.NoError(t, err)
 }
 

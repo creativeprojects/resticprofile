@@ -24,9 +24,9 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 	defer c.DisplayConfigurationIssues()
 
 	type profileJobs struct {
-		scheduler schedule.SchedulerConfig
-		name      string
-		jobs      []*config.Schedule
+		schedulerConfig schedule.SchedulerConfig
+		name            string
+		jobs            []*config.Schedule
 	}
 
 	allJobs := make([]profileJobs, 0, 1)
@@ -55,12 +55,12 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 			}
 		}
 
-		allJobs = append(allJobs, profileJobs{scheduler: scheduler, name: profileName, jobs: jobs})
+		allJobs = append(allJobs, profileJobs{schedulerConfig: scheduler, name: profileName, jobs: jobs})
 	}
 
 	// Step 2: Schedule all collected jobs
 	for _, j := range allJobs {
-		err := scheduleJobs(schedule.NewHandler(j.scheduler), j.name, j.jobs)
+		err := scheduleJobs(schedule.NewHandler(j.schedulerConfig), j.jobs)
 		if err != nil {
 			return retryElevated(err, flags)
 		}
@@ -78,12 +78,12 @@ func removeSchedule(_ io.Writer, ctx commandContext) error {
 	for _, profileName := range selectProfilesAndGroups(c, flags, args) {
 		profileFlags := flagsForProfile(flags, profileName)
 
-		scheduler, jobs, err := getRemovableScheduleJobs(c, profileFlags)
+		schedulerConfig, jobs, err := getRemovableScheduleJobs(c, profileFlags)
 		if err != nil {
 			return err
 		}
 
-		err = removeJobs(schedule.NewHandler(scheduler), profileName, jobs)
+		err = removeJobs(schedule.NewHandler(schedulerConfig), jobs)
 		if err != nil {
 			err = retryElevated(err, flags)
 		}
@@ -105,7 +105,7 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	// single profile or group
 	if !slices.Contains(args, "--all") {
-		scheduler, schedules, _, err := getScheduleJobs(c, flags)
+		schedulerConfig, schedules, _, err := getScheduleJobs(c, flags)
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 			clog.Warningf("profile or group %s has no schedule", flags.name)
 			return nil
 		}
-		err = statusScheduleProfileOrGroup(scheduler, schedules, flags)
+		err = statusScheduleProfileOrGroup(schedulerConfig, schedules, flags)
 		if err != nil {
 			return err
 		}
@@ -166,8 +166,8 @@ func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlag
 	return flags
 }
 
-func statusScheduleProfileOrGroup(scheduler schedule.SchedulerConfig, schedules []*config.Schedule, flags commandLineFlags) error {
-	err := statusJobs(schedule.NewHandler(scheduler), flags.name, schedules)
+func statusScheduleProfileOrGroup(schedulerConfig schedule.SchedulerConfig, schedules []*config.Schedule, flags commandLineFlags) error {
+	err := statusJobs(schedule.NewHandler(schedulerConfig), flags.name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
