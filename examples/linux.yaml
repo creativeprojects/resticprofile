@@ -12,6 +12,7 @@ global:
     ionice-class: 3
     ionice-level: 7
     nice: 19
+    scheduler: crontab:*:/tmp/crontab
 
 default:
     password-file: key
@@ -100,10 +101,14 @@ self:
     backup:
         extended-status: true
         source: ./
+        # schedule:
+        #   at: "*:15"
+        #   permission: system
     copy:
         initialize: true
         schedule-permission: user
         schedule:
+          - "*:15"
           - "*:45"
 
 src:

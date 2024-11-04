@@ -117,40 +117,52 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	defer c.DisplayConfigurationIssues()
 
-	// single profile or group
-	if !slices.Contains(args, "--all") {
-		schedulerConfig, schedules, _, err := getScheduleJobs(c, flags)
-		if err != nil {
-			return err
-		}
-		if len(schedules) == 0 {
-			clog.Warningf("profile or group %s has no schedule", flags.name)
+	if slices.Contains(flags.resticArgs, "--legacy") { // TODO: remove this option in the future
+		// single profile or group
+		if !slices.Contains(args, "--all") {
+			schedulerConfig, schedules, _, err := getScheduleJobs(c, flags)
+			if err != nil {
+				return err
+			}
+			if len(schedules) == 0 {
+				clog.Warningf("profile or group %s has no schedule", flags.name)
+				return nil
+			}
+			err = statusScheduleProfileOrGroup(schedulerConfig, schedules, flags)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
-		err = statusScheduleProfileOrGroup(schedulerConfig, schedules, flags)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
 
-	// all profiles and groups
-	for _, profileName := range selectProfilesAndGroups(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-		scheduler, schedules, schedulable, err := getScheduleJobs(c, profileFlags)
-		if err != nil {
-			return err
+		// all profiles and groups
+		for _, profileName := range selectProfilesAndGroups(c, flags, args) {
+			profileFlags := flagsForProfile(flags, profileName)
+			scheduler, schedules, schedulable, err := getScheduleJobs(c, profileFlags)
+			if err != nil {
+				return err
+			}
+			// it's all fine if this profile has no schedule
+			if len(schedules) == 0 {
+				continue
+			}
+			clog.Infof("%s %q:", cases.Title(language.English).String(schedulable.Kind()), profileName)
+			err = statusScheduleProfileOrGroup(scheduler, schedules, profileFlags)
+			if err != nil {
+				// display the error but keep going with the other profiles
+				clog.Error(err)
+			}
 		}
-		// it's all fine if this profile has no schedule
-		if len(schedules) == 0 {
-			continue
-		}
-		clog.Infof("%s %q:", cases.Title(language.English).String(schedulable.Kind()), profileName)
-		err = statusScheduleProfileOrGroup(scheduler, schedules, profileFlags)
-		if err != nil {
-			// display the error but keep going with the other profiles
-			clog.Error(err)
-		}
+	}
+	profileName := ctx.request.profile
+	if slices.Contains(args, "--all") {
+		// Unschedule all jobs of all profiles
+		profileName = ""
+	}
+	schedulerConfig := schedule.NewSchedulerConfig(ctx.global)
+	err := statusScheduledJobs(schedule.NewHandler(schedulerConfig), ctx.config.GetConfigFile(), profileName)
+	if err != nil {
+		return retryElevated(err, flags)
 	}
 	return nil
 }

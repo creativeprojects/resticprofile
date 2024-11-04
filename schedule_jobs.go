@@ -114,7 +114,8 @@ func removeScheduledJobs(handler schedule.Handler, configFile, profileName strin
 			clog.Debugf("skipping job %s/%s from configuration file %s", cfg.ProfileName, cfg.CommandName, cfg.ConfigFile)
 			continue
 		}
-		err = handler.RemoveJob(&cfg, cfg.Permission)
+		job := schedule.NewJob(handler, &cfg)
+		err = job.Remove()
 		if err != nil {
 			clog.Error(err)
 		}
@@ -149,6 +150,40 @@ func statusJobs(handler schedule.Handler, profileName string, configs []*config.
 				scheduleConfig.ProfileName,
 				scheduleConfig.CommandName,
 				err)
+		}
+	}
+	err = handler.DisplayStatus(profileName)
+	if err != nil {
+		clog.Error(err)
+	}
+	return nil
+}
+
+func statusScheduledJobs(handler schedule.Handler, configFile, profileName string) error {
+	err := handler.Init()
+	if err != nil {
+		return err
+	}
+	defer handler.Close()
+
+	clog.Debugf("looking up schedules from configuration file %s", configFile)
+	configs, err := handler.Scheduled(profileName)
+	if err != nil {
+		return err
+	}
+	if len(configs) == 0 {
+		clog.Info("no scheduled jobs found")
+		return nil
+	}
+	for _, cfg := range configs {
+		if cfg.ConfigFile != configFile {
+			clog.Debugf("skipping job %s/%s from configuration file %s", cfg.ProfileName, cfg.CommandName, cfg.ConfigFile)
+			continue
+		}
+		job := schedule.NewJob(handler, &cfg)
+		err := job.Status()
+		if err != nil {
+			clog.Error(err)
 		}
 	}
 	err = handler.DisplayStatus(profileName)

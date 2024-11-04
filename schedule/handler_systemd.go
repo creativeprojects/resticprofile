@@ -29,6 +29,7 @@ const (
 	systemctlReload  = "daemon-reload"
 	flagUserUnit     = "--user"
 	flagNoPager      = "--no-pager"
+	unitNotFound     = "not-found"
 
 	// https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
 	codeStatusNotRunning   = 3
@@ -383,7 +384,7 @@ func unitLoaded(serviceName string, unitType systemd.UnitType) (bool, error) {
 		return false, err
 	}
 	return slices.ContainsFunc(units, func(unit SystemdUnit) bool {
-		return unit.Unit == serviceName && unit.Load != "not-found"
+		return unit.Unit == serviceName && unit.Load != unitNotFound
 	}), nil
 }
 
@@ -394,6 +395,9 @@ func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error)
 	}
 	configs := make([]Config, 0, len(units))
 	for _, unit := range units {
+		if unit.Load == unitNotFound {
+			continue
+		}
 		cfg, err := systemd.Read(unit.Unit, unitType)
 		if err != nil {
 			clog.Errorf("cannot read information from unit %q: %s", unit.Unit, err)
