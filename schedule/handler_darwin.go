@@ -311,6 +311,7 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 		ConfigFile:       args.ConfigFile(),
 		Arguments:        args,
 		WorkingDirectory: launchdJob.WorkingDirectory,
+		Schedules:        parseCalendarIntervals(launchdJob.StartCalendarInterval),
 	}
 	return job, nil
 }
@@ -359,30 +360,6 @@ var (
 	_ Handler = &HandlerLaunchd{}
 )
 
-// CalendarInterval contains date and time trigger definition inside a map.
-// keys of the map should be:
-//
-//	"Month"   Month of year (1..12, 1 being January)
-//	"Day"     Day of month (1..31)
-//	"Weekday" Day of week (0..7, 0 and 7 being Sunday)
-//	"Hour"    Hour of day (0..23)
-//	"Minute"  Minute of hour (0..59)
-type CalendarInterval map[string]int
-
-// newCalendarInterval creates a new map of 5 elements
-func newCalendarInterval() *CalendarInterval {
-	var value CalendarInterval = make(map[string]int, 5)
-	return &value
-}
-
-func (c *CalendarInterval) clone() *CalendarInterval {
-	clone := newCalendarInterval()
-	for key, value := range *c {
-		(*clone)[key] = value
-	}
-	return clone
-}
-
 func getJobName(profileName, command string) string {
 	return fmt.Sprintf("%s%s.%s", namePrefix, strings.ToLower(profileName), command)
 }
@@ -396,83 +373,6 @@ func getFilename(name, permission string) (string, error) {
 		return "", err
 	}
 	return path.Join(home, UserAgentPath, name+agentExtension), nil
-}
-
-// getCalendarIntervalsFromSchedules converts schedules into launchd calendar events
-// let's say we've setup these rules:
-//
-//	Mon-Fri *-*-* *:0,30:00  = every half hour
-//	Sat     *-*-* 0,12:00:00 = twice a day on saturday
-//	        *-*-01 *:*:*     = the first of each month
-//
-// it should translate as:
-// 1st rule
-//
-//	Weekday = Monday, Minute = 0
-//	Weekday = Monday, Minute = 30
-//	... same from Tuesday to Thurday
-//	Weekday = Friday, Minute = 0
-//	Weekday = Friday, Minute = 30
-//
-// Total of 10 rules
-// 2nd rule
-//
-//	Weekday = Saturday, Hour = 0
-//	Weekday = Saturday, Hour = 12
-//
-// Total of 2 rules
-// 3rd rule
-//
-//	Day = 1
-//
-// Total of 1 rule
-func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
-	entries := make([]CalendarInterval, 0, len(schedules))
-	for _, schedule := range schedules {
-		entries = append(entries, getCalendarIntervalsFromScheduleTree(generateTreeOfSchedules(schedule))...)
-	}
-	return entries
-}
-
-func getCalendarIntervalsFromScheduleTree(tree []*treeElement) []CalendarInterval {
-	entries := make([]CalendarInterval, 0)
-	for _, element := range tree {
-		// creates a new calendar entry for each tip of the branch
-		newEntry := newCalendarInterval()
-		fillInValueFromScheduleTreeElement(newEntry, element, &entries)
-	}
-	return entries
-}
-
-func fillInValueFromScheduleTreeElement(currentEntry *CalendarInterval, element *treeElement, entries *[]CalendarInterval) {
-	setCalendarIntervalValueFromType(currentEntry, element.value, element.elementType)
-	if len(element.subElements) == 0 {
-		// end of the line, this entry is finished
-		*entries = append(*entries, *currentEntry)
-		return
-	}
-	for _, subElement := range element.subElements {
-		// new branch means new calendar entry
-		fillInValueFromScheduleTreeElement(currentEntry.clone(), subElement, entries)
-	}
-}
-
-func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeValue calendar.TypeValue) {
-	if entry == nil {
-		entry = newCalendarInterval()
-	}
-	switch typeValue {
-	case calendar.TypeWeekDay:
-		(*entry)["Weekday"] = value
-	case calendar.TypeMonth:
-		(*entry)["Month"] = value
-	case calendar.TypeDay:
-		(*entry)["Day"] = value
-	case calendar.TypeHour:
-		(*entry)["Hour"] = value
-	case calendar.TypeMinute:
-		(*entry)["Minute"] = value
-	}
 }
 
 func parseStatus(status string) map[string]string {

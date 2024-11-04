@@ -183,6 +183,11 @@ func TestCreateSystemPlist(t *testing.T) {
 }
 
 func TestReadingLaunchdScheduled(t *testing.T) {
+	calendarEvent := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+	})
 	testCases := []struct {
 		job       Config
 		schedules []*calendar.Event
@@ -196,8 +201,9 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Permission:       constants.SchedulePermissionSystem,
 				ConfigFile:       "examples/dev.yaml",
+				Schedules:        []string{"*-*-* *:00,30:00"},
 			},
-			schedules: []*calendar.Event{},
+			schedules: []*calendar.Event{calendarEvent},
 		},
 		{
 			job: Config{
@@ -208,8 +214,9 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Permission:       constants.SchedulePermissionSystem,
 				ConfigFile:       "config file.yaml",
+				Schedules:        []string{"*-*-* *:00,30:00"},
 			},
-			schedules: []*calendar.Event{},
+			schedules: []*calendar.Event{calendarEvent},
 		},
 		{
 			job: Config{
@@ -220,8 +227,9 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Permission:       constants.SchedulePermissionUser,
 				ConfigFile:       "examples/dev.yaml",
+				Schedules:        []string{"*-*-* *:00,30:00"},
 			},
-			schedules: []*calendar.Event{},
+			schedules: []*calendar.Event{calendarEvent},
 		},
 	}
 
