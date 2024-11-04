@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -189,12 +190,15 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	// order keys alphabetically
 	keys := make([]string, 0, len(status))
 	for key := range status {
+		if slices.Contains([]string{"LimitLoadToSessionType", "OnDemand"}, key) {
+			continue
+		}
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
 	for _, key := range keys {
-		fmt.Fprintf(writer, "%s:\t %s\n", key, status[key])
+		fmt.Fprintf(writer, "%s:\t %s\n", spacedTitle(key), status[key])
 	}
 	writer.Flush()
 	fmt.Println("")
