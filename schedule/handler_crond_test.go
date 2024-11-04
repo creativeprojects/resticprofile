@@ -27,7 +27,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 				Command:          "/bin/resticprofile",
 				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "--name", "self", "check"}),
 				WorkingDirectory: "/resticprofile",
-				Schedules:        []string{"*-*-* *:*:*"}, // no parsing of crontab schedules
+				Schedules:        []string{"*-*-* *:00:00"},
 				ConfigFile:       "examples/dev.yaml",
 			},
 			schedules: []*calendar.Event{
@@ -41,7 +41,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 				Command:          "/bin/resticprofile",
 				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "config file.yaml", "--name", "test.scheduled", "backup"}),
 				WorkingDirectory: "/resticprofile",
-				Schedules:        []string{"*-*-* *:*:*"}, // no parsing of crontab schedules
+				Schedules:        []string{"*-*-* *:00:00"},
 				ConfigFile:       "config file.yaml",
 			},
 			schedules: []*calendar.Event{

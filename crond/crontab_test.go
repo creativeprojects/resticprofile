@@ -364,57 +364,68 @@ func TestUseCrontabBinary(t *testing.T) {
 }
 
 func TestParseEntry(t *testing.T) {
+	scheduledEvent := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+	})
 	testData := []struct {
 		source      string
 		expectEntry *Entry
 	}{
 		{
 			source:      "00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup",
-			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", commandLine: "/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup"},
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup"},
 		},
 		{
 			source:      "00,30 * * * *	cd /workdir && /home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup",
-			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", commandLine: "/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup"},
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup"},
 		},
 		{
 			source:      "00,30 * * * *	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	user	/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", user: "user", commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", user: "user", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	user	/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	cd /workdir && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
 		},
 		{
 			source:      "00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
-			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
 		},
 	}
 
 	for _, testRun := range testData {
 		t.Run("", func(t *testing.T) {
-			entry := parseEntry(testRun.source)
-			testRun.expectEntry.event = calendar.NewEvent()
-			assert.Equal(t, testRun.expectEntry, entry)
+			entry, err := parseEntry(testRun.source)
+			require.NoError(t, err)
+			assert.Equal(t, testRun.expectEntry.CommandLine(), entry.CommandLine())
+			assert.Equal(t, testRun.expectEntry.CommandName(), entry.CommandName())
+			assert.Equal(t, testRun.expectEntry.ConfigFile(), entry.ConfigFile())
+			assert.Equal(t, testRun.expectEntry.ProfileName(), entry.ProfileName())
+			assert.Equal(t, testRun.expectEntry.User(), entry.User())
+			assert.Equal(t, testRun.expectEntry.WorkDir(), entry.WorkDir())
+			assert.Equal(t, testRun.expectEntry.Event().String(), entry.Event().String())
 		})
 	}
 }

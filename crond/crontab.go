@@ -1,13 +1,13 @@
 package crond
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os/user"
 	"regexp"
 	"strings"
 
-	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/spf13/afero"
 )
 
@@ -25,6 +25,10 @@ const (
 var (
 	legacyPattern      = regexp.MustCompile(timeExp + userExp + workDirExp + configExp + legacyExp)
 	runSchedulePattern = regexp.MustCompile(timeExp + userExp + workDirExp + configExp + runScheduleExp)
+)
+
+var (
+	ErrEntryNoMatch = errors.New("line doesn't match a typical resticprofile entry")
 )
 
 type Crontab struct {
@@ -326,7 +330,7 @@ func parseEntries(crontab string) []Entry {
 		if len(line) == 0 || strings.HasPrefix(line, "#") {
 			continue
 		}
-		entry := parseEntry(line)
+		entry, _ := parseEntry(line)
 		if entry == nil {
 			continue
 		}
@@ -335,7 +339,7 @@ func parseEntries(crontab string) []Entry {
 	return entries
 }
 
-func parseEntry(line string) *Entry {
+func parseEntry(line string) (*Entry, error) {
 	// should match lines like:
 	// 00,15,30,45 * * * *	/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
 	// 00,15,30,45 * * * *	cd /workdir && /home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup
@@ -347,35 +351,38 @@ func parseEntry(line string) *Entry {
 	// try legacy pattern first
 	matches := legacyPattern.FindStringSubmatch(line)
 	if len(matches) == 10 {
+		event, err := parseEvent(matches[1])
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse %q: %w", matches[1], err)
+		}
 		return &Entry{
-			event:       parseEvent(matches[1]),
+			event:       event,
 			user:        getUserValue(matches[3]),
 			workDir:     getWorkdirValue(matches[4]),
 			commandLine: matches[5],
 			configFile:  matches[6],
 			profileName: matches[7],
 			commandName: matches[9],
-		}
+		}, nil
 	}
 	// then try the current pattern
 	matches = runSchedulePattern.FindStringSubmatch(line)
 	if len(matches) == 9 {
+		event, err := parseEvent(matches[1])
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse %q: %w", matches[1], err)
+		}
 		return &Entry{
-			event:       parseEvent(matches[1]),
+			event:       event,
 			user:        getUserValue(matches[3]),
 			workDir:     getWorkdirValue(matches[4]),
 			commandLine: matches[5],
 			configFile:  matches[6],
 			commandName: matches[7],
 			profileName: matches[8],
-		}
+		}, nil
 	}
-	return nil
-}
-
-func parseEvent(_ string) *calendar.Event {
-	event := calendar.NewEvent()
-	return event
+	return nil, ErrEntryNoMatch
 }
 
 func getUserValue(user string) string {
