@@ -8,6 +8,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
+	"github.com/creativeprojects/resticprofile/shell"
 )
 
 // HandlerWindows is using windows task manager
@@ -30,13 +31,13 @@ func (h *HandlerWindows) ParseSchedules(schedules []string) ([]*calendar.Event, 
 	return parseSchedules(schedules)
 }
 
-// DisplayParsedSchedules via term output
-func (h *HandlerWindows) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	displayParsedSchedules(command, events)
-}
-
-// DisplaySchedules does nothing on windows
-func (h *HandlerWindows) DisplaySchedules(command string, schedules []string) error {
+// DisplaySchedules via term output
+func (h *HandlerWindows) DisplaySchedules(profile, command string, schedules []string) error {
+	events, err := parseSchedules(schedules)
+	if err != nil {
+		return err
+	}
+	displayParsedSchedules(profile, command, events)
 	return nil
 }
 
@@ -74,7 +75,7 @@ func (h *HandlerWindows) RemoveJob(job *Config, permission string) error {
 	err := schtasks.Delete(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrNotRegistered) {
-			return ErrServiceNotFound
+			return ErrScheduledJobNotFound
 		}
 		return err
 	}
@@ -86,11 +87,34 @@ func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 	err := schtasks.Status(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrNotRegistered) {
-			return ErrServiceNotFound
+			return ErrScheduledJobNotFound
 		}
 		return err
 	}
 	return nil
+}
+
+func (h *HandlerWindows) Scheduled(profileName string) ([]Config, error) {
+	tasks, err := schtasks.Registered()
+	if err != nil {
+		return nil, err
+	}
+	configs := make([]Config, 0, len(tasks))
+	for _, task := range tasks {
+		if profileName == "" || task.ProfileName == profileName {
+			args := NewCommandArguments(shell.SplitArguments(task.Arguments))
+			configs = append(configs, Config{
+				ConfigFile:       args.ConfigFile(),
+				ProfileName:      task.ProfileName,
+				CommandName:      task.CommandName,
+				Command:          task.Command,
+				Arguments:        args,
+				WorkingDirectory: task.WorkingDirectory,
+				JobDescription:   task.JobDescription,
+			})
+		}
+	}
+	return configs, nil
 }
 
 // init registers HandlerWindows

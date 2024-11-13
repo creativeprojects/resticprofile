@@ -4,6 +4,6 @@ import "errors"
 
 // Generic errors
 var (
-	ErrServiceNotFound   = errors.New("service not found")
-	ErrServiceNotRunning = errors.New("service is not running")
+	ErrScheduledJobNotFound   = errors.New("scheduled job not found")
+	ErrScheduledJobNotRunning = errors.New("scheduled job is not running")
 )

@@ -78,6 +78,28 @@ func (e Entry) Generate(w io.StringWriter) error {
 	return err
 }
 
+func (e Entry) Event() *calendar.Event {
+	return e.event
+}
+func (e Entry) ConfigFile() string {
+	return e.configFile
+}
+func (e Entry) ProfileName() string {
+	return e.profileName
+}
+func (e Entry) CommandName() string {
+	return e.commandName
+}
+func (e Entry) CommandLine() string {
+	return e.commandLine
+}
+func (e Entry) WorkDir() string {
+	return e.workDir
+}
+func (e Entry) User() string {
+	return e.user
+}
+
 func formatWeekDay(weekDay int) string {
 	if weekDay >= 7 {
 		weekDay -= 7

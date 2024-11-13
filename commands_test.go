@@ -14,6 +14,7 @@ import (
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPanicCommand(t *testing.T) {
@@ -66,14 +67,15 @@ schedule = "daily"
 
 	for _, jobConfig := range schedules {
 		configOrigin := jobConfig.ScheduleOrigin()
-		scheduler := schedule.NewScheduler(schedule.NewHandler(schedule.SchedulerDefaultOS{}), configOrigin.Name)
-		defer func(s *schedule.Scheduler) { s.Close() }(scheduler) // Capture current ref to scheduler to be able to close it when function returns.
+		handler := schedule.NewHandler(schedule.SchedulerDefaultOS{})
+		require.NoError(t, handler.Init())
+		defer func(s schedule.Handler) { s.Close() }(handler) // Capture current ref to scheduler to be able to close it when function returns.
 
 		if configOrigin.Command == constants.CommandCheck {
-			assert.False(t, scheduler.NewJob(scheduleToConfig(jobConfig)).RemoveOnly())
+			assert.False(t, schedule.NewJob(handler, scheduleToConfig(jobConfig)).RemoveOnly())
 			declaredCount++
 		} else {
-			assert.True(t, scheduler.NewJob(scheduleToConfig(jobConfig)).RemoveOnly())
+			assert.True(t, schedule.NewJob(handler, scheduleToConfig(jobConfig)).RemoveOnly())
 		}
 	}
 

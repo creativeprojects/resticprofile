@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewRemoveOnlyConfig(t *testing.T) {
@@ -39,10 +40,11 @@ func TestDetectRemoveOnlyConfig(t *testing.T) {
 
 func TestRemoveOnlyJob(t *testing.T) {
 	profile := "non-existent"
-	scheduler := NewScheduler(NewHandler(SchedulerDefaultOS{}), profile)
-	defer scheduler.Close()
+	handler := NewHandler(SchedulerDefaultOS{})
+	require.NoError(t, handler.Init())
+	defer handler.Close()
 
-	job := scheduler.NewJob(NewRemoveOnlyConfig(profile, "check"))
+	job := NewJob(handler, NewRemoveOnlyConfig(profile, "check"))
 
 	assert.Equal(t, ErrJobCanBeRemovedOnly, job.Create())
 	assert.Equal(t, ErrJobCanBeRemovedOnly, job.Status())

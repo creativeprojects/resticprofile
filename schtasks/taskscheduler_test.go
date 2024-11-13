@@ -114,8 +114,8 @@ func TestCompileDifferences(t *testing.T) {
 		require.NoError(t, err)
 		start := event.Next(ref)
 		diff, uniques := compileDifferences(event.GetAllInBetween(start, start.Add(24*time.Hour)))
-		assert.ElementsMatch(t, testItem.differences, diff)
-		assert.ElementsMatch(t, testItem.unique, uniques)
+		assert.ElementsMatch(t, testItem.differences, diff, "duration between triggers")
+		assert.ElementsMatch(t, testItem.unique, uniques, "unique set of durations between triggers")
 	}
 }
 
@@ -139,6 +139,8 @@ func TestTaskSchedulerConversion(t *testing.T) {
 	}
 	task := taskmaster.Definition{}
 	createSchedules(&task, schedules)
+
+	require.Len(t, task.Triggers, 5)
 
 	// 1st task should be a single event
 	singleEvent, ok := task.Triggers[0].(taskmaster.TimeTrigger)
@@ -389,4 +391,55 @@ func exportTask(taskName string) (string, error) {
 	cmd.Stdout = buffer
 	err := cmd.Run()
 	return buffer.String(), err
+}
+
+func TestRegisteredTasks(t *testing.T) {
+	tasks := []Config{
+		{
+			ProfileName:      "test1",
+			CommandName:      "backup",
+			Command:          "echo",
+			Arguments:        "hello there",
+			WorkingDirectory: "C:\\",
+			JobDescription:   "test1",
+		},
+		{
+			ProfileName:      "test 2",
+			CommandName:      "check",
+			Command:          "echo",
+			Arguments:        "hello there",
+			WorkingDirectory: "C:\\",
+			JobDescription:   "test 2",
+		},
+		{
+			ProfileName:      "test 3",
+			CommandName:      "forget",
+			Command:          "echo",
+			Arguments:        "hello there",
+			WorkingDirectory: "C:\\",
+			JobDescription:   "test 3",
+		},
+	}
+	err := Connect()
+	defer Close()
+	assert.NoError(t, err)
+
+	event := calendar.NewEvent()
+	err = event.Parse("2020-01-02 03:04") // will never get triggered
+	require.NoError(t, err)
+
+	for _, task := range tasks {
+		// user logged in doesn't need a password
+		err = createUserLoggedOnTask(&task, []*calendar.Event{event})
+		assert.NoError(t, err)
+
+		defer func() {
+			_ = Delete(task.ProfileName, task.CommandName)
+		}()
+	}
+
+	registeredTasks, err := Registered()
+	assert.NoError(t, err)
+
+	assert.ElementsMatch(t, tasks, registeredTasks)
 }

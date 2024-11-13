@@ -87,6 +87,10 @@ $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to '$(GOBIN)'
 
+$(GOBIN)/golangci-lint: verify $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.61.0 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
+
 prepare_build: verify download
 	@echo "[*] $@"
 
@@ -296,14 +300,14 @@ checklinks:
 	muffet -b 8192 --exclude="(linux.die.net|stackoverflow.com)" http://localhost:1313/resticprofile/
 
 .PHONY: lint
-lint:
+lint: $(GOBIN)/golangci-lint
 	@echo "[*] $@"
 	GOOS=darwin golangci-lint run
 	GOOS=linux golangci-lint run
 	GOOS=windows golangci-lint run
 
 .PHONY: fix
-fix:
+fix: $(GOBIN)/golangci-lint
 	@echo "[*] $@"
 	$(GOCMD) mod tidy
 	$(GOCMD) fix ./...

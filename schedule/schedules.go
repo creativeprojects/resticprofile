@@ -2,16 +2,27 @@ package schedule
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-const (
-	displayHeader = "\nAnalyzing %s schedule %d/%d\n=================================\n"
-)
+func displayHeader(profile, command string, index, total int) {
+	term.Print(platform.LineSeparator)
+	header := fmt.Sprintf("Profile (or Group) %s: %s schedule", profile, command)
+	if total > 1 {
+		header += fmt.Sprintf(" %d/%d", index, total)
+	}
+	term.Print(header)
+	term.Print(platform.LineSeparator)
+	term.Print(strings.Repeat("=", len(header)))
+	term.Print(platform.LineSeparator)
+}
 
 // parseSchedules creates a *calendar.Event from a string
 func parseSchedules(schedules []string) ([]*calendar.Event, error) {
@@ -30,10 +41,10 @@ func parseSchedules(schedules []string) ([]*calendar.Event, error) {
 	return events, nil
 }
 
-func displayParsedSchedules(command string, events []*calendar.Event) {
+func displayParsedSchedules(profile, command string, events []*calendar.Event) {
 	now := time.Now().Round(time.Second)
 	for index, event := range events {
-		term.Printf(displayHeader, command, index+1, len(events))
+		displayHeader(profile, command, index+1, len(events))
 		next := event.Next(now)
 		term.Printf("  Original form: %s\n", event.Input())
 		term.Printf("Normalized form: %s\n", event.String())
@@ -41,15 +52,15 @@ func displayParsedSchedules(command string, events []*calendar.Event) {
 		term.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
 		term.Printf("       From now: %s left\n", next.Sub(now))
 	}
-	term.Print("\n")
+	term.Print(platform.LineSeparator)
 }
 
-func displaySystemdSchedules(command string, schedules []string) error {
+func displaySystemdSchedules(profile, command string, schedules []string) error {
 	for index, schedule := range schedules {
 		if schedule == "" {
 			return errors.New("empty schedule")
 		}
-		term.Printf(displayHeader, command, index+1, len(schedules))
+		displayHeader(profile, command, index+1, len(schedules))
 		cmd := exec.Command("systemd-analyze", "calendar", schedule)
 		cmd.Stdout = term.GetOutput()
 		cmd.Stderr = term.GetErrorOutput()
@@ -58,6 +69,6 @@ func displaySystemdSchedules(command string, schedules []string) error {
 			return err
 		}
 	}
-	term.Print("\n")
+	term.Print(platform.LineSeparator)
 	return nil
 }

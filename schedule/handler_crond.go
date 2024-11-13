@@ -1,10 +1,14 @@
 package schedule
 
 import (
+	"slices"
+
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/platform"
+	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/spf13/afero"
 )
 
 var crontabBinary = "crontab"
@@ -12,6 +16,7 @@ var crontabBinary = "crontab"
 // HandlerCrond is a handler for crond scheduling
 type HandlerCrond struct {
 	config SchedulerCrond
+	fs     afero.Fs
 }
 
 // NewHandlerCrond creates a new handler for crond scheduling
@@ -43,12 +48,12 @@ func (h *HandlerCrond) ParseSchedules(schedules []string) ([]*calendar.Event, er
 	return parseSchedules(schedules)
 }
 
-func (h *HandlerCrond) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	displayParsedSchedules(command, events)
-}
-
-// DisplaySchedules does nothing with crond
-func (h *HandlerCrond) DisplaySchedules(command string, schedules []string) error {
+func (h *HandlerCrond) DisplaySchedules(profile, command string, schedules []string) error {
+	events, err := parseSchedules(schedules)
+	if err != nil {
+		return err
+	}
+	displayParsedSchedules(profile, command, events)
 	return nil
 }
 
@@ -73,9 +78,10 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 			entries[i] = entries[i].WithUser(h.config.Username)
 		}
 	}
-	crontab := crond.NewCrontab(entries)
-	crontab.SetFile(h.config.CrontabFile)
-	crontab.SetBinary(h.config.CrontabBinary)
+	crontab := crond.NewCrontab(entries).
+		SetFile(h.config.CrontabFile).
+		SetBinary(h.config.CrontabBinary).
+		SetFs(h.fs)
 	err := crontab.Rewrite()
 	if err != nil {
 		return err
@@ -94,15 +100,16 @@ func (h *HandlerCrond) RemoveJob(job *Config, permission string) error {
 			job.WorkingDirectory,
 		),
 	}
-	crontab := crond.NewCrontab(entries)
-	crontab.SetFile(h.config.CrontabFile)
-	crontab.SetBinary(h.config.CrontabBinary)
+	crontab := crond.NewCrontab(entries).
+		SetFile(h.config.CrontabFile).
+		SetBinary(h.config.CrontabBinary).
+		SetFs(h.fs)
 	num, err := crontab.Remove()
 	if err != nil {
 		return err
 	}
 	if num == 0 {
-		return ErrServiceNotFound
+		return ErrScheduledJobNotFound
 	}
 	return nil
 }
@@ -112,13 +119,50 @@ func (h *HandlerCrond) DisplayJobStatus(job *Config) error {
 	return nil
 }
 
+func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
+	crontab := crond.NewCrontab(nil).
+		SetFile(h.config.CrontabFile).
+		SetBinary(h.config.CrontabBinary).
+		SetFs(h.fs)
+	entries, err := crontab.GetEntries()
+	if err != nil {
+		return nil, err
+	}
+	configs := make([]Config, 0, len(entries))
+	for _, entry := range entries {
+		profileName := entry.ProfileName()
+		commandName := entry.CommandName()
+		configFile := entry.ConfigFile()
+		if index := slices.IndexFunc(configs, func(cfg Config) bool {
+			return cfg.ProfileName == profileName && cfg.CommandName == commandName && cfg.ConfigFile == configFile
+		}); index >= 0 {
+			configs[index].Schedules = append(configs[index].Schedules, entry.Event().String())
+		} else {
+			commandLine := entry.CommandLine()
+			args := shell.SplitArguments(commandLine)
+			configs = append(configs, Config{
+				ProfileName:      profileName,
+				CommandName:      commandName,
+				ConfigFile:       configFile,
+				Schedules:        []string{entry.Event().String()},
+				Command:          args[0],
+				Arguments:        NewCommandArguments(args[1:]),
+				WorkingDirectory: entry.WorkDir(),
+			})
+		}
+	}
+	return configs, nil
+}
+
 // init registers HandlerCrond
 func init() {
-	AddHandlerProvider(func(config SchedulerConfig, fallback bool) (hr Handler) {
+	AddHandlerProvider(func(config SchedulerConfig, fallback bool) Handler {
 		if config.Type() == constants.SchedulerCrond ||
 			(fallback && config.Type() == constants.SchedulerOSDefault) {
-			hr = NewHandlerCrond(config.Convert(constants.SchedulerCrond))
+			handler := NewHandlerCrond(config.Convert(constants.SchedulerCrond))
+			handler.fs = afero.NewOsFs()
+			return handler
 		}
-		return
+		return nil
 	})
 }

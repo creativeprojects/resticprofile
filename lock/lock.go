@@ -109,7 +109,7 @@ func (l *Lock) LastPID() (int32, error) {
 		if contents[i] != "" {
 			pid, err := strconv.ParseInt(contents[i], 10, 32)
 			if err == nil {
-				return int32(pid), nil //nolint:gosec
+				return int32(pid), nil
 			}
 		}
 	}

@@ -271,15 +271,15 @@ func TestCompleter(t *testing.T) {
 			{args: []string{"self-update", "-q"}, expected: nil},
 
 			// Can completion commands after flags
-			{args: []string{"--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start"}},
-			{args: []string{"--log", "file", "schedule", "-"}, expected: []string{"--all", "--no-start"}},
+			{args: []string{"--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start", "--start"}},
+			{args: []string{"--log", "file", "schedule", "-"}, expected: []string{"--all", "--no-start", "--start"}},
 
 			// Flags are returned only once
 			{args: []string{"--verb"}, expected: []string{"--verbose"}},
 			{args: []string{"--verb", "--verb"}, expected: []string{"--verbose"}},
 			{args: []string{"--verbose", "--verb"}, expected: nil},
-			{args: []string{"schedule", "-"}, expected: []string{"--all", "--no-start"}},
-			{args: []string{"schedule", "--all", "-"}, expected: []string{"--no-start"}},
+			{args: []string{"schedule", "-"}, expected: []string{"--all", "--no-start", "--start"}},
+			{args: []string{"schedule", "--all", "-"}, expected: []string{"--no-start", "--start"}},
 
 			// Exact command match returns nothing (no duplication)
 			{args: []string{"schedule"}, expected: nil},
@@ -295,9 +295,9 @@ func TestCompleter(t *testing.T) {
 			{args: []string{"__POS:2", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{RequestFileCompletion}},
 			{args: []string{"__POS:4", "--log", "out.log", "--verbose", "schedule", "-"}, expected: nil},
 			{args: []string{"__POS:4", "--log", "out.log", "--verbose", "schedule"}, expected: nil},
-			{args: []string{"__POS:5", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start"}},
-			{args: []string{"__POS:5", "--log", "out.log", "--verbose", "schedule"}, expected: []string{"--all", "--no-start"}},
-			{args: []string{"__POS:INVALID", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start"}},
+			{args: []string{"__POS:5", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start", "--start"}},
+			{args: []string{"__POS:5", "--log", "out.log", "--verbose", "schedule"}, expected: []string{"--all", "--no-start", "--start"}},
+			{args: []string{"__POS:INVALID", "--log", "out.log", "--verbose", "schedule", "-"}, expected: []string{"--all", "--no-start", "--start"}},
 			{args: []string{"__POS:INVALID", "--log", "out.log", "--verbose", "schedule"}, expected: nil},
 
 			// Unknown is delegated to restic

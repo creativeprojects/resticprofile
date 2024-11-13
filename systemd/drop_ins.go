@@ -65,7 +65,7 @@ func CreateDropIns(dir string, files []string) error {
 		_, notOrphaned := fileBasenamesOwned[f.Name()]
 		if createdByUs && !notOrphaned {
 			orphanPath := filepath.Join(dir, f.Name())
-			clog.Infof("deleting orphaned drop-in file %v", orphanPath)
+			clog.Debugf("deleting orphaned drop-in file %v", orphanPath)
 			if err := fs.Remove(orphanPath); err != nil {
 				return err
 			}
@@ -78,15 +78,19 @@ func CreateDropIns(dir string, files []string) error {
 		// to signify it wasn't created outside of resticprofile, i.e. we own it
 		dropInFileOwned := getOwnedName(dropInFileBase)
 		dstPath := filepath.Join(dir, dropInFileOwned)
-		clog.Infof("writing %v", dstPath)
+		clog.Debugf("writing %v", dstPath)
 		dst, err := fs.Create(dstPath)
 		if err != nil {
 			return err
 		}
+		defer dst.Close()
+
 		src, err := fs.Open(dropInFilePath)
 		if err != nil {
 			return err
 		}
+		defer src.Close()
+
 		if _, err := io.Copy(dst, src); err != nil {
 			return err
 		}

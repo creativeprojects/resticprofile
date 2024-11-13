@@ -172,7 +172,7 @@ func Generate(config Config) error {
 		return err
 	}
 	filePathName := filepath.Join(systemdUserDir, systemdProfile)
-	clog.Infof("writing %v", filePathName)
+	clog.Debugf("writing %v", filePathName)
 	if err = afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func Generate(config Config) error {
 		return err
 	}
 	filePathName = filepath.Join(systemdUserDir, timerProfile)
-	clog.Infof("writing %v", filePathName)
+	clog.Debugf("writing %v", filePathName)
 	if err = afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}

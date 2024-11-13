@@ -24,9 +24,9 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 	defer c.DisplayConfigurationIssues()
 
 	type profileJobs struct {
-		scheduler schedule.SchedulerConfig
-		name      string
-		jobs      []*config.Schedule
+		schedulerConfig schedule.SchedulerConfig
+		name            string
+		jobs            []*config.Schedule
 	}
 
 	allJobs := make([]profileJobs, 0, 1)
@@ -55,12 +55,12 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 			}
 		}
 
-		allJobs = append(allJobs, profileJobs{scheduler: scheduler, name: profileName, jobs: jobs})
+		allJobs = append(allJobs, profileJobs{schedulerConfig: scheduler, name: profileName, jobs: jobs})
 	}
 
 	// Step 2: Schedule all collected jobs
 	for _, j := range allJobs {
-		err := scheduleJobs(schedule.NewHandler(j.scheduler), j.name, j.jobs)
+		err := scheduleJobs(schedule.NewHandler(j.schedulerConfig), j.jobs)
 		if err != nil {
 			return retryElevated(err, flags)
 		}
@@ -70,26 +70,44 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 }
 
 func removeSchedule(_ io.Writer, ctx commandContext) error {
+	var err error
 	c := ctx.config
 	flags := ctx.flags
 	args := ctx.request.arguments
 
-	// Unschedule all jobs of all selected profiles
-	for _, profileName := range selectProfilesAndGroups(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
+	if slices.Contains(args, "--legacy") { // TODO: remove this option in the future
+		// Unschedule all jobs of all selected profiles
+		for _, profileName := range selectProfilesAndGroups(c, flags, args) {
+			profileFlags := flagsForProfile(flags, profileName)
 
-		scheduler, jobs, err := getRemovableScheduleJobs(c, profileFlags)
-		if err != nil {
-			return err
-		}
+			schedulerConfig, jobs, err := getRemovableScheduleJobs(c, profileFlags)
+			if err != nil {
+				return err
+			}
 
-		err = removeJobs(schedule.NewHandler(scheduler), profileName, jobs)
-		if err != nil {
-			return retryElevated(err, flags)
+			err = removeJobs(schedule.NewHandler(schedulerConfig), jobs)
+			if err != nil {
+				err = retryElevated(err, flags)
+			}
+			if err != nil {
+				// we keep trying to remove the other jobs
+				clog.Error(err)
+			}
 		}
+		return nil
 	}
 
-	return nil
+	profileName := ctx.request.profile
+	if slices.Contains(args, "--all") {
+		// Unschedule all jobs of all profiles
+		profileName = ""
+	}
+	schedulerConfig := schedule.NewSchedulerConfig(ctx.global)
+	err = removeScheduledJobs(schedule.NewHandler(schedulerConfig), ctx.config.GetConfigFile(), profileName)
+	if err != nil {
+		err = retryElevated(err, flags)
+	}
+	return err
 }
 
 func statusSchedule(w io.Writer, ctx commandContext) error {
@@ -99,37 +117,52 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	defer c.DisplayConfigurationIssues()
 
-	if !slices.Contains(args, "--all") {
-		scheduler, schedules, _, err := getScheduleJobs(c, flags)
-		if err != nil {
-			return err
-		}
-		if len(schedules) == 0 {
-			clog.Warningf("profile or group %s has no schedule", flags.name)
+	if slices.Contains(flags.resticArgs, "--legacy") { // TODO: remove this option in the future
+		// single profile or group
+		if !slices.Contains(args, "--all") {
+			schedulerConfig, schedules, _, err := getScheduleJobs(c, flags)
+			if err != nil {
+				return err
+			}
+			if len(schedules) == 0 {
+				clog.Warningf("profile or group %s has no schedule", flags.name)
+				return nil
+			}
+			err = statusScheduleProfileOrGroup(schedulerConfig, schedules, flags)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
-		err = statusScheduleProfileOrGroup(scheduler, schedules, flags)
-		if err != nil {
-			return err
+
+		// all profiles and groups
+		for _, profileName := range selectProfilesAndGroups(c, flags, args) {
+			profileFlags := flagsForProfile(flags, profileName)
+			scheduler, schedules, schedulable, err := getScheduleJobs(c, profileFlags)
+			if err != nil {
+				return err
+			}
+			// it's all fine if this profile has no schedule
+			if len(schedules) == 0 {
+				continue
+			}
+			clog.Infof("%s %q:", cases.Title(language.English).String(schedulable.Kind()), profileName)
+			err = statusScheduleProfileOrGroup(scheduler, schedules, profileFlags)
+			if err != nil {
+				// display the error but keep going with the other profiles
+				clog.Error(err)
+			}
 		}
 	}
-
-	for _, profileName := range selectProfilesAndGroups(c, flags, args) {
-		profileFlags := flagsForProfile(flags, profileName)
-		scheduler, schedules, schedulable, err := getScheduleJobs(c, profileFlags)
-		if err != nil {
-			return err
-		}
-		// it's all fine if this profile has no schedule
-		if len(schedules) == 0 {
-			continue
-		}
-		clog.Infof("%s %q:", cases.Title(language.English).String(schedulable.Kind()), profileName)
-		err = statusScheduleProfileOrGroup(scheduler, schedules, profileFlags)
-		if err != nil {
-			// display the error but keep going with the other profiles
-			clog.Error(err)
-		}
+	profileName := ctx.request.profile
+	if slices.Contains(args, "--all") {
+		// Unschedule all jobs of all profiles
+		profileName = ""
+	}
+	schedulerConfig := schedule.NewSchedulerConfig(ctx.global)
+	err := statusScheduledJobs(schedule.NewHandler(schedulerConfig), ctx.config.GetConfigFile(), profileName)
+	if err != nil {
+		return retryElevated(err, flags)
 	}
 	return nil
 }
@@ -159,8 +192,8 @@ func flagsForProfile(flags commandLineFlags, profileName string) commandLineFlag
 	return flags
 }
 
-func statusScheduleProfileOrGroup(scheduler schedule.SchedulerConfig, schedules []*config.Schedule, flags commandLineFlags) error {
-	err := statusJobs(schedule.NewHandler(scheduler), flags.name, schedules)
+func statusScheduleProfileOrGroup(schedulerConfig schedule.SchedulerConfig, schedules []*config.Schedule, flags commandLineFlags) error {
+	err := statusJobs(schedule.NewHandler(schedulerConfig), flags.name, schedules)
 	if err != nil {
 		return retryElevated(err, flags)
 	}
