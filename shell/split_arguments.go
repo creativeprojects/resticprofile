@@ -1,6 +1,10 @@
 package shell
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/creativeprojects/resticprofile/platform"
+)
 
 func SplitArguments(commandLine string) []string {
 	args := make([]string, 0)
@@ -8,7 +12,7 @@ func SplitArguments(commandLine string) []string {
 	quoted := false
 	escaped := false
 	for _, r := range commandLine {
-		if r == '\\' && !escaped {
+		if r == '\\' && !escaped && !platform.IsWindows() {
 			escaped = true
 		} else if r == '"' && !escaped {
 			quoted = !quoted
