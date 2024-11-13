@@ -102,11 +102,13 @@ func (h *HandlerWindows) Scheduled(profileName string) ([]Config, error) {
 	configs := make([]Config, 0, len(tasks))
 	for _, task := range tasks {
 		if profileName == "" || task.ProfileName == profileName {
+			args := NewCommandArguments(shell.SplitArguments(task.Arguments))
 			configs = append(configs, Config{
+				ConfigFile:       args.ConfigFile(),
 				ProfileName:      task.ProfileName,
 				CommandName:      task.CommandName,
 				Command:          task.Command,
-				Arguments:        NewCommandArguments(shell.SplitArguments(task.Arguments)),
+				Arguments:        args,
 				WorkingDirectory: task.WorkingDirectory,
 				JobDescription:   task.JobDescription,
 			})
