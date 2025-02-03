@@ -25,7 +25,7 @@ archives:
   - id: targz
     builds:
       - resticprofile_targz
-    format: tar.gz
+    formats: tar.gz
 
 dockers:
   - image_templates:
