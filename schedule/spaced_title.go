@@ -7,6 +7,7 @@ import "strings"
 // spacedTitle adds spaces before capital letters in a string, except for the first character
 // or when the capital letter follows a space. For example, "ThisIsATest" becomes "This Is A Test".
 // If the input is empty or contains no capital letters, it is returned unchanged.
+// This function is only used by the launchd handler on macOS.
 func spacedTitle(title string) string {
 	var previous rune
 	sb := strings.Builder{}

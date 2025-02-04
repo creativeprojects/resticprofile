@@ -60,14 +60,17 @@ func (ca CommandArguments) ConfigFile() string {
 	if len(ca.args) == 0 {
 		return ""
 	}
+	const configFlag = "--config"
+	const configPrefix = configFlag + "="
+
 	var lastConfig string
 	for i, arg := range ca.args {
-		if arg == "--config" {
+		if arg == configFlag {
 			if i+1 < len(ca.args) {
 				lastConfig = ca.args[i+1]
 			}
-		} else if strings.HasPrefix(arg, "--config=") {
-			lastConfig = strings.TrimPrefix(arg, "--config=")
+		} else if strings.HasPrefix(arg, configPrefix) {
+			lastConfig = strings.TrimPrefix(arg, configPrefix)
 		}
 	}
 	return lastConfig

@@ -17,6 +17,7 @@ const (
 	testServiceUnit = `[Unit]
 Description=resticprofile copy for profile self in examples/linux.yaml
 OnFailure=unit-status-mail@%n.service
+# Description=commented
 
 [Service]
 Type=notify
