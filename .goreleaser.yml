@@ -107,19 +107,19 @@ archives:
     builds:
       - resticprofile_targz
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    format: tar.gz
+    formats: tar.gz
 
   - id: targz_no_self_update
     builds:
       - resticprofile_no_self_update
     name_template: '{{ .ProjectName }}_no_self_update_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    format: tar.gz
+    formats: tar.gz
 
   - id: zip
     builds:
       - resticprofile_zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    format: zip
+    formats: zip
 
 checksum:
   name_template: 'checksums.txt'

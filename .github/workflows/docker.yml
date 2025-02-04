@@ -1,6 +1,7 @@
 name: Rebuild docker image
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '32 6 * * 0'
 

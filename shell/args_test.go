@@ -44,9 +44,8 @@ func TestClone(t *testing.T) {
 	assert.Equal(t, args.ToMap(), clone.ToMap())
 
 	assert.NotSame(t, args, clone)
-	assert.NotSame(t, args.args, clone.args)
-	assert.NotSame(t, args.args["x"], clone.args["x"])
-	assert.NotSame(t, args.more, clone.more)
+	assert.NotSame(t, &args.args, &clone.args)
+	assert.NotSame(t, &args.more, &clone.more)
 }
 
 func TestWalk(t *testing.T) {

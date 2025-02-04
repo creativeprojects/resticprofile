@@ -11,7 +11,7 @@ COPY build/restic-${ARCH} /usr/bin/restic
 COPY build/rclone-${ARCH} /usr/bin/rclone
 COPY resticprofile /usr/bin/resticprofile
 
-RUN apk add --no-cache openssh-client-default curl tzdata ca-certificates supercronic && \
+RUN apk add --no-cache ca-certificates curl logrotate openssh-client-default tzdata supercronic && \
     chmod +x /usr/bin/restic /usr/bin/rclone /usr/bin/resticprofile && \
     adduser -D -h /resticprofile resticprofile && \
     mkdir -p /resticprofile && \
