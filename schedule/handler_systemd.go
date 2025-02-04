@@ -221,7 +221,10 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 	}
 
 	// tell systemd we've changed some system configuration files
-	_ = runSystemctlReload(unitType)
+	err = runSystemctlReload(unitType)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -241,7 +244,7 @@ func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	if !unitLoaded {
 		return ErrScheduledJobNotFound
 	}
-	_ = runJournalCtlCommand(timerName, systemdType)
+	_ = runJournalCtlCommand(timerName, systemdType) // ignore errors on journalctl
 	return runSystemctlCommand(timerName, systemctlStatus, systemdType, false)
 }
 
@@ -337,7 +340,7 @@ func runSystemctlReload(unitType systemd.UnitType) error {
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
-	clog.Debugf("starting command \"%s %s\"", journalctlBinary, strings.Join(args, " "))
+	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	cmd := exec.Command(systemctlBinary, args...)
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()

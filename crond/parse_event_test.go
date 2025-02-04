@@ -34,6 +34,8 @@ func TestParseEvents(t *testing.T) {
 		{"00 00 05 03 *", "*-03-05 00:00:00"},
 		{"00 00 * * 1,2,3,4,5,6,0", "Sun..Sat *-*-* 00:00:00"},
 		{"00 00 * * 0,1", "Sun,Mon *-*-* 00:00:00"},
+		{"00\t00 * * 0,1", "Sun,Mon *-*-* 00:00:00"},   // should replace tab by space
+		{"00 00    * * 0,1", "Sun,Mon *-*-* 00:00:00"}, // should compact all spaces into one
 	}
 
 	for _, testRun := range testData {
@@ -41,6 +43,36 @@ func TestParseEvents(t *testing.T) {
 			event, err := parseEvent(testRun.cron)
 			require.NoError(t, err)
 			assert.Equal(t, testRun.expected, event.String())
+		})
+	}
+}
+
+func TestFailingParseEvents(t *testing.T) {
+	testData := []struct {
+		cron string
+	}{
+		{""},
+		{" "},
+		{"  "},
+		{"   "},
+		{"    "},
+		{"     "},
+		{"      "},
+		{"       "},
+		{"        "},
+		{"         "},
+		{"99 00 * * 0,1"},
+		{"0- 00 * * 0,1"},
+		{"-0 00 * * 0,1"},
+		{"0, 00 * * 0,1"},
+		{",0 00 * * 0,1"},
+		{"invalid"},
+	}
+
+	for _, testRun := range testData {
+		t.Run(testRun.cron, func(t *testing.T) {
+			_, err := parseEvent(testRun.cron)
+			require.Error(t, err)
 		})
 	}
 }

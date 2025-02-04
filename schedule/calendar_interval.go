@@ -97,6 +97,7 @@ func fillInValueFromScheduleTreeElement(currentEntry *CalendarInterval, element 
 
 func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeValue calendar.TypeValue) {
 	if entry == nil {
+		// should never happen (keep in case we change the workflow later on)
 		entry = newCalendarInterval()
 	}
 	switch typeValue {

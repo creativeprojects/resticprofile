@@ -28,7 +28,10 @@ func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
 	if cfg.CrontabBinary == "" {
 		cfg.CrontabBinary = platform.Executable(crontabBinary)
 	}
-	return &HandlerCrond{config: cfg}
+	return &HandlerCrond{
+		config: cfg,
+		fs:     afero.NewOsFs(),
+	}
 }
 
 // Init verifies crond is available on this system
@@ -160,7 +163,6 @@ func init() {
 		if config.Type() == constants.SchedulerCrond ||
 			(fallback && config.Type() == constants.SchedulerOSDefault) {
 			handler := NewHandlerCrond(config.Convert(constants.SchedulerCrond))
-			handler.fs = afero.NewOsFs()
 			return handler
 		}
 		return nil

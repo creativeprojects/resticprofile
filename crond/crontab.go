@@ -17,14 +17,14 @@ const (
 	timeExp        = `^(([\d,\/\-\*]+[ \t]?){5})`
 	userExp        = `[\t]+(\w+[\t]+)?`
 	workDirExp     = `(cd .+ && )?`
-	configExp      = `([^\s]+.+--config[ =]"?([^"\n]+)"? `
-	legacyExp      = `[^\n]*--name[ =]([^\s]+)( --.+)? ([a-z]+))$`
-	runScheduleExp = `run-schedule ([^\s]+)@([^\s]+))$`
+	configExp      = `[^\s]+.+--config[ =]"?([^"\n]+)"?`
+	legacyExp      = "(" + configExp + ` [^\n]*--name[ =]([^\s]+)( --.+)? ([a-z]+))$`
+	runScheduleExp = "(" + configExp + ` run-schedule ([^\s]+)@([^\s]+))$`
 )
 
 var (
-	legacyPattern      = regexp.MustCompile(timeExp + userExp + workDirExp + configExp + legacyExp)
-	runSchedulePattern = regexp.MustCompile(timeExp + userExp + workDirExp + configExp + runScheduleExp)
+	legacyPattern      = regexp.MustCompile(timeExp + userExp + workDirExp + legacyExp)
+	runSchedulePattern = regexp.MustCompile(timeExp + userExp + workDirExp + runScheduleExp)
 )
 
 var (

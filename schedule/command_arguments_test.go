@@ -69,9 +69,12 @@ func TestConfigFile(t *testing.T) {
 		{[]string{"--config", "C:\\Program Files\\config.toml"}, "C:\\Program Files\\config.toml"},
 		{[]string{"--name", "backup", "--config", "config.toml"}, "config.toml"},
 		{[]string{"--config", "config.toml", "--name", "backup"}, "config.toml"},
+		{[]string{"--config", "config.toml", "--name", "backup", "--config", "config.yaml"}, "config.yaml"},
 		{[]string{"--name", "backup", "--config", "config.toml", "--no-ansi"}, "config.toml"},
 		{[]string{"--name", "backup", "--no-ansi", "--config", "config.toml"}, "config.toml"},
 		{[]string{"--name", "backup", "--no-ansi"}, ""},
+		{[]string{"--config="}, ""},
+		{[]string{"--config=config.toml"}, "config.toml"},
 	}
 
 	for _, test := range tests {

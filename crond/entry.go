@@ -78,6 +78,7 @@ func (e Entry) Generate(w io.StringWriter) error {
 	return err
 }
 
+// Event returns the calendar event associated with this entry
 func (e Entry) Event() *calendar.Event {
 	return e.event
 }

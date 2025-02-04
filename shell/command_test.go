@@ -25,16 +25,23 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	mockBinary = "./shellmock"
+	tempDir, err := os.MkdirTemp("", "resticprofile")
+	if err != nil {
+		fmt.Printf("cannot create temp dir: %v", err)
+		os.Exit(1)
+	}
+	mockBinary = filepath.Join(tempDir, "shellmock")
 	if platform.IsWindows() {
-		mockBinary = `.\\shellmock.exe`
+		mockBinary += ".exe"
 	}
 	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
 	if output, err := cmd.CombinedOutput(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
+		os.Exit(1)
 	}
 	exitCode := m.Run()
 	_ = os.Remove(mockBinary)
+	_ = os.RemoveAll(tempDir)
 	os.Exit(exitCode)
 }
 

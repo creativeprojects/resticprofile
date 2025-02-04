@@ -6,8 +6,21 @@ import (
 	"github.com/creativeprojects/resticprofile/platform"
 )
 
+// SplitArguments splits a command line string into individual arguments.
+// It handles quoted strings and escape characters, with platform-specific behaviour:
+// - On non-Windows platforms, backslashes are treated as escape characters
+// - Quoted strings are preserved as single arguments
+// - Spaces outside quotes are used as argument delimiters
+//
+// Example:
+//
+//	SplitArguments(`echo "Hello World" file\ with\ spaces`)
+//	// Returns: []string{"echo", "Hello World", "file with spaces"}
 func SplitArguments(commandLine string) []string {
 	args := make([]string, 0)
+	if len(commandLine) == 0 {
+		return args
+	}
 	sb := &strings.Builder{}
 	quoted := false
 	escaped := false

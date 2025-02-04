@@ -14,6 +14,9 @@ func TestSpacedTitle(t *testing.T) {
 		{"", ""},
 		{"lowercase", "lowercase"},
 		{"ALLCAPS", "A L L C A P S"},
+		{"iPhone", "i Phone"},
+		{"iOS15Device", "i O S15 Device"},
+		{"user@Home", "user@ Home"},
 	}
 
 	for _, test := range tests {

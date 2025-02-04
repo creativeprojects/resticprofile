@@ -11,7 +11,9 @@ import (
 func parseEvent(source string) (*calendar.Event, error) {
 	event := calendar.NewEvent()
 	source = strings.ReplaceAll(source, "\t", " ")
-	source = strings.ReplaceAll(source, " ", " ")
+	for strings.Contains(source, "  ") {
+		source = strings.ReplaceAll(source, "  ", " ")
+	}
 	source = strings.TrimSpace(source)
 	parts := strings.Split(source, " ")
 	if len(parts) != 5 {
@@ -23,13 +25,15 @@ func parseEvent(source string) (*calendar.Event, error) {
 		return nil, err
 	}
 
-	for index, eventField := range []*calendar.Value{
+	eventFields := []*calendar.Value{
 		event.Minute,
 		event.Hour,
 		event.Day,
 		event.Month,
 		event.WeekDay,
-	} {
+	}
+
+	for index, eventField := range eventFields {
 		err := parseField(parts[index], eventField)
 		if err != nil {
 			return event, fmt.Errorf("error parsing %q: %w", parts[index], err)

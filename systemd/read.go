@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/afero"
 )
 
@@ -44,7 +45,7 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 		IOSchedulingClass:    getIntegerValue(serviceSections, "Service", "IOSchedulingClass"),
 		IOSchedulingPriority: getIntegerValue(serviceSections, "Service", "IOSchedulingPriority"),
 		Schedules:            getValues(timerSections, "Timer", "OnCalendar"),
-		Priority:             "background", // TODO fix this hard-coded value
+		Priority:             getPriority(getSingleValue(serviceSections, "Service", "CPUSchedulingPolicy")),
 	}
 	return cfg, nil
 }
@@ -117,4 +118,13 @@ func parseServiceFileName(filename string) (profileName, commandName string) {
 	commandName, profileName, _ = strings.Cut(filename, "@")
 	profileName = strings.TrimPrefix(profileName, "profile-")
 	return
+}
+
+func getPriority(input string) string {
+	switch input {
+	case "idle":
+		return constants.SchedulePriorityBackground
+	default:
+		return constants.SchedulePriorityStandard
+	}
 }

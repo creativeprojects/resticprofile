@@ -89,7 +89,7 @@ $(GOBIN)/mockery: verify $(GOBIN)/eget
 
 $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.61.0 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.63.4 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"

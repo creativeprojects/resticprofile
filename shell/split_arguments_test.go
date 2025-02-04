@@ -11,12 +11,16 @@ func TestSplitArguments(t *testing.T) {
 	testCases := []struct {
 		commandLine  string
 		expectedArgs []string
-		windowsMode  bool
-		unixMode     bool
+		windowsOnly  bool
+		unixOnly     bool
 	}{
 		{
 			commandLine:  `cmd arg1 arg2`,
 			expectedArgs: []string{"cmd", "arg1", "arg2"},
+		},
+		{
+			commandLine:  ``,
+			expectedArgs: []string{},
 		},
 		{
 			commandLine:  `cmd "arg with spaces" arg3`,
@@ -45,12 +49,12 @@ func TestSplitArguments(t *testing.T) {
 		{
 			commandLine:  `cmd "arg \"with\" spaces"`,
 			expectedArgs: []string{"cmd", "arg \"with\" spaces"},
-			unixMode:     true,
+			unixOnly:     true,
 		},
 		{
 			commandLine:  `cmd arg\ with\ spaces`,
 			expectedArgs: []string{"cmd", "arg with spaces"},
-			unixMode:     true,
+			unixOnly:     true,
 		},
 		{
 			commandLine:  `args --with folder/file.txt`,
@@ -59,15 +63,15 @@ func TestSplitArguments(t *testing.T) {
 		{
 			commandLine:  `args --with folder\file.txt`,
 			expectedArgs: []string{"args", "--with", "folder\\file.txt"},
-			windowsMode:  true,
+			windowsOnly:  true,
 		},
 	}
 
 	for _, testCase := range testCases {
-		if testCase.windowsMode && !platform.IsWindows() {
+		if testCase.windowsOnly && !platform.IsWindows() {
 			continue
 		}
-		if testCase.unixMode && platform.IsWindows() {
+		if testCase.unixOnly && platform.IsWindows() {
 			continue
 		}
 		t.Run(testCase.commandLine, func(t *testing.T) {

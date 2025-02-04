@@ -61,7 +61,7 @@ func TestReadUnitFile(t *testing.T) {
 		TimerDescription:     "",
 		Schedules:            []string{"*:45"},
 		UnitType:             SystemUnit,
-		Priority:             "background",
+		Priority:             "standard",
 		UnitFile:             "",
 		TimerFile:            "",
 		DropInFiles:          []string(nil),
@@ -101,7 +101,7 @@ func TestReadSystemUnit(t *testing.T) {
 				TimerDescription: "timer description",
 				Schedules:        []string{"daily", "weekly"},
 				UnitType:         UserUnit,
-				Priority:         "background",
+				Priority:         "standard",
 				Environment: []string{
 					"TMP=/tmp",
 				},

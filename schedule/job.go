@@ -8,7 +8,7 @@ import (
 // Job: common code for all scheduling systems
 //
 
-var ErrJobCanBeRemovedOnly = errors.New("job can be removed only")
+var ErrJobCanBeRemovedOnly = errors.New("this job is marked for removal only and cannot be created or modified")
 
 // Job scheduler
 type Job struct {
@@ -17,6 +17,12 @@ type Job struct {
 }
 
 func NewJob(handler Handler, config *Config) *Job {
+	if handler == nil {
+		panic("NewJob: handler cannot be nil")
+	}
+	if config == nil {
+		panic("NewJob: config cannot be nil")
+	}
 	return &Job{
 		config:  config,
 		handler: handler,

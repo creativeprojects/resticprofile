@@ -38,7 +38,7 @@ const (
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 
-	namePrefix      = "local.resticprofile."
+	namePrefix      = "local.resticprofile." // namePrefix is the prefix used for all launchd job labels managed by resticprofile
 	agentExtension  = ".agent.plist"
 	daemonExtension = ".plist"
 

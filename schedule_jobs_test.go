@@ -201,6 +201,8 @@ func TestStatusRemoveOnlyJob(t *testing.T) {
 }
 
 func TestRemoveScheduledJobs(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		removeProfileName string
 		fromConfigFile    string
@@ -267,4 +269,122 @@ func TestRemoveScheduledJobs(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	}
+}
+
+func TestFailRemoveScheduledJobs(t *testing.T) {
+	t.Parallel()
+
+	handler := mocks.NewHandler(t)
+	handler.EXPECT().Init().Return(nil)
+	handler.EXPECT().Close()
+
+	handler.EXPECT().Scheduled("profile_to_remove").Return([]schedule.Config{
+		{
+			ProfileName: "profile_to_remove",
+			CommandName: "backup",
+			ConfigFile:  "configFile",
+			Permission:  "user",
+		},
+	}, nil)
+	handler.EXPECT().RemoveJob(&schedule.Config{
+		ProfileName: "profile_to_remove",
+		CommandName: "backup",
+		ConfigFile:  "configFile",
+		Permission:  "user",
+	}, "user").Return(errors.New("impossible"))
+
+	err := removeScheduledJobs(handler, "configFile", "profile_to_remove")
+	assert.Error(t, err)
+	t.Log(err)
+}
+
+func TestStatusScheduledJobs(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		statusProfileName string
+		fromConfigFile    string
+		scheduledConfigs  []schedule.Config
+		statusConfigs     []schedule.Config
+	}{
+		{
+			statusProfileName: "profile_no_config",
+			fromConfigFile:    "configFile",
+			scheduledConfigs:  []schedule.Config{},
+			statusConfigs:     []schedule.Config{},
+		},
+		{
+			statusProfileName: "profile_one_config_to_remove",
+			fromConfigFile:    "configFile",
+			scheduledConfigs: []schedule.Config{
+				{
+					ProfileName: "profile_one_config_to_remove",
+					CommandName: "backup",
+					ConfigFile:  "configFile",
+				},
+			},
+			statusConfigs: []schedule.Config{
+				{
+					ProfileName: "profile_one_config_to_remove",
+					CommandName: "backup",
+					ConfigFile:  "configFile",
+				},
+			},
+		},
+		{
+			statusProfileName: "profile_different_config_file",
+			fromConfigFile:    "configFile",
+			scheduledConfigs: []schedule.Config{
+				{
+					ProfileName: "profile_different_config_file",
+					CommandName: "backup",
+					ConfigFile:  "other_configFile",
+				},
+			},
+			statusConfigs: []schedule.Config{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.statusProfileName, func(t *testing.T) {
+			handler := mocks.NewHandler(t)
+			handler.EXPECT().Init().Return(nil)
+			handler.EXPECT().Close()
+
+			handler.EXPECT().Scheduled(tc.statusProfileName).Return(tc.scheduledConfigs, nil)
+			for _, cfg := range tc.statusConfigs {
+				handler.EXPECT().DisplaySchedules(cfg.ProfileName, cfg.CommandName, []string(nil)).Return(nil)
+				handler.EXPECT().DisplayJobStatus(&cfg).Return(nil)
+			}
+			if len(tc.scheduledConfigs) > 0 {
+				handler.EXPECT().DisplayStatus(tc.statusProfileName).Return(nil)
+			}
+
+			err := statusScheduledJobs(handler, tc.fromConfigFile, tc.statusProfileName)
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestFailStatusScheduledJobs(t *testing.T) {
+	t.Parallel()
+
+	handler := mocks.NewHandler(t)
+	handler.EXPECT().Init().Return(nil)
+	handler.EXPECT().Close()
+
+	handler.EXPECT().Scheduled("profile_name").Return([]schedule.Config{
+		{
+			ProfileName: "profile_name",
+			CommandName: "backup",
+			ConfigFile:  "configFile",
+			Permission:  "user",
+		},
+	}, nil)
+	handler.EXPECT().DisplaySchedules("profile_name", "backup", []string(nil)).Return(errors.New("impossible"))
+	handler.EXPECT().DisplayStatus("profile_name").Return(errors.New("impossible"))
+
+	err := statusScheduledJobs(handler, "configFile", "profile_name")
+	assert.Error(t, err)
+	t.Log(err)
 }

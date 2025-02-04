@@ -15,6 +15,10 @@ import (
 	"golang.org/x/text/language"
 )
 
+const (
+	legacyFlagWarning = "the --legacy flag is only temporary and will be removed in version 1.0."
+)
+
 // createSchedule accepts one argument from the commandline: --no-start
 func createSchedule(_ io.Writer, ctx commandContext) error {
 	c := ctx.config
@@ -75,7 +79,8 @@ func removeSchedule(_ io.Writer, ctx commandContext) error {
 	flags := ctx.flags
 	args := ctx.request.arguments
 
-	if slices.Contains(args, "--legacy") { // TODO: remove this option in the future
+	if slices.Contains(args, "--legacy") {
+		clog.Warning(legacyFlagWarning)
 		// Unschedule all jobs of all selected profiles
 		for _, profileName := range selectProfilesAndGroups(c, flags, args) {
 			profileFlags := flagsForProfile(flags, profileName)
@@ -117,7 +122,8 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 
 	defer c.DisplayConfigurationIssues()
 
-	if slices.Contains(flags.resticArgs, "--legacy") { // TODO: remove this option in the future
+	if slices.Contains(flags.resticArgs, "--legacy") {
+		clog.Warning(legacyFlagWarning)
 		// single profile or group
 		if !slices.Contains(args, "--all") {
 			schedulerConfig, schedules, _, err := getScheduleJobs(c, flags)
