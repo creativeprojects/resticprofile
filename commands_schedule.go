@@ -162,7 +162,7 @@ func statusSchedule(w io.Writer, ctx commandContext) error {
 	}
 	profileName := ctx.request.profile
 	if slices.Contains(args, "--all") {
-		// Unschedule all jobs of all profiles
+		// display all jobs of all profiles
 		profileName = ""
 	}
 	schedulerConfig := schedule.NewSchedulerConfig(ctx.global)

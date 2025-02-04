@@ -68,4 +68,14 @@ func TestReadingCrondScheduled(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.ElementsMatch(t, expectedJobs, scheduled)
+
+	// now delete all schedules
+	for _, testCase := range testCases {
+		err := handler.RemoveJob(&testCase.job, testCase.job.Permission)
+		require.NoError(t, err)
+	}
+
+	scheduled, err = handler.Scheduled("")
+	require.NoError(t, err)
+	assert.Empty(t, scheduled)
 }

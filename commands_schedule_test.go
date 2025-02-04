@@ -52,7 +52,8 @@ const scheduleIntegrationTestsCrontab = `
 ### end of resticprofile content, please leave this line intact ###
 `
 
-func TestCommandsIntegrationUsingCrontab(t *testing.T) {
+// TODO: finish implementation of this test
+func TestStatusCommandIntegrationUsingCrontab(t *testing.T) {
 	crontab := filepath.Join(t.TempDir(), "crontab")
 	err := os.WriteFile(crontab, []byte(scheduleIntegrationTestsCrontab), 0o600)
 	require.NoError(t, err)

@@ -82,4 +82,14 @@ func TestReadingSystemdScheduled(t *testing.T) {
 	}
 
 	assert.ElementsMatch(t, expectedJobs, testScheduled)
+
+	// now delete all schedules
+	for _, testCase := range testCases {
+		err := handler.RemoveJob(&testCase.job, testCase.job.Permission)
+		require.NoError(t, err)
+	}
+
+	scheduled, err = handler.Scheduled("")
+	require.NoError(t, err)
+	assert.Empty(t, scheduled)
 }
