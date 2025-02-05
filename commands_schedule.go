@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	legacyFlagWarning = "the --legacy flag is only temporary and will be removed in version 1.0."
+	legacyFlagWarning = "the --legacy flag is only temporary and will be removed in version 1.0.0"
 )
 
-// createSchedule accepts one argument from the commandline: --no-start
+// createSchedule command
 func createSchedule(_ io.Writer, ctx commandContext) error {
 	c := ctx.config
 	request := ctx.request
@@ -106,9 +106,9 @@ func removeSchedule(_ io.Writer, ctx commandContext) error {
 	schedulerConfig := schedule.NewSchedulerConfig(ctx.global)
 	err = removeScheduledJobs(schedule.NewHandler(schedulerConfig), ctx.config.GetConfigFile(), profileName)
 	if err != nil {
-		err = retryElevated(err, ctx.flags)
+		return retryElevated(err, ctx.flags)
 	}
-	return err
+	return nil
 }
 
 func statusSchedule(w io.Writer, ctx commandContext) error {
