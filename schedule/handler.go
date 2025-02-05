@@ -17,6 +17,7 @@ type Handler interface {
 	CreateJob(job *Config, schedules []*calendar.Event, permission string) error
 	RemoveJob(job *Config, permission string) error
 	DisplayJobStatus(job *Config) error
+	// Scheduled can return configs at the same time as an error: it means some configs are fine but some others cannot be loaded properly
 	Scheduled(profileName string) ([]Config, error)
 }
 

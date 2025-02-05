@@ -127,9 +127,9 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 		SetFile(h.config.CrontabFile).
 		SetBinary(h.config.CrontabBinary).
 		SetFs(h.fs)
-	entries, err := crontab.GetEntries()
-	if err != nil {
-		return nil, err
+	entries, configsErr := crontab.GetEntries()
+	if configsErr != nil && len(entries) == 0 {
+		return nil, configsErr
 	}
 	configs := make([]Config, 0, len(entries))
 	for _, entry := range entries {
@@ -154,7 +154,7 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 			})
 		}
 	}
-	return configs, nil
+	return configs, configsErr
 }
 
 // init registers HandlerCrond

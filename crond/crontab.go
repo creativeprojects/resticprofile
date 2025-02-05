@@ -230,8 +230,7 @@ func (c *Crontab) GetEntries() ([]Entry, error) {
 		return nil, nil
 	}
 
-	entries := parseEntries(ownSection)
-	return entries, nil
+	return parseEntries(ownSection)
 }
 
 func cleanupCrontab(crontab string) string {
@@ -322,21 +321,25 @@ func deleteLine(crontab string, entry Entry) (string, bool, error) {
 	return crontab, false, nil
 }
 
-func parseEntries(crontab string) []Entry {
+func parseEntries(crontab string) ([]Entry, error) {
+	var errs error
 	lines := strings.Split(crontab, "\n")
 	entries := make([]Entry, 0, len(lines))
-	for _, line := range lines {
+	for lineNum, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 || strings.HasPrefix(line, "#") {
 			continue
 		}
-		entry, _ := parseEntry(line)
+		entry, err := parseEntry(line)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("line %d: %w", lineNum+1, err))
+		}
 		if entry == nil {
 			continue
 		}
 		entries = append(entries, *entry)
 	}
-	return entries
+	return entries, errs
 }
 
 func parseEntry(line string) (*Entry, error) {

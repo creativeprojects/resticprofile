@@ -103,7 +103,10 @@ func removeScheduledJobs(handler schedule.Handler, configFile, profileName strin
 	clog.Debugf("looking up schedules from configuration file %s", configFile)
 	configs, err := handler.Scheduled(profileName)
 	if err != nil {
-		return err
+		if len(configs) == 0 {
+			return err
+		}
+		clog.Errorf("some configurations failed to load:\n%v", err)
 	}
 	if len(configs) == 0 {
 		clog.Info("no scheduled jobs found")
@@ -174,7 +177,10 @@ func statusScheduledJobs(handler schedule.Handler, configFile, profileName strin
 	clog.Debugf("looking up schedules from configuration file %s", configFile)
 	configs, err := handler.Scheduled(profileName)
 	if err != nil {
-		return err
+		if len(configs) == 0 {
+			return err
+		}
+		clog.Errorf("some configurations failed to load:\n%v", err)
 	}
 	if len(configs) == 0 {
 		clog.Info("no scheduled jobs found")

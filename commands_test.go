@@ -54,11 +54,11 @@ schedule = "daily"
 	assert.Nil(t, err)
 
 	// Test that errors from getScheduleJobs are passed through
-	_, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "non-existent"})
+	_, _, notFoundErr := getRemovableScheduleJobs(parsedConfig, "non-existent")
 	assert.ErrorIs(t, notFoundErr, config.ErrNotFound)
 
 	// Test that declared and declarable job configs are returned
-	_, schedules, err := getRemovableScheduleJobs(parsedConfig, commandLineFlags{name: "default"})
+	_, schedules, err := getRemovableScheduleJobs(parsedConfig, "default")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, schedules)
 	assert.Len(t, schedules, len(config.NewProfile(parsedConfig, "test").SchedulableCommands()))
@@ -93,26 +93,24 @@ schedule = "daily"
 	assert.Nil(t, err)
 
 	// Test that non-existent profiles causes an error
-	_, _, notFoundErr := getProfileScheduleJobs(cfg, commandLineFlags{name: "non-existent"})
+	_, _, notFoundErr := getProfileScheduleJobs(cfg, "non-existent")
 	assert.ErrorIs(t, notFoundErr, config.ErrNotFound)
 
 	// Test that non-existent schedule causes no error at first
 	{
-		flags := commandLineFlags{name: "other"}
-		_, schedules, err := getProfileScheduleJobs(cfg, flags)
+		_, schedules, err := getProfileScheduleJobs(cfg, "other")
 		assert.Nil(t, err)
 
-		err = requireScheduleJobs(schedules, flags)
+		err = requireScheduleJobs(schedules, "other")
 		assert.EqualError(t, err, "no schedule found for profile 'other'")
 	}
 
 	// Test that only declared job configs are returned
 	{
-		flags := commandLineFlags{name: "default"}
-		profile, schedules, err := getProfileScheduleJobs(cfg, flags)
+		profile, schedules, err := getProfileScheduleJobs(cfg, "default")
 		assert.Nil(t, err)
 
-		err = requireScheduleJobs(schedules, flags)
+		err = requireScheduleJobs(schedules, "default")
 		assert.Nil(t, err)
 
 		assert.NotNil(t, profile)
@@ -151,29 +149,20 @@ _ = 0
 	}
 
 	// Select --all
-	assert.ElementsMatch(t, allProfilesAndGroups, selectProfilesAndGroups(cfg, commandLineFlags{}, []string{"--all"}))
+	assert.ElementsMatch(t, allProfilesAndGroups, selectProfilesAndGroups(cfg, "", []string{"--all"}))
 
 	// Select profiles by name
 	for _, p := range allProfiles {
-		assert.ElementsMatch(t, []string{p}, selectProfilesAndGroups(cfg, commandLineFlags{name: p}, nil))
+		assert.ElementsMatch(t, []string{p}, selectProfilesAndGroups(cfg, p, nil))
 	}
 
 	// Select groups by name
 	for _, g := range allGroups {
-		assert.ElementsMatch(t, []string{g}, selectProfilesAndGroups(cfg, commandLineFlags{name: g}, nil))
+		assert.ElementsMatch(t, []string{g}, selectProfilesAndGroups(cfg, g, nil))
 	}
 
 	// Select non-existing profile or group
-	assert.ElementsMatch(t, []string{"non-existing"}, selectProfilesAndGroups(cfg, commandLineFlags{name: "non-existing"}, nil))
-}
-
-func TestFlagsForProfile(t *testing.T) {
-	flags := commandLineFlags{name: "_"}
-	profileFlags := flagsForProfile(flags, "test")
-
-	assert.NotEqual(t, flags, profileFlags)
-	assert.Equal(t, "_", flags.name)
-	assert.Equal(t, "test", profileFlags.name)
+	assert.ElementsMatch(t, []string{"non-existing"}, selectProfilesAndGroups(cfg, "non-existing", nil))
 }
 
 func TestCompleteCall(t *testing.T) {
@@ -364,10 +353,10 @@ func TestCreateScheduleAll(t *testing.T) {
 	err = createSchedule(nil, commandContext{
 		Context: Context{
 			config: cfg,
-			flags: commandLineFlags{
-				name: "default",
+			request: Request{
+				profile:   "default",
+				arguments: []string{"--all"},
 			},
-			request: Request{arguments: []string{"--all"}},
 		},
 	})
 	assert.NoError(t, err)
