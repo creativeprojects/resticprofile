@@ -198,7 +198,7 @@ func userCredentials() (string, string, error) {
 	return userName, userPassword, nil
 }
 
-// createUserLoggedOnTask creates a new user task. Will update an existing task instead of overwritting
+// createUserLoggedOnTask creates a new user task. Will update an existing task instead of overwriting
 func createUserLoggedOnTask(config *Config, schedules []*calendar.Event) error {
 	taskName := getTaskPath(config.ProfileName, config.CommandName)
 	registeredTask, err := taskService.GetRegisteredTask(taskName)
@@ -220,15 +220,9 @@ func createUserLoggedOnTask(config *Config, schedules []*calendar.Event) error {
 
 	createSchedules(&task, schedules)
 
-	_, created, err := taskService.CreateTaskEx(
-		taskName,
-		task,
-		"",
-		"",
-		taskmaster.TASK_LOGON_INTERACTIVE_TOKEN,
-		false)
+	_, created, err := taskService.CreateTask(taskName, task, false)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot create user task: %w", err)
 	}
 	if !created {
 		return errors.New("cannot create user task")
