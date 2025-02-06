@@ -5,6 +5,7 @@ package schtasks
 import (
 	"bytes"
 	"math"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -370,6 +371,9 @@ func TestCreationOfTasks(t *testing.T) {
 
 			taskName := getTaskPath(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			buffer, err := exportTask(taskName)
+			require.NoError(t, err)
+
+			err = os.WriteFile(strings.ReplaceAll(fixture.description, " ", "_")+".xml", []byte(buffer), 0644)
 			require.NoError(t, err)
 
 			pattern := regexp.MustCompile(fixture.expected)
