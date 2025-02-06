@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/giert/taskmaster"
 	"github.com/rickb777/date/period"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -363,14 +363,14 @@ func TestCreationOfTasks(t *testing.T) {
 			}
 			// user logged in doesn't need a password
 			err = createUserLoggedOnTask(scheduleConfig, schedules)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer func() {
 				_ = Delete(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			}()
 
 			taskName := getTaskPath(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			buffer, err := exportTask(taskName)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			pattern := regexp.MustCompile(fixture.expected)
 			match := pattern.FindAllString(buffer, -1)
