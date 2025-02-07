@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/giert/taskmaster"
 	"github.com/rickb777/date/period"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

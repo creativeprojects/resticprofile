@@ -5,12 +5,12 @@ go 1.23.6
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/adrg/xdg v0.5.3
+	github.com/capnspacehook/taskmaster v0.0.0-20210519235353-1629df7c85e9
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.14.0
 	github.com/creativeprojects/go-selfupdate v1.4.1
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.18.0
-	github.com/giert/taskmaster v0.0.0-20250127094140-73d6bfe6121b
 	github.com/joho/godotenv v1.5.1
 	github.com/mackerelio/go-osstat v0.2.5
 	github.com/mattn/go-colorable v0.1.14

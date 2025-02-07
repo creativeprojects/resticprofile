@@ -10,11 +10,11 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/capnspacehook/taskmaster"
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
-	"github.com/giert/taskmaster"
 	"github.com/rickb777/date/period"
 )
 

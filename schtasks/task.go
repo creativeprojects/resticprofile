@@ -2,6 +2,7 @@ package schtasks
 
 import (
 	"encoding/xml"
+	"os/user"
 	"time"
 
 	"github.com/rickb777/date/period"
@@ -48,29 +49,9 @@ type Task struct {
 			} `xml:"ScheduleByMonthDayOfWeek"`
 		} `xml:"CalendarTrigger"`
 	} `xml:"Triggers"`
-	Principals struct {
-		Principal Principal `xml:"Principal"`
-	} `xml:"Principals"`
-	Settings struct {
-		MultipleInstancesPolicy    string       `xml:"MultipleInstancesPolicy"`
-		DisallowStartIfOnBatteries string       `xml:"DisallowStartIfOnBatteries"`
-		StopIfGoingOnBatteries     string       `xml:"StopIfGoingOnBatteries"`
-		AllowHardTerminate         string       `xml:"AllowHardTerminate"`
-		StartWhenAvailable         string       `xml:"StartWhenAvailable"`
-		RunOnlyIfNetworkAvailable  string       `xml:"RunOnlyIfNetworkAvailable"`
-		IdleSettings               IdleSettings `xml:"IdleSettings"`
-		AllowStartOnDemand         string       `xml:"AllowStartOnDemand"`
-		Enabled                    string       `xml:"Enabled"`
-		Hidden                     string       `xml:"Hidden"`
-		RunOnlyIfIdle              string       `xml:"RunOnlyIfIdle"`
-		WakeToRun                  string       `xml:"WakeToRun"`
-		ExecutionTimeLimit         string       `xml:"ExecutionTimeLimit"`
-		Priority                   string       `xml:"Priority"`
-	} `xml:"Settings"`
-	Actions struct {
-		Context string     `xml:"Context,attr"`
-		Exec    ExecAction `xml:"Exec"`
-	} `xml:"Actions"`
+	Principals Principals `xml:"Principals"`
+	Settings   Settings   `xml:"Settings"`
+	Actions    Actions    `xml:"Actions"`
 }
 
 type RegistrationInfo struct {
@@ -80,33 +61,45 @@ type RegistrationInfo struct {
 	URI         string `xml:"URI"`
 }
 
-type Principal struct {
-	ID        string `xml:"id,attr"`
-	UserId    string `xml:"UserId"`
-	LogonType string `xml:"LogonType"`
-	RunLevel  string `xml:"RunLevel"`
-}
-
-type ExecAction struct {
-	Command          string `xml:"Command"`
-	Arguments        string `xml:"Arguments"`
-	WorkingDirectory string `xml:"WorkingDirectory"`
-}
-
-// IdleSettings specifies how the Task Scheduler performs tasks when the computer is in an idle condition.
-type IdleSettings struct {
-	Duration      period.Period `xml:"Duration"`      // the amount of time that the computer must be in an idle state before the task is run
-	RestartOnIdle bool          `xml:"RestartOnIdle"` // whether the task is restarted when the computer cycles into an idle condition more than once
-	StopOnIdleEnd bool          `xml:"StopOnIdleEnd"` // indicates that the Task Scheduler will terminate the task if the idle condition ends before the task is completed
-	WaitTimeout   period.Period `xml:"WaitTimeout"`   // the amount of time that the Task Scheduler will wait for an idle condition to occur
-}
-
 func NewTask() Task {
+	var userName, userID string
+	if currentUser, err := user.Current(); err == nil {
+		userID = currentUser.Uid
+		userName = currentUser.Username
+	}
 	task := Task{
 		Version: "1.2",
 		Xmlns:   "http://schemas.microsoft.com/windows/2004/02/mit/task",
 		RegistrationInfo: RegistrationInfo{
-			Date: time.Now().Format(time.RFC3339),
+			Date:   time.Now().Format(time.RFC3339),
+			Author: userName,
+		},
+		Principals: Principals{
+			Principal: Principal{
+				ID:        "Author",
+				UserId:    userID,
+				LogonType: LogonTypeInteractiveToken,
+				RunLevel:  RunLevelLeastPrivilege,
+			},
+		},
+		Settings: Settings{
+			AllowDemandStart:           true,
+			AllowHardTerminate:         true,
+			Compatibility:              TaskCompatibilityV2,
+			DisallowStartIfOnBatteries: true,
+			Enabled:                    true,
+			IdleSettings: IdleSettings{
+				Duration:      period.NewHMS(0, 10, 0), // PT10M
+				WaitTimeout:   period.NewHMS(1, 0, 0),  // PT1H
+				StopOnIdleEnd: true,
+			},
+			MultipleInstancesPolicy: MultipleInstancesIgnoreNew,
+			Priority:                7,
+			StopIfGoingOnBatteries:  true,
+			ExecutionTimeLimit:      period.NewHMS(72, 0, 0), // PT72H
+		},
+		Actions: Actions{
+			Context: "Author",
 		},
 	}
 	return task

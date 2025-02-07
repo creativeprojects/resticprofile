@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2025-02-06T22:07:18</Date>
+    <Author>resticprofile</Author>
+    <Description>resticprofile check for profile self in examples/windows.yaml</Description>
+    <URI>\resticprofile backup\self check</URI>
+  </RegistrationInfo>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2025-11-03T01:00:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <Enabled>true</Enabled>
+      <ScheduleByMonthDayOfWeek>
+        <Weeks>
+          <Week>1</Week>
+          <Week>2</Week>
+          <Week>3</Week>
+          <Week>4</Week>
+          <Week>Last</Week>
+        </Weeks>
+        <DaysOfWeek>
+          <Monday />
+        </DaysOfWeek>
+        <Months>
+          <November />
+          <December />
+        </Months>
+      </ScheduleByMonthDayOfWeek>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-11-03T13:00:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <Enabled>true</Enabled>
+      <ScheduleByMonthDayOfWeek>
+        <Weeks>
+          <Week>1</Week>
+          <Week>2</Week>
+          <Week>3</Week>
+          <Week>4</Week>
+          <Week>Last</Week>
+        </Weeks>
+        <DaysOfWeek>
+          <Monday />
+        </DaysOfWeek>
+        <Months>
+          <November />
+          <December />
+        </Months>
+      </ScheduleByMonthDayOfWeek>
+    </CalendarTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-21-3622340250-3004114779-3108145013-1002</UserId>
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>false</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <Duration>PT10M</Duration>
+      <WaitTimeout>PT1H</WaitTimeout>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>R:\Temp\go-build2628570706\b001\exe\resticprofile.exe</Command>
+      <Arguments>--no-ansi --config examples/windows.yaml run-schedule check@self</Arguments>
+      <WorkingDirectory>C:\Users\fredq\go\src\github.com\creativeprojects\resticprofile</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
