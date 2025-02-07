@@ -1,0 +1,44 @@
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2025-02-07T18:46:27Z</Date>
+    <Author></Author>
+    <Description></Description>
+    <URI></URI>
+  </RegistrationInfo>
+  <Triggers></Triggers>
+  <Principals>
+    <Principal id="">
+      <UserId></UserId>
+      <LogonType></LogonType>
+      <RunLevel></RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy></MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries></DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries></StopIfGoingOnBatteries>
+    <AllowHardTerminate></AllowHardTerminate>
+    <StartWhenAvailable></StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable></RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <Duration>P0D</Duration>
+      <RestartOnIdle>false</RestartOnIdle>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <WaitTimeout>P0D</WaitTimeout>
+    </IdleSettings>
+    <AllowStartOnDemand></AllowStartOnDemand>
+    <Enabled></Enabled>
+    <Hidden></Hidden>
+    <RunOnlyIfIdle></RunOnlyIfIdle>
+    <WakeToRun></WakeToRun>
+    <ExecutionTimeLimit></ExecutionTimeLimit>
+    <Priority></Priority>
+  </Settings>
+  <Actions Context="">
+    <Exec>
+      <Command></Command>
+      <Arguments></Arguments>
+      <WorkingDirectory></WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
