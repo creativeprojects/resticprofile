@@ -8,11 +8,12 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLoadXMLTask(t *testing.T) {
-	filenames, err := filepath.Glob("examples/self*.xml")
+	filenames, err := filepath.Glob("examples/*.xml")
 	require.NoError(t, err)
 	for _, filename := range filenames {
 		file, err := os.Open(filename)
@@ -26,9 +27,10 @@ func TestLoadXMLTask(t *testing.T) {
 		}
 		task := Task{}
 		err = decoder.Decode(&task)
-		require.NoError(t, err)
+		require.NoErrorf(t, err, "filename: %s", filename)
+		assert.True(t, len(task.Triggers.CalendarTrigger) > 0 || len(task.Triggers.TimeTrigger) > 0)
 
-		t.Logf("%+v", task)
+		// t.Logf("%+v", task)
 	}
 }
 
@@ -46,6 +48,14 @@ func TestSaveXMLTask(t *testing.T) {
 		{
 			Command:   "echo",
 			Arguments: "Hello World!",
+		},
+	}
+	task.Triggers.CalendarTrigger = []CalendarTrigger{
+		{
+			Enabled: true,
+			ScheduleByDay: &ScheduleByDay{
+				DaysInterval: 1,
+			},
 		},
 	}
 	err = encoder.Encode(&task)
