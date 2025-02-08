@@ -1,587 +1,587 @@
-<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <RegistrationInfo>
-    <Date>2025-02-06T22:46:30</Date>
-    <Author>resticprofile</Author>
-    <Description>every hour on the 1st of each month</Description>
-    <URI>\resticprofile backup\test 19</URI>
-  </RegistrationInfo>
-  <Principals>
-    <Principal id="Author">
-      <UserId>S-1-5-21-3622340250-3004114779-3108145013-1002</UserId>
-      <LogonType>InteractiveToken</LogonType>
-    </Principal>
-  </Principals>
-  <Settings>
-    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <IdleSettings>
-      <Duration>PT10M</Duration>
-      <WaitTimeout>PT1H</WaitTimeout>
-      <StopOnIdleEnd>true</StopOnIdleEnd>
-      <RestartOnIdle>false</RestartOnIdle>
-    </IdleSettings>
-  </Settings>
-  <Triggers>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T00:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T01:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T02:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T03:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T04:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T05:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T06:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T07:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T08:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T09:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T10:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T11:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T12:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T13:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T14:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T15:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T16:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T17:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T18:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T19:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T20:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T21:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T22:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-    <CalendarTrigger>
-      <StartBoundary>2025-03-01T23:04:00</StartBoundary>
-      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-      <ScheduleByMonth>
-        <Months>
-          <January />
-          <February />
-          <March />
-          <April />
-          <May />
-          <June />
-          <July />
-          <August />
-          <September />
-          <October />
-          <November />
-          <December />
-        </Months>
-        <DaysOfMonth>
-          <Day>1</Day>
-        </DaysOfMonth>
-      </ScheduleByMonth>
-    </CalendarTrigger>
-  </Triggers>
-  <Actions Context="Author">
-    <Exec>
-      <Command>echo</Command>
-      <Arguments>hello there</Arguments>
-      <WorkingDirectory>C:\</WorkingDirectory>
-    </Exec>
-  </Actions>
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2025-02-06T22:46:30</Date>
+    <Author>resticprofile</Author>
+    <Description>every hour on the 1st of each month</Description>
+    <URI>\resticprofile backup\test 19</URI>
+  </RegistrationInfo>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-21-3622340250-3004114779-3108145013-1002</UserId>
+      <LogonType>InteractiveToken</LogonType>
+    </Principal>
+  </Principals>
+  <Settings>
+    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <IdleSettings>
+      <Duration>PT10M</Duration>
+      <WaitTimeout>PT1H</WaitTimeout>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+  </Settings>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T00:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T01:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T02:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T03:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T04:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T05:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T06:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T07:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T08:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T09:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T10:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T11:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T12:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T13:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T14:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T15:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T16:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T17:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T18:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T19:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T20:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T21:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T22:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+    <CalendarTrigger>
+      <StartBoundary>2025-03-01T23:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+          <February />
+          <March />
+          <April />
+          <May />
+          <June />
+          <July />
+          <August />
+          <September />
+          <October />
+          <November />
+          <December />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+  </Triggers>
+  <Actions Context="Author">
+    <Exec>
+      <Command>echo</Command>
+      <Arguments>hello there</Arguments>
+      <WorkingDirectory>C:\</WorkingDirectory>
+    </Exec>
+  </Actions>
 </Task>
