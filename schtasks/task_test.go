@@ -32,6 +32,8 @@ func TestLoadXMLTask(t *testing.T) {
 
 		// t.Logf("%+v", task)
 		// t.Logf("%+v", task.Triggers.CalendarTrigger[0].ScheduleByWeek)
+		// t.Logf("%+v", task.Triggers.CalendarTrigger[0].ScheduleByMonth)
+		// t.Logf("%+v", task.Triggers.CalendarTrigger[0].ScheduleByMonthDayOfWeek)
 	}
 }
 

@@ -225,12 +225,12 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 	}
 }
 
-func convertWeekdays(weekdays []int) DaysOfWeek {
+func convertWeekdays(input []int) DaysOfWeek {
 	var weekDays DaysOfWeek
-	if len(weekdays) == 0 {
+	if len(input) == 0 {
 		return weekDays
 	}
-	for _, weekday := range weekdays {
+	for _, weekday := range input {
 		switch weekday {
 		case 0, 7:
 			weekDays.Sunday = WeekDay
@@ -252,6 +252,103 @@ func convertWeekdays(weekdays []int) DaysOfWeek {
 }
 
 func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
+	start := schedule.Next(time.Now())
+	// get all recurrences in the same day
+	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
+	if len(recurrences) == 0 {
+		clog.Warningf("cannot convert schedule '%s' into a monthly trigger", schedule.String())
+		return
+	}
+
+	if len(recurrences) > maxTriggers {
+		clog.Warningf("this task would need more than %d triggers (%d in total), please rethink your triggers definition", maxTriggers, len(recurrences))
+		return
+	}
+	// install them all
+	for _, recurrence := range recurrences {
+		if schedule.WeekDay.HasValue() && schedule.Day.HasValue() {
+			clog.Warningf("task scheduler does not support a day of the month and a day of the week in the same trigger: %s", schedule.String())
+			return
+		}
+		if schedule.WeekDay.HasValue() {
+			t.addCalendarTrigger(CalendarTrigger{
+				StartBoundary: recurrence.Format(dateFormat),
+				ScheduleByMonthDayOfWeek: &ScheduleByMonthDayOfWeek{
+					DaysOfWeek: convertWeekdays(schedule.WeekDay.GetRangeValues()),
+					Weeks:      AllWeeks,
+					Months:     convertMonths(schedule.Month.GetRangeValues()),
+				},
+			})
+			continue
+		}
+		t.addCalendarTrigger(CalendarTrigger{
+			StartBoundary: recurrence.Format(dateFormat),
+			ScheduleByMonth: &ScheduleByMonth{
+				DaysOfMonth: convertDaysOfMonth(schedule.Day.GetRangeValues()),
+				Months:      convertMonths(schedule.Month.GetRangeValues()),
+			},
+		})
+	}
+}
+
+func convertMonths(input []int) Months {
+	if len(input) == 0 {
+		return Months{
+			January:   Month,
+			February:  Month,
+			March:     Month,
+			April:     Month,
+			May:       Month,
+			June:      Month,
+			July:      Month,
+			August:    Month,
+			September: Month,
+			October:   Month,
+			November:  Month,
+			December:  Month,
+		}
+	}
+	var months Months
+	for _, month := range input {
+		switch month {
+		case 1:
+			months.January = Month
+		case 2:
+			months.February = Month
+		case 3:
+			months.March = Month
+		case 4:
+			months.April = Month
+		case 5:
+			months.May = Month
+		case 6:
+			months.June = Month
+		case 7:
+			months.July = Month
+		case 8:
+			months.August = Month
+		case 9:
+			months.September = Month
+		case 10:
+			months.October = Month
+		case 11:
+			months.November = Month
+		case 12:
+			months.December = Month
+		}
+	}
+	return months
+}
+
+func convertDaysOfMonth(input []int) DaysOfMonth {
+	if len(input) == 0 {
+		all := make([]int, 31)
+		for i := 1; i <= 31; i++ {
+			all[i-1] = i
+		}
+		return DaysOfMonth{all}
+	}
+	return DaysOfMonth{input}
 }
 
 func (t *Task) addCalendarTrigger(trigger CalendarTrigger) {

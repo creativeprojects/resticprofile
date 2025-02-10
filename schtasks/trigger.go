@@ -24,6 +24,7 @@ type CalendarTrigger struct {
 	Enabled                  *bool                     `xml:"Enabled"`            // indicates whether the trigger is enabled
 	ScheduleByDay            *ScheduleByDay            `xml:"ScheduleByDay,omitempty"`
 	ScheduleByWeek           *ScheduleByWeek           `xml:"ScheduleByWeek,omitempty"`
+	ScheduleByMonth          *ScheduleByMonth          `xml:"ScheduleByMonth,omitempty"`
 	ScheduleByMonthDayOfWeek *ScheduleByMonthDayOfWeek `xml:"ScheduleByMonthDayOfWeek,omitempty"`
 }
 
@@ -45,6 +46,27 @@ type ScheduleByWeek struct {
 	DaysOfWeek    DaysOfWeek     `xml:"DaysOfWeek"`
 }
 
+type ScheduleByMonth struct {
+	RandomDelay *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
+	Months      Months         `xml:"Months"`
+	DaysOfMonth DaysOfMonth    `xml:"DaysOfMonth"`
+}
+
+type ScheduleByMonthDayOfWeek struct {
+	RandomDelay *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
+	Months      Months         `xml:"Months"`
+	Weeks       Weeks          `xml:"Weeks"`
+	DaysOfWeek  DaysOfWeek     `xml:"DaysOfWeek"`
+}
+
+type DaysOfMonth struct {
+	Day []int `xml:"Day"`
+}
+
+type Weeks struct {
+	Week []string `xml:"Week"`
+}
+
 type DaysOfWeek struct {
 	Monday    *string `xml:"Monday"`
 	Tuesday   *string `xml:"Tuesday"`
@@ -55,22 +77,24 @@ type DaysOfWeek struct {
 	Saturday  *string `xml:"Saturday"`
 }
 
-var WeekDay = Ptr("")
-
-type ScheduleByMonthDayOfWeek struct {
-	RandomDelay *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
-	Weeks       struct {
-		Week []string `xml:"Week"`
-	} `xml:"Weeks"`
-	DaysOfWeek struct {
-		Monday string `xml:"Monday"`
-	} `xml:"DaysOfWeek"`
-	Months struct {
-		November string `xml:"November"`
-		December string `xml:"December"`
-	} `xml:"Months"`
+type Months struct {
+	January   *string `xml:"January"`
+	February  *string `xml:"February"`
+	March     *string `xml:"March"`
+	April     *string `xml:"April"`
+	May       *string `xml:"May"`
+	June      *string `xml:"June"`
+	July      *string `xml:"July"`
+	August    *string `xml:"August"`
+	September *string `xml:"September"`
+	October   *string `xml:"October"`
+	November  *string `xml:"November"`
+	December  *string `xml:"December"`
 }
 
-func Ptr(value string) *string {
-	return &value
-}
+var (
+	emptyString = ""
+	WeekDay     = &emptyString
+	Month       = &emptyString
+	AllWeeks    = Weeks{[]string{"1", "2", "3", "4", "Last"}}
+)
