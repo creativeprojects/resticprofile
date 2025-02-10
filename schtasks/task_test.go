@@ -42,7 +42,6 @@ func TestSaveXMLTask(t *testing.T) {
 	encoder := xml.NewEncoder(file)
 	encoder.Indent("", "  ")
 	task := NewTask()
-	task.RegistrationInfo.Author = constants.ApplicationName
 	task.Principals.Principal.LogonType = LogonTypePassword
 	task.Actions.Exec = []ExecAction{
 		{
@@ -52,7 +51,6 @@ func TestSaveXMLTask(t *testing.T) {
 	}
 	task.Triggers.CalendarTrigger = []CalendarTrigger{
 		{
-			Enabled: true,
 			ScheduleByDay: &ScheduleByDay{
 				DaysInterval: 1,
 			},

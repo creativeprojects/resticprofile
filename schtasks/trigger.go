@@ -8,16 +8,18 @@ type Triggers struct {
 }
 
 type TimeTrigger struct {
-	StartBoundary      string `xml:"StartBoundary"`
-	ExecutionTimeLimit string `xml:"ExecutionTimeLimit"`
+	Enabled            *bool          `xml:"Enabled"` // indicates whether the trigger is enabled
+	StartBoundary      string         `xml:"StartBoundary"`
+	ExecutionTimeLimit *period.Period `xml:"ExecutionTimeLimit"`
+	RandomDelay        *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
 }
 
 type CalendarTrigger struct {
-	Repetition               RepetitionPattern         `xml:"Repetition"`
 	StartBoundary            string                    `xml:"StartBoundary,omitempty"` // the date and time when the trigger is activated
 	EndBoundary              string                    `xml:"EndBoundary,omitempty"`   // the date and time when the trigger is deactivated
-	ExecutionTimeLimit       period.Period             `xml:"ExecutionTimeLimit"`      // the maximum amount of time that the task launched by this trigger is allowed to run
-	Enabled                  bool                      `xml:"Enabled"`                 // indicates whether the trigger is enabled
+	Repetition               *RepetitionPattern        `xml:"Repetition"`
+	ExecutionTimeLimit       *period.Period            `xml:"ExecutionTimeLimit"` // the maximum amount of time that the task launched by this trigger is allowed to run
+	Enabled                  *bool                     `xml:"Enabled"`            // indicates whether the trigger is enabled
 	ScheduleByDay            *ScheduleByDay            `xml:"ScheduleByDay,omitempty"`
 	ScheduleByWeek           *ScheduleByWeek           `xml:"ScheduleByWeek,omitempty"`
 	ScheduleByMonthDayOfWeek *ScheduleByMonthDayOfWeek `xml:"ScheduleByMonthDayOfWeek,omitempty"`
@@ -25,9 +27,9 @@ type CalendarTrigger struct {
 
 // RepetitionPattern defines how often the task is run and how long the repetition pattern is repeated after the task is started.
 type RepetitionPattern struct {
-	Duration          period.Period `xml:"Duration"`          // how long the pattern is repeated
 	Interval          period.Period `xml:"Interval"`          // the amount of time between each restart of the task. Required if RepetitionDuration is specified. Minimum time is one minute
-	StopAtDurationEnd bool          `xml:"StopAtDurationEnd"` // indicates if a running instance of the task is stopped at the end of the repetition pattern duration
+	Duration          period.Period `xml:"Duration"`          // how long the pattern is repeated
+	StopAtDurationEnd *bool         `xml:"StopAtDurationEnd"` // indicates if a running instance of the task is stopped at the end of the repetition pattern duration
 }
 
 type ScheduleByDay struct {
