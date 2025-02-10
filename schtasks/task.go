@@ -61,7 +61,6 @@ func NewTask() Task {
 		Settings: Settings{
 			Compatibility:              TaskCompatibilityAT,
 			DisallowStartIfOnBatteries: true,
-			// Enabled:                    true,
 			IdleSettings: IdleSettings{
 				Duration:      period.NewHMS(0, 10, 0), // PT10M
 				WaitTimeout:   period.NewHMS(1, 0, 0),  // PT1H
@@ -70,7 +69,6 @@ func NewTask() Task {
 			MultipleInstancesPolicy: MultipleInstancesIgnoreNew,
 			Priority:                8,
 			StopIfGoingOnBatteries:  true,
-			// ExecutionTimeLimit:      period.NewHMS(72, 0, 0), // PT72H
 		},
 		Actions: Actions{
 			Context: author,
