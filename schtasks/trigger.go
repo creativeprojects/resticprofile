@@ -5,8 +5,8 @@ import (
 )
 
 type Triggers struct {
-	CalendarTrigger []CalendarTrigger `xml:"CalendarTrigger"`
-	TimeTrigger     []TimeTrigger     `xml:"TimeTrigger"`
+	CalendarTrigger []CalendarTrigger `xml:"CalendarTrigger,omitempty"`
+	TimeTrigger     []TimeTrigger     `xml:"TimeTrigger,omitempty"`
 }
 
 type TimeTrigger struct {

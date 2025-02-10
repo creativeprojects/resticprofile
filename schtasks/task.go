@@ -12,8 +12,11 @@ import (
 )
 
 const (
-	dateFormat  = time.RFC3339
+	dateFormat  = "2006-01-02T15:04:05-07:00"
 	maxTriggers = 60
+	author      = "Author"
+	tasksPath   = `\resticprofile backup\`
+	taskSchema  = "http://schemas.microsoft.com/windows/2004/02/mit/task"
 )
 
 type RegistrationInfo struct {
@@ -40,43 +43,37 @@ func NewTask() Task {
 		userID = currentUser.Uid
 	}
 	task := Task{
+		XMLName: xml.Name{Space: taskSchema, Local: "Task"},
 		Version: "1.2",
-		Xmlns:   "http://schemas.microsoft.com/windows/2004/02/mit/task",
+		Xmlns:   taskSchema,
 		RegistrationInfo: RegistrationInfo{
 			Date:   time.Now().Format(dateFormat),
 			Author: constants.ApplicationName,
 		},
 		Principals: Principals{
 			Principal: Principal{
-				ID:        "Author",
+				ID:        author,
 				UserId:    userID,
 				LogonType: LogonTypeInteractiveToken,
-				RunLevel:  RunLevelLeastPrivilege,
+				RunLevel:  RunLevelDefault,
 			},
 		},
 		Settings: Settings{
-			AllowDemandStart:           true,
-			AllowHardTerminate:         true,
-			Compatibility:              TaskCompatibilityV2,
+			Compatibility:              TaskCompatibilityAT,
 			DisallowStartIfOnBatteries: true,
-			Enabled:                    true,
+			// Enabled:                    true,
 			IdleSettings: IdleSettings{
 				Duration:      period.NewHMS(0, 10, 0), // PT10M
 				WaitTimeout:   period.NewHMS(1, 0, 0),  // PT1H
 				StopOnIdleEnd: true,
 			},
 			MultipleInstancesPolicy: MultipleInstancesIgnoreNew,
-			Priority:                7,
+			Priority:                8,
 			StopIfGoingOnBatteries:  true,
-			ExecutionTimeLimit:      period.NewHMS(72, 0, 0), // PT72H
+			// ExecutionTimeLimit:      period.NewHMS(72, 0, 0), // PT72H
 		},
 		Actions: Actions{
-			Context: "Author",
-			Exec:    make([]ExecAction, 0, 1), // prepare space for 1 command
-		},
-		Triggers: Triggers{
-			TimeTrigger:     make([]TimeTrigger, 0),
-			CalendarTrigger: make([]CalendarTrigger, 0),
+			Context: author,
 		},
 	}
 	return task
@@ -84,6 +81,10 @@ func NewTask() Task {
 
 // AddExecAction returns the same instance of Task (for chaining)
 func (t *Task) AddExecAction(action ExecAction) *Task {
+	if t.Actions.Exec == nil {
+		t.Actions.Exec = []ExecAction{action}
+		return t
+	}
 	t.Actions.Exec = append(t.Actions.Exec, action)
 	return t
 }
@@ -113,9 +114,22 @@ func (t *Task) AddSchedules(schedules []*calendar.Event) {
 }
 
 func (t *Task) addTimeTrigger(triggerOnce time.Time) {
-	t.Triggers.TimeTrigger = append(t.Triggers.TimeTrigger, TimeTrigger{
+	timeTrigger := TimeTrigger{
 		StartBoundary: triggerOnce.Format(dateFormat),
-	})
+	}
+	if t.Triggers.TimeTrigger == nil {
+		t.Triggers.TimeTrigger = []TimeTrigger{timeTrigger}
+		return
+	}
+	t.Triggers.TimeTrigger = append(t.Triggers.TimeTrigger, timeTrigger)
+}
+
+func (t *Task) addCalendarTrigger(trigger CalendarTrigger) {
+	if t.Triggers.CalendarTrigger == nil {
+		t.Triggers.CalendarTrigger = []CalendarTrigger{trigger}
+		return
+	}
+	t.Triggers.CalendarTrigger = append(t.Triggers.CalendarTrigger, trigger)
 }
 
 func (t *Task) addDailyTrigger(schedule *calendar.Event) {
@@ -349,8 +363,4 @@ func convertDaysOfMonth(input []int) DaysOfMonth {
 		return DaysOfMonth{all}
 	}
 	return DaysOfMonth{input}
-}
-
-func (t *Task) addCalendarTrigger(trigger CalendarTrigger) {
-	t.Triggers.CalendarTrigger = append(t.Triggers.CalendarTrigger, trigger)
 }

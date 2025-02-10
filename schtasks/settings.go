@@ -5,16 +5,16 @@ import "github.com/rickb777/date/period"
 // Settings provides the settings that the Task Scheduler service uses to perform the task
 // https://docs.microsoft.com/en-us/windows/desktop/api/taskschd/nn-taskschd-itasksettings
 type Settings struct {
-	AllowDemandStart           bool            `xml:"AllowStartOnDemand"` // indicates that the task can be started by using either the Run command or the Context menu
-	AllowHardTerminate         bool            `xml:"AllowHardTerminate"` // indicates that the task may be terminated by the Task Scheduler service using TerminateProcess
-	Compatibility              Compatibility   // indicates which version of Task Scheduler a task is compatible with
-	DeleteExpiredTaskAfter     *period.Period  `xml:"DeleteExpiredTaskAfter,omitempty"` // the amount of time that the Task Scheduler will wait before deleting the task after it expires
-	DisallowStartIfOnBatteries bool            `xml:"DisallowStartIfOnBatteries"`       // indicates that the task will not be started if the computer is running on batteries
-	Enabled                    bool            `xml:"Enabled"`                          // indicates that the task is enabled
-	ExecutionTimeLimit         period.Period   `xml:"ExecutionTimeLimit"`               // the amount of time that is allowed to complete the task
-	Hidden                     bool            `xml:"Hidden"`                           // indicates that the task will not be visible in the UI
-	IdleSettings               IdleSettings    `xml:"IdleSettings"`
-	MultipleInstancesPolicy    InstancesPolicy `xml:"MultipleInstancesPolicy"` // defines how the Task Scheduler deals with multiple instances of the task
+	AllowDemandStart           bool           `xml:"AllowStartOnDemand"` // indicates that the task can be started by using either the Run command or the Context menu
+	AllowHardTerminate         bool           `xml:"AllowHardTerminate"` // indicates that the task may be terminated by the Task Scheduler service using TerminateProcess
+	Compatibility              Compatibility  // indicates which version of Task Scheduler a task is compatible with
+	DeleteExpiredTaskAfter     *period.Period `xml:"DeleteExpiredTaskAfter,omitempty"` // the amount of time that the Task Scheduler will wait before deleting the task after it expires
+	DisallowStartIfOnBatteries bool           `xml:"DisallowStartIfOnBatteries"`       // indicates that the task will not be started if the computer is running on batteries
+	// Enabled                    bool            `xml:"Enabled"`                          // indicates that the task is enabled
+	ExecutionTimeLimit      period.Period   `xml:"ExecutionTimeLimit"` // the amount of time that is allowed to complete the task
+	Hidden                  bool            `xml:"Hidden"`             // indicates that the task will not be visible in the UI
+	IdleSettings            IdleSettings    `xml:"IdleSettings"`
+	MultipleInstancesPolicy InstancesPolicy `xml:"MultipleInstancesPolicy"` // defines how the Task Scheduler deals with multiple instances of the task
 	// NetworkSettings            NetworkSettings
 	Priority                  uint              `xml:"Priority"` // the priority level of the task, ranging from 0 - 10, where 0 is the highest priority, and 10 is the lowest. Only applies to ComHandler, Email, and MessageBox actions
 	RestartOnFailure          *RestartOnFailure `xml:"RestartOnFailure,omitempty"`

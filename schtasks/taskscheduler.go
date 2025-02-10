@@ -35,7 +35,7 @@ import (
 //    - on specific days (1 to 31)
 
 const (
-	tasksPath = `\resticprofile backup\`
+
 	// maxTriggers    = 60
 	systemUserName = "SYSTEM"
 )
@@ -550,10 +550,6 @@ func Status(title, subtitle string) error {
 	fmt.Fprintf(writer, "Next Run Time:\t %v\n", registeredTask.NextRunTime)
 	writer.Flush()
 	return nil
-}
-
-func getTaskPath(profileName, commandName string) string {
-	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
 }
 
 func convertWeekdaysToBitmap(weekdays []int) uint16 {

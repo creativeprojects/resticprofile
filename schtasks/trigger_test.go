@@ -2,8 +2,6 @@ package schtasks
 
 import (
 	"bytes"
-	"encoding/xml"
-	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -202,7 +200,9 @@ func TestTriggerCreationFromXML(t *testing.T) {
 				schedules[index] = event
 			}
 			buffer := &bytes.Buffer{}
-			err = createTaskFile(scheduleConfig, schedules, buffer)
+			task, err := createTaskDefinition(scheduleConfig, schedules)
+			require.NoError(t, err)
+			err = createTaskFile(task, buffer)
 			require.NoError(t, err)
 
 			pattern := regexp.MustCompile(fixture.expected)
@@ -214,23 +214,4 @@ func TestTriggerCreationFromXML(t *testing.T) {
 			}
 		})
 	}
-}
-
-func createTaskFile(config *Config, schedules []*calendar.Event, w io.Writer) error {
-	var err error
-	encoder := xml.NewEncoder(w)
-	encoder.Indent("", "  ")
-	task := NewTask()
-	task.RegistrationInfo.Description = config.JobDescription
-	task.AddExecAction(ExecAction{
-		Command:          config.Command,
-		Arguments:        config.Arguments,
-		WorkingDirectory: config.WorkingDirectory,
-	})
-	task.AddSchedules(schedules)
-	err = encoder.Encode(&task)
-	if err != nil {
-		return err
-	}
-	return err
 }

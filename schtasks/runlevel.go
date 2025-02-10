@@ -5,6 +5,7 @@ package schtasks
 type RunLevel string
 
 const (
+	RunLevelDefault        RunLevel = ""
 	RunLevelLeastPrivilege RunLevel = "LeastPrivilege"
 	RunLevelHighest        RunLevel = "HighestAvailable"
 )
