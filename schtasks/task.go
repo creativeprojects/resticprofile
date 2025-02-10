@@ -100,14 +100,14 @@ func (t *Task) AddSchedules(schedules []*calendar.Event) {
 			t.addDailyTrigger(schedule)
 			continue
 		}
-		// if schedule.IsWeekly() {
-		// 	createWeeklyTrigger(task, schedule)
-		// 	continue
-		// }
-		// if schedule.IsMonthly() {
-		// 	createMonthlyTrigger(task, schedule)
-		// 	continue
-		// }
+		if schedule.IsWeekly() {
+			t.addWeeklyTrigger(schedule)
+			continue
+		}
+		if schedule.IsMonthly() {
+			t.addMonthlyTrigger(schedule)
+			continue
+		}
 		clog.Warningf("cannot convert schedule '%s' into a task scheduler equivalent", schedule.String())
 	}
 }
@@ -168,6 +168,90 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 			},
 		})
 	}
+}
+
+func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
+	start := schedule.Next(time.Now())
+	// get all recurrences in the same day
+	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
+	if len(recurrences) == 0 {
+		clog.Warningf("cannot convert schedule '%s' into a weekly trigger", schedule.String())
+		return
+	}
+	// Is it only once per 24h?
+	if len(recurrences) == 1 {
+		t.addCalendarTrigger(CalendarTrigger{
+			StartBoundary: recurrences[0].Format(dateFormat),
+			ScheduleByWeek: &ScheduleByWeek{
+				WeeksInterval: 1,
+				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
+			},
+		})
+		return
+	}
+	// now calculate the difference in between each, and check if they're all the same
+	_, compactDifferences := compileDifferences(recurrences)
+
+	if len(compactDifferences) == 1 {
+		// case with regular repetition
+		interval, _ := period.NewOf(compactDifferences[0])
+		t.addCalendarTrigger(CalendarTrigger{
+			StartBoundary: start.Format(dateFormat),
+			ScheduleByWeek: &ScheduleByWeek{
+				WeeksInterval: 1,
+				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
+			},
+			Repetition: &RepetitionPattern{
+				Duration: getRepetionDuration(start, recurrences).Normalise(false),
+				Interval: interval.Normalise(false),
+			},
+		})
+		return
+	}
+
+	if len(recurrences) > maxTriggers {
+		clog.Warningf("this task would need more than %d triggers (%d in total), please rethink your triggers definition", maxTriggers, len(recurrences))
+		return
+	}
+	// install them all
+	for _, recurrence := range recurrences {
+		t.addCalendarTrigger(CalendarTrigger{
+			StartBoundary: recurrence.Format(dateFormat),
+			ScheduleByWeek: &ScheduleByWeek{
+				WeeksInterval: 1,
+				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
+			},
+		})
+	}
+}
+
+func convertWeekdays(weekdays []int) DaysOfWeek {
+	var weekDays DaysOfWeek
+	if len(weekdays) == 0 {
+		return weekDays
+	}
+	for _, weekday := range weekdays {
+		switch weekday {
+		case 0, 7:
+			weekDays.Sunday = WeekDay
+		case 1:
+			weekDays.Monday = WeekDay
+		case 2:
+			weekDays.Tuesday = WeekDay
+		case 3:
+			weekDays.Wednesday = WeekDay
+		case 4:
+			weekDays.Thursday = WeekDay
+		case 5:
+			weekDays.Friday = WeekDay
+		case 6:
+			weekDays.Saturday = WeekDay
+		}
+	}
+	return weekDays
+}
+
+func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
 }
 
 func (t *Task) addCalendarTrigger(trigger CalendarTrigger) {

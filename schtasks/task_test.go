@@ -31,6 +31,7 @@ func TestLoadXMLTask(t *testing.T) {
 		assert.True(t, len(task.Triggers.CalendarTrigger) > 0 || len(task.Triggers.TimeTrigger) > 0)
 
 		// t.Logf("%+v", task)
+		// t.Logf("%+v", task.Triggers.CalendarTrigger[0].ScheduleByWeek)
 	}
 }
 
@@ -42,7 +43,6 @@ func TestSaveXMLTask(t *testing.T) {
 	encoder := xml.NewEncoder(file)
 	encoder.Indent("", "  ")
 	task := NewTask()
-	task.Principals.Principal.LogonType = LogonTypePassword
 	task.Actions.Exec = []ExecAction{
 		{
 			Command:   "echo",
@@ -51,9 +51,14 @@ func TestSaveXMLTask(t *testing.T) {
 	}
 	task.Triggers.CalendarTrigger = []CalendarTrigger{
 		{
-			ScheduleByDay: &ScheduleByDay{
-				DaysInterval: 1,
+			ScheduleByWeek: &ScheduleByWeek{
+				DaysOfWeek: DaysOfWeek{
+					Monday:    WeekDay,
+					Wednesday: WeekDay,
+				},
+				WeeksInterval: 1,
 			},
+			StartBoundary: "2020-01-02T03:04:00Z",
 		},
 	}
 	err = encoder.Encode(&task)

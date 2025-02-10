@@ -6,6 +6,7 @@ import (
 	"io"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -23,11 +24,11 @@ func TestTriggerCreationFromXML(t *testing.T) {
 	// if time.Now().Day() == 1 {
 	// 	dayOfTheMonth = "2"
 	// }
-	// // same issue with tests on mondays
-	// fixedDay := "Monday"
-	// if time.Now().Weekday() == time.Monday {
-	// 	fixedDay = "Tuesday"
-	// }
+	// same issue with tests on mondays
+	fixedDay := "Monday"
+	if time.Now().Weekday() == time.Monday {
+		fixedDay = "Tuesday"
+	}
 	everyDay := ""
 	for day := 1; day <= 31; day++ {
 		everyDay += `<Day>` + strconv.Itoa(day) + `</Day>\s*`
@@ -87,44 +88,50 @@ func TestTriggerCreationFromXML(t *testing.T) {
 			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00Z</StartBoundary>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			48,
 		},
-		// // weekly
-		// {
-		// 	"once weekly",
-		// 	[]string{"mon *-*-* 03:04"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00Z</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	1,
-		// },
-		// {
-		// 	"every hour on mondays",
-		// 	[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + ` />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	1,
-		// },
-		// {
-		// 	"every minute on mondays",
-		// 	[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:*"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + ` />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	1,
-		// },
-		// {
-		// 	"every minute at 12 on mondays",
-		// 	[]string{"mon *-*-* 12:*"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	1,
-		// },
-		// // more than once weekly
-		// {
-		// 	"twice weekly",
-		// 	[]string{"mon *-*-* 03..04:04"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT1H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	1,
-		// },
-		// {
-		// 	"twice mondays and tuesdays",
-		// 	[]string{"mon,tue *-*-* 03:04..06"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT2M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday />\s*<Tuesday />\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	1,
-		// },
+		// weekly
+		{
+			"once weekly",
+			[]string{"mon *-*-* 03:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00Z</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every hour on mondays",
+			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every minute on mondays",
+			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"every minute at 12 on mondays",
+			[]string{"mon *-*-* 12:*"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		// more than once weekly
+		{
+			"twice weekly",
+			[]string{"mon *-*-* 03..04:04"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT1H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"twice mondays and tuesdays",
+			[]string{"mon,tue *-*-* 03:04..06"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00Z</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT2M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*<Tuesday></Tuesday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			1,
+		},
+		{
+			"twice on fridays",
+			[]string{"fri *-*-* *:04..05"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00Z</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Friday></Friday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			48,
+		},
 		// // monthly
 		// {
 		// 	"once monthly",
@@ -142,13 +149,13 @@ func TestTriggerCreationFromXML(t *testing.T) {
 		// {
 		// 	"mondays in January",
 		// 	[]string{"mon *-01-* 03:04"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00Z</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January />\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
+		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00Z</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January />\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
 		// 	1,
 		// },
 		// {
 		// 	"every hour on Mondays in january",
 		// 	[]string{"mon *-01-* *:04"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00Z</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January />\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday />\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
+		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00Z</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January />\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
 		// 	24,
 		// },
 		// // some days every month
@@ -222,5 +229,8 @@ func createTaskFile(config *Config, schedules []*calendar.Event, w io.Writer) er
 	})
 	task.AddSchedules(schedules)
 	err = encoder.Encode(&task)
+	if err != nil {
+		return err
+	}
 	return err
 }

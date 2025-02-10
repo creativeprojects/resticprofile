@@ -1,6 +1,8 @@
 package schtasks
 
-import "github.com/rickb777/date/period"
+import (
+	"github.com/rickb777/date/period"
+)
 
 type Triggers struct {
 	CalendarTrigger []CalendarTrigger `xml:"CalendarTrigger"`
@@ -38,18 +40,22 @@ type ScheduleByDay struct {
 }
 
 type ScheduleByWeek struct {
-	RandomDelay *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
-	DaysOfWeek  struct {
-		Monday    string `xml:"Monday"`
-		Tuesday   string `xml:"Tuesday"`
-		Wednesday string `xml:"Wednesday"`
-		Thursday  string `xml:"Thursday"`
-		Friday    string `xml:"Friday"`
-		Sunday    string `xml:"Sunday"`
-		Saturday  string `xml:"Saturday"`
-	} `xml:"DaysOfWeek"`
-	WeeksInterval string `xml:"WeeksInterval"`
+	RandomDelay   *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
+	WeeksInterval int            `xml:"WeeksInterval"`
+	DaysOfWeek    DaysOfWeek     `xml:"DaysOfWeek"`
 }
+
+type DaysOfWeek struct {
+	Monday    *string `xml:"Monday"`
+	Tuesday   *string `xml:"Tuesday"`
+	Wednesday *string `xml:"Wednesday"`
+	Thursday  *string `xml:"Thursday"`
+	Friday    *string `xml:"Friday"`
+	Sunday    *string `xml:"Sunday"`
+	Saturday  *string `xml:"Saturday"`
+}
+
+var WeekDay = Ptr("")
 
 type ScheduleByMonthDayOfWeek struct {
 	RandomDelay *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
@@ -63,4 +69,8 @@ type ScheduleByMonthDayOfWeek struct {
 		November string `xml:"November"`
 		December string `xml:"December"`
 	} `xml:"Months"`
+}
+
+func Ptr(value string) *string {
+	return &value
 }
