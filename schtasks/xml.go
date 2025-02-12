@@ -56,19 +56,15 @@ func createTask(config *Config, schedules []*calendar.Event) (string, *Task, err
 	file.Close()
 
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("schtasks", "/create", "/tn", taskPath, "/xml", filename)
+	cmd := exec.Command(binaryPath, "/create", "/tn", taskPath, "/xml", filename)
 	cmd.Stdout = buffer
 	err = cmd.Run()
 	return buffer.String(), &task, err
 }
 
-func getTaskPath(profileName, commandName string) string {
-	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
-}
-
 func readTaskDefinition(taskName string) ([]byte, error) {
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("schtasks", "/query", "/xml", "/tn", taskName)
+	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
 	err := cmd.Run()
 	return buffer.Bytes(), err
@@ -76,8 +72,9 @@ func readTaskDefinition(taskName string) ([]byte, error) {
 
 func deleteTask(taskName string) (string, error) {
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("schtasks", "/delete", "/f", "/tn", taskName)
+	cmd := exec.Command(binaryPath, "/delete", "/f", "/tn", taskName)
 	cmd.Stdout = buffer
+	cmd.Stderr = buffer
 	err := cmd.Run()
 	return buffer.String(), err
 }

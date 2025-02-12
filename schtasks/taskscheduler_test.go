@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows && taskmaster
 
 package schtasks
 
@@ -389,7 +389,7 @@ func TestCreationOfTasks(t *testing.T) {
 
 func exportTask(taskName string) (string, error) {
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("schtasks", "/query", "/xml", "/tn", taskName)
+	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
 	err := cmd.Run()
 	return buffer.String(), err
