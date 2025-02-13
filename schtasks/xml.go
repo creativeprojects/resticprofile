@@ -12,7 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 )
 
-func createTaskDefinition(config *Config, schedules []*calendar.Event) (Task, error) {
+func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {
 	task := NewTask()
 	task.RegistrationInfo.Description = config.JobDescription
 	task.AddExecAction(ExecAction{
@@ -21,7 +21,7 @@ func createTaskDefinition(config *Config, schedules []*calendar.Event) (Task, er
 		WorkingDirectory: config.WorkingDirectory,
 	})
 	task.AddSchedules(schedules)
-	return task, nil
+	return task
 }
 
 func createTaskFile(task Task, w io.Writer) error {
@@ -47,7 +47,7 @@ func createTask(config *Config, schedules []*calendar.Event) (string, *Task, err
 	}()
 
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
-	task, _ := createTaskDefinition(config, schedules)
+	task := createTaskDefinition(config, schedules)
 	task.RegistrationInfo.URI = taskPath
 
 	err = createTaskFile(task, file)

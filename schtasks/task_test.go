@@ -76,7 +76,7 @@ func TestSaveXMLTaskUsingServiceAccount(t *testing.T) {
 	encoder.Indent("", "  ")
 	task := NewTask()
 	task.RegistrationInfo.Author = constants.ApplicationName
-	task.Principals.Principal.UserId = ServiceAccount
+	task.Principals.Principal.UserId = serviceAccount
 	task.Principals.Principal.RunLevel = RunLevelLeastPrivilege
 	task.Principals.Principal.LogonType = ""
 	task.Actions.Exec = []ExecAction{

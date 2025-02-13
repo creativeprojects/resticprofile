@@ -200,8 +200,7 @@ func TestTriggerCreationFromXML(t *testing.T) {
 				schedules[index] = event
 			}
 			buffer := &bytes.Buffer{}
-			task, err := createTaskDefinition(scheduleConfig, schedules)
-			require.NoError(t, err)
+			task := createTaskDefinition(scheduleConfig, schedules)
 			err = createTaskFile(task, buffer)
 			require.NoError(t, err)
 

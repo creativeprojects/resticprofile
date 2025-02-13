@@ -20,10 +20,11 @@ const (
 )
 
 type RegistrationInfo struct {
-	Date        string `xml:"Date"`
-	Author      string `xml:"Author"`
-	Description string `xml:"Description"`
-	URI         string `xml:"URI"`
+	Date               string `xml:"Date"`
+	Author             string `xml:"Author"`
+	Description        string `xml:"Description"`
+	URI                string `xml:"URI"`
+	SecurityDescriptor string `xml:"SecurityDescriptor"`
 }
 
 type Task struct {
@@ -44,7 +45,7 @@ func NewTask() Task {
 	}
 	task := Task{
 		XMLName: xml.Name{Space: taskSchema, Local: "Task"},
-		Version: "1.2",
+		Version: "1.4",
 		Xmlns:   taskSchema,
 		RegistrationInfo: RegistrationInfo{
 			Date:   time.Now().Format(dateFormat),
@@ -59,6 +60,7 @@ func NewTask() Task {
 			},
 		},
 		Settings: Settings{
+			AllowStartOnDemand:         true,
 			Compatibility:              TaskCompatibilityAT,
 			DisallowStartIfOnBatteries: true,
 			IdleSettings: IdleSettings{

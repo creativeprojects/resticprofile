@@ -49,6 +49,7 @@ func TestSchTasksError(t *testing.T) {
 		expected error
 	}{
 		{`ERROR: The system cannot find the file specified.\r\n`, ErrNotRegistered},
+		{`ERROR: The system cannot find the path] specified.\r\n`, ErrNotRegistered},
 		{`ERROR: The specified task name "\resticprofile backup\toto" does not exist in the system.\r\n`, ErrNotRegistered},
 		{`ERROR: The filename, directory name, or volume label syntax is incorrect.\r\n`, ErrInvalidTaskName},
 		{`ERROR: Access is denied.\r\n`, ErrAccessDenied},

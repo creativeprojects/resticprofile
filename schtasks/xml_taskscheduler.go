@@ -21,7 +21,9 @@
 package schtasks
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"slices"
 	"text/tabwriter"
@@ -50,6 +52,48 @@ func Close() {
 
 // Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config *Config, schedules []*calendar.Event, permission Permission) error {
+	task := createTaskDefinition(config, schedules)
+	taskPath := getTaskPath(config.ProfileName, config.CommandName)
+	task.RegistrationInfo.URI = taskPath
+
+	switch permission {
+	case SystemAccount:
+		task.Principals.Principal.LogonType = LogonTypeServiceForUser
+		task.Principals.Principal.RunLevel = RunLevelHighest
+		task.Principals.Principal.UserId = serviceAccount
+		task.RegistrationInfo.SecurityDescriptor = "D:AI(A;;FA;;;BA)(A;;FA;;;SY)(A;;FRFX;;;LS)(A;;FR;;;AU)"
+
+	case UserLoggedOnAccount:
+		task.Principals.Principal.LogonType = LogonTypeInteractiveToken
+
+	default:
+		task.Principals.Principal.LogonType = LogonTypePassword
+	}
+
+	file, err := os.CreateTemp("", "*.xml")
+	if err != nil {
+		return fmt.Errorf("cannot create XML task file: %w", err)
+	}
+	filename := file.Name()
+	defer func() {
+		file.Close()
+		os.Remove(filename)
+	}()
+
+	err = createTaskFile(task, file)
+	if err != nil {
+		return fmt.Errorf("cannot write XML task file: %w", err)
+	}
+	file.Close()
+
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+	cmd := exec.Command(binaryPath, "/create", "/tn", taskPath, "/xml", filename)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err = cmd.Run()
+	if err != nil {
+		return schTasksError(stderr.String())
+	}
 	return nil
 }
 

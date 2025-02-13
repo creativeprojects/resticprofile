@@ -1,6 +1,6 @@
 package schtasks
 
-const ServiceAccount = "S-1-5-18"
+const serviceAccount = "S-1-5-18"
 
 type Principals struct {
 	Principal Principal `xml:"Principal"`

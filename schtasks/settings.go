@@ -5,7 +5,7 @@ import "github.com/rickb777/date/period"
 // Settings provides the settings that the Task Scheduler service uses to perform the task
 // https://docs.microsoft.com/en-us/windows/desktop/api/taskschd/nn-taskschd-itasksettings
 type Settings struct {
-	AllowDemandStart           bool              `xml:"AllowStartOnDemand"` // indicates that the task can be started by using either the Run command or the Context menu
+	AllowStartOnDemand         bool              `xml:"AllowStartOnDemand"` // indicates that the task can be started by using either the Run command or the Context menu
 	AllowHardTerminate         bool              `xml:"AllowHardTerminate"` // indicates that the task may be terminated by the Task Scheduler service using TerminateProcess
 	Compatibility              Compatibility     // indicates which version of Task Scheduler a task is compatible with
 	DeleteExpiredTaskAfter     *period.Period    `xml:"DeleteExpiredTaskAfter,omitempty"` // the amount of time that the Task Scheduler will wait before deleting the task after it expires
@@ -21,6 +21,7 @@ type Settings struct {
 	StartWhenAvailable         bool              `xml:"StartWhenAvailable"`        // indicates that the Task Scheduler can start the task at any time after its scheduled time has passed
 	StopIfGoingOnBatteries     bool              `xml:"StopIfGoingOnBatteries"`    // indicates that the task will be stopped if the computer is going onto batteries
 	WakeToRun                  bool              `xml:"WakeToRun"`                 // indicates that the Task Scheduler will wake the computer when it is time to run the task, and keep the computer awake until the task is completed
+	UseUnifiedSchedulingEngine bool              `xml:"UseUnifiedSchedulingEngine"`
 }
 
 // IdleSettings specifies how the Task Scheduler performs tasks when the computer is in an idle condition.

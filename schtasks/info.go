@@ -47,7 +47,7 @@ func getCSV(input io.Reader) ([][]string, error) {
 func schTasksError(message string) error {
 	message = strings.TrimSpace(message)
 	message = strings.TrimPrefix(message, "ERROR: ")
-	if strings.Contains(message, "The system cannot find the file specified") ||
+	if strings.Contains(message, "The system cannot find the") ||
 		strings.Contains(message, "does not exist in the system") {
 		return ErrNotRegistered
 	} else if strings.Contains(message, "The filename, directory name, or volume label syntax is incorrect") {
