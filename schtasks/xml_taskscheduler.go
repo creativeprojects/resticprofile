@@ -23,8 +23,11 @@ package schtasks
 import (
 	"fmt"
 	"os/exec"
+	"slices"
+	"text/tabwriter"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 const (
@@ -52,14 +55,42 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 
 // Delete a task
 func Delete(title, subtitle string) error {
-	return nil
+	taskName := getTaskPath(title, subtitle)
+	_, err := deleteTask(taskName)
+	return err
 }
 
 // Status returns the status of a task
 func Status(title, subtitle string) error {
+	taskName := getTaskPath(title, subtitle)
+	info, err := getTaskInfo(taskName)
+	if err != nil {
+		return err
+	}
+	if len(info) < 2 {
+		return ErrNotRegistered
+	}
+	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', tabwriter.AlignRight)
+	fmt.Fprintf(writer, "Task:\t %s\n", getFirstField(info, "TaskName"))
+	fmt.Fprintf(writer, "User:\t %s\n", getFirstField(info, "Run As User"))
+	fmt.Fprintf(writer, "Working Dir:\t %v\n", getFirstField(info, "Start In"))
+	fmt.Fprintf(writer, "Command:\t %v\n", getFirstField(info, "Task To Run"))
+	fmt.Fprintf(writer, "Status:\t %s\n", getFirstField(info, "Status"))
+	fmt.Fprintf(writer, "Last Run Time:\t %v\n", getFirstField(info, "Last Run Time"))
+	fmt.Fprintf(writer, "Last Result:\t %s\n", getFirstField(info, "Last Result"))
+	fmt.Fprintf(writer, "Next Run Time:\t %v\n", getFirstField(info, "Next Run Time"))
+	writer.Flush()
 	return nil
 }
 
 func getTaskPath(profileName, commandName string) string {
 	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
+}
+
+func getFirstField(data [][]string, fieldName string) string {
+	index := slices.Index(data[0], fieldName)
+	if index < 0 {
+		return ""
+	}
+	return data[1][index]
 }

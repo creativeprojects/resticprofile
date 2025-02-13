@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 )
@@ -71,10 +72,17 @@ func readTaskDefinition(taskName string) ([]byte, error) {
 }
 
 func deleteTask(taskName string) (string, error) {
-	buffer := &bytes.Buffer{}
+	taskName = strings.TrimSpace(taskName)
+	if len(taskName) == 0 {
+		return "", ErrEmptyTaskName
+	}
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, "/delete", "/f", "/tn", taskName)
-	cmd.Stdout = buffer
-	cmd.Stderr = buffer
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 	err := cmd.Run()
-	return buffer.String(), err
+	if err != nil {
+		return "", schTasksError(stderr.String())
+	}
+	return stdout.String(), nil
 }
