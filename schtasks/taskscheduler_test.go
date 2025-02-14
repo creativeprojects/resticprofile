@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"os/exec"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -22,14 +22,6 @@ func TestStatusUnknownTask(t *testing.T) {
 	err = Status("test", "test")
 	assert.Error(t, err)
 	t.Log(err)
-}
-
-func exportTask(taskName string) (string, error) {
-	buffer := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
-	cmd.Stdout = buffer
-	err := cmd.Run()
-	return buffer.String(), err
 }
 
 func TestRegisteredTasks(t *testing.T) {
@@ -209,7 +201,7 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 		t.Run(fixture.description, func(t *testing.T) {
 			var err error
 			count++
-			scheduleConfig := &Config{
+			config := &Config{
 				ProfileName:      fmt.Sprintf("test-profile-%d", count),
 				CommandName:      "test-command",
 				Command:          "echo",
@@ -225,11 +217,23 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 				require.NoError(t, err)
 				schedules[index] = event
 			}
-			result, sourceTask, err := createTask(scheduleConfig, schedules)
-			t.Logf("result: %q\n", result)
+
+			file, err := os.CreateTemp(t.TempDir(), "*.xml")
+			require.NoError(t, err)
+			defer file.Close()
+
+			taskPath := getTaskPath(config.ProfileName, config.CommandName)
+			sourceTask := createTaskDefinition(config, schedules)
+			sourceTask.RegistrationInfo.URI = taskPath
+
+			err = createTaskFile(sourceTask, file)
+			require.NoError(t, err)
+			file.Close()
+
+			result, err := createTask(taskPath, file.Name(), "", "")
+			t.Log(result)
 			require.NoError(t, err)
 
-			taskPath := getTaskPath(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			taskXML, err := exportTaskDefinition(taskPath)
 			require.NoError(t, err)
 
@@ -243,10 +247,10 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 			err = decoder.Decode(&readTask)
 			require.NoError(t, err)
 
-			assert.Equal(t, sourceTask, readTask)
+			assert.Equal(t, sourceTask, *readTask)
 
 			result, err = deleteTask(taskPath)
-			t.Logf("result: %q\n", result)
+			t.Log(result)
 			require.NoError(t, err)
 		})
 	}

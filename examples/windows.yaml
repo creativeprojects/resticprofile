@@ -38,7 +38,7 @@ self:
     check:
         schedule:
         - "mon *-11..12-* 1,13:00"
-        schedule-permission: user_logged_on
+        schedule-permission: user
 
 test:
     inherit: default

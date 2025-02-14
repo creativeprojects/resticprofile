@@ -5,25 +5,52 @@ import (
 	"encoding/csv"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io"
-	"os"
 	"os/exec"
+	"slices"
 	"strings"
-
-	"github.com/creativeprojects/resticprofile/calendar"
 )
 
-func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {
-	task := NewTask()
-	task.RegistrationInfo.Description = config.JobDescription
-	task.AddExecAction(ExecAction{
-		Command:          config.Command,
-		Arguments:        config.Arguments,
-		WorkingDirectory: config.WorkingDirectory,
-	})
-	task.AddSchedules(schedules)
-	return task
+const (
+	binaryPath = "schtasks.exe"
+)
+
+func getRegisteredTasks() ([]string, error) {
+	raw, err := listRegisteredTasks()
+	if err != nil {
+		return nil, err
+	}
+	all, err := getCSV(bytes.NewBuffer(raw))
+	if err != nil {
+		return nil, err
+	}
+	list := make([]string, 0)
+	for _, taskLine := range all {
+		if strings.HasPrefix(taskLine[0], tasksPath) {
+			list = append(list, taskLine[0])
+		}
+	}
+	slices.Sort(list)
+	list = slices.Compact(list)
+	return list, nil
+}
+
+func getTaskInfo(taskName string) ([][]string, error) {
+	buffer := &bytes.Buffer{}
+	err := readTaskInfo(taskName, buffer)
+	if err != nil {
+		return nil, err
+	}
+	output, err := getCSV(buffer)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+func getCSV(input io.Reader) ([][]string, error) {
+	reader := csv.NewReader(input)
+	return reader.ReadAll()
 }
 
 func createTaskFile(task Task, w io.Writer) error {
@@ -37,44 +64,26 @@ func createTaskFile(task Task, w io.Writer) error {
 	return err
 }
 
-func createTask(config *Config, schedules []*calendar.Event) (string, *Task, error) {
-	file, err := os.CreateTemp("", "*.xml")
-	if err != nil {
-		return "", nil, fmt.Errorf("cannot create XML task file: %w", err)
+// createTask calls schtasks.exe to create a task from the XML file.
+// username and password are optional, but must be specified at the same time.
+func createTask(taskName, filename, username, password string) (string, error) {
+	taskName = strings.TrimSpace(taskName)
+	if len(taskName) == 0 {
+		return "", ErrEmptyTaskName
 	}
-	filename := file.Name()
-	defer func() {
-		file.Close()
-		os.Remove(filename)
-	}()
-
-	taskPath := getTaskPath(config.ProfileName, config.CommandName)
-	task := createTaskDefinition(config, schedules)
-	task.RegistrationInfo.URI = taskPath
-
-	err = createTaskFile(task, file)
-	if err != nil {
-		return "", nil, fmt.Errorf("cannot write XML task file: %w", err)
+	params := []string{"/create", "/tn", taskName, "/xml", filename}
+	if len(password) > 0 {
+		params = append(params, "/ru", username, "/rp", password)
 	}
-	file.Close()
-
-	buffer := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/create", "/tn", taskPath, "/xml", filename)
-	cmd.Stdout = buffer
-	err = cmd.Run()
-	return buffer.String(), &task, err
-}
-
-func importTaskDefinition(taskPath, filename string) error {
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/create", "/tn", taskPath, "/xml", filename)
+	cmd := exec.Command(binaryPath, params...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err := cmd.Run()
 	if err != nil {
-		return schTasksError(stderr.String())
+		return stdout.String(), schTasksError(stderr.String())
 	}
-	return nil
+	return stdout.String(), nil
 }
 
 func exportTaskDefinition(taskName string) ([]byte, error) {
@@ -86,11 +95,15 @@ func exportTaskDefinition(taskName string) ([]byte, error) {
 }
 
 func listRegisteredTasks() ([]byte, error) {
-	buffer := &bytes.Buffer{}
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, "/query", "/nh", "/fo", "csv")
-	cmd.Stdout = buffer
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 	err := cmd.Run()
-	return buffer.Bytes(), err
+	if err != nil {
+		return stdout.Bytes(), schTasksError(stderr.String())
+	}
+	return stdout.Bytes(), err
 }
 
 func deleteTask(taskName string) (string, error) {
@@ -140,22 +153,4 @@ func schTasksError(message string) error {
 		return ErrAlreadyExist
 	}
 	return errors.New(message)
-}
-
-func getTaskInfo(taskName string) ([][]string, error) {
-	buffer := &bytes.Buffer{}
-	err := readTaskInfo(taskName, buffer)
-	if err != nil {
-		return nil, err
-	}
-	output, err := getCSV(buffer)
-	if err != nil {
-		return nil, err
-	}
-	return output, nil
-}
-
-func getCSV(input io.Reader) ([][]string, error) {
-	reader := csv.NewReader(input)
-	return reader.ReadAll()
 }

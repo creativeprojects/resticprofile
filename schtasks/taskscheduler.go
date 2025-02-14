@@ -19,7 +19,6 @@
 package schtasks
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -33,8 +32,7 @@ import (
 )
 
 const (
-	tasksPath  = `\resticprofile backup\`
-	binaryPath = "schtasks.exe"
+	tasksPath = `\resticprofile backup\`
 	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format
 	// O:owner_sid
 	// G:group_sid
@@ -70,11 +68,22 @@ func Init() error {
 // Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config *Config, schedules []*calendar.Event, permission Permission) error {
 	var (
-		// username, password string
-		err error
+		username, password string
+		err                error
 	)
-	task := createTaskDefinition(config, schedules)
+	list, err := getRegisteredTasks()
+	if err != nil {
+		return fmt.Errorf("error loading list of registered tasks: %w", err)
+	}
+
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
+	if slices.Contains(list, taskPath) {
+		_, err = deleteTask(taskPath)
+		if err != nil {
+			return fmt.Errorf("cannot delete existing task for replacing it: %w", err)
+		}
+	}
+	task := createTaskDefinition(config, schedules)
 	task.RegistrationInfo.URI = taskPath
 
 	switch permission {
@@ -89,10 +98,10 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 
 	default:
 		task.Principals.Principal.LogonType = LogonTypePassword
-		// username, password, err = userCredentials()
-		// if err != nil {
-		// 	return fmt.Errorf("cannot get user name or password: %w", err)
-		// }
+		username, password, err = userCredentials()
+		if err != nil {
+			return fmt.Errorf("cannot get user name or password: %w", err)
+		}
 	}
 
 	file, err := os.CreateTemp("", "*.xml")
@@ -111,15 +120,8 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 	}
 	file.Close()
 
-	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/create", "/tn", taskPath, "/xml", filename)
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	err = cmd.Run()
-	if err != nil {
-		return schTasksError(stderr.String())
-	}
-	return nil
+	_, err = createTask(taskPath, filename, username, password)
+	return err
 }
 
 // Delete a task
@@ -142,6 +144,7 @@ func Status(title, subtitle string) error {
 	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintf(writer, "Task:\t %s\n", getFirstField(info, "TaskName"))
 	fmt.Fprintf(writer, "User:\t %s\n", getFirstField(info, "Run As User"))
+	fmt.Fprintf(writer, "Logon Mode:\t %s\n", getFirstField(info, "Logon Mode"))
 	fmt.Fprintf(writer, "Working Dir:\t %v\n", getFirstField(info, "Start In"))
 	fmt.Fprintf(writer, "Command:\t %v\n", getFirstField(info, "Task To Run"))
 	fmt.Fprintf(writer, "Status:\t %s\n", getFirstField(info, "Status"))
@@ -153,22 +156,10 @@ func Status(title, subtitle string) error {
 }
 
 func Registered() ([]Config, error) {
-	raw, err := listRegisteredTasks()
+	list, err := getRegisteredTasks()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error loading list of registered tasks: %w", err)
 	}
-	all, err := getCSV(bytes.NewBuffer(raw))
-	if err != nil {
-		return nil, err
-	}
-	list := make([]string, 0)
-	for _, taskLine := range all {
-		if strings.HasPrefix(taskLine[0], tasksPath) {
-			list = append(list, taskLine[0])
-		}
-	}
-	slices.Sort(list)
-	list = slices.Compact(list)
 
 	configs := make([]Config, 0, len(list))
 	for _, taskPath := range list {
@@ -205,6 +196,18 @@ func Registered() ([]Config, error) {
 
 func getTaskPath(profileName, commandName string) string {
 	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
+}
+
+func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {
+	task := NewTask()
+	task.RegistrationInfo.Description = config.JobDescription
+	task.AddExecAction(ExecAction{
+		Command:          config.Command,
+		Arguments:        config.Arguments,
+		WorkingDirectory: config.WorkingDirectory,
+	})
+	task.AddSchedules(schedules)
+	return task
 }
 
 func getFirstField(data [][]string, fieldName string) string {
