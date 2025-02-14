@@ -34,6 +34,25 @@ import (
 
 const (
 	binaryPath = "schtasks.exe"
+	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format
+	// O:owner_sid
+	// G:group_sid
+	// D:dacl_flags(string_ace1)(string_ace2)... (string_acen)  <---
+	// S:sacl_flags(string_ace1)(string_ace2)... (string_acen)
+	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/ace-strings
+	// - first field:
+	// "A" 	SDDL_ACCESS_ALLOWED
+	// - third field
+	// "FA" 	SDDL_FILE_ALL 	FILE_GENERIC_ALL
+	// "FR" 	SDDL_FILE_READ 	FILE_GENERIC_READ
+	// "FW" 	SDDL_FILE_WRITE 	FILE_GENERIC_WRITE
+	// "FX" 	SDDL_FILE_EXECUTE 	FILE_GENERIC_EXECUTE
+	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/sid-strings
+	// "AU" 	SDDL_AUTHENTICATED_USERS
+	// "BA" 	SDDL_BUILTIN_ADMINISTRATORS
+	// "LS" 	SDDL_LOCAL_SERVICE
+	// "SY" 	SDDL_LOCAL_SYSTEM
+	securityDescriptor = "D:AI(A;;FA;;;BA)(A;;FA;;;SY)(A;;FRFX;;;LS)(A;;FR;;;AU)"
 )
 
 // Connect checks the schtask.exe tool is available
@@ -61,7 +80,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 		task.Principals.Principal.LogonType = LogonTypeServiceForUser
 		task.Principals.Principal.RunLevel = RunLevelHighest
 		task.Principals.Principal.UserId = serviceAccount
-		task.RegistrationInfo.SecurityDescriptor = "D:AI(A;;FA;;;BA)(A;;FA;;;SY)(A;;FRFX;;;LS)(A;;FR;;;AU)"
+		task.RegistrationInfo.SecurityDescriptor = securityDescriptor // allow authenticated users to read the task status
 
 	case UserLoggedOnAccount:
 		task.Principals.Principal.LogonType = LogonTypeInteractiveToken

@@ -24,7 +24,7 @@ type RegistrationInfo struct {
 	Author             string `xml:"Author"`
 	Description        string `xml:"Description"`
 	URI                string `xml:"URI"`
-	SecurityDescriptor string `xml:"SecurityDescriptor"`
+	SecurityDescriptor string `xml:"SecurityDescriptor"` // https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format
 }
 
 type Task struct {
