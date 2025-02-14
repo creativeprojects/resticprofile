@@ -12,6 +12,7 @@ global:
     ionice-class: 3
     ionice-level: 7
     nice: 19
+    scheduler: crontab:*:/tmp/crontab
 
 default:
     password-file: key
@@ -100,11 +101,15 @@ self:
     backup:
         extended-status: true
         source: ./
+        # schedule:
+        #   at: "*:15"
+        #   permission: system
     copy:
         initialize: true
         schedule-permission: user
         schedule:
-          - "*:45"
+            - "*:15"
+            - "*:45"
 
 src:
     inherit: default
@@ -113,18 +118,18 @@ src:
     backup:
         check-before: true
         exclude:
-        - /**/.git
+            - /**/.git
         exclude-caches: true
         one-file-system: false
         run-after: echo All Done!
         run-before:
-        - echo Starting!
-        - ls -al ~/go
+            - echo Starting!
+            - ls -al ~/go
         source:
-        - ~/go
+            - ~/go
         tag:
-        - test
-        - dev
+            - test
+            - dev
     retention:
         after-backup: true
         before-backup: false
@@ -133,8 +138,8 @@ src:
         prune: true
     snapshots:
         tag:
-        - test
-        - dev
+            - test
+            - dev
         
 stdin:
     inherit: default

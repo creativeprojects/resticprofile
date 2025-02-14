@@ -1,131 +1,75 @@
-package schedule
+package schedule_test
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/stretchr/testify/assert"
+	"github.com/creativeprojects/resticprofile/schedule"
+	"github.com/creativeprojects/resticprofile/schedule/mocks"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
-func TestCreateJobHappyPathSystemd(t *testing.T) {
-	counter := 0
-	handler := mockHandler{
-		t: t,
-		parseSchedules: func(schedules []string) ([]*calendar.Event, error) {
-			counter |= 1
-			return nil, nil
-		},
-		displaySchedules: func(command string, schedules []string) error {
-			counter |= 2
-			return nil
-		},
-		createJob: func(job *Config, schedules []*calendar.Event, permission string) error {
-			counter |= 4
-			return nil
-		},
-	}
-	job := Job{
-		config:  &Config{},
-		handler: handler,
-	}
-	err := job.Create()
-	assert.NoError(t, err)
+func TestCreateJobHappyPath(t *testing.T) {
+	handler := mocks.NewHandler(t)
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
+	handler.EXPECT().ParseSchedules([]string{}).Return([]*calendar.Event{}, nil)
+	handler.EXPECT().CreateJob(mock.AnythingOfType("*schedule.Config"), []*calendar.Event{}, "user").Return(nil)
 
-	assert.Equal(t, 1|2|4, counter)
+	job := schedule.NewJob(handler, &schedule.Config{
+		ProfileName: "profile",
+		CommandName: "backup",
+		Schedules:   []string{},
+		Permission:  "user",
+	})
+
+	err := job.Create()
+	require.NoError(t, err)
 }
 
-func TestCreateJobHappyPathOther(t *testing.T) {
-	counter := 0
-	handler := mockHandler{
-		t: t,
-		parseSchedules: func(schedules []string) ([]*calendar.Event, error) {
-			counter |= 1
-			return []*calendar.Event{calendar.NewEvent()}, nil
-		},
-		displayParsedSchedules: func(command string, events []*calendar.Event) {
-			counter |= 2
-		},
-		createJob: func(job *Config, schedules []*calendar.Event, permission string) error {
-			counter |= 4
-			return nil
-		},
-	}
-	job := Job{
-		config:  &Config{},
-		handler: handler,
-	}
-	err := job.Create()
-	assert.NoError(t, err)
+func TestCreateJobErrorParseSchedules(t *testing.T) {
+	handler := mocks.NewHandler(t)
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
+	handler.EXPECT().ParseSchedules([]string{}).Return(nil, errors.New("test!"))
 
-	assert.Equal(t, 1|2|4, counter)
+	job := schedule.NewJob(handler, &schedule.Config{
+		ProfileName: "profile",
+		CommandName: "backup",
+		Schedules:   []string{},
+	})
+
+	err := job.Create()
+	require.Error(t, err)
 }
 
-func TestCreateJobSadPath1(t *testing.T) {
-	counter := 0
-	handler := mockHandler{
-		t: t,
-		parseSchedules: func(schedules []string) ([]*calendar.Event, error) {
-			counter |= 1
-			return nil, errors.New("test!")
-		},
-	}
-	job := Job{
-		config:  &Config{},
-		handler: handler,
-	}
-	err := job.Create()
-	assert.Error(t, err)
+func TestCreateJobErrorDisplaySchedules(t *testing.T) {
+	handler := mocks.NewHandler(t)
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(errors.New("test!"))
 
-	assert.Equal(t, 1, counter)
+	job := schedule.NewJob(handler, &schedule.Config{
+		ProfileName: "profile",
+		CommandName: "backup",
+		Schedules:   []string{},
+	})
+
+	err := job.Create()
+	require.Error(t, err)
 }
 
-func TestCreateJobSadPath2(t *testing.T) {
-	counter := 0
-	handler := mockHandler{
-		t: t,
-		parseSchedules: func(schedules []string) ([]*calendar.Event, error) {
-			counter |= 1
-			return nil, nil
-		},
-		displaySchedules: func(command string, schedules []string) error {
-			counter |= 2
-			return errors.New("test!")
-		},
-	}
-	job := Job{
-		config:  &Config{},
-		handler: handler,
-	}
+func TestCreateJobErrorCreate(t *testing.T) {
+	handler := mocks.NewHandler(t)
+	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
+	handler.EXPECT().ParseSchedules([]string{}).Return([]*calendar.Event{}, nil)
+	handler.EXPECT().CreateJob(mock.AnythingOfType("*schedule.Config"), []*calendar.Event{}, "user").Return(errors.New("test!"))
+
+	job := schedule.NewJob(handler, &schedule.Config{
+		ProfileName: "profile",
+		CommandName: "backup",
+		Schedules:   []string{},
+		Permission:  "user",
+	})
+
 	err := job.Create()
-	assert.Error(t, err)
-
-	assert.Equal(t, 1|2, counter)
-}
-
-func TestCreateJobSadPath3(t *testing.T) {
-	counter := 0
-	handler := mockHandler{
-		t: t,
-		parseSchedules: func(schedules []string) ([]*calendar.Event, error) {
-			counter |= 1
-			return nil, nil
-		},
-		displaySchedules: func(command string, schedules []string) error {
-			counter |= 2
-			return nil
-		},
-		createJob: func(job *Config, schedules []*calendar.Event, permission string) error {
-			counter |= 4
-			return errors.New("test!")
-		},
-	}
-	job := Job{
-		config:  &Config{},
-		handler: handler,
-	}
-	err := job.Create()
-	assert.Error(t, err)
-
-	assert.Equal(t, 1|2|4, counter)
+	require.Error(t, err)
 }

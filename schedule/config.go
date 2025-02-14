@@ -8,24 +8,22 @@ import (
 
 // Config contains all information to schedule a profile command
 type Config struct {
-	ProfileName             string
-	CommandName             string // restic command
-	Schedules               []string
-	Permission              string
-	WorkingDirectory        string
-	Command                 string // path to resticprofile executable
-	Arguments               CommandArguments
-	Environment             []string
-	JobDescription          string
-	TimerDescription        string
-	Priority                string // Priority is either "background" or "standard"
-	ConfigFile              string
-	Flags                   map[string]string // flags added to the command line
-	IgnoreOnBattery         bool
-	IgnoreOnBatteryLessThan int
-	AfterNetworkOnline      bool
-	SystemdDropInFiles      []string
-	removeOnly              bool
+	ProfileName        string
+	CommandName        string // restic command
+	Schedules          []string
+	Permission         string
+	WorkingDirectory   string
+	Command            string // path to resticprofile executable
+	Arguments          CommandArguments
+	Environment        []string
+	JobDescription     string
+	TimerDescription   string
+	Priority           string // Priority is either "background" or "standard"
+	ConfigFile         string
+	Flags              map[string]string // flags added to the command line
+	AfterNetworkOnline bool
+	SystemdDropInFiles []string
+	removeOnly         bool
 }
 
 // NewRemoveOnlyConfig creates a job config that may be used to call Job.Remove() on a scheduled job

@@ -8,10 +8,12 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"text/tabwriter"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
@@ -36,7 +38,7 @@ const (
 	GlobalAgentPath = "/Library/LaunchAgents"
 	GlobalDaemons   = "/Library/LaunchDaemons"
 
-	namePrefix      = "local.resticprofile"
+	namePrefix      = "local.resticprofile." // namePrefix is the prefix used for all launchd job labels managed by resticprofile
 	agentExtension  = ".agent.plist"
 	daemonExtension = ".plist"
 
@@ -84,12 +86,12 @@ func (h *HandlerLaunchd) ParseSchedules(schedules []string) ([]*calendar.Event, 
 	return parseSchedules(schedules)
 }
 
-func (h *HandlerLaunchd) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	displayParsedSchedules(command, events)
-}
-
-// DisplaySchedules does nothing with launchd
-func (h *HandlerLaunchd) DisplaySchedules(command string, schedules []string) error {
+func (h *HandlerLaunchd) DisplaySchedules(profile, command string, schedules []string) error {
+	events, err := parseSchedules(schedules)
+	if err != nil {
+		return err
+	}
+	displayParsedSchedules(profile, command, events)
 	return nil
 }
 
@@ -117,29 +119,107 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	if _, noStart := job.GetFlag("no-start"); !noStart {
-		// ask the user if he wants to start the service now
+	if _, start := job.GetFlag("start"); start {
 		name := getJobName(job.ProfileName, job.CommandName)
-		message := `
-By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
-You have to start it manually the first time to accept the requests for access:
 
-%% %s %s %s
-
-Do you want to start it now?`
-		answer := term.AskYesNo(os.Stdin, fmt.Sprintf(message, launchctlBin, launchdStart, name), true)
-		if answer {
-			// start the service
-			cmd := exec.Command(launchctlBin, launchdStart, name)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err = cmd.Run()
-			if err != nil {
-				return err
-			}
+		// start the service
+		cmd := exec.Command(launchctlBin, launchdStart, name)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// RemoveJob stops and unloads the agent from launchd, then removes the configuration file
+func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
+	name := getJobName(job.ProfileName, job.CommandName)
+	filename, err := getFilename(name, permission)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
+		return ErrScheduledJobNotFound
+	}
+	// stop the service in case it's already running
+	stop := exec.Command(launchctlBin, launchdStop, name)
+	stop.Stdout = os.Stdout
+	stop.Stderr = os.Stderr
+	// keep going if there's an error here
+	_ = stop.Run()
+
+	// unload the service
+	unload := exec.Command(launchctlBin, launchdUnload, filename)
+	unload.Stdout = os.Stdout
+	unload.Stderr = os.Stderr
+	err = unload.Run()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(filename)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
+	permission := getSchedulePermission(job.Permission)
+	ok := checkPermission(permission)
+	if !ok {
+		return permissionError("view")
+	}
+	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
+	output, err := cmd.Output()
+	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
+		return ErrScheduledJobNotFound
+	}
+	if err != nil {
+		return err
+	}
+	status := parseStatus(string(output))
+	if len(status) == 0 {
+		// output was not parsed, it could mean output format has changed
+		fmt.Println(string(output))
+	}
+	// order keys alphabetically
+	keys := make([]string, 0, len(status))
+	for key := range status {
+		if slices.Contains([]string{"LimitLoadToSessionType", "OnDemand"}, key) {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
+	for _, key := range keys {
+		fmt.Fprintf(writer, "%s:\t %s\n", spacedTitle(key), status[key])
+	}
+	writer.Flush()
+	fmt.Println("")
+
+	return nil
+}
+
+func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
+	jobs := make([]Config, 0)
+	if profileName == "" {
+		profileName = "*"
+	} else {
+		profileName = strings.ToLower(profileName)
+	}
+	// system jobs
+	systemJobs := h.getScheduledJob(profileName, constants.SchedulePermissionSystem)
+	jobs = append(jobs, systemJobs...)
+	// user jobs
+	userJobs := h.getScheduledJob(profileName, constants.SchedulePermissionUser)
+	jobs = append(jobs, userJobs...)
+	return jobs, nil
 }
 
 func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *LaunchdJob {
@@ -177,6 +257,69 @@ func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event)
 	return launchdJob
 }
 
+func (h *HandlerLaunchd) getScheduledJob(profileName, permission string) []Config {
+	matches, err := afero.Glob(h.fs, getSchedulePattern(profileName, permission))
+	if err != nil {
+		clog.Warningf("Error while listing %s jobs: %s", permission, err)
+	}
+	jobs := make([]Config, 0, len(matches))
+	for _, match := range matches {
+		job, err := h.getJobConfig(match)
+		if err != nil {
+			clog.Warning(err)
+			continue
+		}
+		if job != nil {
+			job.Permission = permission
+			jobs = append(jobs, *job)
+		}
+	}
+	return jobs
+}
+
+func getSchedulePattern(profileName, permission string) string {
+	pattern := "%s%s.*%s"
+	if permission == constants.SchedulePermissionSystem {
+		return fmt.Sprintf(pattern, path.Join(GlobalDaemons, namePrefix), profileName, daemonExtension)
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf(pattern, path.Join(home, UserAgentPath, namePrefix), profileName, agentExtension)
+}
+
+func getCommandAndProfileFromFilename(filename string) (command string, profile string) {
+	// try removing both daemon and agent extensions
+	filename = strings.TrimSuffix(filename, agentExtension)  // longer one
+	filename = strings.TrimSuffix(filename, daemonExtension) // shorter one
+	filename = strings.TrimPrefix(path.Base(filename), namePrefix)
+	parts := strings.Split(filename, ".")
+	command = parts[len(parts)-1]
+	profile = strings.Join(parts[:len(parts)-1], ".")
+	return
+}
+
+func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
+	commandName, profileName := getCommandAndProfileFromFilename(filename)
+
+	launchdJob, err := h.readPlistFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("error reading plist file: %w", err)
+	}
+	args := NewCommandArguments(launchdJob.ProgramArguments[2:]) // first is binary, second is --no-prio
+	job := &Config{
+		ProfileName:      profileName,
+		CommandName:      commandName,
+		Command:          launchdJob.Program,
+		ConfigFile:       args.ConfigFile(),
+		Arguments:        args,
+		WorkingDirectory: launchdJob.WorkingDirectory,
+		Schedules:        parseCalendarIntervals(launchdJob.StartCalendarInterval),
+	}
+	return job, nil
+}
+
 func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission string) (string, error) {
 	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
@@ -201,105 +344,28 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission stri
 	return filename, nil
 }
 
-// RemoveJob stops and unloads the agent from launchd, then removes the configuration file
-func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
-	name := getJobName(job.ProfileName, job.CommandName)
-	filename, err := getFilename(name, permission)
+func (h *HandlerLaunchd) readPlistFile(filename string) (*LaunchdJob, error) {
+	file, err := h.fs.Open(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	defer file.Close()
 
-	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
-		return ErrServiceNotFound
-	}
-	// stop the service in case it's already running
-	stop := exec.Command(launchctlBin, launchdStop, name)
-	stop.Stdout = os.Stdout
-	stop.Stderr = os.Stderr
-	// keep going if there's an error here
-	_ = stop.Run()
-
-	// unload the service
-	unload := exec.Command(launchctlBin, launchdUnload, filename)
-	unload.Stdout = os.Stdout
-	unload.Stderr = os.Stderr
-	err = unload.Run()
+	decoder := plist.NewDecoder(file)
+	launchdJob := new(LaunchdJob)
+	err = decoder.Decode(launchdJob)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = os.Remove(filename)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
-	permission := getSchedulePermission(job.Permission)
-	ok := checkPermission(permission)
-	if !ok {
-		return permissionError("view")
-	}
-	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
-	output, err := cmd.Output()
-	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
-		return ErrServiceNotFound
-	}
-	if err != nil {
-		return err
-	}
-	status := parseStatus(string(output))
-	if len(status) == 0 {
-		// output was not parsed, it could mean output format has changed
-		fmt.Println(string(output))
-	}
-	// order keys alphabetically
-	keys := make([]string, 0, len(status))
-	for key := range status {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
-	for _, key := range keys {
-		fmt.Fprintf(writer, "%s:\t %s\n", key, status[key])
-	}
-	writer.Flush()
-	fmt.Println("")
-
-	return nil
+	return launchdJob, nil
 }
 
 var (
 	_ Handler = &HandlerLaunchd{}
 )
 
-// CalendarInterval contains date and time trigger definition inside a map.
-// keys of the map should be:
-//
-//	"Month"   Month of year (1..12, 1 being January)
-//	"Day"     Day of month (1..31)
-//	"Weekday" Day of week (0..7, 0 and 7 being Sunday)
-//	"Hour"    Hour of day (0..23)
-//	"Minute"  Minute of hour (0..59)
-type CalendarInterval map[string]int
-
-// newCalendarInterval creates a new map of 5 elements
-func newCalendarInterval() *CalendarInterval {
-	var value CalendarInterval = make(map[string]int, 5)
-	return &value
-}
-
-func (c *CalendarInterval) clone() *CalendarInterval {
-	clone := newCalendarInterval()
-	for key, value := range *c {
-		(*clone)[key] = value
-	}
-	return clone
-}
-
 func getJobName(profileName, command string) string {
-	return fmt.Sprintf("%s.%s.%s", namePrefix, strings.ToLower(profileName), command)
+	return fmt.Sprintf("%s%s.%s", namePrefix, strings.ToLower(profileName), command)
 }
 
 func getFilename(name, permission string) (string, error) {
@@ -311,83 +377,6 @@ func getFilename(name, permission string) (string, error) {
 		return "", err
 	}
 	return path.Join(home, UserAgentPath, name+agentExtension), nil
-}
-
-// getCalendarIntervalsFromSchedules converts schedules into launchd calendar events
-// let's say we've setup these rules:
-//
-//	Mon-Fri *-*-* *:0,30:00  = every half hour
-//	Sat     *-*-* 0,12:00:00 = twice a day on saturday
-//	        *-*-01 *:*:*     = the first of each month
-//
-// it should translate as:
-// 1st rule
-//
-//	Weekday = Monday, Minute = 0
-//	Weekday = Monday, Minute = 30
-//	... same from Tuesday to Thurday
-//	Weekday = Friday, Minute = 0
-//	Weekday = Friday, Minute = 30
-//
-// Total of 10 rules
-// 2nd rule
-//
-//	Weekday = Saturday, Hour = 0
-//	Weekday = Saturday, Hour = 12
-//
-// Total of 2 rules
-// 3rd rule
-//
-//	Day = 1
-//
-// Total of 1 rule
-func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
-	entries := make([]CalendarInterval, 0, len(schedules))
-	for _, schedule := range schedules {
-		entries = append(entries, getCalendarIntervalsFromScheduleTree(generateTreeOfSchedules(schedule))...)
-	}
-	return entries
-}
-
-func getCalendarIntervalsFromScheduleTree(tree []*treeElement) []CalendarInterval {
-	entries := make([]CalendarInterval, 0)
-	for _, element := range tree {
-		// creates a new calendar entry for each tip of the branch
-		newEntry := newCalendarInterval()
-		fillInValueFromScheduleTreeElement(newEntry, element, &entries)
-	}
-	return entries
-}
-
-func fillInValueFromScheduleTreeElement(currentEntry *CalendarInterval, element *treeElement, entries *[]CalendarInterval) {
-	setCalendarIntervalValueFromType(currentEntry, element.value, element.elementType)
-	if len(element.subElements) == 0 {
-		// end of the line, this entry is finished
-		*entries = append(*entries, *currentEntry)
-		return
-	}
-	for _, subElement := range element.subElements {
-		// new branch means new calendar entry
-		fillInValueFromScheduleTreeElement(currentEntry.clone(), subElement, entries)
-	}
-}
-
-func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeValue calendar.TypeValue) {
-	if entry == nil {
-		entry = newCalendarInterval()
-	}
-	switch typeValue {
-	case calendar.TypeWeekDay:
-		(*entry)["Weekday"] = value
-	case calendar.TypeMonth:
-		(*entry)["Month"] = value
-	case calendar.TypeDay:
-		(*entry)["Day"] = value
-	case calendar.TypeHour:
-		(*entry)["Hour"] = value
-	case calendar.TypeMinute:
-		(*entry)["Minute"] = value
-	}
 }
 
 func parseStatus(status string) map[string]string {

@@ -131,8 +131,11 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 
 // Load configuration from reader
 // This should only be used for unit tests
-func Load(input io.Reader, format string) (config *Config, err error) {
+func Load(input io.Reader, format string, options ...func(cfg *Config)) (config *Config, err error) {
 	config = newConfig(format)
+	for _, option := range options {
+		option(config)
+	}
 	err = config.addTemplate(input, config.configFile, true)
 	return
 }

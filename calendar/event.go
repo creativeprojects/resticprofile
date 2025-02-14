@@ -97,6 +97,11 @@ func (e *Event) Parse(input string) error {
 func (e *Event) Next(from time.Time) time.Time {
 	// start from time and increment of 1 minute each time
 	next := from.Truncate(time.Minute) // truncate all the seconds
+	// if we're already partway through a minute, skip to the next minute
+	// to avoid scheduling events in the past
+	if from.Second() > 0 {
+		next = next.Add(time.Minute) // it's too late for the current minute
+	}
 	// should stop in 2 years time to avoid an infinite loop
 	endYear := from.Year() + 2
 	for next.Year() <= endYear {

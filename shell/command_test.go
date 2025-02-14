@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"syscall"
 	"testing"
@@ -25,16 +24,27 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	mockBinary = "./shellmock"
-	if platform.IsWindows() {
-		mockBinary = `.\\shellmock.exe`
-	}
-	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
-	if output, err := cmd.CombinedOutput(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
-	}
-	exitCode := m.Run()
-	_ = os.Remove(mockBinary)
+	// using an anonymous function to handle defer statements before os.Exit()
+	exitCode := func() int {
+		tempDir, err := os.MkdirTemp("", "resticprofile")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
+			return 1
+		}
+		fmt.Printf("using temporary dir: %q\n", tempDir)
+		defer os.RemoveAll(tempDir)
+
+		mockBinary = filepath.Join(tempDir, "shellmock")
+		if platform.IsWindows() {
+			mockBinary += ".exe"
+		}
+		cmd := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
+		if output, err := cmd.CombinedOutput(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
+			return 1
+		}
+		return m.Run()
+	}()
 	os.Exit(exitCode)
 }
 
@@ -357,14 +367,11 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 	assert.Contains(t, string(output), "TestRunShellEchoWithSignalling")
 }
 
-// There is something wrong with this test under Linux
+// Flaky test on github linux runner but can't reproduce locally
 func TestInterruptShellCommand(t *testing.T) {
 	t.Parallel()
 
 	if platform.IsWindows() {
-		t.Skip("Test not running on this platform")
-	}
-	if runtime.GOOS == "linux" {
 		t.Skip("Test not running on this platform")
 	}
 	buffer := &bytes.Buffer{}
@@ -381,15 +388,12 @@ func TestInterruptShellCommand(t *testing.T) {
 	}()
 	start := time.Now()
 	_, _, err := cmd.Run()
-	// GitHub Actions *sometimes* sends a different message: "signal: interrupt"
-	if err != nil && err.Error() != "exit status 128" && err.Error() != "signal: interrupt" {
-		t.Fatal(err)
-	}
+	require.Error(t, err)
 
-	// check it ran for more than 100ms (but less than 300ms - the build agent can be very slow at times)
+	// check it ran for more than 100ms (but less than 500ms - the build agent can be very slow at times)
 	duration := time.Since(start)
 	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(100))
-	assert.Less(t, duration.Milliseconds(), int64(300))
+	assert.Less(t, duration.Milliseconds(), int64(500))
 }
 
 func TestSetPIDCallback(t *testing.T) {
@@ -545,14 +549,9 @@ func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
 func TestCanAnalyseLockFailure(t *testing.T) {
 	t.Parallel()
 
-	file, err := os.CreateTemp(".", "test-restic-lock-failure")
+	fileName := filepath.Join(t.TempDir(), "test-restic-lock-failure")
+	err := os.WriteFile(fileName, []byte(ResticLockFailureOutput), 0o600)
 	require.NoError(t, err)
-	_, err = file.Write([]byte(ResticLockFailureOutput))
-	require.NoError(t, err)
-	file.Close()
-
-	fileName := file.Name()
-	defer os.Remove(fileName)
 
 	cmd := NewCommand(mockBinary, []string{"test", "--stderr", fmt.Sprintf("@%s", fileName)})
 	cmd.Stderr = &bytes.Buffer{}

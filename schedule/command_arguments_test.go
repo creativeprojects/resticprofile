@@ -57,3 +57,31 @@ func TestString(t *testing.T) {
 		}
 	}
 }
+
+func TestConfigFile(t *testing.T) {
+	tests := []struct {
+		args     []string
+		expected string
+	}{
+		{[]string{}, ""},
+		{[]string{"--config"}, ""},
+		{[]string{"--config", "config.toml"}, "config.toml"},
+		{[]string{"--config", "C:\\Program Files\\config.toml"}, "C:\\Program Files\\config.toml"},
+		{[]string{"--name", "backup", "--config", "config.toml"}, "config.toml"},
+		{[]string{"--config", "config.toml", "--name", "backup"}, "config.toml"},
+		{[]string{"--config", "config.toml", "--name", "backup", "--config", "config.yaml"}, "config.yaml"},
+		{[]string{"--name", "backup", "--config", "config.toml", "--no-ansi"}, "config.toml"},
+		{[]string{"--name", "backup", "--no-ansi", "--config", "config.toml"}, "config.toml"},
+		{[]string{"--name", "backup", "--no-ansi"}, ""},
+		{[]string{"--config="}, ""},
+		{[]string{"--config=config.toml"}, "config.toml"},
+	}
+
+	for _, test := range tests {
+		ca := NewCommandArguments(test.args)
+		result := ca.ConfigFile()
+		if result != test.expected {
+			t.Errorf("expected %s, got %s", test.expected, result)
+		}
+	}
+}

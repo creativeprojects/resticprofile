@@ -12,12 +12,13 @@ type Handler interface {
 	Init() error
 	Close()
 	ParseSchedules(schedules []string) ([]*calendar.Event, error)
-	DisplayParsedSchedules(command string, events []*calendar.Event)
-	DisplaySchedules(command string, schedules []string) error
+	DisplaySchedules(profile, command string, schedules []string) error
 	DisplayStatus(profileName string) error
 	CreateJob(job *Config, schedules []*calendar.Event, permission string) error
 	RemoveJob(job *Config, permission string) error
 	DisplayJobStatus(job *Config) error
+	// Scheduled can return configs at the same time as an error: it means some configs are fine but some others cannot be loaded properly
+	Scheduled(profileName string) ([]Config, error)
 }
 
 // FindHandler creates a schedule handler depending on the configuration or nil if the config is not supported

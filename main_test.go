@@ -21,27 +21,38 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	mockBinary = "./shellmock"
-	if platform.IsWindows() {
-		mockBinary = `.\\shellmock.exe`
-	}
-	cmdMock := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./shell/mock")
-	if output, err := cmdMock.CombinedOutput(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error building shell/mock binary: %s\nCommand output: %s\n", err, string(output))
-	}
+	// using an anonymous function to handle defer statements before os.Exit()
+	exitCode := func() int {
+		tempDir, err := os.MkdirTemp("", "resticprofile")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
+			return 1
+		}
+		fmt.Printf("using temporary dir: %q\n", tempDir)
+		defer os.RemoveAll(tempDir)
 
-	echoBinary = "./shellecho"
-	if platform.IsWindows() {
-		echoBinary = `.\\shellecho.exe`
-	}
-	cmdEcho := exec.Command("go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
-	if output, err := cmdEcho.CombinedOutput(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
-	}
+		mockBinary = filepath.Join(tempDir, "shellmock")
+		if platform.IsWindows() {
+			mockBinary += ".exe"
+		}
+		cmdMock := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./shell/mock")
+		if output, err := cmdMock.CombinedOutput(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error building shell/mock binary: %s\nCommand output: %s\n", err, string(output))
+			return 1
+		}
 
-	exitCode := m.Run()
-	_ = os.Remove(mockBinary)
-	_ = os.Remove(echoBinary)
+		echoBinary = filepath.Join(tempDir, "shellecho")
+		if platform.IsWindows() {
+			echoBinary += ".exe"
+		}
+		cmdEcho := exec.Command("go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
+		if output, err := cmdEcho.CombinedOutput(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
+			return 1
+		}
+
+		return m.Run()
+	}()
 	os.Exit(exitCode)
 }
 

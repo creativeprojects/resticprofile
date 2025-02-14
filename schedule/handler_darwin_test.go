@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -179,4 +180,72 @@ func TestCreateSystemPlist(t *testing.T) {
 
 	_, err = handler.fs.Stat(filename)
 	assert.NoError(t, err)
+}
+
+func TestReadingLaunchdScheduled(t *testing.T) {
+	calendarEvent := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+	})
+	testCases := []struct {
+		job       Config
+		schedules []*calendar.Event
+	}{
+		{
+			job: Config{
+				ProfileName:      "testscheduled",
+				CommandName:      "backup",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       constants.SchedulePermissionSystem,
+				ConfigFile:       "examples/dev.yaml",
+				Schedules:        []string{"*-*-* *:00,30:00"},
+			},
+			schedules: []*calendar.Event{calendarEvent},
+		},
+		{
+			job: Config{
+				ProfileName:      "test.scheduled",
+				CommandName:      "backup",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "config file.yaml", "--name", "self", "backup"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       constants.SchedulePermissionSystem,
+				ConfigFile:       "config file.yaml",
+				Schedules:        []string{"*-*-* *:00,30:00"},
+			},
+			schedules: []*calendar.Event{calendarEvent},
+		},
+		{
+			job: Config{
+				ProfileName:      "testscheduled",
+				CommandName:      "backup",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       constants.SchedulePermissionUser,
+				ConfigFile:       "examples/dev.yaml",
+				Schedules:        []string{"*-*-* *:00,30:00"},
+			},
+			schedules: []*calendar.Event{calendarEvent},
+		},
+	}
+
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
+	handler.fs = afero.NewMemMapFs()
+
+	expectedJobs := []Config{}
+	for _, testCase := range testCases {
+		expectedJobs = append(expectedJobs, testCase.job)
+
+		_, err := handler.createPlistFile(handler.getLaunchdJob(&testCase.job, testCase.schedules), testCase.job.Permission)
+		require.NoError(t, err)
+	}
+
+	scheduled, err := handler.Scheduled("")
+	require.NoError(t, err)
+
+	assert.ElementsMatch(t, expectedJobs, scheduled)
 }

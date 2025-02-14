@@ -8,22 +8,20 @@ import (
 
 func TestScheduleProperties(t *testing.T) {
 	schedule := Config{
-		ProfileName:             "profile",
-		CommandName:             "command name",
-		Schedules:               []string{"1", "2", "3"},
-		Permission:              "admin",
-		WorkingDirectory:        "home",
-		Command:                 "command",
-		Arguments:               NewCommandArguments([]string{"1", "2"}),
-		Environment:             []string{"test=dev"},
-		JobDescription:          "job",
-		TimerDescription:        "timer",
-		Priority:                "",
-		ConfigFile:              "config",
-		Flags:                   map[string]string{},
-		removeOnly:              false,
-		IgnoreOnBattery:         false,
-		IgnoreOnBatteryLessThan: 0,
+		ProfileName:      "profile",
+		CommandName:      "command name",
+		Schedules:        []string{"1", "2", "3"},
+		Permission:       "admin",
+		WorkingDirectory: "home",
+		Command:          "command",
+		Arguments:        NewCommandArguments([]string{"1", "2"}),
+		Environment:      []string{"test=dev"},
+		JobDescription:   "job",
+		TimerDescription: "timer",
+		Priority:         "",
+		ConfigFile:       "config",
+		Flags:            map[string]string{},
+		removeOnly:       false,
 	}
 
 	assert.Equal(t, "config", schedule.ConfigFile)

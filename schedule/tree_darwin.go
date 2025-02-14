@@ -36,7 +36,7 @@ func generateTreeOfSchedules(event *calendar.Event) []*treeElement {
 				// add each new element to the child of all the current elements
 				element.subElements = make([]*treeElement, len(subTree))
 				copy(element.subElements, subTree)
-				// the new current element is a slice concatening all the child slices into one big one
+				// the new current element is a slice concatenating all the child slices into one big one
 				newCurrentElements = append(newCurrentElements, element.subElements...)
 			}
 			// full horizontal view of the current row of the tree

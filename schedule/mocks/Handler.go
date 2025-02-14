@@ -148,51 +148,17 @@ func (_c *Handler_DisplayJobStatus_Call) RunAndReturn(run func(*schedule.Config)
 	return _c
 }
 
-// DisplayParsedSchedules provides a mock function with given fields: command, events
-func (_m *Handler) DisplayParsedSchedules(command string, events []*calendar.Event) {
-	_m.Called(command, events)
-}
-
-// Handler_DisplayParsedSchedules_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DisplayParsedSchedules'
-type Handler_DisplayParsedSchedules_Call struct {
-	*mock.Call
-}
-
-// DisplayParsedSchedules is a helper method to define mock.On call
-//   - command string
-//   - events []*calendar.Event
-func (_e *Handler_Expecter) DisplayParsedSchedules(command interface{}, events interface{}) *Handler_DisplayParsedSchedules_Call {
-	return &Handler_DisplayParsedSchedules_Call{Call: _e.mock.On("DisplayParsedSchedules", command, events)}
-}
-
-func (_c *Handler_DisplayParsedSchedules_Call) Run(run func(command string, events []*calendar.Event)) *Handler_DisplayParsedSchedules_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].([]*calendar.Event))
-	})
-	return _c
-}
-
-func (_c *Handler_DisplayParsedSchedules_Call) Return() *Handler_DisplayParsedSchedules_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *Handler_DisplayParsedSchedules_Call) RunAndReturn(run func(string, []*calendar.Event)) *Handler_DisplayParsedSchedules_Call {
-	_c.Run(run)
-	return _c
-}
-
-// DisplaySchedules provides a mock function with given fields: command, schedules
-func (_m *Handler) DisplaySchedules(command string, schedules []string) error {
-	ret := _m.Called(command, schedules)
+// DisplaySchedules provides a mock function with given fields: profile, command, schedules
+func (_m *Handler) DisplaySchedules(profile string, command string, schedules []string) error {
+	ret := _m.Called(profile, command, schedules)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DisplaySchedules")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, []string) error); ok {
-		r0 = rf(command, schedules)
+	if rf, ok := ret.Get(0).(func(string, string, []string) error); ok {
+		r0 = rf(profile, command, schedules)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -206,15 +172,16 @@ type Handler_DisplaySchedules_Call struct {
 }
 
 // DisplaySchedules is a helper method to define mock.On call
+//   - profile string
 //   - command string
 //   - schedules []string
-func (_e *Handler_Expecter) DisplaySchedules(command interface{}, schedules interface{}) *Handler_DisplaySchedules_Call {
-	return &Handler_DisplaySchedules_Call{Call: _e.mock.On("DisplaySchedules", command, schedules)}
+func (_e *Handler_Expecter) DisplaySchedules(profile interface{}, command interface{}, schedules interface{}) *Handler_DisplaySchedules_Call {
+	return &Handler_DisplaySchedules_Call{Call: _e.mock.On("DisplaySchedules", profile, command, schedules)}
 }
 
-func (_c *Handler_DisplaySchedules_Call) Run(run func(command string, schedules []string)) *Handler_DisplaySchedules_Call {
+func (_c *Handler_DisplaySchedules_Call) Run(run func(profile string, command string, schedules []string)) *Handler_DisplaySchedules_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].([]string))
+		run(args[0].(string), args[1].(string), args[2].([]string))
 	})
 	return _c
 }
@@ -224,7 +191,7 @@ func (_c *Handler_DisplaySchedules_Call) Return(_a0 error) *Handler_DisplaySched
 	return _c
 }
 
-func (_c *Handler_DisplaySchedules_Call) RunAndReturn(run func(string, []string) error) *Handler_DisplaySchedules_Call {
+func (_c *Handler_DisplaySchedules_Call) RunAndReturn(run func(string, string, []string) error) *Handler_DisplaySchedules_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -421,6 +388,64 @@ func (_c *Handler_RemoveJob_Call) Return(_a0 error) *Handler_RemoveJob_Call {
 }
 
 func (_c *Handler_RemoveJob_Call) RunAndReturn(run func(*schedule.Config, string) error) *Handler_RemoveJob_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Scheduled provides a mock function with given fields: profileName
+func (_m *Handler) Scheduled(profileName string) ([]schedule.Config, error) {
+	ret := _m.Called(profileName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Scheduled")
+	}
+
+	var r0 []schedule.Config
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) ([]schedule.Config, error)); ok {
+		return rf(profileName)
+	}
+	if rf, ok := ret.Get(0).(func(string) []schedule.Config); ok {
+		r0 = rf(profileName)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]schedule.Config)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(profileName)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Handler_Scheduled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Scheduled'
+type Handler_Scheduled_Call struct {
+	*mock.Call
+}
+
+// Scheduled is a helper method to define mock.On call
+//   - profileName string
+func (_e *Handler_Expecter) Scheduled(profileName interface{}) *Handler_Scheduled_Call {
+	return &Handler_Scheduled_Call{Call: _e.mock.On("Scheduled", profileName)}
+}
+
+func (_c *Handler_Scheduled_Call) Run(run func(profileName string)) *Handler_Scheduled_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *Handler_Scheduled_Call) Return(_a0 []schedule.Config, _a1 error) *Handler_Scheduled_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Handler_Scheduled_Call) RunAndReturn(run func(string) ([]schedule.Config, error)) *Handler_Scheduled_Call {
 	_c.Call.Return(run)
 	return _c
 }
