@@ -63,7 +63,19 @@ func createTask(config *Config, schedules []*calendar.Event) (string, *Task, err
 	return buffer.String(), &task, err
 }
 
-func readTaskDefinition(taskName string) ([]byte, error) {
+func importTaskDefinition(taskPath, filename string) error {
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+	cmd := exec.Command(binaryPath, "/create", "/tn", taskPath, "/xml", filename)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err := cmd.Run()
+	if err != nil {
+		return schTasksError(stderr.String())
+	}
+	return nil
+}
+
+func exportTaskDefinition(taskName string) ([]byte, error) {
 	buffer := &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer

@@ -34,7 +34,8 @@ import (
 //    - on specific days (1 to 31)
 
 const (
-	binaryPath = "schtasks.exe"
+	binaryPath     = "schtasks.exe"
+	systemUserName = "SYSTEM"
 )
 
 var (

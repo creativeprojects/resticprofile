@@ -12,11 +12,12 @@ import (
 )
 
 const (
-	dateFormat  = "2006-01-02T15:04:05-07:00"
-	maxTriggers = 60
-	author      = "Author"
-	tasksPath   = `\resticprofile backup\`
-	taskSchema  = "http://schemas.microsoft.com/windows/2004/02/mit/task"
+	dateFormat        = "2006-01-02T15:04:05-07:00"
+	maxTriggers       = 60
+	author            = "Author"
+	tasksPath         = `\resticprofile backup\`
+	taskSchema        = "http://schemas.microsoft.com/windows/2004/02/mit/task"
+	taskSchemaVersion = "1.4"
 )
 
 type RegistrationInfo struct {
@@ -45,7 +46,7 @@ func NewTask() Task {
 	}
 	task := Task{
 		XMLName: xml.Name{Space: taskSchema, Local: "Task"},
-		Version: "1.4",
+		Version: taskSchemaVersion,
 		Xmlns:   taskSchema,
 		RegistrationInfo: RegistrationInfo{
 			Date:   time.Now().Format(dateFormat),

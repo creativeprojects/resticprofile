@@ -7,12 +7,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-const (
-
-	// maxTriggers    = 60
-	systemUserName = "SYSTEM"
-)
-
 // Permission is a choice between System, User and User Logged On
 type Permission int
 

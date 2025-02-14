@@ -71,6 +71,10 @@ func Close() {
 
 // Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config *Config, schedules []*calendar.Event, permission Permission) error {
+	var (
+		// username, password string
+		err error
+	)
 	task := createTaskDefinition(config, schedules)
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
 	task.RegistrationInfo.URI = taskPath
@@ -87,6 +91,10 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 
 	default:
 		task.Principals.Principal.LogonType = LogonTypePassword
+		// username, password, err = userCredentials()
+		// if err != nil {
+		// 	return fmt.Errorf("cannot get user name or password: %w", err)
+		// }
 	}
 
 	file, err := os.CreateTemp("", "*.xml")

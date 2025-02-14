@@ -155,7 +155,7 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 			require.NoError(t, err)
 
 			taskPath := getTaskPath(scheduleConfig.ProfileName, scheduleConfig.CommandName)
-			taskXML, err := readTaskDefinition(taskPath)
+			taskXML, err := exportTaskDefinition(taskPath)
 			require.NoError(t, err)
 
 			buffer := bytes.NewBuffer(taskXML)
