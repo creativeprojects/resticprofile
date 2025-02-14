@@ -65,9 +65,9 @@ func createTaskFile(task Task, w io.Writer) error {
 // createTask calls schtasks.exe to create a task from the XML file.
 // username and password are optional, but must be specified at the same time.
 func createTask(taskName, filename, username, password string) (string, error) {
-	taskName = strings.TrimSpace(taskName)
-	if len(taskName) == 0 {
-		return "", ErrEmptyTaskName
+	taskName, err := sanitizeTaskName(taskName)
+	if err != nil {
+		return "", err
 	}
 	params := []string{"/create", "/tn", taskName, "/xml", filename}
 
@@ -82,7 +82,7 @@ func createTask(taskName, filename, username, password string) (string, error) {
 	cmd := exec.Command(binaryPath, params...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return stdout.String(), schTasksError(stderr.String())
 	}
@@ -90,10 +90,14 @@ func createTask(taskName, filename, username, password string) (string, error) {
 }
 
 func exportTaskDefinition(taskName string) ([]byte, error) {
+	taskName, err := sanitizeTaskName(taskName)
+	if err != nil {
+		return nil, err
+	}
 	buffer := &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
-	err := cmd.Run()
+	err = cmd.Run()
 	return buffer.Bytes(), err
 }
 
@@ -110,15 +114,15 @@ func listRegisteredTasks() ([]byte, error) {
 }
 
 func deleteTask(taskName string) (string, error) {
-	taskName = strings.TrimSpace(taskName)
-	if len(taskName) == 0 {
-		return "", ErrEmptyTaskName
+	taskName, err := sanitizeTaskName(taskName)
+	if err != nil {
+		return "", err
 	}
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, "/delete", "/f", "/tn", taskName)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return "", schTasksError(stderr.String())
 	}
@@ -127,15 +131,15 @@ func deleteTask(taskName string) (string, error) {
 
 // readTaskInfo returns the raw CSV output from querying the task name (via schtasks.exe)
 func readTaskInfo(taskName string, output io.Writer) error {
-	taskName = strings.TrimSpace(taskName)
-	if len(taskName) == 0 {
-		return ErrEmptyTaskName
+	taskName, err := sanitizeTaskName(taskName)
+	if err != nil {
+		return err
 	}
 	stderr := &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, "/query", "/fo", "csv", "/v", "/tn", taskName)
 	cmd.Stdout = output
 	cmd.Stderr = stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return schTasksError(stderr.String())
 	}
@@ -156,4 +160,15 @@ func schTasksError(message string) error {
 		return ErrAlreadyExist
 	}
 	return errors.New(message)
+}
+
+func sanitizeTaskName(taskName string) (string, error) {
+	taskName = strings.TrimSpace(taskName)
+	if len(taskName) == 0 {
+		return "", ErrEmptyTaskName
+	}
+	if strings.ContainsAny(taskName, `"'&|<>^`) {
+		return "", ErrInvalidTaskName
+	}
+	return taskName, nil
 }

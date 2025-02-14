@@ -16,6 +16,8 @@ const csvOutput = `"HostName","TaskName","Next Run Time","Status","Logon Mode","
 `
 
 func TestReadingCSVOutput(t *testing.T) {
+	t.Parallel()
+
 	output, err := getCSV(bytes.NewBufferString(csvOutput))
 	require.NoError(t, err)
 	assert.Len(t, output, 3)     // lines
@@ -23,6 +25,8 @@ func TestReadingCSVOutput(t *testing.T) {
 }
 
 func TestReadTaskInfoError(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		taskname string
 		expected error
@@ -46,6 +50,8 @@ func TestReadTaskInfoError(t *testing.T) {
 }
 
 func TestSchTasksError(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		message  string
 		expected error

@@ -16,6 +16,8 @@ import (
 )
 
 func TestTriggerCreationFromXML(t *testing.T) {
+	t.Parallel()
+
 	// some tests are using the 1st day of the month as a reference,
 	// but this cause issues when we're running the tests on the first day of the month.
 	// typically the test will only generate entries at a time after the time we run the test
@@ -118,12 +120,12 @@ func TestTriggerCreationFromXML(t *testing.T) {
 			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT2M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*<Tuesday></Tuesday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
 		},
-		// {
-		// 	"twice on fridays",
-		// 	[]string{"fri *-*-* *:04..05"},
-		// 	`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+00:00</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Friday></Friday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
-		// 	48,
-		// },
+		{
+			"twice on fixed day",
+			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04..05"},
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+00:00</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			48,
+		},
 		// monthly
 		{
 			"once monthly",

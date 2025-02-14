@@ -18,6 +18,8 @@ import (
 )
 
 func TestStatusUnknownTask(t *testing.T) {
+	t.Parallel()
+
 	err := Status("test", "test")
 	assert.Error(t, err)
 }
@@ -77,6 +79,32 @@ func TestRegisteredTasks(t *testing.T) {
 	}
 
 	assert.ElementsMatch(t, tasks, selected)
+}
+
+func TestCanCreateTwice(t *testing.T) {
+	task := Config{
+		ProfileName:      "TestCanCreateTwice",
+		CommandName:      "backup",
+		Command:          "echo",
+		Arguments:        "hello there",
+		WorkingDirectory: "C:\\",
+		JobDescription:   "TestCanCreateTwice",
+	}
+
+	event := calendar.NewEvent()
+	err := event.Parse("2020-01-02 03:04") // will never get triggered
+	require.NoError(t, err)
+
+	// user logged in doesn't need a password
+	err = Create(&task, []*calendar.Event{event}, UserLoggedOnAccount)
+	assert.NoError(t, err)
+
+	defer func() {
+		_ = Delete(task.ProfileName, task.CommandName)
+	}()
+
+	err = Create(&task, []*calendar.Event{event}, UserLoggedOnAccount)
+	assert.NoError(t, err)
 }
 
 func TestTaskSchedulerIntegration(t *testing.T) {
