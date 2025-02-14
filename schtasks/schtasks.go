@@ -52,14 +52,9 @@ func getCSV(input io.Reader) ([][]string, error) {
 }
 
 func createTaskFile(task Task, w io.Writer) error {
-	var err error
 	encoder := xml.NewEncoder(w)
 	encoder.Indent("", "  ")
-	err = encoder.Encode(&task)
-	if err != nil {
-		return err
-	}
-	return err
+	return encoder.Encode(&task)
 }
 
 // createTask calls schtasks.exe to create a task from the XML file.
