@@ -8,4 +8,5 @@ var (
 	ErrEmptyTaskName   = errors.New("task name cannot be empty")
 	ErrInvalidTaskName = errors.New("invalid task name")
 	ErrAccessDenied    = errors.New("access denied")
+	ErrAlreadyExist    = errors.New("task already exists and cannot be updated in place")
 )

@@ -53,6 +53,7 @@ func TestSchTasksError(t *testing.T) {
 		{`ERROR: The specified task name "\resticprofile backup\toto" does not exist in the system.\r\n`, ErrNotRegistered},
 		{`ERROR: The filename, directory name, or volume label syntax is incorrect.\r\n`, ErrInvalidTaskName},
 		{`ERROR: Access is denied.\r\n`, ErrAccessDenied},
+		{`ERROR: Cannot create a file when that file already exists.\r\n`, ErrAlreadyExist},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.message, func(t *testing.T) {

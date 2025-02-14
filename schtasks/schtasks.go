@@ -2,6 +2,7 @@ package schtasks
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -135,6 +136,26 @@ func schTasksError(message string) error {
 		return ErrInvalidTaskName
 	} else if strings.Contains(message, "Access is denied") {
 		return ErrAccessDenied
+	} else if strings.Contains(message, "already exists") {
+		return ErrAlreadyExist
 	}
 	return errors.New(message)
+}
+
+func getTaskInfo(taskName string) ([][]string, error) {
+	buffer := &bytes.Buffer{}
+	err := readTaskInfo(taskName, buffer)
+	if err != nil {
+		return nil, err
+	}
+	output, err := getCSV(buffer)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+func getCSV(input io.Reader) ([][]string, error) {
+	reader := csv.NewReader(input)
+	return reader.ReadAll()
 }

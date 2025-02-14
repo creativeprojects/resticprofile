@@ -198,7 +198,6 @@ func Registered() ([]Config, error) {
 			Command:          command,
 			Arguments:        args,
 		}
-		fmt.Printf("%+v\n", config)
 		configs = append(configs, config)
 	}
 	return configs, nil
