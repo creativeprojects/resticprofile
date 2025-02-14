@@ -3,6 +3,7 @@ package schtasks
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -83,6 +84,14 @@ func exportTaskDefinition(taskName string) ([]byte, error) {
 	return buffer.Bytes(), err
 }
 
+func listRegisteredTasks() ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	cmd := exec.Command(binaryPath, "/query", "/nh", "/fo", "csv")
+	cmd.Stdout = buffer
+	err := cmd.Run()
+	return buffer.Bytes(), err
+}
+
 func deleteTask(taskName string) (string, error) {
 	taskName = strings.TrimSpace(taskName)
 	if len(taskName) == 0 {
@@ -97,4 +106,35 @@ func deleteTask(taskName string) (string, error) {
 		return "", schTasksError(stderr.String())
 	}
 	return stdout.String(), nil
+}
+
+// readTaskInfo returns the raw CSV output from querying the task name (via schtasks.exe)
+func readTaskInfo(taskName string, output io.Writer) error {
+	taskName = strings.TrimSpace(taskName)
+	if len(taskName) == 0 {
+		return ErrEmptyTaskName
+	}
+	stderr := &bytes.Buffer{}
+	cmd := exec.Command(binaryPath, "/query", "/fo", "csv", "/v", "/tn", taskName)
+	cmd.Stdout = output
+	cmd.Stderr = stderr
+	err := cmd.Run()
+	if err != nil {
+		return schTasksError(stderr.String())
+	}
+	return nil
+}
+
+func schTasksError(message string) error {
+	message = strings.TrimSpace(message)
+	message = strings.TrimPrefix(message, "ERROR: ")
+	if strings.Contains(message, "The system cannot find the") ||
+		strings.Contains(message, "does not exist in the system") {
+		return ErrNotRegistered
+	} else if strings.Contains(message, "The filename, directory name, or volume label syntax is incorrect") {
+		return ErrInvalidTaskName
+	} else if strings.Contains(message, "Access is denied") {
+		return ErrAccessDenied
+	}
+	return errors.New(message)
 }

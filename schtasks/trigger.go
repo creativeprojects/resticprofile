@@ -1,7 +1,7 @@
 package schtasks
 
 import (
-	"github.com/rickb777/date/period"
+	"github.com/rickb777/period"
 )
 
 type Triggers struct {

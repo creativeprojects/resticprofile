@@ -18,12 +18,11 @@ type HandlerWindows struct {
 
 // Init a connection to the task scheduler
 func (h *HandlerWindows) Init() error {
-	return schtasks.Connect()
+	return schtasks.Init()
 }
 
-// Close the connection to the task scheduler
+// Close does nothing with this implementation
 func (h *HandlerWindows) Close() {
-	schtasks.Close()
 }
 
 // ParseSchedules into *calendar.Event

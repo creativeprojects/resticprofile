@@ -5,7 +5,6 @@ go 1.23.6
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/adrg/xdg v0.5.3
-	github.com/capnspacehook/taskmaster v0.0.0-20210519235353-1629df7c85e9
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.14.0
 	github.com/creativeprojects/go-selfupdate v1.4.1
@@ -17,7 +16,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.18.0
 	github.com/prometheus/common v0.46.0
-	github.com/rickb777/date v1.21.1
+	github.com/rickb777/period v1.0.8
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/afero v1.11.0
 	github.com/spf13/cast v1.6.0
@@ -45,6 +44,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/govalues/decimal v0.1.36 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
