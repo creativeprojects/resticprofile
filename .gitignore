@@ -41,3 +41,4 @@ go.work
 go.work.sum
 
 /*.txt
+output.xml

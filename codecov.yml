@@ -11,6 +11,7 @@ ignore:
   - run_profile.go
   - syslog.go
   - syslog_windows.go
+  - schtasks/permission.go
   - "**/mocks/*.go"
 
 codecov:

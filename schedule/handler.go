@@ -53,7 +53,7 @@ func AddHandlerProvider(provider HandlerProvider) {
 func lookupBinary(name, binary string) error {
 	found, err := exec.LookPath(binary)
 	if err != nil || found == "" {
-		return fmt.Errorf("it doesn't look like %s is installed on your system (cannot find %q in path)", name, binary)
+		return fmt.Errorf("cannot find %q: please ensure %s is installed and available on this system", binary, name)
 	}
 	return nil
 }
