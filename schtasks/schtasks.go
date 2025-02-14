@@ -1,3 +1,5 @@
+//go:build windows
+
 package schtasks
 
 import (
@@ -11,10 +13,6 @@ import (
 	"strings"
 )
 
-const (
-	binaryPath = "schtasks.exe"
-)
-
 func getRegisteredTasks() ([]string, error) {
 	raw, err := listRegisteredTasks()
 	if err != nil {
@@ -26,7 +24,7 @@ func getRegisteredTasks() ([]string, error) {
 	}
 	list := make([]string, 0)
 	for _, taskLine := range all {
-		if strings.HasPrefix(taskLine[0], tasksPath) {
+		if len(taskLine) > 0 && strings.HasPrefix(taskLine[0], tasksPathPrefix) {
 			list = append(list, taskLine[0])
 		}
 	}
@@ -72,9 +70,14 @@ func createTask(taskName, filename, username, password string) (string, error) {
 		return "", ErrEmptyTaskName
 	}
 	params := []string{"/create", "/tn", taskName, "/xml", filename}
+
+	if len(password) > 0 && len(username) == 0 {
+		return "", errors.New("username is required when specifying a password")
+	}
 	if len(password) > 0 {
 		params = append(params, "/ru", username, "/rp", password)
 	}
+
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := exec.Command(binaryPath, params...)
 	cmd.Stdout = stdout

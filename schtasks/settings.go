@@ -1,3 +1,5 @@
+//go:build windows
+
 package schtasks
 
 import "github.com/rickb777/period"
@@ -39,10 +41,10 @@ const (
 	TaskCompatibilityAT  Compatibility = iota // The task is compatible with the AT command.
 	TaskCompatibilityV1                       // The task is compatible with Task Scheduler 1.0.
 	TaskCompatibilityV2                       // The task is compatible with Task Scheduler 2.0.
-	TaskCompatibilityV21                      // The task is compatible with Task Scheduler 2.0.
-	TaskCompatibilityV22                      // The task is compatible with Task Scheduler 2.0.
-	TaskCompatibilityV23                      // The task is compatible with Task Scheduler 2.0.
-	TaskCompatibilityV24                      // The task is compatible with Task Scheduler 2.0.
+	TaskCompatibilityV21                      // The task is compatible with Task Scheduler 2.1.
+	TaskCompatibilityV22                      // The task is compatible with Task Scheduler 2.2.
+	TaskCompatibilityV23                      // The task is compatible with Task Scheduler 2.3.
+	TaskCompatibilityV24                      // The task is compatible with Task Scheduler 2.4.
 )
 
 // InstancesPolicy specifies what the Task Scheduler service will do when

@@ -1,3 +1,5 @@
+//go:build windows
+
 package schtasks
 
 import (
@@ -26,14 +28,6 @@ func TestTriggerCreationFromXML(t *testing.T) {
 	fixedDay := "Monday"
 	if time.Now().Weekday() == time.Monday {
 		fixedDay = "Tuesday"
-	}
-	everyDay := ""
-	for day := 1; day <= 31; day++ {
-		everyDay += `<Day>` + strconv.Itoa(day) + `</Day>\s*`
-	}
-	everyMonth := ""
-	for month := 1; month <= 12; month++ {
-		everyMonth += `<` + time.Month(month).String() + `></` + time.Month(month).String() + `>\s*`
 	}
 
 	fixtures := []struct {
@@ -134,13 +128,13 @@ func TestTriggerCreationFromXML(t *testing.T) {
 		{
 			"once monthly",
 			[]string{"*-01-* 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + everyDay + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + generateEveryDayString() + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
 			"every hour in january",
 			[]string{"*-01-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + everyDay + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + generateEveryDayString() + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24,
 		},
 		// monthly with weekdays
@@ -160,20 +154,20 @@ func TestTriggerCreationFromXML(t *testing.T) {
 		{
 			"one day per month",
 			[]string{"*-*-0" + dayOfTheMonth + " 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			1,
 		},
 		{
 			"every hour on the 1st of each month",
 			[]string{"*-*-0" + dayOfTheMonth + " *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24, // 1 per hour
 		},
 		// // more than once per month
 		{
 			"twice in one day per month",
 			[]string{"*-*-0" + dayOfTheMonth + " 03..04:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + everyMonth + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			2,
 		},
 	}
@@ -213,4 +207,20 @@ func TestTriggerCreationFromXML(t *testing.T) {
 			}
 		})
 	}
+}
+
+func generateEveryDayString() string {
+	var everyDay string
+	for day := 1; day <= 31; day++ {
+		everyDay += `<Day>` + strconv.Itoa(day) + `</Day>\s*`
+	}
+	return everyDay
+}
+
+func generateEveryMonthString() string {
+	var everyMonth string
+	for month := 1; month <= 12; month++ {
+		everyMonth += `<` + time.Month(month).String() + `></` + time.Month(month).String() + `>\s*`
+	}
+	return everyMonth
 }

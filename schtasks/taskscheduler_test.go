@@ -1,3 +1,5 @@
+//go:build windows
+
 package schtasks
 
 import (
@@ -16,12 +18,8 @@ import (
 )
 
 func TestStatusUnknownTask(t *testing.T) {
-	err := Init()
-	assert.NoError(t, err)
-
-	err = Status("test", "test")
+	err := Status("test", "test")
 	assert.Error(t, err)
-	t.Log(err)
 }
 
 func TestRegisteredTasks(t *testing.T) {
@@ -51,11 +49,9 @@ func TestRegisteredTasks(t *testing.T) {
 			JobDescription:   "test 3",
 		},
 	}
-	err := Init()
-	assert.NoError(t, err)
 
 	event := calendar.NewEvent()
-	err = event.Parse("2020-01-02 03:04") // will never get triggered
+	err := event.Parse("2020-01-02 03:04") // will never get triggered
 	require.NoError(t, err)
 
 	for _, task := range tasks {

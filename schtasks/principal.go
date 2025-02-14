@@ -1,3 +1,5 @@
+//go:build windows
+
 package schtasks
 
 const serviceAccount = "S-1-5-18"

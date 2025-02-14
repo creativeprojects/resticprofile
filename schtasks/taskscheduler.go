@@ -1,3 +1,5 @@
+//go:build windows
+
 // Schedule types on Windows:
 // ==========================
 // 1. one time:
@@ -21,7 +23,6 @@ package schtasks
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"slices"
 	"strings"
 	"text/tabwriter"
@@ -30,40 +31,6 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/term"
 )
-
-const (
-	tasksPath = `\resticprofile backup\`
-	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format
-	// O:owner_sid
-	// G:group_sid
-	// D:dacl_flags(string_ace1)(string_ace2)... (string_acen)  <---
-	// S:sacl_flags(string_ace1)(string_ace2)... (string_acen)
-	// With flag:
-	// "AI"	SDDL_AUTO_INHERITED
-	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/ace-strings
-	// - first field:
-	// "A" 	SDDL_ACCESS_ALLOWED
-	// - third field
-	// "FA" 	SDDL_FILE_ALL 	FILE_GENERIC_ALL
-	// "FR" 	SDDL_FILE_READ 	FILE_GENERIC_READ
-	// "FW" 	SDDL_FILE_WRITE 	FILE_GENERIC_WRITE
-	// "FX" 	SDDL_FILE_EXECUTE 	FILE_GENERIC_EXECUTE
-	// From: https://learn.microsoft.com/en-us/windows/win32/secauthz/sid-strings
-	// "AU" 	SDDL_AUTHENTICATED_USERS
-	// "BA" 	SDDL_BUILTIN_ADMINISTRATORS
-	// "LS" 	SDDL_LOCAL_SERVICE
-	// "SY" 	SDDL_LOCAL_SYSTEM
-	securityDescriptor = "D:AI(A;;FA;;;BA)(A;;FA;;;SY)(A;;FRFX;;;LS)(A;;FR;;;AU)"
-)
-
-// Init only checks the schtask.exe tool is available
-func Init() error {
-	found, err := exec.LookPath(binaryPath)
-	if err != nil || found == "" {
-		return fmt.Errorf("it doesn't look like %s is installed on your system", binaryPath)
-	}
-	return nil
-}
 
 // Create or update a task (if the name already exists in the Task Scheduler)
 func Create(config *Config, schedules []*calendar.Event, permission Permission) error {
@@ -78,6 +45,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
 	if slices.Contains(list, taskPath) {
+		clog.Debugf("task %q already exists: deleting before creating", taskPath)
 		_, err = deleteTask(taskPath)
 		if err != nil {
 			return fmt.Errorf("cannot delete existing task for replacing it: %w", err)
@@ -171,7 +139,7 @@ func Registered() ([]Config, error) {
 		if len(info) < 2 {
 			continue
 		}
-		taskName := strings.TrimPrefix(taskPath, tasksPath)
+		taskName := strings.TrimPrefix(taskPath, tasksPathPrefix)
 		parts := strings.Split(taskName, " ")
 		if len(parts) < 2 {
 			clog.Warningf("cannot parse task path: %s", taskPath)
@@ -195,7 +163,7 @@ func Registered() ([]Config, error) {
 }
 
 func getTaskPath(profileName, commandName string) string {
-	return fmt.Sprintf("%s%s %s", tasksPath, profileName, commandName)
+	return fmt.Sprintf("%s%s %s", tasksPathPrefix, profileName, commandName)
 }
 
 func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {

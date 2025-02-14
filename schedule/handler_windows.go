@@ -16,9 +16,9 @@ type HandlerWindows struct {
 	config SchedulerConfig
 }
 
-// Init a connection to the task scheduler
+// Init only checks the schtask.exe tool is available
 func (h *HandlerWindows) Init() error {
-	return schtasks.Init()
+	return lookupBinary("schtasks", "schtasks.exe")
 }
 
 // Close does nothing with this implementation

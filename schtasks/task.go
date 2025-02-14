@@ -1,3 +1,5 @@
+//go:build windows
+
 package schtasks
 
 import (
@@ -9,15 +11,6 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/rickb777/period"
-)
-
-const (
-	dateFormat        = "2006-01-02T15:04:05-07:00"
-	maxTriggers       = 60
-	author            = "Author"
-	taskSchema        = "http://schemas.microsoft.com/windows/2004/02/mit/task"
-	taskSchemaVersion = "1.4"
-	defaultPriority   = 8
 )
 
 type RegistrationInfo struct {
@@ -161,7 +154,7 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 				DaysInterval: 1,
 			},
 			Repetition: &RepetitionPattern{
-				Duration: getRepetionDuration(start, recurrences).Normalise(false),
+				Duration: getRepetitionDuration(start, recurrences).Normalise(false),
 				Interval: interval.Normalise(false),
 			},
 		})
@@ -215,7 +208,7 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
 			},
 			Repetition: &RepetitionPattern{
-				Duration: getRepetionDuration(start, recurrences).Normalise(false),
+				Duration: getRepetitionDuration(start, recurrences).Normalise(false),
 				Interval: interval.Normalise(false),
 			},
 		})
@@ -304,7 +297,7 @@ func compileDifferences(recurrences []time.Time) ([]time.Duration, []time.Durati
 	return differences, compactDifferences
 }
 
-func getRepetionDuration(start time.Time, recurrences []time.Time) period.Period {
+func getRepetitionDuration(start time.Time, recurrences []time.Time) period.Period {
 	last := recurrences[len(recurrences)-1]
 	duration := period.Between(start, last)
 	// convert 1439 minutes to 23 hours
