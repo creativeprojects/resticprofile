@@ -1,10 +1,11 @@
-//go:build windows
+//go:build windows && taskmaster
 
 package schtasks
 
 import (
 	"bytes"
 	"math"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -365,14 +366,17 @@ func TestCreationOfTasks(t *testing.T) {
 			}
 			// user logged in doesn't need a password
 			err = createUserLoggedOnTask(scheduleConfig, schedules)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer func() {
 				_ = Delete(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			}()
 
 			taskName := getTaskPath(scheduleConfig.ProfileName, scheduleConfig.CommandName)
 			buffer, err := exportTask(taskName)
-			assert.NoError(t, err)
+			require.NoError(t, err)
+
+			err = os.WriteFile(strings.ReplaceAll(fixture.description, " ", "_")+".xml", []byte(buffer), 0644)
+			require.NoError(t, err)
 
 			pattern := regexp.MustCompile(fixture.expected)
 			match := pattern.FindAllString(buffer, -1)
@@ -387,7 +391,7 @@ func TestCreationOfTasks(t *testing.T) {
 
 func exportTask(taskName string) (string, error) {
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("schtasks", "/query", "/xml", "/tn", taskName)
+	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
 	err := cmd.Run()
 	return buffer.String(), err

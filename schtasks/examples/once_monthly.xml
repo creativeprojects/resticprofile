@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2025-02-06T22:46:30</Date>
+    <Author>resticprofile</Author>
+    <Description>once monthly</Description>
+    <URI>\resticprofile backup\test 14</URI>
+  </RegistrationInfo>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-21-3622340250-3004114779-3108145013-1002</UserId>
+      <LogonType>InteractiveToken</LogonType>
+    </Principal>
+  </Principals>
+  <Settings>
+    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <IdleSettings>
+      <Duration>PT10M</Duration>
+      <WaitTimeout>PT1H</WaitTimeout>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+  </Settings>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2026-01-01T03:04:00</StartBoundary>
+      <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+      <ScheduleByMonth>
+        <Months>
+          <January />
+        </Months>
+        <DaysOfMonth>
+          <Day>1</Day>
+          <Day>2</Day>
+          <Day>3</Day>
+          <Day>4</Day>
+          <Day>5</Day>
+          <Day>6</Day>
+          <Day>7</Day>
+          <Day>8</Day>
+          <Day>9</Day>
+          <Day>10</Day>
+          <Day>11</Day>
+          <Day>12</Day>
+          <Day>13</Day>
+          <Day>14</Day>
+          <Day>15</Day>
+          <Day>16</Day>
+          <Day>17</Day>
+          <Day>18</Day>
+          <Day>19</Day>
+          <Day>20</Day>
+          <Day>21</Day>
+          <Day>22</Day>
+          <Day>23</Day>
+          <Day>24</Day>
+          <Day>25</Day>
+          <Day>26</Day>
+          <Day>27</Day>
+          <Day>28</Day>
+          <Day>29</Day>
+          <Day>30</Day>
+          <Day>31</Day>
+        </DaysOfMonth>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+  </Triggers>
+  <Actions Context="Author">
+    <Exec>
+      <Command>echo</Command>
+      <Arguments>hello there</Arguments>
+      <WorkingDirectory>C:\</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
