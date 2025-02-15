@@ -39,6 +39,7 @@ func TestMain(m *testing.M) {
 		cmd := exec.Command("go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
 		if err := cmd.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
+			return 1
 		}
 
 		return m.Run()
