@@ -95,9 +95,9 @@ func (p *Metrics) Push(url, format, jobName string) error {
 	var expFmt expfmt.Format
 
 	if format == "protobuf" {
-		expFmt = expfmt.FmtProtoDelim
+		expFmt = expfmt.NewFormat(expfmt.TypeProtoDelim)
 	} else {
-		expFmt = expfmt.FmtText
+		expFmt = expfmt.NewFormat(expfmt.TypeTextPlain)
 	}
 
 	return push.New(url, jobName).
