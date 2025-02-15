@@ -26,7 +26,7 @@ var (
 func TestMain(m *testing.M) {
 	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
-		tempDir, err := os.MkdirTemp("", "resticprofile")
+		tempDir, err := os.MkdirTemp("", "resticprofile-shell")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
 			return 1

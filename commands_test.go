@@ -225,7 +225,7 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--config-reference", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--config-reference"})))
+		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--config-reference", "--to", t.TempDir()})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "generating reference.gomd")
 		assert.Contains(t, ref, "generating profile section")
