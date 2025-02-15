@@ -308,7 +308,7 @@ func TestRunEchoProfile(t *testing.T) {
 func TestPostProfileAfterFail(t *testing.T) {
 	t.Parallel()
 
-	testFile := "TestPostProfileAfterFail.txt"
+	testFile := filepath.Join(t.TempDir(), "TestPostProfileAfterFail.txt")
 	_ = os.Remove(testFile)
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfter = []string{"echo failed > " + testFile}
@@ -327,7 +327,7 @@ func TestPostProfileAfterFail(t *testing.T) {
 func TestPostFailProfile(t *testing.T) {
 	t.Parallel()
 
-	testFile := "TestPostFailProfile.txt"
+	testFile := filepath.Join(t.TempDir(), "TestPostFailProfile.txt")
 	_ = os.Remove(testFile)
 	profile := config.NewProfile(nil, "name")
 	profile.RunAfterFail = []string{"echo failed > " + testFile}
@@ -346,7 +346,7 @@ func TestPostFailProfile(t *testing.T) {
 func TestFinallyProfile(t *testing.T) {
 	t.Parallel()
 
-	testFile := "TestFinallyProfile.txt"
+	testFile := filepath.Join(t.TempDir(), "TestFinallyProfile.txt")
 	defer os.Remove(testFile)
 
 	var profile *config.Profile

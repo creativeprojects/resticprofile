@@ -306,7 +306,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 }
 
 func TestUseCrontabBinary(t *testing.T) {
-	binary := platform.Executable("./crontab")
+	binary := filepath.Join(t.TempDir(), platform.Executable("crontab"))
 	defer func() { _ = os.Remove(binary) }()
 
 	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", binary, "./mock")

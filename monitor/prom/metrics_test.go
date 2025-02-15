@@ -1,6 +1,7 @@
 package prom
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ func TestSaveSingleBackup(t *testing.T) {
 		BytesAdded: 100,
 		BytesTotal: 1000,
 	})
-	err := p.SaveTo("test_no_group.prom")
+	err := p.SaveTo(filepath.Join(t.TempDir(), "test_no_group.prom"))
 	require.NoError(t, err)
 }
 
@@ -26,7 +27,7 @@ func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
 		BytesAdded: 100,
 		BytesTotal: 1000,
 	})
-	err := p.SaveTo("test_add_label.prom")
+	err := p.SaveTo(filepath.Join(t.TempDir(), "test_add_label.prom"))
 	require.NoError(t, err)
 }
 
@@ -37,6 +38,6 @@ func TestSaveBackupGroup(t *testing.T) {
 		BytesAdded: 100,
 		BytesTotal: 1000,
 	})
-	err := p.SaveTo("test_group.prom")
+	err := p.SaveTo(filepath.Join(t.TempDir(), "test_group.prom"))
 	require.NoError(t, err)
 }

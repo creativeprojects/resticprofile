@@ -20,19 +20,30 @@ import (
 )
 
 var (
-	helperBinary = "./locktest"
+	helperBinary string
 )
 
 func TestMain(m *testing.M) {
-	if platform.IsWindows() {
-		helperBinary = `.\locktest.exe`
-	}
-	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
-	if err := cmd.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
-	}
-	exitCode := m.Run()
-	_ = os.Remove(helperBinary)
+	// using an anonymous function to handle defer statements before os.Exit()
+	exitCode := func() int {
+		tempDir, err := os.MkdirTemp("", "resticprofile-lock")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
+			return 1
+		}
+		fmt.Printf("using temporary dir: %q\n", tempDir)
+		defer os.RemoveAll(tempDir)
+
+		helperBinary = filepath.Join(tempDir, platform.Executable("locktest"))
+
+		cmd := exec.Command("go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
+		if err := cmd.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
+			return 1
+		}
+
+		return m.Run()
+	}()
 	os.Exit(exitCode)
 }
 
