@@ -367,7 +367,6 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 	assert.Contains(t, string(output), "TestRunShellEchoWithSignalling")
 }
 
-// Flaky test on github linux runner but can't reproduce locally
 func TestInterruptShellCommand(t *testing.T) {
 	t.Parallel()
 

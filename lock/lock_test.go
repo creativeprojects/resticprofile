@@ -229,7 +229,7 @@ func TestForceLockWithRunningPID(t *testing.T) {
 	assert.True(t, lock.TryAcquire())
 	assert.True(t, lock.HasLocked())
 
-	// user the lock helper binary (we only need to wait for some time, we don't need the locking part)
+	// use the lock helper binary (we only need to wait for some time, we don't need the locking part)
 	cmd := shell.NewCommand(helperBinary, []string{"-wait", "100", "-lock", filepath.Join(t.TempDir(), t.Name())})
 	cmd.SetPID = func(pid int32) {
 		lock.SetPID(pid)
@@ -258,8 +258,8 @@ func TestLockWithNoInterruption(t *testing.T) {
 	cmd.Stderr = buffer
 
 	err = cmd.Run()
-	assert.NoError(t, err)
-	assert.Equal(t, "lock acquired\ntask finished\nlock released\n", buffer.String())
+	require.NoError(t, err)
+	assert.Equal(t, "acquiring lock\nlock acquired\ntask finished\nlock released\n", buffer.String())
 }
 
 func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
@@ -268,6 +268,7 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
 	}
+	start := time.Now()
 	lockfile := getTempfile(t)
 
 	var err error
@@ -284,8 +285,10 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	require.NoError(t, err)
 
 	err = cmd.Wait()
+	t.Log(os.Args)
 	assert.NoError(t, err)
-	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
+	assert.Equal(t, "acquiring lock\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
+	assert.LessOrEqual(t, time.Since(start), 2000*time.Millisecond)
 }
 
 func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
@@ -294,6 +297,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
 	}
+	start := time.Now()
 	lockfile := getTempfile(t)
 
 	var err error
@@ -310,6 +314,8 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	require.NoError(t, err)
 
 	err = cmd.Wait()
+	t.Log(os.Args)
 	assert.NoError(t, err)
-	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
+	assert.Equal(t, "acquiring lock\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
+	assert.LessOrEqual(t, time.Since(start), 2000*time.Millisecond)
 }
