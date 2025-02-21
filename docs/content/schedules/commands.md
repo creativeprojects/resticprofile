@@ -31,13 +31,13 @@ Please note, schedules are always independent of each other no matter whether th
 
 Install all the schedules defined on the selected profile or profiles.
 
-Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **dont' want** to start (and enable) it now, pass the `--no-start` flag to the command line.
+Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **don't want** to start (and enable) it now, pass the `--no-start` flag to the command line.
 
 Also if you use the `--all` flag to schedule all your profiles at once, make sure you use only the `user` mode or `system` mode. A combination of both would not schedule the tasks properly:
 - if the user is not privileged, only the `user` tasks will be scheduled
-- if the user **is** privileged, **all schedule will end-up as a `system` schedule**
+- if the user **is** privileged, **all schedules will end up as a `system` schedule**
 {{% notice style=tip %}}
-Before version `v0.30.0`, resticprofile **did not keep a state** of the schedule and unschedule commands. If you need to make many changes in your profiles (like moving, renaming, deleting etc.) **it was recommended to unschedule everything using the `--all` flag before changing your profiles.**. This is no longer the case since version `v0.30.0`.
+Before version `v0.30.0` resticprofile **did not keep a state** of the schedule and unschedule commands. If you need to make many changes in your profiles (like moving, renaming, deleting etc.) **it was recommended to unschedule everything using the `--all` flag before changing your profiles.**. This is no longer the case since version `v0.30.0`.
 {{% /notice %}}
 
 ### unschedule command

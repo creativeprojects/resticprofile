@@ -9,15 +9,15 @@ Windows 10 is the minimum version supported for scheduling.
 
 ## Elevated mode
 
-I you have any schedule profile with the permission set to `system`, resticprofile will need to run in elevated permission mode to be able to setup the schedules.
+If you have any schedule profile with the permission set to `system`, resticprofile will need to run in elevated permission mode to be able to set up the schedules.
 
-In general you shouldn't worry about it: resticprofile will restart itself in elevated mode. You'll see the popup window asking if it's ok to give resticprofile elevated privileges.
+In general, you shouldn't worry about it: resticprofile will restart itself in elevated mode. You'll see the popup window asking to give resticprofile elevated privileges.
 
 ### resticprofile is blocked from restarting in elevated mode
 
-![Unwanted software my ass]({{< absolute "schedules/task_scheduler/unwanted_my_ass.png" nohtml >}})
+![Unwanted software]({{< absolute "schedules/task_scheduler/unwanted_my_ass.png" nohtml >}})
 
-There's nothing I can do on my side to prevent this, but to buy a $300 certificate. Developer certificates for Windows are way more expensive than certificates for macOS. Sorry I'm not paying to distribute open source software.
+There's nothing I can do on my side to prevent this, but to buy a $300 certificate. Developer certificates for Windows are way more expensive than certificates for macOS. Sorry, I'm not paying to distribute open source software.
 
 #### Solution
 
