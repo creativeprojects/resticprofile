@@ -1,6 +1,5 @@
 ---
 title: "No root backup on Linux"
-date: 2022-05-16T20:26:09+01:00
 weight: 25
 hidden: true # for this to work we might need https://pkg.go.dev/kernel.org/pub/linux/libs/security/libcap/cap
 ---

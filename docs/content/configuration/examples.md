@@ -1,6 +1,5 @@
 ---
 title: "Examples"
-date: 2022-04-24T09:44:47+01:00
 weight: 5
 ---
 

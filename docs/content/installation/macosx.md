@@ -1,6 +1,5 @@
 ---
 title: "mac OS X"
-date: 2022-04-23T23:22:41+01:00
 weight: 11
 ---
 

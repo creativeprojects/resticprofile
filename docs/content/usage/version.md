@@ -1,6 +1,5 @@
 ---
 title: "Version"
-date: 2022-05-16T20:21:01+01:00
 weight: 5
 ---
 

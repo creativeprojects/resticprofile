@@ -1,6 +1,5 @@
 ---
 title: "Warnings"
-date: 2022-05-16T20:24:23+01:00
 weight: 30
 ---
 

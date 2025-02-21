@@ -1,6 +1,5 @@
 ---
 title: "Shell Completion"
-date: 2022-04-23T23:55:10+01:00
 weight: 100
 ---
 

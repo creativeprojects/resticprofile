@@ -1,6 +1,5 @@
 ---
 title: "Memory"
-date: 2022-05-16T20:20:55+01:00
 weight: 15
 ---
 

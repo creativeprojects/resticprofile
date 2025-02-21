@@ -1,6 +1,5 @@
 ---
 title: "Inheritance"
-date: 2022-05-02T20:00:00+02:00
 weight: 16
 ---
 

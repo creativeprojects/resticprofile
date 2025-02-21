@@ -1,6 +1,6 @@
 ---
 title: "Pre-built binaries"
-# tags: ["v0.26.0"]
+tags: ["v0.26.0"]
 weight: 5
 ---
 

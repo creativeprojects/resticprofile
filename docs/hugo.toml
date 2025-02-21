@@ -21,10 +21,10 @@ publishdir = "../public/"
   externalLinkTarget = "_blank"
   ordersectionsby = "weight"
 
-# [[menu.shortcuts]]
-#   name = "<i class='fas fa-tags'></i> Tags"
-#   url = "/tags"
-#   weight = 10
+[[menu.shortcuts]]
+  name = "<i class='fas fa-tags'></i> Tags"
+  url = "/tags"
+  weight = 10
 
 [[menu.shortcuts]]
   name = "<i class='fab fa-fw fa-github'></i> GitHub repo"

@@ -1,6 +1,5 @@
 ---
 title: "Getting Started"
-date: 2023-03-25T14:44:47+00:00
 weight: 2
 ---
 
