@@ -1,6 +1,5 @@
 ---
 title: "Source"
-date: 2022-04-23T23:50:43+01:00
 weight: 16
 ---
 

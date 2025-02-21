@@ -1,6 +1,5 @@
 ---
 title: "Ansible"
-date: 2022-04-23T23:47:41+01:00
 weight: 15
 ---
 

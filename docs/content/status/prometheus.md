@@ -1,6 +1,5 @@
 ---
 title: "Prometheus"
-date: 2022-05-16T20:19:00+01:00
 weight: 5
 ---
 

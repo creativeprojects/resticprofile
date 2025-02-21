@@ -1,7 +1,7 @@
 ---
 title: "Schedule Commands"
 weight: 20
-# tags: ["v0.25.0", "v0.29.0"]
+tags: ["v0.25.0", "v0.29.0", "v0.30.0"]
 ---
 
 
@@ -31,20 +31,25 @@ Please note, schedules are always independent of each other no matter whether th
 
 Install all the schedules defined on the selected profile or profiles.
 
-Please note on systemd, we need to `start` the timer once to enable it. Otherwise it will only be enabled on the next reboot. If you **dont' want** to start (and enable) it now, pass the `--no-start` flag to the command line.
+Please note on systemd, we need to `start` the timer once to enable it. Otherwise, it will only be enabled on the next reboot. If you **don't want** to start (and enable) it now, pass the `--no-start` flag to the command line.
 
-Also if you use the `--all` flag to schedule all your profiles at once, make sure you use only the `user` mode or `system` mode. A combination of both would not schedule the tasks properly:
+Also, if you use the `--all` flag to schedule all your profiles at once, make sure you use only the `user` mode or `system` mode. A combination of both would not schedule the tasks properly:
 - if the user is not privileged, only the `user` tasks will be scheduled
-- if the user **is** privileged, **all schedule will end-up as a `system` schedule**
+- if the user **is** privileged, **all schedules will end up as a `system` schedule**
 {{% notice style=tip %}}
-resticprofile **does not keep a state** of the schedule and unschedule commands. If you need to make many changes in your profiles (like moving, renaming, deleting etc.) **it's recommended to unschedule everything using the `--all` flag before changing your profiles.**
+Before version `v0.30.0` resticprofile **did not keep a state** of the schedule and unschedule commands. If you need to make many changes in your profiles (like moving, renaming, deleting etc.) **it was recommended to unschedule everything using the `--all` flag before changing your profiles.**. This is no longer the case since version `v0.30.0`
 {{% /notice %}}
 
 ### unschedule command
 
-Remove all the schedules defined on the selected profile or profiles.
+Remove all the schedules defined on the selected profile, or all profiles via the `--all` flag.
 
-Please note, using the `--all` flag won't remove schedules on deleted (or renamed) profiles. **resticprofile does not keep a state of the schedules.**
+Before version `v0.30.0`, using the `--all` flag wasn't removing schedules on deleted (or renamed) profiles.
+
+> [!NOTE]
+> The behavior of the `unschedule` command has changed in version `v0.30.0`:
+>
+> it now deletes **any schedule associated with the profile name, or any profile of the configuration file with `--all`** (even profiles deleted from the configuration file)
 
 ### status command
 
@@ -65,5 +70,5 @@ resticprofile run-schedule backup@profile
 ```
 
 {{% notice info %}}
-You cannot specify the profile name using the `--name` flag.
+For the `run-schedule` command, you cannot specify the profile name using the `--name` flag.
 {{% /notice %}}

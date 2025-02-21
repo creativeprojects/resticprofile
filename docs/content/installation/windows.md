@@ -1,6 +1,5 @@
 ---
 title: "Windows"
-date: 2022-04-23T23:24:38+01:00
 weight: 12
 ---
 

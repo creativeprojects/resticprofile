@@ -1,7 +1,6 @@
 ---
 title: "JSON schema"
-date: 2022-04-24T09:44:47+01:00
-# tags: ["v0.21.0"]
+tags: ["v0.21.0"]
 weight: 55
 ---
 

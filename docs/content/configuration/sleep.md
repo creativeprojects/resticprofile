@@ -1,6 +1,6 @@
 ---
 title: "Preventing system sleep"
-# tags: ["v0.19.0"]
+tags: ["v0.19.0"]
 weight: 40
 ---
 
