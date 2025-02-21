@@ -17,7 +17,7 @@ In general, you shouldn't worry about it: resticprofile will restart itself in e
 
 ![Unwanted software]({{< absolute "schedules/task_scheduler/unwanted_my_ass.png" nohtml >}})
 
-There's nothing I can do on my side to prevent this, but to buy a $300 certificate. Developer certificates for Windows are way more expensive than certificates for macOS. Sorry, I'm not paying to distribute open source software.
+There's nothing I can do on my side to prevent this, but to buy a $300 certificate. Developer certificates for Windows are way more expensive than certificates for macOS. If you know any other way for free open-source software, please let me know.
 
 #### Solution
 
