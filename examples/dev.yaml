@@ -345,3 +345,15 @@ nopwd:
     initialize: true
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     insecure-no-password: true
+
+with-env:
+    inherit: default
+    env-file: .env
+    backup:
+        send-before:
+            method: POST
+            url: https://healthcheck.example.org/ping/$VAR1/${PROFILE_NAME}/start
+        send-after:
+            body-template: send-body-template.json
+            method: POST
+            url: https://healthcheck.example.org/ping/$VAR2/${PROFILE_NAME}/end
