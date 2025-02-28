@@ -40,23 +40,6 @@ publishdir = "../public/"
   main = false
   type = 'menu'
 
-[menu]
-  [[menu.version]]
-    name = 'A Menu Title for the Whole Menu'
-
-# make a list of versions here, or use this trick with one page per version: https://dannorth.net/hugo-redirects/#the-solution
-  [[menu.version]]
-    name = 'A Menu Entry Title for Child 1'
-    parent = 'Parent'
-    url = 'https://example.com/1'
-    weight = 1
-
-  [[menu.version]]
-    name = 'A Menu Entry Title for Child 2'
-    parent = 'Parent'
-    url = 'https://example.com/2'
-    weight = 2
-
 [[menu.shortcuts]]
   name = "<i class='fas fa-tags'></i> Tags"
   url = "/tags"
