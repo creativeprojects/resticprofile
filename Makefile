@@ -292,7 +292,7 @@ syslog-ng:
 
 checkdoc:
 	@echo "[*] $@"
-	$(GOCMD) run ./config/checkdoc -r docs/content
+	$(GOCMD) run ./config/checkdoc -r docs/content -i changelog.md
 
 .PHONY: checklinks
 checklinks:
