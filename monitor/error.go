@@ -17,7 +17,7 @@ func IsWarning(err error) bool {
 	}
 	exitErr := &exec.ExitError{}
 	if errors.As(err, &exitErr) {
-		return exitErr.ExitCode() == constants.ExitCodeWarning
+		return exitErr.ExitCode() == constants.ResticExitCodeWarning
 	}
 	// so far, internal warning is only used in unit tests
 	warn := &InternalWarningError{}

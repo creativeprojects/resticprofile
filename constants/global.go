@@ -42,8 +42,14 @@ const (
 	ScheduleLockModeOptionIgnore = "ignore"
 )
 
+// Exit codes from restic
 const (
-	ExitCodeSuccess = 0
-	ExitCodeError   = 1
-	ExitCodeWarning = 3
+	ResticExitCodeSuccess            = 0
+	ResticExitCodeError              = 1
+	ResticExitCodeGoRuntimeError     = 2
+	ResticExitCodeWarning            = 3
+	ResticExitCodeNoRepository       = 10
+	ResticExitCodeFailLockRepository = 11
+	ResticExitCodeWrongPassword      = 12
+	ResticExitCodeInterrupted        = 130
 )
