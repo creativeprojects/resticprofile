@@ -22,7 +22,7 @@ jobs:
           go-version: ~1.23
 
       - name: Check configuration snippets in documentation
-        run: go run ./config/checkdoc -r docs/content
+        run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
         
       - name: Build JSON schema & config reference
