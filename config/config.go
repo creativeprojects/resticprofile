@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -20,6 +19,7 @@ import (
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/maps"
 )
@@ -74,7 +74,7 @@ func formatFromExtension(configFile string) string {
 
 // LoadFile loads configuration from file
 // Leave format blank for auto-detection from the file extension
-func LoadFile(configFile, format string) (config *Config, err error) {
+func LoadFile(fs afero.Fs, configFile, format string) (config *Config, err error) {
 	if format == "" {
 		format = formatFromExtension(configFile)
 	}
@@ -84,7 +84,7 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 
 	readAndAdd := func(configFile string, replace bool) error {
 		clog.Debugf("loading: %s", configFile)
-		file, fileErr := os.Open(configFile)
+		file, fileErr := fs.Open(configFile)
 		if fileErr != nil {
 			return fmt.Errorf("cannot open configuration file for reading: %w", fileErr)
 		}
@@ -101,7 +101,7 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 
 	// Load includes (if any).
 	var includes []string
-	if includes, err = filesearch.FindConfigurationIncludes(configFile, config.getIncludes()); err == nil {
+	if includes, err = filesearch.FindConfigurationIncludes(fs, configFile, config.getIncludes()); err == nil {
 		for _, include := range includes {
 			format := formatFromExtension(include)
 
@@ -715,6 +715,22 @@ func (c *Config) getProfilePath(key string) string {
 		return key
 	}
 	return c.flatKey(constants.SectionConfigurationProfiles, key)
+}
+
+// HasRemote returns true if the remote exists in the configuration
+func (c *Config) HasRemote(remoteName string) bool {
+	return c.IsSet(c.flatKey(constants.SectionConfigurationRemotes, remoteName))
+}
+
+func (c *Config) GetRemote(remoteName string) (*Remote, error) {
+	// we don't need to check the file version: the remotes can be in a separate configuration file
+
+	remote := NewRemote(c, remoteName)
+	err := c.unmarshalKey(c.flatKey(constants.SectionConfigurationRemotes, remoteName), remote)
+
+	rootPath := filepath.Dir(c.GetConfigFile())
+	remote.SetRootPath(rootPath)
+	return remote, err
 }
 
 // unmarshalConfig returns the decoder config options depending on the configuration version and format
