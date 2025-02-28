@@ -509,10 +509,10 @@ New maintenance version, with bug fixes:
 
 This release adds a few new features:
 
-- support for [splitting configuration into multiple files](https://github.com/creativeprojects/resticprofile/tree/v0.16.0#includes)
-- support for `run-finally` that [runs shell commands every time after restic](https://github.com/creativeprojects/resticprofile/tree/v0.16.0#run-commands-before-after-success-or-after-failure)
-- ability to [define your own systemd unit and timer files](https://github.com/creativeprojects/resticprofile/tree/v0.16.0#how-to-change-the-default-systemd-unit-and-timer-file-using-a-template) (from go templates)
-- support for the restic `copy` [command](https://github.com/creativeprojects/resticprofile/tree/v0.16.0#special-case-for-the-copy-command-section)
+- support for splitting configuration into multiple files
+- support for `run-finally` that runs shell commands every time after restic
+- ability to define your own systemd unit and timer files (from go templates)
+- support for the restic `copy` command
 - fix for some cosmetic issues with `crond` scheduler
 
 ## Changelog
