@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/creativeprojects/clog"
 )
 
 // commandContext is the context for running a command.
@@ -23,6 +25,7 @@ type ownCommand struct {
 	hide              bool                                  // don't display the command in help and completion
 	hideInCompletion  bool                                  // don't display the command in completion
 	noProfile         bool                                  // true if the command doesn't need a profile name
+	experimental      bool                                  // display a warning when using this command
 	flags             map[string]string                     // own command flags should be simple enough to be handled manually for now
 }
 
@@ -60,6 +63,9 @@ func (o *OwnCommands) Run(ctx *Context) error {
 	command := o.find(ctx.request.command)
 	if command == nil {
 		return fmt.Errorf("command not found: %v", ctx.request.command)
+	}
+	if command.experimental {
+		clog.Warningf("%s: this command is experimental and its behaviour may change in the future", ctx.request.command)
 	}
 	return command.action(os.Stdout, commandContext{
 		ownCommands: o,
