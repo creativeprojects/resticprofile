@@ -28,7 +28,7 @@ jobs:
           go-version: ~1.23
 
       - name: Check configuration snippets in documentation
-        run: go run ./config/checkdoc -r docs/content
+        run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
         
       - name: Build JSON schema & config reference
@@ -55,7 +55,7 @@ jobs:
         with:
           url: "https://${{ env.BRANCH_NAME }}.resticprofile.pages.dev/"
           pages_path: ./public/
-          cmd_params: '--exclude="(linux.die.net|stackoverflow.com)" --buffer-size=8192 --max-connections=10 --color=always --skip-tls-verification --header="User-Agent:curl/7.54.0" --timeout=20'
+          cmd_params: '--exclude="(linux.die.net|stackoverflow.com|scoop.sh)" --buffer-size=8192 --max-connections=10 --color=always --skip-tls-verification --header="User-Agent:curl/7.54.0" --timeout=20'
 
       - name: Publish to pages.dev
         continue-on-error: true # secrets are not set for PRs from forks

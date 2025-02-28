@@ -1,0 +1,9 @@
+<hr />
+<h5>Other versions of this page</h5>
+<ul>
+{{ range .Params }}
+  <li>
+    <a href="{{ $.Site.BaseURL }}{{ . }}{{ $.Page.RelPermalink -}}" class="highlight">{{ . }}</a>
+  </li>
+{{ end }}
+</ul>

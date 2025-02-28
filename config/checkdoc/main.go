@@ -39,9 +39,11 @@ func main() {
 
 	var root string
 	var verbose bool
+	var ignoreFiles []string
 	pflag.StringVarP(&root, "root", "r", "", "root directory where to search for documentation files (*.md)")
 	pflag.StringVarP(&tempDir, "temp-dir", "t", "", "temporary directory to store extracted configuration files")
 	pflag.BoolVarP(&verbose, "verbose", "v", false, "display more information")
+	pflag.StringSliceVarP(&ignoreFiles, "ignore", "i", nil, "ignore files")
 	pflag.Parse()
 
 	level := clog.LevelInfo
@@ -68,12 +70,18 @@ func main() {
 		if d.IsDir() {
 			return nil
 		}
+		simplePath := strings.TrimPrefix(path, wd)
+		for _, ignore := range ignoreFiles {
+			if strings.Contains(simplePath, ignore) {
+				clog.Infof("* ignoring file %s", simplePath)
+				return nil
+			}
+		}
 		base := filepath.Base(path)
 		ext := filepath.Ext(base)
 		if ext != ".md" {
 			return nil
 		}
-		simplePath := strings.TrimPrefix(path, wd)
 		clog.Infof("* file %s", simplePath)
 		if !extractConfigurationSnippets(path) {
 			exitCode = 1

@@ -292,12 +292,12 @@ syslog-ng:
 
 checkdoc:
 	@echo "[*] $@"
-	$(GOCMD) run ./config/checkdoc -r docs/content
+	$(GOCMD) run ./config/checkdoc -r docs/content -i changelog.md
 
 .PHONY: checklinks
 checklinks:
 	@echo "[*] $@"
-	muffet -b 8192 --exclude="(linux.die.net|stackoverflow.com)" http://localhost:1313/resticprofile/
+	muffet -b 8192 --max-connections=10 --exclude="(linux.die.net|stackoverflow.com|scoop.sh)" http://localhost:1313/resticprofile/
 
 .PHONY: lint
 lint: $(GOBIN)/golangci-lint

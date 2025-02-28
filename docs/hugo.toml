@@ -11,7 +11,6 @@ publishdir = "../public/"
   home = [ "html", "rss" ]
 
 [params]
-  # themeVariant = [ "relearn-dark", "relearn-light"  ]
   themeVariant = [
     { identifier = 'relearn-auto',  name = 'Relearn Light/Dark', auto = [] },
     { identifier = 'relearn-light'  },
@@ -20,6 +19,26 @@ publishdir = "../public/"
   collapsibleMenu = true
   externalLinkTarget = "_blank"
   ordersectionsby = "weight"
+
+
+[[params.sidebarmenus]]
+  disableTitle = true
+  identifier = 'home'
+  main = true
+  pageRef = ''
+  type = 'page'
+
+[[params.sidebarmenus]]
+  disableTitle = false
+  identifier = 'version'
+  main = false
+  type = 'menu'
+  
+[[params.sidebarmenus]]
+  disableTitle = false
+  identifier = 'shortcuts'
+  main = false
+  type = 'menu'
 
 [[menu.shortcuts]]
   name = "<i class='fas fa-tags'></i> Tags"
@@ -56,3 +75,9 @@ publishdir = "../public/"
     # - set `style` to a predefined style name
     noClasses = false
     # style = "tango"
+
+[image]
+  errorlevel = 'warning'
+
+[link]
+  errorlevel = 'warning'

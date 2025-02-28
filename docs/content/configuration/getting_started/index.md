@@ -5,61 +5,61 @@ weight: 2
 
 ## Prerequisite
 
-**resticprofile** is one of many automation tools for restic, also called a *wrapper*.
+**resticprofile** is an automation tool for restic, also known as a *wrapper*.
 
-In a nutshell, **resticprofile** provides a configuration file and a runner that will generate all the necessary calls to **restic**.
+In short, **resticprofile** provides a configuration file and a runner that generates all necessary calls to **restic**.
 
 Unless you're using the **resticprofile** [Docker image]({{% relref "/installation/docker/index.html" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
 
-## Choose your favourite format
+## Choose Your Favorite Format
 
-**resticprofile** configuration file can be written in:
-* [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ or _.conf_
-* [YAML](https://en.wikipedia.org/wiki/YAML) : configuration file with extension _.yaml_
-* [JSON](https://en.wikipedia.org/wiki/JSON) : configuration file with extension _.json_
-* [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
+The **resticprofile** configuration file can be written in:
+* [TOML](https://github.com/toml-lang/toml): configuration file with extension *.toml* or *.conf*
+* [YAML](https://en.wikipedia.org/wiki/YAML): configuration file with extension *.yaml*
+* [JSON](https://en.wikipedia.org/wiki/JSON): configuration file with extension *.json*
+* [HCL](https://github.com/hashicorp/hcl): configuration file with extension *.hcl*
 
 We recommend using either TOML or YAML.
 
-JSON is fine for auto generated configurations but is not the easiest format for a human to read and write.
+JSON is suitable for auto-generated configurations but is not the easiest format for humans to read and write.
 
-HCL can be interesting if you already use a tool from the Hashicorp stack otherwise that's yet another format to learn.
+HCL can be useful if you already use a tool from the Hashicorp stack; otherwise, it's another format to learn.
 
-## Configure your text editor
+## Configure Your Text Editor
 
-We're going to show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
+We'll show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
 
-You can use any other editor that recognise the [JSON schema]({{% relref "/configuration/jsonschema" %}}). The same JSON schema can be used for JSON, TOML and YAML file formats.
+You can use any other editor that recognizes the [JSON schema]({{% relref "/configuration/jsonschema" %}}). The same JSON schema can be used for JSON, TOML, and YAML file formats.
 
 ### TOML
 
-In Visual Studio Code, you need to install an extension that supports completion and syntax validation using a JSON schema.
+In Visual Studio Code, install an extension that supports completion and syntax validation using a JSON schema.
 
-For example you can install the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension:
+For example, install the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension:
 
 ![TOML extension]({{< absolute "configuration/getting_started/TOML.png" nohtml >}})
 
 ### YAML
 
-Same for YAML: in Visual Studio Code you need to install an extension like the one [provided by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) to understand the shape of your configuration file.
+For YAML, install an extension like the one [provided by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) in Visual Studio Code to understand the shape of your configuration file.
 
 ![YAML extension]({{< absolute "configuration/getting_started/YAML.png" nohtml >}})
 
 ## Write your first configuration file
 
-The configuration file is essentially a list of profiles containing a list of commands and flags.
+The configuration file lists profiles containing commands and flags.
 
 A profile defines:
-* a restic repository (flag `repository`)
-* how to access your restic repository (like `password-file`)
-* a list of commands (like `backup`):
-    * which files to include in a backup (flag `source`)
-    * when to backup them (we'll see that later)
-    * any other restic flags you would add to the command line (like `verbose`)
+* a restic repository (`repository` flag)
+* how to access your restic repository (e.g., `password-file`)
+* a list of commands (e.g., `backup`):
+  * files to include in a backup (`source` flag)
+  * when to back them up (details later)
+  * other restic flags for the command line (e.g., `verbose`)
 
-In this example, we're going to call our profile `default`. You don't need to specify the profile name on the command line when using this name (`default`).
+In this example, we'll call our profile `default`. You don't need to specify the profile name on the command line when using `default`.
 
-Create a file named `profiles` with the extension of your choice (.toml, .yaml, .hcl or .json)
+Create a file named `profiles` with an extension of your choice (.toml, .yaml, .hcl, or .json).
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -138,7 +138,7 @@ default {
 
 ## Generate a secure password
 
-**resticprofile** has a handy command that can generate a [cryptographically secure password file]({{% relref "/usage/keyfile" %}}) for you:
+**resticprofile** can generate a [secure password file]({{% relref "/usage/keyfile" %}}) for you:
 
 ```shell
 resticprofile generate --random-key > password.txt
@@ -146,7 +146,7 @@ resticprofile generate --random-key > password.txt
 
 ## Initialize your repository
 
-Now that you have a password file, you can initialize your restic repository:
+With the password file, initialize your restic repository:
 
 ```shell
 resticprofile init
