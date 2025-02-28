@@ -14,10 +14,10 @@ Unless you're using the **resticprofile** [Docker image]({{% relref "/installati
 ## Choose Your Favorite Format
 
 The **resticprofile** configuration file can be written in:
-* [TOML](https://github.com/toml-lang/toml): configuration file with extension _.toml_ or _.conf_
-* [YAML](https://en.wikipedia.org/wiki/YAML): configuration file with extension _.yaml_
-* [JSON](https://en.wikipedia.org/wiki/JSON): configuration file with extension _.json_
-* [HCL](https://github.com/hashicorp/hcl): configuration file with extension _.hcl_
+* [TOML](https://github.com/toml-lang/toml): configuration file with extension *.toml* or *.conf*
+* [YAML](https://en.wikipedia.org/wiki/YAML): configuration file with extension *.yaml*
+* [JSON](https://en.wikipedia.org/wiki/JSON): configuration file with extension *.json*
+* [HCL](https://github.com/hashicorp/hcl): configuration file with extension *.hcl*
 
 We recommend using either TOML or YAML.
 
@@ -53,9 +53,9 @@ A profile defines:
 * a restic repository (`repository` flag)
 * how to access your restic repository (e.g., `password-file`)
 * a list of commands (e.g., `backup`):
-    * files to include in a backup (`source` flag)
-    * when to back them up (details later)
-    * other restic flags for the command line (e.g., `verbose`)
+  * files to include in a backup (`source` flag)
+  * when to back them up (details later)
+  * other restic flags for the command line (e.g., `verbose`)
 
 In this example, we'll call our profile `default`. You don't need to specify the profile name on the command line when using `default`.
 

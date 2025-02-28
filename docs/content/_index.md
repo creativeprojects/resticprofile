@@ -37,7 +37,7 @@ With resticprofile:
 * **[new for v0.29.0]** Schedule a group of profiles (configuration `v2` only)
 
 The configuration file supports various formats:
-* [TOML](https://github.com/toml-lang/toml): files with extensions _.toml_ and _.conf_ (for compatibility with versions before 0.6.0)
-* [JSON](https://en.wikipedia.org/wiki/JSON): files with extension _.json_
-* [YAML](https://en.wikipedia.org/wiki/YAML): files with extension _.yaml_
-* [HCL](https://github.com/hashicorp/hcl): files with extension _.hcl_
+* [TOML](https://github.com/toml-lang/toml): files with extensions *.toml* and *.conf* (for compatibility with versions before 0.6.0)
+* [JSON](https://en.wikipedia.org/wiki/JSON): files with extension *.json*
+* [YAML](https://en.wikipedia.org/wiki/YAML): files with extension *.yaml*
+* [HCL](https://github.com/hashicorp/hcl): files with extension *.hcl*
