@@ -260,16 +260,32 @@ func displayVersion(output io.Writer, ctx commandContext) error {
 	if ctx.flags.verbose || (len(arguments) > 0 && (arguments[0] == "-v" || arguments[0] == "--verbose")) {
 		out("\n")
 		out("\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
-		out("\t%s:\t%s\n", "os", runtime.GOOS)
-		out("\t%s:\t%s\n", "arch", runtime.GOARCH)
 		out("\t%s:\t%s\n", "version", version)
 		out("\t%s:\t%s\n", "commit", commit)
 		out("\t%s:\t%s\n", "compiled", date)
 		out("\t%s:\t%s\n", "by", builtBy)
 		out("\t%s:\t%s\n", "go version", runtime.Version())
+		out("\t%s:\t%s\n", "os", runtime.GOOS)
+		out("\t%s:\t%s\n", "arch", runtime.GOARCH)
+		bi, ok := debug.ReadBuildInfo()
+		if !ok {
+			out("\n")
+			return nil
+		}
+		for _, setting := range bi.Settings {
+			switch setting.Key {
+			case "GOAMD64":
+				out("\t%s\t%s\n", "microarchitecture", setting.Value)
+
+			case "GOARM":
+				out("\t%s\t%s\n", "arm", setting.Value)
+
+			case "GOARM64":
+				out("\t%s\t%s\n", "arm", setting.Value)
+			}
+		}
 		out("\n")
 		out("\t%s:\n", "go modules")
-		bi, _ := debug.ReadBuildInfo()
 		for _, dep := range bi.Deps {
 			out("\t\t%s\t%s\n", ansiCyan(dep.Path), dep.Version)
 		}
