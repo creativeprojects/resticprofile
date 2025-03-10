@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/darwin"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/spf13/afero"
@@ -44,28 +45,6 @@ const (
 
 	codeServiceNotFound = 113
 )
-
-// LaunchJob is an agent definition for launchd
-type LaunchdJob struct {
-	Label                 string             `plist:"Label"`
-	Program               string             `plist:"Program"`
-	ProgramArguments      []string           `plist:"ProgramArguments"`
-	EnvironmentVariables  map[string]string  `plist:"EnvironmentVariables,omitempty"`
-	StandardInPath        string             `plist:"StandardInPath,omitempty"`
-	StandardOutPath       string             `plist:"StandardOutPath,omitempty"`
-	StandardErrorPath     string             `plist:"StandardErrorPath,omitempty"`
-	WorkingDirectory      string             `plist:"WorkingDirectory"`
-	StartInterval         int                `plist:"StartInterval,omitempty"`
-	StartCalendarInterval []CalendarInterval `plist:"StartCalendarInterval,omitempty"`
-	ProcessType           string             `plist:"ProcessType"`
-	LowPriorityIO         bool               `plist:"LowPriorityIO"`
-	Nice                  int                `plist:"Nice"`
-}
-
-var priorityValues = map[string]string{
-	constants.SchedulePriorityBackground: "Background",
-	constants.SchedulePriorityStandard:   "Standard",
-}
 
 type HandlerLaunchd struct {
 	config SchedulerConfig
@@ -222,7 +201,7 @@ func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
 	return jobs, nil
 }
 
-func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *LaunchdJob {
+func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *darwin.LaunchdJob {
 	name := getJobName(job.ProfileName, job.CommandName)
 	// we always set the log file in the job settings as a default
 	// if changed in the configuration via schedule-log the standard output will be empty anyway
@@ -241,18 +220,20 @@ func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event)
 		nice = constants.DefaultStandardNiceFlag
 	}
 
-	launchdJob := &LaunchdJob{
-		Label:                 name,
-		Program:               job.Command,
-		ProgramArguments:      append([]string{job.Command, "--no-prio"}, job.Arguments.RawArgs()...),
-		StandardOutPath:       logfile,
-		StandardErrorPath:     logfile,
-		WorkingDirectory:      job.WorkingDirectory,
-		StartCalendarInterval: getCalendarIntervalsFromSchedules(schedules),
-		EnvironmentVariables:  env.ValuesAsMap(),
-		Nice:                  nice,
-		ProcessType:           priorityValues[job.GetPriority()],
-		LowPriorityIO:         lowPriorityIO,
+	launchdJob := &darwin.LaunchdJob{
+		Label:                   name,
+		Program:                 job.Command,
+		ProgramArguments:        append([]string{job.Command, "--no-prio"}, job.Arguments.RawArgs()...),
+		StandardOutPath:         logfile,
+		StandardErrorPath:       logfile,
+		WorkingDirectory:        job.WorkingDirectory,
+		StartCalendarInterval:   darwin.GetCalendarIntervalsFromSchedules(schedules),
+		EnvironmentVariables:    env.ValuesAsMap(),
+		Nice:                    nice,
+		ProcessType:             darwin.NewProcessType(job.GetPriority()),
+		LowPriorityIO:           lowPriorityIO,
+		LowPriorityBackgroundIO: lowPriorityIO,
+		LimitLoadToSessionType:  darwin.NewSessionType(job.Permission),
 	}
 	return launchdJob
 }
@@ -315,12 +296,12 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 		ConfigFile:       args.ConfigFile(),
 		Arguments:        args,
 		WorkingDirectory: launchdJob.WorkingDirectory,
-		Schedules:        parseCalendarIntervals(launchdJob.StartCalendarInterval),
+		Schedules:        darwin.ParseCalendarIntervals(launchdJob.StartCalendarInterval),
 	}
 	return job, nil
 }
 
-func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission string) (string, error) {
+func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permission string) (string, error) {
 	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
 		return "", err
@@ -344,7 +325,7 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *LaunchdJob, permission stri
 	return filename, nil
 }
 
-func (h *HandlerLaunchd) readPlistFile(filename string) (*LaunchdJob, error) {
+func (h *HandlerLaunchd) readPlistFile(filename string) (*darwin.LaunchdJob, error) {
 	file, err := h.fs.Open(filename)
 	if err != nil {
 		return nil, err
@@ -352,7 +333,7 @@ func (h *HandlerLaunchd) readPlistFile(filename string) (*LaunchdJob, error) {
 	defer file.Close()
 
 	decoder := plist.NewDecoder(file)
-	launchdJob := new(LaunchdJob)
+	launchdJob := new(darwin.LaunchdJob)
 	err = decoder.Decode(launchdJob)
 	if err != nil {
 		return nil, err

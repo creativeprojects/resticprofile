@@ -10,6 +10,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/darwin"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,70 +25,17 @@ func TestHandlerCrond(t *testing.T) {
 func TestPListEncoderWithCalendarInterval(t *testing.T) {
 	expected := `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict><key>Day</key><integer>1</integer><key>Hour</key><integer>0</integer></dict></plist>`
-	entry := newCalendarInterval()
-	setCalendarIntervalValueFromType(entry, 1, calendar.TypeDay)
-	setCalendarIntervalValueFromType(entry, 0, calendar.TypeHour)
+<plist version="1.0"><array><dict><key>Day</key><integer>1</integer><key>Hour</key><integer>0</integer></dict></array></plist>`
+	event := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Day.AddValue(1)
+		_ = e.Hour.AddValue(0)
+	})
+	entry := darwin.GetCalendarIntervalsFromSchedules([]*calendar.Event{event})
 	buffer := &bytes.Buffer{}
 	encoder := plist.NewEncoder(buffer)
 	err := encoder.Encode(entry)
 	require.NoError(t, err)
 	assert.Equal(t, expected, buffer.String())
-}
-
-func TestGetCalendarIntervalsFromScheduleTree(t *testing.T) {
-	testData := []struct {
-		input    string
-		expected []CalendarInterval
-	}{
-		{"*-*-*", []CalendarInterval{
-			{"Hour": 0, "Minute": 0},
-		}},
-		{"*:0,30", []CalendarInterval{
-			{"Minute": 0},
-			{"Minute": 30},
-		}},
-		{"0,12:20", []CalendarInterval{
-			{"Hour": 0, "Minute": 20},
-			{"Hour": 12, "Minute": 20},
-		}},
-		{"0,12:20,40", []CalendarInterval{
-			{"Hour": 0, "Minute": 20},
-			{"Hour": 0, "Minute": 40},
-			{"Hour": 12, "Minute": 20},
-			{"Hour": 12, "Minute": 40},
-		}},
-		{"Mon..Fri *-*-* *:0,30:00", []CalendarInterval{
-			{"Weekday": 1, "Minute": 0},
-			{"Weekday": 1, "Minute": 30},
-			{"Weekday": 2, "Minute": 0},
-			{"Weekday": 2, "Minute": 30},
-			{"Weekday": 3, "Minute": 0},
-			{"Weekday": 3, "Minute": 30},
-			{"Weekday": 4, "Minute": 0},
-			{"Weekday": 4, "Minute": 30},
-			{"Weekday": 5, "Minute": 0},
-			{"Weekday": 5, "Minute": 30},
-		}},
-		// First sunday of the month at 3:30am
-		{"Sun *-*-01..06 03:30:00", []CalendarInterval{
-			{"Day": 1, "Weekday": 0, "Hour": 3, "Minute": 30},
-			{"Day": 2, "Weekday": 0, "Hour": 3, "Minute": 30},
-			{"Day": 3, "Weekday": 0, "Hour": 3, "Minute": 30},
-			{"Day": 4, "Weekday": 0, "Hour": 3, "Minute": 30},
-			{"Day": 5, "Weekday": 0, "Hour": 3, "Minute": 30},
-			{"Day": 6, "Weekday": 0, "Hour": 3, "Minute": 30},
-		}},
-	}
-
-	for _, testItem := range testData {
-		t.Run(testItem.input, func(t *testing.T) {
-			event := calendar.NewEvent()
-			err := event.Parse(testItem.input)
-			assert.NoError(t, err)
-			assert.ElementsMatch(t, testItem.expected, getCalendarIntervalsFromScheduleTree(generateTreeOfSchedules(event)))
-		})
-	}
 }
 
 func TestParseStatus(t *testing.T) {
@@ -158,7 +106,7 @@ func TestCreateUserPlist(t *testing.T) {
 	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 	handler.fs = afero.NewMemMapFs()
 
-	launchdJob := &LaunchdJob{
+	launchdJob := &darwin.LaunchdJob{
 		Label: "TestCreateSystemPlist",
 	}
 	filename, err := handler.createPlistFile(launchdJob, "user")
@@ -172,7 +120,7 @@ func TestCreateSystemPlist(t *testing.T) {
 	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 	handler.fs = afero.NewMemMapFs()
 
-	launchdJob := &LaunchdJob{
+	launchdJob := &darwin.LaunchdJob{
 		Label: "TestCreateSystemPlist",
 	}
 	filename, err := handler.createPlistFile(launchdJob, "system")

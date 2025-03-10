@@ -1,6 +1,6 @@
 //go:build darwin
 
-package schedule
+package darwin
 
 import "github.com/creativeprojects/resticprofile/calendar"
 
@@ -64,7 +64,7 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 //	Day = 1
 //
 // Total of 1 rule
-func getCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
+func GetCalendarIntervalsFromSchedules(schedules []*calendar.Event) []CalendarInterval {
 	entries := make([]CalendarInterval, 0, len(schedules))
 	for _, schedule := range schedules {
 		entries = append(entries, getCalendarIntervalsFromScheduleTree(generateTreeOfSchedules(schedule))...)
@@ -116,7 +116,7 @@ func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeVa
 
 // parseCalendarIntervals converts calendar intervals into a single calendar event.
 // TODO: find a pattern on how to split into multiple events when needed
-func parseCalendarIntervals(intervals []CalendarInterval) []string {
+func ParseCalendarIntervals(intervals []CalendarInterval) []string {
 	event := calendar.NewEvent(func(e *calendar.Event) {
 		_ = e.Second.AddValue(0)
 	})

@@ -8,6 +8,19 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
+// Detect returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func (p Permission) Detect() (Permission, bool) {
+	switch p {
+	case PermissionAuto:
+		return PermissionSystem, true
+
+	default:
+		return p, true
+	}
+}
+
 // detectSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission.
 // safe specifies whether a guess may lead to a too broad or too narrow file access permission.
@@ -23,11 +36,11 @@ func detectSchedulePermission(permission string) (detected string, safe bool) {
 
 // checkPermission returns true if the user is allowed to access the job.
 // This is always true on Windows
-func checkPermission(permission string) bool {
+func checkPermission(_ string) bool {
 	return true
 }
 
 // permissionError is not used in Windows
-func permissionError(string) error {
+func permissionError(_ string) error {
 	return errors.New("computer says no")
 }

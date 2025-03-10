@@ -12,8 +12,9 @@ var ErrJobCanBeRemovedOnly = errors.New("this job is marked for removal only and
 
 // Job scheduler
 type Job struct {
-	config  *Config
-	handler Handler
+	config             *Config
+	handler            Handler
+	resolvedPermission Permission
 }
 
 func NewJob(handler Handler, config *Config) *Job {
@@ -42,8 +43,7 @@ func (j *Job) Create() error {
 	}
 
 	permission := getSchedulePermission(j.config.Permission)
-	ok := checkPermission(permission)
-	if !ok {
+	if ok := checkPermission(permission); !ok {
 		return permissionError("create")
 	}
 
