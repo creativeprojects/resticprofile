@@ -57,11 +57,11 @@ func TestReadingSystemdScheduled(t *testing.T) {
 	expectedJobs := []Config{}
 	for _, testCase := range testCases {
 		job := testCase.job
-		err := handler.CreateJob(&job, testCase.schedules, schedulePermission)
+		err := handler.CreateJob(&job, testCase.schedules, PermissionFromConfig(schedulePermission))
 
 		toRemove := &job
 		t.Cleanup(func() {
-			_ = handler.RemoveJob(toRemove, schedulePermission)
+			_ = handler.RemoveJob(toRemove, PermissionFromConfig(schedulePermission))
 		})
 		require.NoError(t, err)
 
@@ -85,7 +85,7 @@ func TestReadingSystemdScheduled(t *testing.T) {
 
 	// now delete all schedules
 	for _, testCase := range testCases {
-		err := handler.RemoveJob(&testCase.job, testCase.job.Permission)
+		err := handler.RemoveJob(&testCase.job, PermissionFromConfig(testCase.job.Permission))
 		require.NoError(t, err)
 	}
 

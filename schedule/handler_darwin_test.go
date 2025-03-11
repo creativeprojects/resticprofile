@@ -109,7 +109,7 @@ func TestCreateUserPlist(t *testing.T) {
 	launchdJob := &darwin.LaunchdJob{
 		Label: "TestCreateSystemPlist",
 	}
-	filename, err := handler.createPlistFile(launchdJob, "user")
+	filename, err := handler.createPlistFile(launchdJob, PermissionUserBackground)
 	require.NoError(t, err)
 
 	_, err = handler.fs.Stat(filename)
@@ -123,7 +123,7 @@ func TestCreateSystemPlist(t *testing.T) {
 	launchdJob := &darwin.LaunchdJob{
 		Label: "TestCreateSystemPlist",
 	}
-	filename, err := handler.createPlistFile(launchdJob, "system")
+	filename, err := handler.createPlistFile(launchdJob, PermissionSystem)
 	require.NoError(t, err)
 
 	_, err = handler.fs.Stat(filename)
@@ -188,7 +188,7 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 	for _, testCase := range testCases {
 		expectedJobs = append(expectedJobs, testCase.job)
 
-		_, err := handler.createPlistFile(handler.getLaunchdJob(&testCase.job, testCase.schedules), testCase.job.Permission)
+		_, err := handler.createPlistFile(handler.getLaunchdJob(&testCase.job, testCase.schedules), PermissionFromConfig(testCase.job.Permission))
 		require.NoError(t, err)
 	}
 

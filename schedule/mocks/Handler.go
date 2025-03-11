@@ -55,7 +55,7 @@ func (_c *Handler_Close_Call) RunAndReturn(run func()) *Handler_Close_Call {
 }
 
 // CreateJob provides a mock function with given fields: job, schedules, permission
-func (_m *Handler) CreateJob(job *schedule.Config, schedules []*calendar.Event, permission string) error {
+func (_m *Handler) CreateJob(job *schedule.Config, schedules []*calendar.Event, permission schedule.Permission) error {
 	ret := _m.Called(job, schedules, permission)
 
 	if len(ret) == 0 {
@@ -63,7 +63,7 @@ func (_m *Handler) CreateJob(job *schedule.Config, schedules []*calendar.Event, 
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*schedule.Config, []*calendar.Event, string) error); ok {
+	if rf, ok := ret.Get(0).(func(*schedule.Config, []*calendar.Event, schedule.Permission) error); ok {
 		r0 = rf(job, schedules, permission)
 	} else {
 		r0 = ret.Error(0)
@@ -80,14 +80,14 @@ type Handler_CreateJob_Call struct {
 // CreateJob is a helper method to define mock.On call
 //   - job *schedule.Config
 //   - schedules []*calendar.Event
-//   - permission string
+//   - permission schedule.Permission
 func (_e *Handler_Expecter) CreateJob(job interface{}, schedules interface{}, permission interface{}) *Handler_CreateJob_Call {
 	return &Handler_CreateJob_Call{Call: _e.mock.On("CreateJob", job, schedules, permission)}
 }
 
-func (_c *Handler_CreateJob_Call) Run(run func(job *schedule.Config, schedules []*calendar.Event, permission string)) *Handler_CreateJob_Call {
+func (_c *Handler_CreateJob_Call) Run(run func(job *schedule.Config, schedules []*calendar.Event, permission schedule.Permission)) *Handler_CreateJob_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*schedule.Config), args[1].([]*calendar.Event), args[2].(string))
+		run(args[0].(*schedule.Config), args[1].([]*calendar.Event), args[2].(schedule.Permission))
 	})
 	return _c
 }
@@ -97,7 +97,63 @@ func (_c *Handler_CreateJob_Call) Return(_a0 error) *Handler_CreateJob_Call {
 	return _c
 }
 
-func (_c *Handler_CreateJob_Call) RunAndReturn(run func(*schedule.Config, []*calendar.Event, string) error) *Handler_CreateJob_Call {
+func (_c *Handler_CreateJob_Call) RunAndReturn(run func(*schedule.Config, []*calendar.Event, schedule.Permission) error) *Handler_CreateJob_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DetectSchedulePermission provides a mock function with given fields: permission
+func (_m *Handler) DetectSchedulePermission(permission schedule.Permission) (schedule.Permission, bool) {
+	ret := _m.Called(permission)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DetectSchedulePermission")
+	}
+
+	var r0 schedule.Permission
+	var r1 bool
+	if rf, ok := ret.Get(0).(func(schedule.Permission) (schedule.Permission, bool)); ok {
+		return rf(permission)
+	}
+	if rf, ok := ret.Get(0).(func(schedule.Permission) schedule.Permission); ok {
+		r0 = rf(permission)
+	} else {
+		r0 = ret.Get(0).(schedule.Permission)
+	}
+
+	if rf, ok := ret.Get(1).(func(schedule.Permission) bool); ok {
+		r1 = rf(permission)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+
+	return r0, r1
+}
+
+// Handler_DetectSchedulePermission_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DetectSchedulePermission'
+type Handler_DetectSchedulePermission_Call struct {
+	*mock.Call
+}
+
+// DetectSchedulePermission is a helper method to define mock.On call
+//   - permission schedule.Permission
+func (_e *Handler_Expecter) DetectSchedulePermission(permission interface{}) *Handler_DetectSchedulePermission_Call {
+	return &Handler_DetectSchedulePermission_Call{Call: _e.mock.On("DetectSchedulePermission", permission)}
+}
+
+func (_c *Handler_DetectSchedulePermission_Call) Run(run func(permission schedule.Permission)) *Handler_DetectSchedulePermission_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(schedule.Permission))
+	})
+	return _c
+}
+
+func (_c *Handler_DetectSchedulePermission_Call) Return(_a0 schedule.Permission, _a1 bool) *Handler_DetectSchedulePermission_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Handler_DetectSchedulePermission_Call) RunAndReturn(run func(schedule.Permission) (schedule.Permission, bool)) *Handler_DetectSchedulePermission_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -346,7 +402,7 @@ func (_c *Handler_ParseSchedules_Call) RunAndReturn(run func([]string) ([]*calen
 }
 
 // RemoveJob provides a mock function with given fields: job, permission
-func (_m *Handler) RemoveJob(job *schedule.Config, permission string) error {
+func (_m *Handler) RemoveJob(job *schedule.Config, permission schedule.Permission) error {
 	ret := _m.Called(job, permission)
 
 	if len(ret) == 0 {
@@ -354,7 +410,7 @@ func (_m *Handler) RemoveJob(job *schedule.Config, permission string) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*schedule.Config, string) error); ok {
+	if rf, ok := ret.Get(0).(func(*schedule.Config, schedule.Permission) error); ok {
 		r0 = rf(job, permission)
 	} else {
 		r0 = ret.Error(0)
@@ -370,14 +426,14 @@ type Handler_RemoveJob_Call struct {
 
 // RemoveJob is a helper method to define mock.On call
 //   - job *schedule.Config
-//   - permission string
+//   - permission schedule.Permission
 func (_e *Handler_Expecter) RemoveJob(job interface{}, permission interface{}) *Handler_RemoveJob_Call {
 	return &Handler_RemoveJob_Call{Call: _e.mock.On("RemoveJob", job, permission)}
 }
 
-func (_c *Handler_RemoveJob_Call) Run(run func(job *schedule.Config, permission string)) *Handler_RemoveJob_Call {
+func (_c *Handler_RemoveJob_Call) Run(run func(job *schedule.Config, permission schedule.Permission)) *Handler_RemoveJob_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*schedule.Config), args[1].(string))
+		run(args[0].(*schedule.Config), args[1].(schedule.Permission))
 	})
 	return _c
 }
@@ -387,7 +443,7 @@ func (_c *Handler_RemoveJob_Call) Return(_a0 error) *Handler_RemoveJob_Call {
 	return _c
 }
 
-func (_c *Handler_RemoveJob_Call) RunAndReturn(run func(*schedule.Config, string) error) *Handler_RemoveJob_Call {
+func (_c *Handler_RemoveJob_Call) RunAndReturn(run func(*schedule.Config, schedule.Permission) error) *Handler_RemoveJob_Call {
 	_c.Call.Return(run)
 	return _c
 }

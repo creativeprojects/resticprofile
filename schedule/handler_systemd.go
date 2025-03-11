@@ -103,7 +103,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the systemd unit and activating it
-func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
+func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
@@ -166,7 +166,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 }
 
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
-func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
+func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 	unitType := systemd.UserUnit
 	if os.Geteuid() == 0 {
 		// user has sudoed already
@@ -232,9 +232,9 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	serviceName := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
-	permission := getSchedulePermission(job.Permission)
+	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
 	systemdType := systemd.UserUnit
-	if permission == constants.SchedulePermissionSystem {
+	if permission == PermissionSystem || permission == PermissionUserBackground {
 		systemdType = systemd.SystemUnit
 	}
 	unitLoaded, err := unitLoaded(serviceName, systemdType)
@@ -267,6 +267,26 @@ func (h *HandlerSystemd) Scheduled(profileName string) ([]Config, error) {
 		configs = append(configs, cfgs...)
 	}
 	return configs, nil
+}
+
+// detectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func (h *HandlerSystemd) DetectSchedulePermission(p Permission) (Permission, bool) {
+	switch p {
+	case PermissionSystem, PermissionUserBackground, PermissionUserLoggedOn:
+		// well defined
+		return p, true
+
+	default:
+		// best guess is depending on the user being root or not:
+		detected := PermissionUserLoggedOn // sane default
+		if os.Geteuid() == 0 {
+			detected = PermissionSystem
+		}
+		// guess based on UID is never safe
+		return detected, false
+	}
 }
 
 var (

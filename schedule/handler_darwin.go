@@ -80,7 +80,7 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob creates a plist file and registers it with launchd
-func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
+func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
 	filename, err := h.createPlistFile(h.getLaunchdJob(job, schedules), permission)
 	if err != nil {
 		if filename != "" {
@@ -114,7 +114,7 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 }
 
 // RemoveJob stops and unloads the agent from launchd, then removes the configuration file
-func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
+func (h *HandlerLaunchd) RemoveJob(job *Config, permission Permission) error {
 	name := getJobName(job.ProfileName, job.CommandName)
 	filename, err := getFilename(name, permission)
 	if err != nil {
@@ -148,9 +148,8 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission string) error {
 }
 
 func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
-	permission := getSchedulePermission(job.Permission)
-	ok := checkPermission(permission)
-	if !ok {
+	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
+	if ok := permission.Check(); !ok {
 		return permissionError("view")
 	}
 	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
@@ -258,6 +257,26 @@ func (h *HandlerLaunchd) getScheduledJob(profileName, permission string) []Confi
 	return jobs
 }
 
+// DetectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func (h *HandlerLaunchd) DetectSchedulePermission(permission Permission) (Permission, bool) {
+	switch permission {
+	case PermissionSystem, PermissionUserBackground, PermissionUserLoggedOn:
+		// well defined
+		return permission, true
+
+	default:
+		// best guess is depending on the user being root or not:
+		detected := PermissionUserLoggedOn // sane default
+		if os.Geteuid() == 0 {
+			detected = PermissionSystem
+		}
+		// darwin can backup protected files without the need of a system task
+		return detected, true
+	}
+}
+
 func getSchedulePattern(profileName, permission string) string {
 	pattern := "%s%s.*%s"
 	if permission == constants.SchedulePermissionSystem {
@@ -301,12 +320,12 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 	return job, nil
 }
 
-func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permission string) (string, error) {
+func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permission Permission) (string, error) {
 	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
 		return "", err
 	}
-	if permission != constants.SchedulePermissionSystem {
+	if permission != PermissionSystem {
 		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
 		_ = h.fs.MkdirAll(path.Dir(filename), 0o700)
 	}
@@ -349,8 +368,8 @@ func getJobName(profileName, command string) string {
 	return fmt.Sprintf("%s%s.%s", namePrefix, strings.ToLower(profileName), command)
 }
 
-func getFilename(name, permission string) (string, error) {
-	if permission == constants.SchedulePermissionSystem {
+func getFilename(name string, permission Permission) (string, error) {
+	if permission == PermissionSystem {
 		return path.Join(GlobalDaemons, name+daemonExtension), nil
 	}
 	home, err := os.UserHomeDir()

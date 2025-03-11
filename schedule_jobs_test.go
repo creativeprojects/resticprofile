@@ -41,7 +41,7 @@ func TestSimpleScheduleJob(t *testing.T) {
 		mock.AnythingOfType("*schedule.Config"),
 		mock.AnythingOfType("[]*calendar.Event"),
 		mock.AnythingOfType("string")).
-		RunAndReturn(func(scheduleConfig *schedule.Config, events []*calendar.Event, permission string) error {
+		RunAndReturn(func(scheduleConfig *schedule.Config, events []*calendar.Event, permission schedule.Permission) error {
 			assert.Equal(t, []string{"--no-ansi", "--config", `config file`, "run-schedule", "backup@profile"}, scheduleConfig.Arguments.RawArgs())
 			assert.Equal(t, `--no-ansi --config "config file" run-schedule backup@profile`, scheduleConfig.Arguments.String())
 			return nil
@@ -90,7 +90,7 @@ func TestRemoveJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
-		RunAndReturn(func(scheduleConfig *schedule.Config, user string) error {
+		RunAndReturn(func(scheduleConfig *schedule.Config, _ schedule.Permission) error {
 			assert.Equal(t, "profile", scheduleConfig.ProfileName)
 			assert.Equal(t, "backup", scheduleConfig.CommandName)
 			return nil
@@ -108,7 +108,7 @@ func TestRemoveJobNoConfig(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
-		RunAndReturn(func(scheduleConfig *schedule.Config, user string) error {
+		RunAndReturn(func(scheduleConfig *schedule.Config, _ schedule.Permission) error {
 			assert.Equal(t, "profile", scheduleConfig.ProfileName)
 			assert.Equal(t, "backup", scheduleConfig.CommandName)
 			return nil

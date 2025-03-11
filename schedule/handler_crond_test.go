@@ -60,7 +60,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 	for _, testCase := range testCases {
 		expectedJobs = append(expectedJobs, testCase.job)
 
-		err := handler.CreateJob(&testCase.job, testCase.schedules, testCase.job.Permission)
+		err := handler.CreateJob(&testCase.job, testCase.schedules, PermissionFromConfig(testCase.job.Permission))
 		require.NoError(t, err)
 	}
 
@@ -71,7 +71,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 
 	// now delete all schedules
 	for _, testCase := range testCases {
-		err := handler.RemoveJob(&testCase.job, testCase.job.Permission)
+		err := handler.RemoveJob(&testCase.job, PermissionFromConfig(testCase.job.Permission))
 		require.NoError(t, err)
 	}
 

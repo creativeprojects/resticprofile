@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"os"
 	"slices"
 
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -66,7 +67,7 @@ func (h *HandlerCrond) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the crontab
-func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
+func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
 	entries := make([]crond.Entry, len(schedules))
 	for i, event := range schedules {
 		entries[i] = crond.NewEntry(
@@ -92,7 +93,7 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 	return nil
 }
 
-func (h *HandlerCrond) RemoveJob(job *Config, permission string) error {
+func (h *HandlerCrond) RemoveJob(job *Config, permission Permission) error {
 	entries := []crond.Entry{
 		crond.NewEntry(
 			calendar.NewEvent(),
@@ -155,6 +156,26 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 		}
 	}
 	return configs, configsErr
+}
+
+// DetectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func (h *HandlerCrond) DetectSchedulePermission(p Permission) (Permission, bool) {
+	switch p {
+	case PermissionSystem, PermissionUserBackground, PermissionUserLoggedOn:
+		// well defined
+		return p, true
+
+	default:
+		// best guess is depending on the user being root or not:
+		detected := PermissionUserBackground // sane default
+		if os.Geteuid() == 0 {
+			detected = PermissionSystem
+		}
+		// guess based on UID is never safe
+		return detected, false
+	}
 }
 
 // init registers HandlerCrond
