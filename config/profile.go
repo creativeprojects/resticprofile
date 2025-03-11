@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"reflect"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -17,7 +18,6 @@ import (
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
-	"golang.org/x/exp/maps"
 )
 
 // resticVersion14 is the semver of restic 0.14 (the version where several flag names were changed)
@@ -424,7 +424,7 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 		}
 	} else {
 		// restic >= 0.14: from-repo, from-password-file, etc. is the source, repo, password-file, etc. the destination
-		for _, name := range maps.Keys(repositoryArgs) {
+		for name := range maps.Keys(repositoryArgs) {
 			flags.Rename(name, fmt.Sprintf("from-%s", name))
 		}
 		for name, value := range repositoryArgs {
@@ -873,11 +873,8 @@ func (p *Profile) GetCopySnapshotIDs() []string {
 }
 
 // DefinedCommands returns all commands (also called sections) defined in the profile (backup, check, forget, etc.)
-func (p *Profile) DefinedCommands() (commands []string) {
-	if commands = maps.Keys(GetSectionsWith[any](p)); commands != nil {
-		sort.Strings(commands)
-	}
-	return
+func (p *Profile) DefinedCommands() []string {
+	return slices.Sorted(maps.Keys(GetSectionsWith[any](p)))
 }
 
 func (p *Profile) allSectionStructs() map[string]any {
@@ -902,11 +899,8 @@ func (p *Profile) AllSections() (sections map[string]any) {
 }
 
 // SchedulableCommands returns all command names that could have a schedule
-func (p *Profile) SchedulableCommands() (commands []string) {
-	if commands = maps.Keys(GetDeclaredSectionsWith[scheduling](p)); commands != nil {
-		sort.Strings(commands)
-	}
-	return
+func (p *Profile) SchedulableCommands() []string {
+	return slices.Sorted(maps.Keys(GetDeclaredSectionsWith[scheduling](p)))
 }
 
 func (p *Profile) GetEnvironment(withOs bool) (env *util.Environment) {

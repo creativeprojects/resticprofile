@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -12,7 +14,6 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util"
-	"golang.org/x/exp/maps"
 )
 
 // ProfileInfo provides structural information on profiles and can be used for specification and validation
@@ -129,11 +130,8 @@ type profileInfo struct {
 
 func (p *profileInfo) SectionInfo(name string) SectionInfo { return p.sections[name] }
 
-func (p *profileInfo) Sections() (names []string) {
-	if names = maps.Keys(p.sections); names != nil {
-		sort.Strings(names)
-	}
-	return
+func (p *profileInfo) Sections() []string {
+	return slices.Sorted(maps.Keys(p.sections))
 }
 
 // sectionInfo implements SectionInfo
@@ -158,11 +156,8 @@ func (p *propertySet) IsClosed() bool                        { return !p.openSet
 func (p *propertySet) PropertyInfo(name string) PropertyInfo { return p.properties[name] }
 func (p *propertySet) OtherPropertyInfo() PropertyInfo       { return p.otherProperty }
 
-func (p *propertySet) Properties() (names []string) {
-	if names = maps.Keys(p.properties); names != nil {
-		sort.Strings(names)
-	}
-	return
+func (p *propertySet) Properties() []string {
+	return slices.Sorted(maps.Keys(p.properties))
 }
 
 func (p *propertySet) IsAllOptions() bool {
@@ -607,7 +602,7 @@ func init() {
 		infoTypes.profile = reflect.TypeOf(profile)
 		infoTypes.scheduleConfig = reflect.TypeOf(ScheduleConfig{})
 		infoTypes.genericSection = reflect.TypeOf(GenericSection{})
-		infoTypes.genericSectionNames = maps.Keys(profile.OtherSections)
+		infoTypes.genericSectionNames = slices.Collect(maps.Keys(profile.OtherSections))
 	}
 }
 

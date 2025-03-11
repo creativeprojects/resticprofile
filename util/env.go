@@ -1,10 +1,11 @@
 package util
 
 import (
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/creativeprojects/resticprofile/platform"
-	"golang.org/x/exp/maps"
 )
 
 // Environment manages a set of environment variables
@@ -58,13 +59,13 @@ func (e *Environment) SetValues(values ...string) {
 }
 
 // Values returns all environment variables as NAME=VALUE lines (case is preserved as inserted)
-func (e *Environment) Values() (values []string) { return maps.Values(e.env) }
+func (e *Environment) Values() (values []string) { return slices.Collect(maps.Values(e.env)) }
 
 // Names returns all environment variables names (case is preserved as inserted)
-func (e *Environment) Names() (names []string) { return maps.Keys(e.ValuesAsMap()) }
+func (e *Environment) Names() (names []string) { return slices.Collect(maps.Keys(e.ValuesAsMap())) }
 
 // FoldedNames returns all environment variables names (case depends on preserveCase)
-func (e *Environment) FoldedNames() (names []string) { return maps.Keys(e.env) }
+func (e *Environment) FoldedNames() (names []string) { return slices.Collect(maps.Keys(e.env)) }
 
 // ValuesAsMap returns all environment variables as name & value map
 func (e *Environment) ValuesAsMap() (m map[string]string) {

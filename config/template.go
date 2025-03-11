@@ -1,14 +1,14 @@
 package config
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/templates"
-	"golang.org/x/exp/maps"
 )
 
 // TemplateData contain the variables fed to a config template
@@ -89,8 +89,7 @@ func (t *TemplateInfoData) NestedSections() []SectionInfo {
 		t.collectPropertiesByType(section, sectionByType)
 	}
 
-	typeNames := maps.Keys(sectionByType)
-	sort.Strings(typeNames)
+	typeNames := slices.Sorted(maps.Keys(sectionByType))
 
 	return collect.From(typeNames, func(name string) SectionInfo {
 		section := sectionByType[name]

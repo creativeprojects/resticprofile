@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,7 +25,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
-	"golang.org/x/exp/maps"
 )
 
 type resticWrapper struct {
@@ -731,8 +731,7 @@ func (r *resticWrapper) stringifyEnvironment(env *util.Environment) string {
 	confidentialEnv := collect.FromMap(env.ValuesAsMap(), mapper)
 	config.ProcessConfidentialEnvironment(confidentialEnv)
 
-	names := maps.Keys(confidentialEnv)
-	sort.Strings(names)
+	names := slices.Sorted(maps.Keys(confidentialEnv))
 
 	out := new(strings.Builder)
 	for _, name := range names {
