@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"regexp"
 	"slices"
 	"strconv"
@@ -21,7 +22,6 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/win"
-	"golang.org/x/exp/maps"
 )
 
 var (
@@ -252,7 +252,7 @@ func showProfileOrGroup(output io.Writer, ctx commandContext) error {
 	_, _ = fmt.Fprintln(output)
 
 	// Show schedules
-	showSchedules(output, maps.Values(profileOrGroup.Schedules()))
+	showSchedules(output, slices.Collect(maps.Values(profileOrGroup.Schedules())))
 
 	if profile, ok := profileOrGroup.(*config.Profile); ok {
 		// Show deprecation notice

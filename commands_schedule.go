@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"slices"
 	"strings"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/schedule"
-	"golang.org/x/exp/maps"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -230,7 +230,7 @@ func getProfileScheduleJobs(c *config.Config, profileName string) (*config.Profi
 		return nil, nil, fmt.Errorf("cannot load profile '%s': %w", profileName, err)
 	}
 
-	return profile, maps.Values(profile.Schedules()), nil
+	return profile, slices.Collect(maps.Values(profile.Schedules())), nil
 }
 
 func getGroupScheduleJobs(c *config.Config, profileName string) (*config.Group, []*config.Schedule, error) {
@@ -242,7 +242,7 @@ func getGroupScheduleJobs(c *config.Config, profileName string) (*config.Group, 
 		return nil, nil, fmt.Errorf("cannot load group '%s': %w", profileName, err)
 	}
 
-	return group, maps.Values(group.Schedules()), nil
+	return group, slices.Collect(maps.Values(group.Schedules())), nil
 }
 
 func requireScheduleJobs(schedules []*config.Schedule, profileName string) error {
