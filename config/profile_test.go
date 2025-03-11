@@ -3,11 +3,13 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -18,7 +20,6 @@ import (
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/maps"
 )
 
 func runForVersions(t *testing.T, runner func(t *testing.T, version, prefix string)) {
@@ -542,10 +543,10 @@ func TestFillGenericSections(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.NotEmpty(t, profile.OtherSections)
-		assert.Subset(t, maps.Keys(profile.AllSections()), maps.Keys(profile.OtherSections))
+		assert.Subset(t, slices.Collect(maps.Keys(profile.AllSections())), slices.Collect(maps.Keys(profile.OtherSections)))
 
 		sectionStructs := profile.allSectionStructs()
-		assert.Subset(t, maps.Keys(sectionStructs), []string{
+		assert.Subset(t, slices.Collect(maps.Keys(sectionStructs)), []string{
 			constants.CommandBackup,
 			constants.CommandCheck,
 			constants.CommandCopy,

@@ -6,11 +6,13 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -25,7 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/maps"
 )
 
 // TODO: Check if nodejs dependency for schema validation can be replaced with
@@ -409,7 +410,7 @@ func TestSchemaForPropertySet(t *testing.T) {
 		}
 
 		schema := schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) {
-			m.EXPECT().Properties().Return(maps.Keys(props))
+			m.EXPECT().Properties().Return(slices.Collect(maps.Keys(props)))
 			for name, info := range props {
 				if info != nil {
 					setupMock(t, &info.Mock, propertyInfoDefaults)

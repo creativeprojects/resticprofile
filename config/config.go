@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -21,7 +22,6 @@ import (
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/maps"
 )
 
 // Config wraps up a viper configuration object
@@ -349,8 +349,7 @@ func (c *Config) DisplayConfigurationIssues() {
 	}
 
 	if len(c.issues.failedSection) > 0 {
-		names := maps.Keys(c.issues.failedSection)
-		sort.Strings(names)
+		names := slices.Sorted(maps.Keys(c.issues.failedSection))
 		for _, name := range names {
 			clog.Errorf("Failed parsing profile section %q: %s", name, c.issues.failedSection[name].Error())
 		}
@@ -553,7 +552,7 @@ func (c *Config) GetProfileGroups() map[string]*Group {
 func (c *Config) GetGroupNames() (names []string) {
 	if c.GetVersion() <= Version01 {
 		_ = c.loadGroupsV1()
-		names = maps.Keys(c.cached.groups)
+		names = slices.Collect(maps.Keys(c.cached.groups))
 	} else {
 		if groups := c.viper.Sub(constants.SectionConfigurationGroups); groups != nil {
 			for name := range groups.AllSettings() {

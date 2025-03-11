@@ -1,7 +1,7 @@
-# Mockery config >= v2.31.0
 with-expecter: true
 resolve-type-alias: false
 issue-845-fix: true
+disable-version-string: true
 
 dir: "{{.InterfaceDir}}/mocks"
 outpkg: "mocks"

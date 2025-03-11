@@ -1,14 +1,15 @@
 package prom
 
 import (
+	"maps"
 	"runtime"
+	"slices"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/prometheus/common/expfmt"
-	"golang.org/x/exp/maps"
 )
 
 const (
@@ -34,7 +35,7 @@ func NewMetrics(profile, group, version string, configLabels map[string]string) 
 		labels[groupLabel] = group
 	}
 	labels = mergeLabels(labels, configLabels)
-	keys := maps.Keys(labels)
+	keys := slices.Collect(maps.Keys(labels))
 
 	registry := prometheus.NewRegistry()
 	p := &Metrics{
