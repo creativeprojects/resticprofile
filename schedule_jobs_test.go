@@ -6,6 +6,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schedule"
 	"github.com/creativeprojects/resticprofile/schedule/mocks"
 	"github.com/stretchr/testify/assert"
@@ -35,12 +36,13 @@ func TestSimpleScheduleJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
 	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().CreateJob(
 		mock.AnythingOfType("*schedule.Config"),
 		mock.AnythingOfType("[]*calendar.Event"),
-		mock.AnythingOfType("string")).
+		schedule.PermissionUserBackground).
 		RunAndReturn(func(scheduleConfig *schedule.Config, events []*calendar.Event, permission schedule.Permission) error {
 			assert.Equal(t, []string{"--no-ansi", "--config", `config file`, "run-schedule", "backup@profile"}, scheduleConfig.Arguments.RawArgs())
 			assert.Equal(t, `--no-ansi --config "config file" run-schedule backup@profile`, scheduleConfig.Arguments.String())
@@ -59,12 +61,13 @@ func TestFailScheduleJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
 	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().CreateJob(
 		mock.AnythingOfType("*schedule.Config"),
 		mock.AnythingOfType("[]*calendar.Event"),
-		mock.AnythingOfType("string")).
+		schedule.PermissionUserBackground).
 		Return(errors.New("error creating job"))
 
 	scheduleConfig := configForJob("backup", "sched")
@@ -89,7 +92,8 @@ func TestRemoveJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
-	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		RunAndReturn(func(scheduleConfig *schedule.Config, _ schedule.Permission) error {
 			assert.Equal(t, "profile", scheduleConfig.ProfileName)
 			assert.Equal(t, "backup", scheduleConfig.CommandName)
@@ -107,7 +111,8 @@ func TestRemoveJobNoConfig(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
-	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		RunAndReturn(func(scheduleConfig *schedule.Config, _ schedule.Permission) error {
 			assert.Equal(t, "profile", scheduleConfig.ProfileName)
 			assert.Equal(t, "backup", scheduleConfig.CommandName)
@@ -125,7 +130,8 @@ func TestFailRemoveJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
-	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		Return(errors.New("error removing job"))
 
 	scheduleConfig := configForJob("backup", "sched")
@@ -139,7 +145,8 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
-	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		Return(schedule.ErrScheduledJobNotFound)
 
 	scheduleConfig := configForJob("backup", "sched")
@@ -153,7 +160,8 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
-	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), mock.AnythingOfType("string")).
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		Return(schedule.ErrScheduledJobNotFound)
 
 	scheduleConfig := configForJob("backup")
@@ -208,14 +216,14 @@ func TestRemoveScheduledJobs(t *testing.T) {
 		fromConfigFile    string
 		scheduledConfigs  []schedule.Config
 		removedConfigs    []schedule.Config
-		permission        string
+		permission        schedule.Permission
 	}{
 		{
 			removeProfileName: "profile_no_config",
 			fromConfigFile:    "configFile",
 			scheduledConfigs:  []schedule.Config{},
 			removedConfigs:    []schedule.Config{},
-			permission:        "user",
+			permission:        schedule.PermissionUserBackground,
 		},
 		{
 			removeProfileName: "profile_one_config_to_remove",
@@ -225,7 +233,7 @@ func TestRemoveScheduledJobs(t *testing.T) {
 					ProfileName: "profile_one_config_to_remove",
 					CommandName: "backup",
 					ConfigFile:  "configFile",
-					Permission:  "user",
+					Permission:  constants.SchedulePermissionUser,
 				},
 			},
 			removedConfigs: []schedule.Config{
@@ -233,10 +241,10 @@ func TestRemoveScheduledJobs(t *testing.T) {
 					ProfileName: "profile_one_config_to_remove",
 					CommandName: "backup",
 					ConfigFile:  "configFile",
-					Permission:  "user",
+					Permission:  constants.SchedulePermissionUser,
 				},
 			},
-			permission: "user",
+			permission: schedule.PermissionUserBackground,
 		},
 		{
 			removeProfileName: "profile_different_config_file",
@@ -246,11 +254,11 @@ func TestRemoveScheduledJobs(t *testing.T) {
 					ProfileName: "profile_different_config_file",
 					CommandName: "backup",
 					ConfigFile:  "other_configFile",
-					Permission:  "user",
+					Permission:  constants.SchedulePermissionUser,
 				},
 			},
 			removedConfigs: []schedule.Config{},
-			permission:     "user",
+			permission:     schedule.PermissionUserBackground,
 		},
 	}
 
@@ -263,6 +271,7 @@ func TestRemoveScheduledJobs(t *testing.T) {
 			handler.EXPECT().Scheduled(tc.removeProfileName).Return(tc.scheduledConfigs, nil)
 			for _, cfg := range tc.removedConfigs {
 				handler.EXPECT().RemoveJob(&cfg, tc.permission).Return(nil)
+				handler.EXPECT().DetectSchedulePermission(tc.permission).Return(tc.permission, true)
 			}
 
 			err := removeScheduledJobs(handler, tc.fromConfigFile, tc.removeProfileName)
@@ -283,15 +292,16 @@ func TestFailRemoveScheduledJobs(t *testing.T) {
 			ProfileName: "profile_to_remove",
 			CommandName: "backup",
 			ConfigFile:  "configFile",
-			Permission:  "user",
+			Permission:  constants.SchedulePermissionUser,
 		},
 	}, nil)
 	handler.EXPECT().RemoveJob(&schedule.Config{
 		ProfileName: "profile_to_remove",
 		CommandName: "backup",
 		ConfigFile:  "configFile",
-		Permission:  "user",
-	}, "user").Return(errors.New("impossible"))
+		Permission:  constants.SchedulePermissionUser,
+	}, schedule.PermissionUserBackground).Return(errors.New("impossible"))
+	handler.EXPECT().DetectSchedulePermission(schedule.PermissionUserBackground).Return(schedule.PermissionUserBackground, true)
 
 	err := removeScheduledJobs(handler, "configFile", "profile_to_remove")
 	assert.Error(t, err)
@@ -378,7 +388,7 @@ func TestFailStatusScheduledJobs(t *testing.T) {
 			ProfileName: "profile_name",
 			CommandName: "backup",
 			ConfigFile:  "configFile",
-			Permission:  "user",
+			Permission:  constants.SchedulePermissionUser,
 		},
 	}, nil)
 	handler.EXPECT().DisplaySchedules("profile_name", "backup", []string(nil)).Return(errors.New("impossible"))
