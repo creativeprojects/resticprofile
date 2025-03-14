@@ -113,9 +113,8 @@ self:
             - "/**/.git/"
         schedule:
             - "*:00,30"
-        schedule-permission: user
+        schedule-permission: user_logged_on
         schedule-log: "_schedule-log.txt"
-        schedule-ignore-on-battery: true
         schedule-after-network-online: true
         skip-if-unchanged: true
 
@@ -126,20 +125,20 @@ self:
         - "echo restic stderr = ${RESTIC_STDERR}"
     check:
         read-data-subset: "$DOW/7"
-        schedule:
-            - "*:15"
+    #     schedule:
+    #         - "*:15"
     retention:
         after-backup: true
         keep-last: 30
         group-by: host
-    forget:
-        schedule: "weekly"
-        schedule-priority: background
-    copy:
-        initialize: true
-        snapshot: latest
-        schedule:
-            - "*:45"
+    # forget:
+    #     schedule: "weekly"
+    #     schedule-priority: background
+    # copy:
+    #     initialize: true
+    #     snapshot: latest
+    #     schedule:
+    #         - "*:45"
     snapshots:
         host: true
         run-before:

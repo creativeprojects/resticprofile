@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
-	"slices"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -28,16 +27,18 @@ import (
 
 // Default paths for launchd files
 const (
-	launchdBin      = "launchd"
-	launchctlBin    = "launchctl"
-	launchdStart    = "start"
-	launchdStop     = "stop"
-	launchdLoad     = "load"
-	launchdUnload   = "unload"
-	launchdList     = "list"
-	UserAgentPath   = "Library/LaunchAgents"
-	GlobalAgentPath = "/Library/LaunchAgents"
-	GlobalDaemons   = "/Library/LaunchDaemons"
+	launchdBin       = "launchd"
+	launchctlBin     = "launchctl"
+	launchdStart     = "start"
+	launchdStop      = "stop"
+	launchdLoad      = "load"
+	launchdUnload    = "unload"
+	launchdBootstrap = "bootstrap"
+	launchdBootout   = "bootout"
+	launchdList      = "list"
+	UserAgentPath    = "Library/LaunchAgents"
+	GlobalAgentPath  = "/Library/LaunchAgents"
+	GlobalDaemons    = "/Library/LaunchDaemons"
 
 	namePrefix      = "local.resticprofile." // namePrefix is the prefix used for all launchd job labels managed by resticprofile
 	agentExtension  = ".agent.plist"
@@ -90,7 +91,7 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 	}
 
 	// load the service
-	cmd := exec.Command(launchctlBin, launchdLoad, filename)
+	cmd := exec.Command(launchctlBin, launchdBootstrap, domainTarget(permission), filename)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -124,15 +125,15 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission Permission) error {
 	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
 		return ErrScheduledJobNotFound
 	}
-	// stop the service in case it's already running
-	stop := exec.Command(launchctlBin, launchdStop, name)
-	stop.Stdout = os.Stdout
-	stop.Stderr = os.Stderr
-	// keep going if there's an error here
-	_ = stop.Run()
+	// // stop the service in case it's already running
+	// stop := exec.Command(launchctlBin, launchdStop, name)
+	// stop.Stdout = os.Stdout
+	// stop.Stderr = os.Stderr
+	// // keep going if there's an error here
+	// _ = stop.Run()
 
 	// unload the service
-	unload := exec.Command(launchctlBin, launchdUnload, filename)
+	unload := exec.Command(launchctlBin, launchdBootout, domainTarget(permission)+"/"+getJobName(job.ProfileName, job.CommandName))
 	unload.Stdout = os.Stdout
 	unload.Stderr = os.Stderr
 	err = unload.Run()
@@ -168,9 +169,9 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	// order keys alphabetically
 	keys := make([]string, 0, len(status))
 	for key := range status {
-		if slices.Contains([]string{"LimitLoadToSessionType", "OnDemand"}, key) {
-			continue
-		}
+		// if slices.Contains([]string{"LimitLoadToSessionType", "OnDemand"}, key) {
+		// 	continue
+		// }
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
@@ -390,6 +391,21 @@ func parseStatus(status string) map[string]string {
 		}
 	}
 	return output
+}
+
+func domainTarget(permission Permission) string {
+	switch permission {
+	case PermissionSystem:
+		return "system"
+	case PermissionUserLoggedOn:
+		return fmt.Sprintf("gui/%d", os.Getuid())
+
+	case PermissionUserBackground:
+		return fmt.Sprintf("user/%d", os.Getuid())
+
+	default:
+		return ""
+	}
 }
 
 // init registers HandlerLaunchd
