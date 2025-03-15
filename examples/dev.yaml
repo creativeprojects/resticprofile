@@ -125,8 +125,9 @@ self:
         - "echo restic stderr = ${RESTIC_STDERR}"
     check:
         read-data-subset: "$DOW/7"
-    #     schedule:
-    #         - "*:15"
+        schedule:
+            - "*:05,10,15,20,25,35"
+        schedule-permission: user
     retention:
         after-backup: true
         keep-last: 30

@@ -27,12 +27,7 @@ import (
 
 // Default paths for launchd files
 const (
-	launchdBin       = "launchd"
-	launchctlBin     = "launchctl"
-	launchdStart     = "start"
-	launchdStop      = "stop"
-	launchdLoad      = "load"
-	launchdUnload    = "unload"
+	launchctlBin     = "/bin/launchctl"
 	launchdBootstrap = "bootstrap"
 	launchdBootout   = "bootout"
 	launchdList      = "list"
@@ -54,7 +49,7 @@ type HandlerLaunchd struct {
 
 // Init verifies launchd is available on this system
 func (h *HandlerLaunchd) Init() error {
-	return lookupBinary("launchd", launchdBin)
+	return lookupBinary("launchd", launchctlBin)
 }
 
 // Close does nothing with launchd
@@ -90,7 +85,7 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	cmd := exec.Command(launchctlBin, launchdBootstrap, domainTarget(permission), filename)
+	cmd := launchctlCommand(launchdBootstrap, domainTarget(permission), filename)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -113,7 +108,7 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission Permission) error {
 		return ErrScheduledJobNotFound
 	}
 
-	unload := exec.Command(launchctlBin, launchdBootout, domainTarget(permission)+"/"+name)
+	unload := launchctlCommand(launchdBootout, domainTarget(permission)+"/"+name)
 	unload.Stdout = os.Stdout
 	unload.Stderr = os.Stderr
 	err = unload.Run()
@@ -133,7 +128,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	if ok := permission.Check(); !ok {
 		return permissionError("view")
 	}
-	cmd := exec.Command(launchctlBin, launchdList, getJobName(job.ProfileName, job.CommandName))
+	cmd := launchctlCommand(launchdList, getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
 		return ErrScheduledJobNotFound
@@ -231,7 +226,9 @@ func (h *HandlerLaunchd) getScheduledJob(profileName, permission string) []Confi
 			continue
 		}
 		if job != nil {
-			job.Permission = permission
+			if job.Permission == "" {
+				job.Permission = permission
+			}
 			jobs = append(jobs, *job)
 		}
 	}
@@ -288,6 +285,17 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading plist file: %w", err)
 	}
+
+	permission := ""
+	switch launchdJob.LimitLoadToSessionType {
+	case "", "Aqua":
+		permission = constants.SchedulePermissionUserLoggedOn
+	case "Background":
+		permission = constants.SchedulePermissionUser
+	case "System":
+		permission = constants.SchedulePermissionSystem
+	}
+
 	args := NewCommandArguments(launchdJob.ProgramArguments[2:]) // first is binary, second is --no-prio
 	job := &Config{
 		ProfileName:      profileName,
@@ -297,6 +305,7 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 		Arguments:        args,
 		WorkingDirectory: launchdJob.WorkingDirectory,
 		Schedules:        darwin.ParseCalendarIntervals(launchdJob.StartCalendarInterval),
+		Permission:       permission,
 	}
 	return job, nil
 }
@@ -386,6 +395,11 @@ func domainTarget(permission Permission) string {
 	default:
 		return ""
 	}
+}
+
+func launchctlCommand(arg ...string) *exec.Cmd {
+	clog.Debugf("running command: '%s %s'", launchctlBin, strings.Join(arg, " "))
+	return exec.Command(launchctlBin, arg...)
 }
 
 // init registers HandlerLaunchd
