@@ -90,7 +90,6 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	// load the service
 	cmd := exec.Command(launchctlBin, launchdBootstrap, domainTarget(permission), filename)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -99,18 +98,6 @@ func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	if _, start := job.GetFlag("start"); start {
-		name := getJobName(job.ProfileName, job.CommandName)
-
-		// start the service
-		cmd := exec.Command(launchctlBin, launchdStart, name)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -125,15 +112,8 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission Permission) error {
 	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
 		return ErrScheduledJobNotFound
 	}
-	// // stop the service in case it's already running
-	// stop := exec.Command(launchctlBin, launchdStop, name)
-	// stop.Stdout = os.Stdout
-	// stop.Stderr = os.Stderr
-	// // keep going if there's an error here
-	// _ = stop.Run()
 
-	// unload the service
-	unload := exec.Command(launchctlBin, launchdBootout, domainTarget(permission)+"/"+getJobName(job.ProfileName, job.CommandName))
+	unload := exec.Command(launchctlBin, launchdBootout, domainTarget(permission)+"/"+name)
 	unload.Stdout = os.Stdout
 	unload.Stderr = os.Stderr
 	err = unload.Run()

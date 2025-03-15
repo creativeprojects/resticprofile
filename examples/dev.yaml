@@ -112,7 +112,7 @@ self:
         exclude:
             - "/**/.git/"
         schedule:
-            - "*:00,30"
+            - "*:00,30,50,55"
         schedule-permission: user_logged_on
         schedule-log: "_schedule-log.txt"
         schedule-after-network-online: true
