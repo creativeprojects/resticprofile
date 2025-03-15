@@ -13,15 +13,18 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"text/tabwriter"
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/batt"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/win"
+	"github.com/distatus/battery"
 )
 
 var (
@@ -154,6 +157,13 @@ func getOwnCommands() []ownCommand {
 			name:              "panic",
 			description:       "(debug only) simulates a panic",
 			action:            panicCommand,
+			needConfiguration: false,
+			hide:              true,
+		},
+		{
+			name:              "battery",
+			description:       "check battery status",
+			action:            batteryCommand,
 			needConfiguration: false,
 			hide:              true,
 		},
@@ -360,5 +370,28 @@ func elevated() error {
 	// wait until the server is done
 	<-done
 
+	return nil
+}
+
+func batteryCommand(stdout io.Writer, _ commandContext) error {
+	all, err := batt.Batteries()
+	if err != nil {
+		if errors.Is(err, battery.ErrFatal{}) {
+			return fmt.Errorf("error loading battery information: %w", err)
+		}
+		clog.Errorf("error loading battery information: %s", err)
+	}
+	if len(all) == 0 {
+		clog.Info("no battery detected")
+		return nil
+	}
+	fmt.Fprintln(stdout, "")
+	w := tabwriter.NewWriter(stdout, 2, 2, 2, ' ', tabwriter.AlignRight)
+	fmt.Fprintf(w, "Battery\tStatus\tCurrent capacity\tFull capacity\tDesign Capacity\tCharge Rate\tVoltage\t\n")
+	for index, batt := range all {
+		fmt.Fprintf(w, "#%d\t%s\t%.2f mWh\t%.2f mWh\t%.2f mWh\t%.2f mWh\t%.2f V\t\n", index, batt.State, batt.Current, batt.Full, batt.Design, batt.ChargeRate, batt.Voltage)
+	}
+	w.Flush()
+	fmt.Fprintln(stdout, "")
 	return nil
 }

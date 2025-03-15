@@ -10,6 +10,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/batt"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/filesearch"
@@ -325,7 +326,7 @@ func setPriority(nice int, class string) error {
 
 func shouldStopOnBattery(batteryLimit int) bool {
 	if batteryLimit > 0 && batteryLimit <= constants.BatteryFull {
-		battery, charge, err := IsRunningOnBattery()
+		battery, charge, err := batt.IsRunningOnBattery()
 		if err != nil {
 			clog.Errorf("cannot check if the computer is running on battery: %s", err)
 		}

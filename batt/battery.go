@@ -1,4 +1,4 @@
-package main
+package batt
 
 import (
 	"math"
@@ -7,11 +7,29 @@ import (
 	"github.com/distatus/battery"
 )
 
+// Batteries return all connected batteries information
+func Batteries() ([]battery.Battery, error) {
+	batteries, err := battery.GetAll()
+	output := make([]battery.Battery, 0, len(batteries))
+	for _, battery := range batteries {
+		if battery == nil {
+			continue
+		}
+		if (battery.Design == 0 && battery.Full == 0) && battery.Voltage == 0 {
+			// bug in recent mac OS hardware that returns ghost battery information
+			// https://github.com/distatus/battery/issues/34
+			continue
+		}
+		output = append(output, *battery)
+	}
+	return output, err
+}
+
 // IsRunningOnBattery returns true if the computer is running on battery,
 // followed by the percentage of battery remaining. If no battery is present
 // the percentage will be 0.
 func IsRunningOnBattery() (bool, int, error) {
-	batteries, err := battery.GetAll()
+	batteries, err := Batteries()
 	if err != nil {
 		err = isFatalError(err)
 		if err != nil {
@@ -56,7 +74,7 @@ func isFatalError(err error) error {
 }
 
 // detectRunningOnBattery returns true if all batteries are discharging
-func detectRunningOnBattery(batteries []*battery.Battery) bool {
+func detectRunningOnBattery(batteries []battery.Battery) bool {
 	pluggedIn := false
 	discharging := false
 	for _, bat := range batteries {
@@ -69,7 +87,7 @@ func detectRunningOnBattery(batteries []*battery.Battery) bool {
 	return !pluggedIn && discharging
 }
 
-func averageBatteryLevel(batteries []*battery.Battery) float64 {
+func averageBatteryLevel(batteries []battery.Battery) float64 {
 	var total, count float64
 	for _, bat := range batteries {
 		if bat.Full <= 0 {
