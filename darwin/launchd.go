@@ -96,5 +96,5 @@ type LaunchdJob struct {
 	// runs only in non-GUI login session (e.g. SSH sessions)
 	//   System:
 	// runs in the system context
-	LimitLoadToSessionType SessionType `plist:"LimitLoadToSessionType"`
+	LimitLoadToSessionType SessionType `plist:"LimitLoadToSessionType,omitempty"`
 }

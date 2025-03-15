@@ -7,14 +7,17 @@ import "github.com/creativeprojects/resticprofile/constants"
 type SessionType string
 
 const (
+	SessionTypeDefault    SessionType = ""
 	SessionTypeGUI        SessionType = "Aqua"
 	SessionTypeBackground SessionType = "Background"
+	SessionTypeStandardIO SessionType = "StandardIO"
+	SessionTypeSystem     SessionType = "System"
 )
 
 func NewSessionType(permission string) SessionType {
 	switch permission {
 	case constants.SchedulePermissionSystem:
-		return SessionTypeBackground
+		return SessionTypeSystem
 
 	case constants.SchedulePermissionUser:
 		return SessionTypeBackground
@@ -24,6 +27,6 @@ func NewSessionType(permission string) SessionType {
 
 	default:
 		// this was the only option available before 0.30.0
-		return SessionTypeGUI
+		return SessionTypeDefault
 	}
 }

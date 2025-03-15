@@ -9,6 +9,7 @@ import (
 	"path"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -288,11 +289,11 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 
 	permission := ""
 	switch launchdJob.LimitLoadToSessionType {
-	case "", "Aqua":
+	case darwin.SessionTypeDefault, darwin.SessionTypeGUI:
 		permission = constants.SchedulePermissionUserLoggedOn
-	case "Background":
+	case darwin.SessionTypeBackground:
 		permission = constants.SchedulePermissionUser
-	case "System":
+	case darwin.SessionTypeSystem:
 		permission = constants.SchedulePermissionSystem
 	}
 
@@ -383,14 +384,22 @@ func parseStatus(status string) map[string]string {
 }
 
 func domainTarget(permission Permission) string {
+	// after a sudo, macOs returns the root user on both os.Getuid() and os.Geteuid()
+	// to detect the logged on user after a sudo, we need to use the environment variable
+	uid := os.Getuid()
+	if userid, sudo := os.LookupEnv("SUDO_UID"); sudo {
+		if temp, err := strconv.Atoi(userid); err == nil {
+			uid = temp
+		}
+	}
 	switch permission {
 	case PermissionSystem:
 		return "system"
 	case PermissionUserLoggedOn:
-		return fmt.Sprintf("gui/%d", os.Getuid())
+		return fmt.Sprintf("gui/%d", uid)
 
 	case PermissionUserBackground:
-		return fmt.Sprintf("user/%d", os.Getuid())
+		return fmt.Sprintf("user/%d", uid)
 
 	default:
 		return ""

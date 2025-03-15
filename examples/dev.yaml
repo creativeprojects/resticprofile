@@ -132,9 +132,9 @@ self:
         after-backup: true
         keep-last: 30
         group-by: host
-    # forget:
-    #     schedule: "weekly"
-    #     schedule-priority: background
+    forget:
+        schedule: "weekly"
+        schedule-permission: system
     # copy:
     #     initialize: true
     #     snapshot: latest
