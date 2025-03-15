@@ -1,4 +1,4 @@
-package main
+package batt
 
 import (
 	"errors"
@@ -79,12 +79,12 @@ func TestIsFatalError(t *testing.T) {
 
 func TestDetectRunningOnBattery(t *testing.T) {
 	fixtures := []struct {
-		batteries        []*battery.Battery
+		batteries        []battery.Battery
 		runningOnBattery bool
 	}{
 		// one discharging
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Discharging,
@@ -95,7 +95,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one charging
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Charging,
@@ -106,7 +106,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one full
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Full,
@@ -117,7 +117,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one idle (usually at around 80%)
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Idle,
@@ -128,7 +128,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one unknown (we consider this as not running on battery)
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Unknown,
@@ -139,7 +139,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one discharging, one charging
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Discharging,
@@ -155,7 +155,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one discharging, one full
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Discharging,
@@ -171,7 +171,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one discharging, one idle (usually at around 80%)
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Discharging,
@@ -187,7 +187,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one discharging, one unknown (we consider this as not running on battery)
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Discharging,
@@ -203,7 +203,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one charging, one discharging
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Charging,
@@ -219,7 +219,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one charging, one full
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Charging,
@@ -235,7 +235,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one charging, one idle (usually at around 80%)
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Charging,
@@ -251,7 +251,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one charging, one unknown (we consider this as not running on battery)
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Charging,
@@ -267,7 +267,7 @@ func TestDetectRunningOnBattery(t *testing.T) {
 		},
 		// one full, one discharging
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					State: battery.State{
 						Raw: battery.Full,
@@ -293,15 +293,15 @@ func TestDetectRunningOnBattery(t *testing.T) {
 
 func TestAverageBatteryLevel(t *testing.T) {
 	fixtures := []struct {
-		batteries []*battery.Battery
+		batteries []battery.Battery
 		average   float64
 	}{
 		{
-			[]*battery.Battery{},
+			[]battery.Battery{},
 			0,
 		},
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					Current: 0,
 					Full:    0,
@@ -310,7 +310,7 @@ func TestAverageBatteryLevel(t *testing.T) {
 			0,
 		},
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					Current: 10,
 					Full:    100,
@@ -319,7 +319,7 @@ func TestAverageBatteryLevel(t *testing.T) {
 			10,
 		},
 		{
-			[]*battery.Battery{
+			[]battery.Battery{
 				{
 					Current: 10,
 					Full:    100,
