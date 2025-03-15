@@ -453,3 +453,9 @@ func TestRunScheduleProfileUnknown(t *testing.T) {
 	})
 	assert.ErrorIs(t, err, ErrProfileNotFound)
 }
+
+func TestBatteryCommand(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	err := batteryCommand(buffer, commandContext{})
+	require.NoError(t, err)
+}

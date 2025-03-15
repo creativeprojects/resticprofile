@@ -15,7 +15,7 @@ func Batteries() ([]battery.Battery, error) {
 		if battery == nil {
 			continue
 		}
-		if (battery.Design == 0 && battery.Full == 0) && battery.Voltage == 0 {
+		if battery.Design == 0 && battery.Full == 0 && battery.Voltage == 0 {
 			// bug in recent mac OS hardware that returns ghost battery information
 			// https://github.com/distatus/battery/issues/34
 			continue
