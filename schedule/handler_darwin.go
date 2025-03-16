@@ -3,11 +3,13 @@
 package schedule
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -409,6 +411,31 @@ func domainTarget(permission Permission) string {
 func launchctlCommand(arg ...string) *exec.Cmd {
 	clog.Debugf("running command: '%s %s'", launchctlBin, strings.Join(arg, " "))
 	return exec.Command(launchctlBin, arg...)
+}
+
+type keyValue struct {
+	key   string
+	value string
+}
+
+func parsePrint(output []byte) ([]keyValue, error) {
+	keys := []string{"state"}
+	info := make([]keyValue, 0, 10)
+	lines := bytes.Split(output, []byte{'\n'})
+	for _, line := range lines {
+		line = bytes.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+		if key, value, found := bytes.Cut(line, []byte{'='}); found {
+			strKey := string(bytes.TrimSpace(key))
+			strValue := string(bytes.TrimSpace(value))
+			if slices.Contains(keys, strKey) {
+				info = append(info, keyValue{strKey, strValue})
+			}
+		}
+	}
+	return info, nil
 }
 
 // init registers HandlerLaunchd

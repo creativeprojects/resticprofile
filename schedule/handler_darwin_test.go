@@ -197,3 +197,36 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 
 	assert.ElementsMatch(t, expectedJobs, scheduled)
 }
+
+func TestDisplayStatusOnGUIAgent(t *testing.T) {
+	output, err := os.ReadFile("print_gui.txt")
+	require.NoError(t, err)
+
+	info, err := parsePrint(output)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, info, []keyValue{
+		{"state", "not running"},
+	})
+}
+
+func TestDisplayStatusOnUserAgent(t *testing.T) {
+	output, err := os.ReadFile("print_user.txt")
+	require.NoError(t, err)
+
+	info, err := parsePrint(output)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, info, []keyValue{
+		{"state", "not running"},
+	})
+}
+
+func TestDisplayStatusOnSystemAgent(t *testing.T) {
+	output, err := os.ReadFile("print_system.txt")
+	require.NoError(t, err)
+
+	info, err := parsePrint(output)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, info, []keyValue{
+		{"state", "not running"},
+	})
+}
