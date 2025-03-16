@@ -5,7 +5,10 @@ package schedule
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"os"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -198,35 +201,29 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 	assert.ElementsMatch(t, expectedJobs, scheduled)
 }
 
-func TestDisplayStatusOnGUIAgent(t *testing.T) {
-	output, err := os.ReadFile("print_gui.txt")
-	require.NoError(t, err)
+func TestParsePrint(t *testing.T) {
+	t.Parallel()
+	files := []string{"print_gui.txt", "print_user.txt", "print_system.txt"}
 
-	info, err := parsePrint(output)
-	require.NoError(t, err)
-	assert.ElementsMatch(t, info, []keyValue{
-		{"state", "not running"},
-	})
+	for _, filename := range files {
+		t.Run(filename, func(t *testing.T) {
+			t.Parallel()
+
+			output, err := os.ReadFile(filename)
+			require.NoError(t, err)
+
+			info := parsePrint(output)
+			assertMapHasKeys(t, info, []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"})
+		})
+	}
 }
 
-func TestDisplayStatusOnUserAgent(t *testing.T) {
-	output, err := os.ReadFile("print_user.txt")
-	require.NoError(t, err)
+func assertMapHasKeys(t *testing.T, source map[string]string, keys []string) {
+	t.Helper()
 
-	info, err := parsePrint(output)
-	require.NoError(t, err)
-	assert.ElementsMatch(t, info, []keyValue{
-		{"state", "not running"},
-	})
-}
-
-func TestDisplayStatusOnSystemAgent(t *testing.T) {
-	output, err := os.ReadFile("print_system.txt")
-	require.NoError(t, err)
-
-	info, err := parsePrint(output)
-	require.NoError(t, err)
-	assert.ElementsMatch(t, info, []keyValue{
-		{"state", "not running"},
-	})
+	for _, key := range keys {
+		if _, found := source[key]; !found {
+			t.Errorf("key %q not found in map, available keys are: %s", key, strings.Join(slices.Collect(maps.Keys(source)), ", "))
+		}
+	}
 }

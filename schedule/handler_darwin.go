@@ -9,9 +9,6 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
-	"slices"
-	"sort"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -34,6 +31,7 @@ const (
 	launchdBootstrap = "bootstrap"
 	launchdBootout   = "bootout"
 	launchdList      = "list"
+	launchdPrint     = "print"
 	UserAgentPath    = "Library/LaunchAgents"
 	GlobalAgentPath  = "/Library/LaunchAgents"
 	GlobalDaemons    = "/Library/LaunchDaemons"
@@ -128,10 +126,10 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission Permission) error {
 
 func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
-	if ok := permission.Check(); !ok {
-		return permissionError("view")
-	}
-	cmd := launchctlCommand(launchdList, getJobName(job.ProfileName, job.CommandName))
+	// if ok := permission.Check(); !ok {
+	// 	return permissionError("view")
+	// }
+	cmd := launchctlCommand(launchdPrint, domainTarget(permission)+"/"+getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
 		return ErrScheduledJobNotFound
@@ -139,20 +137,12 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	if err != nil {
 		return err
 	}
-	status := parseStatus(string(output))
+	status := parsePrint(output)
 	if len(status) == 0 {
 		// output was not parsed, it could mean output format has changed
-		fmt.Println(string(output))
+		clog.Warning("output of 'launchctl print' was either empty or using an incompatible format")
 	}
-	// order keys alphabetically
-	keys := make([]string, 0, len(status))
-	for key := range status {
-		// if slices.Contains([]string{"LimitLoadToSessionType", "OnDemand"}, key) {
-		// 	continue
-		// }
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
+	keys := []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"}
 	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
 	for _, key := range keys {
 		fmt.Fprintf(writer, "%s:\t %s\n", spacedTitle(key), status[key])
@@ -328,6 +318,12 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permissi
 	}
 	defer file.Close()
 
+	// if running using sudo, a user task file would end up being owned by root
+	user := darwin.CurrentUser()
+	if permission != PermissionSystem && user.SudoRoot {
+		_ = h.fs.Chown(filename, user.Uid, user.Gid)
+	}
+
 	encoder := plist.NewEncoder(file)
 	encoder.Indent("\t")
 	err = encoder.Encode(launchdJob)
@@ -386,22 +382,14 @@ func parseStatus(status string) map[string]string {
 }
 
 func domainTarget(permission Permission) string {
-	// after a sudo, macOs returns the root user on both os.Getuid() and os.Geteuid()
-	// to detect the logged on user after a sudo, we need to use the environment variable
-	uid := os.Getuid()
-	if userid, sudo := os.LookupEnv("SUDO_UID"); sudo {
-		if temp, err := strconv.Atoi(userid); err == nil {
-			uid = temp
-		}
-	}
 	switch permission {
 	case PermissionSystem:
 		return "system"
 	case PermissionUserLoggedOn:
-		return fmt.Sprintf("gui/%d", uid)
+		return fmt.Sprintf("gui/%d", darwin.CurrentUser().Uid)
 
 	case PermissionUserBackground:
-		return fmt.Sprintf("user/%d", uid)
+		return fmt.Sprintf("user/%d", darwin.CurrentUser().Uid)
 
 	default:
 		return ""
@@ -413,29 +401,26 @@ func launchctlCommand(arg ...string) *exec.Cmd {
 	return exec.Command(launchctlBin, arg...)
 }
 
-type keyValue struct {
-	key   string
-	value string
-}
-
-func parsePrint(output []byte) ([]keyValue, error) {
-	keys := []string{"state"}
-	info := make([]keyValue, 0, 10)
+func parsePrint(output []byte) map[string]string {
+	info := make(map[string]string, 10)
 	lines := bytes.Split(output, []byte{'\n'})
 	for _, line := range lines {
 		line = bytes.TrimSpace(line)
 		if len(line) == 0 {
 			continue
 		}
+		if bytes.Contains(line, []byte("=>")) {
+			continue
+		}
 		if key, value, found := bytes.Cut(line, []byte{'='}); found {
 			strKey := string(bytes.TrimSpace(key))
 			strValue := string(bytes.TrimSpace(value))
-			if slices.Contains(keys, strKey) {
-				info = append(info, keyValue{strKey, strValue})
+			if strValue != "{" {
+				info[strKey] = strValue
 			}
 		}
 	}
-	return info, nil
+	return info
 }
 
 // init registers HandlerLaunchd
