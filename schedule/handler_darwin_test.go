@@ -41,39 +41,6 @@ func TestPListEncoderWithCalendarInterval(t *testing.T) {
 	assert.Equal(t, expected, buffer.String())
 }
 
-func TestParseStatus(t *testing.T) {
-	status := `{
-	"StandardOutPath" = "local.resticprofile.self.check.log";
-	"LimitLoadToSessionType" = "Aqua";
-	"StandardErrorPath" = "local.resticprofile.self.check.log";
-	"Label" = "local.resticprofile.self.check";
-	"OnDemand" = true;
-	"LastExitStatus" = 0;
-	"Program" = "/Users/go/src/github.com/creativeprojects/resticprofile/resticprofile";
-	"ProgramArguments" = (
-		"/Users/go/src/github.com/creativeprojects/resticprofile/resticprofile";
-		"--no-ansi";
-		"--config";
-		"examples/dev.yaml";
-		"--name";
-		"self";
-		"check";
-	);
-};`
-	expected := map[string]string{
-		"StandardOutPath":        "local.resticprofile.self.check.log",
-		"LimitLoadToSessionType": "Aqua",
-		"StandardErrorPath":      "local.resticprofile.self.check.log",
-		"Label":                  "local.resticprofile.self.check",
-		"OnDemand":               "true",
-		"LastExitStatus":         "0",
-		"Program":                "/Users/go/src/github.com/creativeprojects/resticprofile/resticprofile",
-	}
-
-	output := parseStatus(status)
-	assert.Equal(t, expected, output)
-}
-
 func TestHandlerInstanceDefault(t *testing.T) {
 	handler := NewHandler(SchedulerDefaultOS{})
 	assert.NotNil(t, handler)
@@ -202,20 +169,89 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 }
 
 func TestParsePrint(t *testing.T) {
-	t.Parallel()
-	files := []string{"print_gui.txt", "print_user.txt", "print_system.txt"}
+	const launchctlOutput = `user/503/local.resticprofile.self.check = {
+	active count = 0
+	path = /Users/cp/Library/LaunchAgents/local.resticprofile.self.check.agent.plist
+	type = LaunchAgent
+	state = not running
 
-	for _, filename := range files {
-		t.Run(filename, func(t *testing.T) {
-			t.Parallel()
-
-			output, err := os.ReadFile(filename)
-			require.NoError(t, err)
-
-			info := parsePrint(output)
-			assertMapHasKeys(t, info, []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"})
-		})
+	program = /Users/cp/go/src/github.com/creativeprojects/resticprofile/resticprofile
+	arguments = {
+		/Users/cp/go/src/github.com/creativeprojects/resticprofile/resticprofile
+		--no-prio
+		--no-ansi
+		--config
+		examples/dev.yaml
+		run-schedule
+		check@self
 	}
+
+	working directory = /Users/cp/go/src/github.com/creativeprojects/resticprofile
+
+	stdout path = local.resticprofile.self.check.log
+	stderr path = local.resticprofile.self.check.log
+	default environment = {
+		PATH => /usr/bin:/bin:/usr/sbin:/sbin
+	}
+
+	environment = {
+		PATH => /usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/cp/go/bin
+		RESTICPROFILE_SCHEDULE_ID => examples/dev.yaml:check@self
+		XPC_SERVICE_NAME => local.resticprofile.self.check
+	}
+
+	domain = user/503
+	asid = 100008
+	minimum runtime = 10
+	exit timeout = 5
+	nice = 0
+	runs = 1
+	last exit code = 0
+
+	event triggers = {
+		local.resticprofile.self.check.267436470 => {
+			keepalive = 0
+			service = local.resticprofile.self.check
+			stream = com.apple.launchd.calendarinterval
+			monitor = com.apple.UserEventAgent-Aqua
+			descriptor = {
+				"Minute" => 5
+			}
+		}
+	}
+
+	event channels = {
+		"com.apple.launchd.calendarinterval" = {
+			port = 0xc1851
+			active = 0
+			managed = 1
+			reset = 0
+			hide = 0
+			watching = 1
+		}
+	}
+
+	spawn type = daemon (3)
+	jetsam priority = 40
+	jetsam memory limit (active) = (unlimited)
+	jetsam memory limit (inactive) = (unlimited)
+	jetsamproperties category = daemon
+	jetsam thread limit = 32
+	cpumon = default
+	probabilistic guard malloc policy = {
+		activation rate = 1/1000
+		sample rate = 1/0
+	}
+
+	properties = 
+}
+`
+
+	t.Parallel()
+
+	info := parsePrintStatus([]byte(launchctlOutput))
+	assertMapHasKeys(t, info, []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"})
+
 }
 
 func assertMapHasKeys(t *testing.T, source map[string]string, keys []string) {
@@ -225,5 +261,22 @@ func assertMapHasKeys(t *testing.T, source map[string]string, keys []string) {
 		if _, found := source[key]; !found {
 			t.Errorf("key %q not found in map, available keys are: %s", key, strings.Join(slices.Collect(maps.Keys(source)), ", "))
 		}
+	}
+}
+
+func TestIsServiceRegistered(t *testing.T) {
+	services := []struct {
+		domain       string
+		name         string
+		isRegistered bool
+	}{
+		{"system", "service.that.surely.does.not.exist", false},
+		{"system", "com.apple.fseventsd", true},
+	}
+
+	for _, service := range services {
+		registered, err := isServiceRegistered(service.domain, service.name)
+		require.NoError(t, err)
+		assert.Equal(t, service.isRegistered, registered)
 	}
 }

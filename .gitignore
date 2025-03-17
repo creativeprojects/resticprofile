@@ -3,6 +3,7 @@
 
 .DS_Store
 /examples/private
+/examples/*-log.txt
 /build/restic*
 /build/rclone*
 /dist

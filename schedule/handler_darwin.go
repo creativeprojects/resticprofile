@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
 	"strings"
 	"text/tabwriter"
 
@@ -78,6 +77,16 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 
 // CreateJob creates a plist file and registers it with launchd
 func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
+	exists, err := isServiceRegistered(domainTarget(permission), getJobName(job.ProfileName, job.CommandName))
+	if err != nil {
+		return fmt.Errorf("error listing service: %w", err)
+	}
+	if exists {
+		err := h.RemoveJob(job, permission)
+		if err != nil {
+			return fmt.Errorf("error removing existing job before re-creating: %w", err)
+		}
+	}
 	filename, err := h.createPlistFile(h.getLaunchdJob(job, schedules), permission)
 	if err != nil {
 		if filename != "" {
@@ -126,9 +135,6 @@ func (h *HandlerLaunchd) RemoveJob(job *Config, permission Permission) error {
 
 func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
-	// if ok := permission.Check(); !ok {
-	// 	return permissionError("view")
-	// }
 	cmd := launchctlCommand(launchdPrint, domainTarget(permission)+"/"+getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
 	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
@@ -137,16 +143,18 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	if err != nil {
 		return err
 	}
-	status := parsePrint(output)
+	status := parsePrintStatus(output)
 	if len(status) == 0 {
 		// output was not parsed, it could mean output format has changed
 		clog.Warning("output of 'launchctl print' was either empty or using an incompatible format")
 	}
 	keys := []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"}
-	writer := tabwriter.NewWriter(term.GetOutput(), 0, 0, 0, ' ', tabwriter.AlignRight)
+	writer := tabwriter.NewWriter(term.GetOutput(), 1, 1, 1, ' ', tabwriter.AlignRight)
 	for _, key := range keys {
-		fmt.Fprintf(writer, "%s:\t %s\n", spacedTitle(key), status[key])
+		key, value := presentStatus(key, status[key])
+		fmt.Fprintf(writer, "%s:\t %s\n", key, value)
 	}
+	fmt.Fprintf(writer, "* :\t since last (re)schedule or last reboot\n")
 	writer.Flush()
 	fmt.Println("")
 
@@ -304,13 +312,17 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 }
 
 func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permission Permission) (string, error) {
+	user := darwin.CurrentUser()
 	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
 		return "", err
 	}
 	if permission != PermissionSystem {
 		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
-		_ = h.fs.MkdirAll(path.Dir(filename), 0o700)
+		dir := path.Dir(filename)
+		_ = h.fs.MkdirAll(dir, 0o700)
+		// if running using sudo, the directory would end up being owned by root
+		_ = h.fs.Chown(dir, user.Uid, user.Gid)
 	}
 	file, err := h.fs.Create(filename)
 	if err != nil {
@@ -318,9 +330,8 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permissi
 	}
 	defer file.Close()
 
-	// if running using sudo, a user task file would end up being owned by root
-	user := darwin.CurrentUser()
 	if permission != PermissionSystem && user.SudoRoot {
+		// if running using sudo, a user task file would end up being owned by root
 		_ = h.fs.Chown(filename, user.Uid, user.Gid)
 	}
 
@@ -368,19 +379,6 @@ func getFilename(name string, permission Permission) (string, error) {
 	return path.Join(home, UserAgentPath, name+agentExtension), nil
 }
 
-func parseStatus(status string) map[string]string {
-	expr := regexp.MustCompile(`^\s*"(\w+)"\s*=\s*(.*);$`)
-	lines := strings.Split(status, "\n")
-	output := make(map[string]string, len(lines))
-	for _, line := range lines {
-		match := expr.FindStringSubmatch(line)
-		if len(match) == 3 {
-			output[match[1]] = strings.Trim(match[2], "\"")
-		}
-	}
-	return output
-}
-
 func domainTarget(permission Permission) string {
 	switch permission {
 	case PermissionSystem:
@@ -401,7 +399,7 @@ func launchctlCommand(arg ...string) *exec.Cmd {
 	return exec.Command(launchctlBin, arg...)
 }
 
-func parsePrint(output []byte) map[string]string {
+func parsePrintStatus(output []byte) map[string]string {
 	info := make(map[string]string, 10)
 	lines := bytes.Split(output, []byte{'\n'})
 	for _, line := range lines {
@@ -421,6 +419,35 @@ func parsePrint(output []byte) map[string]string {
 		}
 	}
 	return info
+}
+
+func presentStatus(key, value string) (string, string) {
+	switch key {
+	case "domain":
+		key = "permission"
+		if strings.HasPrefix(value, "gui") {
+			value = "user logged on"
+		} else if strings.HasPrefix(value, "user") {
+			value = "user"
+		}
+		return key, value
+	case "runs", "last exit code":
+		return key + " (*)", value
+	default:
+		return key, value
+	}
+}
+
+func isServiceRegistered(domain, name string) (bool, error) {
+	cmd := launchctlCommand(launchdPrint, fmt.Sprintf("%s/%s", domain, name))
+	err := cmd.Run()
+	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // init registers HandlerLaunchd
