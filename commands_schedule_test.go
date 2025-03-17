@@ -40,11 +40,13 @@ profiles:
   profile-schedule-inline:
     backup:
       schedule: "*:00,30"
+      schedule-permission: "user"
 
   profile-schedule-struct:
     backup:
       schedule:
         at: "*:20,50"
+        permission: "user"
 
 `
 
