@@ -108,11 +108,12 @@ self:
         extended-status: false
         check-before: true
         no-error-on-warning: true
-        source: "{{ .CurrentDir }}"
+        source:
+            - "{{ .CurrentDir }}"
         exclude:
             - "/**/.git/"
         schedule:
-            - "*:00,30,50,55"
+            - "*:00,30,36,50,55"
         schedule-permission: user_logged_on
         schedule-log: "_schedule-log.txt"
         schedule-after-network-online: true

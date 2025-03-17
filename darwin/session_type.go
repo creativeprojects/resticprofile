@@ -30,3 +30,16 @@ func NewSessionType(permission string) SessionType {
 		return SessionTypeDefault
 	}
 }
+
+func (st SessionType) Permission() string {
+	permission := ""
+	switch st {
+	case SessionTypeDefault, SessionTypeGUI:
+		permission = constants.SchedulePermissionUserLoggedOn
+	case SessionTypeBackground:
+		permission = constants.SchedulePermissionUser
+	case SessionTypeSystem:
+		permission = constants.SchedulePermissionSystem
+	}
+	return permission
+}

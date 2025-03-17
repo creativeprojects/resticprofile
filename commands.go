@@ -22,7 +22,6 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/win"
-	"github.com/distatus/battery"
 )
 
 var (
@@ -155,13 +154,6 @@ func getOwnCommands() []ownCommand {
 			name:              "panic",
 			description:       "(debug only) simulates a panic",
 			action:            panicCommand,
-			needConfiguration: false,
-			hide:              true,
-		},
-		{
-			name:              "battery",
-			description:       "check battery status",
-			action:            batteryCommand,
 			needConfiguration: false,
 			hide:              true,
 		},
@@ -368,16 +360,5 @@ func elevated() error {
 	// wait until the server is done
 	<-done
 
-	return nil
-}
-
-func batteryCommand(_ io.Writer, _ commandContext) error {
-	all, err := battery.GetAll()
-	if err != nil {
-		clog.Errorf("loading battery information: %s", err)
-	}
-	for _, batt := range all {
-		clog.Infof("%+v", *batt)
-	}
 	return nil
 }

@@ -130,7 +130,7 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 				Command:          "/bin/resticprofile",
 				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "config file.yaml", "--name", "self", "backup"}),
 				WorkingDirectory: "/resticprofile",
-				Permission:       constants.SchedulePermissionSystem,
+				Permission:       constants.SchedulePermissionUserLoggedOn,
 				ConfigFile:       "config file.yaml",
 				Schedules:        []string{"*-*-* *:00,30:00"},
 			},
@@ -250,7 +250,7 @@ func TestParsePrint(t *testing.T) {
 	t.Parallel()
 
 	info := parsePrintStatus([]byte(launchctlOutput))
-	assertMapHasKeys(t, info, []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"})
+	assertMapHasKeys(t, info, launchctlPrintKeys)
 
 }
 
@@ -279,4 +279,15 @@ func TestIsServiceRegistered(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, service.isRegistered, registered)
 	}
+}
+
+func TestParsePrintSystemService(t *testing.T) {
+	// this test should tell us when the output format of the launchctl print command is changing
+	cmd := launchctlCommand(launchdPrint, "system/com.apple.fseventsd")
+	output, err := cmd.Output()
+	require.NoError(t, err)
+
+	info := parsePrintStatus(output)
+	assert.Greater(t, len(info), 20) // keep a low number to avoid flaky test
+	assert.Equal(t, "system", info["domain"])
 }

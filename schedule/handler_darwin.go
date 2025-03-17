@@ -29,7 +29,6 @@ const (
 	launchctlBin     = "/bin/launchctl"
 	launchdBootstrap = "bootstrap"
 	launchdBootout   = "bootout"
-	launchdList      = "list"
 	launchdPrint     = "print"
 	UserAgentPath    = "Library/LaunchAgents"
 	GlobalAgentPath  = "/Library/LaunchAgents"
@@ -39,8 +38,10 @@ const (
 	agentExtension  = ".agent.plist"
 	daemonExtension = ".plist"
 
-	codeServiceNotFound = 113
+	launchctlServiceNotFound = 113
 )
+
+var launchctlPrintKeys = []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"}
 
 type HandlerLaunchd struct {
 	config SchedulerConfig
@@ -137,7 +138,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
 	cmd := launchctlCommand(launchdPrint, domainTarget(permission)+"/"+getJobName(job.ProfileName, job.CommandName))
 	output, err := cmd.Output()
-	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
+	if cmd.ProcessState.ExitCode() == launchctlServiceNotFound {
 		return ErrScheduledJobNotFound
 	}
 	if err != nil {
@@ -148,10 +149,12 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 		// output was not parsed, it could mean output format has changed
 		clog.Warning("output of 'launchctl print' was either empty or using an incompatible format")
 	}
-	keys := []string{"service", "domain", "program", "working directory", "stdout path", "stderr path", "state", "runs", "last exit code"}
 	writer := tabwriter.NewWriter(term.GetOutput(), 1, 1, 1, ' ', tabwriter.AlignRight)
-	for _, key := range keys {
+	for _, key := range launchctlPrintKeys {
 		key, value := presentStatus(key, status[key])
+		if len(value) == 0 {
+			continue
+		}
 		fmt.Fprintf(writer, "%s:\t %s\n", key, value)
 	}
 	fmt.Fprintf(writer, "* :\t since last (re)schedule or last reboot\n")
@@ -287,16 +290,6 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 		return nil, fmt.Errorf("error reading plist file: %w", err)
 	}
 
-	permission := ""
-	switch launchdJob.LimitLoadToSessionType {
-	case darwin.SessionTypeDefault, darwin.SessionTypeGUI:
-		permission = constants.SchedulePermissionUserLoggedOn
-	case darwin.SessionTypeBackground:
-		permission = constants.SchedulePermissionUser
-	case darwin.SessionTypeSystem:
-		permission = constants.SchedulePermissionSystem
-	}
-
 	args := NewCommandArguments(launchdJob.ProgramArguments[2:]) // first is binary, second is --no-prio
 	job := &Config{
 		ProfileName:      profileName,
@@ -306,7 +299,7 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 		Arguments:        args,
 		WorkingDirectory: launchdJob.WorkingDirectory,
 		Schedules:        darwin.ParseCalendarIntervals(launchdJob.StartCalendarInterval),
-		Permission:       permission,
+		Permission:       launchdJob.LimitLoadToSessionType.Permission(),
 	}
 	return job, nil
 }
@@ -321,8 +314,10 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permissi
 		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
 		dir := path.Dir(filename)
 		_ = h.fs.MkdirAll(dir, 0o700)
-		// if running using sudo, the directory would end up being owned by root
-		_ = h.fs.Chown(dir, user.Uid, user.Gid)
+		if user.SudoRoot {
+			// if running using sudo, the directory would end up being owned by root
+			_ = h.fs.Chown(dir, user.Uid, user.Gid)
+		}
 	}
 	file, err := h.fs.Create(filename)
 	if err != nil {
@@ -441,7 +436,7 @@ func presentStatus(key, value string) (string, string) {
 func isServiceRegistered(domain, name string) (bool, error) {
 	cmd := launchctlCommand(launchdPrint, fmt.Sprintf("%s/%s", domain, name))
 	err := cmd.Run()
-	if cmd.ProcessState.ExitCode() == codeServiceNotFound {
+	if cmd.ProcessState.ExitCode() == launchctlServiceNotFound {
 		return false, nil
 	}
 	if err != nil {

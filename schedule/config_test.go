@@ -36,28 +36,28 @@ func TestScheduleProperties(t *testing.T) {
 	assert.ElementsMatch(t, []string{"1", "2"}, schedule.Arguments.RawArgs())
 	assert.Equal(t, `1 2`, schedule.Arguments.String())
 	assert.Equal(t, []string{"test=dev"}, schedule.Environment)
-	assert.Equal(t, "background", schedule.GetPriority()) // default value
+	assert.Equal(t, "standard", schedule.GetPriority()) // default value
 }
 
 func TestStandardPriority(t *testing.T) {
 	schedule := Config{
-		Priority: "standard",
+		Priority: "background",
 	}
-	assert.Equal(t, "standard", schedule.GetPriority())
+	assert.Equal(t, "background", schedule.GetPriority())
 }
 
 func TestCaseInsensitivePriority(t *testing.T) {
 	schedule := Config{
-		Priority: "stANDard",
+		Priority: "backGROUNd",
 	}
-	assert.Equal(t, "standard", schedule.GetPriority())
+	assert.Equal(t, "background", schedule.GetPriority())
 }
 
 func TestOtherPriority(t *testing.T) {
 	schedule := Config{
 		Priority: "other",
 	}
-	assert.Equal(t, "background", schedule.GetPriority()) // default value
+	assert.Equal(t, "standard", schedule.GetPriority()) // default value
 }
 
 func TestScheduleFlags(t *testing.T) {
