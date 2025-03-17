@@ -29,6 +29,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Schedules:        []string{"*-*-* *:00:00"},
 				ConfigFile:       "examples/dev.yaml",
+				Permission:       "user",
 			},
 			schedules: []*calendar.Event{
 				hourly,
@@ -43,6 +44,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Schedules:        []string{"*-*-* *:00:00"},
 				ConfigFile:       "config file.yaml",
+				Permission:       "user",
 			},
 			schedules: []*calendar.Event{
 				hourly,

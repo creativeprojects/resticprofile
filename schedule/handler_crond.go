@@ -4,6 +4,7 @@ import (
 	"os"
 	"slices"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
@@ -37,6 +38,7 @@ func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
 
 // Init verifies crond is available on this system
 func (h *HandlerCrond) Init() error {
+	clog.Debug("using cron scheduler")
 	if len(h.config.CrontabFile) > 0 {
 		return nil
 	}
@@ -137,6 +139,11 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 		profileName := entry.ProfileName()
 		commandName := entry.CommandName()
 		configFile := entry.ConfigFile()
+		permission := constants.SchedulePermissionUser
+		if entry.User() == "root" {
+			permission = constants.SchedulePermissionSystem
+		}
+
 		if index := slices.IndexFunc(configs, func(cfg Config) bool {
 			return cfg.ProfileName == profileName && cfg.CommandName == commandName && cfg.ConfigFile == configFile
 		}); index >= 0 {
@@ -152,6 +159,7 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 				Command:          args[0],
 				Arguments:        NewCommandArguments(args[1:]),
 				WorkingDirectory: entry.WorkDir(),
+				Permission:       permission,
 			})
 		}
 	}
