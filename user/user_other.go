@@ -1,4 +1,4 @@
-//go:build !darwin
+//go:build !windows
 
 package user
 
@@ -17,12 +17,21 @@ type User struct {
 
 func Current() User {
 	username := ""
+	sudoed := false
 	uid := os.Getuid()
 	gid := os.Getgid()
-
-	current, err := user.Current()
+	if uid == 0 {
+		// after a sudo, both os.Getuid() and os.Geteuid() return 0 (the root user)
+		// to detect the logged on user after a sudo, we need to use the environment variable
+		if userid, sudo := os.LookupEnv("SUDO_UID"); sudo {
+			if temp, err := strconv.Atoi(userid); err == nil {
+				uid = temp
+				sudoed = true
+			}
+		}
+	}
+	current, err := user.LookupId(strconv.Itoa(uid))
 	if err == nil {
-		uid, _ = strconv.Atoi(current.Uid)
 		gid, _ = strconv.Atoi(current.Gid)
 		username = current.Username
 	}
@@ -30,6 +39,6 @@ func Current() User {
 		Uid:      uid,
 		Gid:      gid,
 		Username: username,
-		SudoRoot: false,
+		SudoRoot: sudoed,
 	}
 }
