@@ -35,7 +35,7 @@ func NewJob(handler Handler, config *Config) *Job {
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {
 	permission, _ := j.handler.DetectSchedulePermission(PermissionFromConfig(j.config.Permission))
-	return permission.Check()
+	return j.handler.CheckPermission(permission)
 }
 
 // Create a new job
@@ -45,7 +45,7 @@ func (j *Job) Create() error {
 	}
 
 	permission := j.getSchedulePermission(PermissionFromConfig(j.config.Permission))
-	if ok := permission.Check(); !ok {
+	if ok := j.handler.CheckPermission(permission); !ok {
 		return permissionError("create")
 	}
 
@@ -73,7 +73,7 @@ func (j *Job) Remove() error {
 	} else {
 		permission = j.getSchedulePermission(permission)
 	}
-	if ok := permission.Check(); !ok {
+	if ok := j.handler.CheckPermission(permission); !ok {
 		return permissionError("remove")
 	}
 

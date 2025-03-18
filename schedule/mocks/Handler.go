@@ -22,6 +22,52 @@ func (_m *Handler) EXPECT() *Handler_Expecter {
 	return &Handler_Expecter{mock: &_m.Mock}
 }
 
+// CheckPermission provides a mock function with given fields: p
+func (_m *Handler) CheckPermission(p schedule.Permission) bool {
+	ret := _m.Called(p)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CheckPermission")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(schedule.Permission) bool); ok {
+		r0 = rf(p)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// Handler_CheckPermission_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CheckPermission'
+type Handler_CheckPermission_Call struct {
+	*mock.Call
+}
+
+// CheckPermission is a helper method to define mock.On call
+//   - p schedule.Permission
+func (_e *Handler_Expecter) CheckPermission(p interface{}) *Handler_CheckPermission_Call {
+	return &Handler_CheckPermission_Call{Call: _e.mock.On("CheckPermission", p)}
+}
+
+func (_c *Handler_CheckPermission_Call) Run(run func(p schedule.Permission)) *Handler_CheckPermission_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(schedule.Permission))
+	})
+	return _c
+}
+
+func (_c *Handler_CheckPermission_Call) Return(_a0 bool) *Handler_CheckPermission_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Handler_CheckPermission_Call) RunAndReturn(run func(schedule.Permission) bool) *Handler_CheckPermission_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Close provides a mock function with no fields
 func (_m *Handler) Close() {
 	_m.Called()

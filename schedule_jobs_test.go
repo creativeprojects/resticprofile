@@ -37,6 +37,7 @@ func TestSimpleScheduleJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().CreateJob(
@@ -62,6 +63,7 @@ func TestFailScheduleJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().ParseSchedules([]string{"sched"}).Return([]*calendar.Event{{}}, nil)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{"sched"}).Return(nil)
 	handler.EXPECT().CreateJob(
@@ -93,6 +95,7 @@ func TestRemoveJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		RunAndReturn(func(scheduleConfig *schedule.Config, _ schedule.Permission) error {
 			assert.Equal(t, "profile", scheduleConfig.ProfileName)
@@ -112,6 +115,7 @@ func TestRemoveJobNoConfig(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		RunAndReturn(func(scheduleConfig *schedule.Config, _ schedule.Permission) error {
 			assert.Equal(t, "profile", scheduleConfig.ProfileName)
@@ -131,6 +135,7 @@ func TestFailRemoveJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		Return(errors.New("error removing job"))
 
@@ -146,6 +151,7 @@ func TestNoFailRemoveUnknownJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		Return(schedule.ErrScheduledJobNotFound)
 
@@ -161,6 +167,7 @@ func TestNoFailRemoveUnknownRemoveOnlyJob(t *testing.T) {
 	handler.EXPECT().Init().Return(nil)
 	handler.EXPECT().Close()
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().RemoveJob(mock.AnythingOfType("*schedule.Config"), schedule.PermissionUserBackground).
 		Return(schedule.ErrScheduledJobNotFound)
 
@@ -272,6 +279,7 @@ func TestRemoveScheduledJobs(t *testing.T) {
 			for _, cfg := range tc.removedConfigs {
 				handler.EXPECT().RemoveJob(&cfg, tc.permission).Return(nil)
 				handler.EXPECT().DetectSchedulePermission(tc.permission).Return(tc.permission, true)
+				handler.EXPECT().CheckPermission(tc.permission).Return(true)
 			}
 
 			err := removeScheduledJobs(handler, tc.fromConfigFile, tc.removeProfileName)
@@ -302,6 +310,7 @@ func TestFailRemoveScheduledJobs(t *testing.T) {
 		Permission:  constants.SchedulePermissionUser,
 	}, schedule.PermissionUserBackground).Return(errors.New("impossible"))
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionUserBackground).Return(schedule.PermissionUserBackground, true)
+	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
 
 	err := removeScheduledJobs(handler, "configFile", "profile_to_remove")
 	assert.Error(t, err)

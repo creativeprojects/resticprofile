@@ -38,10 +38,11 @@ func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
 
 // Init verifies crond is available on this system
 func (h *HandlerCrond) Init() error {
-	clog.Debug("using cron scheduler")
 	if len(h.config.CrontabFile) > 0 {
+		clog.Debugf("using file %q as cron scheduler", h.config.CrontabFile)
 		return nil
 	}
+	clog.Debug("using standard cron scheduler")
 	return lookupBinary("crond", h.config.CrontabBinary)
 }
 
@@ -183,6 +184,24 @@ func (h *HandlerCrond) DetectSchedulePermission(p Permission) (Permission, bool)
 		}
 		// guess based on UID is never safe
 		return detected, false
+	}
+}
+
+// CheckPermission returns true if the user is allowed to access the job.
+func (h *HandlerCrond) CheckPermission(p Permission) bool {
+	switch p {
+	case PermissionUserLoggedOn, PermissionUserBackground:
+		// user mode is always available
+		return true
+
+	default:
+		if os.Geteuid() == 0 {
+			// user has sudoed
+			return true
+		}
+		// last case is system (or undefined) + no sudo
+		return false
+
 	}
 }
 

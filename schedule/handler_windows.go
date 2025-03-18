@@ -129,6 +129,12 @@ func (h *HandlerWindows) DetectSchedulePermission(permission Permission) (Permis
 	}
 }
 
+// CheckPermission returns true if the user is allowed to access the job.
+// This is always true on Windows.
+func (h *HandlerWindows) CheckPermission(p Permission) bool {
+	return true
+}
+
 // init registers HandlerWindows
 func init() {
 	AddHandlerProvider(func(config SchedulerConfig, _ bool) (hr Handler) {
