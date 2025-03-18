@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/darwin"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/spf13/afero"
 	"howett.net/plist"
@@ -323,7 +324,7 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 }
 
 func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permission Permission) (string, error) {
-	user := darwin.CurrentUser()
+	user := user.Current()
 	filename, err := getFilename(launchdJob.Label, permission)
 	if err != nil {
 		return "", err
@@ -397,10 +398,10 @@ func domainTarget(permission Permission) string {
 	case PermissionSystem:
 		return "system"
 	case PermissionUserLoggedOn:
-		return fmt.Sprintf("gui/%d", darwin.CurrentUser().Uid)
+		return fmt.Sprintf("gui/%d", user.Current().Uid)
 
 	case PermissionUserBackground:
-		return fmt.Sprintf("user/%d", darwin.CurrentUser().Uid)
+		return fmt.Sprintf("user/%d", user.Current().Uid)
 
 	default:
 		return ""

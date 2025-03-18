@@ -1,6 +1,6 @@
 //go:build darwin
 
-package darwin
+package user
 
 import (
 	"os"
@@ -11,10 +11,12 @@ import (
 type User struct {
 	Uid      int
 	Gid      int
+	Username string
 	SudoRoot bool
 }
 
-func CurrentUser() User {
+func Current() User {
+	username := ""
 	sudoed := false
 	uid := os.Getuid()
 	gid := os.Getgid()
@@ -27,14 +29,16 @@ func CurrentUser() User {
 				sudoed = true
 			}
 		}
-		current, err := user.LookupId(strconv.Itoa(uid))
-		if err == nil {
-			gid, _ = strconv.Atoi(current.Gid)
-		}
+	}
+	current, err := user.LookupId(strconv.Itoa(uid))
+	if err == nil {
+		gid, _ = strconv.Atoi(current.Gid)
+		username = current.Username
 	}
 	return User{
 		Uid:      uid,
 		Gid:      gid,
+		Username: username,
 		SudoRoot: sudoed,
 	}
 }
