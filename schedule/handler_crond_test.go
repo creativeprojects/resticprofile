@@ -81,3 +81,30 @@ func TestReadingCrondScheduled(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, scheduled)
 }
+
+func TestDetectPermissionCrond(t *testing.T) {
+	t.Parallel()
+
+	fixtures := []struct {
+		input    string
+		expected string
+		safe     bool
+	}{
+		{"", "user", false},
+		{"something", "user", false},
+		{"system", "system", true},
+		{"user", "user", true},
+		{"user_logged_on", "user_logged_on", true},
+		{"user_logged_in", "user_logged_on", true}, // I did the typo as I was writing the doc, so let's add it here :)
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.input, func(t *testing.T) {
+			t.Parallel()
+
+			handler := NewHandler(SchedulerCrond{}).(*HandlerCrond)
+			perm, safe := handler.DetectSchedulePermission(PermissionFromConfig(fixture.input))
+			assert.Equal(t, fixture.expected, perm.String())
+			assert.Equal(t, fixture.safe, safe)
+		})
+	}
+}

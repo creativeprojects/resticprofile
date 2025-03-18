@@ -291,3 +291,30 @@ func TestParsePrintSystemService(t *testing.T) {
 	assert.Greater(t, len(info), 20) // keep a low number to avoid flaky test
 	assert.Equal(t, "system", info["domain"])
 }
+
+func TestDetectPermissionLaunchd(t *testing.T) {
+	t.Parallel()
+
+	fixtures := []struct {
+		input    string
+		expected string
+		safe     bool
+	}{
+		{"", "user_logged_on", true},
+		{"something", "user_logged_on", true},
+		{"system", "system", true},
+		{"user", "user", true},
+		{"user_logged_on", "user_logged_on", true},
+		{"user_logged_in", "user_logged_on", true}, // I did the typo as I was writing the doc, so let's add it here :)
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.input, func(t *testing.T) {
+			t.Parallel()
+
+			handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
+			perm, safe := handler.DetectSchedulePermission(PermissionFromConfig(fixture.input))
+			assert.Equal(t, fixture.expected, perm.String())
+			assert.Equal(t, fixture.safe, safe)
+		})
+	}
+}
