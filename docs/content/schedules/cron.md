@@ -95,7 +95,8 @@ global:
 ## Crontab
 
 You can use a crontab file directly instead of the `crontab` tool:
-* `crontab:*:filepath`: Use a crontab file `filepath` **with a user field**
+* `crontab:*:filepath`: Use a crontab file `filepath` **with a user field** filled in automatically
+* `crontab:username:filepath`: Use a crontab file `filepath` **with a user field** always set to `username`
 * `crontab:-:filepath`: Use a crontab file `filepath` **without a user field**
 ### With user field
 

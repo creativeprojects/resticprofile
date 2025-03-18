@@ -7,7 +7,7 @@ global:
     initialize: false
     priority: low
     prevent-sleep: true
-    scheduler: "crontab:*:crontab"
+    scheduler: "crontab:me:crontab"
     group-continue-on-error: true
     restic-lock-retry-after: "1m"
     # log: "_global.txt"
