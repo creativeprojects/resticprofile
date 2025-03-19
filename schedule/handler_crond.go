@@ -82,7 +82,11 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 			job.WorkingDirectory,
 		)
 		if h.config.Username != "" {
-			entries[i] = entries[i].WithUser(h.config.Username)
+			if permission == PermissionSystem {
+				entries[i] = entries[i].WithUser("root")
+			} else {
+				entries[i] = entries[i].WithUser(h.config.Username)
+			}
 		}
 	}
 	crontab := crond.NewCrontab(entries).
