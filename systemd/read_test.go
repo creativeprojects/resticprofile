@@ -108,6 +108,20 @@ func TestReadSystemUnit(t *testing.T) {
 				},
 			},
 		},
+		{
+			config: Config{
+				CommandLine:      "/bin/resticprofile --no-ansi --config profiles.yaml run-schedule check@profile3",
+				WorkingDirectory: "/workdir",
+				Title:            "profile3",
+				SubTitle:         "forget",
+				JobDescription:   "job description",
+				TimerDescription: "",
+				Schedules:        []string{"monthly"},
+				UnitType:         SystemUnit,
+				Priority:         "standard",
+				User:             "me",
+			},
+		},
 	}
 
 	fs = afero.NewMemMapFs()
@@ -137,6 +151,7 @@ func TestReadSystemUnit(t *testing.T) {
 				Environment:      append(tc.config.Environment, "HOME="+home),
 				Schedules:        tc.config.Schedules,
 				Priority:         tc.config.Priority,
+				User:             tc.config.User,
 			}
 			assert.Equal(t, expected, readCfg)
 		})

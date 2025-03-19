@@ -6,23 +6,18 @@ import (
 	"os/user"
 )
 
-type User struct {
-	Uid      int
-	Gid      int
-	Username string
-	SudoRoot bool
-}
-
 func Current() User {
-	username := ""
+	var username, homedir string
 	current, err := user.Current()
 	if err == nil {
 		username = current.Username
+		homedir = current.HomeDir
 	}
 	return User{
 		Uid:      -1,
 		Gid:      -1,
 		Username: username,
+		HomeDir:  homedir,
 		SudoRoot: false,
 	}
 }

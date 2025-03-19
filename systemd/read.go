@@ -53,6 +53,7 @@ func Read(unit string, unitType UnitType) (*Config, error) {
 		IOSchedulingPriority: getIntegerValue(serviceSections, "Service", "IOSchedulingPriority"),
 		Schedules:            getValues(timerSections, "Timer", "OnCalendar"),
 		Priority:             getPriority(getSingleValue(serviceSections, "Service", "CPUSchedulingPolicy")),
+		User:                 getSingleValue(serviceSections, "Service", "User"),
 	}
 	return cfg, nil
 }

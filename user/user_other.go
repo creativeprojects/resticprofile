@@ -8,15 +8,8 @@ import (
 	"strconv"
 )
 
-type User struct {
-	Uid      int
-	Gid      int
-	Username string
-	SudoRoot bool
-}
-
 func Current() User {
-	username := ""
+	var username, homedir string
 	sudoed := false
 	uid := os.Getuid()
 	gid := os.Getgid()
@@ -34,11 +27,13 @@ func Current() User {
 	if err == nil {
 		gid, _ = strconv.Atoi(current.Gid)
 		username = current.Username
+		homedir = current.HomeDir
 	}
 	return User{
 		Uid:      uid,
 		Gid:      gid,
 		Username: username,
+		HomeDir:  homedir,
 		SudoRoot: sudoed,
 	}
 }

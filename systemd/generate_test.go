@@ -560,6 +560,41 @@ func TestGeneratePriorityFields(t *testing.T) {
 	}
 }
 
+func TestGenerateUserField(t *testing.T) {
+	fs = afero.NewMemMapFs()
+	systemdDir := GetSystemDir()
+	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
+
+	err := Generate(Config{
+		JobDescription:   "Test",
+		CommandLine:      "resticprofile",
+		WorkingDirectory: "/tmp",
+		Title:            "name",
+		SubTitle:         "backup",
+		UnitType:         SystemUnit,
+		User:             "user",
+	})
+	require.NoError(t, err)
+
+	contents, err := afero.ReadFile(fs, serviceFile)
+	require.NoError(t, err)
+
+	homeDir, err := os.UserHomeDir()
+	require.NoError(t, err)
+
+	expected := `[Unit]
+Description=Test
+
+[Service]
+Type=notify
+WorkingDirectory=/tmp
+ExecStart=resticprofile
+User=user
+Environment="HOME=%s"
+`
+	assert.Equal(t, fmt.Sprintf(expected, homeDir), string(contents))
+}
+
 func assertNoFileExists(t *testing.T, filename string) {
 	t.Helper()
 	exists, err := afero.Exists(fs, filename)

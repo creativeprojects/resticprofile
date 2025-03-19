@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/user"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/spf13/afero"
@@ -38,6 +38,8 @@ ExecStart={{ .CommandLine }}
 {{ if .IOSchedulingClass }}IOSchedulingClass={{ .IOSchedulingClass }}
 {{ end -}}
 {{ if .IOSchedulingPriority }}IOSchedulingPriority={{ .IOSchedulingPriority }}
+{{ end -}}
+ {{ if .User }}User={{ .User }}
 {{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"
@@ -85,6 +87,7 @@ type templateInfo struct {
 	CPUSchedulingPolicy  string
 	IOSchedulingClass    int
 	IOSchedulingPriority int
+	User                 string
 }
 
 // Config for generating systemd unit and timer files
@@ -107,6 +110,7 @@ type Config struct {
 	CPUSchedulingPolicy  string
 	IOSchedulingClass    int
 	IOSchedulingPriority int
+	User                 string
 }
 
 func init() {
@@ -128,13 +132,20 @@ func Generate(config Config) error {
 	}
 
 	environment := slices.Clone(config.Environment)
-	// add $HOME to the environment variables (as a fallback if not defined in profile)
-	if home, err := os.UserHomeDir(); err == nil {
-		environment = append(environment, fmt.Sprintf("HOME=%s", home))
-	}
-	// also add $SUDO_USER to env variables
-	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
-		environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
+	if config.User != "" {
+		// resticprofile will start under config.User (user background mode)
+		u := user.Current()
+		if u.HomeDir != "" {
+			environment = append(environment, fmt.Sprintf("HOME=%s", u.HomeDir))
+		}
+	} else {
+		// running resticprofile as root
+		if home, err := os.UserHomeDir(); err == nil {
+			environment = append(environment, fmt.Sprintf("HOME=%s", home))
+		}
+		if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
+			environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
+		}
 	}
 
 	policy := ""
@@ -156,6 +167,7 @@ func Generate(config Config) error {
 		CPUSchedulingPolicy:  policy,
 		IOSchedulingClass:    config.IOSchedulingClass,
 		IOSchedulingPriority: config.IOSchedulingPriority,
+		User:                 config.User,
 	}
 
 	var data bytes.Buffer
@@ -231,10 +243,7 @@ func GetTimerFile(profileName, commandName string) string {
 
 // GetUserDir returns the default directory where systemd stores user units
 func GetUserDir() (string, error) {
-	u, err := user.Current()
-	if err != nil {
-		return "", err
-	}
+	u := user.Current()
 
 	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
 	if err := fs.MkdirAll(systemdUserDir, 0o700); err != nil {
