@@ -39,7 +39,7 @@ func NewHandlerCrond(config SchedulerConfig) *HandlerCrond {
 // Init verifies crond is available on this system
 func (h *HandlerCrond) Init() error {
 	if len(h.config.CrontabFile) > 0 {
-		clog.Debugf("using file %q as cron scheduler", h.config.CrontabFile)
+		clog.Debugf("using %q file as cron scheduler", h.config.CrontabFile)
 		return nil
 	}
 	clog.Debug("using standard cron scheduler")

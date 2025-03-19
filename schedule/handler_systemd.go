@@ -38,8 +38,8 @@ const (
 )
 
 var (
-	journalctlBinary = "journalctl"
-	systemctlBinary  = "systemctl"
+	journalctlBinary = "/usr/bin/journalctl"
+	systemctlBinary  = "/usr/bin/systemctl"
 )
 
 // HandlerSystemd is a handler to schedule tasks using systemd
@@ -234,7 +234,8 @@ func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
 	systemdType := systemd.UserUnit
-	if permission == PermissionSystem || permission == PermissionUserBackground {
+	if permission == PermissionSystem {
+		// if permission == PermissionSystem || permission == PermissionUserBackground {
 		systemdType = systemd.SystemUnit
 	}
 	unitLoaded, err := unitLoaded(serviceName, systemdType)
@@ -318,9 +319,8 @@ func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error)
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	buffer := &strings.Builder{}
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd := systemctlCommand(args...)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 	err := cmd.Run()
@@ -338,8 +338,7 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 	args = append(args, flagNoPager)
 	args = append(args, command, timerName)
 
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd := systemctlCommand(args...)
 	if !silent {
 		cmd.Stdout = term.GetOutput()
 		cmd.Stderr = term.GetErrorOutput()
@@ -378,8 +377,7 @@ func runSystemctlReload(unitType systemd.UnitType) error {
 	if unitType == systemd.UserUnit {
 		args = append(args, flagUserUnit)
 	}
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd := systemctlCommand(args...)
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()
 	err := cmd.Run()
@@ -400,10 +398,9 @@ func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error)
 	}
 	args = append(args, pattern)
 
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd := systemctlCommand(args...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err := cmd.Run()
@@ -479,6 +476,11 @@ func toScheduleConfig(systemdConfig systemd.Config, unitType systemd.UnitType) C
 		Priority:         systemdConfig.Priority,
 	}
 	return cfg
+}
+
+func systemctlCommand(args ...string) *exec.Cmd {
+	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
+	return exec.Command(systemctlBinary, args...)
 }
 
 // init registers HandlerSystemd

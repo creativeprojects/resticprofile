@@ -92,11 +92,11 @@ func (j *Job) Status() error {
 	}
 
 	if err := j.handler.DisplaySchedules(j.config.ProfileName, j.config.CommandName, j.config.Schedules); err != nil {
-		return err
+		return fmt.Errorf("cannot display schedules: %w", err)
 	}
 
 	if err := j.handler.DisplayJobStatus(j.config); err != nil {
-		return err
+		return fmt.Errorf("cannot display status: %w", err)
 	}
 	return nil
 }

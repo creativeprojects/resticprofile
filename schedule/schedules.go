@@ -61,7 +61,7 @@ func displaySystemdSchedules(profile, command string, schedules []string) error 
 			return errors.New("empty schedule")
 		}
 		displayHeader(profile, command, index+1, len(schedules))
-		cmd := exec.Command("systemd-analyze", "calendar", schedule)
+		cmd := exec.Command("/usr/bin/systemd-analyze", "calendar", schedule)
 		cmd.Stdout = term.GetOutput()
 		cmd.Stderr = term.GetErrorOutput()
 		err := cmd.Run()

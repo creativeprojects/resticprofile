@@ -194,7 +194,7 @@ ${TMP_MOUNT_DARWIN}:
 # Mount tmpfs on linux
 ${TMP_MOUNT_LINUX}:
 	mkdir -p ${TMP_MOUNT_LINUX}
-	sudo mount -t tmpfs -o "rw,relatime,size=2097152k" tmpfs ${TMP_MOUNT_LINUX}
+	sudo mount -t tmpfs -o "rw,relatime,size=2097152k,uid=`id -u`,gid=`id -g`" tmpfs ${TMP_MOUNT_LINUX}
 
 rest-server:
 	@echo "[*] $@"

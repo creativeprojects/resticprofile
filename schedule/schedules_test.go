@@ -70,7 +70,7 @@ func TestDisplaySystemdSchedulesWithEmpty(t *testing.T) {
 }
 
 func TestDisplaySystemdSchedules(t *testing.T) {
-	_, err := exec.LookPath("systemd-analyze")
+	_, err := exec.LookPath("/usr/bin/systemd-analyze")
 	if err != nil {
 		t.Skip("systemd-analyze not available")
 	}
