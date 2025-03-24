@@ -48,6 +48,10 @@ func displayParsedSchedules(profile, command string, events []*calendar.Event) {
 		next := event.Next(now)
 		term.Printf("  Original form: %s\n", event.Input())
 		term.Printf("Normalized form: %s\n", event.String())
+		if next.IsZero() {
+			term.Print("    Next elapse: Never\n")
+			continue
+		}
 		term.Printf("    Next elapse: %s\n", next.Format(time.UnixDate))
 		term.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
 		term.Printf("       From now: %s left\n", next.Sub(now))
