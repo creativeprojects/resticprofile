@@ -48,7 +48,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 		clog.Debugf("task %q already exists: deleting before creating", taskPath)
 		_, err = deleteTask(taskPath)
 		if err != nil {
-			return fmt.Errorf("cannot delete existing task for replacing it: %w", err)
+			return fmt.Errorf("cannot delete existing task to replace it: %w", err)
 		}
 	}
 	task := createTaskDefinition(config, schedules)
