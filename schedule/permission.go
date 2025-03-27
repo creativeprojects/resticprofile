@@ -31,8 +31,6 @@ func PermissionFromConfig(permission string) Permission {
 
 func (p Permission) String() string {
 	switch p {
-	case PermissionAuto:
-		return constants.SchedulePermissionAuto
 
 	case PermissionSystem:
 		return constants.SchedulePermissionSystem
@@ -44,6 +42,6 @@ func (p Permission) String() string {
 		return constants.SchedulePermissionUserLoggedOn
 
 	default:
-		return ""
+		return constants.SchedulePermissionAuto
 	}
 }
