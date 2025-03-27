@@ -105,7 +105,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 
 // CreateJob is creating the systemd unit and activating it
 func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
-	unitType, user := permissionToSystemd(permission)
+	unitType, user := permissionToSystemd(user.Current(), permission)
 
 	if unitType == systemd.UserUnit && job.AfterNetworkOnline {
 		return fmt.Errorf("after-network-online is not available for \"user_logged_on\" permission schedules")
@@ -166,7 +166,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
 func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 	var err error
-	unitType, _ := permissionToSystemd(permission)
+	unitType, _ := permissionToSystemd(user.Current(), permission)
 	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	unitLoaded, err := unitLoaded(serviceFile, unitType)
 	if err != nil {
@@ -305,20 +305,20 @@ var (
 	_ Handler = &HandlerSystemd{}
 )
 
-func permissionToSystemd(permission Permission) (systemd.UnitType, string) {
+func permissionToSystemd(user user.User, permission Permission) (systemd.UnitType, string) {
 	switch permission {
 	case PermissionSystem:
 		return systemd.SystemUnit, ""
 
 	case PermissionUserBackground:
-		return systemd.SystemUnit, user.Current().Username
+		return systemd.SystemUnit, user.Username
 
 	case PermissionUserLoggedOn:
 		return systemd.UserUnit, ""
 
 	default:
 		unitType := systemd.UserUnit
-		if os.Geteuid() == 0 {
+		if user.Uid == 0 {
 			unitType = systemd.SystemUnit
 		}
 		return unitType, ""

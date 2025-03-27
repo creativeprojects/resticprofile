@@ -11,8 +11,7 @@ import (
 
 func TestCurrentUser(t *testing.T) {
 	user := Current()
-	// it is very unlikely anyone would run the tests using sudo :D
-	assert.False(t, user.SudoRoot)
+	assert.Equal(t, os.Geteuid() == 0, user.SudoRoot)
 
 	assert.NotEmpty(t, user.Username)
 

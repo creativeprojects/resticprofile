@@ -8,6 +8,8 @@ import (
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/systemd"
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -117,6 +119,112 @@ func TestDetectPermissionSystemd(t *testing.T) {
 			perm, safe := handler.DetectSchedulePermission(PermissionFromConfig(fixture.input))
 			assert.Equal(t, fixture.expected, perm.String())
 			assert.Equal(t, fixture.safe, safe)
+		})
+	}
+}
+func TestSystemdConfigPermission(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		config   systemd.Config
+		expected string
+	}{
+		{
+			name: "SystemUnit with User",
+			config: systemd.Config{
+				UnitType: systemd.SystemUnit,
+				User:     "testuser",
+			},
+			expected: constants.SchedulePermissionUser,
+		},
+		{
+			name: "SystemUnit without User",
+			config: systemd.Config{
+				UnitType: systemd.SystemUnit,
+				User:     "",
+			},
+			expected: constants.SchedulePermissionSystem,
+		},
+		{
+			name: "Default case (UserUnit)",
+			config: systemd.Config{
+				UnitType: systemd.UserUnit,
+			},
+			expected: constants.SchedulePermissionUserLoggedOn,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			result := systemdConfigPermission(testCase.config)
+			assert.Equal(t, testCase.expected, result)
+		})
+	}
+}
+func TestPermissionToSystemd(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name         string
+		permission   Permission
+		isRoot       bool
+		expected     systemd.UnitType
+		expectedUser string
+	}{
+		{
+			name:         "PermissionSystem",
+			permission:   PermissionSystem,
+			isRoot:       false,
+			expected:     systemd.SystemUnit,
+			expectedUser: "",
+		},
+		{
+			name:         "PermissionUserBackground",
+			permission:   PermissionUserBackground,
+			isRoot:       false,
+			expected:     systemd.SystemUnit,
+			expectedUser: "testuser",
+		},
+		{
+			name:         "PermissionUserLoggedOn",
+			permission:   PermissionUserLoggedOn,
+			isRoot:       false,
+			expected:     systemd.UserUnit,
+			expectedUser: "",
+		},
+		{
+			name:         "Default case as non-root",
+			permission:   PermissionFromConfig("unknown"),
+			isRoot:       false,
+			expected:     systemd.UserUnit,
+			expectedUser: "",
+		},
+		{
+			name:         "Default case as root",
+			permission:   PermissionFromConfig("unknown"),
+			isRoot:       true,
+			expected:     systemd.SystemUnit,
+			expectedUser: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			currentUser := user.User{
+				Uid:      1000,
+				Gid:      1000,
+				Username: "testuser",
+			}
+			if testCase.isRoot {
+				currentUser.Uid = 0
+			}
+
+			unitType, user := permissionToSystemd(currentUser, testCase.permission)
+			assert.Equal(t, testCase.expected, unitType)
+			assert.Equal(t, testCase.expectedUser, user)
 		})
 	}
 }
