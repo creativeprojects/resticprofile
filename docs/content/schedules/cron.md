@@ -4,7 +4,11 @@ weight: 170
 ---
 
 
-On any OS, use a **crond** compatible scheduler if configured in `global` / `scheduler`:
+On non-Windows OS, use a **crond**-compatible scheduler if specified in `global`/`scheduler`:
+
+{{% notice style="warning" title="Windows No Longer Supported" %}}
+Crond support on Windows has been removed due to significant issues in previous versions.
+{{% /notice %}}
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}

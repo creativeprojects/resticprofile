@@ -8,10 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHandlerCrond(t *testing.T) {
-	handler := NewHandler(SchedulerCrond{})
-	assert.IsType(t, &HandlerCrond{}, handler)
-}
+// Support for Windows removed as it was broken
+// func TestHandlerCrond(t *testing.T) {
+// 	handler := NewHandler(SchedulerCrond{})
+// 	assert.IsType(t, &HandlerCrond{}, handler)
+// }
 
 func TestHandlerDefaultOS(t *testing.T) {
 	handler := NewHandler(SchedulerDefaultOS{})
