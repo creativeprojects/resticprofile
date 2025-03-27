@@ -9,6 +9,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/user"
 )
 
 // HandlerWindows is using windows task manager
@@ -131,7 +132,7 @@ func (h *HandlerWindows) DetectSchedulePermission(permission Permission) (Permis
 
 // CheckPermission returns true if the user is allowed to access the job.
 // This is always true on Windows.
-func (h *HandlerWindows) CheckPermission(p Permission) bool {
+func (h *HandlerWindows) CheckPermission(_ user.User, _ Permission) bool {
 	return true
 }
 

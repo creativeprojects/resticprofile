@@ -10,6 +10,7 @@ import (
 	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 )
 
@@ -192,15 +193,14 @@ func (h *HandlerCrond) DetectSchedulePermission(p Permission) (Permission, bool)
 }
 
 // CheckPermission returns true if the user is allowed to access the job.
-func (h *HandlerCrond) CheckPermission(p Permission) bool {
+func (h *HandlerCrond) CheckPermission(user user.User, p Permission) bool {
 	switch p {
 	case PermissionUserLoggedOn, PermissionUserBackground:
 		// user mode is always available
 		return true
 
 	default:
-		if os.Geteuid() == 0 {
-			// user has sudoed
+		if user.SudoRoot || user.Uid == 0 {
 			return true
 		}
 		// last case is system (or undefined) + no sudo

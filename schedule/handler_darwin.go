@@ -261,14 +261,14 @@ func (h *HandlerLaunchd) DetectSchedulePermission(permission Permission) (Permis
 }
 
 // CheckPermission returns true if the user is allowed to access the job.
-func (h *HandlerLaunchd) CheckPermission(p Permission) bool {
+func (h *HandlerLaunchd) CheckPermission(user user.User, p Permission) bool {
 	switch p {
 	case PermissionUserLoggedOn, PermissionUserBackground:
 		// user mode is always available
 		return true
 
 	default:
-		if os.Geteuid() == 0 {
+		if user.SudoRoot || user.Uid == 0 {
 			// user has sudoed
 			return true
 		}

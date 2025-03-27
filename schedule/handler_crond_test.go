@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -44,7 +45,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Schedules:        []string{"*-*-* *:00:00"},
 				ConfigFile:       "config file.yaml",
-				Permission:       "user",
+				Permission:       "system",
 			},
 			schedules: []*calendar.Event{
 				hourly,
@@ -55,6 +56,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 	tempFile := filepath.Join(t.TempDir(), "crontab")
 	handler := NewHandler(SchedulerCrond{
 		CrontabFile: tempFile,
+		Username:    "*",
 	}).(*HandlerCrond)
 	handler.fs = afero.NewMemMapFs()
 
@@ -105,6 +107,68 @@ func TestDetectPermissionCrond(t *testing.T) {
 			perm, safe := handler.DetectSchedulePermission(PermissionFromConfig(fixture.input))
 			assert.Equal(t, fixture.expected, perm.String())
 			assert.Equal(t, fixture.safe, safe)
+		})
+	}
+}
+
+func TestCheckPermission(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name       string
+		permission Permission
+		euid       int
+		expected   bool
+	}{
+		{
+			name:       "PermissionUserLoggedOn",
+			permission: PermissionUserLoggedOn,
+			euid:       1000, // non-root user
+			expected:   true,
+		},
+		{
+			name:       "PermissionUserBackground",
+			permission: PermissionUserBackground,
+			euid:       1000, // non-root user
+			expected:   true,
+		},
+		{
+			name:       "PermissionSystem as root",
+			permission: PermissionSystem,
+			euid:       0, // root user
+			expected:   true,
+		},
+		{
+			name:       "PermissionSystem as non-root",
+			permission: PermissionSystem,
+			euid:       1000, // non-root user
+			expected:   false,
+		},
+		{
+			name:       "Undefined permission as root",
+			permission: PermissionFromConfig("undefined"),
+			euid:       0, // root user
+			expected:   true,
+		},
+		{
+			name:       "Undefined permission as non-root",
+			permission: PermissionFromConfig("undefined"),
+			euid:       1000, // non-root user
+			expected:   false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			user := user.User{
+				Uid: tc.euid,
+			}
+
+			handler := NewHandler(SchedulerCrond{}).(*HandlerCrond)
+			result := handler.CheckPermission(user, tc.permission)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }

@@ -15,7 +15,7 @@ import (
 func TestCreateJobHappyPath(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionUserBackground).Return(schedule.PermissionUserBackground, true)
-	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
+	handler.EXPECT().CheckPermission(mock.Anything, schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
 	handler.EXPECT().ParseSchedules([]string{}).Return([]*calendar.Event{}, nil)
 	handler.EXPECT().CreateJob(mock.AnythingOfType("*schedule.Config"), []*calendar.Event{}, schedule.PermissionUserBackground).Return(nil)
@@ -34,7 +34,7 @@ func TestCreateJobHappyPath(t *testing.T) {
 func TestCreateJobErrorParseSchedules(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
-	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
+	handler.EXPECT().CheckPermission(mock.Anything, schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
 	handler.EXPECT().ParseSchedules([]string{}).Return(nil, errors.New("test!"))
 
@@ -51,7 +51,7 @@ func TestCreateJobErrorParseSchedules(t *testing.T) {
 func TestCreateJobErrorDisplaySchedules(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionAuto).Return(schedule.PermissionUserBackground, true)
-	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
+	handler.EXPECT().CheckPermission(mock.Anything, schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(errors.New("test!"))
 
 	job := schedule.NewJob(handler, &schedule.Config{
@@ -67,7 +67,7 @@ func TestCreateJobErrorDisplaySchedules(t *testing.T) {
 func TestCreateJobErrorCreate(t *testing.T) {
 	handler := mocks.NewHandler(t)
 	handler.EXPECT().DetectSchedulePermission(schedule.PermissionUserBackground).Return(schedule.PermissionUserBackground, true)
-	handler.EXPECT().CheckPermission(schedule.PermissionUserBackground).Return(true)
+	handler.EXPECT().CheckPermission(mock.Anything, schedule.PermissionUserBackground).Return(true)
 	handler.EXPECT().DisplaySchedules("profile", "backup", []string{}).Return(nil)
 	handler.EXPECT().ParseSchedules([]string{}).Return([]*calendar.Event{}, nil)
 	handler.EXPECT().CreateJob(mock.AnythingOfType("*schedule.Config"), []*calendar.Event{}, schedule.PermissionUserBackground).Return(errors.New("test!"))

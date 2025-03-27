@@ -5,6 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/user"
 )
 
 // Handler interface for the scheduling software available on the system
@@ -24,7 +25,7 @@ type Handler interface {
 	// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
 	DetectSchedulePermission(permission Permission) (Permission, bool)
 	// CheckPermission returns true if the user is allowed to access the job.
-	CheckPermission(p Permission) bool
+	CheckPermission(user user.User, p Permission) bool
 }
 
 // FindHandler creates a schedule handler depending on the configuration or nil if the config is not supported

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/user"
 )
 
 //
@@ -35,7 +36,7 @@ func NewJob(handler Handler, config *Config) *Job {
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {
 	permission, _ := j.handler.DetectSchedulePermission(PermissionFromConfig(j.config.Permission))
-	return j.handler.CheckPermission(permission)
+	return j.handler.CheckPermission(user.Current(), permission)
 }
 
 // Create a new job
@@ -45,7 +46,7 @@ func (j *Job) Create() error {
 	}
 
 	permission := j.getSchedulePermission(PermissionFromConfig(j.config.Permission))
-	if ok := j.handler.CheckPermission(permission); !ok {
+	if ok := j.handler.CheckPermission(user.Current(), permission); !ok {
 		return permissionError("create")
 	}
 
@@ -73,7 +74,7 @@ func (j *Job) Remove() error {
 	} else {
 		permission = j.getSchedulePermission(permission)
 	}
-	if ok := j.handler.CheckPermission(permission); !ok {
+	if ok := j.handler.CheckPermission(user.Current(), permission); !ok {
 		return permissionError("remove")
 	}
 
