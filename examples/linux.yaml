@@ -112,6 +112,7 @@ self:
     forget:
         schedule-permission: user_logged_on
         schedule:
+            - "2020-01-01"
             - "*:10"
             - "*:40"
 

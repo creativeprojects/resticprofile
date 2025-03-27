@@ -457,9 +457,12 @@ func toScheduleConfig(systemdConfig systemd.Config, unitType systemd.UnitType) C
 	}
 	args := NewCommandArguments(cmdLine[1:])
 
-	permission := constants.SchedulePermissionUser
+	permission := constants.SchedulePermissionUserLoggedOn
 	if unitType == systemd.SystemUnit {
 		permission = constants.SchedulePermissionSystem
+		if systemdConfig.User != "" {
+			permission = constants.SchedulePermissionUser
+		}
 	}
 
 	cfg := Config{
