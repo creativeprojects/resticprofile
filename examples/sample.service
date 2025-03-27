@@ -1,7 +1,8 @@
 [Unit]
 Description={{ .JobDescription }}
 OnFailure=unit-status-mail@%n.service
-
+{{ if .AfterNetworkOnline }}After=network-online.target
+{{ end }}
 [Service]
 Type=notify
 WorkingDirectory={{ .WorkingDirectory }}
@@ -13,6 +14,8 @@ ExecStart={{ .CommandLine }}
 {{ if .IOSchedulingClass }}IOSchedulingClass={{ .IOSchedulingClass }}
 {{ end -}}
 {{ if .IOSchedulingPriority }}IOSchedulingPriority={{ .IOSchedulingPriority }}
+{{ end -}}
+ {{ if .User }}User={{ .User }}
 {{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"

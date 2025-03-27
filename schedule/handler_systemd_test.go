@@ -16,7 +16,7 @@ func TestReadingSystemdScheduled(t *testing.T) {
 	event := calendar.NewEvent()
 	require.NoError(t, event.Parse("2020-01-01"))
 
-	schedulePermission := constants.SchedulePermissionUser
+	schedulePermission := constants.SchedulePermissionUserLoggedOn
 
 	testCases := []struct {
 		job       Config
