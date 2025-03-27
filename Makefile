@@ -238,6 +238,7 @@ generate-restic:
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.16.1 --version=0.16.1 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.16.4 --version=0.16.4 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.17.0 --version=0.17.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.18.0 --version=0.18.0 --commands $(RESTIC_CMD)
 
 	cp $(RESTIC_CMD) restic/commands.json
 
@@ -250,7 +251,7 @@ generate-jsonschema: build
 
 	for config_version in 1 2 ; do \
 		$(abspath $(BINARY)) generate --json-schema v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version.json ; \
-		for restic_version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 ; do \
+		for restic_version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 ; do \
 			name=$$(echo $$restic_version | sed 's/\./-/g') ; \
 			$(abspath $(BINARY)) generate --json-schema --version $$restic_version v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version-restic-$$name.json ; \
 		done ; \

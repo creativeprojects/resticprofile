@@ -383,7 +383,7 @@
         "Name": "from-insecure-no-password",
         "Alias": "",
         "Default": "false",
-        "Description": "use an empty password for the source repository, must be passed to every restic command (insecure)",
+        "Description": "use an empty password for the source repository (insecure)",
         "Once": true,
         "FromVersion": "0.17.0",
         "RemovedInVersion": ""
@@ -605,8 +605,25 @@
     ]
   },
   {
+    "Name": "features",
+    "Description": "The \"features\" command prints a list of supported feature flags.\n\nTo pass feature flags to restic, set the RESTIC_FEATURES environment variable\nto \"featureA=true,featureB=false\". Specifying an unknown feature flag is an error.\n\nA feature can either be in alpha, beta, stable or deprecated state.\nAn alpha feature is disabled by default and may change in arbitrary ways between restic versions or be removed.\nA beta feature is enabled by default, but still can change in minor ways or be removed.\nA stable feature is always enabled and cannot be disabled. The flag will be removed in a future restic version.\nA deprecated feature is always disabled and cannot be enabled. The flag will be removed in a future restic version.",
+    "FromVersion": "0.18.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for features",
+        "Once": true,
+        "FromVersion": "0.18.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
     "Name": "find",
-    "Description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.",
+    "Description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -698,6 +715,15 @@
         "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "reverse",
+        "Alias": "R",
+        "Default": "false",
+        "Description": "reverse sort order oldest to newest",
+        "Once": true,
+        "FromVersion": "0.18.0",
         "RemovedInVersion": ""
       },
       {
@@ -910,7 +936,7 @@
         "Name": "max-repack-size",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T)",
+        "Description": "stop after repacking this much data in total (allowed suffixes for size: k/K, m/M, g/G, t/T)",
         "Once": true,
         "FromVersion": "0.12.0",
         "RemovedInVersion": ""
@@ -961,6 +987,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "repack-smaller-than",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "pack below-limit packfiles (allowed suffixes: k/K, m/M)",
+        "Once": true,
+        "FromVersion": "0.18.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "repack-uncompressed",
         "Alias": "",
         "Default": "false",
@@ -999,7 +1034,7 @@
         "Name": "bash-completion",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "write bash completion file",
+        "Description": "write bash completion file (- for stdout)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1008,7 +1043,7 @@
         "Name": "fish-completion",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "write fish completion file",
+        "Description": "write fish completion file (- for stdout)",
         "Once": true,
         "FromVersion": "0.13.0",
         "RemovedInVersion": ""
@@ -1035,7 +1070,7 @@
         "Name": "powershell-completion",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "write powershell completion file",
+        "Description": "write powershell completion file (- for stdout)",
         "Once": true,
         "FromVersion": "0.15.0",
         "RemovedInVersion": ""
@@ -1044,7 +1079,7 @@
         "Name": "zsh-completion",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "write zsh completion file",
+        "Description": "write zsh completion file (- for stdout)",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1070,7 +1105,7 @@
         "Name": "from-insecure-no-password",
         "Alias": "",
         "Default": "false",
-        "Description": "use an empty password for the source repository, must be passed to every restic command (insecure)",
+        "Description": "use an empty password for the source repository (insecure)",
         "Once": true,
         "FromVersion": "0.17.0",
         "RemovedInVersion": ""
@@ -1388,7 +1423,7 @@
   },
   {
     "Name": "ls",
-    "Description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.",
+    "Description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.\n\nFile listings can be sorted by specifying --sort followed by one of the\nsort specifiers '(name|size|time=mtime|atime|ctime|extension)'.\nThe sorting can be reversed by specifying --reverse.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1453,6 +1488,24 @@
         "Description": "include files in subfolders of the listed directories",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "reverse",
+        "Alias": "",
+        "Default": "false",
+        "Description": "reverse sorted output",
+        "Once": true,
+        "FromVersion": "0.18.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "sort",
+        "Alias": "s",
+        "Default": "name",
+        "Description": "sort output by (name|size|time=mtime|atime|ctime|extension)",
+        "Once": true,
+        "FromVersion": "0.18.0",
         "RemovedInVersion": ""
       },
       {
@@ -1600,6 +1653,23 @@
     ]
   },
   {
+    "Name": "options",
+    "Description": "The \"options\" command prints a list of extended options.",
+    "FromVersion": "0.18.0",
+    "RemovedInVersion": "",
+    "Options": [
+      {
+        "Name": "help",
+        "Alias": "h",
+        "Default": "false",
+        "Description": "help for options",
+        "Once": true,
+        "FromVersion": "0.18.0",
+        "RemovedInVersion": ""
+      }
+    ]
+  },
+  {
     "Name": "prune",
     "Description": "The \"prune\" command checks the repository and removes data that is not\nreferenced and therefore not needed any more.",
     "FromVersion": "",
@@ -1627,7 +1697,7 @@
         "Name": "max-repack-size",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T)",
+        "Description": "stop after repacking this much data in total (allowed suffixes for size: k/K, m/M, g/G, t/T)",
         "Once": true,
         "FromVersion": "0.12.0",
         "RemovedInVersion": ""
@@ -1657,6 +1727,15 @@
         "Description": "repack pack files below 80% of target pack size",
         "Once": true,
         "FromVersion": "0.14.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "repack-smaller-than",
+        "Alias": "",
+        "Default": "\"\"",
+        "Description": "pack below-limit packfiles (allowed suffixes: k/K, m/M)",
+        "Once": true,
+        "FromVersion": "0.18.0",
         "RemovedInVersion": ""
       },
       {
@@ -1887,6 +1966,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "exclude-xattr",
+        "Alias": "",
+        "Default": "",
+        "Description": "exclude xattr by pattern (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.18.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "help",
         "Alias": "h",
         "Default": "false",
@@ -1959,10 +2047,19 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "include-xattr",
+        "Alias": "",
+        "Default": "",
+        "Description": "include xattr by pattern (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.18.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "overwrite",
         "Alias": "",
         "Default": "always",
-        "Description": "overwrite behavior, one of (always|if-changed|if-newer|never) (default: always)",
+        "Description": "overwrite behavior, one of (always|if-changed|if-newer|never)",
         "Once": true,
         "FromVersion": "0.17.0",
         "RemovedInVersion": ""
@@ -2016,7 +2113,7 @@
   },
   {
     "Name": "rewrite",
-    "Description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.",
+    "Description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.\n\nWhen rewrite is used with the --snapshot-summary option, a new snapshot is\ncreated containing statistics summary data. Only two fields in the summary will\nbe non-zero: TotalFilesProcessed and TotalBytesProcessed.\n\nWhen rewrite is called with one of the --exclude options, TotalFilesProcessed\nand TotalBytesProcessed will be updated in the snapshot summary.",
     "FromVersion": "0.15.0",
     "RemovedInVersion": "",
     "Options": [
@@ -2117,6 +2214,15 @@
         "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
         "Once": false,
         "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "snapshot-summary",
+        "Alias": "s",
+        "Default": "false",
+        "Description": "create snapshot summary record if it does not exist",
+        "Once": true,
+        "FromVersion": "0.18.0",
         "RemovedInVersion": ""
       },
       {
@@ -2614,6 +2720,15 @@
         "Description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries)",
         "Once": true,
         "FromVersion": "0.16.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "stuck-request-timeout",
+        "Alias": "",
+        "Default": "5m0s",
+        "Description": "duration after which to retry stuck requests",
+        "Once": true,
+        "FromVersion": "0.18.0",
         "RemovedInVersion": ""
       },
       {
