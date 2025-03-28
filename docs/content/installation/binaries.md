@@ -1,6 +1,5 @@
 ---
 title: "Pre-built binaries"
-tags: ["v0.26.0"]
 weight: 5
 ---
 
@@ -19,17 +18,18 @@ You can download the latest versions from the [releases page](https://github.com
 - linux/arm64
 - linux/armv6
 - linux/armv7
-- linux/mips64 hardfloat - `v0.26.0`
-- linux/mips64le hardfloat - `v0.26.0`
-- linux/mips hardfloat - `v0.26.0`
-- linux/mipsle hardfloat - `v0.26.0`
-- linux/ppc64 - `v0.26.0`
-- linux/ppc64le - `v0.26.0`
-- linux/riscv64 - `v0.26.0`
-- linux/s390x - `v0.26.0`
-- netbsd/amd64 - `v0.26.0`
-- openbsd/386 - `v0.26.0`
-- openbsd/amd64 - `v0.26.0`
-- solaris/amd64 - `v0.26.0`
+- linux/mips64 hardfloat
+- linux/mips64le hardfloat
+- linux/mips hardfloat
+- linux/mipsle hardfloat
+- linux/ppc64
+- linux/ppc64le
+- linux/riscv64
+- linux/s390x
+- netbsd/amd64
+- openbsd/386
+- openbsd/amd64
+- solaris/amd64
 - windows/386
 - windows/amd64
+- windows/arm64 🆕
