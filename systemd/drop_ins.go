@@ -37,7 +37,7 @@ func IsTimerDropIn(file string) bool {
 	return false
 }
 
-func CreateDropIns(dir string, files []string) error {
+func createDropIns(dir string, files []string) error {
 	if err := fs.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}

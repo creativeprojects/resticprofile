@@ -109,12 +109,12 @@ self:
         schedule:
             - "*:15"
             - "*:45"
-    forget:
-        schedule-permission: user_logged_on
-        schedule:
-            - "2020-01-01"
-            - "*:10"
-            - "*:40"
+    # forget:
+    #     schedule-permission: user_logged_on
+    #     schedule:
+    #         - "2020-01-01"
+    #         - "*:10"
+    #         - "*:40"
 
 src:
     inherit: default

@@ -120,6 +120,7 @@ func init() {
 // Generate systemd unit
 func Generate(config Config) error {
 	var err error
+	u := user.Current()
 	systemdProfile := GetServiceFile(config.Title, config.SubTitle)
 	timerProfile := GetTimerFile(config.Title, config.SubTitle)
 
@@ -134,7 +135,6 @@ func Generate(config Config) error {
 	environment := slices.Clone(config.Environment)
 	if config.User != "" {
 		// resticprofile will start under config.User (user background mode)
-		u := user.Current()
 		if u.HomeDir != "" {
 			environment = append(environment, fmt.Sprintf("HOME=%s", u.HomeDir))
 		}
@@ -190,6 +190,11 @@ func Generate(config Config) error {
 	}
 	data.Reset()
 
+	if config.UnitType == UserUnit && u.SudoRoot {
+		// we need to change the owner to the original account
+		_ = fs.Chown(filePathName, u.Uid, u.Gid)
+	}
+
 	systemdTimerTmpl, err := loadTemplate(config.TimerFile, systemdTimerDefaultTmpl)
 	if err != nil {
 		return err
@@ -207,14 +212,23 @@ func Generate(config Config) error {
 		return err
 	}
 
+	if config.UnitType == UserUnit && u.SudoRoot {
+		// we need to change the owner to the original account
+		_ = fs.Chown(filePathName, u.Uid, u.Gid)
+	}
+
 	dropIns := map[string][]string{
 		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(config.DropInFiles, IsTimerDropIn),
 		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(config.DropInFiles, collect.Not(IsTimerDropIn)),
 	}
 	for dropInDir, dropInFiles := range dropIns {
 		dropInDir = filepath.Join(systemdUserDir, dropInDir)
-		if err = CreateDropIns(dropInDir, dropInFiles); err != nil {
+		if err = createDropIns(dropInDir, dropInFiles); err != nil {
 			return err
+		}
+		if config.UnitType == UserUnit && u.SudoRoot {
+			// we need to change the owner to the original account
+			_ = fs.Chown(dropInDir, u.Uid, u.Gid)
 		}
 	}
 
