@@ -14,6 +14,7 @@ import (
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/darwin"
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -315,6 +316,51 @@ func TestDetectPermissionLaunchd(t *testing.T) {
 			perm, safe := handler.DetectSchedulePermission(PermissionFromConfig(fixture.input))
 			assert.Equal(t, fixture.expected, perm.String())
 			assert.Equal(t, fixture.safe, safe)
+		})
+	}
+}
+
+func TestPresentStatus(t *testing.T) {
+	tests := []struct {
+		key           string
+		value         string
+		expectedKey   string
+		expectedValue string
+	}{
+		{"domain", "gui/501", "permission", "user logged on"},
+		{"domain", "user/501", "permission", "user"},
+		{"domain", "system", "permission", "system"},
+		{"runs", "5", "runs (*)", "5"},
+		{"last exit code", "0", "last exit code (*)", "0"},
+		{"state", "running", "state", "running"},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("%s=%s", test.key, test.value), func(t *testing.T) {
+			actualKey, actualValue := presentStatus(test.key, test.value)
+			assert.Equal(t, test.expectedKey, actualKey)
+			assert.Equal(t, test.expectedValue, actualValue)
+		})
+	}
+}
+func TestDomainTarget(t *testing.T) {
+	t.Parallel()
+
+	currentUid := user.Current().Uid
+	tests := []struct {
+		permission Permission
+		expected   string
+	}{
+		{PermissionSystem, "system"},
+		{PermissionUserLoggedOn, fmt.Sprintf("gui/%d", currentUid)},
+		{PermissionUserBackground, fmt.Sprintf("user/%d", currentUid)},
+		{PermissionFromConfig("unknown"), ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.permission.String(), func(t *testing.T) {
+			actual := domainTarget(test.permission)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }

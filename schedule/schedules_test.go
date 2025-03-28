@@ -47,6 +47,19 @@ func TestDisplayParseSchedules(t *testing.T) {
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00\n")
 }
 
+func TestDisplayParseSchedulesWillNeverRun(t *testing.T) {
+	events, err := parseSchedules([]string{"2020-01-01"})
+	require.NoError(t, err)
+
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	defer term.SetOutput(os.Stdout)
+
+	displayParsedSchedules("profile", "command", events)
+	output := buffer.String()
+	assert.Contains(t, output, "Next elapse: never\n")
+}
+
 func TestDisplayParseSchedulesIndexAndTotal(t *testing.T) {
 	events, err := parseSchedules([]string{"daily", "monthly", "yearly"})
 	require.NoError(t, err)
