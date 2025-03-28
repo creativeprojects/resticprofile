@@ -6,7 +6,7 @@ weight: 10
 
 ## Installation via a script
 
-Here's a simple script to download the binary automatically. It works on mac OS X, FreeBSD and Linux:
+Here's a simple script to download the binary automatically. It works on macOS, FreeBSD and Linux:
 
 ```shell
 curl -sfL https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh | sh
@@ -23,6 +23,14 @@ sudo ./install.sh -b /usr/local/bin
 ```
 
 It will install resticprofile in `/usr/local/bin/`
+
+## Debian package
+
+WakeMeOps publishes packages for [restic](https://docs.wakemeops.com/packages/restic/) and [resticprofile](https://docs.wakemeops.com/packages/resticprofile/).
+
+Learn more: https://docs.wakemeops.com/packages/resticprofile/
+
+These packages are managed by a third party.
 
 ## Installation with homebrew for Linux
 
