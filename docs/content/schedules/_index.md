@@ -6,25 +6,43 @@ weight = 4
 +++
 
 
-resticprofile is capable of managing scheduled backups for you. Under the hood it's using:
-- **launchd** on macOS X
-- **Task Scheduler** on Windows
-- **systemd** where available (Linux and other BSDs)
-- **crond** as fallback (depends on the availability of a `crontab` binary)
-- **crontab** files (low level, with (`*`) or without (`-`) user column)
+## Scheduler
 
-On unixes (except macOS) resticprofile is using **systemd** if available and falls back to **crond**. 
-On any OS a **crond** compatible scheduler can be used instead if configured in `global` / `scheduler`:
+resticprofile manages scheduled backups using:
+- **[launchd]({{% relref "/schedules/launchd" %}})** on macOS
+- **[Task Scheduler]({{% relref "/schedules/task_scheduler" %}})** on Windows
+- **[systemd]({{% relref "/schedules/systemd" %}})** on Linux and other BSDs
+- **[crond]({{% relref "/schedules/cron" %}})** as a fallback (requires `crontab` binary)
+- **[crontab]({{% relref "/schedules/cron" %}})** files (with or without a user column)
+
+On Unix systems (excluding macOS), resticprofile uses **systemd** if available, otherwise it falls back to **crond**.
+
+See [reference / global section]({{% relref "/reference/global" %}}) for scheduler configuration options.
+
+Each profile can be scheduled independently. Within each profile, these sections can be scheduled:
+- **backup**
+- **check**
+- **forget**
+- **prune**
+- **copy**
+
+## Deprecation
+Scheduling the `retention` section directly is **deprecated**. Use the `forget` section instead.
+
+The retention section should be associated with a `backup` section, not scheduled independently.
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
 
 ```toml
-[global]
-  scheduler = "crond"
-  # scheduler = "crond:/usr/bin/crontab"
-  # scheduler = "crontab:*:/etc/cron.d/resticprofile"
-  # scheduler = "crontab:-:/var/spool/cron/crontabs/username"
+[profile.retention]
+  # deprecated
+  schedule = "daily"
+
+# use the forget target instead
+[profile.forget]
+  schedule = "daily"
+
 ```
 
 {{% /tab %}}
@@ -32,22 +50,30 @@ On any OS a **crond** compatible scheduler can be used instead if configured in 
 
 ```yaml
 ---
-global:
-    scheduler: crond
-    # scheduler: "crond:/usr/bin/crontab"
-    # scheduler: "crontab:*:/etc/cron.d/resticprofile"
-    # scheduler: "crontab:-:/var/spool/cron/crontabs/username"
+profile:
+  retention:
+    # deprecated
+    schedule: daily
+
+  # use the forget target instead
+  forget:
+    schedule: daily
 ```
 
 {{% /tab %}}
 {{% tab title="hcl" %}}
 
 ```hcl
-"global" = {
-  "scheduler" = "crond"
-  # "scheduler" = "crond:/usr/bin/crontab"
-  # "scheduler" = "crontab:*:/etc/cron.d/resticprofile"
-  # "scheduler" = "crontab:-:/var/spool/cron/crontabs/username"
+"profile" = {
+  "retention" = {
+     # deprecated
+    schedule = "daily"
+  }
+
+  # use the forget target instead
+  "forget" = {
+    schedule = "daily"
+  }
 }
 ```
 
@@ -56,31 +82,13 @@ global:
 
 ```json
 {
-  "global": {
-    "scheduler": "crond"
+  "profile": {
+    "forget": {
+      "schedule": "daily"
+    }
   }
 }
 ```
 
 {{% /tab %}}
 {{< /tabs >}}
-
-See also [reference / global section]({{% relref "/reference/global" %}}) for options on how to configure the scheduler.
-
-
-Each profile can be scheduled independently (groups are not available for scheduling yet - it will be available in version '2' of the configuration file).
-
-These 5 profile sections are accepting a schedule configuration:
-- backup
-- check
-- forget (version 0.11.0)
-- prune (version 0.11.0)
-- copy (version 0.16.0)
-
-which mean you can schedule `backup`, `forget`, `prune`, `check` and `copy` independently (I recommend using a [local lock]({{% relref "/usage/locks" %}}) in this case).
-
-## retention schedule is deprecated
-Starting from version 0.11.0, directly scheduling the `retention` section is **deprecated**: Use the `forget` section for direct schedule instead.
-
-The retention section is designed to be associated with a `backup` section, not to be scheduled independently.
-

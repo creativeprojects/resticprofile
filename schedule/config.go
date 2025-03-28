@@ -46,9 +46,9 @@ func (s *Config) SetCommand(wd, command string, args []string) {
 // Priority is either "background" or "standard"
 func (s *Config) GetPriority() string {
 	s.Priority = strings.ToLower(s.Priority)
-	// default value for priority is "background"
+	// default value for priority is "standard"
 	if s.Priority != constants.SchedulePriorityBackground && s.Priority != constants.SchedulePriorityStandard {
-		s.Priority = constants.SchedulePriorityBackground
+		s.Priority = constants.SchedulePriorityStandard
 	}
 	return s.Priority
 }

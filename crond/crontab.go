@@ -1,13 +1,15 @@
+//go:build !windows
+
 package crond
 
 import (
 	"errors"
 	"fmt"
 	"io"
-	"os/user"
 	"regexp"
 	"strings"
 
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 )
 
@@ -172,9 +174,9 @@ func (c *Crontab) LoadCurrent() (content string, err error) {
 
 func (c *Crontab) username() string {
 	if len(c.user) == 0 {
-		if current, err := user.Current(); err == nil {
-			c.user = current.Username
-		}
+		current := user.Current()
+		c.user = current.Username
+
 		if len(c.user) == 0 || strings.ContainsAny(c.user, "\t \n\r") {
 			c.user = "root"
 		}

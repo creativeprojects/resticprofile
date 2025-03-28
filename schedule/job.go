@@ -2,6 +2,10 @@ package schedule
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/user"
 )
 
 //
@@ -31,8 +35,8 @@ func NewJob(handler Handler, config *Config) *Job {
 
 // Accessible checks if the current user is permitted to access the job
 func (j *Job) Accessible() bool {
-	permission, _ := detectSchedulePermission(j.config.Permission)
-	return checkPermission(permission)
+	permission, _ := j.handler.DetectSchedulePermission(PermissionFromConfig(j.config.Permission))
+	return j.handler.CheckPermission(user.Current(), permission)
 }
 
 // Create a new job
@@ -41,9 +45,8 @@ func (j *Job) Create() error {
 		return ErrJobCanBeRemovedOnly
 	}
 
-	permission := getSchedulePermission(j.config.Permission)
-	ok := checkPermission(permission)
-	if !ok {
+	permission := j.getSchedulePermission(PermissionFromConfig(j.config.Permission))
+	if ok := j.handler.CheckPermission(user.Current(), permission); !ok {
 		return permissionError("create")
 	}
 
@@ -65,14 +68,13 @@ func (j *Job) Create() error {
 
 // Remove a job
 func (j *Job) Remove() error {
-	var permission string
+	permission := PermissionFromConfig(j.config.Permission)
 	if j.RemoveOnly() {
-		permission, _ = detectSchedulePermission(j.config.Permission) // silent call for possibly non-existent job
+		permission, _ = j.handler.DetectSchedulePermission(permission) // silent call for possibly non-existent job
 	} else {
-		permission = getSchedulePermission(j.config.Permission)
+		permission = j.getSchedulePermission(permission)
 	}
-	ok := checkPermission(permission)
-	if !ok {
+	if ok := j.handler.CheckPermission(user.Current(), permission); !ok {
 		return permissionError("remove")
 	}
 
@@ -91,11 +93,28 @@ func (j *Job) Status() error {
 	}
 
 	if err := j.handler.DisplaySchedules(j.config.ProfileName, j.config.CommandName, j.config.Schedules); err != nil {
-		return err
+		return fmt.Errorf("cannot display schedules: %w", err)
 	}
 
 	if err := j.handler.DisplayJobStatus(j.config); err != nil {
-		return err
+		return fmt.Errorf("cannot display status: %w", err)
 	}
 	return nil
+}
+
+// getSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// If the permission can only be guessed, this method will also display a warning
+func (j *Job) getSchedulePermission(permission Permission) Permission {
+	permission, safe := j.handler.DetectSchedulePermission(permission)
+	if !safe {
+		clog.Warningf("you have not specified the permission for your schedule (\"system\", \"user\" or \"user_logged_on\"): assuming %q", permission.String())
+	}
+	return permission
+}
+
+// permissionError display a permission denied message to the user.
+// permissionError is not used in Windows.
+func permissionError(action string) error {
+	return fmt.Errorf("user is not allowed to %s a system job: please restart resticprofile as root (with sudo)", action)
 }

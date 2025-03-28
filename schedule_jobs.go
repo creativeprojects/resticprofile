@@ -124,6 +124,7 @@ func removeScheduledJobs(handler schedule.Handler, configFile, profileName strin
 		err = job.Remove()
 		if err != nil {
 			errs = errors.Join(errs, fmt.Errorf("%s/%s: %w", cfg.ProfileName, cfg.CommandName, err))
+			continue
 		}
 		clog.Infof("scheduled job %s/%s removed", cfg.ProfileName, cfg.CommandName)
 	}

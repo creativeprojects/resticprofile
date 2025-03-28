@@ -7,8 +7,7 @@ global:
     initialize: false
     priority: low
     prevent-sleep: true
-    # restic-binary: ~/fake_restic
-    # legacy-arguments: true
+    # scheduler: "crontab:*:crontab"
     group-continue-on-error: true
     restic-lock-retry-after: "1m"
     # log: "_global.txt"
@@ -108,14 +107,15 @@ self:
         extended-status: false
         check-before: true
         no-error-on-warning: true
-        source: "{{ .CurrentDir }}"
+        source:
+            - "{{ .CurrentDir }}"
         exclude:
             - "/**/.git/"
         schedule:
-            - "*:00,30"
-        schedule-permission: user
+            - "*:00,30,36,50,55"
+            - "2020-01-01"
+        schedule-permission: user_logged_on
         schedule-log: "_schedule-log.txt"
-        schedule-ignore-on-battery: true
         schedule-after-network-online: true
         skip-if-unchanged: true
 
@@ -127,19 +127,20 @@ self:
     check:
         read-data-subset: "$DOW/7"
         schedule:
-            - "*:15"
+            - "*:05,10,15,20,25,35"
+        schedule-permission: user
     retention:
         after-backup: true
         keep-last: 30
         group-by: host
-    forget:
-        schedule: "weekly"
-        schedule-priority: background
-    copy:
-        initialize: true
-        snapshot: latest
-        schedule:
-            - "*:45"
+    # forget:
+    #     schedule: "weekly"
+    #     schedule-permission: system
+    # copy:
+    #     initialize: true
+    #     snapshot: latest
+    #     schedule:
+    #         - "*:45"
     snapshots:
         host: true
         run-before:

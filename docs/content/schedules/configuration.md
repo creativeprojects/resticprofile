@@ -4,7 +4,7 @@ weight: 10
 ---
 
 
-The schedule configuration consists of a few parameters which can be added on each profile:
+The schedule configuration includes several parameters that can be added to each profile:
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -69,79 +69,80 @@ profile:
 {{< /tabs >}}
 
 
-
 ### schedule-permission
 
-`schedule-permission` accepts three parameters: `system`, `user` or `user_logged_on`:
+`schedule-permission` accepts three parameters: `system`, `user`, or `user_logged_on`:
 
-* `system`: if you need to access some system or protected files. You will need to run resticprofile with `sudo` on unixes and with elevated prompt on Windows (please note on Windows resticprofile will ask you for elevated permissions automatically if needed).
+* `system`: Access system or protected files. Run resticprofile with `sudo` on Unix and with elevated prompt on Windows. On Windows, resticprofile will automatically request elevated permissions if needed.
 
-* `user`: your backup will be running using your current user permissions on files. This is fine if you're only saving your documents (or any other file inside your profile). Please note on **systemd** that the schedule **will only run when your user is logged in**. This mode will ask you for your user password on Windows.
+* `user`: Run the backup using current user permissions. Suitable for saving documents or files within your profile. **This mode runs even when the user is not logged on**. It will ask for your user password on Windows.
 
-* `user_logged_on`: **For Windows only** - This gives the same permissions as `user`. This mode is not asking for your user password but will only run while the user is logged on.
+* `user_logged_on`: **Not for crond** - Provides the same permissions as `user`, but runs only when the user is logged on. On Windows, it does not ask for your user password.
 
-* *empty*: resticprofile will try its best guess based on how you started it (with sudo or as a normal user). The fallback is `system` on Windows, and `user` on the other platforms.
+* *empty*: resticprofile will guess based on how it was started (with sudo or as a normal user). The fallback is `system` on Windows and `user_logged_in` on other platforms.
 
+#### Changing schedule-permission
 
-#### Changing schedule-permission from user to system, or system to user
+To change the permission of a schedule, unschedule the profile first.
 
-If you need to change the permission of a schedule, **please be sure to `unschedule` the profile before**.
+Follow this order:
 
-This order is important:
+- Unschedule the job first. Resticprofile does not track how your profile was installed, so you must remove the schedule first.
+- Change your permission (user to system, or system to user).
+- Schedule your updated profile.
 
-- `unschedule` the job first. resticprofile does **not keep track of how your profile was installed**, so you have to remove the schedule first
-- now you can change your permission (`user` to `system`, or `system` to `user`)
-- `schedule` your updated profile
 
 ### schedule-lock-mode
 
-Starting from version 0.14.0, `schedule-lock-mode` accepts 3 values:
-- `default`: Wait on acquiring a lock for the time duration set in `schedule-lock-wait`, before failing a schedule.
-   Behaves like `fail` when `schedule-lock-wait` is "0" or not specified.
-- `fail`: Any lock failure causes a schedule to abort immediately. 
-- `ignore`: Skip resticprofile locks. restic locks are not skipped and can abort the schedule.
+`schedule-lock-mode` accepts 3 values:
+- `default`: Waits for the duration set in `schedule-lock-wait` before failing a schedule. Acts like `fail` if `schedule-lock-wait` is "0" or not specified.
+- `fail`: Any lock failure immediately aborts the schedule.
+- `ignore`: Skips resticprofile locks. Restic locks are not skipped and can abort the schedule.
 
 ### schedule-lock-wait
 
-Sets the amount of time to wait for a resticprofile and restic lock to become available. Is only used when `schedule-lock-mode` is unset or `default`.
+Sets the wait time for a resticprofile and restic lock to become available. Used only when `schedule-lock-mode` is unset or `default`.
+
 
 ### schedule-log
 
 `schedule-log` can be used in two ways:
-- Allow to redirect all output from resticprofile **and restic** to a file. The parameter should point to a file (`/path/to/file`)
-- Redirects all resticprofile log entries to the syslog server. In that case the parameter is a URL like: `udp://server:514` or `tcp://127.0.0.1:514`
+- Redirect all output from resticprofile **and restic** to a file. The parameter should point to a file (`/path/to/file`).
+- Redirect all resticprofile log entries to the syslog server. In this case, the parameter is a URL like `udp://server:514` or `tcp://127.0.0.1:514`.
 
-If there's no server answering on the port specified, resticprofile will send the logs to the default output instead.
+If no server responds on the specified port, resticprofile will send the logs to the default output instead.
 
-### schedule-priority (systemd and launchd only)
 
-Starting from version 0.11.0, `schedule-priority` accepts two values:
-- `background`: the process shouldn't be noticeable when working on the machine at the same time (this is the default)
-- `standard`: the process should get the same priority as any other process on the machine (but it won't run faster if you're not using the machine at the same time)
+### schedule-priority
 
-`schedule-priority` is not available for windows task scheduler, nor crond
+`schedule-priority` accepts two values:
+- `background`: The process runs unnoticed while you work.
+- `standard`: The process gets the same priority as other processes (won't run faster if the machine is idle).
+
+`schedule-priority` is not available for crond.
 
 ### schedule
 
-The `schedule` parameter accepts many forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This is by far the easiest to use: **It is the same format used to schedule on macOS and Windows**.
+The `schedule` parameter accepts various forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This format is the same used to schedule on macOS and Windows.
 
-The most general form is:
+The general form is:
 ```
 weekdays year-month-day hour:minute:second
 ```
 
-- use `*` to mean any
-- use `,` to separate multiple entries
-- use `..` for a range
+- Use `*` to mean any
+- Use `,` to separate multiple entries
+- Use `..` for a range
 
-**limitations**:
-- the divider (`/`), the `~` and timezones are not (yet?) supported on macOS and Windows.
-- the `year` and `second` fields have no effect on macOS. They do have limited availability on Windows (they don't make much sense anyway).
+**Limitations**:
+- The divider (`/`), the `~`, and timezones are not supported on macOS and Windows.
+- The `year` and `second` fields have no effect on macOS and limited availability on Windows.
 
 Here are a few examples (taken from the systemd documentation):
 
 ```
-On the left is the user input, on the right is the full format understood by the system
+
+The user input is on the left, and the system's full format is on the right.
 
   Sat,Thu,Mon..Wed,Sat..Sun → Mon..Thu,Sat,Sun *-*-* 00:00:00
       Mon,Sun 12-*-* 2,1:23 → Mon,Sun 2012-*-* 01,02:23:00
@@ -171,15 +172,15 @@ Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
                    annually → *-01-01 00:00:00
 ```
 
-The `schedule` can be a string or an array of string (to allow for multiple schedules)
+The `schedule` can be a string or an array of strings (to allow for multiple schedules).
 
 ### schedule-ignore-on-battery
 
-If set to `true` the schedule won't start if the system is running on battery (even if the charge is still at 100%)
+If set to `true`, the schedule won't start if the system is running on battery (even if the charge is at 100%).
 
 ### schedule-ignore-on-battery-less-than
 
-If set to a number, the schedule won't start if the system is running on battery and the charge (in %) is less or equal than the number specified.
+If set to a number, the schedule won't start if the system is running on battery and the charge is less than or equal to the specified number.
 
 ## Example 
 

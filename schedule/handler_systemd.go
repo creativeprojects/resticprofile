@@ -5,6 +5,7 @@ package schedule
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,9 +16,11 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/user"
 )
 
 const (
@@ -40,6 +43,7 @@ const (
 var (
 	journalctlBinary = "journalctl"
 	systemctlBinary  = "systemctl"
+	analyzeBinary    = "systemd-analyze"
 )
 
 // HandlerSystemd is a handler to schedule tasks using systemd
@@ -103,15 +107,11 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the systemd unit and activating it
-func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
-	unitType := systemd.UserUnit
-	if os.Geteuid() == 0 {
-		// user has sudoed already
-		unitType = systemd.SystemUnit
-	}
+func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
+	unitType, user := permissionToSystemd(user.Current(), permission)
 
 	if unitType == systemd.UserUnit && job.AfterNetworkOnline {
-		return fmt.Errorf("after-network-online only available for \"system\" permission schedules")
+		return fmt.Errorf("after-network-online is not available for \"user_logged_on\" permission schedules")
 	}
 
 	err := systemd.Generate(systemd.Config{
@@ -132,6 +132,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		Nice:                 h.config.Nice,
 		IOSchedulingClass:    h.config.IONiceClass,
 		IOSchedulingPriority: h.config.IONiceLevel,
+		User:                 user,
 	})
 	if err != nil {
 		return err
@@ -166,13 +167,9 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 }
 
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
-func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
-	unitType := systemd.UserUnit
-	if os.Geteuid() == 0 {
-		// user has sudoed already
-		unitType = systemd.SystemUnit
-	}
+func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 	var err error
+	unitType, _ := permissionToSystemd(user.Current(), permission)
 	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	unitLoaded, err := unitLoaded(serviceFile, unitType)
 	if err != nil {
@@ -232,9 +229,9 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission string) error {
 func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	serviceName := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
-	permission := getSchedulePermission(job.Permission)
+	permission, _ := h.DetectSchedulePermission(PermissionFromConfig(job.Permission))
 	systemdType := systemd.UserUnit
-	if permission == constants.SchedulePermissionSystem {
+	if permission == PermissionSystem || permission == PermissionUserBackground {
 		systemdType = systemd.SystemUnit
 	}
 	unitLoaded, err := unitLoaded(serviceName, systemdType)
@@ -269,23 +266,82 @@ func (h *HandlerSystemd) Scheduled(profileName string) ([]Config, error) {
 	return configs, nil
 }
 
+// detectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func (h *HandlerSystemd) DetectSchedulePermission(p Permission) (Permission, bool) {
+	switch p {
+	case PermissionSystem, PermissionUserBackground, PermissionUserLoggedOn:
+		// well defined
+		return p, true
+
+	default:
+		// best guess is depending on the user being root or not:
+		detected := PermissionUserLoggedOn // sane default
+		if os.Geteuid() == 0 {
+			detected = PermissionSystem
+		}
+		// guess based on UID is never safe
+		return detected, false
+	}
+}
+
+// CheckPermission returns true if the user is allowed to access the job.
+func (h *HandlerSystemd) CheckPermission(user user.User, p Permission) bool {
+	switch p {
+	case PermissionUserLoggedOn:
+		// user mode is always available
+		return true
+
+	default:
+		if user.SudoRoot || user.Uid == 0 {
+			return true
+		}
+		// last case is system (or undefined) + no sudo
+		return false
+
+	}
+}
+
 var (
 	_ Handler = &HandlerSystemd{}
 )
+
+func permissionToSystemd(user user.User, permission Permission) (systemd.UnitType, string) {
+	switch permission {
+	case PermissionSystem:
+		return systemd.SystemUnit, ""
+
+	case PermissionUserBackground:
+		return systemd.SystemUnit, user.Username
+
+	case PermissionUserLoggedOn:
+		return systemd.UserUnit, ""
+
+	default:
+		unitType := systemd.UserUnit
+		if user.Uid == 0 {
+			unitType = systemd.SystemUnit
+		}
+		return unitType, ""
+	}
+}
 
 // getSystemdStatus displays the status of all the timers installed on that profile
 func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error) {
 	timerName := fmt.Sprintf("resticprofile-*@profile-%s.timer", profile)
 	args := []string{"list-timers", "--all", flagNoPager, timerName}
 	if unitType == systemd.UserUnit {
-		args = append(args, flagUserUnit)
+		args = append(args, getUserFlags()...)
 	}
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	buffer := &strings.Builder{}
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return "", err
+	}
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
-	err := cmd.Run()
+	err = cmd.Run()
 	return buffer.String(), err
 }
 
@@ -295,18 +351,20 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 	}
 	args := make([]string, 0, 3)
 	if unitType == systemd.UserUnit {
-		args = append(args, flagUserUnit)
+		args = append(args, getUserFlags()...)
 	}
 	args = append(args, flagNoPager)
 	args = append(args, command, timerName)
 
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return err
+	}
 	if !silent {
 		cmd.Stdout = term.GetOutput()
 		cmd.Stderr = term.GetErrorOutput()
 	}
-	err := cmd.Run()
+	err = cmd.Run()
 	if command == systemctlStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
 		return ErrScheduledJobNotFound
 	}
@@ -324,13 +382,18 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	timerName = strings.TrimSuffix(timerName, ".timer")
 	args := []string{"--since", "1 month ago", flagNoPager, "--priority", "warning", "--unit", timerName}
 	if unitType == systemd.UserUnit {
-		args = append(args, flagUserUnit)
+		args = append(args, getUserFlags()...)
 	}
-	clog.Debugf("starting command \"%s %s\"", journalctlBinary, strings.Join(args, " "))
-	cmd := exec.Command(journalctlBinary, args...)
+
+	binary, err := exec.LookPath(journalctlBinary)
+	if err != nil {
+		return fmt.Errorf("cannot find %q: %w", journalctlBinary, err)
+	}
+	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
+	cmd := exec.Command(binary, args...)
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()
-	err := cmd.Run()
+	err = cmd.Run()
 	fmt.Println("")
 	return err
 }
@@ -338,13 +401,15 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 func runSystemctlReload(unitType systemd.UnitType) error {
 	args := []string{systemctlReload}
 	if unitType == systemd.UserUnit {
-		args = append(args, flagUserUnit)
+		args = append(args, getUserFlags()...)
 	}
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return err
+	}
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -358,17 +423,19 @@ func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error)
 	pattern := fmt.Sprintf("resticprofile-*@profile-%s.service", profile)
 	args := []string{"list-units", "--all", flagNoPager, "--output", "json"}
 	if unitType == systemd.UserUnit {
-		args = append(args, flagUserUnit)
+		args = append(args, getUserFlags()...)
 	}
 	args = append(args, pattern)
 
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	cmd := exec.Command(systemctlBinary, args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return nil, err
+	}
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("error running command: %w\n%s", err, stderr.String())
 	}
@@ -379,6 +446,14 @@ func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error)
 		return nil, fmt.Errorf("error decoding JSON: %w\n%s", err, stdout.String())
 	}
 	return units, err
+}
+
+func getUserFlags() []string {
+	currentUser := user.Current()
+	if !currentUser.SudoRoot {
+		return []string{flagUserUnit}
+	}
+	return []string{flagUserUnit, "-M", currentUser.Username + "@"}
 }
 
 func unitLoaded(serviceName string, unitType systemd.UnitType) (bool, error) {
@@ -409,23 +484,18 @@ func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error)
 		if cfg == nil {
 			continue
 		}
-		configs = append(configs, toScheduleConfig(*cfg, unitType))
+		configs = append(configs, toScheduleConfig(*cfg))
 	}
 	return configs, nil
 }
 
-func toScheduleConfig(systemdConfig systemd.Config, unitType systemd.UnitType) Config {
+func toScheduleConfig(systemdConfig systemd.Config) Config {
 	var command string
 	cmdLine := shell.SplitArguments(systemdConfig.CommandLine)
 	if len(cmdLine) > 0 {
 		command = cmdLine[0]
 	}
 	args := NewCommandArguments(cmdLine[1:])
-
-	permission := constants.SchedulePermissionUser
-	if unitType == systemd.SystemUnit {
-		permission = constants.SchedulePermissionSystem
-	}
 
 	cfg := Config{
 		ConfigFile:       args.ConfigFile(),
@@ -436,11 +506,56 @@ func toScheduleConfig(systemdConfig systemd.Config, unitType systemd.UnitType) C
 		Arguments:        args.Trim([]string{"--no-prio"}),
 		JobDescription:   systemdConfig.JobDescription,
 		Environment:      systemdConfig.Environment,
-		Permission:       permission,
+		Permission:       systemdConfigPermission(systemdConfig),
 		Schedules:        systemdConfig.Schedules,
 		Priority:         systemdConfig.Priority,
 	}
 	return cfg
+}
+
+func systemdConfigPermission(systemdConfig systemd.Config) string {
+	switch systemdConfig.UnitType {
+	case systemd.SystemUnit:
+		if systemdConfig.User != "" {
+			return constants.SchedulePermissionUser
+		}
+		return constants.SchedulePermissionSystem
+	default:
+		return constants.SchedulePermissionUserLoggedOn
+	}
+}
+
+func systemctlCommand(args ...string) (*exec.Cmd, error) {
+	binary, err := exec.LookPath(systemctlBinary)
+	if err != nil {
+		return nil, fmt.Errorf("cannot find %q: %w", systemctlBinary, err)
+	}
+	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
+	return exec.Command(binary, args...), nil
+}
+
+func displaySystemdSchedules(profile, command string, schedules []string) error {
+	binary, err := exec.LookPath(analyzeBinary)
+	if err != nil {
+		return fmt.Errorf("cannot find %q: %w", analyzeBinary, err)
+	}
+
+	for index, schedule := range schedules {
+		if schedule == "" {
+			return errors.New("empty schedule")
+		}
+		displayHeader(profile, command, index+1, len(schedules))
+
+		cmd := exec.Command(binary, "calendar", schedule)
+		cmd.Stdout = term.GetOutput()
+		cmd.Stderr = term.GetErrorOutput()
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+	term.Print(platform.LineSeparator)
+	return nil
 }
 
 // init registers HandlerSystemd

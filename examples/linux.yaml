@@ -6,13 +6,13 @@ global:
     default-command: snapshots
     initialize: false
     priority: low
-    systemd-unit-template: sample.service
+    # systemd-unit-template: sample.service
     prevent-sleep: false
     ionice: true
     ionice-class: 3
     ionice-level: 7
-    nice: 19
-    scheduler: crontab:*:/tmp/crontab
+    # nice: 19
+    # scheduler: crontab:*:/tmp/crontab
 
 default:
     password-file: key
@@ -101,15 +101,20 @@ self:
     backup:
         extended-status: true
         source: ./
-        # schedule:
-        #   at: "*:15"
-        #   permission: system
-    copy:
-        initialize: true
+        schedule:
+            at: "*:15,20,25"
+            permission: system
+    check:
         schedule-permission: user
         schedule:
             - "*:15"
             - "*:45"
+    forget:
+        schedule-permission: user_logged_on
+        schedule:
+            - "2020-01-01"
+            - "*:10"
+            - "*:40"
 
 src:
     inherit: default
@@ -140,7 +145,7 @@ src:
         tag:
             - test
             - dev
-        
+
 stdin:
     inherit: default
     backup:

@@ -1,6 +1,6 @@
 //go:build darwin
 
-package schedule
+package darwin
 
 import "github.com/creativeprojects/resticprofile/calendar"
 

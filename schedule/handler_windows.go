@@ -9,6 +9,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/user"
 )
 
 // HandlerWindows is using windows task manager
@@ -46,12 +47,12 @@ func (h *HandlerWindows) DisplayStatus(profileName string) error {
 }
 
 // CreateJob is creating the task scheduler job.
-func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, permission string) error {
+func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
 	// default permission will be system
 	perm := schtasks.SystemAccount
-	if permission == constants.SchedulePermissionUser {
+	if permission == PermissionUserBackground {
 		perm = schtasks.UserAccount
-	} else if permission == constants.SchedulePermissionUserLoggedOn || permission == constants.SchedulePermissionUserLoggedIn {
+	} else if permission == PermissionUserLoggedOn {
 		perm = schtasks.UserLoggedOnAccount
 	}
 	jobConfig := &schtasks.Config{
@@ -70,7 +71,7 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 }
 
 // RemoveJob is deleting the task scheduler job
-func (h *HandlerWindows) RemoveJob(job *Config, permission string) error {
+func (h *HandlerWindows) RemoveJob(job *Config, _ Permission) error {
 	err := schtasks.Delete(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrNotRegistered) {
@@ -114,6 +115,25 @@ func (h *HandlerWindows) Scheduled(profileName string) ([]Config, error) {
 		}
 	}
 	return configs, nil
+}
+
+// detectSchedulePermission returns the permission defined from the configuration,
+// or the best guess considering the current user permission.
+// safe specifies whether a guess may lead to a too broad or too narrow file access permission.
+func (h *HandlerWindows) DetectSchedulePermission(permission Permission) (Permission, bool) {
+	switch permission {
+	case PermissionAuto:
+		return PermissionSystem, true
+
+	default:
+		return permission, true
+	}
+}
+
+// CheckPermission returns true if the user is allowed to access the job.
+// This is always true on Windows.
+func (h *HandlerWindows) CheckPermission(_ user.User, _ Permission) bool {
+	return true
 }
 
 // init registers HandlerWindows

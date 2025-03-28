@@ -3,7 +3,6 @@ package schedule
 import (
 	"errors"
 	"fmt"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -48,27 +47,13 @@ func displayParsedSchedules(profile, command string, events []*calendar.Event) {
 		next := event.Next(now)
 		term.Printf("  Original form: %s\n", event.Input())
 		term.Printf("Normalized form: %s\n", event.String())
+		if next.IsZero() {
+			term.Print("    Next elapse: never\n")
+			continue
+		}
 		term.Printf("    Next elapse: %s\n", next.Format(time.UnixDate))
 		term.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
 		term.Printf("       From now: %s left\n", next.Sub(now))
 	}
 	term.Print(platform.LineSeparator)
-}
-
-func displaySystemdSchedules(profile, command string, schedules []string) error {
-	for index, schedule := range schedules {
-		if schedule == "" {
-			return errors.New("empty schedule")
-		}
-		displayHeader(profile, command, index+1, len(schedules))
-		cmd := exec.Command("systemd-analyze", "calendar", schedule)
-		cmd.Stdout = term.GetOutput()
-		cmd.Stderr = term.GetErrorOutput()
-		err := cmd.Run()
-		if err != nil {
-			return err
-		}
-	}
-	term.Print(platform.LineSeparator)
-	return nil
 }
