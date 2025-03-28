@@ -133,7 +133,7 @@ func Generate(config Config) error {
 	}
 
 	environment := slices.Clone(config.Environment)
-	if config.User != "" {
+	if config.User != "" || config.UnitType == UserUnit {
 		// resticprofile will start under config.User (user background mode)
 		if u.HomeDir != "" {
 			environment = append(environment, fmt.Sprintf("HOME=%s", u.HomeDir))
