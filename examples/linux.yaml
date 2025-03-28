@@ -102,8 +102,8 @@ self:
         extended-status: true
         source: ./
         schedule:
-          at: "*:15,20,25"
-          permission: system
+            at: "*:15,20,25"
+            permission: system
     check:
         schedule-permission: user
         schedule:
@@ -145,7 +145,7 @@ src:
         tag:
             - test
             - dev
-        
+
 stdin:
     inherit: default
     backup:

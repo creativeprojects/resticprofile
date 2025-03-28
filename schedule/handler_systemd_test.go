@@ -3,12 +3,14 @@
 package schedule
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/systemd"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -227,4 +229,22 @@ func TestPermissionToSystemd(t *testing.T) {
 			assert.Equal(t, testCase.expectedUser, user)
 		})
 	}
+}
+
+func TestDisplaySystemdSchedulesWithEmpty(t *testing.T) {
+	err := displaySystemdSchedules("profile", "command", []string{""})
+	require.Error(t, err)
+}
+
+func TestDisplaySystemdSchedules(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	term.SetOutput(buffer)
+	defer term.SetOutput(os.Stdout)
+
+	err := displaySystemdSchedules("profile", "command", []string{"daily"})
+	require.NoError(t, err)
+
+	output := buffer.String()
+	assert.Contains(t, output, "Original form: daily")
+	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00")
 }

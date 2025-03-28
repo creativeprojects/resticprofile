@@ -5,6 +5,7 @@ package schedule
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,6 +16,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/systemd"
 	"github.com/creativeprojects/resticprofile/term"
@@ -39,8 +41,9 @@ const (
 )
 
 var (
-	journalctlBinary = "/usr/bin/journalctl"
-	systemctlBinary  = "/usr/bin/systemctl"
+	journalctlBinary = "journalctl"
+	systemctlBinary  = "systemctl"
+	analyzeBinary    = "systemd-analyze"
 )
 
 // HandlerSystemd is a handler to schedule tasks using systemd
@@ -332,10 +335,13 @@ func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error)
 		args = append(args, getUserFlags()...)
 	}
 	buffer := &strings.Builder{}
-	cmd := systemctlCommand(args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return "", err
+	}
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
-	err := cmd.Run()
+	err = cmd.Run()
 	return buffer.String(), err
 }
 
@@ -350,12 +356,15 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 	args = append(args, flagNoPager)
 	args = append(args, command, timerName)
 
-	cmd := systemctlCommand(args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return err
+	}
 	if !silent {
 		cmd.Stdout = term.GetOutput()
 		cmd.Stderr = term.GetErrorOutput()
 	}
-	err := cmd.Run()
+	err = cmd.Run()
 	if command == systemctlStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
 		return ErrScheduledJobNotFound
 	}
@@ -375,11 +384,16 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	if unitType == systemd.UserUnit {
 		args = append(args, getUserFlags()...)
 	}
-	clog.Debugf("starting command \"%s %s\"", journalctlBinary, strings.Join(args, " "))
-	cmd := exec.Command(journalctlBinary, args...)
+
+	binary, err := exec.LookPath(journalctlBinary)
+	if err != nil {
+		return fmt.Errorf("cannot find %q: %w", journalctlBinary, err)
+	}
+	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
+	cmd := exec.Command(binary, args...)
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()
-	err := cmd.Run()
+	err = cmd.Run()
 	fmt.Println("")
 	return err
 }
@@ -389,10 +403,13 @@ func runSystemctlReload(unitType systemd.UnitType) error {
 	if unitType == systemd.UserUnit {
 		args = append(args, getUserFlags()...)
 	}
-	cmd := systemctlCommand(args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return err
+	}
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -412,10 +429,13 @@ func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	cmd := systemctlCommand(args...)
+	cmd, err := systemctlCommand(args...)
+	if err != nil {
+		return nil, err
+	}
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("error running command: %w\n%s", err, stderr.String())
 	}
@@ -505,9 +525,37 @@ func systemdConfigPermission(systemdConfig systemd.Config) string {
 	}
 }
 
-func systemctlCommand(args ...string) *exec.Cmd {
-	clog.Debugf("starting command \"%s %s\"", systemctlBinary, strings.Join(args, " "))
-	return exec.Command(systemctlBinary, args...)
+func systemctlCommand(args ...string) (*exec.Cmd, error) {
+	binary, err := exec.LookPath(systemctlBinary)
+	if err != nil {
+		return nil, fmt.Errorf("cannot find %q: %w", systemctlBinary, err)
+	}
+	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
+	return exec.Command(binary, args...), nil
+}
+
+func displaySystemdSchedules(profile, command string, schedules []string) error {
+	binary, err := exec.LookPath(analyzeBinary)
+	if err != nil {
+		return fmt.Errorf("cannot find %q: %w", analyzeBinary, err)
+	}
+
+	for index, schedule := range schedules {
+		if schedule == "" {
+			return errors.New("empty schedule")
+		}
+		displayHeader(profile, command, index+1, len(schedules))
+
+		cmd := exec.Command(binary, "calendar", schedule)
+		cmd.Stdout = term.GetOutput()
+		cmd.Stderr = term.GetErrorOutput()
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+	term.Print(platform.LineSeparator)
+	return nil
 }
 
 // init registers HandlerSystemd

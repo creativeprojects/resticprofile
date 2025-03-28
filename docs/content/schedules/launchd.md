@@ -7,7 +7,7 @@ weight: 110
 
 ## User permission
 
-A user agent is generated when you set `schedule-permission` to `user` or `user_logged-on`. It consists of a `plist` file in `~/Library/LaunchAgents`.
+A user agent is generated when you set `schedule-permission` to `user` or `user_logged_on`. It consists of a `plist` file in `~/Library/LaunchAgents`.
 
 If you include specific files in your backup, like contacts or calendar, you need to grant more permissions to resticprofile and restic (a popup window will ask for permission).
 

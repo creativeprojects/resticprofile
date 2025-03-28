@@ -71,7 +71,7 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 }
 
 // RemoveJob is deleting the task scheduler job
-func (h *HandlerWindows) RemoveJob(job *Config, permission Permission) error {
+func (h *HandlerWindows) RemoveJob(job *Config, _ Permission) error {
 	err := schtasks.Delete(job.ProfileName, job.CommandName)
 	if err != nil {
 		if errors.Is(err, schtasks.ErrNotRegistered) {

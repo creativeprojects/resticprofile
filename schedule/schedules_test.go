@@ -3,10 +3,8 @@ package schedule
 import (
 	"bytes"
 	"os"
-	"os/exec"
 	"testing"
 
-	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -62,35 +60,4 @@ func TestDisplayParseSchedulesIndexAndTotal(t *testing.T) {
 	assert.Contains(t, output, "schedule 1/3")
 	assert.Contains(t, output, "schedule 2/3")
 	assert.Contains(t, output, "schedule 3/3")
-}
-
-func TestDisplaySystemdSchedulesWithEmpty(t *testing.T) {
-	err := displaySystemdSchedules("profile", "command", []string{""})
-	require.Error(t, err)
-}
-
-func TestDisplaySystemdSchedules(t *testing.T) {
-	_, err := exec.LookPath("/usr/bin/systemd-analyze")
-	if err != nil {
-		t.Skip("systemd-analyze not available")
-	}
-
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
-
-	err = displaySystemdSchedules("profile", "command", []string{"daily"})
-	require.NoError(t, err)
-
-	output := buffer.String()
-	assert.Contains(t, output, "Original form: daily")
-	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00")
-}
-
-func TestDisplaySystemdSchedulesError(t *testing.T) {
-	if !platform.IsWindows() && !platform.IsDarwin() {
-		t.Skip()
-	}
-	err := displaySystemdSchedules("profile", "command", []string{"daily"})
-	require.Error(t, err)
 }
