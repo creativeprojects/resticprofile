@@ -4,27 +4,33 @@ package systemd
 
 import (
 	"fmt"
-	"os"
-	"os/user"
 	"path/filepath"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	testStandardUser = user.User{Uid: 1001, Gid: 1001, Username: "testuser", HomeDir: "/home/testuser"}
+	testSudoUser     = user.User{Uid: 1001, Gid: 1001, Username: "testuser", HomeDir: "/home/testuser", SudoRoot: true}
+	testRootUser     = user.User{Uid: 0, Gid: 0, Username: "root", HomeDir: "/root"}
+)
+
 func TestGenerateSystemUnit(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	systemdDir := GetSystemDir()
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
 
-	assertNoFileExists(t, serviceFile)
-	assertNoFileExists(t, timerFile)
+	assertNoFileExists(t, fs, serviceFile)
+	assertNoFileExists(t, fs, timerFile)
 
-	err := Generate(Config{
+	err := Unit{fs: fs}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -36,8 +42,8 @@ func TestGenerateSystemUnit(t *testing.T) {
 		Priority:         "low",
 	})
 	require.NoError(t, err)
-	requireFileExists(t, serviceFile)
-	requireFileExists(t, timerFile)
+	requireFileExists(t, fs, serviceFile)
+	requireFileExists(t, fs, timerFile)
 }
 
 func TestGenerateSystemUnitServiceAfterNetworkOnline(t *testing.T) {
@@ -49,22 +55,20 @@ After=network-online.target
 Type=notify
 WorkingDirectory=workdir
 ExecStart=commandLine
+User=testuser
 Environment="HOME=%s"
 `
-
-	fs = afero.NewMemMapFs()
-
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	systemdDir := GetSystemDir()
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
 
-	assertNoFileExists(t, serviceFile)
-	assertNoFileExists(t, timerFile)
+	assertNoFileExists(t, fs, serviceFile)
+	assertNoFileExists(t, fs, timerFile)
 
-	err = Generate(Config{
+	err := Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:        "commandLine",
 		WorkingDirectory:   "workdir",
 		Title:              "name",
@@ -75,14 +79,15 @@ Environment="HOME=%s"
 		UnitType:           SystemUnit,
 		Priority:           "low",
 		AfterNetworkOnline: true,
+		User:               testStandardUser.Username,
 	})
 	require.NoError(t, err)
-	requireFileExists(t, serviceFile)
-	requireFileExists(t, timerFile)
+	requireFileExists(t, fs, serviceFile)
+	requireFileExists(t, fs, timerFile)
 
 	service, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf(expectedService, home), string(service))
+	assert.Equal(t, fmt.Sprintf(expectedService, testSudoUser.HomeDir), string(service))
 }
 
 func TestGenerateUserUnit(t *testing.T) {
@@ -106,19 +111,17 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 `
-	fs = afero.NewMemMapFs()
-	u, err := user.Current()
-	require.NoError(t, err)
-	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
+	t.Parallel()
+	fs := afero.NewMemMapFs()
+
+	systemdUserDir := filepath.Join(testStandardUser.HomeDir, ".config", "systemd", "user")
 	serviceFile := filepath.Join(systemdUserDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdUserDir, "resticprofile-backup@profile-name.timer")
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
 
-	assertNoFileExists(t, serviceFile)
-	assertNoFileExists(t, timerFile)
+	assertNoFileExists(t, fs, serviceFile)
+	assertNoFileExists(t, fs, timerFile)
 
-	err = Generate(Config{
+	err := Unit{fs: fs, user: testStandardUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -130,12 +133,12 @@ WantedBy=timers.target
 		Priority:         "low",
 	})
 	require.NoError(t, err)
-	requireFileExists(t, serviceFile)
-	requireFileExists(t, timerFile)
+	requireFileExists(t, fs, serviceFile)
+	requireFileExists(t, fs, timerFile)
 
 	service, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf(expectedService, home), string(service))
+	assert.Equal(t, fmt.Sprintf(expectedService, testStandardUser.HomeDir), string(service))
 
 	timer, err := afero.ReadFile(fs, timerFile)
 	require.NoError(t, err)
@@ -143,9 +146,10 @@ WantedBy=timers.target
 }
 
 func TestGenerateUnitTemplateNotFound(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
-	err := Generate(Config{
+	err := Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -161,9 +165,10 @@ func TestGenerateUnitTemplateNotFound(t *testing.T) {
 }
 
 func TestGenerateTimerTemplateNotFound(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
-	err := Generate(Config{
+	err := Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -179,12 +184,13 @@ func TestGenerateTimerTemplateNotFound(t *testing.T) {
 }
 
 func TestGenerateUnitTemplateFailed(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	err := afero.WriteFile(fs, "unit", []byte("{{ ."), 0600)
 	require.NoError(t, err)
 
-	err = Generate(Config{
+	err = Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -200,12 +206,13 @@ func TestGenerateUnitTemplateFailed(t *testing.T) {
 }
 
 func TestGenerateTimerTemplateFailed(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	err := afero.WriteFile(fs, "timer", []byte("{{ ."), 0600)
 	require.NoError(t, err)
 
-	err = Generate(Config{
+	err = Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -221,12 +228,13 @@ func TestGenerateTimerTemplateFailed(t *testing.T) {
 }
 
 func TestGenerateUnitTemplateFailedToExecute(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	err := afero.WriteFile(fs, "unit", []byte("{{ .Toto }}"), 0600)
 	require.NoError(t, err)
 
-	err = Generate(Config{
+	err = Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -242,12 +250,13 @@ func TestGenerateUnitTemplateFailedToExecute(t *testing.T) {
 }
 
 func TestGenerateTimerTemplateFailedToExecute(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	err := afero.WriteFile(fs, "timer", []byte("{{ .Toto }}"), 0600)
 	require.NoError(t, err)
 
-	err = Generate(Config{
+	err = Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -263,21 +272,22 @@ func TestGenerateTimerTemplateFailedToExecute(t *testing.T) {
 }
 
 func TestGenerateFromUserDefinedTemplates(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	systemdDir := GetSystemDir()
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer")
 
-	assertNoFileExists(t, serviceFile)
-	assertNoFileExists(t, timerFile)
+	assertNoFileExists(t, fs, serviceFile)
+	assertNoFileExists(t, fs, timerFile)
 
 	err := afero.WriteFile(fs, "unit", []byte("{{ .JobDescription }}"), 0600)
 	require.NoError(t, err)
 	err = afero.WriteFile(fs, "timer", []byte("{{ .TimerDescription }}"), 0600)
 	require.NoError(t, err)
 
-	err = Generate(Config{
+	err = Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -291,12 +301,13 @@ func TestGenerateFromUserDefinedTemplates(t *testing.T) {
 		TimerFile:        "timer",
 	})
 	require.NoError(t, err)
-	requireFileExists(t, serviceFile)
-	requireFileExists(t, timerFile)
+	requireFileExists(t, fs, serviceFile)
+	requireFileExists(t, fs, timerFile)
 }
 
 func TestGenerateWithDropInFile(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	dropInFileContents := []byte(`
 [Service]
@@ -316,12 +327,12 @@ RandomizedDelaySec=5h
 	dropInFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/99-example.resticprofile.conf")
 	dropInTimerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer.d/98-example.resticprofile.conf")
 
-	assertNoFileExists(t, serviceFile)
-	assertNoFileExists(t, timerFile)
-	assertNoFileExists(t, dropInFile)
-	assertNoFileExists(t, dropInTimerFile)
+	assertNoFileExists(t, fs, serviceFile)
+	assertNoFileExists(t, fs, timerFile)
+	assertNoFileExists(t, fs, dropInFile)
+	assertNoFileExists(t, fs, dropInTimerFile)
 
-	err := Generate(Config{
+	err := Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -334,10 +345,10 @@ RandomizedDelaySec=5h
 		DropInFiles:      []string{"98-example.conf", "99-example.conf"},
 	})
 	require.NoError(t, err)
-	requireFileExists(t, serviceFile)
-	requireFileExists(t, timerFile)
-	requireFileExists(t, dropInFile)
-	requireFileExists(t, dropInTimerFile)
+	requireFileExists(t, fs, serviceFile)
+	requireFileExists(t, fs, timerFile)
+	requireFileExists(t, fs, dropInFile)
+	requireFileExists(t, fs, dropInTimerFile)
 
 	dropIn, err := afero.ReadFile(fs, dropInFile)
 	require.NoError(t, err)
@@ -349,7 +360,8 @@ RandomizedDelaySec=5h
 }
 
 func TestGenerateCleansUpOrphanDropIns(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 
 	dropInFileContents := []byte(`
 [Service]
@@ -380,12 +392,12 @@ RandomizedDelaySec=5h
 	dropInFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service.d/99-example.resticprofile.conf")
 	dropInTimerFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.timer.d/98-example.resticprofile.conf")
 
-	assertNoFileExists(t, serviceFile)
-	assertNoFileExists(t, timerFile)
-	assertNoFileExists(t, dropInFile)
-	assertNoFileExists(t, dropInTimerFile)
+	assertNoFileExists(t, fs, serviceFile)
+	assertNoFileExists(t, fs, timerFile)
+	assertNoFileExists(t, fs, dropInFile)
+	assertNoFileExists(t, fs, dropInTimerFile)
 
-	err := Generate(Config{
+	err := Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -398,30 +410,34 @@ RandomizedDelaySec=5h
 		DropInFiles:      []string{"98-example.conf", "99-example.conf"},
 	})
 	require.NoError(t, err)
-	requireFileExists(t, serviceFile)
-	requireFileExists(t, timerFile)
-	requireFileExists(t, dropInFile)
-	requireFileExists(t, dropInTimerFile)
-	assertNoFileExists(t, orphanFile)
-	assertNoFileExists(t, orphanTimerFile)
-	requireFileExists(t, externallyCreatedFile)
-	requireFileExists(t, externallyCreatedTimerFile)
+	requireFileExists(t, fs, serviceFile)
+	requireFileExists(t, fs, timerFile)
+	requireFileExists(t, fs, dropInFile)
+	requireFileExists(t, fs, dropInTimerFile)
+	assertNoFileExists(t, fs, orphanFile)
+	assertNoFileExists(t, fs, orphanTimerFile)
+	requireFileExists(t, fs, externallyCreatedFile)
+	requireFileExists(t, fs, externallyCreatedTimerFile)
 }
 
 func TestGetUserDirOnReadOnlyFs(t *testing.T) {
-	fs = afero.NewReadOnlyFs(afero.NewMemMapFs())
-	_, err := GetUserDir()
+	t.Parallel()
+	fs := afero.NewReadOnlyFs(afero.NewMemMapFs())
+	_, err := Unit{fs: fs, user: testStandardUser}.GetUserDir()
 	assert.Error(t, err)
 }
 
 func TestGenerateOnReadOnlyFs(t *testing.T) {
-	fs = afero.NewMemMapFs()
-	_, err := GetUserDir()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
+	unit := Unit{fs: fs, user: testSudoUser}
+	_, err := unit.GetUserDir()
 	assert.NoError(t, err)
 	// now make the FS readonly
 	fs = afero.NewReadOnlyFs(fs)
+	unit = Unit{fs: fs, user: testSudoUser}
 
-	err = Generate(Config{
+	err = unit.Generate(Config{
 		CommandLine:      "commandLine",
 		WorkingDirectory: "workdir",
 		Title:            "name",
@@ -436,6 +452,7 @@ func TestGenerateOnReadOnlyFs(t *testing.T) {
 }
 
 func TestGeneratePriorityFields(t *testing.T) {
+	t.Parallel()
 	jobName := "name"
 	jobCommand := "backup"
 	testCases := []struct {
@@ -534,14 +551,15 @@ func TestGeneratePriorityFields(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run("", func(t *testing.T) {
-			fs = afero.NewMemMapFs()
+			t.Parallel()
+			fs := afero.NewMemMapFs()
 
-			assertNoFileExists(t, serviceFile)
+			assertNoFileExists(t, fs, serviceFile)
 
-			err := Generate(testCase.config)
+			err := Unit{fs: fs, user: testSudoUser}.Generate(testCase.config)
 			require.NoError(t, err)
 
-			requireFileExists(t, serviceFile)
+			requireFileExists(t, fs, serviceFile)
 
 			contents, err := afero.ReadFile(fs, serviceFile)
 			require.NoError(t, err)
@@ -561,11 +579,12 @@ func TestGeneratePriorityFields(t *testing.T) {
 }
 
 func TestGenerateUserField(t *testing.T) {
-	fs = afero.NewMemMapFs()
+	t.Parallel()
+	fs := afero.NewMemMapFs()
 	systemdDir := GetSystemDir()
 	serviceFile := filepath.Join(systemdDir, "resticprofile-backup@profile-name.service")
 
-	err := Generate(Config{
+	err := Unit{fs: fs, user: testSudoUser}.Generate(Config{
 		JobDescription:   "Test",
 		CommandLine:      "resticprofile",
 		WorkingDirectory: "/tmp",
@@ -579,9 +598,6 @@ func TestGenerateUserField(t *testing.T) {
 	contents, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
 
-	homeDir, err := os.UserHomeDir()
-	require.NoError(t, err)
-
 	expected := `[Unit]
 Description=Test
 
@@ -592,17 +608,17 @@ ExecStart=resticprofile
 User=user
 Environment="HOME=%s"
 `
-	assert.Equal(t, fmt.Sprintf(expected, homeDir), string(contents))
+	assert.Equal(t, fmt.Sprintf(expected, testSudoUser.HomeDir), string(contents))
 }
 
-func assertNoFileExists(t *testing.T, filename string) {
+func assertNoFileExists(t *testing.T, fs afero.Fs, filename string) {
 	t.Helper()
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)
 	assert.Falsef(t, exists, "file %q exists", filename)
 }
 
-func requireFileExists(t *testing.T, filename string) {
+func requireFileExists(t *testing.T, fs afero.Fs, filename string) {
 	t.Helper()
 	exists, err := afero.Exists(fs, filename)
 	require.NoError(t, err)

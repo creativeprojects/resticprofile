@@ -268,8 +268,7 @@ func (h *HandlerLaunchd) CheckPermission(user user.User, p Permission) bool {
 		return true
 
 	default:
-		if user.SudoRoot || user.Uid == 0 {
-			// user has sudoed
+		if user.IsRoot() {
 			return true
 		}
 		// last case is system (or undefined) + no sudo

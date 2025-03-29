@@ -108,13 +108,15 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 
 // CreateJob is creating the systemd unit and activating it
 func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
-	unitType, user := permissionToSystemd(user.Current(), permission)
+	u := user.Current()
+	unitType, user := permissionToSystemd(u, permission)
 
 	if unitType == systemd.UserUnit && job.AfterNetworkOnline {
 		return fmt.Errorf("after-network-online is not available for \"user_logged_on\" permission schedules")
 	}
 
-	err := systemd.Generate(systemd.Config{
+	unit := systemd.NewUnit(u)
+	err := unit.Generate(systemd.Config{
 		CommandLine:          job.Command + " --no-prio " + job.Arguments.String(),
 		Environment:          job.Environment,
 		WorkingDirectory:     job.WorkingDirectory,
@@ -169,7 +171,9 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
 func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 	var err error
-	unitType, _ := permissionToSystemd(user.Current(), permission)
+	unit := systemd.NewUnit(user.Current())
+	u := user.Current()
+	unitType, _ := permissionToSystemd(u, permission)
 	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
 	unitLoaded, err := unitLoaded(serviceFile, unitType)
 	if err != nil {
@@ -195,7 +199,7 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 
 	systemdPath := systemd.GetSystemDir()
 	if unitType == systemd.UserUnit {
-		systemdPath, err = systemd.GetUserDir()
+		systemdPath, err = unit.GetUserDir()
 		if err != nil {
 			return nil
 		}
@@ -241,7 +245,12 @@ func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	if !unitLoaded {
 		return ErrScheduledJobNotFound
 	}
-	_ = runJournalCtlCommand(timerName, systemdType) // ignore errors on journalctl
+	if systemdType == systemd.UserUnit && user.Current().IsRoot() {
+		// journalctl doesn't accept the parameter "-M user@" (yet?)
+		clog.Warning("cannot load the journal from a user service as root")
+	} else {
+		_ = runJournalCtlCommand(timerName, systemdType) // ignore errors on journalctl
+	}
 	return runSystemctlCommand(timerName, systemctlStatus, systemdType, false)
 }
 
@@ -294,7 +303,7 @@ func (h *HandlerSystemd) CheckPermission(user user.User, p Permission) bool {
 		return true
 
 	default:
-		if user.SudoRoot || user.Uid == 0 {
+		if user.IsRoot() {
 			return true
 		}
 		// last case is system (or undefined) + no sudo
@@ -476,7 +485,7 @@ func getConfigs(profileName string, unitType systemd.UnitType) ([]Config, error)
 		if unit.Load == unitNotFound {
 			continue
 		}
-		cfg, err := systemd.Read(unit.Unit, unitType)
+		cfg, err := systemd.NewUnit(user.Current()).Read(unit.Unit, unitType)
 		if err != nil {
 			clog.Errorf("cannot read information from unit %q: %s", unit.Unit, err)
 			continue

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -70,8 +71,6 @@ const (
 	SystemUnit
 )
 
-var fs afero.Fs
-
 // templateInfo to create systemd unit
 type templateInfo struct {
 	templates.DefaultData
@@ -113,36 +112,40 @@ type Config struct {
 	User                 string
 }
 
-func init() {
-	fs = afero.NewOsFs()
+type Unit struct {
+	fs   afero.Fs
+	user user.User
+}
+
+func NewUnit(user user.User) Unit {
+	return Unit{
+		fs:   afero.NewOsFs(),
+		user: user,
+	}
 }
 
 // Generate systemd unit
-func Generate(config Config) error {
+func (u Unit) Generate(config Config) error {
 	var err error
-	u := user.Current()
 	systemdProfile := GetServiceFile(config.Title, config.SubTitle)
 	timerProfile := GetTimerFile(config.Title, config.SubTitle)
 
 	systemdUserDir := systemdSystemDir
 	if config.UnitType == UserUnit {
-		systemdUserDir, err = GetUserDir()
+		systemdUserDir, err = u.GetUserDir()
 		if err != nil {
 			return err
 		}
 	}
 
 	environment := slices.Clone(config.Environment)
-	if config.User != "" || config.UnitType == UserUnit {
-		// resticprofile will start under config.User (user background mode)
-		if u.HomeDir != "" {
-			environment = append(environment, fmt.Sprintf("HOME=%s", u.HomeDir))
-		}
-	} else {
-		// running resticprofile as root
-		if home, err := os.UserHomeDir(); err == nil {
-			environment = append(environment, fmt.Sprintf("HOME=%s", home))
-		}
+
+	if u.user.HomeDir != "" {
+		environment = append(environment, fmt.Sprintf("HOME=%s", u.user.HomeDir))
+	}
+
+	if config.UnitType == SystemUnit && config.User == "" {
+		// permission = system
 		if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
 			environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
 		}
@@ -172,7 +175,7 @@ func Generate(config Config) error {
 
 	var data bytes.Buffer
 
-	systemdUnitTmpl, err := loadTemplate(config.UnitFile, systemdUnitDefaultTmpl)
+	systemdUnitTmpl, err := u.loadTemplate(config.UnitFile, systemdUnitDefaultTmpl)
 	if err != nil {
 		return err
 	}
@@ -185,17 +188,17 @@ func Generate(config Config) error {
 	}
 	filePathName := filepath.Join(systemdUserDir, systemdProfile)
 	clog.Debugf("writing %v", filePathName)
-	if err = afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
+	if err = afero.WriteFile(u.fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 	data.Reset()
 
-	if config.UnitType == UserUnit && u.SudoRoot {
+	if config.UnitType == UserUnit && u.user.SudoRoot {
 		// we need to change the owner to the original account
-		_ = fs.Chown(filePathName, u.Uid, u.Gid)
+		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
 	}
 
-	systemdTimerTmpl, err := loadTemplate(config.TimerFile, systemdTimerDefaultTmpl)
+	systemdTimerTmpl, err := u.loadTemplate(config.TimerFile, systemdTimerDefaultTmpl)
 	if err != nil {
 		return err
 	}
@@ -208,31 +211,51 @@ func Generate(config Config) error {
 	}
 	filePathName = filepath.Join(systemdUserDir, timerProfile)
 	clog.Debugf("writing %v", filePathName)
-	if err = afero.WriteFile(fs, filePathName, data.Bytes(), defaultPermission); err != nil {
+	if err = afero.WriteFile(u.fs, filePathName, data.Bytes(), defaultPermission); err != nil {
 		return err
 	}
 
-	if config.UnitType == UserUnit && u.SudoRoot {
+	if config.UnitType == UserUnit && u.user.SudoRoot {
 		// we need to change the owner to the original account
-		_ = fs.Chown(filePathName, u.Uid, u.Gid)
+		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
 	}
 
 	dropIns := map[string][]string{
-		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(config.DropInFiles, IsTimerDropIn),
-		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(config.DropInFiles, collect.Not(IsTimerDropIn)),
+		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(config.DropInFiles, u.IsTimerDropIn),
+		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(config.DropInFiles, collect.Not(u.IsTimerDropIn)),
 	}
 	for dropInDir, dropInFiles := range dropIns {
 		dropInDir = filepath.Join(systemdUserDir, dropInDir)
-		if err = createDropIns(dropInDir, dropInFiles); err != nil {
+		if err = u.createDropIns(dropInDir, dropInFiles); err != nil {
 			return err
 		}
-		if config.UnitType == UserUnit && u.SudoRoot {
+		if config.UnitType == UserUnit && u.user.SudoRoot {
 			// we need to change the owner to the original account
-			_ = fs.Chown(dropInDir, u.Uid, u.Gid)
+			afero.Walk(u.fs, dropInDir, func(path string, info fs.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				_ = u.fs.Chown(path, u.user.Uid, u.user.Gid)
+				return nil
+			})
 		}
 	}
 
 	return nil
+}
+
+// GetUserDir returns the default directory where systemd stores user units
+func (u Unit) GetUserDir() (string, error) {
+	systemdUserDir := filepath.Join(u.user.HomeDir, ".config", "systemd", "user")
+	if err := u.fs.MkdirAll(systemdUserDir, 0o700); err != nil {
+		return "", err
+	}
+	return systemdUserDir, nil
+}
+
+// GetSystemDir returns the path where the local systemd units are stored
+func GetSystemDir() string {
+	return systemdSystemDir
 }
 
 // GetServiceFile returns the service file name for the profile
@@ -255,30 +278,14 @@ func GetTimerFile(profileName, commandName string) string {
 	return fmt.Sprintf("resticprofile-%s@profile-%s.timer", commandName, profileName)
 }
 
-// GetUserDir returns the default directory where systemd stores user units
-func GetUserDir() (string, error) {
-	u := user.Current()
-
-	systemdUserDir := filepath.Join(u.HomeDir, ".config", "systemd", "user")
-	if err := fs.MkdirAll(systemdUserDir, 0o700); err != nil {
-		return "", err
-	}
-	return systemdUserDir, nil
-}
-
-// GetSystemDir returns the path where the local systemd units are stored
-func GetSystemDir() string {
-	return systemdSystemDir
-}
-
 // loadTemplate loads the content of the filename if the parameter is not empty,
 // or returns the default template if the filename parameter is empty
-func loadTemplate(filename, defaultTmpl string) (string, error) {
+func (u Unit) loadTemplate(filename, defaultTmpl string) (string, error) {
 	if filename == "" {
 		return defaultTmpl, nil
 	}
 	clog.Debugf("using template file %q", filename)
-	file, err := fs.Open(filename)
+	file, err := u.fs.Open(filename)
 	if err != nil {
 		return "", err
 	}

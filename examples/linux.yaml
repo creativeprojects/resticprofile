@@ -98,23 +98,27 @@ longrun:
 self:
     inherit: default
     status-file: /tmp/status.json
+    # systemd-drop-in-files: [ drop-in-example.conf ]
     backup:
         extended-status: true
         source: ./
         schedule:
             at: "*:15,20,25"
             permission: system
+            after-network-online: true
     check:
         schedule-permission: user
+        schedule-after-network-online: true
         schedule:
             - "*:15"
             - "*:45"
-    # forget:
-    #     schedule-permission: user_logged_on
-    #     schedule:
-    #         - "2020-01-01"
-    #         - "*:10"
-    #         - "*:40"
+    forget:
+        schedule-permission: user_logged_on
+        schedule-after-network-online: false
+        schedule:
+            - "2020-01-01"
+            - "*:10"
+            - "*:40"
 
 src:
     inherit: default

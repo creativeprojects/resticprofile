@@ -202,7 +202,7 @@ func (h *HandlerCrond) CheckPermission(user user.User, p Permission) bool {
 		return true
 
 	default:
-		if user.SudoRoot || user.Uid == 0 {
+		if user.IsRoot() {
 			return true
 		}
 		// last case is system (or undefined) + no sudo
