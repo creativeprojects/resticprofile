@@ -23,7 +23,7 @@ builds:
 
 archives:
   - id: targz
-    builds:
+    ids:
       - resticprofile_targz
     formats: tar.gz
 

@@ -1,6 +1,5 @@
 ---
 title: "Docker"
-tags: ["v0.18.0"]
 weight: 30
 ---
 
@@ -8,10 +7,20 @@ weight: 30
 
 ## Using resticprofile from a docker image ##
 
-You can run resticprofile inside a docker container. It is probably the easiest way to install resticprofile (and restic at the same time) and keep it updated.
+You can run resticprofile in a Docker container, which is the easiest way to install and update resticprofile and restic simultaneously.
 
-**But** be aware that you will need to mount your backup source (and destination if it's local) as a docker volume.
-Depending on your operating system, the backup might be **slower**. Volumes mounted on a mac OS host are well known for being quite slow.
+However, you must mount your backup source (and local destination, if applicable) as a Docker volume. On macOS, backups may be slower due to the known performance issues with mounted volumes.
+
+### Registries
+
+The officiel image is available on docker hub
+```shell
+docker pull creativeprojects/resticprofile:latest
+```
+as well as on Github Container Registry
+```shell
+docker pull ghcr.io/creativeprojects/resticprofile:latest
+```
 
 By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
 
@@ -26,9 +35,9 @@ docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofi
 
 ### Container host name
 
-Each time a container is started, it gets assigned a new random name.
+Each time a container starts, it is assigned a random name.
 
-You might want to force a hostname when starting your container via docker run (flags `-h` or `--hostname`):
+To set a specific hostname, use the `-h` or `--hostname` flag with `docker run`:
 
 ```shell
 docker run -it --rm -v $PWD:/resticprofile -h my-hostname creativeprojects/resticprofile -n profile backup
@@ -36,23 +45,21 @@ docker run -it --rm -v $PWD:/resticprofile -h my-hostname creativeprojects/resti
 
 ### Platforms
 
-Starting from version `0.18.0`, the resticprofile docker image is available in these 2 platforms:
+The resticprofile docker image is available in these 2 platforms:
 - linux/amd64
 - linux/arm64/v8 (compatible with raspberry pi 64bits)
 
 ### rclone
 
-Starting from version `0.18.0`, the resticprofile docker image also includes [rclone][1].
+The resticprofile docker image also includes the latest version of [rclone][1].
 
-### Release cycle on docker hub
+### Container imager release cycle
 
-The docker image is uploaded automatically on docker hub when a new release is published on github.
-Also, the `latest` tag is updated to the latest release.
+The Docker image is automatically uploaded to both registries when a new release is published on GitHub. The `latest` tag is updated to match the release.
 
-Every week, the `latest` image is rebuilt to include the latest updates from restic, rclone and the base image (alpine).
+Each week, the `latest` image is rebuilt to include updates from Restic, Rclone, and the Alpine base image.
 
-Another image is also updated after every commit on the main branch. It's tagged with `nightly`.
-Please be aware that this image might be unstable and should not be used in production.
+After every commit to the main branch, another image is updated and tagged as `nightly`. This image may be unstable and is not recommended for production use.
 
 ## Scheduling with docker compose
 
