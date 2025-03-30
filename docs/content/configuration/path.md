@@ -153,8 +153,12 @@ resticprofile will search for your configuration file in these folders:
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- %USERPROFILE%\AppData\Local\
-- c:\ProgramData\
+- %USERPROFILE%\AppData\Local\resticprofile
+- %USERPROFILE%\AppData\Roaming\resticprofile
+- c:\ProgramData\resticprofile
 - c:\restic\
 - c:\resticprofile\
-- %USERPROFILE%\
+- %USERPROFILE%\resticprofile
+
+These paths may be overridden by setting the `XDG_CONFIG_HOME` or `XDG_CONFIG_DIRS`
+environment variables.
