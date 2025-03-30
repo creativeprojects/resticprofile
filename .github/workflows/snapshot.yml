@@ -1,6 +1,7 @@
 name: Publish snapshot to docker hub
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -71,5 +72,3 @@ jobs:
             --amend "ghcr.io/creativeprojects/resticprofile:nightly-arm64v8"
           docker manifest inspect "ghcr.io/creativeprojects/resticprofile:nightly"
           docker manifest push "ghcr.io/creativeprojects/resticprofile:nightly"
-  
-  
