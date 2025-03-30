@@ -31,6 +31,8 @@ dockers:
   - image_templates:
       - "creativeprojects/resticprofile:latest-amd64"
       - "creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
+      - "ghcr.io/creativeprojects/resticprofile:latest-amd64"
+      - "ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
     ids:
       - resticprofile_targz
     use: buildx
@@ -52,6 +54,8 @@ dockers:
   - image_templates:
       - "creativeprojects/resticprofile:latest-arm64v8"
       - "creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
+      - "ghcr.io/creativeprojects/resticprofile:latest-arm64v8"
+      - "ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
     ids:
       - resticprofile_targz
     use: buildx
@@ -80,6 +84,16 @@ docker_manifests:
     image_templates:
       - creativeprojects/resticprofile:latest-amd64
       - creativeprojects/resticprofile:latest-arm64v8
+
+  - name_template: ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}
+    image_templates:
+      - ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-amd64
+      - ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
+
+  - name_template: ghcr.io/creativeprojects/resticprofile:latest
+    image_templates:
+      - ghcr.io/creativeprojects/resticprofile:latest-amd64
+      - ghcr.io/creativeprojects/resticprofile:latest-arm64v8
 
 release:
   disable: true
