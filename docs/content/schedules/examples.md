@@ -319,42 +319,84 @@ Removed /home/user/.config/systemd/user/timers.target.wants/resticprofile-check@
 
 ### Examples of scheduling commands under macOS
 
-macOS has a very tight protection system when running scheduled tasks (also called agents).
-
-Under macOS, resticprofile is asking if you want to start a profile right now so you can give the access needed to the task, which consists on a few popup windows (you can disable this behavior by adding the flag `--no-start` after the schedule command).
-
-Here's an example of scheduling a backup to Azure (which needs network access):
+Here's an example of scheduling a backup profile named `azure-dev`:
 
 ```shell
-% resticprofile -v -c examples/private/azure.yaml -n self schedule
+% resticprofile -n azure-dev schedule
+2025/03/30 18:40:13 using configuration file: profiles.yaml
 
-Analyzing backup schedule 1/1
-=================================
-  Original form: *:0,15,30,45:00
-Normalized form: *-*-* *:00,15,30,45:00
-    Next elapse: Tue Jul 28 23:00:00 BST 2020
-       (in UTC): Tue Jul 28 22:00:00 UTC 2020
-       From now: 2m34s left
+Profile (or Group) azure-dev: backup schedule
+=============================================
+  Original form: 22:22
+Normalized form: *-*-* 22:22:00
+    Next elapse: Sun Mar 30 22:22:00 BST 2025
+       (in UTC): Sun Mar 30 21:22:00 UTC 2025
+       From now: 3h41m46s left
 
+2025/03/30 18:40:13 scheduled job azure-dev/backup created
 
-By default, a macOS agent access is restricted. If you leave it to start in the background it's likely to fail.
-You have to start it manually the first time to accept the requests for access:
-
-% launchctl start local.resticprofile.self.backup
-
-Do you want to start it now? (Y/n):
-2020/07/28 22:57:26 scheduled job self/backup created
 ```
 
-Right after you started the profile, you should get some popup asking you to grant access to various files/folders/network.
+In some cases, macOS may request permission to access the network, an external volume (like a USB drive), or a protected directory. A message will appear while the backup runs in the background.
 
-If you backup your files to an external repository on a network, you should get this popup window:
+To respond immediately, start the task now:
 
-!["resticprofile" would like to access files on a network volume](https://github.com/creativeprojects/resticprofile/raw/master/network_volume.png)
-
-**Note:**
-If you prefer not being asked, you can add the `--no-start` flag like so:
+1. Retrieve the task name using the status command:
 
 ```shell
-resticprofile -v -c examples/private/azure.yaml -n self schedule --no-start
+% resticprofile -n azure-dev status
+2025/03/30 18:40:21 using configuration file: profiles.yaml
+
+Profile (or Group) azure-dev: backup schedule
+=============================================
+  Original form: *-*-* 22:22:00
+Normalized form: *-*-* 22:22:00
+    Next elapse: Sun Mar 30 22:22:00 BST 2025
+       (in UTC): Sun Mar 30 21:22:00 UTC 2025
+       From now: 3h41m38s left
+
+            service: local.resticprofile.azure-dev.backup
+         permission: user
+            program: /usr/local/bin/resticprofile
+  working directory: /Users/cp/resticprofile
+        stdout path: local.resticprofile.azure-dev.backup.log
+        stderr path: local.resticprofile.azure-dev.backup.log
+              state: not running
+           runs (*): 0
+ last exit code (*): (never exited)
+                 * : since last (re)schedule or last reboot
+```
+
+The name of the task can be seen on the line `service: ...`
+
+2. start the task manually
+
+```shell
+% launchctl start local.resticprofile.azure-dev.backup
+```
+
+You can check the task is currently running:
+
+```shell
+2025/03/30 18:42:07 using configuration file: profiles.yaml
+
+Profile (or Group) azure-dev: backup schedule
+=============================================
+  Original form: *-*-* 22:22:00
+Normalized form: *-*-* 22:22:00
+    Next elapse: Sun Mar 30 22:22:00 BST 2025
+       (in UTC): Sun Mar 30 21:22:00 UTC 2025
+       From now: 3h39m52s left
+
+            service: local.resticprofile.azure-dev.backup
+         permission: user
+            program: /usr/local/bin/resticprofile
+  working directory: /Users/cp/resticprofile
+        stdout path: local.resticprofile.azure-dev.backup.log
+        stderr path: local.resticprofile.azure-dev.backup.log
+              state: running
+           runs (*): 1
+ last exit code (*): (never exited)
+                 * : since last (re)schedule or last reboot
+
 ```
