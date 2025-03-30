@@ -30,6 +30,7 @@ archives:
 dockers:
   - image_templates:
       - "creativeprojects/resticprofile:nightly-amd64"
+      - "ghcr.io/creativeprojects/resticprofile:nightly-amd64"
     ids:
       - resticprofile_targz
     use: buildx
@@ -49,6 +50,7 @@ dockers:
       - "--build-arg=ARCH=amd64"
   - image_templates:
       - "creativeprojects/resticprofile:nightly-arm64v8"
+      - "ghcr.io/creativeprojects/resticprofile:nightly-arm64v8"
     ids:
       - resticprofile_targz
     use: buildx
