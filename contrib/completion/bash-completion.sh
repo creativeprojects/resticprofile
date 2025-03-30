@@ -61,10 +61,15 @@ function _resticprofile() {
       ;;
     esac
   fi
+
+  if [[ ! "${COMPREPLY[*]}" == *. ]]; then
+    # Add space if the last character is not a '.'
+    compopt +o nospace
+  fi
 }
 
 # Registering the completion
-complete -F _resticprofile resticprofile
+complete -F _resticprofile -o nospace resticprofile
 
 #
 # __resticprofile_get_other_completions
