@@ -115,6 +115,24 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return fmt.Errorf("after-network-online is not available for \"user_logged_on\" permission schedules")
 	}
 
+	// check the user hasn't changed the permission, which could duplicate the unit (system & user)
+	otherUnitType := systemd.SystemUnit
+	if unitType == systemd.SystemUnit {
+		otherUnitType = systemd.UserUnit
+	}
+	if cfgs, _ := getConfigs(job.ProfileName, otherUnitType); len(cfgs) > 0 { // ignore errors here
+		for _, cfg := range cfgs {
+			if cfg.CommandName == job.CommandName && cfg.ProfileName == job.ProfileName {
+				// we'd better remove this schedule first
+				clog.Infof("removing existing unit with different permission")
+				err := h.RemoveJob(&cfg, PermissionFromConfig(cfg.Permission))
+				if err != nil {
+					return fmt.Errorf("cannot remove existing unit before scheduling with different permission. You might want to retry using sudo.")
+				}
+			}
+		}
+	}
+
 	unit := systemd.NewUnit(u)
 	err := unit.Generate(systemd.Config{
 		CommandLine:          job.Command + " --no-prio " + job.Arguments.String(),
