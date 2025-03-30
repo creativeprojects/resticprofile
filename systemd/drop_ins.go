@@ -23,8 +23,8 @@ func getOwnedName(basename string) string {
 	return fmt.Sprintf("%s.resticprofile.conf", strings.TrimSuffix(basename, ext))
 }
 
-func IsTimerDropIn(file string) bool {
-	if f, err := fs.Open(file); err == nil {
+func (u Unit) IsTimerDropIn(file string) bool {
+	if f, err := u.fs.Open(file); err == nil {
 		defer func() { _ = f.Close() }()
 		for reader := bufio.NewScanner(f); reader.Scan(); {
 			if timerDropInRegex.Match(reader.Bytes()) {
@@ -37,8 +37,8 @@ func IsTimerDropIn(file string) bool {
 	return false
 }
 
-func CreateDropIns(dir string, files []string) error {
-	if err := fs.MkdirAll(dir, 0o755); err != nil {
+func (u Unit) createDropIns(dir string, files []string) error {
+	if err := u.fs.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 
@@ -47,7 +47,7 @@ func CreateDropIns(dir string, files []string) error {
 		fileBasenamesOwned[getOwnedName(filepath.Base(file))] = struct{}{}
 	}
 
-	d, err := fs.Open(dir)
+	d, err := u.fs.Open(dir)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func CreateDropIns(dir string, files []string) error {
 		if createdByUs && !notOrphaned {
 			orphanPath := filepath.Join(dir, f.Name())
 			clog.Debugf("deleting orphaned drop-in file %v", orphanPath)
-			if err := fs.Remove(orphanPath); err != nil {
+			if err := u.fs.Remove(orphanPath); err != nil {
 				return err
 			}
 		}
@@ -79,13 +79,13 @@ func CreateDropIns(dir string, files []string) error {
 		dropInFileOwned := getOwnedName(dropInFileBase)
 		dstPath := filepath.Join(dir, dropInFileOwned)
 		clog.Debugf("writing %v", dstPath)
-		dst, err := fs.Create(dstPath)
+		dst, err := u.fs.Create(dstPath)
 		if err != nil {
 			return err
 		}
 		defer dst.Close()
 
-		src, err := fs.Open(dropInFilePath)
+		src, err := u.fs.Open(dropInFilePath)
 		if err != nil {
 			return err
 		}

@@ -298,7 +298,10 @@ checkdoc:
 .PHONY: checklinks
 checklinks:
 	@echo "[*] $@"
-	muffet -b 8192 --max-connections=10 --exclude="(linux\.die\.net|stackoverflow\.com|scoop\.sh|0-18)" http://localhost:1313/resticprofile/
+	muffet -b 8192 --max-connections-per-host=8 \
+	  --exclude="(linux\.die\.net|scoop\.sh|0-18)" \
+	  --header="User-Agent: Muffet/$$(muffet --version)" \
+	  http://localhost:1313/resticprofile/
 
 .PHONY: lint
 lint: $(GOBIN)/golangci-lint
