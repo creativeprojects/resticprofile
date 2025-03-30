@@ -231,7 +231,7 @@ func (u Unit) Generate(config Config) error {
 		}
 		if config.UnitType == UserUnit && u.user.SudoRoot {
 			// we need to change the owner to the original account
-			afero.Walk(u.fs, dropInDir, func(path string, info fs.FileInfo, err error) error {
+			_ = afero.Walk(u.fs, dropInDir, func(path string, info fs.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
