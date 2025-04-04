@@ -9,6 +9,8 @@ weight: 8
 
 ## 🌱 Spring release 🌸
 
+This release introduces features and fixes for profile scheduling.
+
 ### ⚠️ Breaking change
 
 Until this release, the `user` scheduling permission was broken. With `systemd` or the default macOS scheduler, the permission functioned as `user_logged_on`, running the profile only when the user was logged in.
@@ -32,6 +34,28 @@ Due to recent error reports, Windows Task Scheduler integration has been complet
 - Included pre-built binary for Windows on ARM64.  
 - Upload Resticprofile container to GitHub Container Registry.  
 
+
+## Changelog
+* [Correct configuration search paths on Windows (#478)](https://github.com/creativeprojects/resticprofile/commit/f14094b98819e6fc6ebd001547ede9b2d58bd2ce)
+* [Create FUNDING.yml](https://github.com/creativeprojects/resticprofile/commit/1b05c7a6932b188d0250dd0e948889296c976d26)
+* [Documentation versioning (#464)](https://github.com/creativeprojects/resticprofile/commit/b6b8285e6226478aceb9c112eec2cd0a093ac5d4)
+* [Run tests on read only source dir (#461)](https://github.com/creativeprojects/resticprofile/commit/edc129250c542c29d8e999aeca557b0cfc24b529)
+* [Schedule user logged in (#470)](https://github.com/creativeprojects/resticprofile/commit/ae073aeb8c1b82f38bd61cbb8c0ca5e1f82cdf9e)
+* [Scheduling improvements (#425)](https://github.com/creativeprojects/resticprofile/commit/8d8a0dac43b9023d951272ea95c0703b79207fd5)
+* [Set schedule permissions (#476)](https://github.com/creativeprojects/resticprofile/commit/e490c429bf167f7e73e952692fe527f01f6c28c8)
+* [Upload to Github Container Registry (#479)](https://github.com/creativeprojects/resticprofile/commit/07df1419c8dae8effe8e1bb46d64a7e8ea912f2c)
+* [Use schtasks.exe CLI to schedule jobs on Windows (#459)](https://github.com/creativeprojects/resticprofile/commit/41039712ee76a675ad60eb9e72a6c3a6e314d4b8)
+* [add microarchitecture to version command (#466)](https://github.com/creativeprojects/resticprofile/commit/ae38db96f2419b9c3cf3c5f95a48474e5db01ed9)
+* [add other restic exit codes](https://github.com/creativeprojects/resticprofile/commit/87cfd5db613cc5b1a1a2ab71afddd6a08989e041)
+* [chore: add pre-built binary for windows arm64](https://github.com/creativeprojects/resticprofile/commit/ac3b810f2f735642d0a0cea8ec46c585b80904bc)
+* [chore: add support for restic 0.18](https://github.com/creativeprojects/resticprofile/commit/edbea57667a422ccce0237b06a8072f305dc6ee6)
+* [don't include systemd dependencies on macos & windows](https://github.com/creativeprojects/resticprofile/commit/c5a5dfa4c547318f02f661f243ed6323cc8dffc4)
+* [fix for macOs ghost battery (#468)](https://github.com/creativeprojects/resticprofile/commit/af9ab7f4e8f63f7b84e1939d97b3277e20e9000d)
+* [remove devcontainer config](https://github.com/creativeprojects/resticprofile/commit/6c9b3cdd7b38bbf05f721c5905ffeb25b9ee0087)
+* [replace experimental maps package with standard library (#467)](https://github.com/creativeprojects/resticprofile/commit/b867b01f00d7dfa0b06c9e079880c103d9af614d)
+
+
+
 # v0.29.1 (2025-02-06)
 
 ## ❄️  Small maintenance release ☃️ 
@@ -42,15 +66,15 @@ Not much going on in this maintenance release while I'm still working on a big r
 * upgrade dependencies to fix security vulnerabilities
 
 ## Changelog
-* [e2297a6f4f0f03a1733177db1dc950c6e05ddd88](https://github.com/creativeprojects/resticprofile/commit/e2297a6f4f0f03a1733177db1dc950c6e05ddd88) add logrotate to docker image #440
-* [37c9aef3032005a88ed006059432a2baddc97ab6](https://github.com/creativeprojects/resticprofile/commit/37c9aef3032005a88ed006059432a2baddc97ab6) upgrade package - CVE-2024-45337
-* [467b82ee1eade497c9d23c0dfe69a889143dc807](https://github.com/creativeprojects/resticprofile/commit/467b82ee1eade497c9d23c0dfe69a889143dc807) upgrade packages
+* [add logrotate to docker image #440](https://github.com/creativeprojects/resticprofile/commit/e2297a6f4f0f03a1733177db1dc950c6e05ddd88)
+* [upgrade package - CVE-2024-45337](https://github.com/creativeprojects/resticprofile/commit/37c9aef3032005a88ed006059432a2baddc97ab6)
+* [upgrade packages](https://github.com/creativeprojects/resticprofile/commit/467b82ee1eade497c9d23c0dfe69a889143dc807)
 
 
 
 # v0.29.0 (2024-10-28)
 
-## 🧙🏻‍♀️ Halloween edition 🎃 
+## 🧙🏻‍♀️  Halloween edition 🎃 
 
 - Finally a long standing bug was fixed in this version: use proper `nice` and `ionice` values on `systemd` scheduled tasks.
 - Also the last chunk of work for the configuration `v2`: we can now schedule groups!
@@ -58,13 +82,13 @@ Not much going on in this maintenance release while I'm still working on a big r
 - Another long standing bug on Windows: escape configuration file path on scheduled tasks
 
 ## Changelog
-* [fb6c7a2fbb0d3a955a0cdb53e87c58a32a532022](https://github.com/creativeprojects/resticprofile/commit/fb6c7a2fbb0d3a955a0cdb53e87c58a32a532022) Escape config file name in schedule parameters (#420)
-* [1d3ec32e293c9d3c4918df7ea7bd6a62a3eb2168](https://github.com/creativeprojects/resticprofile/commit/1d3ec32e293c9d3c4918df7ea7bd6a62a3eb2168) Fix scheduling arguments (#423)
-* [62c5c6472f4ef5462bbafc02d6e75d7684a40abf](https://github.com/creativeprojects/resticprofile/commit/62c5c6472f4ef5462bbafc02d6e75d7684a40abf) Global json schema (auto versioning) (#412)
-* [2a34ea77e5d4c8367436e2ebb2c7cf82973f39a5](https://github.com/creativeprojects/resticprofile/commit/2a34ea77e5d4c8367436e2ebb2c7cf82973f39a5) Group schedule (#418)
-* [830d0fd4f8313a0de7a04ffd48d2b44cc797929a](https://github.com/creativeprojects/resticprofile/commit/830d0fd4f8313a0de7a04ffd48d2b44cc797929a) Setup systemd priority (#409)
-* [62f311814f0f1e034942f3bf6a95dff3590597e3](https://github.com/creativeprojects/resticprofile/commit/62f311814f0f1e034942f3bf6a95dff3590597e3) doc: upgrade hugo theme
-* [da03de768a30c8d6656be5cce39d35a9e42e0817](https://github.com/creativeprojects/resticprofile/commit/da03de768a30c8d6656be5cce39d35a9e42e0817) fix deprecated option in goreleaser config
+* [Escape config file name in schedule parameters (#420)](https://github.com/creativeprojects/resticprofile/commit/fb6c7a2fbb0d3a955a0cdb53e87c58a32a532022)
+* [Fix scheduling arguments (#423)](https://github.com/creativeprojects/resticprofile/commit/1d3ec32e293c9d3c4918df7ea7bd6a62a3eb2168)
+* [Global json schema (auto versioning) (#412)](https://github.com/creativeprojects/resticprofile/commit/62c5c6472f4ef5462bbafc02d6e75d7684a40abf)
+* [Group schedule (#418)](https://github.com/creativeprojects/resticprofile/commit/2a34ea77e5d4c8367436e2ebb2c7cf82973f39a5)
+* [Setup systemd priority (#409)](https://github.com/creativeprojects/resticprofile/commit/830d0fd4f8313a0de7a04ffd48d2b44cc797929a)
+* [doc: upgrade hugo theme](https://github.com/creativeprojects/resticprofile/commit/62f311814f0f1e034942f3bf6a95dff3590597e3)
+* [fix deprecated option in goreleaser config](https://github.com/creativeprojects/resticprofile/commit/da03de768a30c8d6656be5cce39d35a9e42e0817)
 
 
 
@@ -76,15 +100,15 @@ Not much going on in this maintenance release while I'm still working on a big r
 - [configuration v2] fix regression bug where profile groups were stopping after an error when the `continue-on-error` flag was set
 
 ## Changelog
-* [57d1439ea33e6da9a5e19010cf2fc95b951ea27e](https://github.com/creativeprojects/resticprofile/commit/57d1439ea33e6da9a5e19010cf2fc95b951ea27e) Fix for continue-on-error broken in 0.26.0 (#407)
-* [ccccfa2d0a56432af84dda9f3833e760e30d6a48](https://github.com/creativeprojects/resticprofile/commit/ccccfa2d0a56432af84dda9f3833e760e30d6a48) Linters (#397)
-* [249fd41b3d8e1af034594c9617bc3145a6a3e29a](https://github.com/creativeprojects/resticprofile/commit/249fd41b3d8e1af034594c9617bc3145a6a3e29a) add base url on json schema (#408)
-* [b254503506c76700eb74868677facaed250a7730](https://github.com/creativeprojects/resticprofile/commit/b254503506c76700eb74868677facaed250a7730) add misspell linter
-* [7dcb41bf248da13a58d551838cca7eb2412eaaf2](https://github.com/creativeprojects/resticprofile/commit/7dcb41bf248da13a58d551838cca7eb2412eaaf2) fix bullet points from restic man (#398)
-* [4181d9e809539ede5b2d73aeb682fa9324e493db](https://github.com/creativeprojects/resticprofile/commit/4181d9e809539ede5b2d73aeb682fa9324e493db) fix overflow integer conversion lint warning from gosec (#399)
-* [22317937234ab678c899c15ac7b1900dc7fe4b54](https://github.com/creativeprojects/resticprofile/commit/22317937234ab678c899c15ac7b1900dc7fe4b54) generate JSON schema for restic 0.17
-* [0ad1b68504f41fc6e7ca11297683ec4e2dc02ff8](https://github.com/creativeprojects/resticprofile/commit/0ad1b68504f41fc6e7ca11297683ec4e2dc02ff8) prepare next release
-* [3612b519aa5c0e41ae302ce5fda136db288e0837](https://github.com/creativeprojects/resticprofile/commit/3612b519aa5c0e41ae302ce5fda136db288e0837) use goreleaser v2
+* [Fix for continue-on-error broken in 0.26.0 (#407)](https://github.com/creativeprojects/resticprofile/commit/57d1439ea33e6da9a5e19010cf2fc95b951ea27e)
+* [Linters (#397)](https://github.com/creativeprojects/resticprofile/commit/ccccfa2d0a56432af84dda9f3833e760e30d6a48)
+* [add base url on json schema (#408)](https://github.com/creativeprojects/resticprofile/commit/249fd41b3d8e1af034594c9617bc3145a6a3e29a)
+* [add misspell linter](https://github.com/creativeprojects/resticprofile/commit/b254503506c76700eb74868677facaed250a7730)
+* [fix bullet points from restic man (#398)](https://github.com/creativeprojects/resticprofile/commit/7dcb41bf248da13a58d551838cca7eb2412eaaf2)
+* [fix overflow integer conversion lint warning from gosec (#399)](https://github.com/creativeprojects/resticprofile/commit/4181d9e809539ede5b2d73aeb682fa9324e493db)
+* [generate JSON schema for restic 0.17](https://github.com/creativeprojects/resticprofile/commit/22317937234ab678c899c15ac7b1900dc7fe4b54)
+* [prepare next release](https://github.com/creativeprojects/resticprofile/commit/0ad1b68504f41fc6e7ca11297683ec4e2dc02ff8)
+* [use goreleaser v2](https://github.com/creativeprojects/resticprofile/commit/3612b519aa5c0e41ae302ce5fda136db288e0837)
 
 
 
@@ -111,13 +135,13 @@ check-repo-profile:
 ```
 
 ## Changelog
-* [3b42e4a](https://github.com/creativeprojects/resticprofile/commit/3b42e4a) Add contributed docs for protected configuration on Windows (#394)
-* [1e80d02](https://github.com/creativeprojects/resticprofile/commit/1e80d02) Restic 0.17 (#396)
-* [eb8c721](https://github.com/creativeprojects/resticprofile/commit/eb8c721) build with go 1.23
-* [1df3711](https://github.com/creativeprojects/resticprofile/commit/1df3711) convert priority value to lowercase
-* [d74c521](https://github.com/creativeprojects/resticprofile/commit/d74c521) fix panic when sending on closed handler
-* [49add79](https://github.com/creativeprojects/resticprofile/commit/49add79) refactoring of arguments generation (#387)
-* [cff446b](https://github.com/creativeprojects/resticprofile/commit/cff446b) upgrade packages
+* [Add contributed docs for protected configuration on Windows (#394)](https://github.com/creativeprojects/resticprofile/commit/3b42e4a)
+* [Restic 0.17 (#396)](https://github.com/creativeprojects/resticprofile/commit/1e80d02)
+* [build with go 1.23](https://github.com/creativeprojects/resticprofile/commit/eb8c721)
+* [convert priority value to lowercase](https://github.com/creativeprojects/resticprofile/commit/1df3711)
+* [fix panic when sending on closed handler](https://github.com/creativeprojects/resticprofile/commit/d74c521)
+* [refactoring of arguments generation (#387)](https://github.com/creativeprojects/resticprofile/commit/49add79)
+* [upgrade packages](https://github.com/creativeprojects/resticprofile/commit/cff446b)
 
 
 
@@ -129,13 +153,13 @@ Fix of a regression bug preventing resticprofile from sending logs to a temporar
 Thanks @iluvatyr for the quick bug report 👍🏻 
 
 ## Changelog
-* [a615444](https://github.com/creativeprojects/resticprofile/commit/a615444) fix creation of mock binaries during unit tests (#375)
-* [c9f87ec](https://github.com/creativeprojects/resticprofile/commit/c9f87ec) fix documentation for release
-* [eb13003](https://github.com/creativeprojects/resticprofile/commit/eb13003) fix regression with temporary log file (#386)
-* [abf35a7](https://github.com/creativeprojects/resticprofile/commit/abf35a7) prepare next release
-* [854f6c9](https://github.com/creativeprojects/resticprofile/commit/854f6c9) refactor unit tests on package lock (#374)
-* [ffffabf](https://github.com/creativeprojects/resticprofile/commit/ffffabf) remove flaky test
-* [5cfdca2](https://github.com/creativeprojects/resticprofile/commit/5cfdca2) remove goarm linked to the internal variable of runtime go1.23 will apparently forbid the use of linkname to the standard library
+* [fix creation of mock binaries during unit tests (#375)](https://github.com/creativeprojects/resticprofile/commit/a615444)
+* [fix documentation for release](https://github.com/creativeprojects/resticprofile/commit/c9f87ec)
+* [fix regression with temporary log file (#386)](https://github.com/creativeprojects/resticprofile/commit/eb13003)
+* [prepare next release](https://github.com/creativeprojects/resticprofile/commit/abf35a7)
+* [refactor unit tests on package lock (#374)](https://github.com/creativeprojects/resticprofile/commit/854f6c9)
+* [remove flaky test](https://github.com/creativeprojects/resticprofile/commit/ffffabf)
+* [remove goarm linked to the internal variable of runtime go1.23 will apparently forbid the use of linkname to the standard library](https://github.com/creativeprojects/resticprofile/commit/5cfdca2)
 
 
 
@@ -190,30 +214,30 @@ More information: https://github.com/creativeprojects/resticprofile/pull/354
 ### many bug fixes!
 
 ## Changelog
-* [1bbac2a](https://github.com/creativeprojects/resticprofile/commit/1bbac2a) Add "--stderr" to redirect console to stderr (for "cat" and "dump") (#353)
-* [0598026](https://github.com/creativeprojects/resticprofile/commit/0598026) Add documentation on how to ingest resticprofile stats into telegraf (#366)
-* [f9b5dac](https://github.com/creativeprojects/resticprofile/commit/f9b5dac) Add option to set working directory for restic backup (#354)
-* [00360a2](https://github.com/creativeprojects/resticprofile/commit/00360a2) Fix group priority (#339)
-* [a05ad39](https://github.com/creativeprojects/resticprofile/commit/a05ad39) Relative source followup: Evaluate symlinks (#355)
-* [56f20af](https://github.com/creativeprojects/resticprofile/commit/56f20af) Squashed commit of the following: (#259)
-* [6b00c2c](https://github.com/creativeprojects/resticprofile/commit/6b00c2c) add "profile" flag as an alias for "name" (#357)
-* [6da0317](https://github.com/creativeprojects/resticprofile/commit/6da0317) also search configuration from ~/.config/resticprofile on macOS (#370)
-* [5739b13](https://github.com/creativeprojects/resticprofile/commit/5739b13) crond: add support for crontab file only (on any OS) (#289)
-* [9719411](https://github.com/creativeprojects/resticprofile/commit/9719411) don't replace header value in stringifyHeaders (#327)
-* [2a7d5fc](https://github.com/creativeprojects/resticprofile/commit/2a7d5fc) drop-ins: move systemd drop-ins into unified schedule struct (#341)
-* [7e03741](https://github.com/creativeprojects/resticprofile/commit/7e03741) drop-ins: transparent timer drop-in support (#340)
-* [9b2bd8c](https://github.com/creativeprojects/resticprofile/commit/9b2bd8c) env-file: Implement dotenv and {{env}} support (#323)
-* [16f5dc5](https://github.com/creativeprojects/resticprofile/commit/16f5dc5) fix remaining unit tests failing in Windows (#360)
-* [3b8613e](https://github.com/creativeprojects/resticprofile/commit/3b8613e) fixed link to config reference / global section (#349)
-* [5fad1cb](https://github.com/creativeprojects/resticprofile/commit/5fad1cb) flags: added "RESTICPROFILE_{FLAGNAME}" env vars (#335)
-* [85d5afc](https://github.com/creativeprojects/resticprofile/commit/85d5afc) log: allow controlling command output redirection (#343)
-* [e5b17d3](https://github.com/creativeprojects/resticprofile/commit/e5b17d3) restic: use repository-file if the repo flag contains a password (#336)
-* [4255868](https://github.com/creativeprojects/resticprofile/commit/4255868) schedule: added unified schedule config struct (#333)
-* [667180e](https://github.com/creativeprojects/resticprofile/commit/667180e) syslog: local syslog and stdout redirection (#344)
-* [e93874d](https://github.com/creativeprojects/resticprofile/commit/e93874d) build with go 1.22 and macOs arm64 (#317)
-* [e6eed3d](https://github.com/creativeprojects/resticprofile/commit/e6eed3d) update test to pass on Windows 11 (#359)
-* [655e9c5](https://github.com/creativeprojects/resticprofile/commit/655e9c5) upgrade packages (CVE-2024-24786) (#347)
-* [08a01c4](https://github.com/creativeprojects/resticprofile/commit/08a01c4) upgrade packages (CVE-2024-6104)
+* [Add "--stderr" to redirect console to stderr (for "cat" and "dump") (#353)](https://github.com/creativeprojects/resticprofile/commit/1bbac2a)
+* [Add documentation on how to ingest resticprofile stats into telegraf (#366)](https://github.com/creativeprojects/resticprofile/commit/0598026)
+* [Add option to set working directory for restic backup (#354)](https://github.com/creativeprojects/resticprofile/commit/f9b5dac)
+* [Fix group priority (#339)](https://github.com/creativeprojects/resticprofile/commit/00360a2)
+* [Relative source followup: Evaluate symlinks (#355)](https://github.com/creativeprojects/resticprofile/commit/a05ad39)
+* [Squashed commit of the following: (#259)](https://github.com/creativeprojects/resticprofile/commit/56f20af)
+* [add "profile" flag as an alias for "name" (#357)](https://github.com/creativeprojects/resticprofile/commit/6b00c2c)
+* [also search configuration from ~/.config/resticprofile on macOS (#370)](https://github.com/creativeprojects/resticprofile/commit/6da0317)
+* [crond: add support for crontab file only (on any OS) (#289)](https://github.com/creativeprojects/resticprofile/commit/5739b13)
+* [don't replace header value in stringifyHeaders (#327)](https://github.com/creativeprojects/resticprofile/commit/9719411)
+* [drop-ins: move systemd drop-ins into unified schedule struct (#341)](https://github.com/creativeprojects/resticprofile/commit/2a7d5fc)
+* [drop-ins: transparent timer drop-in support (#340)](https://github.com/creativeprojects/resticprofile/commit/7e03741)
+* [env-file: Implement dotenv and {{env}} support (#323)](https://github.com/creativeprojects/resticprofile/commit/9b2bd8c)
+* [fix remaining unit tests failing in Windows (#360)](https://github.com/creativeprojects/resticprofile/commit/16f5dc5)
+* [fixed link to config reference / global section (#349)](https://github.com/creativeprojects/resticprofile/commit/3b8613e)
+* [flags: added "RESTICPROFILE_{FLAGNAME}" env vars (#335)](https://github.com/creativeprojects/resticprofile/commit/5fad1cb)
+* [log: allow controlling command output redirection (#343)](https://github.com/creativeprojects/resticprofile/commit/85d5afc)
+* [restic: use repository-file if the repo flag contains a password (#336)](https://github.com/creativeprojects/resticprofile/commit/e5b17d3)
+* [schedule: added unified schedule config struct (#333)](https://github.com/creativeprojects/resticprofile/commit/4255868)
+* [syslog: local syslog and stdout redirection (#344)](https://github.com/creativeprojects/resticprofile/commit/667180e)
+* [build with go 1.22 and macOs arm64 (#317)](https://github.com/creativeprojects/resticprofile/commit/e93874d)
+* [update test to pass on Windows 11 (#359)](https://github.com/creativeprojects/resticprofile/commit/e6eed3d)
+* [upgrade packages (CVE-2024-24786) (#347)](https://github.com/creativeprojects/resticprofile/commit/655e9c5)
+* [upgrade packages (CVE-2024-6104)](https://github.com/creativeprojects/resticprofile/commit/08a01c4)
 
 
 
@@ -230,15 +254,15 @@ Otherwise this is mostly a maintenance release with a few fixes:
 - restrict the `copy` command to a list of snapshots in the configuration
 
 ## Changelog
-* [2ab1f3a](https://github.com/creativeprojects/resticprofile/commit/2ab1f3a) Add pre-built binary targets to release pipeline (#324)
-* [233e4b8](https://github.com/creativeprojects/resticprofile/commit/233e4b8) Add prometheus label to build info (#319)
-* [b1b03db](https://github.com/creativeprojects/resticprofile/commit/b1b03db) Change priority warning message (#310)
-* [9eba431](https://github.com/creativeprojects/resticprofile/commit/9eba431) Fix missing fields in show command (#315)
-* [a9273f8](https://github.com/creativeprojects/resticprofile/commit/a9273f8) Merge pull request #312 from creativeprojects/nightly
-* [15004f9](https://github.com/creativeprojects/resticprofile/commit/15004f9) Restrict copy command to a list of snapshots (#291)
-* [1c076dc](https://github.com/creativeprojects/resticprofile/commit/1c076dc) add separate goreleaser config for rebuilding the docker image only (#309)
-* [bbb3760](https://github.com/creativeprojects/resticprofile/commit/bbb3760) add snapshot build to docker hub
-* [8aebd28](https://github.com/creativeprojects/resticprofile/commit/8aebd28) publish docker images and manifest manually (#313)
+* [Add pre-built binary targets to release pipeline (#324)](https://github.com/creativeprojects/resticprofile/commit/2ab1f3a)
+* [Add prometheus label to build info (#319)](https://github.com/creativeprojects/resticprofile/commit/233e4b8)
+* [Change priority warning message (#310)](https://github.com/creativeprojects/resticprofile/commit/b1b03db)
+* [Fix missing fields in show command (#315)](https://github.com/creativeprojects/resticprofile/commit/9eba431)
+* [Merge pull request #312 from creativeprojects/nightly](https://github.com/creativeprojects/resticprofile/commit/a9273f8)
+* [Restrict copy command to a list of snapshots (#291)](https://github.com/creativeprojects/resticprofile/commit/15004f9)
+* [add separate goreleaser config for rebuilding the docker image only (#309)](https://github.com/creativeprojects/resticprofile/commit/1c076dc)
+* [add snapshot build to docker hub](https://github.com/creativeprojects/resticprofile/commit/bbb3760)
+* [publish docker images and manifest manually (#313)](https://github.com/creativeprojects/resticprofile/commit/8aebd28)
 
 
 
@@ -271,19 +295,19 @@ More information about the different formats: https://prometheus.io/docs/instrum
 **Thanks to all our contributors for the good work!**
 
 ## Changelog
-* [765c2af](https://github.com/creativeprojects/resticprofile/commit/765c2af) Add `prometheus-push-format` to allow selecting text format (#281)
-* [ae9554a](https://github.com/creativeprojects/resticprofile/commit/ae9554a) Pass context to own commands and profile runner (#280)
-* [fccc05b](https://github.com/creativeprojects/resticprofile/commit/fccc05b) Remove rclone binary in make clean target (#283)
-* [0871d28](https://github.com/creativeprojects/resticprofile/commit/0871d28) Trying new configuration for CodeQL (#306)
-* [1317f60](https://github.com/creativeprojects/resticprofile/commit/1317f60) Upgrade packages (#307)
-* [63f8faf](https://github.com/creativeprojects/resticprofile/commit/63f8faf) chore: prep next release & allow deployment to fail on PR
-* [3d72803](https://github.com/creativeprojects/resticprofile/commit/3d72803) chore: various fixes (#285)
-* [952380f](https://github.com/creativeprojects/resticprofile/commit/952380f) doc: add information about windows path in variables
-* [f346571](https://github.com/creativeprojects/resticprofile/commit/f346571) doc: add various missing information (#278)
-* [1b3292c](https://github.com/creativeprojects/resticprofile/commit/1b3292c) logging: allow to setup default log output in global (#277)
-* [99484bf](https://github.com/creativeprojects/resticprofile/commit/99484bf) macOS: create LaunchAgents folder if it doesn't exist
-* [37dcf84](https://github.com/creativeprojects/resticprofile/commit/37dcf84) profile: support source with "-" (dash) prefix (#276)
-* [a1b7840](https://github.com/creativeprojects/resticprofile/commit/a1b7840) systemd drop-ins support, option to wait for network-online.target (#267)
+* [Add `prometheus-push-format` to allow selecting text format (#281)](https://github.com/creativeprojects/resticprofile/commit/765c2af)
+* [Pass context to own commands and profile runner (#280)](https://github.com/creativeprojects/resticprofile/commit/ae9554a)
+* [Remove rclone binary in make clean target (#283)](https://github.com/creativeprojects/resticprofile/commit/fccc05b)
+* [Trying new configuration for CodeQL (#306)](https://github.com/creativeprojects/resticprofile/commit/0871d28)
+* [Upgrade packages (#307)](https://github.com/creativeprojects/resticprofile/commit/1317f60)
+* [chore: prep next release & allow deployment to fail on PR](https://github.com/creativeprojects/resticprofile/commit/63f8faf)
+* [chore: various fixes (#285)](https://github.com/creativeprojects/resticprofile/commit/3d72803)
+* [doc: add information about windows path in variables](https://github.com/creativeprojects/resticprofile/commit/952380f)
+* [doc: add various missing information (#278)](https://github.com/creativeprojects/resticprofile/commit/f346571)
+* [logging: allow to setup default log output in global (#277)](https://github.com/creativeprojects/resticprofile/commit/1b3292c)
+* [macOS: create LaunchAgents folder if it doesn't exist](https://github.com/creativeprojects/resticprofile/commit/99484bf)
+* [profile: support source with "-" (dash) prefix (#276)](https://github.com/creativeprojects/resticprofile/commit/37dcf84)
+* [systemd drop-ins support, option to wait for network-online.target (#267)](https://github.com/creativeprojects/resticprofile/commit/a1b7840)
 
 
 
@@ -299,13 +323,13 @@ More information about the different formats: https://prometheus.io/docs/instrum
 - bug fixes (see changelog)
 
 ## Changelog
-* [ac99302](https://github.com/creativeprojects/resticprofile/commit/ac99302) Allow to interrupt the wait for a lock (#249)
-* [b08ac73](https://github.com/creativeprojects/resticprofile/commit/b08ac73) Detect if running on battery (#235)
-* [1e6d07a](https://github.com/creativeprojects/resticprofile/commit/1e6d07a) Docs for installation from scoop (#268)
-* [0d73c2b](https://github.com/creativeprojects/resticprofile/commit/0d73c2b) Fix doc shortcodes (#271)
-* [f5e751c](https://github.com/creativeprojects/resticprofile/commit/f5e751c) Template: Reduce log level for `Getwd()` failures (#251)
-* [e20973e](https://github.com/creativeprojects/resticprofile/commit/e20973e) systemd: prevent paging in systemd schedules (#270)
-* [bcfaaa7](https://github.com/creativeprojects/resticprofile/commit/bcfaaa7) upgrade packages - CVE-2023-3978 - CVE-2023-39325 - CVE-2023-44487
+* [Allow to interrupt the wait for a lock (#249)](https://github.com/creativeprojects/resticprofile/commit/ac99302)
+* [Detect if running on battery (#235)](https://github.com/creativeprojects/resticprofile/commit/b08ac73)
+* [Docs for installation from scoop (#268)](https://github.com/creativeprojects/resticprofile/commit/1e6d07a)
+* [Fix doc shortcodes (#271)](https://github.com/creativeprojects/resticprofile/commit/0d73c2b)
+* [Template: Reduce log level for `Getwd()` failures (#251)](https://github.com/creativeprojects/resticprofile/commit/f5e751c)
+* [systemd: prevent paging in systemd schedules (#270)](https://github.com/creativeprojects/resticprofile/commit/e20973e)
+* [upgrade packages - CVE-2023-3978 - CVE-2023-39325 - CVE-2023-44487](https://github.com/creativeprojects/resticprofile/commit/bcfaaa7)
 
 
 
@@ -321,22 +345,22 @@ This release mostly fixes a few regression from version 0.21.0 and adds a handfu
 Thanks to all the contributors for the great work 👍🏻 
 
 ## Changelog
-* [b0767ad](https://github.com/creativeprojects/resticprofile/commit/b0767ad) Added {{ "data" | base64 }} & {{ "data" | hex }} (#213)
-* [b00c8a0](https://github.com/creativeprojects/resticprofile/commit/b00c8a0) Allow to set a base-dir inside the profile (#183) (#192)
-* [4b2ea31](https://github.com/creativeprojects/resticprofile/commit/4b2ea31) Fix 194: Allow to set "keep-tag", “tag” & “group-by” as empty string (#220)
-* [10057d4](https://github.com/creativeprojects/resticprofile/commit/10057d4) Fix 218: Args filter must not remove paths (#222)
-* [0c8c985](https://github.com/creativeprojects/resticprofile/commit/0c8c985) Fix 223, 230: Escape args and absolute restic path for pwsh (#224)
-* [2bf0d28](https://github.com/creativeprojects/resticprofile/commit/2bf0d28) Fix 242: iexclude-file not converted to abs path (#243)
-* [6cbfdb3](https://github.com/creativeprojects/resticprofile/commit/6cbfdb3) Fix links for versioned JSON schema files (#244)
-* [fc66fab](https://github.com/creativeprojects/resticprofile/commit/fc66fab) Fix schedule tests (#236)
-* [304e418](https://github.com/creativeprojects/resticprofile/commit/304e418) Fix: Do not add `--tag` for `tag: true` (#221)
-* [82fccdb](https://github.com/creativeprojects/resticprofile/commit/82fccdb) Restic: Add restic v16 release (#238)
-* [3f4e0bf](https://github.com/creativeprojects/resticprofile/commit/3f4e0bf) Restic: Fixed unit tests for restic v16 (#239)
-* [ba9297a](https://github.com/creativeprojects/resticprofile/commit/ba9297a) Retention: Align host filter with "backup" (#227)
-* [347501d](https://github.com/creativeprojects/resticprofile/commit/347501d) Schedule: Capture `os.Environ` on schedule creation (#212)
-* [9c05157](https://github.com/creativeprojects/resticprofile/commit/9c05157) Support `lock-wait` with `--lock-retry` in restic 0.16 (#240)
-* [6cc332d](https://github.com/creativeprojects/resticprofile/commit/6cc332d) Support build when GOPATH is unset / fix mockery build warning (#234)
-* [3476fbc](https://github.com/creativeprojects/resticprofile/commit/3476fbc) Variables: Allow to escape "$" with "$$" (#216)
+* [Added {{ "data" | base64 }} & {{ "data" | hex }} (#213)](https://github.com/creativeprojects/resticprofile/commit/b0767ad)
+* [Allow to set a base-dir inside the profile (#183) (#192)](https://github.com/creativeprojects/resticprofile/commit/b00c8a0)
+* [Fix 194: Allow to set "keep-tag", “tag” & “group-by” as empty string (#220)](https://github.com/creativeprojects/resticprofile/commit/4b2ea31)
+* [Fix 218: Args filter must not remove paths (#222)](https://github.com/creativeprojects/resticprofile/commit/10057d4)
+* [Fix 223, 230: Escape args and absolute restic path for pwsh (#224)](https://github.com/creativeprojects/resticprofile/commit/0c8c985)
+* [Fix 242: iexclude-file not converted to abs path (#243)](https://github.com/creativeprojects/resticprofile/commit/2bf0d28)
+* [Fix links for versioned JSON schema files (#244)](https://github.com/creativeprojects/resticprofile/commit/6cbfdb3)
+* [Fix schedule tests (#236)](https://github.com/creativeprojects/resticprofile/commit/fc66fab)
+* [Fix: Do not add `--tag` for `tag: true` (#221)](https://github.com/creativeprojects/resticprofile/commit/304e418)
+* [Restic: Add restic v16 release (#238)](https://github.com/creativeprojects/resticprofile/commit/82fccdb)
+* [Restic: Fixed unit tests for restic v16 (#239)](https://github.com/creativeprojects/resticprofile/commit/3f4e0bf)
+* [Retention: Align host filter with "backup" (#227)](https://github.com/creativeprojects/resticprofile/commit/ba9297a)
+* [Schedule: Capture `os.Environ` on schedule creation (#212)](https://github.com/creativeprojects/resticprofile/commit/347501d)
+* [Support `lock-wait` with `--lock-retry` in restic 0.16 (#240)](https://github.com/creativeprojects/resticprofile/commit/9c05157)
+* [Support build when GOPATH is unset / fix mockery build warning (#234)](https://github.com/creativeprojects/resticprofile/commit/6cc332d)
+* [Variables: Allow to escape "$" with "$$" (#216)](https://github.com/creativeprojects/resticprofile/commit/3476fbc)
 
 
 
@@ -355,9 +379,9 @@ prometheus-push-job: "${COMMAND}"
 * Complicated scheduling on Windows was sometimes setting up a random delay before starting a job
 
 ## Changelog
-* [c00fc9a](https://github.com/creativeprojects/resticprofile/commit/c00fc9a) New option to specify Prometheus Pushgateway job name (#193)
-* [0c7405f](https://github.com/creativeprojects/resticprofile/commit/0c7405f) Templates: Add `map`/`splitR`/`contains`/`matches` (#197)
-* [7545bbf](https://github.com/creativeprojects/resticprofile/commit/7545bbf) Upgrade task scheduler library (#206)
+* [New option to specify Prometheus Pushgateway job name (#193)](https://github.com/creativeprojects/resticprofile/commit/c00fc9a)
+* [Templates: Add `map`/`splitR`/`contains`/`matches` (#197)](https://github.com/creativeprojects/resticprofile/commit/0c7405f)
+* [Upgrade task scheduler library (#206)](https://github.com/creativeprojects/resticprofile/commit/7545bbf)
 
 
 # v0.21.1 (2023-04-05)
@@ -378,9 +402,9 @@ Also this version generates a JSON schema: this is the configuration schema whic
 Other nice feature is the introduction of the `help` command which works for both all the **resticprofile** and **restic** commands and flags. Try it out!
 
 ## Changelog
-* [487db0b](https://github.com/creativeprojects/resticprofile/commit/487db0b) Fix #187: homedir/env-vars in repo and other flags (#188)
-* [b78d1a0](https://github.com/creativeprojects/resticprofile/commit/b78d1a0) Fix #189: completion of own commands (#190)
-* [b6a98ef](https://github.com/creativeprojects/resticprofile/commit/b6a98ef) Updated clog to 0.13 (#191)
+* [Fix #187: homedir/env-vars in repo and other flags (#188)](https://github.com/creativeprojects/resticprofile/commit/487db0b)
+* [Fix #189: completion of own commands (#190)](https://github.com/creativeprojects/resticprofile/commit/b78d1a0)
+* [Updated clog to 0.13 (#191)](https://github.com/creativeprojects/resticprofile/commit/b6a98ef)
 
 
 
@@ -397,18 +421,18 @@ Other nice feature is the introduction of the `help` command which works for bot
 And as usual, a lot of bug fixes 😉 
 
 ## Changelog
-* [683bf78](https://github.com/creativeprojects/resticprofile/commit/683bf78) Add variables `.OS` and `.Arch` to all templates (#181)
-* [74b0c46](https://github.com/creativeprojects/resticprofile/commit/74b0c46) Allow config encoding in UTF16 and ISO88591
-* [d6a51ad](https://github.com/creativeprojects/resticprofile/commit/d6a51ad) Enhanced: Catch any --help & --dry-run (http only) (#178)
-* [3f5cdc6](https://github.com/creativeprojects/resticprofile/commit/3f5cdc6) Feature: JSON schema (#103) & generated reference
-* [1aad0fb](https://github.com/creativeprojects/resticprofile/commit/1aad0fb) Fix #164: Failure on uppercase mixin names
-* [e65f9bc](https://github.com/creativeprojects/resticprofile/commit/e65f9bc) Implement tempDir and log without locking (#168) (#174)
-* [f2a9c04](https://github.com/creativeprojects/resticprofile/commit/f2a9c04) Make URL and header confidential in HTTP-hook (#175)
-* [e069b77](https://github.com/creativeprojects/resticprofile/commit/e069b77) Restic: Add restic v15 release (#180)
-* [d2e789c](https://github.com/creativeprojects/resticprofile/commit/d2e789c) add build tag to disable self-update (#184)
-* [8231087](https://github.com/creativeprojects/resticprofile/commit/8231087) add suppport for user_logged_on (#160)
-* [f782ef5](https://github.com/creativeprojects/resticprofile/commit/f782ef5) build with go 1.20
-* [bd3813a](https://github.com/creativeprojects/resticprofile/commit/bd3813a) upgrade packages CVE-2022-41721
+* [Add variables `.OS` and `.Arch` to all templates (#181)](https://github.com/creativeprojects/resticprofile/commit/683bf78)
+* [Allow config encoding in UTF16 and ISO88591](https://github.com/creativeprojects/resticprofile/commit/74b0c46)
+* [Enhanced: Catch any --help & --dry-run (http only) (#178)](https://github.com/creativeprojects/resticprofile/commit/d6a51ad)
+* [Feature: JSON schema (#103) & generated reference](https://github.com/creativeprojects/resticprofile/commit/3f5cdc6)
+* [Fix #164: Failure on uppercase mixin names](https://github.com/creativeprojects/resticprofile/commit/1aad0fb)
+* [Implement tempDir and log without locking (#168) (#174)](https://github.com/creativeprojects/resticprofile/commit/e65f9bc)
+* [Make URL and header confidential in HTTP-hook (#175)](https://github.com/creativeprojects/resticprofile/commit/f2a9c04)
+* [Restic: Add restic v15 release (#180)](https://github.com/creativeprojects/resticprofile/commit/e069b77)
+* [add build tag to disable self-update (#184)](https://github.com/creativeprojects/resticprofile/commit/d2e789c)
+* [add suppport for user_logged_on (#160)](https://github.com/creativeprojects/resticprofile/commit/8231087)
+* [build with go 1.20](https://github.com/creativeprojects/resticprofile/commit/f782ef5)
+* [upgrade packages CVE-2022-41721](https://github.com/creativeprojects/resticprofile/commit/bd3813a)
 
 
 
@@ -421,11 +445,11 @@ Not too many new features in this release, but I wanted to build a new docker im
 - Docker image now contains ssh (to allow `sftp` repository), curl, tzdata and ca-certificates
 
 ## Changelog
-* [51634c8](https://github.com/creativeprojects/resticprofile/commit/51634c8) Merge pull request #154 from jkellerer/ft-151
-* [00ab266](https://github.com/creativeprojects/resticprofile/commit/00ab266) New docker image (#161)
-* [fce7165](https://github.com/creativeprojects/resticprofile/commit/fce7165) Run-hooks for all non-conflicting commands (#151)
-* [7439620](https://github.com/creativeprojects/resticprofile/commit/7439620) add QEMU for github agent to build an arm64 image
-* [7c2f806](https://github.com/creativeprojects/resticprofile/commit/7c2f806) dry-run should not send web hooks #157
+* [Merge pull request #154 from jkellerer/ft-151](https://github.com/creativeprojects/resticprofile/commit/51634c8)
+* [New docker image (#161)](https://github.com/creativeprojects/resticprofile/commit/00ab266)
+* [Run-hooks for all non-conflicting commands (#151)](https://github.com/creativeprojects/resticprofile/commit/fce7165)
+* [add QEMU for github agent to build an arm64 image](https://github.com/creativeprojects/resticprofile/commit/7439620)
+* [dry-run should not send web hooks #157](https://github.com/creativeprojects/resticprofile/commit/7c2f806)
 
 
 
@@ -440,14 +464,14 @@ With:
 - May contain nuts
 
 ## Changelog
-* [c360880](https://github.com/creativeprojects/resticprofile/commit/c360880) Add --help to own commands (e.g. generate --help) (#139)
-* [1edf995](https://github.com/creativeprojects/resticprofile/commit/1edf995) Add last backup time to prometheus metrics (#132)
-* [8a70e7b](https://github.com/creativeprojects/resticprofile/commit/8a70e7b) Config: Add run before/after/fail to more restic commands than backup (#138)
-* [419e66c](https://github.com/creativeprojects/resticprofile/commit/419e66c) Continue profile in group on error (#149)
-* [a880b44](https://github.com/creativeprojects/resticprofile/commit/a880b44) Fixes zsh completion script (use of outdated CLI) (#150)
-* [49c4920](https://github.com/creativeprojects/resticprofile/commit/49c4920) Prevent system from idle sleeping (#140)
-* [d4c1032](https://github.com/creativeprojects/resticprofile/commit/d4c1032) add devcontainer config
-* [0c43c2c](https://github.com/creativeprojects/resticprofile/commit/0c43c2c) chore: upgrade packages
+* [Add --help to own commands (e.g. generate --help) (#139)](https://github.com/creativeprojects/resticprofile/commit/c360880)
+* [Add last backup time to prometheus metrics (#132)](https://github.com/creativeprojects/resticprofile/commit/1edf995)
+* [Config: Add run before/after/fail to more restic commands than backup (#138)](https://github.com/creativeprojects/resticprofile/commit/8a70e7b)
+* [Continue profile in group on error (#149)](https://github.com/creativeprojects/resticprofile/commit/419e66c)
+* [Fixes zsh completion script (use of outdated CLI) (#150)](https://github.com/creativeprojects/resticprofile/commit/a880b44)
+* [Prevent system from idle sleeping (#140)](https://github.com/creativeprojects/resticprofile/commit/49c4920)
+* [add devcontainer config](https://github.com/creativeprojects/resticprofile/commit/d4c1032)
+* [chore: upgrade packages](https://github.com/creativeprojects/resticprofile/commit/0c43c2c)
 
 
 
@@ -468,17 +492,17 @@ A few big features were introduced in this version:
 - Also search for a configuration file in the resticprofile program folder on Windows (to be used in portable mode)
 
 ## Changelog
-* [7ba20ad](https://github.com/creativeprojects/resticprofile/commit/7ba20ad) Add http hooks (#114)
-* [fb62876](https://github.com/creativeprojects/resticprofile/commit/fb62876) Add support for syslog (#127)
-* [a5c1147](https://github.com/creativeprojects/resticprofile/commit/a5c1147) Allow to choose `shell` in global config (#112)
-* [d492d7d](https://github.com/creativeprojects/resticprofile/commit/d492d7d) ConfigV2: Mixins (#115)
-* [ca9a418](https://github.com/creativeprojects/resticprofile/commit/ca9a418) ConfigV2: Replace list params - fix #108 (#113)
-* [2ed3045](https://github.com/creativeprojects/resticprofile/commit/2ed3045) Initialise copy repository using --copy-chunker-params (#117)
-* [43ce0be](https://github.com/creativeprojects/resticprofile/commit/43ce0be) Mixins: List merging & inheritance update (#121)
-* [1b8774c](https://github.com/creativeprojects/resticprofile/commit/1b8774c) add binary dir in path and .BinaryDir template var (#134)
-* [eb70a8a](https://github.com/creativeprojects/resticprofile/commit/eb70a8a) add goreleaser config to also build arm64 images
-* [35d07ee](https://github.com/creativeprojects/resticprofile/commit/35d07ee) add rclone to docker image #131
-* [0381942](https://github.com/creativeprojects/resticprofile/commit/0381942) upgrade packages (CVE-2022-28948)
+* [Add http hooks (#114)](https://github.com/creativeprojects/resticprofile/commit/7ba20ad)
+* [Add support for syslog (#127)](https://github.com/creativeprojects/resticprofile/commit/fb62876)
+* [Allow to choose `shell` in global config (#112)](https://github.com/creativeprojects/resticprofile/commit/a5c1147)
+* [ConfigV2: Mixins (#115)](https://github.com/creativeprojects/resticprofile/commit/d492d7d)
+* [ConfigV2: Replace list params - fix #108 (#113)](https://github.com/creativeprojects/resticprofile/commit/ca9a418)
+* [Initialise copy repository using --copy-chunker-params (#117)](https://github.com/creativeprojects/resticprofile/commit/2ed3045)
+* [Mixins: List merging & inheritance update (#121)](https://github.com/creativeprojects/resticprofile/commit/43ce0be)
+* [add binary dir in path and .BinaryDir template var (#134)](https://github.com/creativeprojects/resticprofile/commit/1b8774c)
+* [add goreleaser config to also build arm64 images](https://github.com/creativeprojects/resticprofile/commit/eb70a8a)
+* [add rclone to docker image #131](https://github.com/creativeprojects/resticprofile/commit/35d07ee)
+* [upgrade packages (CVE-2022-28948)](https://github.com/creativeprojects/resticprofile/commit/0381942)
 
 
 
@@ -498,20 +522,20 @@ The resticprofile team has been busy preparing some really cool new features:
 and a lot of bug fixes 👍🏻 
 
 ## Changelog
-* [83e423e](https://github.com/creativeprojects/resticprofile/commit/83e423e) Add run flag to to be able to have profile and job name as one argument (#89)
-* [20a3b81](https://github.com/creativeprojects/resticprofile/commit/20a3b81) Added "generate" command to create resources (#110)
-* [1d2b214](https://github.com/creativeprojects/resticprofile/commit/1d2b214) Added missing cmds that filter by host, tag & path
-* [8cef157](https://github.com/creativeprojects/resticprofile/commit/8cef157) Feature: Take command output as stdin for restic (#98)
-* [fe336ff](https://github.com/creativeprojects/resticprofile/commit/fe336ff) Fix and unit tests for #91
-* [ad511c4](https://github.com/creativeprojects/resticprofile/commit/ad511c4) Fix config includes when any pattern has no match (#95)
-* [3e856ce](https://github.com/creativeprojects/resticprofile/commit/3e856ce) Implemented stream-error callbacks (#99)
-* [3688b90](https://github.com/creativeprojects/resticprofile/commit/3688b90) Merge pull request #101 from jkellerer/fix-common-args
-* [4f13930](https://github.com/creativeprojects/resticprofile/commit/4f13930) Merge pull request #94 from jkellerer/ft-add-missing-commands
-* [a72f635](https://github.com/creativeprojects/resticprofile/commit/a72f635) Only pass common CLI args to command hooks [#100]
-* [7553a24](https://github.com/creativeprojects/resticprofile/commit/7553a24) Shell completion (#90)
-* [ea52e93](https://github.com/creativeprojects/resticprofile/commit/ea52e93) display a neat stack trace on panic
-* [ff13660](https://github.com/creativeprojects/resticprofile/commit/ff13660) fix for profiles command not showing inherited commands fixes second part of #97
-* [69dd965](https://github.com/creativeprojects/resticprofile/commit/69dd965) remove "includes" section from profiles in "profiles" command
+* [Add run flag to to be able to have profile and job name as one argument (#89)](https://github.com/creativeprojects/resticprofile/commit/83e423e)
+* [Added "generate" command to create resources (#110)](https://github.com/creativeprojects/resticprofile/commit/20a3b81)
+* [Added missing cmds that filter by host, tag & path](https://github.com/creativeprojects/resticprofile/commit/1d2b214)
+* [Feature: Take command output as stdin for restic (#98)](https://github.com/creativeprojects/resticprofile/commit/8cef157)
+* [Fix and unit tests for #91](https://github.com/creativeprojects/resticprofile/commit/fe336ff)
+* [Fix config includes when any pattern has no match (#95)](https://github.com/creativeprojects/resticprofile/commit/ad511c4)
+* [Implemented stream-error callbacks (#99)](https://github.com/creativeprojects/resticprofile/commit/3e856ce)
+* [Merge pull request #101 from jkellerer/fix-common-args](https://github.com/creativeprojects/resticprofile/commit/3688b90)
+* [Merge pull request #94 from jkellerer/ft-add-missing-commands](https://github.com/creativeprojects/resticprofile/commit/4f13930)
+* [Only pass common CLI args to command hooks [#100]](https://github.com/creativeprojects/resticprofile/commit/a72f635)
+* [Shell completion (#90)](https://github.com/creativeprojects/resticprofile/commit/7553a24)
+* [display a neat stack trace on panic](https://github.com/creativeprojects/resticprofile/commit/ea52e93)
+* [fix for profiles command not showing inherited commands fixes second part of #97](https://github.com/creativeprojects/resticprofile/commit/ff13660)
+* [remove "includes" section from profiles in "profiles" command](https://github.com/creativeprojects/resticprofile/commit/69dd965)
 
 
 
@@ -522,13 +546,13 @@ New maintenance version, with bug fixes:
 - fix status file telling the backup was successful when a warning happened (file/dir not found)
 
 ## Changelog
-* [e18906b](https://github.com/creativeprojects/resticprofile/commit/e18906b) Fix args are multiplied when commands are retried (#84)
-* [358f060](https://github.com/creativeprojects/resticprofile/commit/358f060) Fix for #88 with unit tests
-* [b011437](https://github.com/creativeprojects/resticprofile/commit/b011437) don't inherit profile description
-* [16ad4b1](https://github.com/creativeprojects/resticprofile/commit/16ad4b1) prepare for future versions of the configuration
-* [da8c255](https://github.com/creativeprojects/resticprofile/commit/da8c255) show schedules separately
-* [358a5db](https://github.com/creativeprojects/resticprofile/commit/358a5db) simple implementation of a config file v2
-* [e2bd2cf](https://github.com/creativeprojects/resticprofile/commit/e2bd2cf) update packages
+* [Fix args are multiplied when commands are retried (#84)](https://github.com/creativeprojects/resticprofile/commit/e18906b)
+* [Fix for #88 with unit tests](https://github.com/creativeprojects/resticprofile/commit/358f060)
+* [don't inherit profile description](https://github.com/creativeprojects/resticprofile/commit/b011437)
+* [prepare for future versions of the configuration](https://github.com/creativeprojects/resticprofile/commit/16ad4b1)
+* [show schedules separately](https://github.com/creativeprojects/resticprofile/commit/da8c255)
+* [simple implementation of a config file v2](https://github.com/creativeprojects/resticprofile/commit/358a5db)
+* [update packages](https://github.com/creativeprojects/resticprofile/commit/e2bd2cf)
 
 
 
@@ -544,16 +568,16 @@ This release adds a few new features:
 
 ## Changelog
 
-* [1fa7d48](https://github.com/creativeprojects/resticprofile/commit/1fa7d48) Add support for copy command (#73)
-* [271c128](https://github.com/creativeprojects/resticprofile/commit/271c128) Change codecov uploader to use GitHub Action v2 (#79)
-* [85fcc20](https://github.com/creativeprojects/resticprofile/commit/85fcc20) Optional: Allow disabling path in retention with 'false' (#67)
-* [8773899](https://github.com/creativeprojects/resticprofile/commit/8773899) Scheduler refactoring (#76)
-* [48c822c](https://github.com/creativeprojects/resticprofile/commit/48c822c) Support "run-finally" in backup-section & profile (#70)
-* [ac13d06](https://github.com/creativeprojects/resticprofile/commit/ac13d06) Supporting config `includes` (e.g. `profiles.d`) (#65)
-* [245a440](https://github.com/creativeprojects/resticprofile/commit/245a440) Systemd template (#75)
-* [122620e](https://github.com/creativeprojects/resticprofile/commit/122620e) add tests on crontab
-* [0dad5a8](https://github.com/creativeprojects/resticprofile/commit/0dad5a8) crontab RemoveJob returns error if the entry was not found
-* [ff2fc1f](https://github.com/creativeprojects/resticprofile/commit/ff2fc1f) upgrade dependencies
+* [Add support for copy command (#73)](https://github.com/creativeprojects/resticprofile/commit/1fa7d48)
+* [Change codecov uploader to use GitHub Action v2 (#79)](https://github.com/creativeprojects/resticprofile/commit/271c128)
+* [Optional: Allow disabling path in retention with 'false' (#67)](https://github.com/creativeprojects/resticprofile/commit/85fcc20)
+* [Scheduler refactoring (#76)](https://github.com/creativeprojects/resticprofile/commit/8773899)
+* [Support "run-finally" in backup-section & profile (#70)](https://github.com/creativeprojects/resticprofile/commit/48c822c)
+* [Supporting config `includes` (e.g. `profiles.d`) (#65)](https://github.com/creativeprojects/resticprofile/commit/ac13d06)
+* [Systemd template (#75)](https://github.com/creativeprojects/resticprofile/commit/245a440)
+* [add tests on crontab](https://github.com/creativeprojects/resticprofile/commit/122620e)
+* [crontab RemoveJob returns error if the entry was not found](https://github.com/creativeprojects/resticprofile/commit/0dad5a8)
+* [upgrade dependencies](https://github.com/creativeprojects/resticprofile/commit/ff2fc1f)
 
 
 ## Docker images
@@ -588,17 +612,17 @@ global:
 
 ## Changelog
 
-* [abf0b00](https://github.com/creativeprojects/resticprofile/commit/abf0b00) Add support for prometheus export and push (#57)
-* [37a69d7](https://github.com/creativeprojects/resticprofile/commit/37a69d7) Added "{{.TmpDir}}" to TemplateData (#62)
-* [8218e70](https://github.com/creativeprojects/resticprofile/commit/8218e70) Feature: Hide confidential values in output (#58)
-* [0be5d5f](https://github.com/creativeprojects/resticprofile/commit/0be5d5f) Resolve glob expressions in backup sources (#63)
-* [8cc2574](https://github.com/creativeprojects/resticprofile/commit/8cc2574) Shell escape (#60)
-* [34f693c](https://github.com/creativeprojects/resticprofile/commit/34f693c) Update non-confidential values to support shell.Args (#68)
-* [0841959](https://github.com/creativeprojects/resticprofile/commit/0841959) add Hostname pre-defined variable to template resolver (#55)
-* [f58116b](https://github.com/creativeprojects/resticprofile/commit/f58116b) add description field in profile section
-* [0f9b21e](https://github.com/creativeprojects/resticprofile/commit/0f9b21e) build with go 1.17
-* [16308e9](https://github.com/creativeprojects/resticprofile/commit/16308e9) don't send status summary in dry-run
-* [88052c6](https://github.com/creativeprojects/resticprofile/commit/88052c6) show description in output of profiles command
+* [Add support for prometheus export and push (#57)](https://github.com/creativeprojects/resticprofile/commit/abf0b00)
+* [Added "{{.TmpDir}}" to TemplateData (#62)](https://github.com/creativeprojects/resticprofile/commit/37a69d7)
+* [Feature: Hide confidential values in output (#58)](https://github.com/creativeprojects/resticprofile/commit/8218e70)
+* [Resolve glob expressions in backup sources (#63)](https://github.com/creativeprojects/resticprofile/commit/0be5d5f)
+* [Shell escape (#60)](https://github.com/creativeprojects/resticprofile/commit/8cc2574)
+* [Update non-confidential values to support shell.Args (#68)](https://github.com/creativeprojects/resticprofile/commit/34f693c)
+* [add Hostname pre-defined variable to template resolver (#55)](https://github.com/creativeprojects/resticprofile/commit/0841959)
+* [add description field in profile section](https://github.com/creativeprojects/resticprofile/commit/f58116b)
+* [build with go 1.17](https://github.com/creativeprojects/resticprofile/commit/0f9b21e)
+* [don't send status summary in dry-run](https://github.com/creativeprojects/resticprofile/commit/16308e9)
+* [show description in output of profiles command](https://github.com/creativeprojects/resticprofile/commit/88052c6)
 
 
 ## Docker images
@@ -616,8 +640,8 @@ This release changes the way the restic binary is searched:
 
 ## Changelog
 
-* [4686dd2](https://github.com/creativeprojects/resticprofile/commit/4686dd2) use shell to resolve special paths with ~
-* [823304a](https://github.com/creativeprojects/resticprofile/commit/823304a) warning when the restic-binary was not found
+* [use shell to resolve special paths with ~](https://github.com/creativeprojects/resticprofile/commit/4686dd2)
+* [warning when the restic-binary was not found](https://github.com/creativeprojects/resticprofile/commit/823304a)
 
 
 ## Docker images
@@ -633,11 +657,11 @@ This release changes the way the restic binary is searched:
 
 ## Changelog
 
-* [331b710](https://github.com/creativeprojects/resticprofile/commit/331b710) Added resticprofile flags --no-lock & --lock-wait (#33)
-* [7fc5b3a](https://github.com/creativeprojects/resticprofile/commit/7fc5b3a) Summary from plain output when not run in terminal (#48)
-* [b7edeb5](https://github.com/creativeprojects/resticprofile/commit/b7edeb5) Updated contrib script systemd/send-error.sh (#49)
-* [fa42cf2](https://github.com/creativeprojects/resticprofile/commit/fa42cf2) add macOS arm64 target to install.sh script
-* [a87f76d](https://github.com/creativeprojects/resticprofile/commit/a87f76d) add token as an environment variable
+* [Added resticprofile flags --no-lock & --lock-wait (#33)](https://github.com/creativeprojects/resticprofile/commit/331b710)
+* [Summary from plain output when not run in terminal (#48)](https://github.com/creativeprojects/resticprofile/commit/7fc5b3a)
+* [Updated contrib script systemd/send-error.sh (#49)](https://github.com/creativeprojects/resticprofile/commit/b7edeb5)
+* [add macOS arm64 target to install.sh script](https://github.com/creativeprojects/resticprofile/commit/fa42cf2)
+* [add token as an environment variable](https://github.com/creativeprojects/resticprofile/commit/a87f76d)
 
 
 ## Docker images
@@ -652,10 +676,10 @@ This version fixes a defect where extended status wasn't returning the extended 
 
 ## Changelog
 
-* [cab8909](https://github.com/creativeprojects/resticprofile/commit/cab8909) add Homebrew Tap (#45)
-* [794f404](https://github.com/creativeprojects/resticprofile/commit/794f404) add github token in config
-* [5e06dbd](https://github.com/creativeprojects/resticprofile/commit/5e06dbd) fix test too slow on build agent
-* [2f79a46](https://github.com/creativeprojects/resticprofile/commit/2f79a46) fix windows bogus prefix (#47)
+* [add Homebrew Tap (#45)](https://github.com/creativeprojects/resticprofile/commit/cab8909)
+* [add github token in config](https://github.com/creativeprojects/resticprofile/commit/794f404)
+* [fix test too slow on build agent](https://github.com/creativeprojects/resticprofile/commit/5e06dbd)
+* [fix windows bogus prefix (#47)](https://github.com/creativeprojects/resticprofile/commit/2f79a46)
 
 
 ## Docker images
@@ -671,8 +695,8 @@ Bug fix:
 
 ## Changelog
 
-* [02e6414](https://github.com/creativeprojects/resticprofile/commit/02e6414) Increase test coverage (#40)
-* [d64dc4f](https://github.com/creativeprojects/resticprofile/commit/d64dc4f) fix #41: a message  was sent to stderr when parameter initialize=true and repo exists
+* [Increase test coverage (#40)](https://github.com/creativeprojects/resticprofile/commit/02e6414)
+* [fix #41: a message  was sent to stderr when parameter initialize=true and repo exists](https://github.com/creativeprojects/resticprofile/commit/d64dc4f)
 
 
 ## Docker images
@@ -689,10 +713,10 @@ This version adds two new features:
 
 ## Changelog
 
-* [8968e33](https://github.com/creativeprojects/resticprofile/commit/8968e33) add RESTIC_STDERR env variable to run-after-fail
-* [6b7dea4](https://github.com/creativeprojects/resticprofile/commit/6b7dea4) quick implementation of ignore warning
-* [833d24d](https://github.com/creativeprojects/resticprofile/commit/833d24d) quick mock to do some testing with a fake restic
-* [3c54cc6](https://github.com/creativeprojects/resticprofile/commit/3c54cc6) returns stderr output in the status file
+* [add RESTIC_STDERR env variable to run-after-fail](https://github.com/creativeprojects/resticprofile/commit/8968e33)
+* [quick implementation of ignore warning](https://github.com/creativeprojects/resticprofile/commit/6b7dea4)
+* [quick mock to do some testing with a fake restic](https://github.com/creativeprojects/resticprofile/commit/833d24d)
+* [returns stderr output in the status file](https://github.com/creativeprojects/resticprofile/commit/3c54cc6)
 
 
 ## Docker images
@@ -710,16 +734,16 @@ This release mainly brings 2 new features and a few enhancements:
 
 ## Changelog
 
-* [237a87f](https://github.com/creativeprojects/resticprofile/commit/237a87f) Add backup statistics in status file (#36)
-* [6622a39](https://github.com/creativeprojects/resticprofile/commit/6622a39) Added fail env variable ERROR_COMMANDLINE (#32)
-* [0887354](https://github.com/creativeprojects/resticprofile/commit/0887354) Added support for --all to status & (un)schedule (#31)
-* [16e6c19](https://github.com/creativeprojects/resticprofile/commit/16e6c19) Enhanced "unschedule" to remove all possible jobs (#28)
-* [47489a2](https://github.com/creativeprojects/resticprofile/commit/47489a2) add profile name when running status --all
-* [01ae05a](https://github.com/creativeprojects/resticprofile/commit/01ae05a) fix an issue where status --all was stopping at the first profile with no schedule
-* [f50131b](https://github.com/creativeprojects/resticprofile/commit/f50131b) update goreleaser config to v0.154
-* [c700d60](https://github.com/creativeprojects/resticprofile/commit/c700d60) upgrade packages
-* [4569f0d](https://github.com/creativeprojects/resticprofile/commit/4569f0d) upgrade self-update library
-* [7eb663d](https://github.com/creativeprojects/resticprofile/commit/7eb663d) use go 1.16
+* [Add backup statistics in status file (#36)](https://github.com/creativeprojects/resticprofile/commit/237a87f)
+* [Added fail env variable ERROR_COMMANDLINE (#32)](https://github.com/creativeprojects/resticprofile/commit/6622a39)
+* [Added support for --all to status & (un)schedule (#31)](https://github.com/creativeprojects/resticprofile/commit/0887354)
+* [Enhanced "unschedule" to remove all possible jobs (#28)](https://github.com/creativeprojects/resticprofile/commit/16e6c19)
+* [add profile name when running status --all](https://github.com/creativeprojects/resticprofile/commit/47489a2)
+* [fix an issue where status --all was stopping at the first profile with no schedule](https://github.com/creativeprojects/resticprofile/commit/01ae05a)
+* [update goreleaser config to v0.154](https://github.com/creativeprojects/resticprofile/commit/f50131b)
+* [upgrade packages](https://github.com/creativeprojects/resticprofile/commit/c700d60)
+* [upgrade self-update library](https://github.com/creativeprojects/resticprofile/commit/4569f0d)
+* [use go 1.16](https://github.com/creativeprojects/resticprofile/commit/7eb663d)
 
 
 ## Docker images
@@ -743,24 +767,24 @@ Scheduling in the `retention` section is now deprecated, please use the `forget`
 
 ## Changelog
 
-* [be72758](https://github.com/creativeprojects/resticprofile/commit/be72758) Add background types and low priorityIO to launchd plist (#19)
-* [d0de636](https://github.com/creativeprojects/resticprofile/commit/d0de636) Add support for scheduling forget (#26)
-* [ec02310](https://github.com/creativeprojects/resticprofile/commit/ec02310) Added prune as supported, schedulable command (#24)
-* [8f48acf](https://github.com/creativeprojects/resticprofile/commit/8f48acf) Move CI build from Travis CI to GitHub Actions
-* [2e1564a](https://github.com/creativeprojects/resticprofile/commit/2e1564a) Refactoring schedule package (#30)
-* [8fd7a2e](https://github.com/creativeprojects/resticprofile/commit/8fd7a2e) Schedule priority (#29)
-* [b8c3e6a](https://github.com/creativeprojects/resticprofile/commit/b8c3e6a) add crond support to unix targets (except macOS)
-* [3e93f45](https://github.com/creativeprojects/resticprofile/commit/3e93f45) add deprecation notice for schedule on retention
-* [4b815f2](https://github.com/creativeprojects/resticprofile/commit/4b815f2) add docker build to goreleaser
-* [5830a34](https://github.com/creativeprojects/resticprofile/commit/5830a34) add pre-release parameter to self-update
-* [a8939ed](https://github.com/creativeprojects/resticprofile/commit/a8939ed) add schedule-priority parameter
-* [641dc91](https://github.com/creativeprojects/resticprofile/commit/641dc91) add working directory to crontab line
-* [08141a3](https://github.com/creativeprojects/resticprofile/commit/08141a3) allow verbose flag after the command
-* [2a6b0c0](https://github.com/creativeprojects/resticprofile/commit/2a6b0c0) display systemd timer status in a nicer way also display log >= "warning" instead of "err"
-* [a19f124](https://github.com/creativeprojects/resticprofile/commit/a19f124) move other-flags before the sub-sections
-* [967c4a8](https://github.com/creativeprojects/resticprofile/commit/967c4a8) refactor show command to remove empty lines
-* [6544052](https://github.com/creativeprojects/resticprofile/commit/6544052) search for systemctl instead of systemd
-* [c406e80](https://github.com/creativeprojects/resticprofile/commit/c406e80) upgrade clog package
+* [Add background types and low priorityIO to launchd plist (#19)](https://github.com/creativeprojects/resticprofile/commit/be72758)
+* [Add support for scheduling forget (#26)](https://github.com/creativeprojects/resticprofile/commit/d0de636)
+* [Added prune as supported, schedulable command (#24)](https://github.com/creativeprojects/resticprofile/commit/ec02310)
+* [Move CI build from Travis CI to GitHub Actions](https://github.com/creativeprojects/resticprofile/commit/8f48acf)
+* [Refactoring schedule package (#30)](https://github.com/creativeprojects/resticprofile/commit/2e1564a)
+* [Schedule priority (#29)](https://github.com/creativeprojects/resticprofile/commit/8fd7a2e)
+* [add crond support to unix targets (except macOS)](https://github.com/creativeprojects/resticprofile/commit/b8c3e6a)
+* [add deprecation notice for schedule on retention](https://github.com/creativeprojects/resticprofile/commit/3e93f45)
+* [add docker build to goreleaser](https://github.com/creativeprojects/resticprofile/commit/4b815f2)
+* [add pre-release parameter to self-update](https://github.com/creativeprojects/resticprofile/commit/5830a34)
+* [add schedule-priority parameter](https://github.com/creativeprojects/resticprofile/commit/a8939ed)
+* [add working directory to crontab line](https://github.com/creativeprojects/resticprofile/commit/641dc91)
+* [allow verbose flag after the command](https://github.com/creativeprojects/resticprofile/commit/08141a3)
+* [display systemd timer status in a nicer way also display log >= "warning" instead of "err"](https://github.com/creativeprojects/resticprofile/commit/2a6b0c0)
+* [move other-flags before the sub-sections](https://github.com/creativeprojects/resticprofile/commit/a19f124)
+* [refactor show command to remove empty lines](https://github.com/creativeprojects/resticprofile/commit/967c4a8)
+* [search for systemctl instead of systemd](https://github.com/creativeprojects/resticprofile/commit/6544052)
+* [upgrade clog package](https://github.com/creativeprojects/resticprofile/commit/c406e80)
 
 
 ## Docker images
@@ -779,9 +803,9 @@ To change the type on your existing schedules, you'll need to run the commands `
 
 ## Changelog
 
-* [ba711f2](https://github.com/creativeprojects/resticprofile/commit/ba711f2) change systemd unit to "notify"
-* [9f2edb8](https://github.com/creativeprojects/resticprofile/commit/9f2edb8) update packages verify self-update binary using checksums.txt file
-* [cff661b](https://github.com/creativeprojects/resticprofile/commit/cff661b) update restic to 0.11.0 in docker image
+* [change systemd unit to "notify"](https://github.com/creativeprojects/resticprofile/commit/ba711f2)
+* [update packages verify self-update binary using checksums.txt file](https://github.com/creativeprojects/resticprofile/commit/9f2edb8)
+* [update restic to 0.11.0 in docker image](https://github.com/creativeprojects/resticprofile/commit/cff661b)
 
 
 
@@ -798,15 +822,15 @@ I think it is now feature complete for a version 1.0 😄
 
 ## Changelog
 
-* [e2047e0](https://github.com/creativeprojects/resticprofile/commit/e2047e0) Escape `exclude` globs passed to `/sh`
-* [be97fae](https://github.com/creativeprojects/resticprofile/commit/be97fae) add proper character escaping: - count the number of \ in front - do not escape it again if it was already escaped
-* [b30cbe5](https://github.com/creativeprojects/resticprofile/commit/b30cbe5) change self-updater library to work with ARM cpus
-* [8d95c1e](https://github.com/creativeprojects/resticprofile/commit/8d95c1e) detect arm version from runtime internal register
-* [c9b0c34](https://github.com/creativeprojects/resticprofile/commit/c9b0c34) new version of the updater
-* [604da32](https://github.com/creativeprojects/resticprofile/commit/604da32) put armv7 target back
-* [836cbae](https://github.com/creativeprojects/resticprofile/commit/836cbae) squash merge of branch config-single-template: add templating and variable expansion
-* [f177173](https://github.com/creativeprojects/resticprofile/commit/f177173) upgrade clog package
-* [48cf85e](https://github.com/creativeprojects/resticprofile/commit/48cf85e) upgrade selfupdate package
+* [Escape `exclude` globs passed to `/sh`](https://github.com/creativeprojects/resticprofile/commit/e2047e0)
+* [add proper character escaping: - count the number of \ in front - do not escape it again if it was already escaped](https://github.com/creativeprojects/resticprofile/commit/be97fae)
+* [change self-updater library to work with ARM cpus](https://github.com/creativeprojects/resticprofile/commit/b30cbe5)
+* [detect arm version from runtime internal register](https://github.com/creativeprojects/resticprofile/commit/8d95c1e)
+* [new version of the updater](https://github.com/creativeprojects/resticprofile/commit/c9b0c34)
+* [put armv7 target back](https://github.com/creativeprojects/resticprofile/commit/604da32)
+* [squash merge of branch config-single-template: add templating and variable expansion](https://github.com/creativeprojects/resticprofile/commit/836cbae)
+* [upgrade clog package](https://github.com/creativeprojects/resticprofile/commit/f177173)
+* [upgrade selfupdate package](https://github.com/creativeprojects/resticprofile/commit/48cf85e)
 
 
 
@@ -819,13 +843,13 @@ A few minor features and bug fixes:
 
 ## Changelog
 
-* [ca6ff07](https://github.com/creativeprojects/resticprofile/commit/ca6ff07) Add "option" in example configurations in README and azure.conf fixes https://github.com/creativeprojects/resticprofile/issues/13
-* [06f98e9](https://github.com/creativeprojects/resticprofile/commit/06f98e9) Add version command
-* [f3aa7b9](https://github.com/creativeprojects/resticprofile/commit/f3aa7b9) add tests on set and get PID from lock file
-* [cd10c9d](https://github.com/creativeprojects/resticprofile/commit/cd10c9d) remove openbsd from goreleaser library github.com/shirou/gopsutil cannot be compiled for openbsd
-* [8c07f35](https://github.com/creativeprojects/resticprofile/commit/8c07f35) squash merge of branch pid: should fix https://github.com/creativeprojects/resticprofile/issues/14
-* [618be92](https://github.com/creativeprojects/resticprofile/commit/618be92) use go 1.15 for ci builds
-* [94f0ef1](https://github.com/creativeprojects/resticprofile/commit/94f0ef1) write down child PIDs in lock file
+* [Add "option" in example configurations in README and azure.conf fixes https://github.com/creativeprojects/resticprofile/issues/13](https://github.com/creativeprojects/resticprofile/commit/ca6ff07)
+* [Add version command](https://github.com/creativeprojects/resticprofile/commit/06f98e9)
+* [add tests on set and get PID from lock file](https://github.com/creativeprojects/resticprofile/commit/f3aa7b9)
+* [remove openbsd from goreleaser library github.com/shirou/gopsutil cannot be compiled for openbsd](https://github.com/creativeprojects/resticprofile/commit/cd10c9d)
+* [squash merge of branch pid: should fix https://github.com/creativeprojects/resticprofile/issues/14](https://github.com/creativeprojects/resticprofile/commit/8c07f35)
+* [use go 1.15 for ci builds](https://github.com/creativeprojects/resticprofile/commit/618be92)
+* [write down child PIDs in lock file](https://github.com/creativeprojects/resticprofile/commit/94f0ef1)
 
 
 
@@ -838,8 +862,8 @@ Two new features in this release:
 
 ## Changelog
 
-* [58ecde0](https://github.com/creativeprojects/resticprofile/commit/58ecde0) Merge branch run-after-fail
-* [05afb52](https://github.com/creativeprojects/resticprofile/commit/05afb52) merge from branch status-file
+* [Merge branch run-after-fail](https://github.com/creativeprojects/resticprofile/commit/58ecde0)
+* [merge from branch status-file](https://github.com/creativeprojects/resticprofile/commit/05afb52)
 
 
 
@@ -854,27 +878,27 @@ A few new big features in this release:
 
 ## Changelog
 
-* [c0c067e](https://github.com/creativeprojects/resticprofile/commit/c0c067e) add SUDO_USER to systemd environment
-* [67e24a4](https://github.com/creativeprojects/resticprofile/commit/67e24a4) add dry-run flag
-* [b31c4cf](https://github.com/creativeprojects/resticprofile/commit/b31c4cf) add file logger
-* [ef87550](https://github.com/creativeprojects/resticprofile/commit/ef87550) add journalctl to status output
-* [ba9d132](https://github.com/creativeprojects/resticprofile/commit/ba9d132) add schedule documentation to README
-* [db4fd20](https://github.com/creativeprojects/resticprofile/commit/db4fd20) add schedule parameter in config
-* [05d0308](https://github.com/creativeprojects/resticprofile/commit/05d0308) add windows task scheduler
-* [2a03874](https://github.com/creativeprojects/resticprofile/commit/2a03874) create plist file for darwin
-* [b1c12ab](https://github.com/creativeprojects/resticprofile/commit/b1c12ab) create system job on darwin
-* [c73ccb3](https://github.com/creativeprojects/resticprofile/commit/c73ccb3) full implementation of systemd user unit
-* [fce69a1](https://github.com/creativeprojects/resticprofile/commit/fce69a1) generate random keys
-* [5ddecf0](https://github.com/creativeprojects/resticprofile/commit/5ddecf0) generate schedule for darwin
-* [4647e6e](https://github.com/creativeprojects/resticprofile/commit/4647e6e) implement schedule-log
-* [631038d](https://github.com/creativeprojects/resticprofile/commit/631038d) move logger into external package
-* [43e7f81](https://github.com/creativeprojects/resticprofile/commit/43e7f81) only ask for the user password once
-* [af04717](https://github.com/creativeprojects/resticprofile/commit/af04717) redirect terminal when elevated mode
-* [b049747](https://github.com/creativeprojects/resticprofile/commit/b049747) send message from elevated process to parent process via some simple http calls
-* [106ea1b](https://github.com/creativeprojects/resticprofile/commit/106ea1b) send terminal output remotely
-* [fbac6f4](https://github.com/creativeprojects/resticprofile/commit/fbac6f4) sudo trick in the example configuration
-* [0465a19](https://github.com/creativeprojects/resticprofile/commit/0465a19) system daemon with launchd
-* [8538fce](https://github.com/creativeprojects/resticprofile/commit/8538fce) systemd user/system
+* [add SUDO_USER to systemd environment](https://github.com/creativeprojects/resticprofile/commit/c0c067e)
+* [add dry-run flag](https://github.com/creativeprojects/resticprofile/commit/67e24a4)
+* [add file logger](https://github.com/creativeprojects/resticprofile/commit/b31c4cf)
+* [add journalctl to status output](https://github.com/creativeprojects/resticprofile/commit/ef87550)
+* [add schedule documentation to README](https://github.com/creativeprojects/resticprofile/commit/ba9d132)
+* [add schedule parameter in config](https://github.com/creativeprojects/resticprofile/commit/db4fd20)
+* [add windows task scheduler](https://github.com/creativeprojects/resticprofile/commit/05d0308)
+* [create plist file for darwin](https://github.com/creativeprojects/resticprofile/commit/2a03874)
+* [create system job on darwin](https://github.com/creativeprojects/resticprofile/commit/b1c12ab)
+* [full implementation of systemd user unit](https://github.com/creativeprojects/resticprofile/commit/c73ccb3)
+* [generate random keys](https://github.com/creativeprojects/resticprofile/commit/fce69a1)
+* [generate schedule for darwin](https://github.com/creativeprojects/resticprofile/commit/5ddecf0)
+* [implement schedule-log](https://github.com/creativeprojects/resticprofile/commit/4647e6e)
+* [move logger into external package](https://github.com/creativeprojects/resticprofile/commit/631038d)
+* [only ask for the user password once](https://github.com/creativeprojects/resticprofile/commit/43e7f81)
+* [redirect terminal when elevated mode](https://github.com/creativeprojects/resticprofile/commit/af04717)
+* [send message from elevated process to parent process via some simple http calls](https://github.com/creativeprojects/resticprofile/commit/b049747)
+* [send terminal output remotely](https://github.com/creativeprojects/resticprofile/commit/106ea1b)
+* [sudo trick in the example configuration](https://github.com/creativeprojects/resticprofile/commit/fbac6f4)
+* [system daemon with launchd](https://github.com/creativeprojects/resticprofile/commit/0465a19)
+* [systemd user/system](https://github.com/creativeprojects/resticprofile/commit/8538fce)
 
 
 
@@ -886,9 +910,9 @@ Bug fixing release:
 
 ## Changelog
 
-* [4e08c7b](https://github.com/creativeprojects/resticprofile/commit/4e08c7b) add restic flags for forget and mount commands
-* [74d36fe](https://github.com/creativeprojects/resticprofile/commit/74d36fe) add test to verify forget flags are loaded for all configuration types
-* [4b1d937](https://github.com/creativeprojects/resticprofile/commit/4b1d937) version 0.8.3
+* [add restic flags for forget and mount commands](https://github.com/creativeprojects/resticprofile/commit/4e08c7b)
+* [add test to verify forget flags are loaded for all configuration types](https://github.com/creativeprojects/resticprofile/commit/74d36fe)
+* [version 0.8.3](https://github.com/creativeprojects/resticprofile/commit/4b1d937)
 
 
 
@@ -900,11 +924,11 @@ This is a bug fixing release:
 
 ## Changelog
 
-* [7a7836f](https://github.com/creativeprojects/resticprofile/commit/7a7836f) add table of contents
-* [0bf1400](https://github.com/creativeprojects/resticprofile/commit/0bf1400) build 0.8.2
-* [1ecc090](https://github.com/creativeprojects/resticprofile/commit/1ecc090) document new features in README
-* [e2f1d8e](https://github.com/creativeprojects/resticprofile/commit/e2f1d8e) remove armv7 packages from goreleaser
-* [3183207](https://github.com/creativeprojects/resticprofile/commit/3183207) remove default decode hooks (which can do funny things with tags)
+* [add table of contents](https://github.com/creativeprojects/resticprofile/commit/7a7836f)
+* [build 0.8.2](https://github.com/creativeprojects/resticprofile/commit/0bf1400)
+* [document new features in README](https://github.com/creativeprojects/resticprofile/commit/1ecc090)
+* [remove armv7 packages from goreleaser](https://github.com/creativeprojects/resticprofile/commit/e2f1d8e)
+* [remove default decode hooks (which can do funny things with tags)](https://github.com/creativeprojects/resticprofile/commit/3183207)
 
 
 
@@ -918,13 +942,13 @@ This is mostly a bug fixing release:
 
 ## Changelog
 
-* [d2ebc7b](https://github.com/creativeprojects/resticprofile/commit/d2ebc7b) add --format flag to specify the config format
-* [85a5d59](https://github.com/creativeprojects/resticprofile/commit/85a5d59) add command 'show' to display profile properties
-* [b3349bc](https://github.com/creativeprojects/resticprofile/commit/b3349bc) add show command to help
-* [3ac1afa](https://github.com/creativeprojects/resticprofile/commit/3ac1afa) allow spaces in directories and files
-* [52c74cd](https://github.com/creativeprojects/resticprofile/commit/52c74cd) change expected structure in unit tests
-* [1006fcf](https://github.com/creativeprojects/resticprofile/commit/1006fcf) display correct XDG directories in error message
-* [98706fb](https://github.com/creativeprojects/resticprofile/commit/98706fb) update dependencies
+* [add --format flag to specify the config format](https://github.com/creativeprojects/resticprofile/commit/d2ebc7b)
+* [add command 'show' to display profile properties](https://github.com/creativeprojects/resticprofile/commit/85a5d59)
+* [add show command to help](https://github.com/creativeprojects/resticprofile/commit/b3349bc)
+* [allow spaces in directories and files](https://github.com/creativeprojects/resticprofile/commit/3ac1afa)
+* [change expected structure in unit tests](https://github.com/creativeprojects/resticprofile/commit/52c74cd)
+* [display correct XDG directories in error message](https://github.com/creativeprojects/resticprofile/commit/1006fcf)
+* [update dependencies](https://github.com/creativeprojects/resticprofile/commit/98706fb)
 
 
 
@@ -938,18 +962,18 @@ This version is introducing a few new features:
 
 ## Changelog
 
-* [d74a5d6](https://github.com/creativeprojects/resticprofile/commit/d74a5d6) Initial support for HCL configuration file
-* [1e645e2](https://github.com/creativeprojects/resticprofile/commit/1e645e2) Refactoring y/n question
-* [4aa7bcb](https://github.com/creativeprojects/resticprofile/commit/4aa7bcb) add OS & ARCH to panic data
-* [5e417b3](https://github.com/creativeprojects/resticprofile/commit/5e417b3) add missing build info to docker image
-* [254377b](https://github.com/creativeprojects/resticprofile/commit/254377b) add note with self-updating on linux/arm
-* [b1a7674](https://github.com/creativeprojects/resticprofile/commit/b1a7674) add safeguard to prevent running restic when memory is running low: "min-memory" in "global"
-* [e10a2ab](https://github.com/creativeprojects/resticprofile/commit/e10a2ab) add section on where to locate configuration file
-* [8c548bf](https://github.com/creativeprojects/resticprofile/commit/8c548bf) bump version
-* [742f6dd](https://github.com/creativeprojects/resticprofile/commit/742f6dd) example of configuration in HCL
-* [69a4385](https://github.com/creativeprojects/resticprofile/commit/69a4385) refactor configuration as a dependency as opposed to a global
-* [8efe9c4](https://github.com/creativeprojects/resticprofile/commit/8efe9c4) search for configuration file without an extension resticprofile will load the first file with a valid extension (conf, yaml, toml, json, hcl)
-* [428fdb8](https://github.com/creativeprojects/resticprofile/commit/428fdb8) update xdg paths in documentation
+* [Initial support for HCL configuration file](https://github.com/creativeprojects/resticprofile/commit/d74a5d6)
+* [Refactoring y/n question](https://github.com/creativeprojects/resticprofile/commit/1e645e2)
+* [add OS & ARCH to panic data](https://github.com/creativeprojects/resticprofile/commit/4aa7bcb)
+* [add missing build info to docker image](https://github.com/creativeprojects/resticprofile/commit/5e417b3)
+* [add note with self-updating on linux/arm](https://github.com/creativeprojects/resticprofile/commit/254377b)
+* [add safeguard to prevent running restic when memory is running low: "min-memory" in "global"](https://github.com/creativeprojects/resticprofile/commit/b1a7674)
+* [add section on where to locate configuration file](https://github.com/creativeprojects/resticprofile/commit/e10a2ab)
+* [bump version](https://github.com/creativeprojects/resticprofile/commit/8c548bf)
+* [example of configuration in HCL](https://github.com/creativeprojects/resticprofile/commit/742f6dd)
+* [refactor configuration as a dependency as opposed to a global](https://github.com/creativeprojects/resticprofile/commit/69a4385)
+* [search for configuration file without an extension resticprofile will load the first file with a valid extension (conf, yaml, toml, json, hcl)](https://github.com/creativeprojects/resticprofile/commit/8efe9c4)
+* [update xdg paths in documentation](https://github.com/creativeprojects/resticprofile/commit/428fdb8)
 
 
 
@@ -962,11 +986,11 @@ This a maintenance release:
 
 ## Changelog
 
-* [2321bf9](https://github.com/creativeprojects/resticprofile/commit/2321bf9) add raspberry pi to supported platforms
-* [1efeb81](https://github.com/creativeprojects/resticprofile/commit/1efeb81) add run-after-fail parameter to run shell commands after a restic command failed. the auto initialization of a repository now happens after the "run-before" scripts (in version 0.7.0 it was happening before)
-* [80ddc06](https://github.com/creativeprojects/resticprofile/commit/80ddc06) detect panic and display a nice message asking the user to post details on github
-* [9ca91d0](https://github.com/creativeprojects/resticprofile/commit/9ca91d0) fix self-update not working on windows
-* [d32c172](https://github.com/creativeprojects/resticprofile/commit/d32c172) run self-update command with no configuration file
+* [add raspberry pi to supported platforms](https://github.com/creativeprojects/resticprofile/commit/2321bf9)
+* [add run-after-fail parameter to run shell commands after a restic command failed. the auto initialization of a repository now happens after the "run-before" scripts (in version 0.7.0 it was happening before)](https://github.com/creativeprojects/resticprofile/commit/1efeb81)
+* [detect panic and display a nice message asking the user to post details on github](https://github.com/creativeprojects/resticprofile/commit/80ddc06)
+* [fix self-update not working on windows](https://github.com/creativeprojects/resticprofile/commit/9ca91d0)
+* [run self-update command with no configuration file](https://github.com/creativeprojects/resticprofile/commit/d32c172)
 
 
 
@@ -980,13 +1004,13 @@ This is a maintenance release:
 
 ## Changelog
 
-* [a8ff142](https://github.com/creativeprojects/resticprofile/commit/a8ff142) Bump up version
-* [b499f76](https://github.com/creativeprojects/resticprofile/commit/b499f76) Fix update confirmation message
-* [d71f45f](https://github.com/creativeprojects/resticprofile/commit/d71f45f) Refactoring resticprofile commands
-* [ab527c0](https://github.com/creativeprojects/resticprofile/commit/ab527c0) add goreleaser target to build for raspberry pi
-* [744ac5b](https://github.com/creativeprojects/resticprofile/commit/744ac5b) initial support for systemd
-* [88cb74f](https://github.com/creativeprojects/resticprofile/commit/88cb74f) run shell commands before and after a profile. In previous versions, you could only run commands before and after a backup
-* [c4c8d9a](https://github.com/creativeprojects/resticprofile/commit/c4c8d9a) stop creating empty configuration file at XDG config location
+* [Bump up version](https://github.com/creativeprojects/resticprofile/commit/a8ff142)
+* [Fix update confirmation message](https://github.com/creativeprojects/resticprofile/commit/b499f76)
+* [Refactoring resticprofile commands](https://github.com/creativeprojects/resticprofile/commit/d71f45f)
+* [add goreleaser target to build for raspberry pi](https://github.com/creativeprojects/resticprofile/commit/ab527c0)
+* [initial support for systemd](https://github.com/creativeprojects/resticprofile/commit/744ac5b)
+* [run shell commands before and after a profile. In previous versions, you could only run commands before and after a backup](https://github.com/creativeprojects/resticprofile/commit/88cb74f)
+* [stop creating empty configuration file at XDG config location](https://github.com/creativeprojects/resticprofile/commit/c4c8d9a)
 
 
 
@@ -997,11 +1021,11 @@ This is a maintenance release:
 
 ## Changelog
 
-* [b17b23c](https://github.com/creativeprojects/resticprofile/commit/b17b23c) Activate self-update flag
-* [713e429](https://github.com/creativeprojects/resticprofile/commit/713e429) Add .tar.gz binary for mac os
-* [4c4c0d8](https://github.com/creativeprojects/resticprofile/commit/4c4c0d8) Build tar.gz for windows so we can download it from git bash
-* [a2fe661](https://github.com/creativeprojects/resticprofile/commit/a2fe661) Clean up lock file after pressing CTRL-C
-* [2a76a04](https://github.com/creativeprojects/resticprofile/commit/2a76a04) Fix nil pointer panic when retention not defined
+* [Activate self-update flag](https://github.com/creativeprojects/resticprofile/commit/b17b23c)
+* [Add .tar.gz binary for mac os](https://github.com/creativeprojects/resticprofile/commit/713e429)
+* [Build tar.gz for windows so we can download it from git bash](https://github.com/creativeprojects/resticprofile/commit/4c4c0d8)
+* [Clean up lock file after pressing CTRL-C](https://github.com/creativeprojects/resticprofile/commit/a2fe661)
+* [Fix nil pointer panic when retention not defined](https://github.com/creativeprojects/resticprofile/commit/2a76a04)
 
 
 
