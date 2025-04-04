@@ -5,6 +5,33 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.30.0 (2025-04-04)
+
+## 🌱 Spring release 🌸
+
+### ⚠️ Breaking change
+
+Until this release, the `user` scheduling permission was broken. With `systemd` or the default macOS scheduler, the permission functioned as `user_logged_on`, running the profile only when the user was logged in.
+
+This issue is now fixed for new schedules.
+
+To update existing schedules, run `unschedule` and then `schedule` again.
+
+For `systemd`, resticprofile requires root privileges (via sudo) to schedule with `user` permission, as it now uses a system unit running as the user.
+
+### Scheduler
+
+Scheduling has been significantly improved with the ability to read existing schedules. The `status` and `unschedule` commands now detect any resticprofile schedules from the selected configuration file, even if the profile is no longer present.
+
+Due to recent error reports, Windows Task Scheduler integration has been completely rewritten to use the `schtasks` CLI tool.
+
+### Other
+
+- Fixed issue with non-existent battery reported on recent Mac desktop hardware.  
+- Added support for Restic 0.18.  
+- Included pre-built binary for Windows on ARM64.  
+- Upload Resticprofile container to GitHub Container Registry.  
+
 # v0.29.1 (2025-02-06)
 
 ## ❄️  Small maintenance release ☃️ 
@@ -23,7 +50,7 @@ Not much going on in this maintenance release while I'm still working on a big r
 
 # v0.29.0 (2024-10-28)
 
-## 🧙🏻‍♀️  Halloween edition 🎃 
+## 🧙🏻‍♀️ Halloween edition 🎃 
 
 - Finally a long standing bug was fixed in this version: use proper `nice` and `ionice` values on `systemd` scheduled tasks.
 - Also the last chunk of work for the configuration `v2`: we can now schedule groups!

@@ -1,6 +1,5 @@
 ---
 title: "Copy command"
-tags: ["v0.18.0", "v0.26.0"]
 weight: 17
 ---
 

@@ -69,42 +69,42 @@ profile:
 {{< /tabs >}}
 
 
-### schedule-permission
+## schedule-permission
 
 `schedule-permission` accepts three parameters: `system`, `user`, or `user_logged_on`:
 
 * `system`: Access system or protected files. Run resticprofile with `sudo` on Unix and with elevated prompt on Windows. On Windows, resticprofile will automatically request elevated permissions if needed.
 
-* `user`: Run the backup using current user permissions. Suitable for saving documents or files within your profile. **This mode runs even when the user is not logged on**. It will ask for your user password on Windows.
+* `user`: Run the backup using current user permissions. Suitable for saving documents or files within your profile. **This mode runs even when the user is not logged on**. It will ask for your user password on Windows. It needs root permission (via sudo) when using `systemd`.
 
 * `user_logged_on`: **Not for crond** - Provides the same permissions as `user`, but runs only when the user is logged on. On Windows, it does not ask for your user password.
 
 * *empty*: resticprofile will guess based on how it was started (with sudo or as a normal user). The fallback is `system` on Windows and `user_logged_in` on other platforms.
 
-#### Changing schedule-permission
+### Changing schedule-permission
 
 To change the permission of a schedule, unschedule the profile first.
 
 Follow this order:
 
-- Unschedule the job first. Resticprofile does not track how your profile was installed, so you must remove the schedule first.
+- Unschedule the job first (before updating the permission in the configuration)
 - Change your permission (user to system, or system to user).
 - Schedule your updated profile.
 
 
-### schedule-lock-mode
+## schedule-lock-mode
 
 `schedule-lock-mode` accepts 3 values:
 - `default`: Waits for the duration set in `schedule-lock-wait` before failing a schedule. Acts like `fail` if `schedule-lock-wait` is "0" or not specified.
 - `fail`: Any lock failure immediately aborts the schedule.
 - `ignore`: Skips resticprofile locks. Restic locks are not skipped and can abort the schedule.
 
-### schedule-lock-wait
+## schedule-lock-wait
 
 Sets the wait time for a resticprofile and restic lock to become available. Used only when `schedule-lock-mode` is unset or `default`.
 
 
-### schedule-log
+## schedule-log
 
 `schedule-log` can be used in two ways:
 - Redirect all output from resticprofile **and restic** to a file. The parameter should point to a file (`/path/to/file`).
@@ -113,7 +113,7 @@ Sets the wait time for a resticprofile and restic lock to become available. Used
 If no server responds on the specified port, resticprofile will send the logs to the default output instead.
 
 
-### schedule-priority
+## schedule-priority
 
 `schedule-priority` accepts two values:
 - `background`: The process runs unnoticed while you work.
@@ -121,7 +121,7 @@ If no server responds on the specified port, resticprofile will send the logs to
 
 `schedule-priority` is not available for crond.
 
-### schedule
+## schedule
 
 The `schedule` parameter accepts various forms of input from the [systemd calendar event](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) type. This format is the same used to schedule on macOS and Windows.
 
@@ -174,11 +174,11 @@ Wed..Sat,Tue 12-10-15 1:2:3 → Tue..Sat 2012-10-15 01:02:03
 
 The `schedule` can be a string or an array of strings (to allow for multiple schedules).
 
-### schedule-ignore-on-battery
+## schedule-ignore-on-battery
 
 If set to `true`, the schedule won't start if the system is running on battery (even if the charge is at 100%).
 
-### schedule-ignore-on-battery-less-than
+## schedule-ignore-on-battery-less-than
 
 If set to a number, the schedule won't start if the system is running on battery and the charge is less than or equal to the specified number.
 
@@ -229,8 +229,8 @@ self:
   backup:
     source: "."
     schedule:
-    - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
-    - "Sat,Sun 0,12:00"        # twice a day on week-ends
+      - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
+      - "Sat,Sun 0,12:00"        # twice a day on week-ends
     schedule-permission: user
     schedule-lock-wait: 10m
   prune:

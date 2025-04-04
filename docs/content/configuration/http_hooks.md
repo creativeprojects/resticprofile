@@ -1,6 +1,5 @@
 ---
 title: "HTTP Hooks"
-tags: ["v0.18.0"]
 weight: 22
 ---
 

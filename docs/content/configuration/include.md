@@ -1,6 +1,5 @@
 ---
 title: "Includes"
-tags: ["v0.18.0"]
 weight: 15
 ---
 

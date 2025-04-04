@@ -1,7 +1,6 @@
 ---
 title: "User schedule in container"
 weight: 200
-tags: ["v0.27.0"]
 ---
 
 

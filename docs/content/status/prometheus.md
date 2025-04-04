@@ -124,7 +124,7 @@ resticprofile_backup_status{profile="prom"} 2
 resticprofile_backup_time_seconds{profile="prom"} 1.707863748e+09
 # HELP resticprofile_build_info resticprofile build information.
 # TYPE resticprofile_build_info gauge
-resticprofile_build_info{goversion="go1.22.0",profile="prom",version="0.26.0-dev"} 1
+resticprofile_build_info{goversion="go1.22.0",profile="prom",version="0.26.0"} 1
 
 ```
 

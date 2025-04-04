@@ -1,7 +1,6 @@
 ---
 title: "Schedule Commands"
 weight: 20
-tags: ["v0.25.0", "v0.29.0", "v0.30.0"]
 ---
 
 

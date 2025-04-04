@@ -337,9 +337,12 @@ Normalized form: *-*-* 22:22:00
 
 ```
 
-In some cases, macOS may request permission to access the network, an external volume (like a USB drive), or a protected directory. A message will appear while the backup runs in the background.
+{{% notice info %}}
 
-To respond immediately, start the task now:
+In some cases, macOS may request permission to access the network, an external volume (like a USB drive), or a protected directory. A message window will appear while the backup runs in the background.
+{{% /notice %}}
+
+You may want to start the task now so you can grant special permissions:
 
 1. Retrieve the task name using the status command:
 

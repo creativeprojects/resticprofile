@@ -3,7 +3,6 @@ archetype: "chapter"
 pre: "<b>3. </b>"
 title: "Using resticprofile"
 weight: 3
-tags: ["v0.17.0"]
 ---
 
 Here are a few examples how to run resticprofile (using the main example configuration file)
@@ -34,7 +33,7 @@ Backup root & src profiles (using _full-backup_ group shown earlier)
 ```shell
 resticprofile --name "full-backup" backup
 ```
-or using the syntax introduced in v0.17.0:
+or using the alternative syntax:
 
 ```shell
 resticprofile full-backup.backup
@@ -45,7 +44,7 @@ Assuming the _stdin_ profile from the configuration file shown before, the comma
 ```shell
 mysqldump --all-databases --order-by-primary | resticprofile --name stdin backup
 ```
-or using the syntax introduced in v0.17.0:
+or using the alternative syntax:
 
 ```shell
 mysqldump --all-databases --order-by-primary | resticprofile stdin.backup

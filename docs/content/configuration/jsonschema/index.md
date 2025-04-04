@@ -1,6 +1,5 @@
 ---
 title: "JSON schema"
-tags: ["v0.21.0"]
 weight: 55
 ---
 
