@@ -2379,8 +2379,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -2496,8 +2496,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -2602,8 +2602,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -2807,8 +2807,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -3016,7 +3016,7 @@
       },
       "find": {
         "title": "find",
-        "description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.",
+        "description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -3203,11 +3203,6 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -3217,6 +3212,11 @@
           },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "keep-daily": {
             "title": "keep-daily",
@@ -3447,8 +3447,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -3540,8 +3540,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -3751,7 +3751,7 @@
       },
       "ls": {
         "title": "ls",
-        "description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.",
+        "description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.\n\nFile listings can be sorted by specifying --sort followed by one of the\nsort specifiers '(name|size|time=mtime|atime|ctime|extension)'.\nThe sorting can be reversed by specifying --reverse.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -3769,13 +3769,13 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "key-hint": {
             "title": "key-hint",
@@ -3888,14 +3888,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "force": {
             "title": "force",
             "description": "apply a migration a second time",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4195,8 +4195,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -4378,8 +4378,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -4478,8 +4478,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -4592,16 +4592,16 @@
           "exclude": {
             "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
           "include": {
             "$ref": "#/$defs/id-1b525c9f6a0698293ca268ea3866afa4"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "key-hint": {
             "title": "key-hint",
@@ -4735,11 +4735,6 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -4749,6 +4744,11 @@
           },
           "host": {
             "$ref": "#/$defs/id-9eb097550c08524117d0906abd0d2a05"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "keep-daily": {
             "title": "keep-daily",
@@ -4982,13 +4982,13 @@
             "description": "use compact output format",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "key-hint": {
             "title": "key-hint",
@@ -5097,13 +5097,13 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "key-hint": {
             "title": "key-hint",
@@ -5343,8 +5343,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
+          "json": {
+            "title": "json",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -5469,6 +5469,7 @@
             "copy",
             "diff",
             "dump",
+            "features",
             "find",
             "forget",
             "generate",
@@ -5482,6 +5483,7 @@
             "ls",
             "migrate",
             "mount",
+            "options",
             "prune",
             "rebuild-index",
             "recover",

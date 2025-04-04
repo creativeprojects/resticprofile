@@ -125,6 +125,86 @@
                                             "anyOf": [
                                                 {
                                                     "type": "string",
+                                                    "pattern": "0\\.18.*",
+                                                    "default": "0.18",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.18"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-2-restic-0-18.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-1"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "0\\.18.*",
+                                                    "default": "0.18",
+                                                    "minLength": 3
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "0.18"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "restic-version"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "global"
+                            ]
+                        },
+                        {
+                            "$ref": "https://creativeprojects.github.io/resticprofile/jsonschema/config-1-restic-0-18.json"
+                        }
+                    ]
+                }
+                ,{
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/version-2"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restic-version": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
                                                     "pattern": "0\\.17.*",
                                                     "default": "0.17",
                                                     "minLength": 3

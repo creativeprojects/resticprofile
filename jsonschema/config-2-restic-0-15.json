@@ -3689,6 +3689,7 @@
             "copy",
             "diff",
             "dump",
+            "features",
             "find",
             "forget",
             "generate",
@@ -3702,6 +3703,7 @@
             "ls",
             "migrate",
             "mount",
+            "options",
             "prune",
             "rebuild-index",
             "recover",
@@ -5369,14 +5371,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5731,8 +5733,8 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "from-repo": {
-                  "title": "from-repo",
+                "from-repository": {
+                  "title": "from-repository",
                   "description": "source repository to copy snapshots from (default: $RESTIC_FROM_REPOSITORY) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
@@ -6568,7 +6570,7 @@
             },
             "find": {
               "title": "find",
-              "description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.",
+              "description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -7073,7 +7075,7 @@
                 },
                 "max-repack-size": {
                   "title": "max-repack-size",
-                  "description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T) [restic \u003e= 0.12.0]",
+                  "description": "stop after repacking this much data in total (allowed suffixes for size: k/K, m/M, g/G, t/T) [restic \u003e= 0.12.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -7963,7 +7965,7 @@
             },
             "ls": {
               "title": "ls",
-              "description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.",
+              "description": "The \"ls\" command lists files and directories in a snapshot.\n\nThe special snapshot ID \"latest\" can be used to list files and\ndirectories of the latest snapshot in the repository. The\n--host flag can be used in conjunction to select the latest\nsnapshot originating from a certain host only.\n\nFile listings can optionally be filtered by directories. Any\npositional arguments after the snapshot ID are interpreted as\nabsolute directory paths, and only files inside those directories\nwill be listed. If the --recursive flag is used, then the filter\nwill allow traversing into matching directories' subfolders.\nAny directory paths specified must be absolute (starting with\na path separator); paths use the forward slash '/' as separator.\n\nFile listings can be sorted by specifying --sort followed by one of the\nsort specifiers '(name|size|time=mtime|atime|ctime|extension)'.\nThe sorting can be reversed by specifying --reverse.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -8023,11 +8025,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
@@ -8043,6 +8040,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8266,11 +8268,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "force": {
                   "title": "force",
                   "description": "apply a migration a second time",
@@ -8279,6 +8276,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8867,7 +8869,7 @@
                 },
                 "max-repack-size": {
                   "title": "max-repack-size",
-                  "description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T) [restic \u003e= 0.12.0]",
+                  "description": "stop after repacking this much data in total (allowed suffixes for size: k/K, m/M, g/G, t/T) [restic \u003e= 0.12.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -10039,7 +10041,7 @@
                 },
                 "max-repack-size": {
                   "title": "max-repack-size",
-                  "description": "maximum size to repack (allowed suffixes: k/K, m/M, g/G, t/T) [restic \u003e= 0.12.0]",
+                  "description": "stop after repacking this much data in total (allowed suffixes for size: k/K, m/M, g/G, t/T) [restic \u003e= 0.12.0]",
                   "type": "string",
                   "minLength": 0
                 },
@@ -10257,7 +10259,7 @@
             },
             "rewrite": {
               "title": "rewrite",
-              "description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.",
+              "description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.\n\nWhen rewrite is used with the --snapshot-summary option, a new snapshot is\ncreated containing statistics summary data. Only two fields in the summary will\nbe non-zero: TotalFilesProcessed and TotalBytesProcessed.\n\nWhen rewrite is called with one of the --exclude options, TotalFilesProcessed\nand TotalBytesProcessed will be updated in the snapshot summary.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -10935,11 +10937,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -10955,6 +10952,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
