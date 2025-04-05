@@ -1,5 +1,5 @@
 ---
-title: "mac OS X"
+title: "mac OS"
 weight: 11
 ---
 

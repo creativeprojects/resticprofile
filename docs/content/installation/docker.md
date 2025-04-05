@@ -22,15 +22,17 @@ as well as on Github Container Registry
 docker pull ghcr.io/creativeprojects/resticprofile:latest
 ```
 
+### Configuration
+
 By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
 
 ```shell
-docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile
+docker run -it --rm -v $PWD/examples:/resticprofile ghcr.io/creativeprojects/resticprofile
 ```
 
 You can list your profiles:
 ```shell
-docker run -it --rm -v $PWD/examples:/resticprofile creativeprojects/resticprofile profiles
+docker run -it --rm -v $PWD/examples:/resticprofile ghcr.io/creativeprojects/resticprofile profiles
 ```
 
 ### Container host name
@@ -40,7 +42,7 @@ Each time a container starts, it is assigned a random name.
 To set a specific hostname, use the `-h` or `--hostname` flag with `docker run`:
 
 ```shell
-docker run -it --rm -v $PWD:/resticprofile -h my-hostname creativeprojects/resticprofile -n profile backup
+docker run -it --rm -v $PWD:/resticprofile -h my-hostname ghcr.io/creativeprojects/resticprofile -n profile backup
 ```
 
 ### Platforms
