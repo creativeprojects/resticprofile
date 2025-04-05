@@ -5,12 +5,14 @@ weight: 16
 
 ## Installation from source
 
-You can download the source code and compile it, it's actually very easy! all you need to have on your machine is:
-- `git` (with `git-bash` on Windows)
-- [go compiler](https://golang.org/dl/)
-- `GNU Make` which is installed by default on many unix boxes. On debian based distributions (Ubuntu included) the package is called `build-essential`.
+It's very easy to compile from the source code.
 
-To compile from sources:
+Ensure your machine has the following:  
+- `git` (use `git-bash` on Windows)  
+- [Go compiler](https://golang.org/dl/)  
+- `GNU Make` (preinstalled on many Unix systems). On Debian-based distributions (e.g., Ubuntu), install the `build-essential` package.  
+
+Compilation:
 ```shell
 git clone https://github.com/creativeprojects/resticprofile.git
 cd resticprofile
@@ -36,16 +38,5 @@ Alternatively, a **go-only** build (without `GNU Make`) is accomplished with:
 ```shell
 git clone https://github.com/creativeprojects/resticprofile.git
 cd resticprofile
-go mod download
-go generate ./... 
-go build -o resticprofile .
+go build -v -o resticprofile .
 ```
-
-
-{{% notice style="note" %}}
-
-The build step `go generate ./...` installs additional binaries `github.com/zyedidia/eget` and `github.com/vektra/mockery` into `$GOPATH/bin`.
-See `generate.go`, `Makefile` and `go.mod` for details on additional dependencies.
-
-{{% /notice %}}
-

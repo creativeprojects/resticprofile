@@ -3,31 +3,24 @@ title: "Upgrade"
 weight: 20
 ---
 
-Once installed, you can easily upgrade resticprofile to the latest release using this command:
+After installation, upgrade resticprofile to the latest release with this command:
 
 ```shell
 resticprofile self-update
 ```
 
 {{% notice style="note" title="Package Managers" %}}
-The `self-update` command is not available when installed via a package manager (homebrew, scoop).
-You should use the upgrade built in the package manager instead.
+The `self-update` command is generally unavailable when installed through a package manager like Homebrew or Scoop. Use the package manager's upgrade feature instead.
 {{% /notice %}}
 
-
-
-resticprofile will check for a new version from GitHub releases and asks you if you want to update to the new version. If you add the flag `-q` or `--quiet` to the command line, it will update automatically without asking.
+Resticprofile checks for new versions from GitHub releases and prompts you to update. Use the `-q` or `--quiet` flag to update automatically without prompting.
 
 ```shell
 resticprofile --quiet self-update
 ```
 
-and since version 0.11.0:
+or
 
 ```shell
 resticprofile self-update --quiet
 ```
-
-{{% notice style="info" %}}
-On versions before 0.10.0, there was an issue with self-updating from linux with ARM processors (like a raspberry pi). This was fixed in version 0.10.0
-{{% /notice %}}

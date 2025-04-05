@@ -23,13 +23,7 @@ The playbook is installing (or upgrading):
 * password files that can be encrypted using ansible vault. These files are located in `./resticprofile/{{ inventory_hostname }}/keys/*`: they will be decrypted and saved to `/root/resticprofile/`.
 * other files (like files needed for `--exclude-file`, `--files-from` or anything else you need) from `./resticprofile/{{ inventory_hostname }}/copy/*` to `/root/resticprofile/`
 
-{{% notice style="note" %}}
 
-This new version (21st Feb 2023) installs the `github3` python packages in a virtual environment. This seems to avoid having to compile the `cryptography` package, which is a huge time saver.
-
-Previously, the playbook wasn't running in a virtual environment. For that matter it needed a whole bunch of packages including `cryptography`, which in turn needed the `libssl-dev` package (on debian) and a `rust` compiler.
-
-{{% /notice %}}
 
 ### Requirements
 
