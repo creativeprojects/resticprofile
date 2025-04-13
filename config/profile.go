@@ -243,6 +243,8 @@ type RetentionSection struct {
 	OtherFlagsSection   `mapstructure:",squash"`
 	BeforeBackup        maybe.Bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
 	AfterBackup         maybe.Bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
+	BeforeCopy          maybe.Bool `mapstructure:"before-copy" description:"Apply retention before starting the copy command"`
+	AfterCopy           maybe.Bool `mapstructure:"after-copy" description:"Apply retention after the copy command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
@@ -252,20 +254,27 @@ func (r *RetentionSection) resolve(profile *Profile) {
 
 	// Special cases of retention
 	isSet := func(flags OtherFlags, name string) (found bool) { _, found = flags.GetOtherFlags()[name]; return }
-	hasBackup := !profile.Backup.IsEmpty()
+	hasBackup := !profile.Backup.IsEmpty() && (r.BeforeBackup.IsTrue() || r.AfterBackup.IsTrue())
+	hasCopy := !profile.Copy.IsEmpty() && (r.BeforeCopy.IsTrue() || r.AfterCopy.IsTrue())
 
 	// Copy "source" from "backup" as "path" if it hasn't been redefined
 	if hasBackup && !isSet(r, constants.ParameterPath) {
 		r.SetOtherFlag(constants.ParameterPath, true)
 	}
 
+	// Copy "source" from "backup" as "path" if it hasn't been redefined
+	if hasCopy && !isSet(r, constants.ParameterPath) {
+		r.SetOtherFlag(constants.ParameterPath, true)
+	}
+
 	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
 	if profile.config != nil && profile.config.version >= Version02 {
 		// Auto-enable "after-backup" if nothing was specified explicitly and any "keep-" was configured
-		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() {
+		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() && r.AfterCopy.IsUndefined() && r.BeforeCopy.IsUndefined() {
 			for name := range r.OtherFlags {
 				if strings.HasPrefix(name, "keep-") {
 					r.AfterBackup = maybe.True()
+					hasBackup = true
 					break
 				}
 			}
@@ -280,12 +289,23 @@ func (r *RetentionSection) resolve(profile *Profile) {
 			r.SetOtherFlag(constants.ParameterTag, true)
 		}
 
+		// Copy "tag" from "copy" if it was set and hasn't been redefined here
+		// Allow setting it at profile level when not defined in "backup" nor "retention"
+		if hasCopy &&
+			!isSet(r, constants.ParameterTag) &&
+			isSet(profile.Copy, constants.ParameterTag) {
+
+			r.SetOtherFlag(constants.ParameterTag, true)
+		}
+
 		// Copy "host" from "backup" if it was set and hasn't been redefined here
 		// Or use os.Hostname() same as restic does for backup when not setting it, see:
 		// https://github.com/restic/restic/blob/master/cmd/restic/cmd_backup.go#L48
 		if !isSet(r, constants.ParameterHost) {
 			if hasBackup && isSet(profile.Backup, constants.ParameterHost) {
 				r.SetOtherFlag(constants.ParameterHost, profile.Backup.OtherFlags[constants.ParameterHost])
+			} else if hasCopy && isSet(profile.Copy, constants.ParameterHost) {
+				r.SetOtherFlag(constants.ParameterHost, profile.Copy.OtherFlags[constants.ParameterHost])
 			} else if !isSet(profile, constants.ParameterHost) {
 				r.SetOtherFlag(constants.ParameterHost, true) // resolved with os.Hostname()
 			}
