@@ -313,7 +313,7 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 		profile.ResolveConfiguration()
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Repository.Value()))
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Init.FromRepository.Value()))
-		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.Repository.Value()))
+		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.ToRepository.Value()))
 
 		profile.SetRootPath("any")
 		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
@@ -433,7 +433,7 @@ from-password-file = "key"
 		assert.ElementsMatch(t, []string{"/wd/include-verbatim"}, profile.Backup.FilesFromVerbatim)
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
-		assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
+		assert.Equal(t, "/wd/key", profile.Copy.ToPasswordFile)
 		assert.Equal(t, []string{"/wd/key"}, profile.OtherSections[constants.CommandDump].OtherFlags["password-file"])
 		assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
 		assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
@@ -1503,11 +1503,11 @@ func TestGetInitStructFields(t *testing.T) {
 
 func TestGetCopyStructFields(t *testing.T) {
 	copySection := &CopySection{
-		Repository:      NewConfidentialValue("dest-repo"),
-		RepositoryFile:  "dest-repo-file",
-		PasswordFile:    "dest-pw-file",
-		PasswordCommand: "dest-pw-command",
-		KeyHint:         "dest-key-hint",
+		ToRepository:      NewConfidentialValue("dest-repo"),
+		ToRepositoryFile:  "dest-repo-file",
+		ToPasswordFile:    "dest-pw-file",
+		ToPasswordCommand: "dest-pw-command",
+		ToKeyHint:         "dest-key-hint",
 	}
 
 	copySection.OtherFlags = map[string]any{"option": "opt=dest"}
