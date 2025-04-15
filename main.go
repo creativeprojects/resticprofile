@@ -118,8 +118,14 @@ func main() {
 				term.PrintToError = flags.stderr
 			}
 			if logTarget != "" && logTarget != "-" {
-				if closer, err := setupTargetLogger(flags, logTarget, commandOutput); err == nil {
-					logCloser = func() { _ = closer.Close() }
+				if closer, err := setupTargetLogger(flags, logTarget, ctx.global.LogUploadUrl, commandOutput); err == nil {
+					logCloser = func() {
+						err := closer.Close()
+						if err != nil {
+							// Log is already closed. Write to stderr as last resort
+							fmt.Fprintf(os.Stderr, "Error closing logfile: %v", err)
+						}
+					}
 				} else {
 					// fallback to a console logger
 					setupConsoleLogger(flags)

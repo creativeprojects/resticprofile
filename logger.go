@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -50,18 +52,20 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, logTarget, logUploadTarget, commandOutput string) (io.Closer, error) {
 	var (
-		handler LogCloser
-		file    io.Writer
-		err     error
+		handler  LogCloser
+		file     io.Writer
+		filepath string
+		err      error
 	)
 	if scheme, hostPort, isURL := dial.GetAddr(logTarget); isURL {
 		handler, file, err = getSyslogHandler(scheme, hostPort)
 	} else if dial.IsURL(logTarget) {
 		err = fmt.Errorf("unsupported URL: %s", logTarget)
 	} else {
-		handler, file, err = getFileHandler(logTarget)
+		filepath = getLogfilePath(logTarget)
+		handler, file, err = getFileHandler(filepath)
 	}
 	if err != nil {
 		return nil, err
@@ -79,9 +83,43 @@ func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) 
 		} else if toLog {
 			term.SetAllOutput(file)
 		}
+		if logUploadTarget != "" && filepath != "" {
+			handler = createSendLogWrappedLogHandler(handler, filepath, logUploadTarget)
+		}
 	}
 	// and return the handler (so we can close it at the end)
 	return handler, nil
+}
+
+type wrappedLogCloser struct {
+	LogCloser
+	logfilePath     string
+	logUploadTarget string
+}
+
+func (w wrappedLogCloser) Close() error {
+	err := w.LogCloser.Close()
+	if err != nil {
+		return err
+	}
+	logData, err := os.ReadFile(w.logfilePath)
+	if err != nil {
+		return err
+	}
+	resp, err := http.Post(w.logUploadTarget, "application/octet-stream", bytes.NewReader(logData))
+	defer resp.Body.Close()
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("log-upload: Got invalid http status %v: %v", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+func createSendLogWrappedLogHandler(handler LogCloser, logfilePath string, logUploadTarget string) LogCloser {
+	return wrappedLogCloser{LogCloser: handler, logfilePath: logfilePath, logUploadTarget: logUploadTarget}
 }
 
 func parseCommandOutput(commandOutput string) (all, log bool) {
@@ -98,7 +136,7 @@ func parseCommandOutput(commandOutput string) (all, log bool) {
 	return
 }
 
-func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error) {
+func getLogfilePath(logfile string) string {
 	if strings.HasPrefix(logfile, constants.TemporaryDirMarker) {
 		if tempDir, err := util.TempDir(); err == nil {
 			logfile = logfile[len(constants.TemporaryDirMarker):]
@@ -109,7 +147,10 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 			_ = os.MkdirAll(filepath.Dir(logfile), 0755)
 		}
 	}
+	return logfile
+}
 
+func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error) {
 	// create a platform aware log file appender
 	keepOpen, appender := true, appendFunc(nil)
 	if platform.IsWindows() {
