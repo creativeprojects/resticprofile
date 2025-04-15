@@ -16,8 +16,8 @@
             "name": "Private profiles.toml",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
-            "program": "${fileDirname}",
+            "mode": "debug",
+            "program": "${workspaceFolder}",
             "args": ["-c", "examples/private/profiles.toml"]
         }
     ]
