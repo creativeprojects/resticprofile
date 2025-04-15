@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -84,33 +83,38 @@ func setupTargetLogger(flags commandLineFlags, logTarget, logUploadTarget, comma
 			term.SetAllOutput(file)
 		}
 		if logUploadTarget != "" && filepath != "" {
-			handler = createSendLogWrappedLogHandler(handler, filepath, logUploadTarget)
+			handler = createLogUploadingLogHandler(handler, filepath, logUploadTarget)
 		}
 	}
 	// and return the handler (so we can close it at the end)
 	return handler, nil
 }
 
-type wrappedLogCloser struct {
+type logUploadingLogCloser struct {
 	LogCloser
 	logfilePath     string
 	logUploadTarget string
 }
 
-func (w wrappedLogCloser) Close() error {
+// Try to close the original handler
+// Also upload the log to the configured log-upload-url
+func (w logUploadingLogCloser) Close() error {
 	err := w.LogCloser.Close()
 	if err != nil {
 		return err
 	}
-	logData, err := os.ReadFile(w.logfilePath)
+	// Open logfile for reading
+	logData, err := os.Open(w.logfilePath)
 	if err != nil {
 		return err
 	}
-	resp, err := http.Post(w.logUploadTarget, "application/octet-stream", bytes.NewReader(logData))
+	// Upload logfile to server
+	resp, err := http.Post(w.logUploadTarget, "application/octet-stream", logData)
 	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}
+	// HTTP-Status-Codes 200-299 signal success, return an error for everything else
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		respBody, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("log-upload: Got invalid http status %v: %v", resp.StatusCode, string(respBody))
@@ -118,8 +122,8 @@ func (w wrappedLogCloser) Close() error {
 	return nil
 }
 
-func createSendLogWrappedLogHandler(handler LogCloser, logfilePath string, logUploadTarget string) LogCloser {
-	return wrappedLogCloser{LogCloser: handler, logfilePath: logfilePath, logUploadTarget: logUploadTarget}
+func createLogUploadingLogHandler(handler LogCloser, logfilePath string, logUploadTarget string) LogCloser {
+	return logUploadingLogCloser{LogCloser: handler, logfilePath: logfilePath, logUploadTarget: logUploadTarget}
 }
 
 func parseCommandOutput(commandOutput string) (all, log bool) {
