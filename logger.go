@@ -113,10 +113,14 @@ func (w logUploadingLogCloser) Close() error {
 		return err
 	}
 	// Upload logfile to server
-	req, err := http.NewRequestWithContext(context.TODO(), "POST", w.logUploadTarget, logData)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, w.logUploadTarget, logData)
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
