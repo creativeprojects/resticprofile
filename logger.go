@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -112,8 +113,12 @@ func (w logUploadingLogCloser) Close() error {
 		return err
 	}
 	// Upload logfile to server
+	req, err := http.NewRequestWithContext(context.TODO(), "POST", w.logUploadTarget, logData)
+	if err != nil {
+		return err
+	}
 	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Post(w.logUploadTarget, "application/octet-stream", logData)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
