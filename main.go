@@ -123,7 +123,7 @@ func main() {
 						err := closer.Close()
 						if err != nil {
 							// Log is already closed. Write to stderr as last resort
-							fmt.Fprintf(os.Stderr, "Error closing logfile: %v", err)
+							fmt.Fprintf(os.Stderr, "Error closing logfile: %v\n", err)
 						}
 					}
 				} else {

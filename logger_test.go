@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -151,13 +152,13 @@ func TestCloseFileHandler(t *testing.T) {
 func TestLogUploadFailed(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Body.Close()
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
 	closer, err := setupTargetLogger(commandLineFlags{}, filepath.Join(constants.TemporaryDirMarker, "file.log"), server.URL, "log")
 	assert.NoError(t, err)
-	assert.ErrorContains(t, closer.Close(), "log-upload: Got invalid http status 500")
+	assert.ErrorContains(t, closer.Close(), "log-upload: Got invalid http status "+strconv.Itoa(http.StatusInternalServerError))
 }
 
 func TestLogUpload(t *testing.T) {
@@ -167,12 +168,13 @@ func TestLogUpload(t *testing.T) {
 		assert.NoError(t, err)
 		r.Body.Close()
 
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		assert.Equal(t, strings.Trim(buffer.String(), "\r\n"), "TestLogLine")
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
 	closer, err := setupTargetLogger(commandLineFlags{}, filepath.Join(constants.TemporaryDirMarker, "file.log"), server.URL, "log")
+	assert.NoError(t, err)
 	_, err = term.Println("TestLogLine")
 	assert.NoError(t, err)
 	assert.NoError(t, closer.Close())

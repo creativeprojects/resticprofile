@@ -83,6 +83,9 @@ func setupTargetLogger(flags commandLineFlags, logTarget, logUploadTarget, comma
 			term.SetAllOutput(file)
 		}
 		if logUploadTarget != "" && filepath != "" {
+			if !dial.IsURL(logUploadTarget) {
+				return nil, fmt.Errorf("log-upload: No valid URL %v", logUploadTarget)
+			}
 			handler = createLogUploadingLogHandler(handler, filepath, logUploadTarget)
 		}
 	}
@@ -109,11 +112,12 @@ func (w logUploadingLogCloser) Close() error {
 		return err
 	}
 	// Upload logfile to server
-	resp, err := http.Post(w.logUploadTarget, "application/octet-stream", logData)
-	defer resp.Body.Close()
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Post(w.logUploadTarget, "application/octet-stream", logData)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	// HTTP-Status-Codes 200-299 signal success, return an error for everything else
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		respBody, _ := io.ReadAll(resp.Body)
