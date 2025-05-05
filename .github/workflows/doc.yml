@@ -2,8 +2,8 @@ name: Documentation Build
 
 on:
   push:
-    branches:
-      - master
+    # branches:
+    #   - master
     paths:
       - "docs/**"
 
