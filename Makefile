@@ -85,11 +85,11 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" vektra/mockery --tag v2.53.3 --upgrade-only --to '$(GOBIN)'
 
 $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.64.6 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.64.8 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"

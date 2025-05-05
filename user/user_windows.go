@@ -14,10 +14,10 @@ func Current() User {
 		homedir = current.HomeDir
 	}
 	return User{
-		Uid:      -1,
-		Gid:      -1,
-		Username: username,
-		HomeDir:  homedir,
-		SudoRoot: false,
+		Uid:         -1,
+		Gid:         -1,
+		Username:    username,
+		UserHomeDir: homedir,
+		Sudo:        false,
 	}
 }

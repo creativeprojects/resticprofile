@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	testStandardUser = user.User{Uid: 1001, Gid: 1001, Username: "testuser", HomeDir: "/home/testuser"}
-	testSudoUser     = user.User{Uid: 1001, Gid: 1001, Username: "testuser", HomeDir: "/home/testuser", SudoRoot: true}
-	testRootUser     = user.User{Uid: 0, Gid: 0, Username: "root", HomeDir: "/root"}
+	testStandardUser = user.User{Uid: 1001, Gid: 1001, Username: "testuser", UserHomeDir: "/home/testuser", SudoHomeDir: "/home/testuser"}
+	testSudoUser     = user.User{Uid: 1001, Gid: 1001, Username: "testuser", UserHomeDir: "/home/testuser", Sudo: true, SudoHomeDir: "/root"}
+	testRootUser     = user.User{Uid: 0, Gid: 0, Username: "root", UserHomeDir: "/root", SudoHomeDir: "/root"}
 )
 
 func TestGenerateSystemUnit(t *testing.T) {
@@ -87,7 +87,7 @@ Environment="HOME=%s"
 
 	service, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf(expectedService, testSudoUser.HomeDir), string(service))
+	assert.Equal(t, fmt.Sprintf(expectedService, testSudoUser.UserHomeDir), string(service))
 }
 
 func TestGenerateUserUnit(t *testing.T) {
@@ -114,7 +114,7 @@ WantedBy=timers.target
 	t.Parallel()
 	fs := afero.NewMemMapFs()
 
-	systemdUserDir := filepath.Join(testStandardUser.HomeDir, ".config", "systemd", "user")
+	systemdUserDir := filepath.Join(testStandardUser.UserHomeDir, ".config", "systemd", "user")
 	serviceFile := filepath.Join(systemdUserDir, "resticprofile-backup@profile-name.service")
 	timerFile := filepath.Join(systemdUserDir, "resticprofile-backup@profile-name.timer")
 
@@ -138,7 +138,7 @@ WantedBy=timers.target
 
 	service, err := afero.ReadFile(fs, serviceFile)
 	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf(expectedService, testStandardUser.HomeDir), string(service))
+	assert.Equal(t, fmt.Sprintf(expectedService, testStandardUser.UserHomeDir), string(service))
 
 	timer, err := afero.ReadFile(fs, timerFile)
 	require.NoError(t, err)
@@ -608,7 +608,7 @@ ExecStart=resticprofile
 User=user
 Environment="HOME=%s"
 `
-	assert.Equal(t, fmt.Sprintf(expected, testSudoUser.HomeDir), string(contents))
+	assert.Equal(t, fmt.Sprintf(expected, testSudoUser.UserHomeDir), string(contents))
 }
 
 func assertNoFileExists(t *testing.T, fs afero.Fs, filename string) {
