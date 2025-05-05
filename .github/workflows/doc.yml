@@ -55,7 +55,7 @@ jobs:
         with:
           url: "https://${{ env.BRANCH_NAME }}.resticprofile.pages.dev/"
           pages_path: ./public/
-          cmd_params: '--exclude="(linux\.die\.net|scoop\.sh)" --buffer-size=8192 --max-connections-per-host=6 --rate-limit=10 --color=always --skip-tls-verification --header="User-Agent: Muffet/2.10.8" --timeout=20'
+          cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|commit)" --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 --color=always --skip-tls-verification --header="User-Agent: Muffet/2.10.8" --timeout=20'
 
       - name: Publish to pages.dev
         continue-on-error: true # secrets are not set for PRs from forks

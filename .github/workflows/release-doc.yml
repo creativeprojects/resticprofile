@@ -49,7 +49,7 @@ jobs:
         with:
           url: https://creativeprojects.github.io/resticprofile/
           pages_path: ./www/
-          cmd_params: '--exclude="(linux\.die\.net|scoop\.sh)" --buffer-size=8192 --max-connections-per-host=6 --rate-limit=10 --timeout=20 --header="User-Agent: Muffet/2.10.8" --skip-tls-verification'
+          cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|commit)" --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 --timeout=20 --header="User-Agent: Muffet/2.10.8" --skip-tls-verification'
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
