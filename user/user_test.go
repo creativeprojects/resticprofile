@@ -25,3 +25,33 @@ func TestCurrentUser(t *testing.T) {
 	}
 	t.Logf("%+v", user)
 }
+
+func TestIsRoot(t *testing.T) {
+	testCases := []struct {
+		name     string
+		user     User
+		expected bool
+	}{
+		{
+			name:     "sudo user returns true",
+			user:     User{Uid: 1000, Sudo: true},
+			expected: true,
+		},
+		{
+			name:     "root user returns true",
+			user:     User{Uid: 0, Sudo: false},
+			expected: true,
+		},
+		{
+			name:     "non-root and non-sudo user returns false",
+			user:     User{Uid: 1000, Sudo: false},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.user.IsRoot())
+		})
+	}
+}
