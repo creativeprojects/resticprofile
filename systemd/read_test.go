@@ -59,7 +59,7 @@ func TestReadUnitFile(t *testing.T) {
 	expected := &Config{
 		CommandLine:          "/tmp/go-build982790897/b001/exe/resticprofile --no-prio --no-ansi --config examples/linux.yaml run-schedule copy@self",
 		Environment:          []string{"RESTICPROFILE_SCHEDULE_ID=examples/linux.yaml:copy@self", "HOME=/home/testuser"},
-		WorkingDirectory:     testSudoUser.HomeDir + "/go/src/github.com/creativeprojects/resticprofile",
+		WorkingDirectory:     testSudoUser.UserHomeDir + "/go/src/github.com/creativeprojects/resticprofile",
 		Title:                "self",
 		SubTitle:             "copy",
 		JobDescription:       "resticprofile copy for profile self in examples/linux.yaml",
@@ -164,6 +164,11 @@ func TestReadSystemUnit(t *testing.T) {
 			require.NoError(t, err)
 			assert.NotNil(t, readCfg)
 
+			homedir := tc.user.UserHomeDir
+			if tc.config.UnitType == SystemUnit && tc.config.User == "" {
+				homedir = tc.user.SudoHomeDir
+			}
+
 			expected := &Config{
 				Title:            tc.config.Title,
 				SubTitle:         tc.config.SubTitle,
@@ -171,7 +176,7 @@ func TestReadSystemUnit(t *testing.T) {
 				WorkingDirectory: tc.config.WorkingDirectory,
 				CommandLine:      tc.config.CommandLine,
 				UnitType:         tc.config.UnitType,
-				Environment:      append(tc.config.Environment, "HOME="+tc.user.HomeDir),
+				Environment:      append(tc.config.Environment, "HOME="+homedir),
 				Schedules:        tc.config.Schedules,
 				Priority:         tc.config.Priority,
 				User:             tc.config.User,

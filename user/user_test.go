@@ -11,13 +11,13 @@ import (
 
 func TestCurrentUser(t *testing.T) {
 	user := Current()
-	assert.Equal(t, os.Geteuid() == 0, user.SudoRoot)
+	assert.Equal(t, os.Geteuid() == 0, user.Sudo)
 
 	assert.NotEmpty(t, user.Username)
 
 	homeDir, err := os.UserHomeDir()
 	require.NoError(t, err)
-	assert.Equal(t, homeDir, user.HomeDir)
+	assert.Equal(t, homeDir, user.UserHomeDir)
 
 	if !platform.IsWindows() {
 		assert.Greater(t, user.Uid, 500)

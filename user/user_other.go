@@ -9,17 +9,18 @@ import (
 )
 
 func Current() User {
-	var username, homedir string
-	sudoed := false
+	var username, userHomedir string
+	sudo := false
 	uid := os.Getuid()
 	gid := os.Getgid()
+	sudoHomedir, _ := os.UserHomeDir()
 	if uid == 0 {
-		// after a sudo, both os.Getuid() and os.Geteuid() return 0 (the root user)
-		// to detect the logged on user after a sudo, we need to use the environment variable
-		if userid, sudo := os.LookupEnv("SUDO_UID"); sudo {
+		// after a found, both os.Getuid() and os.Geteuid() return 0 (the root user)
+		// to detect the logged on user after a found, we need to use the environment variable
+		if userid, found := os.LookupEnv("SUDO_UID"); found {
 			if temp, err := strconv.Atoi(userid); err == nil {
 				uid = temp
-				sudoed = true
+				sudo = true
 			}
 		}
 	}
@@ -27,13 +28,14 @@ func Current() User {
 	if err == nil {
 		gid, _ = strconv.Atoi(current.Gid)
 		username = current.Username
-		homedir = current.HomeDir
+		userHomedir = current.HomeDir
 	}
 	return User{
-		Uid:      uid,
-		Gid:      gid,
-		Username: username,
-		HomeDir:  homedir,
-		SudoRoot: sudoed,
+		Uid:         uid,
+		Gid:         gid,
+		Username:    username,
+		UserHomeDir: userHomedir,
+		Sudo:        sudo,
+		SudoHomeDir: sudoHomedir,
 	}
 }
