@@ -91,6 +91,10 @@ $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.64.8 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
 
+$(GOBIN)/hugo: $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" gohugoio/hugo --tag 0.145.0 --upgrade-only --asset=extended_0 --to '$(GOBIN)'
+
 prepare_build: verify download
 	@echo "[*] $@"
 
@@ -272,7 +276,7 @@ generate-config-reference: build
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
 .PHONY: documentation
-documentation: generate-jsonschema generate-config-reference
+documentation: generate-jsonschema generate-config-reference $(GOBIN)/hugo
 	@echo "[*] $@"
 	cd docs && hugo --minify
 
@@ -301,7 +305,7 @@ checklinks:
 	muffet -b 8192 --max-connections-per-host=8 \
 	  --exclude="(linux\.die\.net|scoop\.sh|0-18)" \
 	  --header="User-Agent: Muffet/$$(muffet --version)" \
-	  http://localhost:1313/resticprofile/
+	  http://127.0.0.1:1313/resticprofile/
 
 .PHONY: lint
 lint: $(GOBIN)/golangci-lint

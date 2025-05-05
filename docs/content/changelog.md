@@ -5,6 +5,20 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.30.1 (2025-05-05)
+
+## 🐛 Bug fix release 🐞 
+
+This releases fixes a regression bug when scheduling `system` tasks with `systemd`: in some cases the HOME directory was replaced by the home directory of the user who ran the `sudo` command
+
+Bug report: https://github.com/creativeprojects/resticprofile/issues/493
+
+
+## Changelog
+* [fix root home regression bug in 0.30.0 (#497)](https://github.com/creativeprojects/resticprofile/commit/ceff435459d5a1327af6e5e1f449957b5a8166a3)
+
+
+
 # v0.30.0 (2025-04-04)
 
 ## 🌱 Spring release 🌸
