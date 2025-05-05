@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	namespace      = "resticprofile"
-	backup         = "backup"
-	groupLabel     = "group"
-	profileLabel   = "profile"
-	goVersionLabel = "goversion"
-	versionLabel   = "version"
+	namespace          = "resticprofile"
+	backup             = "backup"
+	groupLabel         = "group"
+	profileLabel       = "profile"
+	goVersionLabel     = "goversion"
+	versionLabel       = "version"
+	resticVersionLabel = "resticversion"
 )
 
 type Metrics struct {
@@ -28,7 +29,7 @@ type Metrics struct {
 	backup   BackupMetrics
 }
 
-func NewMetrics(profile, group, version string, configLabels map[string]string) *Metrics {
+func NewMetrics(profile, group, version string, resticversion string, configLabels map[string]string) *Metrics {
 	// default labels for all metrics
 	labels := prometheus.Labels{profileLabel: profile}
 	if group != "" {
@@ -46,9 +47,9 @@ func NewMetrics(profile, group, version string, configLabels map[string]string) 
 		Namespace: namespace,
 		Name:      "build_info",
 		Help:      "resticprofile build information.",
-	}, append(keys, goVersionLabel, versionLabel))
+	}, append(keys, goVersionLabel, versionLabel, resticVersionLabel))
 	// send the information about the build right away
-	p.info.With(mergeLabels(cloneLabels(labels), map[string]string{goVersionLabel: runtime.Version(), versionLabel: version})).Set(1)
+	p.info.With(mergeLabels(cloneLabels(labels), map[string]string{goVersionLabel: runtime.Version(), versionLabel: version, resticVersionLabel: resticversion})).Set(1)
 
 	p.backup = newBackupMetrics(keys)
 
