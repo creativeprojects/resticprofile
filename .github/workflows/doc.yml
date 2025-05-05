@@ -1,6 +1,7 @@
 name: Documentation Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -9,8 +10,8 @@ on:
 
   pull_request:
     types: [opened, synchronize, reopened]
-    # paths:
-    #   - 'docs/**'
+    paths:
+      - 'docs/**'
   
 jobs:
   build:
