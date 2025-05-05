@@ -2,15 +2,15 @@ name: Documentation Build
 
 on:
   push:
-    # branches:
-    #   - master
+    branches:
+      - master
     paths:
       - "docs/**"
 
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - 'docs/**'
+    # paths:
+    #   - 'docs/**'
   
 jobs:
   build:
