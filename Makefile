@@ -302,7 +302,7 @@ checkdoc:
 .PHONY: checklinks
 checklinks:
 	@echo "[*] $@"
-	muffet -b 8192 --max-connections-per-host=6 \
+	muffet -b 8192 --max-connections-per-host=6 --rate-limit=10 \
 	  --exclude="(linux\.die\.net|scoop\.sh)" \
 	  --header="User-Agent: Muffet/$$(muffet --version)" \
 	  http://127.0.0.1:1313/resticprofile/
