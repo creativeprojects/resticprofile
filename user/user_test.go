@@ -11,7 +11,7 @@ import (
 
 func TestCurrentUser(t *testing.T) {
 	user := Current()
-	assert.Equal(t, os.Geteuid() == 0, user.Sudo)
+	assert.Equal(t, os.Geteuid() == 0, user.IsRoot())
 
 	assert.NotEmpty(t, user.Username)
 

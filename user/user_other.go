@@ -15,8 +15,8 @@ func Current() User {
 	gid := os.Getgid()
 	sudoHomedir, _ := os.UserHomeDir()
 	if uid == 0 {
-		// after a found, both os.Getuid() and os.Geteuid() return 0 (the root user)
-		// to detect the logged on user after a found, we need to use the environment variable
+		// after sudo, both os.Getuid() and os.Geteuid() return 0 (the root user)
+		// to detect the logged on user after sudo, we need to use the environment variable
 		if userid, found := os.LookupEnv("SUDO_UID"); found {
 			if temp, err := strconv.Atoi(userid); err == nil {
 				uid = temp
