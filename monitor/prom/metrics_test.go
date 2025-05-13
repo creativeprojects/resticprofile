@@ -10,7 +10,7 @@ import (
 )
 
 func TestSaveSingleBackup(t *testing.T) {
-	p := NewMetrics("test", "", "", nil)
+	p := NewMetrics("test", "", "", "", nil)
 	p.BackupResults(StatusSuccess, monitor.Summary{
 		Duration:   11 * time.Second,
 		BytesAdded: 100,
@@ -21,7 +21,7 @@ func TestSaveSingleBackup(t *testing.T) {
 }
 
 func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
-	p := NewMetrics("test", "", "", map[string]string{"test_label": "test_value"})
+	p := NewMetrics("test", "", "", "", map[string]string{"test_label": "test_value"})
 	p.BackupResults(StatusSuccess, monitor.Summary{
 		Duration:   11 * time.Second,
 		BytesAdded: 100,
@@ -32,7 +32,7 @@ func TestSaveSingleBackupWithConfigLabel(t *testing.T) {
 }
 
 func TestSaveBackupGroup(t *testing.T) {
-	p := NewMetrics("test", "group", "", nil)
+	p := NewMetrics("test", "group", "", "", nil)
 	p.BackupResults(StatusSuccess, monitor.Summary{
 		Duration:   11 * time.Second,
 		BytesAdded: 100,
