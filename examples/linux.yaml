@@ -98,7 +98,7 @@ longrun:
 self:
     inherit: default
     status-file: /tmp/status.json
-    # systemd-drop-in-files: [ drop-in-example.conf ]
+    systemd-drop-in-files: [ drop-in-example.conf ]
     backup:
         extended-status: true
         source: ./

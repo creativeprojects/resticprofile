@@ -4,8 +4,10 @@ package systemd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -21,6 +23,18 @@ var (
 func getOwnedName(basename string) string {
 	ext := filepath.Ext(basename)
 	return fmt.Sprintf("%s.resticprofile.conf", strings.TrimSuffix(basename, ext))
+}
+
+func (u Unit) DropInFileExists(file string) bool {
+	if _, err := u.fs.Stat(file); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			clog.Errorf("drop-in file %q not found", file)
+			return false
+		}
+		clog.Error(err)
+		return false
+	}
+	return true
 }
 
 func (u Unit) IsTimerDropIn(file string) bool {
