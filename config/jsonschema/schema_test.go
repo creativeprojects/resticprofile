@@ -147,7 +147,7 @@ func TestJsonSchemaValidation(t *testing.T) {
 
 	extensionMatcher := regexp.MustCompile(`\.(conf|toml|yaml|json)$`)
 	version2Matcher := regexp.MustCompile(`"version":\s*"2`)
-	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf)$`)
+	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf|drop-in-example\.conf)$`)
 	testCount := 0
 
 	err := filepath.Walk("../../examples/", func(filename string, info fs.FileInfo, err error) error {

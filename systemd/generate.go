@@ -220,9 +220,11 @@ func (u Unit) Generate(config Config) error {
 		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
 	}
 
+	existingFiles := collect.All(config.DropInFiles, u.FileExists)
+
 	dropIns := map[string][]string{
-		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(config.DropInFiles, u.IsTimerDropIn),
-		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(config.DropInFiles, collect.Not(u.IsTimerDropIn)),
+		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(existingFiles, u.IsTimerDropIn),
+		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(existingFiles, collect.Not(u.IsTimerDropIn)),
 	}
 	for dropInDir, dropInFiles := range dropIns {
 		dropInDir = filepath.Join(systemdUserDir, dropInDir)
