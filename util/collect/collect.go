@@ -47,16 +47,3 @@ func From[I ~[]T, T, R any](input I, mapper func(t T) R) (output []R) {
 	}
 	return
 }
-
-// Filter a slice using a filter func (T) => (bool).
-func Filter[I ~[]T, T any](input I, filterFunc func(t T) bool) (output []T) {
-	if len(input) > 0 {
-		output = make([]T, 0, len(input))
-		for _, item := range input {
-			if filterFunc(item) {
-				output = append(output, item)
-			}
-		}
-	}
-	return
-}

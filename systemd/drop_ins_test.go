@@ -31,6 +31,17 @@ func TestDropInFileExists(t *testing.T) {
 			expectedValue: true,
 		},
 		{
+			name: "directory",
+			file: "/path/to/dir",
+			setupFs: func() afero.Fs {
+				testFs := afero.NewMemMapFs()
+				err := testFs.Mkdir("/path/to/dir", 0755)
+				require.NoError(t, err)
+				return testFs
+			},
+			expectedValue: true,
+		},
+		{
 			name: "file does not exist",
 			file: "/path/to/nonexistent",
 			setupFs: func() afero.Fs {

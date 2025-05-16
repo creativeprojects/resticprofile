@@ -56,15 +56,3 @@ func TestFrom(t *testing.T) {
 	assert.Nil(t, From([]string(nil), toInt))
 	assert.Nil(t, From([]string{}, toInt))
 }
-
-func TestFilter(t *testing.T) {
-	input := []int{1, 2, 3, 4, 5}
-	expected := []int{2, 4}
-
-	actual := Filter(input, even)
-	assert.Equal(t, expected, actual)
-
-	assert.Nil(t, Filter([]int(nil), even))
-	assert.Nil(t, Filter([]int{}, even))
-	assert.Equal(t, []int{}, Filter([]int{3}, even))
-}
