@@ -220,7 +220,7 @@ func (u Unit) Generate(config Config) error {
 		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
 	}
 
-	existingFiles := collect.All(config.DropInFiles, u.FileExists)
+	existingFiles := collect.All(config.DropInFiles, u.DropInFileExists)
 
 	dropIns := map[string][]string{
 		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(existingFiles, u.IsTimerDropIn),

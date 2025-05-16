@@ -25,13 +25,13 @@ func getOwnedName(basename string) string {
 	return fmt.Sprintf("%s.resticprofile.conf", strings.TrimSuffix(basename, ext))
 }
 
-func (u Unit) FileExists(file string) bool {
+func (u Unit) DropInFileExists(file string) bool {
 	if _, err := u.fs.Stat(file); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			clog.Errorf("drop-in file %q not found", file)
 			return false
 		}
-		clog.Warning(err)
+		clog.Error(err)
 		return false
 	}
 	return true
