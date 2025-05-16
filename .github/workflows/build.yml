@@ -74,7 +74,7 @@ jobs:
   sonarCloudTrigger:
     needs: build
     name: SonarCloud Trigger
-    if: github.event_name != 'pull_request'
+    # if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
@@ -90,7 +90,7 @@ jobs:
         run: ls -R
 
       - name: Analyze with SonarCloud
-        uses: sonarsource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
