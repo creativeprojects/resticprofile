@@ -563,10 +563,21 @@ func TestBuiltInCommandsTable(t *testing.T) {
 		assert.GreaterOrEqual(t, len(GetDefaultOptions()), len(expectedOptions))
 	})
 
-	t.Run("windows specific option", func(t *testing.T) {
+	t.Run("windows specific option use-fs-snapshot", func(t *testing.T) {
 		cmd, _ := GetCommandForVersion("backup", "0.12", false)
 		require.NotNil(t, cmd)
 		option, found := cmd.Lookup("use-fs-snapshot")
+		require.True(t, found)
+
+		assert.False(t, option.AvailableInOS("linux"))
+		assert.False(t, option.AvailableInOS("darwin"))
+		assert.True(t, option.AvailableInOS("windows"))
+	})
+
+	t.Run("windows specific option exclude-cloud-files", func(t *testing.T) {
+		cmd, _ := GetCommandForVersion("backup", "0.18", false)
+		require.NotNil(t, cmd)
+		option, found := cmd.Lookup("exclude-cloud-files")
 		require.True(t, found)
 
 		assert.False(t, option.AvailableInOS("linux"))
