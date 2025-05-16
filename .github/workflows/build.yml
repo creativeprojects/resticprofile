@@ -74,7 +74,7 @@ jobs:
   sonarCloudTrigger:
     needs: build
     name: SonarCloud Trigger
-    # if: github.event_name != 'pull_request'
+    if: github.repository == 'creativeprojects/resticprofile'
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
