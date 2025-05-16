@@ -8,6 +8,15 @@
       "Once": true,
       "FromVersion": "0.12.0",
       "RemovedInVersion": ""
+    },
+    {
+      "Name": "exclude-cloud-files",
+      "Alias": "",
+      "Default": "false",
+      "Description": "excludes online-only cloud files (such as OneDrive Files On-Demand)",
+      "Once": true,
+      "FromVersion": "0.18.0",
+      "RemovedInVersion": ""
     }
   ]
 }
