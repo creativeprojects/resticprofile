@@ -106,7 +106,15 @@ self:
             at: "*:15,20,25"
             permission: system
             after-network-online: true
+        exclude-file:
+            - root-excludes
+            - excludes
     check:
+        schedule:
+          at: "*:15"
+          permission: system
+    copy:
+        initialize: true
         schedule-permission: user
         schedule:
             - "*:15"
@@ -131,9 +139,8 @@ src:
         run-after: echo All Done!
         run-before:
             - echo Starting!
-            - ls -al ~/go
         source:
-            - ~/go
+            - ~/go/src/github.com/creativeprojects/resticprofile
         tag:
             - test
             - dev
