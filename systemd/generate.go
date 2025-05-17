@@ -140,15 +140,15 @@ func (u Unit) Generate(config Config) error {
 
 	environment := slices.Clone(config.Environment)
 
-	if u.user.HomeDir != "" {
-		environment = append(environment, fmt.Sprintf("HOME=%s", u.user.HomeDir))
-	}
-
 	if config.UnitType == SystemUnit && config.User == "" {
 		// permission = system
+		environment = append(environment, fmt.Sprintf("HOME=%s", u.user.SudoHomeDir))
 		if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
 			environment = append(environment, fmt.Sprintf("SUDO_USER=%s", sudoUser))
 		}
+	} else if u.user.UserHomeDir != "" {
+		// permission = user or user_logged_on
+		environment = append(environment, fmt.Sprintf("HOME=%s", u.user.UserHomeDir))
 	}
 
 	policy := ""
@@ -193,7 +193,7 @@ func (u Unit) Generate(config Config) error {
 	}
 	data.Reset()
 
-	if config.UnitType == UserUnit && u.user.SudoRoot {
+	if config.UnitType == UserUnit && u.user.Sudo {
 		// we need to change the owner to the original account
 		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
 	}
@@ -215,21 +215,23 @@ func (u Unit) Generate(config Config) error {
 		return err
 	}
 
-	if config.UnitType == UserUnit && u.user.SudoRoot {
+	if config.UnitType == UserUnit && u.user.Sudo {
 		// we need to change the owner to the original account
 		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
 	}
 
+	existingFiles := collect.All(config.DropInFiles, u.DropInFileExists)
+
 	dropIns := map[string][]string{
-		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(config.DropInFiles, u.IsTimerDropIn),
-		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(config.DropInFiles, collect.Not(u.IsTimerDropIn)),
+		GetTimerFileDropInDir(config.Title, config.SubTitle):   collect.All(existingFiles, u.IsTimerDropIn),
+		GetServiceFileDropInDir(config.Title, config.SubTitle): collect.All(existingFiles, collect.Not(u.IsTimerDropIn)),
 	}
 	for dropInDir, dropInFiles := range dropIns {
 		dropInDir = filepath.Join(systemdUserDir, dropInDir)
 		if err = u.createDropIns(dropInDir, dropInFiles); err != nil {
 			return err
 		}
-		if config.UnitType == UserUnit && u.user.SudoRoot {
+		if config.UnitType == UserUnit && u.user.Sudo {
 			// we need to change the owner to the original account
 			_ = afero.Walk(u.fs, dropInDir, func(path string, info fs.FileInfo, err error) error {
 				if err != nil {
@@ -246,7 +248,7 @@ func (u Unit) Generate(config Config) error {
 
 // GetUserDir returns the default directory where systemd stores user units
 func (u Unit) GetUserDir() (string, error) {
-	systemdUserDir := filepath.Join(u.user.HomeDir, ".config", "systemd", "user")
+	systemdUserDir := filepath.Join(u.user.UserHomeDir, ".config", "systemd", "user")
 	if err := u.fs.MkdirAll(systemdUserDir, 0o700); err != nil {
 		return "", err
 	}

@@ -332,7 +332,7 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permissi
 		// in some very recent installations of macOS, the user's LaunchAgents folder may not exist
 		dir := path.Dir(filename)
 		_ = h.fs.MkdirAll(dir, 0o700)
-		if user.SudoRoot {
+		if user.Sudo {
 			// if running using sudo, the directory would end up being owned by root
 			_ = h.fs.Chown(dir, user.Uid, user.Gid)
 		}
@@ -343,7 +343,7 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permissi
 	}
 	defer file.Close()
 
-	if permission != PermissionSystem && user.SudoRoot {
+	if permission != PermissionSystem && user.Sudo {
 		// if running using sudo, a user task file would end up being owned by root
 		_ = h.fs.Chown(filename, user.Uid, user.Gid)
 	}

@@ -85,11 +85,15 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" vektra/mockery --tag v2.53.3 --upgrade-only --to '$(GOBIN)'
 
 $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.64.6 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v1.64.8 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
+
+$(GOBIN)/hugo: $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" gohugoio/hugo --tag 0.145.0 --upgrade-only --asset=extended_0 --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"
@@ -272,7 +276,7 @@ generate-config-reference: build
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
 .PHONY: documentation
-documentation: generate-jsonschema generate-config-reference
+documentation: generate-jsonschema generate-config-reference $(GOBIN)/hugo
 	@echo "[*] $@"
 	cd docs && hugo --minify
 
@@ -298,10 +302,10 @@ checkdoc:
 .PHONY: checklinks
 checklinks:
 	@echo "[*] $@"
-	muffet -b 8192 --max-connections-per-host=8 \
-	  --exclude="(linux\.die\.net|scoop\.sh|0-18)" \
+	muffet --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 \
+	  --exclude="(linux\.die\.net|scoop\.sh|commit)" \
 	  --header="User-Agent: Muffet/$$(muffet --version)" \
-	  http://localhost:1313/resticprofile/
+	  http://127.0.0.1:1313/resticprofile/
 
 .PHONY: lint
 lint: $(GOBIN)/golangci-lint

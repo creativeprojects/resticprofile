@@ -477,7 +477,7 @@ func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error)
 
 func getUserFlags() []string {
 	currentUser := user.Current()
-	if !currentUser.SudoRoot {
+	if !currentUser.Sudo {
 		return []string{flagUserUnit}
 	}
 	return []string{flagUserUnit, "-M", currentUser.Username + "@"}
