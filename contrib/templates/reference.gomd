@@ -4,6 +4,8 @@ archetype: "chapter"
 pre: "<b>6. </b>"
 linkTitle: Reference
 slug: reference
+aliases:
+  - /configuration/reference
 {{ if .Env.META_TITLE -}}
   title: {{ .Env.META_TITLE }}
 {{- else -}}

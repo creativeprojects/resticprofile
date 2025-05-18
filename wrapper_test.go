@@ -1024,11 +1024,11 @@ func TestRunShellCommands(t *testing.T) {
 
 	profile := config.NewProfile(&config.Config{}, "name")
 	profile.Backup = &config.BackupSection{}
-	profile.Check = &config.SectionWithScheduleAndMonitoring{}
+	profile.Check = &config.GenericSectionWithSchedule{}
 	profile.Copy = &config.CopySection{}
-	profile.Forget = &config.SectionWithScheduleAndMonitoring{}
+	profile.Forget = &config.GenericSectionWithSchedule{}
 	profile.Init = &config.InitSection{}
-	profile.Prune = &config.SectionWithScheduleAndMonitoring{}
+	profile.Prune = &config.GenericSectionWithSchedule{}
 	for name := range profile.OtherSections {
 		profile.OtherSections[name] = new(config.GenericSection)
 	}

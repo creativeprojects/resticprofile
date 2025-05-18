@@ -93,7 +93,7 @@ $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 
 $(GOBIN)/hugo: $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" gohugoio/hugo --tag 0.145.0 --upgrade-only --asset=extended_0 --to '$(GOBIN)'
+	"$(GOBIN)/eget" gohugoio/hugo --tag v0.145.0 --upgrade-only --asset=extended_0 --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"
