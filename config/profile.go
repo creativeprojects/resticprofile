@@ -70,53 +70,54 @@ type Profile struct {
 	config                  *Config
 	resticVersion           *semver.Version
 	Name                    string
-	Description             string                            `mapstructure:"description" description:"Describes the profile"`
-	BaseDir                 string                            `mapstructure:"base-dir" description:"Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead"`
-	Quiet                   bool                              `mapstructure:"quiet" argument:"quiet"`
-	Verbose                 int                               `mapstructure:"verbose" argument:"verbose"`
-	KeyHint                 string                            `mapstructure:"key-hint" argument:"key-hint"`
-	Repository              ConfidentialValue                 `mapstructure:"repository" argument:"repo"`
-	RepositoryFile          string                            `mapstructure:"repository-file" argument:"repository-file"`
-	PasswordFile            string                            `mapstructure:"password-file" argument:"password-file"`
-	PasswordCommand         string                            `mapstructure:"password-command" argument:"password-command"`
-	CacheDir                string                            `mapstructure:"cache-dir" argument:"cache-dir"`
-	CACert                  string                            `mapstructure:"cacert" argument:"cacert"`
-	TLSClientCert           string                            `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
-	Initialize              bool                              `mapstructure:"initialize" default:"" description:"Initialize the restic repository if missing"`
-	Inherit                 string                            `mapstructure:"inherit" show:"noshow" description:"Name of the profile to inherit all of the settings from"`
-	Lock                    string                            `mapstructure:"lock" description:"Path to the lock file to use with resticprofile locks"`
-	ForceLock               bool                              `mapstructure:"force-inactive-lock" description:"Allows to lock when the existing lock is considered stale"`
-	StreamError             []StreamErrorSection              `mapstructure:"stream-error" description:"Run shell command(s) when a pattern matches the stderr of restic"`
-	StatusFile              string                            `mapstructure:"status-file" description:"Path to the status file to update with a summary of last restic command result"`
-	PrometheusSaveToFile    string                            `mapstructure:"prometheus-save-to-file" description:"Path to the prometheus metrics file to update with a summary of the last restic command result"`
-	PrometheusPush          string                            `mapstructure:"prometheus-push" format:"uri" description:"URL of the prometheus push gateway to send the summary of the last restic command result to"`
-	PrometheusPushJob       string                            `mapstructure:"prometheus-push-job" description:"Prometheus push gateway job name. $command placeholder is replaced with restic command"`
-	PrometheusPushFormat    string                            `mapstructure:"prometheus-push-format" default:"text" enum:"text;protobuf" description:"Prometheus push gateway request format"`
-	PrometheusLabels        map[string]string                 `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
-	SystemdDropInFiles      []string                          `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
-	Environment             map[string]ConfidentialValue      `mapstructure:"env" description:"Additional environment variables to set in any child process. Inline env variables take precedence over dotenv files declared with \"env-file\"."`
-	EnvironmentFiles        []string                          `mapstructure:"env-file" description:"Additional dotenv files to load and set as environment in any child process"`
-	Init                    *InitSection                      `mapstructure:"init"`
-	Backup                  *BackupSection                    `mapstructure:"backup"`
-	Retention               *RetentionSection                 `mapstructure:"retention" command:"forget"`
-	Check                   *SectionWithScheduleAndMonitoring `mapstructure:"check"`
-	Prune                   *SectionWithScheduleAndMonitoring `mapstructure:"prune"`
-	Forget                  *SectionWithScheduleAndMonitoring `mapstructure:"forget"`
-	Copy                    *CopySection                      `mapstructure:"copy"`
-	OtherSections           map[string]*GenericSection        `show:",remain"`
+	Description             string                       `mapstructure:"description" description:"Describes the profile"`
+	BaseDir                 string                       `mapstructure:"base-dir" description:"Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead"`
+	Quiet                   bool                         `mapstructure:"quiet" argument:"quiet"`
+	Verbose                 int                          `mapstructure:"verbose" argument:"verbose"`
+	KeyHint                 string                       `mapstructure:"key-hint" argument:"key-hint"`
+	Repository              ConfidentialValue            `mapstructure:"repository" argument:"repo"`
+	RepositoryFile          string                       `mapstructure:"repository-file" argument:"repository-file"`
+	PasswordFile            string                       `mapstructure:"password-file" argument:"password-file"`
+	PasswordCommand         string                       `mapstructure:"password-command" argument:"password-command"`
+	CacheDir                string                       `mapstructure:"cache-dir" argument:"cache-dir"`
+	CACert                  string                       `mapstructure:"cacert" argument:"cacert"`
+	TLSClientCert           string                       `mapstructure:"tls-client-cert" argument:"tls-client-cert"`
+	Initialize              bool                         `mapstructure:"initialize" default:"" description:"Initialize the restic repository if missing"`
+	Inherit                 string                       `mapstructure:"inherit" show:"noshow" description:"Name of the profile to inherit all of the settings from"`
+	Lock                    string                       `mapstructure:"lock" description:"Path to the lock file to use with resticprofile locks"`
+	ForceLock               bool                         `mapstructure:"force-inactive-lock" description:"Allows to lock when the existing lock is considered stale"`
+	StreamError             []StreamErrorSection         `mapstructure:"stream-error" description:"Run shell command(s) when a pattern matches the stderr of restic"`
+	StatusFile              string                       `mapstructure:"status-file" description:"Path to the status file to update with a summary of last restic command result"`
+	PrometheusSaveToFile    string                       `mapstructure:"prometheus-save-to-file" description:"Path to the prometheus metrics file to update with a summary of the last restic command result"`
+	PrometheusPush          string                       `mapstructure:"prometheus-push" format:"uri" description:"URL of the prometheus push gateway to send the summary of the last restic command result to"`
+	PrometheusPushJob       string                       `mapstructure:"prometheus-push-job" description:"Prometheus push gateway job name. $command placeholder is replaced with restic command"`
+	PrometheusPushFormat    string                       `mapstructure:"prometheus-push-format" default:"text" enum:"text;protobuf" description:"Prometheus push gateway request format"`
+	PrometheusLabels        map[string]string            `mapstructure:"prometheus-labels" description:"Additional prometheus labels to set"`
+	SystemdDropInFiles      []string                     `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
+	Environment             map[string]ConfidentialValue `mapstructure:"env" description:"Additional environment variables to set in any child process. Inline env variables take precedence over dotenv files declared with \"env-file\"."`
+	EnvironmentFiles        []string                     `mapstructure:"env-file" description:"Additional dotenv files to load and set as environment in any child process"`
+	Init                    *InitSection                 `mapstructure:"init"`
+	Backup                  *BackupSection               `mapstructure:"backup"`
+	Retention               *RetentionSection            `mapstructure:"retention" command:"forget"`
+	Check                   *GenericSectionWithSchedule  `mapstructure:"check"`
+	Prune                   *GenericSectionWithSchedule  `mapstructure:"prune"`
+	Forget                  *GenericSectionWithSchedule  `mapstructure:"forget"`
+	Copy                    *CopySection                 `mapstructure:"copy"`
+	OtherSections           map[string]*GenericSection   `show:",remain"`
 }
 
 // GenericSection is used for all restic commands that are not covered in specific section types
 type GenericSection struct {
 	OtherFlagsSection       `mapstructure:",squash"`
 	RunShellCommandsSection `mapstructure:",squash"`
+	SendMonitoringSections  `mapstructure:",squash"`
 }
 
 func (g *GenericSection) IsEmpty() bool { return g == nil }
 
 // InitSection contains the specific configuration to the 'init' command
 type InitSection struct {
-	OtherFlagsSection   `mapstructure:",squash"`
+	GenericSection      `mapstructure:",squash"`
 	CopyChunkerParams   bool              `mapstructure:"copy-chunker-params" argument:"copy-chunker-params"`
 	FromKeyHint         string            `mapstructure:"from-key-hint" argument:"from-key-hint"`
 	FromRepository      ConfidentialValue `mapstructure:"from-repository" argument:"from-repo"`
@@ -164,25 +165,24 @@ func (i *InitSection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 
 // BackupSection contains the specific configuration to the 'backup' command
 type BackupSection struct {
-	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
-	RunShellCommandsSection          `mapstructure:",squash"`
-	unresolvedSource                 []string
-	CheckBefore                      bool     `mapstructure:"check-before" description:"Check the repository before starting the backup command"`
-	CheckAfter                       bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
-	UseStdin                         bool     `mapstructure:"stdin" argument:"stdin"`
-	StdinCommand                     []string `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
-	SourceRelative                   bool     `mapstructure:"source-relative" description:"Enable backup with relative source paths. This will change the working directory of the \"restic backup\" command to \"source-base\", and will not expand \"source\" to an absolute path."`
-	SourceBase                       string   `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
-	Source                           []string `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
-	Exclude                          []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
-	Iexclude                         []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
-	ExcludeFile                      []string `mapstructure:"exclude-file" argument:"exclude-file"`
-	IexcludeFile                     []string `mapstructure:"iexclude-file" argument:"iexclude-file"`
-	FilesFrom                        []string `mapstructure:"files-from" argument:"files-from"`
-	FilesFromRaw                     []string `mapstructure:"files-from-raw" argument:"files-from-raw"`
-	FilesFromVerbatim                []string `mapstructure:"files-from-verbatim" argument:"files-from-verbatim"`
-	ExtendedStatus                   bool     `mapstructure:"extended-status" argument:"json"`
-	NoErrorOnWarning                 bool     `mapstructure:"no-error-on-warning" description:"Do not fail the backup when some files could not be read"`
+	GenericSectionWithSchedule `mapstructure:",squash"`
+	unresolvedSource           []string
+	CheckBefore                bool     `mapstructure:"check-before" description:"Check the repository before starting the backup command"`
+	CheckAfter                 bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
+	UseStdin                   bool     `mapstructure:"stdin" argument:"stdin"`
+	StdinCommand               []string `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
+	SourceRelative             bool     `mapstructure:"source-relative" description:"Enable backup with relative source paths. This will change the working directory of the \"restic backup\" command to \"source-base\", and will not expand \"source\" to an absolute path."`
+	SourceBase                 string   `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
+	Source                     []string `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
+	Exclude                    []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
+	Iexclude                   []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
+	ExcludeFile                []string `mapstructure:"exclude-file" argument:"exclude-file"`
+	IexcludeFile               []string `mapstructure:"iexclude-file" argument:"iexclude-file"`
+	FilesFrom                  []string `mapstructure:"files-from" argument:"files-from"`
+	FilesFromRaw               []string `mapstructure:"files-from-raw" argument:"files-from-raw"`
+	FilesFromVerbatim          []string `mapstructure:"files-from-verbatim" argument:"files-from-verbatim"`
+	ExtendedStatus             bool     `mapstructure:"extended-status" argument:"json"`
+	NoErrorOnWarning           bool     `mapstructure:"no-error-on-warning" description:"Do not fail the backup when some files could not be read"`
 }
 
 func (s *BackupSection) IsEmpty() bool { return s == nil }
@@ -219,7 +219,7 @@ func (b *BackupSection) resolve(profile *Profile) {
 }
 
 func (s *BackupSection) setRootPath(p *Profile, rootPath string) {
-	s.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
+	s.GenericSectionWithSchedule.setRootPath(p, rootPath)
 
 	s.ExcludeFile = fixPaths(s.ExcludeFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	s.IexcludeFile = fixPaths(s.IexcludeFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
@@ -287,20 +287,19 @@ func (r *RetentionSection) resolve(profile *Profile) {
 	}
 }
 
-// SectionWithScheduleAndMonitoring is a section containing schedule, shell command hooks and monitoring
+// GenericSectionWithSchedule is a section containing schedule, shell command hooks and monitoring
 // (all the other parameters being for restic)
-type SectionWithScheduleAndMonitoring struct {
-	ScheduleBaseSection    `mapstructure:",squash"`
-	SendMonitoringSections `mapstructure:",squash"`
-	OtherFlagsSection      `mapstructure:",squash"`
+type GenericSectionWithSchedule struct {
+	GenericSection      `mapstructure:",squash"`
+	ScheduleBaseSection `mapstructure:",squash"`
 }
 
-func (s *SectionWithScheduleAndMonitoring) setRootPath(p *Profile, rootPath string) {
+func (s *GenericSectionWithSchedule) setRootPath(p *Profile, rootPath string) {
 	s.SendMonitoringSections.setRootPath(p, rootPath)
 	s.ScheduleBaseSection.setRootPath(p, rootPath)
 }
 
-func (s *SectionWithScheduleAndMonitoring) IsEmpty() bool { return s == nil }
+func (s *GenericSectionWithSchedule) IsEmpty() bool { return s == nil }
 
 // ScheduleBaseSection contains the parameters for scheduling a command (backup, check, forget, etc.)
 type ScheduleBaseSection struct {
@@ -341,16 +340,16 @@ func (s *ScheduleBaseSection) getScheduleConfig(p *Profile, command string) *Sch
 
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
-	SectionWithScheduleAndMonitoring `mapstructure:",squash"`
-	RunShellCommandsSection          `mapstructure:",squash"`
-	Initialize                       bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
-	InitializeCopyChunkerParams      maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
-	Repository                       ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
-	RepositoryFile                   string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
-	PasswordFile                     string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
-	PasswordCommand                  string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
-	KeyHint                          string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
-	Snapshots                        []string          `mapstructure:"snapshot" description:"Snapshot IDs to copy (if empty, all snapshots are copied)"`
+	GenericSectionWithSchedule  `mapstructure:",squash"`
+	RunShellCommandsSection     `mapstructure:",squash"`
+	Initialize                  bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
+	InitializeCopyChunkerParams maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
+	Repository                  ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
+	RepositoryFile              string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
+	PasswordFile                string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
+	PasswordCommand             string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
+	KeyHint                     string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
+	Snapshots                   []string          `mapstructure:"snapshot" description:"Snapshot IDs to copy (if empty, all snapshots are copied)"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
@@ -362,7 +361,7 @@ func (c *CopySection) resolve(p *Profile) {
 }
 
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
-	c.SectionWithScheduleAndMonitoring.setRootPath(p, rootPath)
+	c.GenericSectionWithSchedule.setRootPath(p, rootPath)
 
 	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))

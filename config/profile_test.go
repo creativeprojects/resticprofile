@@ -1393,7 +1393,8 @@ profile:
 		{"copy", true},
 		{"prune", true},
 		{"forget", true},
-		{"init", false},
+		{"init", true},
+		{"other", false},
 	}
 
 	for _, config := range configs {
@@ -1606,7 +1607,7 @@ func TestGetCopyStructFields(t *testing.T) {
 }
 
 // make sure all commands are supporting run-before
-func TestRunBeforeAllCommands(t *testing.T) {
+func TestRunBeforeOnAllCommands(t *testing.T) {
 	commands := restic.CommandNames()
 	assert.NotEmpty(t, commands)
 
@@ -1614,9 +1615,9 @@ func TestRunBeforeAllCommands(t *testing.T) {
 		t.Run(command, func(t *testing.T) {
 			testConfig := `
 [profile]
-[profile.%s]
+[profile.%[1]s]
 run-before = ["echo hello"]
-	`
+`
 			profile, err := getProfile("toml", fmt.Sprintf(testConfig, command), "profile", "")
 			require.NoError(t, err)
 			assert.NotNil(t, profile)
@@ -1624,11 +1625,13 @@ run-before = ["echo hello"]
 			assert.Empty(t, profileCommands)
 			assert.NotEmpty(t, sectionCommands)
 			assert.Equal(t, []string{"echo hello"}, sectionCommands.RunBefore)
+			assert.Empty(t, sectionCommands.RunAfter)
 		})
 	}
 }
 
-func TestSendBeforeAllCommands(t *testing.T) {
+// make sure all commands are supporting send-before
+func TestSendBeforeOnAllCommands(t *testing.T) {
 	commands := restic.CommandNames()
 	assert.NotEmpty(t, commands)
 
@@ -1636,16 +1639,17 @@ func TestSendBeforeAllCommands(t *testing.T) {
 		t.Run(command, func(t *testing.T) {
 			testConfig := `
 [profile]
-[profile.%s]
-[[profile.%s.send-before]]
+[profile.%[1]s]
+[[profile.%[1]s.send-before]]
 url = "http://example.com"
-	`
-			profile, err := getProfile("toml", fmt.Sprintf(testConfig, command, command), "profile", "")
+`
+			profile, err := getProfile("toml", fmt.Sprintf(testConfig, command), "profile", "")
 			require.NoError(t, err)
 			assert.NotNil(t, profile)
 			monitoring := profile.GetMonitoringSections(command)
 			assert.NotEmpty(t, monitoring)
 			assert.Equal(t, 1, len(monitoring.SendBefore))
+			assert.Empty(t, monitoring.SendAfter)
 		})
 	}
 }

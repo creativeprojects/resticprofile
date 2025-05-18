@@ -252,11 +252,13 @@ func TestConfidentialURL(t *testing.T) {
 
 	profile := &config.Profile{
 		Backup: &config.BackupSection{
-			SectionWithScheduleAndMonitoring: config.SectionWithScheduleAndMonitoring{
-				SendMonitoringSections: config.SendMonitoringSections{
-					SendBefore: []config.SendMonitoringSection{
-						{
-							URL: config.NewConfidentialValue(serverURL),
+			GenericSectionWithSchedule: config.GenericSectionWithSchedule{
+				GenericSection: config.GenericSection{
+					SendMonitoringSections: config.SendMonitoringSections{
+						SendBefore: []config.SendMonitoringSection{
+							{
+								URL: config.NewConfidentialValue(serverURL),
+							},
 						},
 					},
 				},
@@ -286,13 +288,15 @@ func TestConfidentialHeader(t *testing.T) {
 
 	profile := &config.Profile{
 		Backup: &config.BackupSection{
-			SectionWithScheduleAndMonitoring: config.SectionWithScheduleAndMonitoring{
-				SendMonitoringSections: config.SendMonitoringSections{
-					SendBefore: []config.SendMonitoringSection{
-						{
-							URL: config.NewConfidentialValue(server.URL),
-							Headers: []config.SendMonitoringHeader{
-								{Name: headerKey, Value: config.NewConfidentialValue(headerValue)},
+			GenericSectionWithSchedule: config.GenericSectionWithSchedule{
+				GenericSection: config.GenericSection{
+					SendMonitoringSections: config.SendMonitoringSections{
+						SendBefore: []config.SendMonitoringSection{
+							{
+								URL: config.NewConfidentialValue(server.URL),
+								Headers: []config.SendMonitoringHeader{
+									{Name: headerKey, Value: config.NewConfidentialValue(headerValue)},
+								},
 							},
 						},
 					},
