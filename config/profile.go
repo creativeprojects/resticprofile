@@ -345,7 +345,6 @@ func (s *ScheduleBaseSection) getScheduleConfig(p *Profile, command string) *Sch
 // CopySection contains the destination parameters for a copy command
 type CopySection struct {
 	GenericSectionWithSchedule  `mapstructure:",squash"`
-	RunShellCommandsSection     `mapstructure:",squash"`
 	Initialize                  bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
 	InitializeCopyChunkerParams maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
 	Repository                  ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
