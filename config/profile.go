@@ -113,6 +113,10 @@ type GenericSection struct {
 	SendMonitoringSections  `mapstructure:",squash"`
 }
 
+func (g *GenericSection) setRootPath(p *Profile, rootPath string) {
+	g.SendMonitoringSections.setRootPath(p, rootPath)
+}
+
 func (g *GenericSection) IsEmpty() bool { return g == nil }
 
 // InitSection contains the specific configuration to the 'init' command
@@ -295,7 +299,7 @@ type GenericSectionWithSchedule struct {
 }
 
 func (s *GenericSectionWithSchedule) setRootPath(p *Profile, rootPath string) {
-	s.SendMonitoringSections.setRootPath(p, rootPath)
+	s.GenericSection.setRootPath(p, rootPath)
 	s.ScheduleBaseSection.setRootPath(p, rootPath)
 }
 

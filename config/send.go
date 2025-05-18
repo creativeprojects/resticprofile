@@ -9,9 +9,9 @@ type SendMonitoringSections struct {
 }
 
 func (s *SendMonitoringSections) setRootPath(_ *Profile, rootPath string) {
-	for _, monitoringSections := range s.getAllSendMonitoringSections() {
-		for index, value := range monitoringSections {
-			monitoringSections[index].BodyTemplate = fixPath(value.BodyTemplate, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	for _, sections := range s.getAllSendMonitoringSections() {
+		for index := range sections {
+			sections[index].BodyTemplate = fixPath(sections[index].BodyTemplate, expandEnv, expandUserHome, absolutePrefix(rootPath))
 		}
 	}
 }
