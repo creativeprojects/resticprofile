@@ -134,7 +134,7 @@ func (c *Completer) listProfileNames() (list []string) {
 			format = formatFlag.Value.String()
 		}
 
-		if file, err := filesearch.FindConfigurationFile(filename); err == nil {
+		if file, err := filesearch.NewFinder().FindConfigurationFile(filename); err == nil {
 			if conf, err := config.LoadFile(file, format); err == nil {
 				list = append(list, conf.GetProfileNames()...)
 				for name := range conf.GetProfileGroups() {

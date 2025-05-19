@@ -275,7 +275,7 @@ func banner() {
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
 	var configFile string
-	if configFile, err = filesearch.FindConfigurationFile(flags.config); err == nil {
+	if configFile, err = filesearch.NewFinder().FindConfigurationFile(flags.config); err == nil {
 		if configFile != flags.config && !silent {
 			clog.Infof("using configuration file: %s", configFile)
 		}
@@ -346,7 +346,7 @@ func shouldStopOnBattery(batteryLimit int) bool {
 }
 
 func detectResticBinary(global *config.Global) (string, error) {
-	resticBinary, err := filesearch.FindResticBinary(global.ResticBinary)
+	resticBinary, err := filesearch.NewFinder().FindResticBinary(global.ResticBinary)
 	if err != nil {
 		return "", fmt.Errorf("cannot find restic: %w", err)
 	}

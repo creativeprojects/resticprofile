@@ -165,7 +165,7 @@ func displayResticHelp(output io.Writer, configuration *config.Config, flags com
 		}
 	}
 
-	if restic, err := filesearch.FindResticBinary(resticBinary); err == nil {
+	if restic, err := filesearch.NewFinder().FindResticBinary(resticBinary); err == nil {
 		buf := bytes.Buffer{}
 		cmd := shell.NewCommand(restic, []string{"help", command})
 		cmd.Stdout = &buf

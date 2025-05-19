@@ -5,8 +5,8 @@ import (
 	iofs "io/fs"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -17,11 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestMain(t *testing.M) {
-	fs = afero.NewMemMapFs()
-	os.Exit(t.Run())
-}
 
 // Quick test to see the default xdg config on the build agents
 //
@@ -48,11 +43,10 @@ func TestDefaultConfigDirs(t *testing.T) {
 }
 
 type testLocation struct {
-	realPath        string
-	realFile        string
-	searchPath      string
-	searchFile      string
-	deletePathAfter bool
+	realPath   string
+	realFile   string
+	searchPath string
+	searchFile string
 }
 
 func testLocations(t *testing.T) []testLocation {
@@ -101,46 +95,52 @@ func testLocations(t *testing.T) []testLocation {
 			searchFile: "profiles",
 		},
 		{
-			realPath:        "unittest-config",
-			realFile:        "profiles.spec",
-			searchPath:      "unittest-config",
-			searchFile:      "profiles.spec",
-			deletePathAfter: true,
+			realPath:   "",
+			realFile:   "profiles.yml",
+			searchPath: "",
+			searchFile: "profiles",
 		},
 		{
-			realPath:        "unittest-config",
-			realFile:        "profiles.conf",
-			searchPath:      "unittest-config",
-			searchFile:      "profiles",
-			deletePathAfter: true,
+			realPath:   "unittest-config",
+			realFile:   "profiles.spec",
+			searchPath: "unittest-config",
+			searchFile: "profiles.spec",
 		},
 		{
-			realPath:        "unittest-config",
-			realFile:        "profiles.toml",
-			searchPath:      "unittest-config",
-			searchFile:      "profiles",
-			deletePathAfter: true,
+			realPath:   "unittest-config",
+			realFile:   "profiles.conf",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
 		},
 		{
-			realPath:        "unittest-config",
-			realFile:        "profiles.yaml",
-			searchPath:      "unittest-config",
-			searchFile:      "profiles",
-			deletePathAfter: true,
+			realPath:   "unittest-config",
+			realFile:   "profiles.toml",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
 		},
 		{
-			realPath:        "unittest-config",
-			realFile:        "profiles.json",
-			searchPath:      "unittest-config",
-			searchFile:      "profiles",
-			deletePathAfter: true,
+			realPath:   "unittest-config",
+			realFile:   "profiles.yaml",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
 		},
 		{
-			realPath:        "unittest-config",
-			realFile:        "profiles.hcl",
-			searchPath:      "unittest-config",
-			searchFile:      "profiles",
-			deletePathAfter: true,
+			realPath:   "unittest-config",
+			realFile:   "profiles.json",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.hcl",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
+		},
+		{
+			realPath:   "unittest-config",
+			realFile:   "profiles.yml",
+			searchPath: "unittest-config",
+			searchFile: "profiles",
 		},
 		{
 			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
@@ -178,6 +178,12 @@ func testLocations(t *testing.T) []testLocation {
 			searchPath: "",
 			searchFile: "profiles",
 		},
+		{
+			realPath:   filepath.Join(xdg.ConfigHome, "resticprofile"),
+			realFile:   "profiles.yml",
+			searchPath: "",
+			searchFile: "profiles",
+		},
 	}
 
 	// on windows, we allow config file next to the resticprofile executable
@@ -196,47 +202,38 @@ func testLocations(t *testing.T) []testLocation {
 func TestFindConfigurationFile(t *testing.T) {
 	t.Parallel()
 
-	// Work from a temporary directory
-	err := os.Chdir(os.TempDir())
-	require.NoError(t, err)
-
-	cwd, err := os.Getwd()
-	require.NoError(t, err)
-	t.Log("Working directory:", cwd)
-
 	locations := testLocations(t)
 
 	for _, location := range locations {
-		var err error
-		// Install empty config file
-		if location.realPath != "" {
-			err = fs.MkdirAll(location.realPath, 0o700)
+		t.Run(path.Join(location.realPath, location.realFile), func(t *testing.T) {
+			t.Parallel()
+			var err error
+			fs := afero.NewMemMapFs()
+			finder := Finder{fs: fs}
+
+			// Install empty config file
+			if location.realPath != "" {
+				err = fs.MkdirAll(location.realPath, 0o700)
+				require.NoError(t, err)
+			}
+			file, err := fs.Create(filepath.Join(location.realPath, location.realFile))
 			require.NoError(t, err)
-		}
-		file, err := fs.Create(filepath.Join(location.realPath, location.realFile))
-		require.NoError(t, err)
-		file.Close()
+			require.NoError(t, file.Close())
 
-		// Test
-		found, err := FindConfigurationFile(filepath.Join(location.searchPath, location.searchFile))
-		assert.NoError(t, err)
-		assert.NotEmpty(t, found)
-		assert.Equal(t, filepath.Join(location.realPath, location.realFile), found)
-
-		// Clears up the test file
-		if location.realPath == "" || !location.deletePathAfter {
-			err = fs.Remove(filepath.Join(location.realPath, location.realFile))
-		} else {
-			err = fs.RemoveAll(location.realPath)
-		}
-		require.NoError(t, err)
+			// Test
+			found, err := finder.FindConfigurationFile(filepath.Join(location.searchPath, location.searchFile))
+			assert.NoError(t, err)
+			assert.NotEmpty(t, found)
+			assert.Equal(t, filepath.Join(location.realPath, location.realFile), found)
+		})
 	}
 }
 
 func TestCannotFindConfigurationFile(t *testing.T) {
 	t.Parallel()
 
-	found, err := FindConfigurationFile("some_config_file")
+	finder := NewFinder()
+	found, err := finder.FindConfigurationFile("some_unknown-config_file")
 	assert.Empty(t, found)
 	assert.Error(t, err)
 }
@@ -244,8 +241,33 @@ func TestCannotFindConfigurationFile(t *testing.T) {
 func TestFindResticBinary(t *testing.T) {
 	t.Parallel()
 
-	binary, err := FindResticBinary("some_other_name")
+	var paths []string
+	if platform.IsWindows() {
+		paths = defaultBinaryLocationsWindows
+	} else {
+		paths = defaultBinaryLocationsUnix
+	}
+
+	fs := afero.NewMemMapFs()
+	file, err := fs.Create(path.Join(paths[len(paths)-1], getResticBinaryName()))
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
+
+	finder := Finder{fs: fs}
+	binary, err := finder.FindResticBinary("")
+
+	assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
+	assert.NoError(t, err)
+}
+
+func TestMayFindResticBinary(t *testing.T) {
+	t.Parallel()
+
+	fs := afero.NewMemMapFs()
+	finder := Finder{fs: fs}
+	binary, err := finder.FindResticBinary("")
 	if binary != "" {
+		// not found from fs, but latest resort is to search in the path
 		assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
 		assert.NoError(t, err)
 	} else {
@@ -256,22 +278,22 @@ func TestFindResticBinary(t *testing.T) {
 func TestFindResticBinaryWithTilde(t *testing.T) {
 	t.Parallel()
 
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		t.Skip("not supported on Windows")
 		return
 	}
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
+	fs := afero.NewMemMapFs()
+	finder := Finder{fs: fs}
+
 	tempFile, err := afero.TempFile(fs, home, t.Name())
 	require.NoError(t, err)
 	tempFile.Close()
-	defer func() {
-		_ = fs.Remove(tempFile.Name())
-	}()
 
 	search := filepath.Join("~", filepath.Base(tempFile.Name()))
-	binary, err := FindResticBinary(search)
+	binary, err := finder.FindResticBinary(search)
 	require.NoError(t, err)
 	assert.Equalf(t, tempFile.Name(), binary, "cannot find %q", search)
 }
@@ -279,7 +301,7 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 func TestShellExpand(t *testing.T) {
 	t.Parallel()
 
-	if runtime.GOOS == "windows" {
+	if platform.IsWindows() {
 		t.Skip("not supported on Windows")
 		return
 	}
@@ -314,6 +336,7 @@ func TestShellExpand(t *testing.T) {
 func TestFindConfigurationIncludes(t *testing.T) {
 	t.Parallel()
 
+	fs := afero.NewMemMapFs()
 	testID := fmt.Sprintf("%x", time.Now().UnixNano())
 	tempDir := os.TempDir()
 	files := []string{
@@ -325,9 +348,6 @@ func TestFindConfigurationIncludes(t *testing.T) {
 
 	for _, file := range files {
 		require.NoError(t, afero.WriteFile(fs, file, []byte{}, iofs.ModePerm))
-		t.Cleanup(func() {
-			_ = fs.Remove(file)
-		})
 	}
 
 	testData := []struct {
@@ -351,11 +371,13 @@ func TestFindConfigurationIncludes(t *testing.T) {
 		{files[0:1], []string{}},
 	}
 
+	finder := Finder{fs: fs}
+
 	for _, test := range testData {
 		t.Run(strings.Join(test.includes, ","), func(t *testing.T) {
 			t.Parallel()
 
-			result, err := FindConfigurationIncludes(files[0], test.includes)
+			result, err := finder.FindConfigurationIncludes(files[0], test.includes)
 			if test.expected == nil {
 				assert.Nil(t, result)
 				assert.NotNil(t, err)
