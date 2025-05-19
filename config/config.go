@@ -63,7 +63,7 @@ var (
 func newConfig(format string) *Config {
 	codecRegistry := viper.NewCodecRegistry()
 	codec := hcl.Codec{}
-	codecRegistry.RegisterCodec("hcl", codec)
+	_ = codecRegistry.RegisterCodec("hcl", codec)
 
 	keyDelimiter := "\\"
 
