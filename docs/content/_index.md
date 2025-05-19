@@ -23,10 +23,10 @@ With resticprofile:
 * Check for [enough memory]({{% relref "/usage/memory" %}}) before starting a backup
 * Generate cryptographically secure random keys for a restic [key file]({{% relref "/usage/keyfile" %}})
 * Easily [schedule]({{% relref "/schedules" %}}) backups, retentions, and checks (supports *systemd*, *crond*, *launchd*, and *Windows Task Scheduler*)
-* Generate a simple [status file]({{% relref "/status" %}}) for monitoring software to ensure backups are running smoothly
+* Generate a simple [status file]({{% relref "/monitoring/status" %}}) for monitoring software to ensure backups are running smoothly
 * Use [template syntax]({{% relref "/configuration/templates" %}}) in your configuration file
 * Automatically clear [stale locks]({{% relref "/usage/locks" %}})
-* Export a [prometheus]({{% relref "/status/prometheus" %}}) file after a backup or send the report to a push gateway
+* Export a [prometheus]({{% relref "/monitoring/prometheus" %}}) file after a backup or send the report to a push gateway
 * Run shell commands in the background when non-fatal errors are detected
 * Send messages to [HTTP hooks]({{% relref "/configuration/http_hooks" %}}) before, after a successful or failed job (backup, forget, check, prune, copy)
 * Automatically [initialize the secondary repository]({{% relref "/configuration/copy" %}}) using the `copy-chunker-params` flag

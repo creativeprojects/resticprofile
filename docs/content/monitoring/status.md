@@ -1,16 +1,17 @@
-+++
-archetype = "chapter"
-pre = "<b>5. </b>"
-title = "Status file"
-weight = 5
-+++
+---
+title: "Status file"
+slug: status
+weight: 5
+tags: [ "monitoring" ]
+aliases:
+  - /status
+---
 
+If you need to send your backup results to a monitoring system, use the `run-after` and `run-after-fail` scripts.
 
-If you need to escalate the result of your backup to a monitoring system, you can definitely use the `run-after` and `run-after-fail` scripting.
+For simpler needs, resticprofile can generate a JSON file with details of the latest backup, forget, or check command. For example, I use a Zabbix agent to [check this file](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix) daily. Any monitoring system that reads JSON files can be integrated.
 
-But sometimes we just need something simple that a monitoring system can regularly check. For that matter, resticprofile can generate a simple JSON file with the details of the latest backup/forget/check command. For example I have a Zabbix agent [checking this file](https://github.com/creativeprojects/resticprofile/tree/master/contrib/zabbix) once a day, and so you can hook up any monitoring system that can interpret a JSON file.
-
-In your profile, you simply need to add a new parameter, which is the location of your status file
+To enable this, add the status file location as a parameter in your profile.
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -57,7 +58,7 @@ profile:
 {{< /tabs >}}
 
 
-Here's an example of a generated file, where you can see that the last `check` failed, whereas the last `backup` succeeded:
+Here is an example of a generated file showing the last `check` failed, while the last `backup` succeeded:
 
 ```json
 {
@@ -93,18 +94,18 @@ Here's an example of a generated file, where you can see that the last `check` f
 
 ## ⚠️ Extended status
 
-In the backup section above you can see some fields like `files_new`, `files_total`, etc. This information is only available when resticprofile's output is either *not* sent to the terminal (e.g. redirected) or when you add the flag `extended-status` to your backup configuration.
+In the backup section above, you can see fields like `files_new` and `files_total`. This information is available only when resticprofile's output is redirected or when the `extended-status` flag is added to your backup configuration.
 
-This is a technical limitation to ensure restic displays terminal output correctly. 
+This limitation ensures restic displays terminal output correctly.
 
-`extended-status` or stdout redirection is **not needed** for these fields:
+The following fields do **not** require `extended-status` or stdout redirection:
 - success
 - time
 - error
 - stderr
 - duration
 
-`extended-status` is **not set by default because it hides any output from restic**
+The `extended-status` flag is **disabled by default because it suppresses restic's output**.
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}

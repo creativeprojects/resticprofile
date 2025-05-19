@@ -136,7 +136,9 @@ func (i *InitSection) resolve(_ *Profile) {
 	i.FromRepository.setValue(fixPath(i.FromRepository.Value(), expandEnv, expandUserHome))
 }
 
-func (i *InitSection) setRootPath(_ *Profile, rootPath string) {
+func (i *InitSection) setRootPath(p *Profile, rootPath string) {
+	i.GenericSection.setRootPath(p, rootPath)
+
 	i.FromRepositoryFile = fixPath(i.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 	i.FromPasswordFile = fixPath(i.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 }

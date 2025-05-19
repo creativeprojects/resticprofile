@@ -1,6 +1,7 @@
 ---
 title: "HTTP Hooks"
 weight: 22
+tags: [ "monitoring", "healthchecks.io" ]
 ---
 
 

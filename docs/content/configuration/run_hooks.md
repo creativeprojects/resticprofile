@@ -1,6 +1,7 @@
 ---
 title: "Command Hooks"
 weight: 20
+tags: [ "monitoring" ]
 ---
 
 
