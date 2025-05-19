@@ -233,7 +233,7 @@ func TestCannotFindConfigurationFile(t *testing.T) {
 	t.Parallel()
 
 	finder := NewFinder()
-	found, err := finder.FindConfigurationFile("some_config_file")
+	found, err := finder.FindConfigurationFile("some_unknown-config_file")
 	assert.Empty(t, found)
 	assert.Error(t, err)
 }
@@ -241,9 +241,33 @@ func TestCannotFindConfigurationFile(t *testing.T) {
 func TestFindResticBinary(t *testing.T) {
 	t.Parallel()
 
-	finder := NewFinder()
-	binary, err := finder.FindResticBinary("some_other_name")
+	var paths []string
+	if platform.IsWindows() {
+		paths = defaultBinaryLocationsWindows
+	} else {
+		paths = defaultBinaryLocationsUnix
+	}
+
+	fs := afero.NewMemMapFs()
+	file, err := fs.Create(path.Join(paths[len(paths)-1], getResticBinaryName()))
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
+
+	finder := Finder{fs: fs}
+	binary, err := finder.FindResticBinary("")
+
+	assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
+	assert.NoError(t, err)
+}
+
+func TestMayFindResticBinary(t *testing.T) {
+	t.Parallel()
+
+	fs := afero.NewMemMapFs()
+	finder := Finder{fs: fs}
+	binary, err := finder.FindResticBinary("")
 	if binary != "" {
+		// not found from fs, but latest resort is to search in the path
 		assert.True(t, strings.HasSuffix(binary, getResticBinaryName()))
 		assert.NoError(t, err)
 	} else {

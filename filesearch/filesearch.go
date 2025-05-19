@@ -1,9 +1,7 @@
 package filesearch
 
 import (
-	"errors"
 	"fmt"
-	iofs "io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -273,8 +271,8 @@ func getResticBinaryName() string {
 }
 
 func fileExists(fs afero.Fs, filename string) bool {
-	_, err := fs.Stat(filename)
-	return err == nil || errors.Is(err, iofs.ErrExist)
+	info, err := fs.Stat(filename)
+	return err == nil && !info.IsDir()
 }
 
 func addRootToRelativePaths(home string, paths []string) []string {
