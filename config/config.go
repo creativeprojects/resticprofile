@@ -101,7 +101,7 @@ func LoadFile(configFile, format string) (config *Config, err error) {
 
 	// Load includes (if any).
 	var includes []string
-	if includes, err = filesearch.FindConfigurationIncludes(configFile, config.getIncludes()); err == nil {
+	if includes, err = filesearch.NewFinder().FindConfigurationIncludes(configFile, config.getIncludes()); err == nil {
 		for _, include := range includes {
 			format := formatFromExtension(include)
 

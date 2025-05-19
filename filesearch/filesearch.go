@@ -12,13 +12,12 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/spf13/afero"
 )
 
 var (
-	AppName = "resticprofile"
-
 	// configurationExtensions list the possible extensions for the config file
 	configurationExtensions = []string{
 		"conf",
@@ -26,6 +25,7 @@ var (
 		"toml",
 		"json",
 		"hcl",
+		"yml",
 	}
 
 	defaultConfigurationLocationsUnix = []string{
@@ -41,7 +41,7 @@ var (
 	}
 
 	addConfigurationLocationsDarwin = []string{
-		".config/" + AppName + "/",
+		".config/" + constants.ApplicationName + "/",
 	}
 
 	defaultConfigurationLocationsWindows = []string{
@@ -69,27 +69,31 @@ var (
 	}
 )
 
-var fs afero.Fs // we could probably change the implementation to use fs.FS instead
+type Finder struct {
+	fs afero.Fs
+}
 
-func init() {
-	fs = afero.NewOsFs()
+func NewFinder() Finder {
+	return Finder{
+		fs: afero.NewOsFs(), // external packages will always need files from the OS
+	}
 }
 
 // FindConfigurationFile returns the path of the configuration file
 // If the file doesn't have an extension, it will search for all possible extensions
-func FindConfigurationFile(configFile string) (string, error) {
+func (f Finder) FindConfigurationFile(configFile string) (string, error) {
 	found := ""
 	extension := filepath.Ext(configFile)
 	displayFile := ""
 	if extension != "" {
 		displayFile = fmt.Sprintf("'%s'", configFile)
 		// Search only once through the paths
-		found = findConfigurationFileWithExtension(configFile)
+		found = f.findConfigurationFileWithExtension(configFile)
 	} else {
 		displayFile = fmt.Sprintf("'%s' with extensions %s", configFile, strings.Join(configurationExtensions, ", "))
 		// Search all extensions one by one
 		for _, ext := range configurationExtensions {
-			found = findConfigurationFileWithExtension(configFile + "." + ext)
+			found = f.findConfigurationFileWithExtension(configFile + "." + ext)
 			if found != "" {
 				break
 			}
@@ -105,9 +109,9 @@ func FindConfigurationFile(configFile string) (string, error) {
 		strings.Join(getSearchConfigurationLocations(), ", "))
 }
 
-func findConfigurationFileWithExtension(configFile string) string {
+func (f Finder) findConfigurationFileWithExtension(configFile string) string {
 	// simple case: try current folder (or rooted path)
-	if fileExists(configFile) {
+	if fileExists(f.fs, configFile) {
 		return configFile
 	}
 
@@ -116,7 +120,7 @@ func findConfigurationFileWithExtension(configFile string) string {
 
 	for _, configPath := range paths {
 		filename := filepath.Join(configPath, configFile)
-		if fileExists(filename) {
+		if fileExists(f.fs, filename) {
 			return filename
 		}
 	}
@@ -125,7 +129,7 @@ func findConfigurationFileWithExtension(configFile string) string {
 }
 
 // FindConfigurationIncludes finds includes (glob patterns) relative to the configuration file.
-func FindConfigurationIncludes(configFile string, includes []string) ([]string, error) {
+func (f Finder) FindConfigurationIncludes(configFile string, includes []string) ([]string, error) {
 	if !filepath.IsAbs(configFile) {
 		var err error
 		if configFile, err = filepath.Abs(configFile); err != nil {
@@ -150,10 +154,10 @@ func FindConfigurationIncludes(configFile string, includes []string) ([]string, 
 			include = filepath.Join(base, include)
 		}
 
-		if fileExists(include) {
+		if fileExists(f.fs, include) {
 			addFile(include)
 		} else {
-			if matches, err := afero.Glob(fs, include); err == nil && matches != nil {
+			if matches, err := afero.Glob(f.fs, include); err == nil && matches != nil {
 				sort.Strings(matches)
 				for _, match := range matches {
 					addFile(match)
@@ -170,14 +174,14 @@ func FindConfigurationIncludes(configFile string, includes []string) ([]string, 
 }
 
 // FindResticBinary returns the path of restic executable
-func FindResticBinary(configLocation string) (string, error) {
+func (f Finder) FindResticBinary(configLocation string) (string, error) {
 	if configLocation != "" {
 		// Start by the location from the configuration
 		filename, err := ShellExpand(configLocation)
 		if err != nil {
 			clog.Warning(err)
 		}
-		if filename != "" && fileExists(filename) {
+		if filename != "" && fileExists(f.fs, filename) {
 			return filename, nil
 		}
 		clog.Warningf("cannot find or read the restic binary specified in the configuration: %q", configLocation)
@@ -187,7 +191,7 @@ func FindResticBinary(configLocation string) (string, error) {
 
 	for _, configPath := range paths {
 		filename := filepath.Join(configPath, binaryFile)
-		if fileExists(filename) {
+		if fileExists(f.fs, filename) {
 			return filename, nil
 		}
 	}
@@ -219,9 +223,9 @@ func ShellExpand(filename string) (string, error) {
 func getSearchConfigurationLocations() []string {
 	home, _ := os.UserHomeDir()
 
-	locations := []string{filepath.Join(xdg.ConfigHome, AppName)}
+	locations := []string{filepath.Join(xdg.ConfigHome, constants.ApplicationName)}
 	for _, configDir := range xdg.ConfigDirs {
-		locations = append(locations, filepath.Join(configDir, AppName))
+		locations = append(locations, filepath.Join(configDir, constants.ApplicationName))
 	}
 
 	if platform.IsWindows() {
@@ -268,7 +272,7 @@ func getResticBinaryName() string {
 	return resticBinaryUnix
 }
 
-func fileExists(filename string) bool {
+func fileExists(fs afero.Fs, filename string) bool {
 	_, err := fs.Stat(filename)
 	return err == nil || errors.Is(err, iofs.ErrExist)
 }
