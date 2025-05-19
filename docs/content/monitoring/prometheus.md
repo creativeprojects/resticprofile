@@ -1,12 +1,11 @@
 ---
 title: "Prometheus"
-weight: 5
+slug: prometheus
+weight: 10
+tags: [ "monitoring" ]
 ---
 
-
-
-resticprofile can generate a prometheus file, or send the report to a push gateway. For now, only a `backup` command will generate a report.
-Here's a configuration example with both options to generate a file and send to a push gateway:
+Resticprofile can generate a Prometheus file or send the report to a Pushgateway. Currently, only the `backup` command generates a report. Below is a configuration example for generating a file and sending it to a Pushgateway:
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -80,66 +79,69 @@ root:
 {{< /tabs >}}
 
 {{% notice style="note" %}}
-Please note you need to set `extended-status` to `true` if you want all the available metrics. See [Extended status]({{% relref "/status/index.html#-extended-status" %}}) for more information.
+Set `extended-status` to `true` to access all available metrics. For details, see [Extended status]({{% relref "/monitoring/status/index.html#-extended-status" %}}).
 {{% /notice %}}
 
-Here's an example of the generated prometheus file:
+Here's an example of a generated prometheus file:
 
 ```
+# HELP restic_build_info restic build information.
+# TYPE restic_build_info gauge
+restic_build_info{profile="prom",version="0.18.0"} 1
 # HELP resticprofile_backup_added_bytes Total number of bytes added to the repository.
 # TYPE resticprofile_backup_added_bytes gauge
-resticprofile_backup_added_bytes{profile="prom"} 9.83610983e+08
+resticprofile_backup_added_bytes{profile="prom"} 96167
 # HELP resticprofile_backup_dir_changed Number of directories with changes.
 # TYPE resticprofile_backup_dir_changed gauge
-resticprofile_backup_dir_changed{profile="prom"} 0
+resticprofile_backup_dir_changed{profile="prom"} 8
 # HELP resticprofile_backup_dir_new Number of new directories added to the backup.
 # TYPE resticprofile_backup_dir_new gauge
-resticprofile_backup_dir_new{profile="prom"} 847
+resticprofile_backup_dir_new{profile="prom"} 0
 # HELP resticprofile_backup_dir_unmodified Number of directories unmodified since last backup.
 # TYPE resticprofile_backup_dir_unmodified gauge
-resticprofile_backup_dir_unmodified{profile="prom"} 0
+resticprofile_backup_dir_unmodified{profile="prom"} 1060
 # HELP resticprofile_backup_duration_seconds The backup duration (in seconds).
 # TYPE resticprofile_backup_duration_seconds gauge
-resticprofile_backup_duration_seconds{profile="prom"} 4.453124672
+resticprofile_backup_duration_seconds{profile="prom"} 0.986296416
 # HELP resticprofile_backup_files_changed Number of files with changes.
 # TYPE resticprofile_backup_files_changed gauge
-resticprofile_backup_files_changed{profile="prom"} 0
+resticprofile_backup_files_changed{profile="prom"} 2
 # HELP resticprofile_backup_files_new Number of new files added to the backup.
 # TYPE resticprofile_backup_files_new gauge
-resticprofile_backup_files_new{profile="prom"} 6006
+resticprofile_backup_files_new{profile="prom"} 0
 # HELP resticprofile_backup_files_processed Total number of files scanned by the backup for changes.
 # TYPE resticprofile_backup_files_processed gauge
-resticprofile_backup_files_processed{profile="prom"} 6006
+resticprofile_backup_files_processed{profile="prom"} 7723
 # HELP resticprofile_backup_files_unmodified Number of files unmodified since last backup.
 # TYPE resticprofile_backup_files_unmodified gauge
-resticprofile_backup_files_unmodified{profile="prom"} 0
+resticprofile_backup_files_unmodified{profile="prom"} 7721
 # HELP resticprofile_backup_processed_bytes Total number of bytes scanned for changes.
 # TYPE resticprofile_backup_processed_bytes gauge
-resticprofile_backup_processed_bytes{profile="prom"} 1.016520315e+09
+resticprofile_backup_processed_bytes{profile="prom"} 2.935621558e+09
 # HELP resticprofile_backup_status Backup status: 0=fail, 1=warning, 2=success.
 # TYPE resticprofile_backup_status gauge
 resticprofile_backup_status{profile="prom"} 2
 # HELP resticprofile_backup_time_seconds Last backup run (unixtime).
 # TYPE resticprofile_backup_time_seconds gauge
-resticprofile_backup_time_seconds{profile="prom"} 1.707863748e+09
+resticprofile_backup_time_seconds{profile="prom"} 1.747673785e+09
 # HELP resticprofile_build_info resticprofile build information.
 # TYPE resticprofile_build_info gauge
-resticprofile_build_info{goversion="go1.22.0",profile="prom",version="0.26.0"} 1
+resticprofile_build_info{goversion="go1.24.3",profile="prom",version="0.31.0"} 1
+
 
 ```
 
 ## Prometheus Pushgateway
 
-Prometheus Pushgateway uses the job label as a grouping key. All metrics with the same grouping key get replaced when pushed. To prevent metrics from multiple profiles getting overwritten by each other, the default job label is set to `<profile_name>.<command>` (e.g. `root.backup`).
+Prometheus Pushgateway uses the job label as a grouping key. Metrics with the same grouping key are replaced when pushed. To prevent overwriting metrics from different profiles, the default job label is set to `<profile_name>.<command>` (e.g., `root.backup`).
 
-If you need more control over the job label, you can use the `prometheus-push-job` property. This property can contain the `$command` placeholder, which is replaced with the name of the executed command.
+For more control over the job label, use the `prometheus-push-job` property. This property supports the `$command` placeholder, which is replaced with the executed command's name.
 
-Additionally, the request format can be specified with `prometheus-push-format`. The default is `text`, but it can also be set to `protobuf` (see [compatibility with Prometheus](https://prometheus.io/docs/instrumenting/exposition_formats/#exposition-formats)).
+You can specify the request format using `prometheus-push-format`. The default is `text`, but it can also be set to `protobuf` (see [compatibility with Prometheus](https://prometheus.io/docs/instrumenting/exposition_formats/#exposition-formats)).
 
-## User defined labels
+## User-Defined Labels
 
-You can add your own prometheus labels. Please note they will be applied to **all** the metrics.
-Here's an example:
+You can add custom Prometheus labels, which will apply to **all** metrics. Example:
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -227,4 +229,4 @@ root:
 {{< /tabs >}}
 
 
-which will add the `host` label to all your metrics.
+This adds the `host` label to all your metrics.
