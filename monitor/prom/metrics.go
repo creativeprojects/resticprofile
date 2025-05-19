@@ -22,13 +22,14 @@ const (
 )
 
 type Metrics struct {
-	labels   prometheus.Labels
-	registry *prometheus.Registry
-	info     *prometheus.GaugeVec
-	backup   BackupMetrics
+	labels     prometheus.Labels
+	registry   *prometheus.Registry
+	info       *prometheus.GaugeVec
+	resticInfo *prometheus.GaugeVec
+	backup     BackupMetrics
 }
 
-func NewMetrics(profile, group, version string, configLabels map[string]string) *Metrics {
+func NewMetrics(profile, group, version string, resticversion string, configLabels map[string]string) *Metrics {
 	// default labels for all metrics
 	labels := prometheus.Labels{profileLabel: profile}
 	if group != "" {
@@ -50,10 +51,18 @@ func NewMetrics(profile, group, version string, configLabels map[string]string) 
 	// send the information about the build right away
 	p.info.With(mergeLabels(cloneLabels(labels), map[string]string{goVersionLabel: runtime.Version(), versionLabel: version})).Set(1)
 
+	p.resticInfo = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name:      "restic_build_info",
+		Help:      "restic build information.",
+	}, append(keys, versionLabel))
+	// send the information about the build right away
+	p.resticInfo.With(mergeLabels(cloneLabels(labels), map[string]string{versionLabel: resticversion})).Set(1)
+
 	p.backup = newBackupMetrics(keys)
 
 	registry.MustRegister(
 		p.info,
+		p.resticInfo,
 		p.backup.duration,
 		p.backup.filesNew,
 		p.backup.filesChanged,
