@@ -8,7 +8,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
