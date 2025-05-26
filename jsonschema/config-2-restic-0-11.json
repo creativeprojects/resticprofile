@@ -4518,6 +4518,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -4677,6 +4689,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -4720,6 +4780,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -4864,6 +4936,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -4889,6 +5009,18 @@
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -4934,8 +5066,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -5016,6 +5148,54 @@
                   "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-3c76d5de2387afe5a7919aad45604644"
@@ -5642,6 +5822,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -5790,6 +5982,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -5833,6 +6073,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
@@ -6004,6 +6256,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -6087,6 +6387,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...snapshot": {
                   "$ref": "#/$defs/id-03550d33226c03f7e7c8a6a6fc971333"
                 },
@@ -6121,6 +6433,11 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -6136,11 +6453,6 @@
                 "ignore-case": {
                   "title": "ignore-case",
                   "description": "ignore case for pattern",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6292,6 +6604,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "show-pack-id": {
                   "title": "show-pack-id",
                   "description": "display the pack-ID the blobs belong to (with --blob or --tree)",
@@ -6366,6 +6726,18 @@
                 "...path": {
                   "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
                 },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
@@ -6417,11 +6789,6 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -6440,6 +6807,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -6572,6 +6944,54 @@
                   "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-3c76d5de2387afe5a7919aad45604644"
@@ -6752,6 +7172,30 @@
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -6880,6 +7324,102 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -6923,6 +7463,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -6946,13 +7498,13 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7076,6 +7628,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -7137,6 +7737,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -7160,8 +7772,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -7280,6 +7892,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -7330,6 +7990,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -7356,11 +8028,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
@@ -7372,6 +8039,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -7510,6 +8182,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -7559,6 +8279,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -7708,6 +8440,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -7751,6 +8531,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
@@ -7937,6 +8729,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "snapshot-template": {
                   "title": "snapshot-template",
                   "deprecated": true,
@@ -8061,6 +8901,18 @@
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
@@ -8170,6 +9022,54 @@
                   "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-3c76d5de2387afe5a7919aad45604644"
@@ -8349,186 +9249,17 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
-                "cacert": {
-                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
                 },
-                "cacert...": {
-                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
                 },
-                "cacert__APPEND": {
-                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
                 },
-                "cacert__PREPEND": {
-                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
-                },
-                "cache-dir": {
-                  "title": "cache-dir",
-                  "description": "set the cache directory. (default: use system default cache directory)",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "cleanup-cache": {
-                  "title": "cleanup-cache",
-                  "description": "auto remove old cache directories",
-                  "type": "boolean"
-                },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
-                "key-hint": {
-                  "title": "key-hint",
-                  "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "limit-download": {
-                  "title": "limit-download",
-                  "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
-                  "type": "integer"
-                },
-                "limit-upload": {
-                  "title": "limit-upload",
-                  "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
-                  "type": "integer"
-                },
-                "no-cache": {
-                  "title": "no-cache",
-                  "description": "do not use a local cache",
-                  "type": "boolean"
-                },
-                "no-lock": {
-                  "title": "no-lock",
-                  "description": "do not lock the repository, this allows some operations on read-only repositories",
-                  "type": "boolean"
-                },
-                "option": {
-                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-                },
-                "option...": {
-                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-                },
-                "option__APPEND": {
-                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-                },
-                "option__PREPEND": {
-                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-                },
-                "password-command": {
-                  "title": "password-command",
-                  "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "password-file": {
-                  "title": "password-file",
-                  "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "quiet": {
-                  "title": "quiet",
-                  "description": "do not output comprehensive progress report",
-                  "type": "boolean"
-                },
-                "repo": {
-                  "title": "repo",
-                  "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "repository-file": {
-                  "title": "repository-file",
-                  "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "run-after": {
-                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-                },
-                "run-after-fail": {
-                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-                },
-                "run-after-fail...": {
-                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-                },
-                "run-after-fail__APPEND": {
-                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-                },
-                "run-after-fail__PREPEND": {
-                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-                },
-                "run-after...": {
-                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-                },
-                "run-after__APPEND": {
-                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-                },
-                "run-after__PREPEND": {
-                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-                },
-                "run-before": {
-                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-                },
-                "run-before...": {
-                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-                },
-                "run-before__APPEND": {
-                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-                },
-                "run-before__PREPEND": {
-                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-                },
-                "run-finally": {
-                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-                },
-                "run-finally...": {
-                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-                },
-                "run-finally__APPEND": {
-                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-                },
-                "run-finally__PREPEND": {
-                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-                },
-                "tls-client-cert": {
-                  "title": "tls-client-cert",
-                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
-                  "type": "string",
-                  "minLength": 0
-                },
-                "use": {
-                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
-                },
-                "verbose": {
-                  "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
-                }
-              }
-            },
-            "recover": {
-              "title": "recover",
-              "description": "The \"recover\" command builds a new snapshot from all directories it can find in\nthe raw data of the repository which are not referenced in an existing snapshot.\nIt can be used if, for example, a snapshot has been removed by accident with \"forget\".",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "...cacert": {
-                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
-                },
-                "...option": {
-                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-                },
-                "...run-after": {
-                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-                },
-                "...run-after-fail": {
-                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-                },
-                "...run-before": {
-                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-                },
-                "...run-finally": {
-                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -8673,6 +9404,295 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "tls-client-cert": {
+                  "title": "tls-client-cert",
+                  "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "use": {
+                  "$ref": "#/$defs/id-169a8a109f5202e4e730ddb575c1282c"
+                },
+                "verbose": {
+                  "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+                }
+              }
+            },
+            "recover": {
+              "title": "recover",
+              "description": "The \"recover\" command builds a new snapshot from all directories it can find in\nthe raw data of the repository which are not referenced in an existing snapshot.\nIt can be used if, for example, a snapshot has been removed by accident with \"forget\".",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "...cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "...option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "cacert": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert...": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__APPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cacert__PREPEND": {
+                  "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+                },
+                "cache-dir": {
+                  "title": "cache-dir",
+                  "description": "set the cache directory. (default: use system default cache directory)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "cleanup-cache": {
+                  "title": "cleanup-cache",
+                  "description": "auto remove old cache directories",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
+                "key-hint": {
+                  "title": "key-hint",
+                  "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "limit-download": {
+                  "title": "limit-download",
+                  "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "limit-upload": {
+                  "title": "limit-upload",
+                  "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+                  "type": "integer"
+                },
+                "no-cache": {
+                  "title": "no-cache",
+                  "description": "do not use a local cache",
+                  "type": "boolean"
+                },
+                "no-lock": {
+                  "title": "no-lock",
+                  "description": "do not lock the repository, this allows some operations on read-only repositories",
+                  "type": "boolean"
+                },
+                "option": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option...": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__APPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "option__PREPEND": {
+                  "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "password-command": {
+                  "title": "password-command",
+                  "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "password-file": {
+                  "title": "password-file",
+                  "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "quiet": {
+                  "title": "quiet",
+                  "description": "do not output comprehensive progress report",
+                  "type": "boolean"
+                },
+                "repo": {
+                  "title": "repo",
+                  "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "repository-file": {
+                  "title": "repository-file",
+                  "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+                  "type": "string",
+                  "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tls-client-cert": {
                   "title": "tls-client-cert",
                   "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -8740,6 +9760,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
@@ -8959,6 +9991,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -9066,11 +10146,6 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -9089,6 +10164,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-9adce3f5946d7ba07e254360f9162b89"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "keep-daily": {
                   "title": "keep-daily",
@@ -9417,6 +10497,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
@@ -9448,6 +10540,11 @@
                   "description": "use compact output format",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -9465,11 +10562,6 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -9604,6 +10696,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
@@ -9659,6 +10799,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...tag": {
                   "$ref": "#/$defs/id-bac728d70d7f809711e6c27ea7825da9"
@@ -9837,6 +10989,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "tag": {
                   "$ref": "#/$defs/id-bac728d70d7f809711e6c27ea7825da9"
                 },
@@ -9929,6 +11129,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...set": {
                   "$ref": "#/$defs/id-0ec8ec07c5d04919d4d678a5ae0105b4"
                 },
@@ -9970,11 +11182,6 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -9986,6 +11193,11 @@
                 },
                 "host__PREPEND": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -10126,6 +11338,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "set": {
                   "$ref": "#/$defs/id-0ec8ec07c5d04919d4d678a5ae0105b4"
                 },
@@ -10194,6 +11454,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -10217,8 +11489,8 @@
                   "description": "auto remove old cache directories",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
+                "json": {
+                  "title": "json",
                   "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
@@ -10341,6 +11613,54 @@
                 },
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "tls-client-cert": {
                   "title": "tls-client-cert",

@@ -2758,14 +2758,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -2849,6 +2849,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -2886,14 +2898,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -2966,6 +2978,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -3003,14 +3027,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3081,6 +3105,18 @@
             "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
             "type": "string",
             "minLength": 0
+          },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
             "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
@@ -3484,14 +3520,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3569,6 +3605,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -3607,17 +3655,17 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3693,6 +3741,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tag": {
             "$ref": "#/$defs/id-5a6e7b23808067f4ea3cd8627e7434be"
           },
@@ -3745,6 +3805,11 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
@@ -3756,11 +3821,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3858,6 +3918,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "show-pack-id": {
             "title": "show-pack-id",
             "description": "display the pack-ID the blobs belong to (with --blob or --tree)",
@@ -3920,6 +3992,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -3933,11 +4010,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -4092,6 +4164,18 @@
             "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
             "type": "string",
             "minLength": 0
+          },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
             "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
@@ -4331,6 +4415,30 @@
             "type": "string",
             "minLength": 0
           },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -4372,17 +4480,17 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
           },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4462,6 +4570,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -4516,14 +4636,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4595,6 +4715,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "tls-client-cert": {
             "title": "tls-client-cert",
@@ -4729,6 +4861,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tag": {
             "$ref": "#/$defs/id-5a6e7b23808067f4ea3cd8627e7434be"
           },
@@ -4763,6 +4907,11 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "force": {
             "title": "force",
             "description": "apply a migration a second time",
@@ -4771,11 +4920,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4848,6 +4992,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -4884,17 +5040,17 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4979,6 +5135,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "snapshot-template": {
             "title": "snapshot-template",
@@ -5177,6 +5345,18 @@
             "type": "string",
             "minLength": 0
           },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
           "schedule": {
             "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
           },
@@ -5303,14 +5483,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5388,6 +5568,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -5419,14 +5611,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5499,6 +5691,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -5545,6 +5749,11 @@
           "exclude": {
             "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
@@ -5560,11 +5769,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5640,6 +5844,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tag": {
             "$ref": "#/$defs/id-5a6e7b23808067f4ea3cd8627e7434be"
           },
@@ -5705,6 +5921,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -5718,11 +5939,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -6011,6 +6227,11 @@
             "description": "use compact output format",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -6023,11 +6244,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6107,6 +6323,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "tag": {
             "$ref": "#/$defs/id-07122d0553bd2888fbf7616a676047d5"
@@ -6235,6 +6463,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "tag": {
             "$ref": "#/$defs/id-d07a19e23ce110495e29bd4c07d194b8"
           },
@@ -6284,17 +6524,17 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6373,6 +6613,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "set": {
             "$ref": "#/$defs/id-0ec8ec07c5d04919d4d678a5ae0105b4"
           },
@@ -6416,14 +6668,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6500,6 +6752,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "tls-client-cert": {
             "title": "tls-client-cert",

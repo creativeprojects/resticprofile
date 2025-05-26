@@ -4696,6 +4696,11 @@
                   "description": "excludes cache directories that are marked with a CACHEDIR.TAG file. See https://bford.info/cachedir/ for the Cache Directory Tagging Standard",
                   "type": "boolean"
                 },
+                "exclude-cloud-files": {
+                  "title": "exclude-cloud-files",
+                  "description": "excludes online-only cloud files (such as OneDrive Files On-Demand) [restic \u003e= 0.18.0]",
+                  "type": "boolean"
+                },
                 "exclude-file": {
                   "$ref": "#/$defs/id-d7f8fecbb230b837e9062334f594f0b5"
                 },
@@ -5280,6 +5285,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -5314,6 +5331,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -5328,11 +5350,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5477,6 +5494,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -5527,6 +5592,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -5556,6 +5633,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -5570,11 +5652,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5708,6 +5785,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -5739,6 +5864,18 @@
                 },
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -5784,6 +5921,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -5798,11 +5940,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5898,6 +6035,54 @@
                   "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-3c76d5de2387afe5a7919aad45604644"
@@ -6179,8 +6364,8 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "from-repo": {
-                  "title": "from-repo",
+                "from-repository": {
+                  "title": "from-repository",
                   "description": "source repository to copy snapshots from (default: $RESTIC_FROM_REPOSITORY) [restic \u003e= 0.14.0]",
                   "type": "string",
                   "minLength": 0
@@ -6588,6 +6773,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -6617,11 +6814,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -6636,6 +6828,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6774,6 +6971,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -6824,6 +7069,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -6863,6 +7120,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
@@ -6889,11 +7151,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7039,6 +7296,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -7128,6 +7433,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -7157,11 +7474,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7176,6 +7488,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7309,6 +7626,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -7359,6 +7724,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...snapshot": {
                   "$ref": "#/$defs/id-03550d33226c03f7e7c8a6a6fc971333"
                 },
@@ -7399,6 +7776,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -7435,11 +7817,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7612,6 +7989,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "show-pack-id": {
                   "title": "show-pack-id",
                   "description": "display the pack-ID the blobs belong to (with --blob or --tree)",
@@ -7691,6 +8116,18 @@
                 },
                 "...path": {
                   "$ref": "#/$defs/id-50287fc5f0b0ec16f5013bbe833c1100"
+                },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
@@ -8001,6 +8438,54 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
                 "schedule": {
                   "$ref": "#/$defs/id-3c76d5de2387afe5a7919aad45604644"
                 },
@@ -8197,6 +8682,30 @@
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -8377,6 +8886,102 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -8436,6 +9041,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -8617,6 +9234,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -8661,6 +9326,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -8690,6 +9367,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
                 },
@@ -8707,11 +9389,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -8855,6 +9532,54 @@
                 },
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
@@ -8912,6 +9637,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -9093,6 +9830,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -9137,6 +9922,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -9166,6 +9963,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
                 },
@@ -9183,11 +9985,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9332,6 +10129,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -9382,6 +10227,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -9411,6 +10268,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -9425,11 +10287,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9562,6 +10419,54 @@
                 },
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
@@ -9617,6 +10522,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -9646,6 +10563,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -9660,11 +10582,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9797,6 +10714,54 @@
                 },
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
@@ -9854,6 +10819,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -9886,6 +10863,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
                 },
@@ -9917,11 +10899,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10087,6 +11064,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "sort": {
                   "title": "sort",
                   "default": "name",
@@ -10150,6 +11175,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -10179,6 +11216,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "force": {
                   "title": "force",
                   "description": "apply a migration a second time",
@@ -10198,11 +11240,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10336,6 +11373,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -10389,6 +11474,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
@@ -10426,6 +11523,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -10452,11 +11554,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10624,6 +11721,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -10714,6 +11859,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -10743,6 +11900,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -10757,11 +11919,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10895,6 +12052,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -10989,6 +12194,18 @@
                 "...option": {
                   "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
                 },
+                "...run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "...run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "...run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "...run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
                 "...schedule-capture-environment": {
                   "$ref": "#/$defs/id-ac1347149103e4aba75340d690c7d011"
                 },
@@ -11038,6 +12255,11 @@
                   "description": "do not modify the repository, just print what would be done [restic \u003e= 0.12.0]",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -11052,11 +12274,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -11175,6 +12392,54 @@
                   "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
                   "type": "string",
                   "minLength": 0
+                },
+                "run-after": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after-fail": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail...": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+                },
+                "run-after...": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__APPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-after__PREPEND": {
+                  "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+                },
+                "run-before": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before...": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__APPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-before__PREPEND": {
+                  "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+                },
+                "run-finally": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally...": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__APPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "run-finally__PREPEND": {
+                  "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
                 "schedule": {
                   "$ref": "#/$defs/id-3c76d5de2387afe5a7919aad45604644"
@@ -11366,6 +12631,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -11395,6 +12672,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -11409,11 +12691,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -11546,6 +12823,54 @@
                 },
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
@@ -11591,6 +12916,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -11620,6 +12957,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -11634,11 +12976,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -11772,6 +13109,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -11815,6 +13200,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -12002,6 +13399,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -12045,6 +13490,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
@@ -12227,6 +13684,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -12276,6 +13781,18 @@
                 },
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "...tag": {
                   "$ref": "#/$defs/id-5ea59c8a3698c9f849086ff3968f5bde"
@@ -12495,6 +14012,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -12599,6 +14164,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-73ddecc00270b21ad3fb847e79607e50"
                 },
@@ -12676,6 +14253,11 @@
                 },
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-9fc99e529e5753db5850c6ad0fe6e769"
+                },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
                 },
                 "host": {
                   "$ref": "#/$defs/id-d8318aede08ef634d4b20867f5791722"
@@ -12787,11 +14369,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -12944,6 +14521,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "sparse": {
                   "title": "sparse",
                   "description": "restore files as sparse [restic \u003e= 0.15.0]",
@@ -13068,6 +14693,11 @@
                   "description": "do not delete anything, just print what would be done",
                   "type": "boolean"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "default": "host,paths",
@@ -13101,11 +14731,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "keep-daily": {
@@ -13497,6 +15122,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-211783b4c728b6fc5c2c329f3010e694"
                 },
@@ -13558,6 +15195,11 @@
                 "exclude__PREPEND": {
                   "$ref": "#/$defs/id-783b5260d9a5f4eba741f6448d3a73a0"
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "forget": {
                   "title": "forget",
                   "description": "remove original snapshots after creating new ones [restic \u003e= 0.15.0]",
@@ -13613,11 +15255,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -13775,6 +15412,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "snapshot-summary": {
                   "title": "snapshot-summary",
                   "description": "create snapshot summary record if it does not exist [restic \u003e= 0.18.0]",
@@ -13890,6 +15575,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-8fee4af1900e0d2f64f1ee66a27254ef"
                 },
@@ -13927,6 +15624,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "group-by": {
                   "title": "group-by",
                   "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -13959,11 +15661,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -14114,6 +15811,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -14176,6 +15921,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...tag": {
                   "$ref": "#/$defs/id-bac728d70d7f809711e6c27ea7825da9"
                 },
@@ -14208,6 +15965,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -14234,11 +15996,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -14391,6 +16148,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",
                   "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -14496,6 +16301,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "...set": {
                   "$ref": "#/$defs/id-0ec8ec07c5d04919d4d678a5ae0105b4"
                 },
@@ -14543,6 +16360,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-11fa1e23ade12c8149af2d113ea9dbb4"
                 },
@@ -14569,11 +16391,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -14731,6 +16548,54 @@
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "set": {
                   "$ref": "#/$defs/id-0ec8ec07c5d04919d4d678a5ae0105b4"
                 },
@@ -14805,6 +16670,18 @@
                 "...run-finally": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
                 },
+                "...send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "...send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "...send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "...send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
                 "cacert": {
                   "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
                 },
@@ -14834,6 +16711,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "http-user-agent": {
                   "title": "http-user-agent",
                   "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -14848,11 +16730,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -14990,6 +16867,54 @@
                 },
                 "run-finally__PREPEND": {
                   "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+                },
+                "send-after": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after-fail": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail...": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__APPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after-fail__PREPEND": {
+                  "$ref": "#/$defs/id-734e7052ffb3742969c96ccff9d0e7b2"
+                },
+                "send-after...": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__APPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-after__PREPEND": {
+                  "$ref": "#/$defs/id-b03ccdd7899cd5486625a0e514a03d2c"
+                },
+                "send-before": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before...": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__APPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-before__PREPEND": {
+                  "$ref": "#/$defs/id-8ed79f73925689de4526f415d4bf639d"
+                },
+                "send-finally": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally...": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__APPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
+                },
+                "send-finally__PREPEND": {
+                  "$ref": "#/$defs/id-1fcb7f2138c894ddc8b954809daf9590"
                 },
                 "stuck-request-timeout": {
                   "title": "stuck-request-timeout",

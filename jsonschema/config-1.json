@@ -3044,6 +3044,11 @@
             "description": "excludes cache directories that are marked with a CACHEDIR.TAG file. See https://bford.info/cachedir/ for the Cache Directory Tagging Standard",
             "type": "boolean"
           },
+          "exclude-cloud-files": {
+            "title": "exclude-cloud-files",
+            "description": "excludes online-only cloud files (such as OneDrive Files On-Demand) [restic \u003e= 0.18.0]",
+            "type": "boolean"
+          },
           "exclude-file": {
             "$ref": "#/$defs/id-d7f8fecbb230b837e9062334f594f0b5"
           },
@@ -3561,6 +3566,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -3717,6 +3734,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -3766,11 +3795,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -3785,6 +3809,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3871,6 +3900,18 @@
             "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
             "type": "string",
             "minLength": 0
+          },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
             "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
@@ -4479,6 +4520,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -4529,6 +4582,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
@@ -4546,11 +4604,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4641,6 +4694,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -4814,6 +4879,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -4862,6 +4939,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
@@ -4889,11 +4971,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5012,6 +5089,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "show-pack-id": {
             "title": "show-pack-id",
             "description": "display the pack-ID the blobs belong to (with --blob or --tree)",
@@ -5086,11 +5175,6 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -5115,6 +5199,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -5302,6 +5391,18 @@
             "type": "string",
             "minLength": 0
           },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
           "schedule": {
             "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
           },
@@ -5460,11 +5561,6 @@
             "description": "copy chunker parameters from the secondary repository (useful with the copy command) [restic \u003e= 0.10.0]",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "from-insecure-no-password": {
             "title": "from-insecure-no-password",
             "description": "use an empty password for the source repository (insecure) [restic \u003e= 0.17.0]",
@@ -5514,6 +5610,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5632,6 +5733,30 @@
             "type": "string",
             "minLength": 0
           },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -5690,6 +5815,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
           },
@@ -5707,11 +5837,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5807,6 +5932,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -5857,11 +5994,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
           },
@@ -5879,6 +6011,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5977,6 +6114,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -6140,6 +6289,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -6183,11 +6344,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
           },
@@ -6205,6 +6361,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6304,6 +6465,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -6353,11 +6526,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -6372,6 +6540,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6459,6 +6632,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -6513,11 +6698,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -6532,6 +6712,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6620,6 +6805,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -6669,11 +6866,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
@@ -6696,6 +6888,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6807,6 +7004,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "sort": {
             "title": "sort",
             "default": "name",
@@ -6860,11 +7069,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "force": {
             "title": "force",
             "description": "apply a migration a second time",
@@ -6884,6 +7088,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6972,6 +7181,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -7026,11 +7247,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
@@ -7048,6 +7264,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7152,6 +7373,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "snapshot-template": {
             "title": "snapshot-template",
             "deprecated": true,
@@ -7230,11 +7463,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7249,6 +7477,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7336,6 +7569,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -7571,6 +7816,18 @@
             "type": "string",
             "minLength": 0
           },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
           "schedule": {
             "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
           },
@@ -7715,11 +7972,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7734,6 +7986,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7827,6 +8084,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -7870,11 +8139,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7889,6 +8153,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7976,6 +8245,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -8020,11 +8301,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -8039,6 +8315,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8126,6 +8407,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -8282,6 +8575,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -8431,6 +8736,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
@@ -8598,6 +8915,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -8675,11 +9004,6 @@
           "exclude-xattr": {
             "$ref": "#/$defs/id-8f92d25a48bde1bd1b2cfa82b4b7e95b"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
@@ -8718,6 +9042,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8816,6 +9145,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "sparse": {
             "title": "sparse",
             "description": "restore files as sparse [restic \u003e= 0.15.0]",
@@ -8898,11 +9239,6 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -8927,6 +9263,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -9401,6 +9742,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "snapshot-summary": {
             "title": "snapshot-summary",
             "description": "create snapshot summary record if it does not exist [restic \u003e= 0.18.0]",
@@ -9599,6 +9952,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -9765,6 +10130,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
             "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
@@ -9833,6 +10210,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
@@ -9850,11 +10232,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9949,6 +10326,18 @@
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
           "set": {
             "$ref": "#/$defs/id-0ec8ec07c5d04919d4d678a5ae0105b4"
           },
@@ -10004,11 +10393,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -10023,6 +10407,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -10115,6 +10504,18 @@
           },
           "run-finally": {
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
           },
           "stuck-request-timeout": {
             "title": "stuck-request-timeout",
