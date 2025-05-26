@@ -5,6 +5,33 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.31.0 (2025-05-26)
+
+## 🍸 Spring Bank Holiday release 🌞 
+
+This release includes several long-awaited improvements.
+
+### Improvements:  
+- Add support for the new Restic flag `exclude-cloud-files` introduced in version 0.18.0 (Windows only).  
+- Include missing `run-*` and `send-*` targets in all commands (previously missing in `check` and `copy` commands).  
+- Send Restic version as a new Prometheus metric.  
+- Support `.yml` files when searching for configuration files (previously only `.yaml` was considered).  
+
+### Bug fixes:  
+- Ignore missing drop-in files to prevent creating an empty systemd schedule.  
+
+
+## Changelog
+* [Add missing run-* and send-* to all command sections (#504)](https://github.com/creativeprojects/resticprofile/commit/f7566acc7d87e8f099a3e7ef5b535611c75a04f9)
+* [add support for windows only flag exclude-cloud-files (#500)](https://github.com/creativeprojects/resticprofile/commit/88fcedbd7c4b72eee9b0dcfe23236e8d992ea4a6)
+* [add support for yml extension when searching for configuration file (#506)](https://github.com/creativeprojects/resticprofile/commit/81a6e45f50e3c2196ff4e62e85bfb61e0e5816a0)
+* [add version of restic to the Prometheus metrics (#495)](https://github.com/creativeprojects/resticprofile/commit/43b6c849331aa4b0e1126df57d556e5ba642f1fc)
+* [fix: remove duplicated field](https://github.com/creativeprojects/resticprofile/commit/763a2cdf83c9cd644de4cd275bbaab8c5c4f62b5)
+* [ignore missing drop-in files to avoid creating an empty configuration (#502)](https://github.com/creativeprojects/resticprofile/commit/c3add93ec2debf6e430c9588dc9096ed3c82d936)
+* [replace deprecated sonar scan action (#503)](https://github.com/creativeprojects/resticprofile/commit/8fd3ddbdfdd0798bdd410909c93dfeaf854dc539)
+
+
+
 # v0.30.1 (2025-05-05)
 
 ## 🐛 Bug fix release 🐞 
