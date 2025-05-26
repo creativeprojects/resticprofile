@@ -243,6 +243,8 @@ type RetentionSection struct {
 	OtherFlagsSection   `mapstructure:",squash"`
 	BeforeBackup        maybe.Bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
 	AfterBackup         maybe.Bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
+	BeforeCopy          maybe.Bool `mapstructure:"before-copy" description:"Apply retention before starting the copy command"`
+	AfterCopy           maybe.Bool `mapstructure:"after-copy" description:"Apply retention after the copy command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
@@ -252,20 +254,27 @@ func (r *RetentionSection) resolve(profile *Profile) {
 
 	// Special cases of retention
 	isSet := func(flags OtherFlags, name string) (found bool) { _, found = flags.GetOtherFlags()[name]; return }
-	hasBackup := !profile.Backup.IsEmpty()
+	hasBackup := !profile.Backup.IsEmpty() && (r.BeforeBackup.IsTrue() || r.AfterBackup.IsTrue())
+	hasCopy := !profile.Copy.IsEmpty() && (r.BeforeCopy.IsTrue() || r.AfterCopy.IsTrue())
 
 	// Copy "source" from "backup" as "path" if it hasn't been redefined
 	if hasBackup && !isSet(r, constants.ParameterPath) {
 		r.SetOtherFlag(constants.ParameterPath, true)
 	}
 
+	// Copy "source" from "backup" as "path" if it hasn't been redefined
+	if hasCopy && !isSet(r, constants.ParameterPath) {
+		r.SetOtherFlag(constants.ParameterPath, true)
+	}
+
 	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
 	if profile.config != nil && profile.config.version >= Version02 {
 		// Auto-enable "after-backup" if nothing was specified explicitly and any "keep-" was configured
-		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() {
+		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() && r.AfterCopy.IsUndefined() && r.BeforeCopy.IsUndefined() {
 			for name := range r.OtherFlags {
 				if strings.HasPrefix(name, "keep-") {
 					r.AfterBackup = maybe.True()
+					hasBackup = true
 					break
 				}
 			}
@@ -280,12 +289,23 @@ func (r *RetentionSection) resolve(profile *Profile) {
 			r.SetOtherFlag(constants.ParameterTag, true)
 		}
 
+		// Copy "tag" from "copy" if it was set and hasn't been redefined here
+		// Allow setting it at profile level when not defined in "backup" nor "retention"
+		if hasCopy &&
+			!isSet(r, constants.ParameterTag) &&
+			isSet(profile.Copy, constants.ParameterTag) {
+
+			r.SetOtherFlag(constants.ParameterTag, true)
+		}
+
 		// Copy "host" from "backup" if it was set and hasn't been redefined here
 		// Or use os.Hostname() same as restic does for backup when not setting it, see:
 		// https://github.com/restic/restic/blob/master/cmd/restic/cmd_backup.go#L48
 		if !isSet(r, constants.ParameterHost) {
 			if hasBackup && isSet(profile.Backup, constants.ParameterHost) {
 				r.SetOtherFlag(constants.ParameterHost, profile.Backup.OtherFlags[constants.ParameterHost])
+			} else if hasCopy && isSet(profile.Copy, constants.ParameterHost) {
+				r.SetOtherFlag(constants.ParameterHost, profile.Copy.OtherFlags[constants.ParameterHost])
 			} else if !isSet(profile, constants.ParameterHost) {
 				r.SetOtherFlag(constants.ParameterHost, true) // resolved with os.Hostname()
 			}
@@ -349,71 +369,102 @@ type CopySection struct {
 	GenericSectionWithSchedule  `mapstructure:",squash"`
 	Initialize                  bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
 	InitializeCopyChunkerParams maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
-	Repository                  ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
-	RepositoryFile              string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
-	PasswordFile                string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
-	PasswordCommand             string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
-	KeyHint                     string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
+	FromPasswordFile            string            `mapstructure:"from-password-file" description:"File to read the source repository password from"`
+	FromPasswordCommand         string            `mapstructure:"from-password-command" description:"Shell command to obtain the source repository password from"`
+	FromRepository              ConfidentialValue `mapstructure:"from-repository" description:"Source repository to copy snapshots to"`
+	FromRepositoryFile          string            `mapstructure:"from-repository-file" description:"File from which to read the source repository location to copy snapshots to"`
+	FromKeyHint                 string            `mapstructure:"from-key-hint" description:"Key ID of key to try decrypting the source repository first"`
+	ToPasswordFile              string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
+	ToPasswordCommand           string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
+	ToRepository                ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
+	ToRepositoryFile            string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
+	ToKeyHint                   string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
 	Snapshots                   []string          `mapstructure:"snapshot" description:"Snapshot IDs to copy (if empty, all snapshots are copied)"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
 
+func (s *CopySection) IsCopyTo() bool {
+	return (s.ToRepository.HasValue() || s.ToRepositoryFile != "") &&
+		!(s.FromRepository.HasValue() || s.FromRepositoryFile != "")
+}
+
 func (c *CopySection) resolve(p *Profile) {
 	c.ScheduleBaseSection.resolve(p)
 
-	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
+	c.ToRepository.setValue(fixPath(c.ToRepository.Value(), expandEnv, expandUserHome))
 }
 
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
 	c.GenericSectionWithSchedule.setRootPath(p, rootPath)
 
-	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	c.ToPasswordFile = fixPath(c.ToPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	c.ToRepositoryFile = fixPath(c.ToRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	c.FromPasswordFile = fixPath(c.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	c.FromRepositoryFile = fixPath(c.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
 }
 
 func (s *CopySection) getInitFlags(profile *Profile) *shell.Args {
 	var init *InitSection
 
 	if s.InitializeCopyChunkerParams.IsTrueOrUndefined() {
-		// Source repo for CopyChunkerParams
-		init = &InitSection{
-			CopyChunkerParams:   true,
-			FromKeyHint:         profile.KeyHint,
-			FromRepository:      profile.Repository,
-			FromRepositoryFile:  profile.RepositoryFile,
-			FromPasswordFile:    profile.PasswordFile,
-			FromPasswordCommand: profile.PasswordCommand,
+		if s.IsCopyTo() {
+			// Source repo for CopyChunkerParams
+			init = &InitSection{
+				CopyChunkerParams:   true,
+				FromKeyHint:         profile.KeyHint,
+				FromRepository:      profile.Repository,
+				FromRepositoryFile:  profile.RepositoryFile,
+				FromPasswordFile:    profile.PasswordFile,
+				FromPasswordCommand: profile.PasswordCommand,
+			}
+			init.OtherFlags = profile.OtherFlags
+		} else {
+			init = &InitSection{
+				CopyChunkerParams:   true,
+				FromKeyHint:         s.FromKeyHint,
+				FromRepository:      s.FromRepository,
+				FromRepositoryFile:  s.FromRepositoryFile,
+				FromPasswordFile:    s.FromPasswordFile,
+				FromPasswordCommand: s.FromPasswordCommand,
+			}
 		}
-		init.OtherFlags = profile.OtherFlags
 	} else {
 		init = new(InitSection)
 	}
 
-	// Repo that should be initialized
 	ip := *profile
-	ip.KeyHint = s.KeyHint
-	ip.Repository = s.Repository
-	ip.RepositoryFile = s.RepositoryFile
-	ip.PasswordFile = s.PasswordFile
-	ip.PasswordCommand = s.PasswordCommand
-	ip.OtherFlags = s.OtherFlags
-
+	if s.IsCopyTo() {
+		// Repo that should be initialized
+		ip.KeyHint = s.ToKeyHint
+		ip.Repository = s.ToRepository
+		ip.RepositoryFile = s.ToRepositoryFile
+		ip.PasswordFile = s.ToPasswordFile
+		ip.PasswordCommand = s.ToPasswordCommand
+		ip.OtherFlags = s.OtherFlags
+	}
 	return init.getCommandFlags(&ip)
 }
 
 func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 	repositoryArgs := map[string]string{
-		constants.ParameterRepository:      s.Repository.Value(),
-		constants.ParameterRepositoryFile:  s.RepositoryFile,
-		constants.ParameterPasswordFile:    s.PasswordFile,
-		constants.ParameterPasswordCommand: s.PasswordCommand,
-		constants.ParameterKeyHint:         s.KeyHint,
+		constants.ParameterRepository:          s.ToRepository.Value(),
+		constants.ParameterRepositoryFile:      s.ToRepositoryFile,
+		constants.ParameterPasswordFile:        s.ToPasswordFile,
+		constants.ParameterPasswordCommand:     s.ToPasswordCommand,
+		constants.ParameterKeyHint:             s.ToKeyHint,
+		constants.ParameterFromRepository:      s.FromRepository.Value(),
+		constants.ParameterFromRepositoryFile:  s.FromRepositoryFile,
+		constants.ParameterFromPasswordFile:    s.FromPasswordFile,
+		constants.ParameterFromPasswordCommand: s.FromPasswordCommand,
+		constants.ParameterFromKeyHint:         s.FromKeyHint,
 	}
 
 	// Handle confidential repo in flags
-	restore := profile.replaceWithRepositoryFile(&s.Repository, &s.RepositoryFile, "-to")
-	defer restore()
+	restore1 := profile.replaceWithRepositoryFile(&s.ToRepository, &s.ToRepositoryFile, "-to")
+	defer restore1()
+	restore2 := profile.replaceWithRepositoryFile(&s.FromRepository, &s.FromRepositoryFile, "-from")
+	defer restore2()
 
 	flags = profile.GetCommonFlags()
 	addArgsFromStruct(flags, s)
@@ -427,9 +478,11 @@ func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
 			}
 		}
 	} else {
-		// restic >= 0.14: from-repo, from-password-file, etc. is the source, repo, password-file, etc. the destination
-		for name := range maps.Keys(repositoryArgs) {
-			flags.Rename(name, fmt.Sprintf("from-%s", name))
+		if s.IsCopyTo() {
+			// restic >= 0.14: from-repo, from-password-file, etc. is the source, repo, password-file, etc. the destination
+			for name := range maps.Keys(repositoryArgs) {
+				flags.Rename(name, fmt.Sprintf("from-%s", name))
+			}
 		}
 		for name, value := range repositoryArgs {
 			if len(value) > 0 {
