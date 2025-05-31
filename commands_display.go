@@ -16,6 +16,7 @@ import (
 	"github.com/creativeprojects/resticprofile/filesearch"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/creativeprojects/resticprofile/term"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/fatih/color"
 	colorable "github.com/mattn/go-colorable"
@@ -258,7 +259,12 @@ func displayVersion(output io.Writer, ctx commandContext) error {
 	// allow for the general verbose flag, or specified after the command
 	arguments := ctx.request.arguments
 	if ctx.flags.verbose || (len(arguments) > 0 && (arguments[0] == "-v" || arguments[0] == "--verbose")) {
+		executablePath, err := util.Executable()
+		if err != nil {
+			executablePath = "unknown"
+		}
 		out("\n")
+		out("\t%s:\t%s\n", "executable", executablePath)
 		out("\t%s:\t%s\n", "home", "https://github.com/creativeprojects/resticprofile")
 		out("\t%s:\t%s\n", "version", version)
 		out("\t%s:\t%s\n", "commit", commit)
