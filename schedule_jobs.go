@@ -8,6 +8,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/schedule"
+	"github.com/creativeprojects/resticprofile/util"
 )
 
 func scheduleJobs(handler schedule.Handler, configs []*config.Schedule) error {
@@ -15,7 +16,7 @@ func scheduleJobs(handler schedule.Handler, configs []*config.Schedule) error {
 	if err != nil {
 		return err
 	}
-	binary, err := os.Executable()
+	binary, err := util.Executable()
 	if err != nil {
 		return err
 	}
