@@ -119,6 +119,7 @@ If you set a filename with no extension instead, resticprofile will load the fir
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
+- ~/.config/resticprofile/
 - ~/Library/Preferences/resticprofile/
 - /Library/Preferences/resticprofile/
 - /usr/local/etc/
