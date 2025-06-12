@@ -344,96 +344,156 @@ func (s *ScheduleBaseSection) getScheduleConfig(p *Profile, command string) *Sch
 	return s.scheduleConfig
 }
 
-// CopySection contains the destination parameters for a copy command
+// CopySection contains the source or destination parameters for a copy command
 type CopySection struct {
 	GenericSectionWithSchedule  `mapstructure:",squash"`
 	Initialize                  bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
 	InitializeCopyChunkerParams maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
-	Repository                  ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
-	RepositoryFile              string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
-	PasswordFile                string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
-	PasswordCommand             string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
-	KeyHint                     string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
+	FromRepository              ConfidentialValue `mapstructure:"from-repo" argument:"from-repo" description:"Source repository to copy snapshots from"`
+	FromRepositoryFile          string            `mapstructure:"from-repository-file" argument:"from-repository-file" description:"File from which to read the source repository location to copy snapshots from"`
+	FromPasswordFile            string            `mapstructure:"from-password-file" argument:"from-password-file" description:"File to read the source repository password from"`
+	FromPasswordCommand         string            `mapstructure:"from-password-command" argument:"from-password-command" description:"Shell command to obtain the source repository password from"`
+	FromKeyHint                 string            `mapstructure:"from-key-hint" argument:"from-key-hint" description:"Key ID of key to try decrypting the source repository first"`
 	Snapshots                   []string          `mapstructure:"snapshot" description:"Snapshot IDs to copy (if empty, all snapshots are copied)"`
+	ToRepository                ConfidentialValue `mapstructure:"repository" description:"Destination repository to copy snapshots to"`
+	ToRepositoryFile            string            `mapstructure:"repository-file" description:"File from which to read the destination repository location to copy snapshots to"`
+	ToPasswordFile              string            `mapstructure:"password-file" description:"File to read the destination repository password from"`
+	ToPasswordCommand           string            `mapstructure:"password-command" description:"Shell command to obtain the destination repository password from"`
+	ToKeyHint                   string            `mapstructure:"key-hint" description:"Key ID of key to try decrypting the destination repository first"`
 }
 
 func (s *CopySection) IsEmpty() bool { return s == nil }
 
+func (s *CopySection) IsCopyTo() bool { return s.ToRepository.HasValue() || s.ToRepositoryFile != "" }
+
 func (c *CopySection) resolve(p *Profile) {
 	c.ScheduleBaseSection.resolve(p)
 
-	c.Repository.setValue(fixPath(c.Repository.Value(), expandEnv, expandUserHome))
+	if c.IsCopyTo() {
+		c.ToRepository.setValue(fixPath(c.ToRepository.Value(), expandEnv, expandUserHome))
+	} else {
+		c.FromRepository.setValue(fixPath(c.FromRepository.Value(), expandEnv, expandUserHome))
+	}
 }
 
 func (c *CopySection) setRootPath(p *Profile, rootPath string) {
 	c.GenericSectionWithSchedule.setRootPath(p, rootPath)
 
-	c.PasswordFile = fixPath(c.PasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
-	c.RepositoryFile = fixPath(c.RepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	if c.IsCopyTo() {
+		c.ToPasswordFile = fixPath(c.ToPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+		c.ToRepositoryFile = fixPath(c.ToRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	} else {
+		c.FromPasswordFile = fixPath(c.FromPasswordFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+		c.FromRepositoryFile = fixPath(c.FromRepositoryFile, expandEnv, expandUserHome, absolutePrefix(rootPath))
+	}
 }
 
 func (s *CopySection) getInitFlags(profile *Profile) *shell.Args {
 	var init *InitSection
 
-	if s.InitializeCopyChunkerParams.IsTrueOrUndefined() {
-		// Source repo for CopyChunkerParams
-		init = &InitSection{
-			CopyChunkerParams:   true,
-			FromKeyHint:         profile.KeyHint,
-			FromRepository:      profile.Repository,
-			FromRepositoryFile:  profile.RepositoryFile,
-			FromPasswordFile:    profile.PasswordFile,
-			FromPasswordCommand: profile.PasswordCommand,
+	if s.IsCopyTo() {
+		if s.InitializeCopyChunkerParams.IsTrueOrUndefined() {
+			// Source repo for CopyChunkerParams
+			init = &InitSection{
+				CopyChunkerParams:   true,
+				FromKeyHint:         profile.KeyHint,
+				FromRepository:      profile.Repository,
+				FromRepositoryFile:  profile.RepositoryFile,
+				FromPasswordFile:    profile.PasswordFile,
+				FromPasswordCommand: profile.PasswordCommand,
+			}
+			init.OtherFlags = profile.OtherFlags
+		} else {
+			init = new(InitSection)
 		}
-		init.OtherFlags = profile.OtherFlags
+
+		// Repo that should be initialized
+		ip := *profile
+		ip.KeyHint = s.ToKeyHint
+		ip.Repository = s.ToRepository
+		ip.RepositoryFile = s.ToRepositoryFile
+		ip.PasswordFile = s.ToPasswordFile
+		ip.PasswordCommand = s.ToPasswordCommand
+		ip.OtherFlags = s.OtherFlags
+		return init.getCommandFlags(&ip)
 	} else {
-		init = new(InitSection)
+		if s.InitializeCopyChunkerParams.IsTrueOrUndefined() {
+			// Source repo for CopyChunkerParams
+			init = &InitSection{
+				CopyChunkerParams:   true,
+				FromKeyHint:         s.FromKeyHint,
+				FromRepository:      s.FromRepository,
+				FromRepositoryFile:  s.FromRepositoryFile,
+				FromPasswordFile:    s.FromPasswordFile,
+				FromPasswordCommand: s.FromPasswordCommand,
+			}
+			init.OtherFlags = profile.OtherFlags
+		} else {
+			init = new(InitSection)
+		}
+
+		// Repo that should be initialized
+		return init.getCommandFlags(profile)
 	}
-
-	// Repo that should be initialized
-	ip := *profile
-	ip.KeyHint = s.KeyHint
-	ip.Repository = s.Repository
-	ip.RepositoryFile = s.RepositoryFile
-	ip.PasswordFile = s.PasswordFile
-	ip.PasswordCommand = s.PasswordCommand
-	ip.OtherFlags = s.OtherFlags
-
-	return init.getCommandFlags(&ip)
 }
 
 func (s *CopySection) getCommandFlags(profile *Profile) (flags *shell.Args) {
-	repositoryArgs := map[string]string{
-		constants.ParameterRepository:      s.Repository.Value(),
-		constants.ParameterRepositoryFile:  s.RepositoryFile,
-		constants.ParameterPasswordFile:    s.PasswordFile,
-		constants.ParameterPasswordCommand: s.PasswordCommand,
-		constants.ParameterKeyHint:         s.KeyHint,
-	}
+	if s.IsCopyTo() {
+		repositoryArgs := map[string]string{
+			constants.ParameterRepository:      s.ToRepository.Value(),
+			constants.ParameterRepositoryFile:  s.ToRepositoryFile,
+			constants.ParameterPasswordFile:    s.ToPasswordFile,
+			constants.ParameterPasswordCommand: s.ToPasswordCommand,
+			constants.ParameterKeyHint:         s.ToKeyHint,
+		}
 
-	// Handle confidential repo in flags
-	restore := profile.replaceWithRepositoryFile(&s.Repository, &s.RepositoryFile, "-to")
-	defer restore()
+		// Handle confidential repo in flags
+		restore := profile.replaceWithRepositoryFile(&s.ToRepository, &s.ToRepositoryFile, "-to")
+		defer restore()
 
-	flags = profile.GetCommonFlags()
-	addArgsFromStruct(flags, s)
-	addArgsFromOtherFlags(flags, profile, s)
+		flags = profile.GetCommonFlags()
+		addArgsFromStruct(flags, s)
+		addArgsFromOtherFlags(flags, profile, s)
 
-	if v := profile.resticVersion; v == nil || v.LessThan(resticVersion14) {
-		// restic < 0.14: repo2, password-file2, etc. is the destination, repo, password-file, etc. the source
-		for name, value := range repositoryArgs {
-			if len(value) > 0 {
-				flags.AddFlag(fmt.Sprintf("%s2", name), shell.NewArg(value, shell.ArgConfigEscape))
+		if v := profile.resticVersion; v == nil || v.LessThan(resticVersion14) {
+			// restic < 0.14: repo2, password-file2, etc. is the destination, repo, password-file, etc. the source
+			for name, value := range repositoryArgs {
+				if len(value) > 0 {
+					flags.AddFlag(fmt.Sprintf("%s2", name), shell.NewArg(value, shell.ArgConfigEscape))
+				}
+			}
+		} else {
+			// restic >= 0.14: from-repo, from-password-file, etc. is the source, repo, password-file, etc. the destination
+			for name := range maps.Keys(repositoryArgs) {
+				flags.Rename(name, fmt.Sprintf("from-%s", name))
+			}
+			for name, value := range repositoryArgs {
+				if len(value) > 0 {
+					flags.AddFlag(name, shell.NewArg(value, shell.ArgConfigEscape))
+				}
 			}
 		}
 	} else {
-		// restic >= 0.14: from-repo, from-password-file, etc. is the source, repo, password-file, etc. the destination
-		for name := range maps.Keys(repositoryArgs) {
-			flags.Rename(name, fmt.Sprintf("from-%s", name))
+		legacyArgs := map[string]string{
+			"from-repo":             "repo2",
+			"from-repository-file":  "repository-file2",
+			"from-password-file":    "password-file2",
+			"from-password-command": "password-command2",
+			"from-key-hint":         "key-hint2",
 		}
-		for name, value := range repositoryArgs {
-			if len(value) > 0 {
-				flags.AddFlag(name, shell.NewArg(value, shell.ArgConfigEscape))
+
+		// Handle confidential repo in flags
+		restore := profile.replaceWithRepositoryFile(&s.FromRepository, &s.FromRepositoryFile, "-from")
+		defer restore()
+
+		flags = profile.GetCommonFlags()
+		addArgsFromStruct(flags, s)
+		addArgsFromOtherFlags(flags, profile, s)
+
+		if v := profile.resticVersion; v == nil || v.LessThan(resticVersion14) {
+			// restic < 0.14: from-repo => repo2, from-password-file => password-file2, etc.
+			for name, legacyName := range legacyArgs {
+				flags.Rename(name, legacyName)
 			}
 		}
 	}
