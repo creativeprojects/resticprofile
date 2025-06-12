@@ -323,7 +323,7 @@ my_profile:
   prometheus-push-format: protobuf
 ```
 
-More information about the different formats: https://prometheus.io/docs/instrumenting/exposition_formats/#exposition-formats
+More information about the different formats: https://prometheus.io/docs/instrumenting/exposition_formats/
 
 
 ## New in this version
