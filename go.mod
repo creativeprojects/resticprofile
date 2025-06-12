@@ -10,10 +10,11 @@ require (
 	github.com/creativeprojects/go-selfupdate v1.5.0
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.18.0
+	github.com/go-viper/encoding/hcl v0.1.0
+	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/mackerelio/go-osstat v0.2.5
 	github.com/mattn/go-colorable v0.1.14
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/common v0.63.0
 	github.com/rickb777/period v1.0.12
@@ -21,7 +22,7 @@ require (
 	github.com/spf13/afero v1.14.0
 	github.com/spf13/cast v1.8.0
 	github.com/spf13/pflag v1.0.6
-	github.com/spf13/viper v1.19.0
+	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/sys v0.33.0
 	golang.org/x/term v0.32.0
@@ -49,7 +50,6 @@ require (
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
-	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
@@ -59,7 +59,6 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/rickb777/plural v1.4.3 // indirect
 	github.com/sagikazarmark/locafero v0.9.0 // indirect
-	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
@@ -71,9 +70,7 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
-	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 )
