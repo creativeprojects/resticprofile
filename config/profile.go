@@ -351,6 +351,8 @@ type CopySection struct {
 	GenericSectionWithSchedule  `mapstructure:",squash"`
 	Initialize                  bool              `mapstructure:"initialize" description:"Initialize the secondary repository if missing"`
 	InitializeCopyChunkerParams maybe.Bool        `mapstructure:"initialize-copy-chunker-params" default:"true" description:"Copy chunker parameters when initializing the secondary repository"`
+	CheckBefore                 bool              `mapstructure:"check-before" description:"Check the repository before starting the backup command"`
+	CheckAfter                  bool              `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
 	FromRepository              ConfidentialValue `mapstructure:"from-repo" argument:"from-repo" description:"Destination repository to copy snapshots from"`
 	FromRepositoryFile          string            `mapstructure:"from-repository-file" argument:"from-repository-file" description:"File from which to read the source repository location to copy snapshots from"`
 	FromPasswordFile            string            `mapstructure:"from-password-file" argument:"from-password-file" description:"File to read the source repository password from"`

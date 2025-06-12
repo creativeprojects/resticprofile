@@ -147,6 +147,14 @@ func (r *resticWrapper) getCopyAction() func() error {
 			_ = r.runInitializeCopy() // it's ok if the initialization returned an error
 		}
 
+		// Check before
+		if r.profile.Copy != nil && r.profile.Copy.CheckBefore {
+			err = r.runCheck()
+			if err != nil {
+				return
+			}
+		}
+
 		// Retention before
 		if r.profile.Retention != nil && r.profile.Retention.BeforeCopy.IsTrue() {
 			err = r.runRetention()
@@ -164,6 +172,14 @@ func (r *resticWrapper) getCopyAction() func() error {
 		// Retention after
 		if r.profile.Retention != nil && r.profile.Retention.AfterCopy.IsTrue() {
 			err = r.runRetention()
+			if err != nil {
+				return
+			}
+		}
+
+		// Check after
+		if r.profile.Copy != nil && r.profile.Copy.CheckAfter {
+			err = r.runCheck()
 			if err != nil {
 				return
 			}
