@@ -243,6 +243,8 @@ type RetentionSection struct {
 	OtherFlagsSection   `mapstructure:",squash"`
 	BeforeBackup        maybe.Bool `mapstructure:"before-backup" description:"Apply retention before starting the backup command"`
 	AfterBackup         maybe.Bool `mapstructure:"after-backup" description:"Apply retention after the backup command succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-backup\" is unset"`
+	BeforeCopy          maybe.Bool `mapstructure:"before-copy" description:"Apply retention before starting the copy command"`
+	AfterCopy           maybe.Bool `mapstructure:"after-copy" description:"Apply retention after the backup copy succeeded. Defaults to true in configuration format v2 if any \"keep-*\" flag is set and \"before-copy\" is unset"`
 }
 
 func (r *RetentionSection) IsEmpty() bool { return r == nil }
@@ -262,7 +264,7 @@ func (r *RetentionSection) resolve(profile *Profile) {
 	// Extras, only enabled for Version >= 2 (to remain backward compatible in version 1)
 	if profile.config != nil && profile.config.version >= Version02 {
 		// Auto-enable "after-backup" if nothing was specified explicitly and any "keep-" was configured
-		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() {
+		if r.AfterBackup.IsUndefined() && r.BeforeBackup.IsUndefined() && r.AfterCopy.IsUndefined() && r.BeforeCopy.IsUndefined() {
 			for name := range r.OtherFlags {
 				if strings.HasPrefix(name, "keep-") {
 					r.AfterBackup = maybe.True()

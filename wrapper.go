@@ -141,13 +141,35 @@ func (r *resticWrapper) getCommandAction(command string) func() error {
 func (r *resticWrapper) getCopyAction() func() error {
 	copyAction := r.getCommandAction(constants.CommandCopy)
 
-	return func() error {
+	return func() (err error) {
 		// we might need to initialize the secondary repository (the copy target)
 		if r.global.Initialize || (r.profile.Copy != nil && r.profile.Copy.Initialize) {
 			_ = r.runInitializeCopy() // it's ok if the initialization returned an error
 		}
 
-		return copyAction()
+		// Retention before
+		if r.profile.Retention != nil && r.profile.Retention.BeforeCopy.IsTrue() {
+			err = r.runRetention()
+			if err != nil {
+				return
+			}
+		}
+
+		// Copy command
+		err = copyAction()
+		if err != nil {
+			return
+		}
+
+		// Retention after
+		if r.profile.Retention != nil && r.profile.Retention.AfterCopy.IsTrue() {
+			err = r.runRetention()
+			if err != nil {
+				return
+			}
+		}
+
+		return
 	}
 }
 
