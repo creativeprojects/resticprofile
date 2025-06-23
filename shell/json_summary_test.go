@@ -19,7 +19,7 @@ func TestScanJsonSummary(t *testing.T) {
 {"message_type":"status","percent_done":0.028711419769115988,"total_files":213,"files_done":13,"total_bytes":362948126,"bytes_done":10420756,"current_files":["/go/src/github.com/creativeprojects/resticprofile/build/restic","/go/src/github.com/creativeprojects/resticprofile/build/resticprofile"]}
 {"message_type":"status","percent_done":0.9763572825280271,"total_files":213,"files_done":163,"total_bytes":362948126,"bytes_done":354367046,"current_files":["/go/src/github.com/creativeprojects/resticprofile/resticprofile_darwin","/go/src/github.com/creativeprojects/resticprofile/resticprofile_linux"]}
 {"message_type":"status","seconds_elapsed":1,"percent_done":1,"total_files":213,"files_done":212,"total_bytes":362948126,"bytes_done":362948126,"current_files":["/go/src/github.com/creativeprojects/resticprofile/resticprofile_linux"]}
-{"message_type":"summary","files_new":213,"files_changed":11,"files_unmodified":12,"dirs_new":58,"dirs_changed":2,"dirs_unmodified":3,"data_blobs":402,"tree_blobs":59,"data_added":296530781,"total_files_processed":236,"total_bytes_processed":362948126,"total_duration":1.009156009,"snapshot_id":"6daa8ef6"}
+{"message_type":"summary","files_new":213,"files_changed":11,"files_unmodified":12,"dirs_new":58,"dirs_changed":2,"dirs_unmodified":3,"data_blobs":402,"tree_blobs":59,"data_added":296530781,"data_added_packed":74132695,"total_files_processed":236,"total_bytes_processed":362948126,"total_duration":1.009156009,"snapshot_id":"6daa8ef6"}
 `
 
 	if platform.IsWindows() {
@@ -64,6 +64,7 @@ func TestScanJsonSummary(t *testing.T) {
 	assert.Equal(t, 2, summary.DirsChanged)
 	assert.Equal(t, 3, summary.DirsUnmodified)
 	assert.Equal(t, uint64(296530781), summary.BytesAdded)
+	assert.Equal(t, uint64(74132695), summary.BytesAddedPacked)
 	assert.Equal(t, uint64(362948126), summary.BytesTotal)
 	assert.Equal(t, 236, summary.FilesTotal)
 }

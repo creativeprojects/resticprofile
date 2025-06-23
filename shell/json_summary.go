@@ -21,6 +21,7 @@ type ResticJsonSummary struct {
 	DataBlobs           int     `json:"data_blobs"`
 	TreeBlobs           int     `json:"tree_blobs"`
 	DataAdded           uint64  `json:"data_added"`
+	DataAddedPacked     uint64  `json:"data_added_packed"`
 	TotalFilesProcessed int     `json:"total_files_processed"`
 	TotalBytesProcessed uint64  `json:"total_bytes_processed"`
 	TotalDuration       float64 `json:"total_duration"`
@@ -56,6 +57,7 @@ var ScanBackupJson ScanOutput = func(r io.Reader, summary *monitor.Summary, w io
 				summary.DirsUnmodified = jsonSummary.DirsUnmodified
 				summary.FilesTotal = jsonSummary.TotalFilesProcessed
 				summary.BytesAdded = jsonSummary.DataAdded
+				summary.BytesAddedPacked = jsonSummary.DataAddedPacked
 				summary.BytesTotal = jsonSummary.TotalBytesProcessed
 			}
 			continue
