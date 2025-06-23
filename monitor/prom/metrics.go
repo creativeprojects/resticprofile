@@ -52,8 +52,8 @@ func NewMetrics(profile, group, version string, resticversion string, configLabe
 	p.info.With(mergeLabels(cloneLabels(labels), map[string]string{goVersionLabel: runtime.Version(), versionLabel: version})).Set(1)
 
 	p.resticInfo = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name:      "restic_build_info",
-		Help:      "restic build information.",
+		Name: "restic_build_info",
+		Help: "restic build information.",
 	}, append(keys, versionLabel))
 	// send the information about the build right away
 	p.resticInfo.With(mergeLabels(cloneLabels(labels), map[string]string{versionLabel: resticversion})).Set(1)
@@ -72,6 +72,7 @@ func NewMetrics(profile, group, version string, resticversion string, configLabe
 		p.backup.dirUnmodified,
 		p.backup.filesTotal,
 		p.backup.bytesAdded,
+		p.backup.bytesAddedPacked,
 		p.backup.bytesTotal,
 		p.backup.status,
 		p.backup.time,
@@ -92,6 +93,7 @@ func (p *Metrics) BackupResults(status Status, summary monitor.Summary) {
 
 	p.backup.filesTotal.With(p.labels).Set(float64(summary.FilesTotal))
 	p.backup.bytesAdded.With(p.labels).Set(float64(summary.BytesAdded))
+	p.backup.bytesAddedPacked.With(p.labels).Set(float64(summary.BytesAddedPacked))
 	p.backup.bytesTotal.With(p.labels).Set(float64(summary.BytesTotal))
 	p.backup.status.With(p.labels).Set(float64(status))
 	p.backup.time.With(p.labels).Set(float64(time.Now().Unix()))

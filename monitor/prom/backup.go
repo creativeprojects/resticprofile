@@ -13,18 +13,19 @@ const (
 )
 
 type BackupMetrics struct {
-	duration        *prometheus.GaugeVec
-	filesNew        *prometheus.GaugeVec
-	filesChanged    *prometheus.GaugeVec
-	filesUnmodified *prometheus.GaugeVec
-	dirNew          *prometheus.GaugeVec
-	dirChanged      *prometheus.GaugeVec
-	dirUnmodified   *prometheus.GaugeVec
-	filesTotal      *prometheus.GaugeVec
-	bytesAdded      *prometheus.GaugeVec
-	bytesTotal      *prometheus.GaugeVec
-	status          *prometheus.GaugeVec
-	time            *prometheus.GaugeVec
+	duration         *prometheus.GaugeVec
+	filesNew         *prometheus.GaugeVec
+	filesChanged     *prometheus.GaugeVec
+	filesUnmodified  *prometheus.GaugeVec
+	dirNew           *prometheus.GaugeVec
+	dirChanged       *prometheus.GaugeVec
+	dirUnmodified    *prometheus.GaugeVec
+	filesTotal       *prometheus.GaugeVec
+	bytesAdded       *prometheus.GaugeVec
+	bytesAddedPacked *prometheus.GaugeVec
+	bytesTotal       *prometheus.GaugeVec
+	status           *prometheus.GaugeVec
+	time             *prometheus.GaugeVec
 }
 
 func newBackupMetrics(labels []string) BackupMetrics {
@@ -82,6 +83,12 @@ func newBackupMetrics(labels []string) BackupMetrics {
 			Subsystem: backup,
 			Name:      "added_bytes",
 			Help:      "Total number of bytes added to the repository.",
+		}, labels),
+		bytesAddedPacked: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: backup,
+			Name:      "added_bytes_packed",
+			Help:      "Total number of bytes added to the repository after compression.",
 		}, labels),
 		bytesTotal: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,

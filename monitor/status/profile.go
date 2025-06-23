@@ -30,15 +30,16 @@ type CommandStatus struct {
 // BackupStatus contains the last backup status
 type BackupStatus struct {
 	CommandStatus
-	FilesNew        int    `json:"files_new"`
-	FilesChanged    int    `json:"files_changed"`
-	FilesUnmodified int    `json:"files_unmodified"`
-	DirsNew         int    `json:"dirs_new"`
-	DirsChanged     int    `json:"dirs_changed"`
-	DirsUnmodified  int    `json:"dirs_unmodified"`
-	FilesTotal      int    `json:"files_total"`
-	BytesAdded      uint64 `json:"bytes_added"`
-	BytesTotal      uint64 `json:"bytes_total"`
+	FilesNew         int    `json:"files_new"`
+	FilesChanged     int    `json:"files_changed"`
+	FilesUnmodified  int    `json:"files_unmodified"`
+	DirsNew          int    `json:"dirs_new"`
+	DirsChanged      int    `json:"dirs_changed"`
+	DirsUnmodified   int    `json:"dirs_unmodified"`
+	FilesTotal       int    `json:"files_total"`
+	BytesAdded       uint64 `json:"bytes_added"`
+	BytesAddedPacked uint64 `json:"bytes_added_packed"`
+	BytesTotal       uint64 `json:"bytes_total"`
 }
 
 // BackupSuccess indicates the last backup was successful
@@ -50,15 +51,16 @@ func (p *Profile) BackupSuccess(summary monitor.Summary, stderr string) *Profile
 			Duration: int64(math.Ceil(summary.Duration.Seconds())),
 			Stderr:   stderr,
 		},
-		FilesNew:        summary.FilesNew,
-		FilesChanged:    summary.FilesChanged,
-		FilesUnmodified: summary.FilesUnmodified,
-		DirsNew:         summary.DirsNew,
-		DirsChanged:     summary.DirsChanged,
-		DirsUnmodified:  summary.DirsUnmodified,
-		FilesTotal:      summary.FilesTotal,
-		BytesAdded:      summary.BytesAdded,
-		BytesTotal:      summary.BytesTotal,
+		FilesNew:         summary.FilesNew,
+		FilesChanged:     summary.FilesChanged,
+		FilesUnmodified:  summary.FilesUnmodified,
+		DirsNew:          summary.DirsNew,
+		DirsChanged:      summary.DirsChanged,
+		DirsUnmodified:   summary.DirsUnmodified,
+		FilesTotal:       summary.FilesTotal,
+		BytesAdded:       summary.BytesAdded,
+		BytesAddedPacked: summary.BytesAddedPacked,
+		BytesTotal:       summary.BytesTotal,
 	}
 	return p
 }
@@ -73,15 +75,16 @@ func (p *Profile) BackupError(err error, summary monitor.Summary, stderr string)
 			Duration: int64(math.Ceil(summary.Duration.Seconds())),
 			Stderr:   stderr,
 		},
-		FilesNew:        0,
-		FilesChanged:    0,
-		FilesUnmodified: 0,
-		DirsNew:         0,
-		DirsChanged:     0,
-		DirsUnmodified:  0,
-		FilesTotal:      0,
-		BytesAdded:      0,
-		BytesTotal:      0,
+		FilesNew:         0,
+		FilesChanged:     0,
+		FilesUnmodified:  0,
+		DirsNew:          0,
+		DirsChanged:      0,
+		DirsUnmodified:   0,
+		FilesTotal:       0,
+		BytesAdded:       0,
+		BytesAddedPacked: 0,
+		BytesTotal:       0,
 	}
 	return p
 }

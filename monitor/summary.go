@@ -4,17 +4,18 @@ import "time"
 
 // Summary of the profile run
 type Summary struct {
-	Duration        time.Duration
-	FilesNew        int
-	FilesChanged    int
-	FilesUnmodified int
-	DirsNew         int
-	DirsChanged     int
-	DirsUnmodified  int
-	FilesTotal      int
-	BytesAdded      uint64
-	BytesTotal      uint64
-	OutputAnalysis  OutputAnalysis
+	Duration         time.Duration
+	FilesNew         int
+	FilesChanged     int
+	FilesUnmodified  int
+	DirsNew          int
+	DirsChanged      int
+	DirsUnmodified   int
+	FilesTotal       int
+	BytesAdded       uint64
+	BytesAddedPacked uint64
+	BytesTotal       uint64
+	OutputAnalysis   OutputAnalysis
 }
 
 // OutputAnalysis of the profile run

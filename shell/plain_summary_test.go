@@ -20,7 +20,7 @@ created new cache in /Users/home/Library/Caches/restic
 
 Files:         209 new,     2 changed,    12 unmodified
 Dirs:           58 new,     1 changed,    11 unmodified
-Added to the repo: 282.768 MiB
+Added to the repository: 282.768 MiB (70.691 MiB stored)
 
 processed 223 files, 346.107 MiB in 0:00
 snapshot 07ab30a5 saved
@@ -61,6 +61,7 @@ snapshot 07ab30a5 saved
 	assert.Equal(t, 1, summary.DirsChanged)
 	assert.Equal(t, 11, summary.DirsUnmodified)
 	assert.Equal(t, uint64(296503738), summary.BytesAdded)
+	assert.Equal(t, uint64(74124886), summary.BytesAddedPacked)
 	assert.Equal(t, uint64(362919494), summary.BytesTotal)
 	assert.Equal(t, 223, summary.FilesTotal)
 }

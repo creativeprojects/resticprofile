@@ -17,7 +17,7 @@ var ScanBackupPlain ScanOutput = func(r io.Reader, summary *monitor.Summary, w i
 	if runtime.GOOS == "windows" {
 		eol = "\r\n"
 	}
-	rawBytes, unit, duration := 0.0, "", ""
+	rawBytes, rawBytesStored, unit, unitStored, duration := 0.0, 0.0, "", "", ""
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		_, err := w.Write([]byte(scanner.Text() + eol))
@@ -28,9 +28,10 @@ var ScanBackupPlain ScanOutput = func(r io.Reader, summary *monitor.Summary, w i
 		_, _ = fmt.Sscanf(scanner.Text(), "Files: %d new, %d changed, %d unmodified", &summary.FilesNew, &summary.FilesChanged, &summary.FilesUnmodified)
 		_, _ = fmt.Sscanf(scanner.Text(), "Dirs: %d new, %d changed, %d unmodified", &summary.DirsNew, &summary.DirsChanged, &summary.DirsUnmodified)
 
-		n, err := fmt.Sscanf(scanner.Text(), "Added to the repo: %f %3s", &rawBytes, &unit)
-		if n == 2 && err == nil {
+		n, err := fmt.Sscanf(scanner.Text(), "Added to the repository: %f %3s (%f %3s stored)", &rawBytes, &unit, &rawBytesStored, &unitStored)
+		if n == 4 && err == nil {
 			summary.BytesAdded = unformatBytes(rawBytes, unit)
+			summary.BytesAddedPacked = unformatBytes(rawBytesStored, unitStored)
 		}
 
 		n, err = fmt.Sscanf(scanner.Text(), "processed %d files, %f %3s in %s", &summary.FilesTotal, &rawBytes, &unit, &duration)
