@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -50,18 +52,20 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, logTarget, logUploadTarget, commandOutput string) (io.Closer, error) {
 	var (
-		handler LogCloser
-		file    io.Writer
-		err     error
+		handler  LogCloser
+		file     io.Writer
+		filepath string
+		err      error
 	)
 	if scheme, hostPort, isURL := dial.GetAddr(logTarget); isURL {
 		handler, file, err = getSyslogHandler(scheme, hostPort)
 	} else if dial.IsURL(logTarget) {
 		err = fmt.Errorf("unsupported URL: %s", logTarget)
 	} else {
-		handler, file, err = getFileHandler(logTarget)
+		filepath = getLogfilePath(logTarget)
+		handler, file, err = getFileHandler(filepath)
 	}
 	if err != nil {
 		return nil, err
@@ -79,9 +83,60 @@ func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) 
 		} else if toLog {
 			term.SetAllOutput(file)
 		}
+		if logUploadTarget != "" && filepath != "" {
+			if !dial.IsURL(logUploadTarget) {
+				return nil, fmt.Errorf("log-upload: No valid URL %v", logUploadTarget)
+			}
+			handler = createLogUploadingLogHandler(handler, filepath, logUploadTarget)
+		}
 	}
 	// and return the handler (so we can close it at the end)
 	return handler, nil
+}
+
+type logUploadingLogCloser struct {
+	LogCloser
+	logfilePath     string
+	logUploadTarget string
+}
+
+// Try to close the original handler
+// Also upload the log to the configured log-upload-url
+func (w logUploadingLogCloser) Close() error {
+	err := w.LogCloser.Close()
+	if err != nil {
+		return err
+	}
+	// Open logfile for reading
+	logData, err := os.Open(w.logfilePath)
+	if err != nil {
+		return err
+	}
+	// Upload logfile to server
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, w.logUploadTarget, logData)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	// HTTP-Status-Codes 200-299 signal success, return an error for everything else
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("log-upload: Got invalid http status %v: %v", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+
+func createLogUploadingLogHandler(handler LogCloser, logfilePath string, logUploadTarget string) LogCloser {
+	return logUploadingLogCloser{LogCloser: handler, logfilePath: logfilePath, logUploadTarget: logUploadTarget}
 }
 
 func parseCommandOutput(commandOutput string) (all, log bool) {
@@ -98,7 +153,7 @@ func parseCommandOutput(commandOutput string) (all, log bool) {
 	return
 }
 
-func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error) {
+func getLogfilePath(logfile string) string {
 	if strings.HasPrefix(logfile, constants.TemporaryDirMarker) {
 		if tempDir, err := util.TempDir(); err == nil {
 			logfile = logfile[len(constants.TemporaryDirMarker):]
@@ -109,7 +164,10 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 			_ = os.MkdirAll(filepath.Dir(logfile), 0755)
 		}
 	}
+	return logfile
+}
 
+func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error) {
 	// create a platform aware log file appender
 	keepOpen, appender := true, appendFunc(nil)
 	if platform.IsWindows() {
