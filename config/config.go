@@ -20,7 +20,8 @@ import (
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/encoding/hcl"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
 )
 
@@ -60,11 +61,19 @@ var (
 
 // newConfig instantiate a new Config object
 func newConfig(format string) *Config {
+	codecRegistry := viper.NewCodecRegistry()
+	codec := hcl.Codec{}
+	_ = codecRegistry.RegisterCodec("hcl", codec)
+
 	keyDelimiter := "\\"
+
 	return &Config{
 		keyDelim: keyDelimiter,
 		format:   format,
-		viper:    viper.NewWithOptions(viper.KeyDelimiter(keyDelimiter)),
+		viper: viper.NewWithOptions(
+			viper.KeyDelimiter(keyDelimiter),
+			viper.WithCodecRegistry(codecRegistry),
+		),
 	}
 }
 
