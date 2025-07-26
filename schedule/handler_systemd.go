@@ -115,6 +115,8 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return fmt.Errorf("after-network-online is not available for \"user_logged_on\" permission schedules")
 	}
 
+	timerFile := systemd.GetTimerFile(job.ProfileName, job.CommandName)
+
 	// check the user hasn't changed the permission, which could duplicate the unit (system & user)
 	otherUnitType := systemd.SystemUnit
 	if unitType == systemd.SystemUnit {
@@ -125,7 +127,11 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 			if cfg.CommandName == job.CommandName && cfg.ProfileName == job.ProfileName {
 				// we'd better remove this schedule first
 				clog.Infof("removing existing unit with different permission")
-				err := h.RemoveJob(&cfg, PermissionFromConfig(cfg.Permission))
+				err := h.disableJob(job, otherUnitType, timerFile)
+				if err != nil {
+					return fmt.Errorf("cannot stop or disable existing unit before scheduling with different permission. You might want to retry using sudo.")
+				}
+				err = h.removeJobFiles(job, otherUnitType, timerFile, systemd.GetServiceFile(job.ProfileName, job.CommandName))
 				if err != nil {
 					return fmt.Errorf("cannot remove existing unit before scheduling with different permission. You might want to retry using sudo.")
 				}
@@ -164,32 +170,26 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	timerName := systemd.GetTimerFile(job.ProfileName, job.CommandName)
-
-	// enable the job
-	err = runSystemctlCommand(timerName, systemctlEnable, unitType, false)
+	extraArgs := []string{"--quiet"}
+	if _, noStart := job.GetFlag("no-start"); !noStart {
+		// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
+		extraArgs = append(extraArgs, "--now")
+	}
+	// enable (and start) the job
+	err = runSystemctlOnUnit(timerFile, systemctlEnable, unitType, false, extraArgs...)
 	if err != nil {
 		return err
 	}
 
-	if _, noStart := job.GetFlag("no-start"); !noStart {
-		// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
-		err = runSystemctlCommand(timerName, systemctlStart, unitType, false)
-		if err != nil {
-			return err
-		}
-	}
 	fmt.Println("")
 	// display a status after starting it
-	_ = runSystemctlCommand(timerName, systemctlStatus, unitType, false)
+	_ = runSystemctlOnUnit(timerFile, systemctlStatus, unitType, false)
 
 	return nil
 }
 
 // RemoveJob is disabling the systemd unit and deleting the timer and service files
 func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
-	var err error
-	unit := systemd.NewUnit(user.Current())
 	u := user.Current()
 	unitType, _ := permissionToSystemd(u, permission)
 	serviceFile := systemd.GetServiceFile(job.ProfileName, job.CommandName)
@@ -203,18 +203,37 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 
 	timerFile := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 
-	// stop the job
-	err = runSystemctlCommand(timerFile, systemctlStop, unitType, job.removeOnly)
+	err = h.disableJob(job, unitType, timerFile)
 	if err != nil {
 		return err
 	}
 
-	// disable the job
-	err = runSystemctlCommand(timerFile, systemctlDisable, unitType, job.removeOnly)
+	err = h.removeJobFiles(job, unitType, timerFile, serviceFile)
 	if err != nil {
 		return err
 	}
 
+	// tell systemd we've changed some system configuration files
+	err = runSystemctlReload(unitType)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *HandlerSystemd) disableJob(job *Config, unitType systemd.UnitType, timerFile string) error {
+	// stop the job with the --now flag then disable the job
+	err := runSystemctlOnUnit(timerFile, systemctlDisable, unitType, job.removeOnly, "--now", "--quiet")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *HandlerSystemd) removeJobFiles(job *Config, unitType systemd.UnitType, timerFile, serviceFile string) error {
+	var err error
+	unit := systemd.NewUnit(user.Current())
 	systemdPath := systemd.GetSystemDir()
 	if unitType == systemd.UserUnit {
 		systemdPath, err = unit.GetUserDir()
@@ -237,12 +256,6 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 		if err = os.RemoveAll(pathToRemove); err != nil {
 			clog.Errorf("failed removing %q, error: %s. Please remove this path", pathToRemove, err.Error())
 		}
-	}
-
-	// tell systemd we've changed some system configuration files
-	err = runSystemctlReload(unitType)
-	if err != nil {
-		return err
 	}
 	return nil
 }
@@ -269,7 +282,7 @@ func (h *HandlerSystemd) DisplayJobStatus(job *Config) error {
 	} else {
 		_ = runJournalCtlCommand(timerName, systemdType) // ignore errors on journalctl
 	}
-	return runSystemctlCommand(timerName, systemctlStatus, systemdType, false)
+	return runSystemctlOnUnit(timerName, systemctlStatus, systemdType, false)
 }
 
 func (h *HandlerSystemd) Scheduled(profileName string) ([]Config, error) {
@@ -372,7 +385,7 @@ func getSystemdStatus(profile string, unitType systemd.UnitType) (string, error)
 	return buffer.String(), err
 }
 
-func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, silent bool) error {
+func runSystemctlOnUnit(timerName, command string, unitType systemd.UnitType, silent bool, extraArgs ...string) error {
 	if command == systemctlStatus {
 		fmt.Print("Systemd timer status\n=====================\n")
 	}
@@ -381,6 +394,9 @@ func runSystemctlCommand(timerName, command string, unitType systemd.UnitType, s
 		args = append(args, getUserFlags()...)
 	}
 	args = append(args, flagNoPager)
+	if len(extraArgs) > 0 {
+		args = append(args, extraArgs...)
+	}
 	args = append(args, command, timerName)
 
 	cmd, err := systemctlCommand(args...)
