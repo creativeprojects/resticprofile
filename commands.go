@@ -106,6 +106,7 @@ func getOwnCommands() []ownCommand {
 			flags: map[string]string{
 				"--no-start": "don't start the job after installing (systemd/launch only)",
 				"--start":    "start the job after installing (systemd/launch only)",
+				"--reload":   "force a systemctl daemon-reload after setting up the files (systemd only, available since v0.32.0)",
 				"--all":      "add all scheduled jobs of all profiles and groups",
 			},
 		},
@@ -116,7 +117,10 @@ func getOwnCommands() []ownCommand {
 			action:            removeSchedule,
 			needConfiguration: true,
 			hide:              false,
-			flags:             map[string]string{"--all": "remove all scheduled jobs of all profiles and groups"},
+			flags: map[string]string{
+				"--all":    "remove all scheduled jobs of all profiles and groups",
+				"--reload": "force a systemctl daemon-reload after removing the files (systemd only, available since v0.32.0)",
+			},
 		},
 		{
 			name:              "status",

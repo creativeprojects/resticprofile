@@ -41,11 +41,16 @@ If you use the `--all` flag to schedule all profiles at once, use either `user` 
 Before version `v0.30.0`, resticprofile did not keep a state of the schedule and unschedule commands. If you needed to make many changes to your profiles (e.g., moving, renaming, deleting), it was recommended to unschedule everything using the `--all` flag before making changes. This is no longer necessary since version `v0.30.0`.
 {{% /notice %}}
 
+Use the `--reload` flag to force a `systemctl daemon-reload` after setting up the files. Use this flag if systemd cannot detect some dependencies you added manually in the service file. This flag is available since version 0.32.0.
+
 ### unschedule command
 
 Remove all schedules defined on the selected profile, or all profiles using the `--all` flag.
 
 Before version `v0.30.0`, the `--all` flag didn't remove schedules on deleted or renamed profiles.
+
+Use the `--reload` flag to force a `systemctl daemon-reload` after removing the files. This flag is available since version 0.32.0.
+
 
 > [!NOTE]
 > The behavior of the `unschedule` command changed in version `v0.30.0`:
