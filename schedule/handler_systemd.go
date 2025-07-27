@@ -122,8 +122,8 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 	if unitType == systemd.SystemUnit {
 		otherUnitType = systemd.UserUnit
 	}
-	if cfgs, _ := getConfigs(job.ProfileName, otherUnitType); len(cfgs) > 0 { // ignore errors here
-		for _, cfg := range cfgs {
+	if existingConfigs, _ := getConfigs(job.ProfileName, otherUnitType); len(existingConfigs) > 0 { // ignore errors here
+		for _, cfg := range existingConfigs {
 			if cfg.CommandName == job.CommandName && cfg.ProfileName == job.ProfileName {
 				// we'd better remove this schedule first
 				clog.Infof("removing existing unit with different permission")
@@ -164,10 +164,12 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		return err
 	}
 
-	// tell systemd we've changed some system configuration files
-	err = runSystemctlReload(unitType)
-	if err != nil {
-		return err
+	if _, callReload := job.GetFlag("reload"); callReload {
+		// tell systemd we've changed some system configuration files
+		err = runSystemctlReload(unitType)
+		if err != nil {
+			return err
+		}
 	}
 
 	extraArgs := []string{"--quiet"}
@@ -213,10 +215,12 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 		return err
 	}
 
-	// tell systemd we've changed some system configuration files
-	err = runSystemctlReload(unitType)
-	if err != nil {
-		return err
+	if _, callReload := job.GetFlag("reload"); callReload {
+		// tell systemd we've changed some system configuration files
+		err = runSystemctlReload(unitType)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
