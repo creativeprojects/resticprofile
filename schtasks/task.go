@@ -30,9 +30,10 @@ type Task struct {
 	Principals       Principals       `xml:"Principals"`
 	Settings         Settings         `xml:"Settings"`
 	Actions          Actions          `xml:"Actions"`
+	fromNow          time.Time        `xml:"-"`
 }
 
-func NewTask() Task {
+func NewTask(options ...TaskOption) Task {
 	var userID string
 	if currentUser, err := user.Current(); err == nil {
 		userID = currentUser.Uid
@@ -69,6 +70,11 @@ func NewTask() Task {
 		Actions: Actions{
 			Context: author,
 		},
+		fromNow: time.Now(),
+	}
+
+	for _, option := range options {
+		option.apply(&task)
 	}
 	return task
 }
@@ -105,9 +111,14 @@ func (t *Task) AddSchedules(schedules []*calendar.Event) {
 	}
 }
 
+func (t *Task) setFromNow(fromNow time.Time) {
+	t.fromNow = fromNow
+	t.RegistrationInfo.Date = fromNow.Format(dateFormat)
+}
+
 func (t *Task) addTimeTrigger(triggerOnce time.Time) {
 	timeTrigger := TimeTrigger{
-		StartBoundary: triggerOnce.Format(dateFormat),
+		StartBoundary: &triggerOnce,
 	}
 	if t.Triggers.TimeTrigger == nil {
 		t.Triggers.TimeTrigger = []TimeTrigger{timeTrigger}
@@ -125,7 +136,7 @@ func (t *Task) addCalendarTrigger(trigger CalendarTrigger) {
 }
 
 func (t *Task) addDailyTrigger(schedule *calendar.Event) {
-	start := schedule.Next(time.Now())
+	start := schedule.Next(t.fromNow)
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
 	if len(recurrences) == 0 {
@@ -135,7 +146,7 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 	// Is it only once a day?
 	if len(recurrences) == 1 {
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: recurrences[0].Format(dateFormat),
+			StartBoundary: &recurrences[0],
 			ScheduleByDay: &ScheduleByDay{
 				DaysInterval: 1,
 			},
@@ -149,7 +160,7 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 		// case with regular repetition
 		interval := period.NewOf(compactDifferences[0])
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: start.Format(dateFormat),
+			StartBoundary: &start,
 			ScheduleByDay: &ScheduleByDay{
 				DaysInterval: 1,
 			},
@@ -168,7 +179,7 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 	// install them all
 	for _, recurrence := range recurrences {
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: recurrence.Format(dateFormat),
+			StartBoundary: &recurrence,
 			ScheduleByDay: &ScheduleByDay{
 				DaysInterval: 1,
 			},
@@ -177,7 +188,7 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 }
 
 func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
-	start := schedule.Next(time.Now())
+	start := schedule.Next(t.fromNow)
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
 	if len(recurrences) == 0 {
@@ -187,7 +198,7 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 	// Is it only once per 24h?
 	if len(recurrences) == 1 {
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: recurrences[0].Format(dateFormat),
+			StartBoundary: &recurrences[0],
 			ScheduleByWeek: &ScheduleByWeek{
 				WeeksInterval: 1,
 				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
@@ -202,7 +213,7 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 		// case with regular repetition
 		interval := period.NewOf(compactDifferences[0])
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: start.Format(dateFormat),
+			StartBoundary: &start,
 			ScheduleByWeek: &ScheduleByWeek{
 				WeeksInterval: 1,
 				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
@@ -222,7 +233,7 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 	// install them all
 	for _, recurrence := range recurrences {
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: recurrence.Format(dateFormat),
+			StartBoundary: &recurrence,
 			ScheduleByWeek: &ScheduleByWeek{
 				WeeksInterval: 1,
 				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
@@ -232,7 +243,7 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 }
 
 func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
-	start := schedule.Next(time.Now())
+	start := schedule.Next(t.fromNow)
 	// get all recurrences in the same day
 	recurrences := schedule.GetAllInBetween(start, start.Add(24*time.Hour))
 	if len(recurrences) == 0 {
@@ -252,7 +263,7 @@ func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
 		}
 		if schedule.WeekDay.HasValue() {
 			t.addCalendarTrigger(CalendarTrigger{
-				StartBoundary: recurrence.Format(dateFormat),
+				StartBoundary: &recurrence,
 				ScheduleByMonthDayOfWeek: &ScheduleByMonthDayOfWeek{
 					DaysOfWeek: convertWeekdays(schedule.WeekDay.GetRangeValues()),
 					Weeks:      AllWeeks,
@@ -262,7 +273,7 @@ func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
 			continue
 		}
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: recurrence.Format(dateFormat),
+			StartBoundary: &recurrence,
 			ScheduleByMonth: &ScheduleByMonth{
 				DaysOfMonth: convertDaysOfMonth(schedule.Day.GetRangeValues()),
 				Months:      convertMonths(schedule.Month.GetRangeValues()),
