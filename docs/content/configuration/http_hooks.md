@@ -295,10 +295,12 @@ A few environment variables will be available to construct the url and the body:
 - `PROFILE_COMMAND`: backup, check, forget, etc.
 
 Additionally, for the `send-after-fail` hooks, these environment variables will be available:
-- `ERROR` containing the latest error message (URL Encoded)
-- `ERROR_COMMANDLINE` containing the command line that failed (URL Encoded)
+- `ERROR` containing the latest error message
+- `ERROR_COMMANDLINE` containing the command line that failed
 - `ERROR_EXIT_CODE` containing the exit code of the command line that failed
-- `ERROR_STDERR` containing any message that the failed command sent to the standard error (stderr) (URL Encoded)
+- `ERROR_STDERR` containing any message that the failed command sent to the standard error (stderr)
+
+URL encoding is applayed for variables `ERROR`, `ERROR_COMMANDLINE` and `ERROR_STDERR` if they are used in URL.
 
 The `send-finally` hooks are also getting the environment of `send-after-fail` when any previous operation has failed (except any `send` operation).
 
