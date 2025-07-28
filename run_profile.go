@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -26,11 +27,23 @@ import (
 // Returns:
 //   - error: An error if the profile or group run fails, or if the requested profile is not found.
 func startProfileOrGroup(ctx *Context, runProfile func(ctx *Context) error) error {
-	if ctx.config.HasProfile(ctx.request.profile) {
-		// if running as a systemd timer
-		notifyStart()
-		defer notifyStop()
+	// Catch CTR-C keypress, or other signal sent by a service manager (systemd)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	// remove signal catch before leaving
+	defer signal.Stop(sigChan)
 
+	ctx.sigChan = sigChan
+
+	// also use a go context to stop the loop of group profiles
+	goCtx, cancelGoCtx := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	defer cancelGoCtx()
+
+	// if running as a systemd timer
+	notifyStart()
+	defer notifyStop()
+
+	if ctx.config.HasProfile(ctx.request.profile) {
 		// Single profile run
 		err := runProfile(ctx)
 		if err != nil {
@@ -44,14 +57,14 @@ func startProfileOrGroup(ctx *Context, runProfile func(ctx *Context) error) erro
 			clog.Errorf("cannot load group '%s': %v", ctx.request.profile, err)
 		}
 		if group != nil && len(group.Profiles) > 0 {
-			// if running as a systemd timer
-			notifyStart()
-			defer notifyStop()
-
 			// profile name is the group name
 			groupName := ctx.request.profile
 
 			for i, profileName := range group.Profiles {
+				if goCtx.Err() != nil {
+					clog.Warningf("interrupting group '%s' run", groupName)
+					return nil
+				}
 				clog.Debugf("[%d/%d] starting profile '%s' from group '%s'", i+1, len(group.Profiles), profileName, groupName)
 				ctx = ctx.WithProfile(profileName).WithGroup(groupName)
 				err = runProfile(ctx)
@@ -173,13 +186,6 @@ func runProfile(ctx *Context) error {
 		loadScheduledProfile(ctx)
 	}
 
-	// Catch CTR-C keypress, or other signal sent by a service manager (systemd)
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
-	// remove signal catch before leaving
-	defer signal.Stop(sigChan)
-
-	ctx.sigChan = sigChan
 	wrapper := newResticWrapper(ctx)
 
 	if ctx.noLock {
