@@ -117,10 +117,7 @@ func getOwnCommands() []ownCommand {
 			action:            removeSchedule,
 			needConfiguration: true,
 			hide:              false,
-			flags: map[string]string{
-				"--all":    "remove all scheduled jobs of all profiles and groups",
-				"--reload": "force a systemctl daemon-reload after removing the files (systemd only, available since v0.32.0)",
-			},
+			flags:             map[string]string{"--all": "remove all scheduled jobs of all profiles and groups"},
 		},
 		{
 			name:              "status",

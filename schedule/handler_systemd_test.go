@@ -278,3 +278,11 @@ func TestDisplaySystemdSchedules(t *testing.T) {
 	assert.Contains(t, output, "Original form: daily")
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00")
 }
+
+func TestCloseHandlerRunsDaemonReload(t *testing.T) {
+	handler := NewHandler(SchedulerSystemd{}).(*HandlerSystemd)
+	require.NoError(t, handler.Init())
+
+	handler.addReloadHook(systemd.UserUnit)
+	handler.Close()
+}
