@@ -13,7 +13,10 @@ import (
 // On non-Linux systems, it behaves like os.Executable.
 // On Linux, it returns the path to the executable as specified in the command line arguments.
 func Executable() (string, error) {
-	executable := os.Args[0]
+	return resolveExecutable(os.Args[0])
+}
+
+func resolveExecutable(executable string) (string, error) {
 	if len(executable) == 0 {
 		return "", errors.New("executable path is empty")
 	}

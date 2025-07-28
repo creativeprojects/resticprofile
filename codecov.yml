@@ -2,6 +2,7 @@ ignore:
   - shell/mock/
   - lock/test/
   - priority/check/
+  - util/test_executable/
   - term/remote.go
   - deprecation.go
   - logger.go
