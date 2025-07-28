@@ -5,6 +5,7 @@ package util
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -17,12 +18,22 @@ func Executable() (string, error) {
 		return "", errors.New("executable path is empty")
 	}
 	if executable[0] != '/' {
-		wd, err := os.Getwd()
-		if err != nil {
-			return "", err
+		// If the path is relative, we need to resolve it to an absolute path
+		if executable[0] == '.' {
+			wd, err := os.Getwd()
+			if err != nil {
+				return "", err
+			}
+			// If the executable path is relative, prepend the current working directory to form an absolute path.
+			executable = filepath.Join(wd, executable)
+		} else {
+			// If the path is not absolute, we assume it is in the PATH and resolve it.
+			found, err := exec.LookPath(executable)
+			if err != nil {
+				return "", err
+			}
+			executable = filepath.Clean(found)
 		}
-		// If the executable path is relative, prepend the current working directory to form an absolute path.
-		executable = filepath.Join(wd, executable)
 	}
 	return executable, nil
 }
