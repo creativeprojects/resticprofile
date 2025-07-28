@@ -127,13 +127,13 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 			if cfg.CommandName == job.CommandName && cfg.ProfileName == job.ProfileName {
 				// we'd better remove this schedule first
 				clog.Infof("removing existing unit with different permission")
-				err := h.disableJob(job, otherUnitType, timerFile)
-				if err != nil {
-					return fmt.Errorf("cannot stop or disable existing unit before scheduling with different permission. You might want to retry using sudo.")
-				}
-				err = h.removeJobFiles(job, otherUnitType, timerFile, systemd.GetServiceFile(job.ProfileName, job.CommandName))
+				err := h.removeJobFiles(job, otherUnitType, timerFile, systemd.GetServiceFile(job.ProfileName, job.CommandName))
 				if err != nil {
 					return fmt.Errorf("cannot remove existing unit before scheduling with different permission. You might want to retry using sudo.")
+				}
+				err = h.disableJob(job, otherUnitType, timerFile)
+				if err != nil {
+					return fmt.Errorf("cannot stop or disable existing unit before scheduling with different permission. You might want to retry using sudo.")
 				}
 			}
 		}
@@ -205,23 +205,37 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 
 	timerFile := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 
-	err = h.disableJob(job, unitType, timerFile)
-	if err != nil {
-		return err
-	}
-
-	err = h.removeJobFiles(job, unitType, timerFile, serviceFile)
-	if err != nil {
-		return err
-	}
-
+	// legacy way: stop, disable, remove files then daemon-reload
 	if _, callReload := job.GetFlag("reload"); callReload {
+		err = h.disableJob(job, unitType, timerFile)
+		if err != nil {
+			return err
+		}
+
+		err = h.removeJobFiles(job, unitType, timerFile, serviceFile)
+		if err != nil {
+			return err
+		}
 		// tell systemd we've changed some system configuration files
 		err = runSystemctlReload(unitType)
 		if err != nil {
 			return err
 		}
+
+		return nil
 	}
+
+	// new way: remove the job files, then disable the job
+	err = h.removeJobFiles(job, unitType, timerFile, serviceFile)
+	if err != nil {
+		return err
+	}
+
+	err = h.disableJob(job, unitType, timerFile)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
