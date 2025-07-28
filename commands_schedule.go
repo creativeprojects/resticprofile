@@ -56,6 +56,11 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 				jobs[id].SetFlag("no-start", "")
 			}
 		}
+		if slices.Contains(args, "--reload") {
+			for id := range jobs {
+				jobs[id].SetFlag("reload", "")
+			}
+		}
 
 		allJobs = append(allJobs, profileJobs{schedulerConfig: scheduler, name: profileName, jobs: jobs})
 	}

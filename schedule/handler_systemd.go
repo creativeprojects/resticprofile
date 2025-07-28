@@ -32,6 +32,8 @@ const (
 	systemctlReload  = "daemon-reload"
 	flagUserUnit     = "--user"
 	flagNoPager      = "--no-pager"
+	flagQuiet        = "--quiet"
+	flagNow          = "--now"
 	unitNotFound     = "not-found"
 
 	// https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
@@ -48,7 +50,8 @@ var (
 
 // HandlerSystemd is a handler to schedule tasks using systemd
 type HandlerSystemd struct {
-	config SchedulerSystemd
+	config      SchedulerSystemd
+	reloadHooks []systemd.UnitType
 }
 
 // NewHandlerSystemd creates a new handler to schedule jobs using systemd
@@ -57,7 +60,10 @@ func NewHandlerSystemd(config SchedulerConfig) *HandlerSystemd {
 	if !ok {
 		cfg = SchedulerSystemd{} // empty configuration
 	}
-	return &HandlerSystemd{config: cfg}
+	return &HandlerSystemd{
+		config:      cfg,
+		reloadHooks: make([]systemd.UnitType, 0, 2),
+	}
 }
 
 // Init verifies systemd is available on this system
@@ -65,9 +71,16 @@ func (h *HandlerSystemd) Init() error {
 	return lookupBinary("systemd", systemctlBinary)
 }
 
-// Close does nothing with systemd
+// Close runs systemctl daemon-reload if needed
 func (h *HandlerSystemd) Close() {
-	// nothing to do
+	if len(h.reloadHooks) > 0 {
+		for _, unitType := range h.reloadHooks {
+			err := runSystemctlReload(unitType)
+			if err != nil {
+				clog.Errorf("cannot reload systemd configuration: %s", err)
+			}
+		}
+	}
 }
 
 // ParseSchedules always returns nil on systemd
@@ -137,11 +150,6 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 				}
 			}
 		}
-		// tell systemd we've changed some system configuration files
-		err := runSystemctlReload(unitType)
-		if err != nil {
-			return err
-		}
 	}
 
 	unit := systemd.NewUnit(u)
@@ -177,10 +185,10 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		}
 	}
 
-	extraArgs := []string{"--quiet"}
+	extraArgs := []string{flagQuiet}
 	if _, noStart := job.GetFlag("no-start"); !noStart {
 		// annoyingly, we also have to start it, otherwise it won't be active until the next reboot
-		extraArgs = append(extraArgs, "--now")
+		extraArgs = append(extraArgs, flagNow)
 	}
 	// enable (and start) the job
 	err = runSystemctlOnUnit(timerFile, systemctlEnable, unitType, false, extraArgs...)
@@ -220,20 +228,14 @@ func (h *HandlerSystemd) RemoveJob(job *Config, permission Permission) error {
 		return err
 	}
 
-	if _, callReload := job.GetFlag("reload"); callReload {
-		// tell systemd we've changed some system configuration files
-		err = runSystemctlReload(unitType)
-		if err != nil {
-			return err
-		}
-	}
+	h.addReloadHook(unitType)
 
 	return nil
 }
 
 func (h *HandlerSystemd) disableJob(job *Config, unitType systemd.UnitType, timerFile string) error {
 	// stop the job with the --now flag then disable the job
-	err := runSystemctlOnUnit(timerFile, systemctlDisable, unitType, job.removeOnly, "--now", "--quiet")
+	err := runSystemctlOnUnit(timerFile, systemctlDisable, unitType, job.removeOnly, flagNow, flagQuiet)
 	if err != nil {
 		return err
 	}
@@ -350,6 +352,12 @@ func (h *HandlerSystemd) CheckPermission(user user.User, p Permission) bool {
 		// last case is system (or undefined) + no sudo
 		return false
 
+	}
+}
+
+func (h *HandlerSystemd) addReloadHook(unitType systemd.UnitType) {
+	if !slices.Contains(h.reloadHooks, unitType) {
+		h.reloadHooks = append(h.reloadHooks, unitType)
 	}
 }
 
