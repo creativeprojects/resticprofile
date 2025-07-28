@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	urlpkg "net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -74,8 +75,8 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 	if cfg.URL.Value() == "" {
 		return errors.New("URL field is empty")
 	}
-	url := resolve(cfg.URL.Value(), ctx)
-	publicUrl := resolve(cfg.URL.String(), ctx)
+	url := resolveURL(cfg.URL.Value(), ctx)
+	publicUrl := resolveURL(cfg.URL.String(), ctx)
 	method := cfg.Method
 	if method == "" {
 		method = http.MethodGet
@@ -93,7 +94,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		bodyReader = bytes.NewBufferString(body)
 	}
 	if cfg.Body != "" {
-		body = resolve(cfg.Body, ctx)
+		body = resolveBody(cfg.Body, ctx)
 		bodyReader = bytes.NewBufferString(body)
 	}
 
@@ -202,8 +203,8 @@ func getRootCAs(certificates []string) *x509.CertPool {
 	return caCertPool
 }
 
-func resolve(body string, ctx Context) string {
-	body = os.Expand(body, func(s string) string {
+func resolveBody(body string, ctx Context) string {
+	return os.Expand(body, func(s string) string {
 		switch s {
 		case constants.EnvProfileName:
 			return ctx.ProfileName
@@ -230,7 +231,36 @@ func resolve(body string, ctx Context) string {
 			return os.Getenv(s)
 		}
 	})
-	return body
+}
+
+func resolveURL(url string, ctx Context) string {
+	return os.Expand(url, func(s string) string {
+		switch s {
+		case constants.EnvProfileName:
+			return ctx.ProfileName
+
+		case constants.EnvProfileCommand:
+			return ctx.ProfileCommand
+
+		case constants.EnvError:
+			return urlpkg.QueryEscape(ctx.Error.Message)
+
+		case constants.EnvErrorCommandLine:
+			return urlpkg.QueryEscape(ctx.Error.CommandLine)
+
+		case constants.EnvErrorExitCode:
+			return ctx.Error.ExitCode
+
+		case constants.EnvErrorStderr:
+			return urlpkg.QueryEscape(ctx.Error.Stderr)
+
+		case "$":
+			return "$" // allow to escape "$" as "$$"
+
+		default:
+			return os.Getenv(s)
+		}
+	})
 }
 
 func loadBodyTemplate(filename string, ctx Context) (string, error) {
