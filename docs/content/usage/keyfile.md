@@ -5,24 +5,23 @@ weight: 10
 
 ## Generating random keys
 
-resticprofile has a handy tool to generate cryptographically secure random keys encoded in base64. You can simply put this key into a file and use it as a strong key for restic.
+Resticprofile includes a tool to generate cryptographically secure, base64-encoded random keys. Save the key to a file and use it as a strong key for Restic.
 
-- On Linux and FreeBSD, the generator uses `getrandom(2)` if available, `/dev/urandom` otherwise.
-- On OpenBSD and macOS, the generator uses `getentropy(2)`.
-- On other Unix-like systems, the generator reads from `/dev/urandom`.
-- On Windows systems, the generator uses the uses the RtlGenRandom API.
-- On JS/Wasm, the generator uses the Web Crypto API.
-- On WASIP1/Wasm, the generator uses `random_get` from `wasi_snapshot_preview1`. 
+- On Linux, FreeBSD, Dragonfly, and Solaris, Reader uses `getrandom(2)`.
+- On legacy Linux (< 3.17), it uses `/dev/urandom`.
+- On macOS, and OpenBSD Reader, uses `arc4random_buf(3)`.
+- On NetBSD, Reader uses the kern.arandom sysctl.
+- On Windows, Reader uses the ProcessPrng API.
 
-[Reference from the Go documentation](https://golang.org/pkg/crypto/rand/#pkg-variables)
+[Reference from the Go cryto library documentation](https://golang.org/pkg/crypto/rand/#pkg-variables)
 
 ```shell
 resticprofile generate --random-key
 ```
 
-generates a 1024 bytes random key (converted into 1368 base64 characters) and displays it on the console
+Generates a 1024-byte random key (converted to 1368 Base64 characters) and displays it in the console.
 
-To generate a different size of key, you can specify the bytes length on the command line:
+To generate a key of a different size, specify the byte length in the command line.
 
 ```shell
 resticprofile generate --random-key 2048

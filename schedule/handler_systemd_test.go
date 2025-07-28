@@ -52,6 +52,34 @@ func TestReadingSystemdScheduled(t *testing.T) {
 			},
 			schedules: []*calendar.Event{event},
 		},
+		{
+			job: Config{
+				ProfileName:      "testscheduled-with-reload",
+				CommandName:      "backup",
+				Command:          "/tmp/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       schedulePermission,
+				ConfigFile:       "examples/dev.yaml",
+				Schedules:        []string{event.String()},
+				Flags:            map[string]string{"reload": ""},
+			},
+			schedules: []*calendar.Event{event},
+		},
+		{
+			job: Config{
+				ProfileName:      "test.scheduled.with.reload",
+				CommandName:      "backup",
+				Command:          "/tmp/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "config file.yaml", "--name", "self", "backup"}),
+				WorkingDirectory: "/resticprofile",
+				Permission:       schedulePermission,
+				ConfigFile:       "config file.yaml",
+				Schedules:        []string{event.String()},
+				Flags:            map[string]string{"reload": ""},
+			},
+			schedules: []*calendar.Event{event},
+		},
 	}
 	userHome, err := os.UserHomeDir()
 	require.NoError(t, err)
@@ -70,6 +98,8 @@ func TestReadingSystemdScheduled(t *testing.T) {
 		require.NoError(t, err)
 
 		job.Environment = []string{"HOME=" + userHome}
+		// flags are not stored in the scheduled jobs
+		job.Flags = nil
 		expectedJobs = append(expectedJobs, job)
 	}
 
@@ -247,4 +277,12 @@ func TestDisplaySystemdSchedules(t *testing.T) {
 	output := buffer.String()
 	assert.Contains(t, output, "Original form: daily")
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00")
+}
+
+func TestCloseHandlerRunsDaemonReload(t *testing.T) {
+	handler := NewHandler(SchedulerSystemd{}).(*HandlerSystemd)
+	require.NoError(t, handler.Init())
+
+	handler.addReloadHook(systemd.UserUnit)
+	handler.Close()
 }

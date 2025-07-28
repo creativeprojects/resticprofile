@@ -263,7 +263,7 @@ func TestCreateScheduleOverwriteExistingIntegrationUsingCrontab(t *testing.T) {
 			config: cfg,
 			global: global,
 			request: Request{
-				arguments: []string{"--all"},
+				arguments: []string{"--all", "--reload", "--no-start"},
 			},
 		},
 	}
