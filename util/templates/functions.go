@@ -1,11 +1,14 @@
 package templates
 
 import (
+	"crypto/md5" //nolint:gosec
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"maps"
+	"math/rand/v2"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,6 +46,7 @@ import (
 //   - {{ "plain" | base64 }} => "cGxhaW4="
 //   - {{ tempDir }} => "/path/to/unique-tempdir"
 //   - {{ tempFile "filename" }} => "/path/to/unique-tempdir/filename"
+//   - {{ "seed" | randInt 123 456 }} => 166
 func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 	templateFuncs = map[string]any{
 		"contains":   func(search any, src any) bool { return strings.Contains(toString(src), toString(search)) },
@@ -64,6 +68,7 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 		"tempDir":    TempDir,
 		"tempFile":   TempFile,
 		"env":        func() string { return TempFile(".env.none") }, // satisfies the {{env}} interface w.o. functionality
+		"randInt":    randInt,
 	}
 
 	// aliases
@@ -213,4 +218,23 @@ func toMap(args ...any) (m map[string]any) {
 		}
 	}
 	return
+}
+
+// randInt uses the seed to initialize a pseudo-random number generator and
+// returns a number between low (inclusive) and high (exclusive).
+func randInt(low, high int64, seed string) int64 {
+	if low >= high {
+		panic(fmt.Sprintf("low (%d) must be less than high (%d)", low, high))
+	}
+
+	// MD5 produces the right amount of output bytes and isn't used for
+	// cryptography.
+	sum := md5.Sum([]byte(seed)) //nolint:gosec
+
+	seed1 := binary.LittleEndian.Uint64(sum[0:8])
+	seed2 := binary.LittleEndian.Uint64(sum[8:16])
+
+	r := rand.New(rand.NewPCG(seed1, seed2))
+
+	return low + r.Int64N(high-low)
 }
