@@ -274,11 +274,10 @@ func TestConfidentialURL(t *testing.T) {
 	assert.Equal(t, 1, calls)
 }
 
-// TODO: check if env vars have changed
 func TestURLEncoding(t *testing.T) {
 	ctx := Context{
-		ProfileName:    "unused",
-		ProfileCommand: "unused",
+		ProfileName:    "unencoded/name",
+		ProfileCommand: "unencoded/command",
 		Error: ErrorContext{
 			Message:     "some/error/message",
 			CommandLine: "some < tricky || command & line",
@@ -292,18 +291,26 @@ func TestURLEncoding(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 
+		assert.Equal(t, fmt.Sprintf("/%s-%s", ctx.ProfileName, ctx.ProfileCommand), r.URL.Path)
+
 		assert.Equal(t, ctx.Error.Message, query.Get("message"))
 		assert.Equal(t, ctx.Error.CommandLine, query.Get("command_line"))
 		assert.Equal(t, ctx.Error.ExitCode, query.Get("exit_code"))
 		assert.Equal(t, ctx.Error.Stderr, query.Get("stderr"))
 
+		assert.Equal(t, "$TEST_MONITOR_URL", query.Get("escaped"))
+
 		calls++
 	}))
 	defer server.Close()
 
+	// test if env vars are untouched
+	t.Setenv("TEST_MONITOR_URL", server.URL)
+
 	serverURL := fmt.Sprintf(
-		"%s/?message=$%s&command_line=$%s&exit_code=$%s&stderr=$%s",
-		server.URL,
+		"$TEST_MONITOR_URL/$%s-$%s?message=$%s&command_line=$%s&exit_code=$%s&stderr=$%s&escaped=$$TEST_MONITOR_URL",
+		constants.EnvProfileName,
+		constants.EnvProfileCommand,
 		constants.EnvError,
 		constants.EnvErrorCommandLine,
 		constants.EnvErrorExitCode,
