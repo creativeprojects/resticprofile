@@ -3,7 +3,7 @@ module github.com/creativeprojects/resticprofile
 go 1.24.5
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/adrg/xdg v0.5.3
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.14.0
@@ -11,21 +11,21 @@ require (
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.18.0
 	github.com/joho/godotenv v1.5.1
-	github.com/mackerelio/go-osstat v0.2.5
+	github.com/mackerelio/go-osstat v0.2.6
 	github.com/mattn/go-colorable v0.1.14
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.22.0
-	github.com/prometheus/common v0.63.0
+	github.com/prometheus/common v0.65.0
 	github.com/rickb777/period v1.0.12
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/afero v1.14.0
 	github.com/spf13/cast v1.8.0
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/sys v0.33.0
-	golang.org/x/term v0.32.0
-	golang.org/x/text v0.25.0
+	golang.org/x/sys v0.34.0
+	golang.org/x/term v0.33.0
+	golang.org/x/text v0.27.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
 )

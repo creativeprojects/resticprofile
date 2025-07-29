@@ -39,7 +39,7 @@ jobs:
       - name: Set up Node.js LTS for running JSON schema tests (using ajv)
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -74,7 +74,6 @@ jobs:
   sonarCloudTrigger:
     needs: build
     name: SonarCloud Trigger
-    if: github.repository == 'creativeprojects/resticprofile'
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
@@ -91,6 +90,7 @@ jobs:
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarqube-scan-action@v5
+        if: ${{ env.SONAR_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
