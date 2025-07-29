@@ -45,7 +45,7 @@ type ScheduleBaseConfig struct {
 	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
 	SystemdDropInFiles      []string       `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
-	SchtasksHideWindow      maybe.Bool     `mapstructure:"schtasks-hide-window" default:"false" description:"Hide schedule window when running in foreground (\"schtasks\" only)`
+	SchtasksHideWindow      maybe.Bool     `mapstructure:"schtasks-hide-window" default:"false" description:"Hide schedule window when running in foreground (\"schtasks\" only)"`
 }
 
 // scheduleBaseConfigDefaults declares built-in scheduling defaults
