@@ -54,7 +54,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 
 	if config.HideWindow {
 		if permission != UserLoggedOnAccount {
-			clog.Warning("hidding window makes sense only with \"user_logged_on\" permission")
+			clog.Warning("hiding window makes sense only with \"user_logged_on\" permission")
 		}
 
 		arguments := fmt.Sprintf(
