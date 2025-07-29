@@ -62,6 +62,7 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 		Arguments:        job.Arguments.String(),
 		WorkingDirectory: job.WorkingDirectory,
 		JobDescription:   job.JobDescription,
+		HideWindow:       job.SchtasksHideWindow,
 	}
 	err := schtasks.Create(jobConfig, schedules, perm)
 	if err != nil {

@@ -9,4 +9,5 @@ type Config struct {
 	Arguments        string
 	WorkingDirectory string
 	JobDescription   string
+	HideWindow       bool
 }

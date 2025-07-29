@@ -51,6 +51,22 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 			return fmt.Errorf("cannot delete existing task to replace it: %w", err)
 		}
 	}
+
+	if config.HideWindow {
+		if permission != UserLoggedOnAccount {
+			clog.Warning("hidding window makes sense only with \"user_logged_on\" permission")
+		}
+
+		arguments := fmt.Sprintf(
+			"--headless '%s' %s",
+			config.Command,
+			config.Arguments,
+		)
+
+		config.Command = "conhost.exe"
+		config.Arguments = arguments
+	}
+
 	task := createTaskDefinition(config, schedules)
 	task.RegistrationInfo.URI = taskPath
 
