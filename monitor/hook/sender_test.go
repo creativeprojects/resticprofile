@@ -18,6 +18,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/creativeprojects/resticprofile/constants"
 )
 
 func TestSend(t *testing.T) {
@@ -270,6 +271,57 @@ func TestConfidentialURL(t *testing.T) {
 	sender := NewSender(nil, "", 300*time.Millisecond, false)
 	err := sender.Send(profile.Backup.SendBefore[0], Context{})
 	require.NoError(t, err)
+	assert.Equal(t, 1, calls)
+}
+
+func TestURLEncoding(t *testing.T) {
+	ctx := Context{
+		ProfileName:    "unencoded/name",
+		ProfileCommand: "unencoded/command",
+		Error: ErrorContext{
+			Message:     "some/error/message",
+			CommandLine: "some < tricky || command & line",
+			ExitCode:    "1",
+			Stderr:      "some\nmultiline\nerror\nwith strange &/~!^., characters",
+		},
+		Stdout: "unused",
+	}
+
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query()
+
+		assert.Equal(t, fmt.Sprintf("/%s-%s", ctx.ProfileName, ctx.ProfileCommand), r.URL.Path)
+
+		assert.Equal(t, ctx.Error.Message, query.Get("message"))
+		assert.Equal(t, ctx.Error.CommandLine, query.Get("command_line"))
+		assert.Equal(t, ctx.Error.ExitCode, query.Get("exit_code"))
+		assert.Equal(t, ctx.Error.Stderr, query.Get("stderr"))
+
+		assert.Equal(t, "$TEST_MONITOR_URL", query.Get("escaped"))
+
+		calls++
+	}))
+	defer server.Close()
+
+	// test if env vars are untouched
+	t.Setenv("TEST_MONITOR_URL", server.URL)
+
+	serverURL := fmt.Sprintf(
+		"$TEST_MONITOR_URL/$%s-$%s?message=$%s&command_line=$%s&exit_code=$%s&stderr=$%s&escaped=$$TEST_MONITOR_URL",
+		constants.EnvProfileName,
+		constants.EnvProfileCommand,
+		constants.EnvError,
+		constants.EnvErrorCommandLine,
+		constants.EnvErrorExitCode,
+		constants.EnvErrorStderr,
+	)
+
+	sender := NewSender(nil, "", 300*time.Millisecond, false)
+	err := sender.Send(config.SendMonitoringSection{
+		URL: config.NewConfidentialValue(serverURL),
+	}, ctx)
+	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
 

@@ -300,6 +300,8 @@ Additionally, for the `send-after-fail` hooks, these environment variables will 
 - `ERROR_EXIT_CODE` containing the exit code of the command line that failed
 - `ERROR_STDERR` containing any message that the failed command sent to the standard error (stderr)
 
+URL encoding is applayed for variables `ERROR`, `ERROR_COMMANDLINE` and `ERROR_STDERR` if they are used in URL.
+
 The `send-finally` hooks are also getting the environment of `send-after-fail` when any previous operation has failed (except any `send` operation).
 
 Failures in any `send-*` are logged but do not influence environment or return code.
