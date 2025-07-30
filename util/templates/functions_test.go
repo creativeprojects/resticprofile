@@ -59,6 +59,10 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ "plain" | hex }}`, expected: "706c61696e"},
 		{template: `{{ "plain" | base64 }}`, expected: "cGxhaW4="},
 		{template: `{{ hello }}`, expected: `Hello World`},
+		{template: `{{ "" | randInt 0 1 }}`, expected: `0`},
+		{template: `{{ "hello" | randInt 5 6 }}`, expected: `5`},
+		{template: `{{ "" | randInt -1000 1000 }}`, expected: `419`},
+		{template: `{{ "ABC" | randInt -1000 1000 }}`, expected: `-272`},
 	}
 
 	extraFuncs := map[string]any{

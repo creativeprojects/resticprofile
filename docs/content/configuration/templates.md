@@ -600,6 +600,9 @@ resticprofile supports the following set of own functions in all templates:
 * `{{ tempDir }}` => `/tmp/resticprofile.../t` - unique OS specific existing temporary directory
 * `{{ tempFile "filename" }}` => `/tmp/resticprofile.../t/filename` - unique OS specific existing temporary file
 * `{{ env }}` => `/tmp/resticprofile.../t/profile.env` - unique OS specific existing temporary file that is added to the current profile env-files list
+* `{{ "seed" | randInt low high }}` => `123` -
+  Generate a random number greater than or equal to `low` and less than `high`,
+  using the value of `seed` for repeatable randomness.
 
 All `{{ temp* }}` functions guarantee that returned temporary directories and files are existing & writable. 
 When resticprofile ends, temporary directories and files are removed.
