@@ -189,7 +189,7 @@ This behavior may interrupt the user's activity and is often undesirable.
 
 To prevent that, set this option to `true` to hide the task window by wrapping the execution in `conhost.exe --headless`.
 
-Note: It works only with Windows Task Scheduler and makes sense only with `user_logged_on` permission.
+Note: It works only on Windows and makes sense only with `user_logged_on` permission.
 
 ## Example 
 
