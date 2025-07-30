@@ -320,7 +320,7 @@ type ScheduleBaseSection struct {
 	ScheduleIgnoreOnBattery         maybe.Bool     `mapstructure:"schedule-ignore-on-battery" show:"noshow" default:"false" description:"Don't start this schedule when running on battery"`
 	ScheduleIgnoreOnBatteryLessThan int            `mapstructure:"schedule-ignore-on-battery-less-than" show:"noshow" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	ScheduleAfterNetworkOnline      maybe.Bool     `mapstructure:"schedule-after-network-online" show:"noshow" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
-	ScheduleSchtasksHideWindow      maybe.Bool     `mapstructure:"schedule-schtasks-hide-window" show:"noshow" default:"false" description:"Hide schedule window when running in foreground (\"schtasks\" only)"`
+	ScheduleHideWindow              maybe.Bool     `mapstructure:"schedule-hide-window" show:"noshow" default:"false" description:"Hide schedule window when running in foreground (\"schtasks\" only)"`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {
