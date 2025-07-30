@@ -135,12 +135,12 @@ func TestHideWindowOption(t *testing.T) {
 	found := false
 	for _, registeredTask := range registeredTasks {
 		if registeredTask.ProfileName == "TestHideWindowOption" {
-				found = true
+			found = true
 
-				assert.Equal(t, registeredTask.Command, "conhost.exe")
-				assert.Equal(t, registeredTask.Arguments, "--headless 'echo' hello there")
+			assert.Equal(t, registeredTask.Command, "conhost.exe")
+			assert.Equal(t, registeredTask.Arguments, "--headless 'echo' hello there")
 
-				break
+			break
 		}
 	}
 
