@@ -107,46 +107,6 @@ func TestCanCreateTwice(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestHideWindowOption(t *testing.T) {
-	task := Config{
-		ProfileName:      "TestHideWindowOption",
-		CommandName:      "backup",
-		Command:          "echo",
-		Arguments:        "hello there",
-		WorkingDirectory: "C:\\",
-		JobDescription:   "TestHideWindowOption",
-		HideWindow:       true,
-	}
-
-	event := calendar.NewEvent()
-	err := event.Parse("2020-01-02 03:04") // will never get triggered
-	require.NoError(t, err)
-
-	err = Create(&task, []*calendar.Event{event}, UserLoggedOnAccount)
-	assert.NoError(t, err)
-
-	defer func() {
-		_ = Delete(task.ProfileName, task.CommandName)
-	}()
-
-	registeredTasks, err := Registered()
-	assert.NoError(t, err)
-
-	found := false
-	for _, registeredTask := range registeredTasks {
-		if registeredTask.ProfileName == "TestHideWindowOption" {
-			found = true
-
-			assert.Equal(t, registeredTask.Command, "conhost.exe")
-			assert.Equal(t, registeredTask.Arguments, "--headless 'echo' hello there")
-
-			break
-		}
-	}
-
-	assert.Equal(t, found, true)
-}
-
 func TestTaskSchedulerIntegration(t *testing.T) {
 	// some tests are using the 1st day of the month as a reference,
 	// but this cause issues when we're running the tests on the first day of the month.

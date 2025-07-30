@@ -52,24 +52,6 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 		}
 	}
 
-	if config.HideWindow {
-		if permission != UserLoggedOnAccount {
-			clog.Warning("hiding window makes sense only with \"user_logged_on\" permission")
-		}
-
-		arguments := fmt.Sprintf(
-			"--headless '%s' %s",
-			config.Command,
-			config.Arguments,
-		)
-
-		config.Command = "conhost.exe"
-		config.Arguments = arguments
-    // reset the HideWindow flag to prevent duplicate command wrapping
-    // if this config object is reused
-		config.HideWindow = false
-	}
-
 	task := createTaskDefinition(config, schedules)
 	task.RegistrationInfo.URI = taskPath
 

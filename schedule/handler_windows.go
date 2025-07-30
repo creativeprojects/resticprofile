@@ -5,6 +5,7 @@ package schedule
 import (
 	"errors"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schtasks"
@@ -55,14 +56,32 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 	} else if permission == PermissionUserLoggedOn {
 		perm = schtasks.UserLoggedOnAccount
 	}
+
+	var command string
+	var arguments CommandArguments
+
+	if job.HideWindow {
+		if permission != PermissionUserLoggedOn {
+			clog.Warning("hiding window makes sense only with \"user_logged_on\" permission")
+		}
+
+		command = "conhost.exe"
+		arguments = NewCommandArguments(append(
+			[]string{"--headless", job.Command},
+			job.Arguments.RawArgs()...,
+		))
+	} else {
+		command = job.Command
+		arguments = job.Arguments
+	}
+
 	jobConfig := &schtasks.Config{
 		ProfileName:      job.ProfileName,
 		CommandName:      job.CommandName,
-		Command:          job.Command,
-		Arguments:        job.Arguments.String(),
+		Command:          command,
+		Arguments:        arguments.String(),
 		WorkingDirectory: job.WorkingDirectory,
 		JobDescription:   job.JobDescription,
-		HideWindow:       job.SchtasksHideWindow,
 	}
 	err := schtasks.Create(jobConfig, schedules, perm)
 	if err != nil {
