@@ -65,6 +65,9 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 
 		config.Command = "conhost.exe"
 		config.Arguments = arguments
+    // reset the HideWindow flag to prevent duplicate command wrapping
+    // if this config object is reused
+		config.HideWindow = false
 	}
 
 	task := createTaskDefinition(config, schedules)
