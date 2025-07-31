@@ -35,6 +35,7 @@ const (
 // ScheduleBaseConfig is the base user configuration that could be shared across all schedules.
 type ScheduleBaseConfig struct {
 	Permission              string         `mapstructure:"permission" default:"auto" enum:"auto;system;user;user_logged_on" description:"Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/"`
+	RunLevel                string         `mapstructure:"run-level" show:"noshow" default:"auto" enum:"auto;lowest;highest" description:"Specify the schedule privilege level (for Windows Task Scheduler only)"`
 	Log                     string         `mapstructure:"log" examples:"/resticprofile.log;syslog-tcp://syslog-server:514;syslog:server;syslog:" description:"Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
 	CommandOutput           string         `mapstructure:"command-output" default:"auto" enum:"auto;log;console;all" description:"Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/"`
 	Priority                string         `mapstructure:"priority" default:"standard" enum:"background;standard" description:"Set the priority at which the schedule is run"`
@@ -50,6 +51,7 @@ type ScheduleBaseConfig struct {
 // scheduleBaseConfigDefaults declares built-in scheduling defaults
 var scheduleBaseConfigDefaults = ScheduleBaseConfig{
 	Permission:    "auto",
+	RunLevel:      "auto",
 	CommandOutput: constants.DefaultCommandOutput,
 	Priority:      "standard",
 	LockMode:      "default",
@@ -63,6 +65,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	}
 	if s.Permission == "" {
 		s.Permission = defaults.Permission
+	}
+	if s.RunLevel == "" {
+		s.RunLevel = defaults.RunLevel
 	}
 	if s.Log == "" {
 		s.Log = defaults.Log
@@ -98,6 +103,7 @@ func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	defaults := *s
 	// applying the settings of the section
 	s.Permission = section.SchedulePermission
+	s.RunLevel = section.ScheduleRunLevel
 	s.Log = section.ScheduleLog
 	s.Priority = section.SchedulePriority
 	s.LockMode = section.ScheduleLockMode

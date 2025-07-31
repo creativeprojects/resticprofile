@@ -91,6 +91,14 @@ Follow this order:
 - Change your permission (user to system, or system to user).
 - Schedule your updated profile.
 
+## schedule-run-level
+
+In Windows Task Manager, you can also specify a scheduled task privilege level.
+
+The `schedule-run-level` parameter accepts three values:
+- `lowest`: Runs the task with the least user privileges.
+- `highest`: Runs the task with the highest user privileges available.
+- `auto`: Uses `highest` if `schedule-permission` is set to `system`. Otherwise, defaults to `lowest`.
 
 ## schedule-lock-mode
 
