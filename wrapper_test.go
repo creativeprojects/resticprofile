@@ -1630,8 +1630,8 @@ func TestRunInitCopyCommand(t *testing.T) {
 			PasswordFile: "password_origin",
 			Copy: &config.CopySection{
 				InitializeCopyChunkerParams: copyChunkerParams,
-				Repository:                  config.NewConfidentialValue("repo_copy"),
-				PasswordFile:                "password_copy",
+				ToRepository:                config.NewConfidentialValue("repo_copy"),
+				ToPasswordFile:              "password_copy",
 			},
 		}
 		require.NoError(t, p.SetResticVersion(resticVersion))

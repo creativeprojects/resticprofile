@@ -313,7 +313,7 @@ func TestEnvironmentInProfileRepo(t *testing.T) {
 		profile.ResolveConfiguration()
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Repository.Value()))
 		assert.Equal(t, repoPath, filepath.ToSlash(profile.Init.FromRepository.Value()))
-		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.Repository.Value()))
+		assert.Equal(t, repoPath, filepath.ToSlash(profile.Copy.ToRepository.Value()))
 
 		profile.SetRootPath("any")
 		assert.Equal(t, repoPath+".key", filepath.ToSlash(profile.PasswordFile))
@@ -398,7 +398,7 @@ files-from-verbatim = "include-verbatim"
 exclude = "exclude"
 iexclude = "iexclude"
 [` + prefix + `profile.copy]
-password-file = "key"
+from-password-file = "key"
 [` + prefix + `profile.dump]
 password-file = "key"
 [` + prefix + `profile.init]
@@ -433,7 +433,7 @@ from-password-file = "key"
 		assert.ElementsMatch(t, []string{"/wd/include-verbatim"}, profile.Backup.FilesFromVerbatim)
 		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
 		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
-		assert.Equal(t, "/wd/key", profile.Copy.PasswordFile)
+		assert.Equal(t, "/wd/key", profile.Copy.FromPasswordFile)
 		assert.Equal(t, []string{"/wd/key"}, profile.OtherSections[constants.CommandDump].OtherFlags["password-file"])
 		assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
 		assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
@@ -1503,11 +1503,116 @@ func TestGetInitStructFields(t *testing.T) {
 
 func TestGetCopyStructFields(t *testing.T) {
 	copySection := &CopySection{
-		Repository:      NewConfidentialValue("dest-repo"),
-		RepositoryFile:  "dest-repo-file",
-		PasswordFile:    "dest-pw-file",
-		PasswordCommand: "dest-pw-command",
-		KeyHint:         "dest-key-hint",
+		FromRepository:      NewConfidentialValue("src-repo"),
+		FromRepositoryFile:  "src-repo-file",
+		FromPasswordFile:    "src-pw-file",
+		FromPasswordCommand: "src-pw-command",
+		FromKeyHint:         "src-key-hint",
+	}
+
+	copySection.OtherFlags = map[string]any{"option": "opt=src"}
+
+	profile := NewProfile(nil, "")
+	profile.Repository = NewConfidentialValue("dest-repo")
+	profile.RepositoryFile = "dest-repo-file"
+	profile.PasswordFile = "dest-pw-file"
+	profile.PasswordCommand = "dest-pw-command"
+	profile.KeyHint = "dest-key-hint"
+
+	profile.OtherFlags = map[string]any{"option": "opt=dest"}
+
+	t.Run("restic<14", func(t *testing.T) {
+		require.NoError(t, profile.SetResticVersion(""))
+
+		// copy
+		assert.Equal(t, map[string][]string{
+			"key-hint2":         {"src-key-hint"},
+			"repo2":             {"src-repo"},
+			"repository-file2":  {"src-repo-file"},
+			"password-file2":    {"src-pw-file"},
+			"password-command2": {"src-pw-command"},
+
+			"option": {"opt=src"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copySection.getCommandFlags(profile).ToMap())
+
+		// init
+		assert.Equal(t, map[string][]string{
+			"copy-chunker-params": {},
+			"key-hint2":           {"src-key-hint"},
+			"repo2":               {"src-repo"},
+			"repository-file2":    {"src-repo-file"},
+			"password-file2":      {"src-pw-file"},
+			"password-command2":   {"src-pw-command"},
+
+			"option": {"opt=dest"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copySection.getInitFlags(profile).ToMap())
+	})
+
+	t.Run("restic>=14", func(t *testing.T) {
+		require.NoError(t, profile.SetResticVersion(resticVersion14.Original()))
+
+		// copy
+		assert.Equal(t, map[string][]string{
+			"from-key-hint":         {"src-key-hint"},
+			"from-repo":             {"src-repo"},
+			"from-repository-file":  {"src-repo-file"},
+			"from-password-file":    {"src-pw-file"},
+			"from-password-command": {"src-pw-command"},
+
+			"option": {"opt=src"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copySection.getCommandFlags(profile).ToMap())
+
+		// init
+		assert.Equal(t, map[string][]string{
+			"copy-chunker-params":   {},
+			"from-key-hint":         {"src-key-hint"},
+			"from-repo":             {"src-repo"},
+			"from-repository-file":  {"src-repo-file"},
+			"from-password-file":    {"src-pw-file"},
+			"from-password-command": {"src-pw-command"},
+
+			"option": {"opt=dest"}, // TODO: flags should be partitioned (both options are required)
+
+			"key-hint":         {"dest-key-hint"},
+			"repo":             {"dest-repo"},
+			"repository-file":  {"dest-repo-file"},
+			"password-file":    {"dest-pw-file"},
+			"password-command": {"dest-pw-command"},
+		}, copySection.getInitFlags(profile).ToMap())
+	})
+
+	t.Run("get-init-flags-from-profile", func(t *testing.T) {
+		assert.Nil(t, profile.GetCopyInitializeFlags())
+		profile.Copy = copySection
+		assert.Equal(t, copySection.getInitFlags(profile).GetAll(), profile.GetCopyInitializeFlags().GetAll())
+	})
+}
+
+func TestGetCopyToStructFields(t *testing.T) {
+	copySection := &CopySection{
+		ToRepository:      NewConfidentialValue("dest-repo"),
+		ToRepositoryFile:  "dest-repo-file",
+		ToPasswordFile:    "dest-pw-file",
+		ToPasswordCommand: "dest-pw-command",
+		ToKeyHint:         "dest-key-hint",
 	}
 
 	copySection.OtherFlags = map[string]any{"option": "opt=dest"}
