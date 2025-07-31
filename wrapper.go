@@ -699,7 +699,7 @@ func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, 
 	for i, section := range sections {
 		clog.Debugf("starting %q from %s %d/%d", sendType, command, i+1, len(sections))
 		term.FlushAllOutput()
-		err := r.sender.Send(section, r.getContextWithError(err))
+		err := r.sender.Send(section, r.getContextWithError(err), r.profile.GetEnvironment(true))
 		if err != nil {
 			clog.Warningf("%q returned an error: %s", sendType, err.Error())
 		}
