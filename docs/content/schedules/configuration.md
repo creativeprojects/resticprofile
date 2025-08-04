@@ -191,6 +191,9 @@ To prevent that, set this option to `true` to hide the task window by wrapping t
 
 Note: It works only on Windows and makes sense only with `user_logged_on` permission.
 
+Note: Behaviour of `conhost.exe` is not stable across Windows versions, so it may not work on some of them, especially older ones.
+According our tests, it works on Windows 11 (version 24H2) and doesn't work on Windows 10 (version 1607).
+
 ## Example 
 
 Here's an example of a scheduling configuration:
