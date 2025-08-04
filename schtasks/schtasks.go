@@ -18,7 +18,7 @@ func getRegisteredTasks() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	all, err := getCSV(bytes.NewBuffer(raw))
+	all, err := getTaskInfoFromCSV(bytes.NewBuffer(raw))
 	if err != nil {
 		return nil, err
 	}
@@ -33,20 +33,20 @@ func getRegisteredTasks() ([]string, error) {
 	return list, nil
 }
 
-func getTaskInfo(taskName string) ([][]string, error) {
+func getTaskInfo(taskName string) ([]map[string]string, error) {
 	buffer := &bytes.Buffer{}
 	err := readTaskInfo(taskName, buffer)
 	if err != nil {
 		return nil, err
 	}
-	output, err := getCSV(buffer)
+	output, err := getTaskInfoFromList(buffer)
 	if err != nil {
 		return nil, err
 	}
 	return output, nil
 }
 
-func getCSV(input io.Reader) ([][]string, error) {
+func getTaskInfoFromCSV(input io.Reader) ([][]string, error) {
 	reader := csv.NewReader(input)
 	return reader.ReadAll()
 }
@@ -124,14 +124,14 @@ func deleteTask(taskName string) (string, error) {
 	return stdout.String(), nil
 }
 
-// readTaskInfo returns the raw CSV output from querying the task name (via schtasks.exe)
+// readTaskInfo returns the raw output from querying the task name (via schtasks.exe)
 func readTaskInfo(taskName string, output io.Writer) error {
 	taskName, err := sanitizeTaskName(taskName)
 	if err != nil {
 		return err
 	}
 	stderr := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/fo", "csv", "/v", "/tn", taskName)
+	cmd := exec.Command(binaryPath, "/query", "/fo", "list", "/v", "/tn", taskName)
 	cmd.Stdout = output
 	cmd.Stderr = stderr
 	err = cmd.Run()
