@@ -825,7 +825,6 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 		t.Run("ImplicitCopyPath", func(t *testing.T) {
 			profile := testProfile(t, Version01, ``)
-			t.Log(profile)
 			assert.Equal(t, expectedBackupSource, pathFlag(t, profile))
 		})
 
