@@ -226,6 +226,7 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		CommandName:        origin.Command,
 		Schedules:          sched.Schedules,
 		Permission:         sched.Permission,
+		RunLevel:           sched.RunLevel,
 		WorkingDirectory:   "",
 		Command:            "",
 		Arguments:          schedule.NewCommandArguments(nil),
