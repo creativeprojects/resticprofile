@@ -16,9 +16,10 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/creativeprojects/resticprofile/constants"
 )
 
 func TestSend(t *testing.T) {
@@ -95,7 +96,7 @@ func TestSend(t *testing.T) {
 			}
 
 			sender := NewSender(nil, "resticprofile_test", 10*time.Second, false)
-			err := sender.Send(testCase.cfg, ctx)
+			err := sender.Send(testCase.cfg, ctx, nil)
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.calls, calls)
@@ -114,7 +115,7 @@ func TestDryRun(t *testing.T) {
 	sender := NewSender(nil, "", time.Second, true)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
-	}, Context{})
+	}, Context{}, nil)
 	assert.NoError(t, err)
 
 	assert.Equal(t, uint32(0), atomic.LoadUint32(&calls))
@@ -133,7 +134,7 @@ func TestSenderTimeout(t *testing.T) {
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
-	}, Context{})
+	}, Context{}, nil)
 	assert.Error(t, err)
 
 	assert.Equal(t, uint32(1), atomic.LoadUint32(&startedCalls))
@@ -151,7 +152,7 @@ func TestInsecureRequests(t *testing.T) {
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
-	}, Context{})
+	}, Context{}, nil)
 	assert.Error(t, err)
 	assert.Equal(t, 0, calls)
 
@@ -159,7 +160,7 @@ func TestInsecureRequests(t *testing.T) {
 	err = sender.Send(config.SendMonitoringSection{
 		URL:     config.NewConfidentialValue(server.URL),
 		SkipTLS: true,
-	}, Context{})
+	}, Context{}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
@@ -179,7 +180,7 @@ func TestRequestWithCA(t *testing.T) {
 	// 1: request will fail TLS
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
-	}, Context{})
+	}, Context{}, nil)
 	assert.Error(t, err)
 	assert.Equal(t, 0, calls)
 
@@ -196,7 +197,7 @@ func TestRequestWithCA(t *testing.T) {
 	sender = NewSender([]string{filename}, "resticprofile_test", 300*time.Millisecond, false)
 	err = sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
-	}, Context{})
+	}, Context{}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
@@ -210,7 +211,7 @@ func TestFailedRequest(t *testing.T) {
 	sender := NewSender(nil, "resticprofile_test", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(server.URL),
-	}, Context{})
+	}, Context{}, nil)
 	assert.Error(t, err)
 }
 
@@ -230,7 +231,7 @@ func TestUserAgent(t *testing.T) {
 		Headers: []config.SendMonitoringHeader{
 			{Name: agentHeader, Value: config.NewConfidentialValue(testAgent)},
 		},
-	}, Context{})
+	}, Context{}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
@@ -269,7 +270,7 @@ func TestConfidentialURL(t *testing.T) {
 	config.ProcessConfidentialValues(profile)
 
 	sender := NewSender(nil, "", 300*time.Millisecond, false)
-	err := sender.Send(profile.Backup.SendBefore[0], Context{})
+	err := sender.Send(profile.Backup.SendBefore[0], Context{}, nil)
 	require.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
@@ -320,7 +321,7 @@ func TestURLEncoding(t *testing.T) {
 	sender := NewSender(nil, "", 300*time.Millisecond, false)
 	err := sender.Send(config.SendMonitoringSection{
 		URL: config.NewConfidentialValue(serverURL),
-	}, ctx)
+	}, ctx, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
@@ -359,7 +360,7 @@ func TestConfidentialHeader(t *testing.T) {
 	config.ProcessConfidentialValues(profile)
 
 	sender := NewSender(nil, "", 300*time.Millisecond, false)
-	err := sender.Send(profile.Backup.SendBefore[0], Context{})
+	err := sender.Send(profile.Backup.SendBefore[0], Context{}, nil)
 	require.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }
@@ -393,7 +394,7 @@ func TestParseTemplate(t *testing.T) {
 		URL:          config.NewConfidentialValue(server.URL),
 		Method:       http.MethodPost,
 		BodyTemplate: filename,
-	}, ctx)
+	}, ctx, nil)
 	assert.NoError(t, err)
 }
 
@@ -417,4 +418,34 @@ func TestResponseSanitizer(t *testing.T) {
 	for i, test := range tests {
 		assert.Equal(t, test[1], responseContentSanitizer.ReplaceAllString(test[0], " "), "test #%d", i)
 	}
+}
+
+func TestCustomEnv(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buffer := bytes.Buffer{}
+		_, err := buffer.ReadFrom(r.Body)
+		assert.NoError(t, err)
+		r.Body.Close()
+
+		assert.Equal(t, "some test value\n", buffer.String())
+
+		calls++
+	}))
+	defer server.Close()
+
+	t.Setenv("TEST_MONITOR_URL", "should never be read")
+	t.Setenv("SOME_OS_ENV", "should never be read")
+
+	env := util.NewDefaultEnvironment()
+	env.Put("TEST_MONITOR_URL", server.URL)
+	env.Put("TEST_BODY_VALUE", "some test value")
+
+	sender := NewSender(nil, "", 300*time.Millisecond, false)
+	err := sender.Send(config.SendMonitoringSection{
+		URL:  config.NewConfidentialValue("$TEST_MONITOR_URL"),
+		Body: "$TEST_BODY_VALUE\n$SOME_OS_ENV",
+	}, Context{}, env)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, calls)
 }

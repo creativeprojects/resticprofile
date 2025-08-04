@@ -20,6 +20,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/templates"
 )
 
@@ -71,12 +72,17 @@ func NewSender(certificates []string, userAgent string, timeout time.Duration, d
 	}
 }
 
-func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
+func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context, env *util.Environment) error {
 	if cfg.URL.Value() == "" {
 		return errors.New("URL field is empty")
 	}
-	url := resolveURL(cfg.URL.Value(), ctx)
-	publicUrl := resolveURL(cfg.URL.String(), ctx)
+
+	if env == nil {
+		env = util.NewDefaultEnvironment(os.Environ()...)
+	}
+
+	url := resolveURL(cfg.URL.Value(), ctx, env)
+	publicUrl := resolveURL(cfg.URL.String(), ctx, env)
 	method := cfg.Method
 	if method == "" {
 		method = http.MethodGet
@@ -94,7 +100,7 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context) error {
 		bodyReader = bytes.NewBufferString(body)
 	}
 	if cfg.Body != "" {
-		body = resolveBody(cfg.Body, ctx)
+		body = resolveBody(cfg.Body, ctx, env)
 		bodyReader = bytes.NewBufferString(body)
 	}
 
@@ -203,7 +209,7 @@ func getRootCAs(certificates []string) *x509.CertPool {
 	return caCertPool
 }
 
-func resolveBody(body string, ctx Context) string {
+func resolveBody(body string, ctx Context, env *util.Environment) string {
 	return os.Expand(body, func(s string) string {
 		switch s {
 		case constants.EnvProfileName:
@@ -228,12 +234,12 @@ func resolveBody(body string, ctx Context) string {
 			return "$" // allow to escape "$" as "$$"
 
 		default:
-			return os.Getenv(s)
+			return env.Get(s)
 		}
 	})
 }
 
-func resolveURL(url string, ctx Context) string {
+func resolveURL(url string, ctx Context, env *util.Environment) string {
 	return os.Expand(url, func(s string) string {
 		switch s {
 		case constants.EnvProfileName:
@@ -258,7 +264,7 @@ func resolveURL(url string, ctx Context) string {
 			return "$" // allow to escape "$" as "$$"
 
 		default:
-			return os.Getenv(s)
+			return env.Get(s)
 		}
 	})
 }
