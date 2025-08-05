@@ -21,7 +21,6 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/shutdown"
 	"github.com/mackerelio/go-osstat/memory"
-	"github.com/spf13/afero"
 	"github.com/spf13/pflag"
 )
 
@@ -301,15 +300,13 @@ func banner() {
 }
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
-	fs := afero.NewOsFs()
-
 	var configFile string
 	if configFile, err = filesearch.NewFinder().FindConfigurationFile(flags.config); err == nil {
 		if configFile != flags.config && !silent {
 			clog.Infof("using configuration file: %s", configFile)
 		}
 
-		if cfg, err = config.LoadFile(fs, configFile, flags.format); err == nil {
+		if cfg, err = config.LoadFile(configFile, flags.format); err == nil {
 			global, err = cfg.GetGlobalSection()
 			if err != nil {
 				err = fmt.Errorf("cannot load global configuration: %w", err)

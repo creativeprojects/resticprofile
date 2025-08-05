@@ -10,7 +10,6 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/term"
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -111,7 +110,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 	// try all the config files one by one
 	for _, configFile := range files {
 		t.Run(configFile, func(t *testing.T) {
-			cfg, err := config.LoadFile(afero.NewOsFs(), configFile, "")
+			cfg, err := config.LoadFile(configFile, "")
 			require.NoError(t, err)
 			require.NotNil(t, cfg)
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -82,7 +81,7 @@ func NewFinder() Finder {
 // If the file doesn't have an extension, it will search for all possible extensions
 func (f Finder) FindConfigurationFile(configFile string) (string, error) {
 	found := ""
-	extension := path.Ext(configFile)
+	extension := filepath.Ext(configFile)
 	displayFile := ""
 	if extension != "" {
 		displayFile = fmt.Sprintf("'%s'", configFile)

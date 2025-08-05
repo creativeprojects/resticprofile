@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"os"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -20,7 +21,6 @@ import (
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/creativeprojects/resticprofile/util/templates"
 	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 )
 
@@ -74,7 +74,7 @@ func formatFromExtension(configFile string) string {
 
 // LoadFile loads configuration from file
 // Leave format blank for auto-detection from the file extension
-func LoadFile(fs afero.Fs, configFile, format string) (config *Config, err error) {
+func LoadFile(configFile, format string) (config *Config, err error) {
 	if format == "" {
 		format = formatFromExtension(configFile)
 	}
@@ -84,7 +84,7 @@ func LoadFile(fs afero.Fs, configFile, format string) (config *Config, err error
 
 	readAndAdd := func(configFile string, replace bool) error {
 		clog.Debugf("loading: %s", configFile)
-		file, fileErr := fs.Open(configFile)
+		file, fileErr := os.Open(configFile)
 		if fileErr != nil {
 			return fmt.Errorf("cannot open configuration file for reading: %w", fileErr)
 		}

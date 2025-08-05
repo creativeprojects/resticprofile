@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/util/maybe"
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -367,22 +366,25 @@ x=0
 }
 
 func TestIncludes(t *testing.T) {
-	createFile := func(t *testing.T, fs afero.Fs, suffix, content string) string {
+	createFile := func(t *testing.T, suffix, content string) string {
 		t.Helper()
 		name := ""
-		file, err := afero.TempFile(fs, "", "*-"+suffix)
+		file, err := os.CreateTemp("", "*-"+suffix)
 		if err == nil {
 			defer file.Close()
 			_, err = file.WriteString(content)
 			name = file.Name()
+			t.Cleanup(func() {
+				_ = os.Remove(name)
+			})
 		}
 		require.NoError(t, err)
 		return name
 	}
 
-	mustLoadConfig := func(t *testing.T, fs afero.Fs, configFile string) *Config {
+	mustLoadConfig := func(t *testing.T, configFile string) *Config {
 		t.Helper()
-		config, err := LoadFile(fs, configFile, "")
+		config, err := LoadFile(configFile, "")
 		require.NoError(t, err)
 		return config
 	}
@@ -390,15 +392,14 @@ func TestIncludes(t *testing.T) {
 	testID := fmt.Sprintf("%d", time.Now().Unix())
 
 	t.Run("multiple-includes", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
 		content := fmt.Sprintf(`includes=['*%[1]s.inc.toml','*%[1]s.inc.yaml','*%[1]s.inc.json']`, testID)
 
-		configFile := createFile(t, fs, "profiles.conf", content)
-		createFile(t, fs, "d-"+testID+".inc.toml", "[one]\nk='v'")
-		createFile(t, fs, "o-"+testID+".inc.yaml", `two: { k: v }`)
-		createFile(t, fs, "j-"+testID+".inc.json", `{"three":{ "k": "v" }}`)
+		configFile := createFile(t, "profiles.conf", content)
+		createFile(t, "d-"+testID+".inc.toml", "[one]\nk='v'")
+		createFile(t, "o-"+testID+".inc.yaml", `two: { k: v }`)
+		createFile(t, "j-"+testID+".inc.json", `{"three":{ "k": "v" }}`)
 
-		config := mustLoadConfig(t, fs, configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.IsSet("includes"))
 		assert.True(t, config.HasProfile("one"))
 		assert.True(t, config.HasProfile("two"))
@@ -406,18 +407,16 @@ func TestIncludes(t *testing.T) {
 	})
 
 	t.Run("overrides", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
-
-		configFile := createFile(t, fs, "profiles.conf", `
+		configFile := createFile(t, "profiles.conf", `
 includes = "*`+testID+`.inc.toml"
 [default]
 repository = "default-repo"`)
 
-		createFile(t, fs, "override-"+testID+".inc.toml", `
+		createFile(t, "override-"+testID+".inc.toml", `
 [default]
 repository = "overridden-repo"`)
 
-		config := mustLoadConfig(t, fs, configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
@@ -426,26 +425,24 @@ repository = "overridden-repo"`)
 	})
 
 	t.Run("mixins", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
-
-		configFile := createFile(t, fs, "profiles.conf", `
+		configFile := createFile(t, "profiles.conf", `
 version = 2
 includes = "*`+testID+`.inc.toml"
 [profiles.default]
 use = "another-run-before"
 run-before = "default-before"`)
 
-		createFile(t, fs, "mixin-"+testID+".inc.toml", `
+		createFile(t, "mixin-"+testID+".inc.toml", `
 [mixins.another-run-before]
 "run-before..." = "another-run-before"
 [mixins.another-run-before2]
 "run-before..." = "another-run-before2"`)
 
-		createFile(t, fs, "mixin-use-"+testID+".inc.toml", `
+		createFile(t, "mixin-use-"+testID+".inc.toml", `
 [profiles.default]
 use = "another-run-before2"`)
 
-		config := mustLoadConfig(t, fs, configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("default"))
 
 		profile, err := config.GetProfile("default")
@@ -454,56 +451,50 @@ use = "another-run-before2"`)
 	})
 
 	t.Run("hcl-includes-only-hcl", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
+		configFile := createFile(t, "profiles.hcl", `includes = "*`+testID+`.inc.*"`)
+		createFile(t, "pass-"+testID+".inc.hcl", `one { }`)
 
-		configFile := createFile(t, fs, "profiles.hcl", `includes = "*`+testID+`.inc.*"`)
-		createFile(t, fs, "pass-"+testID+".inc.hcl", `one { }`)
-
-		config := mustLoadConfig(t, fs, configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("one"))
 
-		createFile(t, fs, "fail-"+testID+".inc.toml", `[two]`)
-		_, err := LoadFile(fs, configFile, "")
+		createFile(t, "fail-"+testID+".inc.toml", `[two]`)
+		_, err := LoadFile(configFile, "")
 		require.Error(t, err)
 		assert.Regexp(t, ".+ is in hcl format, includes must use the same format", err.Error())
 	})
 
 	t.Run("non-hcl-include-no-hcl", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
+		configFile := createFile(t, "profiles.toml", `includes = "*`+testID+`.inc.*"`)
+		createFile(t, "pass-"+testID+".inc.toml", "[one]\nk='v'")
 
-		configFile := createFile(t, fs, "profiles.toml", `includes = "*`+testID+`.inc.*"`)
-		createFile(t, fs, "pass-"+testID+".inc.toml", "[one]\nk='v'")
-
-		config := mustLoadConfig(t, fs, configFile)
+		config := mustLoadConfig(t, configFile)
 		assert.True(t, config.HasProfile("one"))
 
-		createFile(t, fs, "fail-"+testID+".inc.hcl", `one { }`)
-		_, err := LoadFile(fs, configFile, "")
+		createFile(t, "fail-"+testID+".inc.hcl", `one { }`)
+		_, err := LoadFile(configFile, "")
 		require.Error(t, err)
 		assert.Regexp(t, "hcl format .+ cannot be used in includes from toml", err.Error())
 	})
 
 	t.Run("cannot-load-different-versions", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
 		content := fmt.Sprintf(`includes=['*%s.inc.json']`, testID)
 
-		configFile := createFile(t, fs, "profiles.conf", content)
-		createFile(t, fs, "a-"+testID+".inc.json", `{"version": 2, "profiles": {"one":{}}}`)
-		createFile(t, fs, "b-"+testID+".inc.json", `{"two":{}}`)
+		configFile := createFile(t, "profiles.conf", content)
+		createFile(t, "a-"+testID+".inc.json", `{"version": 2, "profiles": {"one":{}}}`)
+		createFile(t, "b-"+testID+".inc.json", `{"two":{}}`)
 
-		_, err := LoadFile(fs, configFile, "")
+		_, err := LoadFile(configFile, "")
 		assert.ErrorContains(t, err, "cannot include different versions of the configuration file")
 	})
 
 	t.Run("cannot-load-different-versions", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
 		content := fmt.Sprintf(`{"version": 2, "includes":["*%s.inc.json"]}`, testID)
 
-		configFile := createFile(t, fs, "profiles.json", content)
-		createFile(t, fs, "c-"+testID+".inc.json", `{"version": 1, "two":{}}`)
-		createFile(t, fs, "d-"+testID+".inc.json", `{"profiles": {"one":{}}}`)
+		configFile := createFile(t, "profiles.json", content)
+		createFile(t, "c-"+testID+".inc.json", `{"version": 1, "two":{}}`)
+		createFile(t, "d-"+testID+".inc.json", `{"profiles": {"one":{}}}`)
 
-		_, err := LoadFile(fs, configFile, "")
+		_, err := LoadFile(configFile, "")
 		assert.ErrorContains(t, err, "cannot include different versions of the configuration file")
 	})
 }
