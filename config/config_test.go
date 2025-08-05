@@ -464,7 +464,7 @@ use = "another-run-before2"`)
 
 		createFile(t, fs, "fail-"+testID+".inc.toml", `[two]`)
 		_, err := LoadFile(fs, configFile, "")
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Regexp(t, ".+ is in hcl format, includes must use the same format", err.Error())
 	})
 
@@ -479,7 +479,7 @@ use = "another-run-before2"`)
 
 		createFile(t, fs, "fail-"+testID+".inc.hcl", `one { }`)
 		_, err := LoadFile(fs, configFile, "")
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Regexp(t, "hcl format .+ cannot be used in includes from toml", err.Error())
 	})
 

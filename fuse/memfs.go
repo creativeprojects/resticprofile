@@ -100,16 +100,16 @@ func (memfs *memFS) OnAdd(ctx context.Context) {
 func fileInfoToAttr(fileInfo iofs.FileInfo) fuse.Attr {
 	var out fuse.Attr
 	if header, ok := fileInfo.Sys().(*tar.Header); ok {
-		out.Mode = uint32(header.Mode)
-		out.Size = uint64(header.Size)
-		out.Uid = uint32(header.Uid)
-		out.Gid = uint32(header.Gid)
+		out.Mode = uint32(header.Mode) //nolint:gosec
+		out.Size = uint64(header.Size) //nolint:gosec
+		out.Uid = uint32(header.Uid)   //nolint:gosec
+		out.Gid = uint32(header.Gid)   //nolint:gosec
 		out.SetTimes(&header.AccessTime, &header.ModTime, &header.ChangeTime)
 	} else {
 		out.Mode = uint32(fileInfo.Mode())
-		out.Size = uint64(fileInfo.Size())
-		out.Uid = uint32(os.Geteuid())
-		out.Gid = uint32(os.Getegid())
+		out.Size = uint64(fileInfo.Size()) //nolint:gosec
+		out.Uid = uint32(os.Geteuid())     //nolint:gosec
+		out.Gid = uint32(os.Getegid())     //nolint:gosec
 		modTime := fileInfo.ModTime()
 		out.SetTimes(nil, &modTime, nil)
 	}
