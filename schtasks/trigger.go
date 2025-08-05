@@ -3,6 +3,8 @@
 package schtasks
 
 import (
+	"time"
+
 	"github.com/rickb777/period"
 )
 
@@ -13,14 +15,14 @@ type Triggers struct {
 
 type TimeTrigger struct {
 	Enabled            *bool          `xml:"Enabled"` // indicates whether the trigger is enabled
-	StartBoundary      string         `xml:"StartBoundary"`
+	StartBoundary      *time.Time     `xml:"StartBoundary"`
 	ExecutionTimeLimit *period.Period `xml:"ExecutionTimeLimit"`
 	RandomDelay        *period.Period `xml:"RandomDelay,omitempty"` // a delay time that is randomly added to the start time of the trigger
 }
 
 type CalendarTrigger struct {
-	StartBoundary            string                    `xml:"StartBoundary,omitempty"` // the date and time when the trigger is activated
-	EndBoundary              string                    `xml:"EndBoundary,omitempty"`   // the date and time when the trigger is deactivated
+	StartBoundary            *time.Time                `xml:"StartBoundary,omitempty"` // the date and time when the trigger is activated
+	EndBoundary              *time.Time                `xml:"EndBoundary,omitempty"`   // the date and time when the trigger is deactivated
 	Repetition               *RepetitionPattern        `xml:"Repetition"`
 	ExecutionTimeLimit       *period.Period            `xml:"ExecutionTimeLimit"` // the maximum amount of time that the task launched by this trigger is allowed to run
 	Enabled                  *bool                     `xml:"Enabled"`            // indicates whether the trigger is enabled
