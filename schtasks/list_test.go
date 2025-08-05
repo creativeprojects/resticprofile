@@ -146,3 +146,46 @@ func TestReadingListOutput(t *testing.T) {
 	}
 	assert.Equal(t, expected, output)
 }
+
+func TestReadingListOutputWithNoSeparator(t *testing.T) {
+	t.Parallel()
+
+	list := `
+Line with no separator
+`
+	_, err := getTaskInfoFromList(bytes.NewBufferString(list))
+	require.Error(t, err)
+}
+
+func TestReadingListOutputWithEmptyKey(t *testing.T) {
+	t.Parallel()
+
+	list := `
+: Value
+`
+	_, err := getTaskInfoFromList(bytes.NewBufferString(list))
+	require.NoError(t, err)
+}
+
+func TestReadingListOutputWithEmptyValue(t *testing.T) {
+	t.Parallel()
+
+	// keep the space after the colon
+	list := `
+Key: 
+`
+	_, err := getTaskInfoFromList(bytes.NewBufferString(list))
+	require.NoError(t, err)
+}
+
+func TestReadingListOutputWithDuplicateKey(t *testing.T) {
+	t.Parallel()
+
+	// keep the space after the colon
+	list := `
+Key: Value
+Key: Value
+`
+	_, err := getTaskInfoFromList(bytes.NewBufferString(list))
+	require.Error(t, err)
+}
