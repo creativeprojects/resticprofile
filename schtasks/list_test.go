@@ -20,9 +20,9 @@ Logon Mode:                           Interactive only
 Last Run Time:                        04/08/2025 21:00:01
 Last Result:                          1
 Author:                               resticprofile
-Task To Run:                          G:\go\src\github.com\creativeprojects\resticprofile\resticprofile.exe --no-ansi --config "examples\othere windows.yaml" run-schedule backup@self
+Task To Run:                          G:\go\src\github.com\creativeprojects\resticprofile\resticprofile.exe --no-ansi --config "examples\other windows.yaml" run-schedule backup@self
 Start In:                             G:\go\src\github.com\creativeprojects\resticprofile
-Comment:                              resticprofile backup for profile self in examples\othere windows.yaml
+Comment:                              resticprofile backup for profile self in examples\other windows.yaml
 Scheduled Task State:                 Enabled
 Idle Time:                            Disabled
 Power Management:                     Stop On Battery Mode, No Start On Batteries
@@ -49,9 +49,9 @@ Logon Mode:                           Interactive only
 Last Run Time:                        04/08/2025 21:00:01
 Last Result:                          1
 Author:                               resticprofile
-Task To Run:                          G:\go\src\github.com\creativeprojects\resticprofile\resticprofile.exe --no-ansi --config "examples\othere windows.yaml" run-schedule backup@self
+Task To Run:                          G:\go\src\github.com\creativeprojects\resticprofile\resticprofile.exe --no-ansi --config "examples\other windows.yaml" run-schedule backup@self
 Start In:                             G:\go\src\github.com\creativeprojects\resticprofile
-Comment:                              resticprofile backup for profile self in examples\othere windows.yaml
+Comment:                              resticprofile backup for profile self in examples\other windows.yaml
 Scheduled Task State:                 Enabled
 Idle Time:                            Disabled
 Power Management:                     Stop On Battery Mode, No Start On Batteries
@@ -89,9 +89,9 @@ func TestReadingListOutput(t *testing.T) {
 			"Last Run Time":                        "04/08/2025 21:00:01",
 			"Last Result":                          "1",
 			"Author":                               "resticprofile",
-			"Task To Run":                          "G:\\go\\src\\github.com\\creativeprojects\\resticprofile\\resticprofile.exe --no-ansi --config \"examples\\othere windows.yaml\" run-schedule backup@self",
+			"Task To Run":                          "G:\\go\\src\\github.com\\creativeprojects\\resticprofile\\resticprofile.exe --no-ansi --config \"examples\\other windows.yaml\" run-schedule backup@self",
 			"Start In":                             "G:\\go\\src\\github.com\\creativeprojects\\resticprofile",
-			"Comment":                              "resticprofile backup for profile self in examples\\othere windows.yaml",
+			"Comment":                              "resticprofile backup for profile self in examples\\other windows.yaml",
 			"Scheduled Task State":                 "Enabled",
 			"Idle Time":                            "Disabled",
 			"Power Management":                     "Stop On Battery Mode, No Start On Batteries",
@@ -120,9 +120,9 @@ func TestReadingListOutput(t *testing.T) {
 			"Last Run Time":                        "04/08/2025 21:00:01",
 			"Last Result":                          "1",
 			"Author":                               "resticprofile",
-			"Task To Run":                          "G:\\go\\src\\github.com\\creativeprojects\\resticprofile\\resticprofile.exe --no-ansi --config \"examples\\othere windows.yaml\" run-schedule backup@self",
+			"Task To Run":                          "G:\\go\\src\\github.com\\creativeprojects\\resticprofile\\resticprofile.exe --no-ansi --config \"examples\\other windows.yaml\" run-schedule backup@self",
 			"Start In":                             "G:\\go\\src\\github.com\\creativeprojects\\resticprofile",
-			"Comment":                              "resticprofile backup for profile self in examples\\othere windows.yaml",
+			"Comment":                              "resticprofile backup for profile self in examples\\other windows.yaml",
 			"Scheduled Task State":                 "Enabled",
 			"Idle Time":                            "Disabled",
 			"Power Management":                     "Stop On Battery Mode, No Start On Batteries",
