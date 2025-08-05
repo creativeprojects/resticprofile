@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,11 +18,11 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 )
 
-func loadRemoteFiles(endpoint string) ([]fuse.File, *remote.Manifest, error) {
+func loadRemoteFiles(ctx context.Context, endpoint string) ([]fuse.File, *remote.Manifest, error) {
 	var parameters *remote.Manifest
 
 	client := http.DefaultClient
-	request, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, endpoint, http.NoBody)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -92,8 +91,8 @@ func getManifestParameters(reader io.Reader) (*remote.Manifest, error) {
 }
 
 // setupRemoteConfiguration downloads the configuration files from the remote endpoint and mounts the virtual FS
-func setupRemoteConfiguration(remoteEndpoint string) (func(), *remote.Manifest, error) {
-	files, parameters, err := loadRemoteFiles(remoteEndpoint)
+func setupRemoteConfiguration(ctx context.Context, remoteEndpoint string) (func(), *remote.Manifest, error) {
+	files, parameters, err := loadRemoteFiles(ctx, remoteEndpoint)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -102,17 +101,16 @@ func setupRemoteConfiguration(remoteEndpoint string) (func(), *remote.Manifest, 
 	mountpoint := parameters.Mountpoint
 	if mountpoint == "" {
 		// generates a temporary directory
-		mountpoint = filepath.Join(os.TempDir(), fmt.Sprintf("%s-%x", "resticprofile", rand.Uint32()))
+		mountpoint, err = os.MkdirTemp("", "resticprofile-")
+		if err != nil {
+			return nil, parameters, fmt.Errorf("failed to create mount directory: %w", err)
+		}
 		closeMountpoint = func() {
 			err = os.Remove(mountpoint)
 			if err != nil {
 				clog.Errorf("failed to remove mountpoint: %v", err)
 			}
 		}
-	}
-	err = os.MkdirAll(mountpoint, 0o755)
-	if err != nil {
-		return nil, parameters, fmt.Errorf("failed to create mount directory: %w", err)
 	}
 
 	closeFs, err := fuse.MountFS(mountpoint, files)

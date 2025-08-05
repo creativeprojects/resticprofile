@@ -13,17 +13,24 @@ import (
 
 type Tar struct {
 	writer *tar.Writer
+	fs     afero.Fs
 }
 
 func NewTar(w io.Writer) *Tar {
 	return &Tar{
 		writer: tar.NewWriter(w),
+		fs:     afero.NewOsFs(),
 	}
 }
 
-func (t *Tar) SendFiles(fs afero.Fs, files []string) error {
+func (t *Tar) WithFs(fs afero.Fs) *Tar {
+	t.fs = fs
+	return t
+}
+
+func (t *Tar) SendFiles(files []string) error {
 	for _, filename := range files {
-		fileInfo, err := fs.Stat(filename)
+		fileInfo, err := t.fs.Stat(filename)
 		if err != nil {
 			clog.Errorf("unable to stat file %s: %v", filename, err)
 			continue
@@ -38,7 +45,7 @@ func (t *Tar) SendFiles(fs afero.Fs, files []string) error {
 			clog.Errorf("unable to write tar header for file %s: %v", filename, err)
 			break
 		}
-		file, err := fs.Open(filename)
+		file, err := t.fs.Open(filename)
 		if err != nil {
 			clog.Errorf("unable to open file %s: %v", filename, err)
 			continue

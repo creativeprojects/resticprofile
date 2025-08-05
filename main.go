@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -139,7 +140,8 @@ func main() {
 	banner()
 
 	if flags.remote != "" {
-		closeFS, remoteParameters, err := setupRemoteConfiguration(flags.remote)
+		ctx := context.TODO()
+		closeFS, remoteParameters, err := setupRemoteConfiguration(ctx, flags.remote)
 		if err != nil {
 			// need to setup console logging to display the error message
 			closeLogger := setupLogging(nil)

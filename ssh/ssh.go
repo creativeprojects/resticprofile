@@ -37,9 +37,14 @@ func (s *SSH) Connect() error {
 	if err != nil {
 		return err
 	}
-	hostKeyCallback, err := knownhosts.New(s.config.KnownHostsPath)
-	if err != nil {
-		return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
+	var hostKeyCallback ssh.HostKeyCallback = func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		return nil
+	}
+	if s.config.KnownHostsPath != "" && s.config.KnownHostsPath != "none" && s.config.KnownHostsPath != "/dev/null" {
+		hostKeyCallback, err = knownhosts.New(s.config.KnownHostsPath)
+		if err != nil {
+			return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
+		}
 	}
 	key, err := os.ReadFile(s.config.PrivateKeyPath)
 	if err != nil {

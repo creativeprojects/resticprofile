@@ -10,7 +10,6 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/ssh"
-	"github.com/spf13/afero"
 )
 
 func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
@@ -46,7 +45,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 
 		tar := remote.NewTar(resp)
 		defer tar.Close()
-		_ = tar.SendFiles(afero.NewOsFs(), append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+		_ = tar.SendFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
 		_ = tar.SendFile(constants.ManifestFilename, manifestData)
 	})
 	cnx := ssh.NewSSH(ssh.Config{

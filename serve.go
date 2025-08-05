@@ -14,7 +14,6 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/spf13/afero"
 )
 
 func serveCommand(w io.Writer, cmdCtx commandContext) error {
@@ -25,16 +24,12 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 	handler.HandleFunc("GET /configuration/{remote}", func(resp http.ResponseWriter, req *http.Request) {
 		remoteName := req.PathValue("remote")
 		if !cmdCtx.config.HasRemote(remoteName) {
-			resp.Header().Set("Content-Type", "text/plain")
-			resp.WriteHeader(http.StatusNotFound)
-			_, _ = resp.Write([]byte("remote not found"))
+			sendError(resp, http.StatusNotFound, fmt.Errorf("remote %q not found", remoteName))
 			return
 		}
 		remoteConfig, err := cmdCtx.config.GetRemote(remoteName)
 		if err != nil {
-			resp.Header().Set("Content-Type", "text/plain")
-			resp.WriteHeader(http.StatusBadRequest)
-			_, _ = resp.Write([]byte(err.Error()))
+			sendError(resp, http.StatusBadRequest, fmt.Errorf("error while getting remote configuration: %w", err))
 			return
 		}
 
@@ -45,9 +40,7 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 		}
 		manifestData, err := json.Marshal(manifest)
 		if err != nil {
-			resp.Header().Set("Content-Type", "text/plain")
-			resp.WriteHeader(http.StatusInternalServerError)
-			_, _ = resp.Write([]byte(err.Error()))
+			sendError(resp, http.StatusInternalServerError, fmt.Errorf("error while generating manifest: %w", err))
 			return
 		}
 
@@ -57,7 +50,7 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 
 		tar := remote.NewTar(resp)
 		defer tar.Close()
-		_ = tar.SendFiles(afero.NewOsFs(), append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+		_ = tar.SendFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
 		_ = tar.SendFile(constants.ManifestFilename, manifestData)
 
 	})
@@ -94,4 +87,12 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 		return err
 	}
 	return nil
+}
+
+func sendError(resp http.ResponseWriter, status int, err error) {
+	resp.Header().Set("Content-Type", "text/plain")
+	resp.WriteHeader(status)
+	_, _ = resp.Write([]byte(err.Error()))
+	_, _ = resp.Write([]byte("\n"))
+	clog.Error(err)
 }
