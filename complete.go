@@ -10,6 +10,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/filesearch"
+	"github.com/spf13/afero"
 	"github.com/spf13/pflag"
 )
 
@@ -135,7 +136,7 @@ func (c *Completer) listProfileNames() (list []string) {
 		}
 
 		if file, err := filesearch.NewFinder().FindConfigurationFile(filename); err == nil {
-			if conf, err := config.LoadFile(file, format); err == nil {
+			if conf, err := config.LoadFile(afero.NewOsFs(), file, format); err == nil {
 				list = append(list, conf.GetProfileNames()...)
 				for name := range conf.GetProfileGroups() {
 					list = append(list, name)

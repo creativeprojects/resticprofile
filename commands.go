@@ -168,6 +168,24 @@ func getOwnCommands() []ownCommand {
 			needConfiguration: false,
 			hide:              true,
 		},
+		{
+			name:              "send",
+			description:       "send a configuration profile to a remote client and execute a command",
+			action:            sendProfileCommand,
+			needConfiguration: true,
+			noProfile:         true,
+			hide:              true,
+			experimental:      true,
+		},
+		{
+			name:              "serve",
+			description:       "serve configuration profiles to remote clients",
+			action:            serveCommand,
+			needConfiguration: true,
+			noProfile:         true,
+			hide:              true,
+			experimental:      true,
+		},
 	}
 }
 

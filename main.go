@@ -21,6 +21,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/shutdown"
 	"github.com/mackerelio/go-osstat/memory"
+	"github.com/spf13/afero"
 	"github.com/spf13/pflag"
 )
 
@@ -137,6 +138,26 @@ func main() {
 	defer showPanicData()
 
 	banner()
+
+	if flags.remote != "" {
+		closeFS, remoteParameters, err := setupRemoteConfiguration(flags.remote)
+		if err != nil {
+			// need to setup console logging to display the error message
+			closeLogger := setupLogging(nil)
+			defer closeLogger()
+			clog.Error(err)
+			exitCode = constants.ExitCannotSetupRemoteConfiguration
+			return
+		}
+		if flags.config == constants.DefaultConfigurationFile && remoteParameters.ConfigurationFile != "" {
+			flags.config = remoteParameters.ConfigurationFile
+		}
+		if flags.name == constants.DefaultProfileName && remoteParameters.ProfileName != "" {
+			flags.name = remoteParameters.ProfileName
+		}
+		flags.resticArgs = remoteParameters.CommandLineArguments
+		shutdown.AddHook(closeFS)
+	}
 
 	// resticprofile own commands (configuration file may not be loaded)
 	if len(flags.resticArgs) > 0 {
@@ -270,17 +291,25 @@ func main() {
 }
 
 func banner() {
-	clog.Debugf("resticprofile %s compiled with %s", version, runtime.Version())
+	clog.Debugf(
+		"resticprofile %s compiled with %s %s/%s",
+		version,
+		runtime.Version(),
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 }
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {
+	fs := afero.NewOsFs()
+
 	var configFile string
 	if configFile, err = filesearch.NewFinder().FindConfigurationFile(flags.config); err == nil {
 		if configFile != flags.config && !silent {
 			clog.Infof("using configuration file: %s", configFile)
 		}
 
-		if cfg, err = config.LoadFile(configFile, flags.format); err == nil {
+		if cfg, err = config.LoadFile(fs, configFile, flags.format); err == nil {
 			global, err = cfg.GetGlobalSection()
 			if err != nil {
 				err = fmt.Errorf("cannot load global configuration: %w", err)

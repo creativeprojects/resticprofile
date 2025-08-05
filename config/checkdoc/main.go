@@ -11,6 +11,7 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/spf13/afero"
 	"github.com/spf13/pflag"
 )
 
@@ -174,7 +175,7 @@ func saveConfiguration(content []byte, configType string) (string, error) {
 
 // checkConfiguration returns true when the configuration is valid
 func checkConfiguration(filename, configType string, lineNum int) bool {
-	cfg, err := config.LoadFile(filename, configType)
+	cfg, err := config.LoadFile(afero.NewOsFs(), filename, configType)
 	if err != nil {
 		clog.Errorf("    %q on line %d: %s", configType, lineNum, err)
 		return false
