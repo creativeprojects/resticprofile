@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:misspell
 const listOutput = `
 Folder: \resticprofile backup
 HostName:                             WIN-5NMJF0VS8OR
@@ -78,6 +79,7 @@ func TestReadingListOutput(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, output)
 
+	//nolint:misspell
 	expected := []map[string]string{
 		{
 			"Folder":                               "\\resticprofile backup",
