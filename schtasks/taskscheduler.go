@@ -137,9 +137,6 @@ func Registered() ([]Config, error) {
 			clog.Errorf("loading task %q: %s", taskPath, err)
 			continue
 		}
-		if len(info) < 2 {
-			continue
-		}
 		taskName := strings.TrimPrefix(taskPath, tasksPathPrefix)
 		parts := strings.Split(taskName, " ")
 		if len(parts) < 2 {
