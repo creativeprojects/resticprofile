@@ -708,6 +708,11 @@ func TestPathAndTagInRetention(t *testing.T) {
 	require.Greater(t, len(backupSource), 5)
 	require.NoError(t, err)
 
+	expectedBackupSource := make([]string, len(backupSource))
+	for index, value := range backupSource {
+		expectedBackupSource[index] = shell.NewArg(value, shell.ArgConfigEscape).String()
+	}
+
 	backupHost := ""
 	backupTags := []string{"one", "two"}
 	flatBackupTags := func() []string { return []string{strings.Join(backupTags, ",")} }
@@ -820,7 +825,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 		t.Run("ImplicitCopyPath", func(t *testing.T) {
 			profile := testProfile(t, Version01, ``)
-			assert.Equal(t, backupSource, pathFlag(t, profile))
+			assert.Equal(t, expectedBackupSource, pathFlag(t, profile))
 		})
 
 		t.Run("ExplicitCopyPath", func(t *testing.T) {
@@ -828,7 +833,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 				`path (from source) "` + sourcePattern + `"`: backupSource,
 			}
 			profile := testProfile(t, Version01, `path = true`)
-			assert.Equal(t, backupSource, pathFlag(t, profile))
+			assert.Equal(t, expectedBackupSource, pathFlag(t, profile))
 			assert.Equal(t, expectedIssues, profile.config.issues.changedPaths)
 
 			profile.config.DisplayConfigurationIssues()

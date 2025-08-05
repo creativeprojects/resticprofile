@@ -131,12 +131,10 @@ func Registered() ([]Config, error) {
 
 	configs := make([]Config, 0, len(list))
 	for _, taskPath := range list {
+		clog.Debugf("loading task %q", taskPath)
 		info, err := getTaskInfo(taskPath)
 		if err != nil {
-			clog.Errorf("loading task %q: %w", taskPath, err)
-			continue
-		}
-		if len(info) < 2 {
+			clog.Errorf("loading task %q: %s", taskPath, err)
 			continue
 		}
 		taskName := strings.TrimPrefix(taskPath, tasksPathPrefix)
@@ -176,12 +174,4 @@ func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {
 	})
 	task.AddSchedules(schedules)
 	return task
-}
-
-func getFirstField(data [][]string, fieldName string) string {
-	index := slices.Index(data[0], fieldName)
-	if index < 0 {
-		return ""
-	}
-	return data[1][index]
 }

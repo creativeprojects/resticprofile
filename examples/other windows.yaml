@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config.json
+
+version: "1"
+
+global:
+    priority: low
+    min-memory: 10
+    prevent-sleep: true
+
+
+default:
+    repository: "c:\\backup"
+    password-file: key
+    lock: "c:\\resticprofile-{{ .Profile.Name }}.lock"
+
+self:
+    inherit: default
+    verbose: true
+    force-inactive-lock: true
+    status-file: "c:\\backup\\status.json"
+    backup:
+        source: "."
+        exclude:
+            - "*.exe"
+            - "resticprofile_*"
+            - ".git"
+            - "examples\\private"
+        schedule:
+            at:
+                - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
+                - "Sat,Sun 0,12:00"        # twice a day on week-ends
+            permission: user_logged_on
+            log: "self-backup.log"
