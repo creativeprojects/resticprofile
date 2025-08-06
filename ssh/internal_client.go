@@ -17,7 +17,7 @@ import (
 
 const startPort = 10001
 
-type SSH struct {
+type InternalClient struct {
 	config Config
 	port   int
 	client *ssh.Client
@@ -25,20 +25,20 @@ type SSH struct {
 	server *http.Server
 }
 
-func NewSSH(config Config) *SSH {
-	return &SSH{
+func NewInternalClient(config Config) *InternalClient {
+	return &InternalClient{
 		config: config,
 		port:   startPort,
 	}
 }
 
-func (s *SSH) Connect() error {
+func (s *InternalClient) Connect() error {
 	err := s.config.Validate()
 	if err != nil {
 		return err
 	}
 	var hostKeyCallback ssh.HostKeyCallback = func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-		clog.Debugf("Initiating SSH connection to %s", remote.String())
+		clog.Debugf("initiating SSH connection to %s using internal client", remote.String())
 		return nil
 	}
 	if s.config.KnownHostsPath != "" && s.config.KnownHostsPath != "none" && s.config.KnownHostsPath != "/dev/null" {
@@ -106,11 +106,11 @@ func (s *SSH) Connect() error {
 	return nil
 }
 
-func (s *SSH) TunnelPort() int {
+func (s *InternalClient) TunnelPeerPort() int {
 	return s.port
 }
 
-func (s *SSH) Run(command string) error {
+func (s *InternalClient) Run(command string, arguments ...string) error {
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := s.client.NewSession()
@@ -139,7 +139,7 @@ func (s *SSH) Run(command string) error {
 	return nil
 }
 
-func (s *SSH) Close() {
+func (s *InternalClient) Close() {
 	// close the tunnel first otherwise it fails with error: "ssh: cancel-tcpip-forward failed"
 	if s.tunnel != nil {
 		err := s.tunnel.Close()
@@ -162,3 +162,6 @@ func (s *SSH) Close() {
 		}
 	}
 }
+
+// verify interface
+var _ Client = (*InternalClient)(nil)
