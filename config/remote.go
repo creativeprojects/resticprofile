@@ -12,6 +12,7 @@ type Remote struct {
 	ConfigurationFile string   `mapstructure:"configuration-file" description:"Path to the configuration file to transfer to the remote client"`
 	ProfileName       string   `mapstructure:"profile-name" description:"Name of the profile to use on the remote client"`
 	SendFiles         []string `mapstructure:"send-files" description:"Other configuration files to transfer to the remote client"`
+	SSHConfig         string   `mapstructure:"ssh-config" description:"Path to the OpenSSH config file to use for the connection"`
 }
 
 func NewRemote(config *Config, name string) *Remote {
@@ -27,6 +28,7 @@ func (r *Remote) SetRootPath(rootPath string) {
 	r.PrivateKeyPath = fixPath(r.PrivateKeyPath, expandEnv, absolutePrefix(rootPath))
 	r.KnownHostsPath = fixPath(r.KnownHostsPath, expandEnv, absolutePrefix(rootPath))
 	r.ConfigurationFile = fixPath(r.ConfigurationFile, expandEnv, absolutePrefix(rootPath))
+	r.SSHConfig = fixPath(r.SSHConfig, expandEnv, absolutePrefix(rootPath))
 
 	for i := range r.SendFiles {
 		r.SendFiles[i] = fixPath(r.SendFiles[i], expandEnv, absolutePrefix(rootPath))

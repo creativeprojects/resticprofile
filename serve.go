@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -88,31 +91,37 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		sendRemoteFiles(remoteConfig, remoteName, cmdCtx.flags.resticArgs[2:], resp)
 	})
-	cnx := ssh.NewSSH(ssh.Config{
+	sshConfig := ssh.Config{
 		Host:           remoteConfig.Host,
 		Username:       remoteConfig.Username,
 		PrivateKeyPath: remoteConfig.PrivateKeyPath,
 		KnownHostsPath: remoteConfig.KnownHostsPath,
+		SSHConfigPath:  remoteConfig.SSHConfig,
 		Handler:        handler,
-	})
-	defer cnx.Close()
+	}
+	// cnx := ssh.NewSSH(sshConfig)
+	// defer cnx.Close()
 
-	err = cnx.Connect()
+	// err = cnx.Connect()
+	// if err != nil {
+	// 	return err
+	// }
+	// binaryPath := remoteConfig.BinaryPath
+	// if binaryPath == "" {
+	// 	binaryPath = "resticprofile"
+	// }
+	// commandLine := fmt.Sprintf("%s -v -r http://localhost:%d/configuration/%s ",
+	// 	binaryPath,
+	// 	cnx.TunnelPort(),
+	// 	remoteName,
+	// )
+	// err = cnx.Run(commandLine)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to run command %q: %w", commandLine, err)
+	// }
+	err = callOpenSSH(context.Background(), sshConfig, handler)
 	if err != nil {
 		return err
-	}
-	binaryPath := remoteConfig.BinaryPath
-	if binaryPath == "" {
-		binaryPath = "resticprofile"
-	}
-	commandLine := fmt.Sprintf("%s -v -r http://localhost:%d/configuration/%s ",
-		binaryPath,
-		cnx.TunnelPort(),
-		remoteName,
-	)
-	err = cnx.Run(commandLine)
-	if err != nil {
-		return fmt.Errorf("failed to run command %q: %w", commandLine, err)
 	}
 	return nil
 }
@@ -147,4 +156,45 @@ func sendError(resp http.ResponseWriter, status int, err error) {
 	_, _ = resp.Write([]byte(err.Error()))
 	_, _ = resp.Write([]byte("\n"))
 	clog.Error(err)
+}
+
+func callOpenSSH(ctx context.Context, config ssh.Config, handler http.HandlerFunc) error {
+	var wg sync.WaitGroup
+	ln, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		return err
+	}
+	server := &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer ln.Close()
+		err := server.Serve(ln)
+		if err != nil && err != http.ErrServerClosed {
+			clog.Error("error while serving HTTP:", err)
+		}
+	}()
+	ctx = context.WithoutCancel(ctx)
+	err = server.Shutdown(ctx)
+	if err != nil {
+		return fmt.Errorf("error while shutting down server: %w", err)
+	}
+	cmd := exec.CommandContext(ctx,
+		"ssh", "-v",
+		"-F", config.SSHConfigPath,
+		"-R", fmt.Sprintf("0:localhost:%d", ln.Addr().(*net.TCPAddr).Port),
+		fmt.Sprintf("%s@%s", config.Username, config.Host),
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	clog.Debugf("running command: %s", cmd.String())
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("error while running ssh command: %w", err)
+	}
+	wg.Wait()
+	return nil
 }

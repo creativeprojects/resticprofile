@@ -13,6 +13,7 @@ type Config struct {
 	Username       string
 	PrivateKeyPath string
 	KnownHostsPath string
+	SSHConfigPath  string // Path to the OpenSSH config file, if any
 	Handler        http.Handler
 }
 

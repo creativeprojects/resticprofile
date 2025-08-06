@@ -38,6 +38,7 @@ func (s *SSH) Connect() error {
 		return err
 	}
 	var hostKeyCallback ssh.HostKeyCallback = func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		clog.Debugf("Initiating SSH connection to %s", remote.String())
 		return nil
 	}
 	if s.config.KnownHostsPath != "" && s.config.KnownHostsPath != "none" && s.config.KnownHostsPath != "/dev/null" {
@@ -57,6 +58,12 @@ func (s *SSH) Connect() error {
 		return fmt.Errorf("unable to parse private key: %w", err)
 	}
 
+	// The algorithms returned by ssh.SupportedAlgorithms() are different from
+	// the default ones and do not include algorithms that are considered
+	// insecure, such as those using SHA-1, returned by
+	// ssh.InsecureAlgorithms().
+	algorithms := ssh.SupportedAlgorithms()
+
 	config := &ssh.ClientConfig{
 		User: s.config.Username,
 		Auth: []ssh.AuthMethod{
@@ -64,7 +71,12 @@ func (s *SSH) Connect() error {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback:   hostKeyCallback,
-		HostKeyAlgorithms: []string{ssh.KeyAlgoED25519, ssh.KeyAlgoECDSA256}, // we might need to make this configurable
+		HostKeyAlgorithms: algorithms.HostKeys,
+		Config: ssh.Config{
+			KeyExchanges: algorithms.KeyExchanges,
+			Ciphers:      algorithms.Ciphers,
+			MACs:         algorithms.MACs,
+		},
 	}
 
 	// Connect to the remote server and perform the SSH handshake.
