@@ -32,6 +32,10 @@ func NewInternalClient(config Config) *InternalClient {
 	}
 }
 
+func (s *InternalClient) Name() string {
+	return "InternalSSH"
+}
+
 func (s *InternalClient) Connect() error {
 	err := s.config.Validate()
 	if err != nil {

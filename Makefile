@@ -336,3 +336,43 @@ deploy-current: build-linux build-pi
 		rsync -avz --progress $(BINARY_PI) $$server: ; \
 		ssh $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
 	done
+
+.PHONY: start-ssh-server
+start-ssh-server:
+	@echo "[*] $@"
+	$(eval KEYS_TMP_DIR := $(shell mktemp --directory --tmpdir resticprofile.XXXXXXXXXX))
+	@echo "Using temporary directory for SSH keys: $(KEYS_TMP_DIR)"
+	@echo $(KEYS_TMP_DIR) > ./ssh/tests/running.tmpdir
+	@ssh-keygen -t rsa -b 2048 -f $(KEYS_TMP_DIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
+	@cp $(KEYS_TMP_DIR)/id_rsa.pub ./ssh/tests/authorized_keys
+	@docker run -d \
+		--name=openssh-server \
+		--hostname=openssh-server \
+		-e PUID=1000 \
+		-e PGID=1000 \
+		-e TZ=Etc/UTC \
+		-e SUDO_ACCESS=false \
+		-e PASSWORD_ACCESS=false \
+		-e USER_NAME=resticprofile \
+		-e LOG_STDOUT=false \
+		-p 2222:2222 \
+		-v ./ssh/tests/authorized_keys:/config/.ssh/authorized_keys \
+		lscr.io/linuxserver/openssh-server:latest
+	@ssh-keyscan -p 2222 -H localhost > ./ssh/tests/known_hosts
+
+.PHONY: stop-ssh-server
+stop-ssh-server:
+	@echo "[*] $@"
+	@docker stop openssh-server || echo "No running SSH server to stop"
+	@docker rm openssh-server || echo "No container to remove"
+	$(eval KEYS_TMP_DIR := $(shell cat ./ssh/tests/running.tmpdir))
+	@test -d "$(KEYS_TMP_DIR)" && rm -rf "$(KEYS_TMP_DIR)" || echo "Failed to remove temporary SSH keys directory"
+	@test -f ./ssh/tests/running.tmpdir && rm ./ssh/tests/running.tmpdir || echo "Failed to remove temporary file"
+	@test -f ./ssh/tests/authorized_keys && rm ./ssh/tests/authorized_keys || echo "Failed to remove authorized_keys file"
+	@test -f ./ssh/tests/known_hosts && rm ./ssh/tests/known_hosts || echo "Failed to remove known_hosts file"
+
+known_hosts:
+	@echo "[*] $@"
+	$(eval KEYS_TMP_DIR := $(shell cat ./ssh/tests/running.tmpdir))
+	@ssh-keyscan -p 2222 -H localhost > $(KEYS_TMP_DIR)/known_hosts
+	@echo "Known hosts file created at $(KEYS_TMP_DIR)/known_hosts"
