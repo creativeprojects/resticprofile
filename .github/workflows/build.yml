@@ -132,7 +132,9 @@ jobs:
           args: docker restart openssh-server
 
       - name: Test
-        run: go test -v -tags ssh -coverprofile='coverage-ssh.out' ./ssh
+        run: |
+          ssh -i ${SSH_TESTS_TMPDIR}/id_rsa -p 2222 -o UserKnownHostsFile=${SSH_TESTS_TMPDIR}/known_hosts resticprofile@openssh-server env
+          go test -v -tags ssh -coverprofile='coverage-ssh.out' ./ssh
         env:
           SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
 
