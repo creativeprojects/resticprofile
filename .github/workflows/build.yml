@@ -77,10 +77,11 @@ jobs:
     services:
       openssh-server:
         image: lscr.io/linuxserver/openssh-server:latest
+        options: --name openssh-server
         ports:
           - 2222:2222
         volumes:
-          - ${{ github.workspace }}/ssh/tests/ssh_gateway_ports.conf:/config/sshd/sshd_config.d/ssh_gateway_ports.conf
+          - config:/config
         env:
           PUID: 1000
           PGID: 1000
@@ -102,7 +103,15 @@ jobs:
           cache: true
 
       - name: Download host keys
-        run: ssh-keyscan -p 2222 -H localhost > ${{ github.workspace }}/ssh/tests/known_hosts
+        run: |
+          id
+          ssh-keyscan -p 2222 -H localhost > ${{ runner.temp }}/known_hosts
+          cat ${{ runner.temp }}/known_hosts
+
+      - name: Restart to feed the volume
+        uses: docker://docker
+        with:
+          args: docker restart openssh-server
 
   sonarCloudTrigger:
     needs: build
