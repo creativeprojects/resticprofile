@@ -133,7 +133,7 @@ jobs:
 
       - name: Test
         run: |
-          ssh -i ${SSH_TESTS_TMPDIR}/id_rsa -p 2222 -o UserKnownHostsFile=${SSH_TESTS_TMPDIR}/known_hosts resticprofile@openssh-server env
+          ssh -v -i ${SSH_TESTS_TMPDIR}/id_rsa -p 2222 -o UserKnownHostsFile=${SSH_TESTS_TMPDIR}/known_hosts resticprofile@localhost env
           go test -v -tags ssh -coverprofile='coverage-ssh.out' ./ssh
         env:
           SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
