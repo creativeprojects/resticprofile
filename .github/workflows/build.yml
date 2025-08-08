@@ -119,7 +119,7 @@ jobs:
         id: publickey
         uses: jaywcjlove/github-action-read-file@main
         with:
-          path: ${{ runner.temp }}/resticprofile-ssh-tests/id_rsa.pub
+          localfile: ${{ runner.temp }}/resticprofile-ssh-tests/id_rsa.pub
 
       - name: Insert public key into authorized_keys
         uses: docker://docker
