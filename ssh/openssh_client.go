@@ -98,10 +98,13 @@ func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 		args = append(args, "-F", c.config.SSHConfigPath)
 	}
 	if c.sshPort > 0 {
-		args = append(args, "-p", strconv.Itoa(c.sshPort)) // Specifies the port to connect to on the remote host
+		args = append(args, "-p", strconv.Itoa(c.sshPort))
 	}
 	if c.config.KnownHostsPath != "" {
 		args = append(args, "-o", fmt.Sprintf("UserKnownHostsFile=%s", c.config.KnownHostsPath))
+	}
+	if c.config.PrivateKeyPath != "" {
+		args = append(args, "-i", c.config.PrivateKeyPath)
 	}
 	args = append(args, c.sshUserHost)
 	cmd := exec.CommandContext(ctx, "ssh", args...)

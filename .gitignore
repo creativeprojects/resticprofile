@@ -44,5 +44,3 @@ go.work.sum
 
 /*.txt
 output.xml
-
-/ssh/tests/

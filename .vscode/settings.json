@@ -18,5 +18,6 @@
     "go.lintTool": "golangci-lint",
     "githubPullRequests.ignoredPullRequestBranches": [
         "master"
-    ]
+    ],
+    "go.buildTags": "ssh"
 }

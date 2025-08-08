@@ -357,7 +357,9 @@ start-ssh-server:
 		-e LOG_STDOUT=false \
 		-p 2222:2222 \
 		-v ./ssh/tests/authorized_keys:/config/.ssh/authorized_keys \
+		-v ./ssh/tests/ssh_gateway_ports.conf:/config/sshd/sshd_config.d/ssh_gateway_ports.conf \
 		lscr.io/linuxserver/openssh-server:latest
+	@sleep 1
 	@ssh-keyscan -p 2222 -H localhost > ./ssh/tests/known_hosts
 
 .PHONY: stop-ssh-server
