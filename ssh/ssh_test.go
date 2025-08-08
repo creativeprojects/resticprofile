@@ -11,12 +11,10 @@ import (
 )
 
 func TestSSHClient(t *testing.T) {
-	wd, err := os.Getwd()
-	require.NoError(t, err)
-
-	t.Logf("Current working directory: %s", wd)
-
-	tmpDir := os.Getenv("KEYS_TMP_DIR")
+	tmpDir := os.Getenv("SSH_TESTS_TMPDIR")
+	if tmpDir == "" {
+		tmpDir = filepath.Join(os.TempDir(), "resticprofile-ssh-tests")
+	}
 
 	fixtures := []struct {
 		name       string
@@ -28,7 +26,7 @@ func TestSSHClient(t *testing.T) {
 			config: Config{
 				Host:           "localhost:2222",
 				Username:       "resticprofile",
-				KnownHostsPath: filepath.Join(wd, "./tests/known_hosts"),
+				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
 			},
 			connectErr: true,
 		},
@@ -37,7 +35,7 @@ func TestSSHClient(t *testing.T) {
 			config: Config{
 				Host:           "localhost:2222",
 				Username:       "otheruser",
-				KnownHostsPath: filepath.Join(wd, "tests/known_hosts"),
+				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPath: filepath.Join(tmpDir, "id_rsa"),
 			},
 			connectErr: true,
@@ -47,7 +45,7 @@ func TestSSHClient(t *testing.T) {
 			config: Config{
 				Host:           "localhost:2222",
 				Username:       "resticprofile",
-				KnownHostsPath: filepath.Join(wd, "tests/known_hosts"),
+				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPath: filepath.Join(tmpDir, "id_rsa"),
 			},
 			connectErr: false,

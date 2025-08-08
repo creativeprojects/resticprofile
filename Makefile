@@ -54,6 +54,9 @@ ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
 
+TMPDIR ?= /tmp
+SSH_TESTS_TMPDIR=$(shell echo "$(TMPDIR)/resticprofile-ssh-tests" | tr -s /)
+
 TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
@@ -337,14 +340,12 @@ deploy-current: build-linux build-pi
 		ssh $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
 	done
 
+# this is a convoluted step to mimic the GitHub Actions environment
 .PHONY: start-ssh-server
-start-ssh-server:
+start-ssh-server: stop-ssh-server
 	@echo "[*] $@"
-	$(eval KEYS_TMP_DIR := $(shell mktemp --directory --tmpdir resticprofile.XXXXXXXXXX))
-	@echo "Using temporary directory for SSH keys: $(KEYS_TMP_DIR)"
-	@echo $(KEYS_TMP_DIR) > ./ssh/tests/running.tmpdir
-	@ssh-keygen -t rsa -b 2048 -f $(KEYS_TMP_DIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
-	@cp $(KEYS_TMP_DIR)/id_rsa.pub ./ssh/tests/authorized_keys
+	@mkdir -p $(SSH_TESTS_TMPDIR) || echo "Failed to create temporary directory"
+	@ssh-keygen -t rsa -b 2048 -f $(SSH_TESTS_TMPDIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
 	@docker run -d \
 		--name=openssh-server \
 		--hostname=openssh-server \
@@ -356,25 +357,21 @@ start-ssh-server:
 		-e USER_NAME=resticprofile \
 		-e LOG_STDOUT=false \
 		-p 2222:2222 \
-		-v ./ssh/tests/authorized_keys:/config/.ssh/authorized_keys \
-		-v ./ssh/tests/ssh_gateway_ports.conf:/config/sshd/sshd_config.d/ssh_gateway_ports.conf \
 		lscr.io/linuxserver/openssh-server:latest
 	@sleep 1
-	@ssh-keyscan -p 2222 -H localhost > ./ssh/tests/known_hosts
+	@ssh-keyscan -p 2222 -H localhost > $(SSH_TESTS_TMPDIR)/known_hosts
+	@echo "Match User resticprofile\n    AllowTcpForwarding yes\n" | docker exec -i openssh-server sh -c "tee -a /config/sshd/sshd_config"
+	@cat $(SSH_TESTS_TMPDIR)/id_rsa.pub | docker exec -i openssh-server sh -c "tee -a /config/.ssh/authorized_keys"
+	@docker restart openssh-server
 
 .PHONY: stop-ssh-server
 stop-ssh-server:
 	@echo "[*] $@"
-	@docker stop openssh-server || echo "No running SSH server to stop"
-	@docker rm openssh-server || echo "No container to remove"
-	$(eval KEYS_TMP_DIR := $(shell cat ./ssh/tests/running.tmpdir))
-	@test -d "$(KEYS_TMP_DIR)" && rm -rf "$(KEYS_TMP_DIR)" || echo "Failed to remove temporary SSH keys directory"
-	@test -f ./ssh/tests/running.tmpdir && rm ./ssh/tests/running.tmpdir || echo "Failed to remove temporary file"
-	@test -f ./ssh/tests/authorized_keys && rm ./ssh/tests/authorized_keys || echo "Failed to remove authorized_keys file"
-	@test -f ./ssh/tests/known_hosts && rm ./ssh/tests/known_hosts || echo "Failed to remove known_hosts file"
-
-known_hosts:
-	@echo "[*] $@"
-	$(eval KEYS_TMP_DIR := $(shell cat ./ssh/tests/running.tmpdir))
-	@ssh-keyscan -p 2222 -H localhost > $(KEYS_TMP_DIR)/known_hosts
-	@echo "Known hosts file created at $(KEYS_TMP_DIR)/known_hosts"
+	@echo "stopping and removing openssh-server container..."
+	@docker ps --filter "name=openssh-server" --format "{{.State}}" | grep -q "running" && \
+		docker stop openssh-server || \
+		echo "container is not running, nothing to stop"
+	@docker ps --all --filter "name=openssh-server" --format "{{.Names}}" | grep -q "openssh-server" && \
+		docker rm openssh-server || \
+		echo "container is absent, nothing to remove"
+	@test -d "$(SSH_TESTS_TMPDIR)" && rm -rf "$(SSH_TESTS_TMPDIR)" || echo "temporary directory not found, nothing to remove"

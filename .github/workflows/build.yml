@@ -83,8 +83,8 @@ jobs:
         volumes:
           - config:/config
         env:
-          PUID: 1000
-          PGID: 1000
+          PUID: 1001 # runner user ID
+          PGID: 100  # users group ID
           TZ: Etc/UTC
           SUDO_ACCESS: false
           PASSWORD_ACCESS: false
@@ -99,19 +99,36 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.24
-          check-latest: true
-          cache: true
 
-      - name: Download host keys
+      - name: Setup OpenSSH server
+        env:
+          SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
         run: |
           id
-          ssh-keyscan -p 2222 -H localhost > ${{ runner.temp }}/known_hosts
-          cat ${{ runner.temp }}/known_hosts
+          mkdir -p ${SSH_TESTS_TMPDIR}
+          ssh-keygen -t rsa -b 2048 -f ${SSH_TESTS_TMPDIR}/id_rsa -N "" -C "resticprofile@localhost"
+          ssh-keyscan -p 2222 -H localhost > ${SSH_TESTS_TMPDIR}/known_hosts
+          cat ${SSH_TESTS_TMPDIR}/known_hosts
+          
+      - name: Tweak OpenSSH server configuration
+        uses: docker://docker
+        with:
+          args: echo "Match User resticprofile\n    AllowTcpForwarding yes\n" | docker exec -i openssh-server sh -c "tee -a /config/sshd/sshd_config"
 
-      - name: Restart to feed the volume
+      - name: Insert public key into authorized_keys
+        uses: docker://docker
+        with:
+          args: cat ${SSH_TESTS_TMPDIR}/id_rsa.pub | docker exec -i openssh-server sh -c "tee -a /config/.ssh/authorized_keys"
+
+      - name: Restart with the new configuration
         uses: docker://docker
         with:
           args: docker restart openssh-server
+
+      - name: Test
+        env:
+          SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
+        run: go test -v -tags ssh ./ssh
 
   sonarCloudTrigger:
     needs: build
