@@ -80,8 +80,6 @@ jobs:
         options: --name openssh-server
         ports:
           - 2222:2222
-        volumes:
-          - config:/config
         env:
           PUID: 1001 # runner user ID
           PGID: 100  # users group ID
@@ -130,10 +128,15 @@ jobs:
         uses: docker://docker
         with:
           args: docker restart openssh-server
+          
+      - name: Copy configuration files
+        uses: docker://docker
+        with:
+          args: docker cp openssh-server:/config config
 
       - name: Test
         run: |
-          cat /etc/ssh/ssh_config
+          cat config/**/*
           ssh -v -i ${SSH_TESTS_TMPDIR}/id_rsa -p 2222 -o UserKnownHostsFile=${SSH_TESTS_TMPDIR}/known_hosts resticprofile@localhost env
           go test -v -tags ssh -coverprofile='coverage-ssh.out' ./ssh
         env:
