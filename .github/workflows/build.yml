@@ -114,11 +114,15 @@ jobs:
         uses: docker://docker
         with:
           args: echo "Match User resticprofile\n    AllowTcpForwarding yes\n" | docker exec -i openssh-server sh -c "tee -a /config/sshd/sshd_config"
+        env:
+          SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
 
       - name: Insert public key into authorized_keys
         uses: docker://docker
         with:
           args: cat ${SSH_TESTS_TMPDIR}/id_rsa.pub | docker exec -i openssh-server sh -c "tee -a /config/.ssh/authorized_keys"
+        env:
+          SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
 
       - name: Restart with the new configuration
         uses: docker://docker
@@ -126,9 +130,9 @@ jobs:
           args: docker restart openssh-server
 
       - name: Test
+        run: go test -v -tags ssh -coverprofile='coverage-ssh.out' ./ssh
         env:
           SSH_TESTS_TMPDIR: ${{ runner.temp }}/resticprofile-ssh-tests
-        run: go test -v -tags ssh ./ssh
 
   sonarCloudTrigger:
     needs: build
