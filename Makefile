@@ -340,38 +340,24 @@ deploy-current: build-linux build-pi
 		ssh $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
 	done
 
-# this is a convoluted step to mimic the GitHub Actions environment
 .PHONY: start-ssh-server
-start-ssh-server: stop-ssh-server
+start-ssh-server:
 	@echo "[*] $@"
-	@mkdir -p $(SSH_TESTS_TMPDIR) || echo "Failed to create temporary directory"
+	@mkdir -p $(SSH_TESTS_TMPDIR) && rm -f $(SSH_TESTS_TMPDIR)/id_rsa* || echo "Failed to create temporary directory"
 	@ssh-keygen -t rsa -b 2048 -f $(SSH_TESTS_TMPDIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
-	@docker run -d \
-		--name=openssh-server \
-		--hostname=openssh-server \
-		-e PUID=1000 \
-		-e PGID=1000 \
-		-e TZ=Etc/UTC \
-		-e SUDO_ACCESS=false \
-		-e PASSWORD_ACCESS=false \
-		-e USER_NAME=resticprofile \
-		-e LOG_STDOUT=false \
-		-p 2222:2222 \
-		lscr.io/linuxserver/openssh-server:latest
+	@cd ./ssh/test && \
+		USER_ID=$(shell id -u) GROUP_ID=$(shell id -g) SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) \
+		docker compose up -d --force-recreate
 	@sleep 1
 	@ssh-keyscan -p 2222 -H localhost > $(SSH_TESTS_TMPDIR)/known_hosts
-	@echo "Match User resticprofile\n    AllowTcpForwarding yes\n" | docker exec -i openssh-server sh -c "tee -a /config/sshd/sshd_config"
-	@cat $(SSH_TESTS_TMPDIR)/id_rsa.pub | docker exec -i openssh-server sh -c "tee -a /config/.ssh/authorized_keys"
-	@docker restart openssh-server
 
 .PHONY: stop-ssh-server
 stop-ssh-server:
 	@echo "[*] $@"
-	@echo "stopping and removing openssh-server container..."
-	@docker ps --filter "name=openssh-server" --format "{{.State}}" | grep -q "running" && \
-		docker stop openssh-server || \
-		echo "container is not running, nothing to stop"
-	@docker ps --all --filter "name=openssh-server" --format "{{.Names}}" | grep -q "openssh-server" && \
-		docker rm openssh-server || \
-		echo "container is absent, nothing to remove"
+	cd ./ssh/test && SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) docker compose down --remove-orphans
 	@test -d "$(SSH_TESTS_TMPDIR)" && rm -rf "$(SSH_TESTS_TMPDIR)" || echo "temporary directory not found, nothing to remove"
+
+.PHONY: ssh-test
+ssh-test:
+	@echo "[*] $@"
+	@go test -run TestSSHClient -v -tags ssh ./ssh
