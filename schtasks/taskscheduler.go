@@ -51,6 +51,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 			return fmt.Errorf("cannot delete existing task to replace it: %w", err)
 		}
 	}
+
 	task := createTaskDefinition(config, schedules)
 	task.RegistrationInfo.URI = taskPath
 
