@@ -54,10 +54,24 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 	task := createTaskDefinition(config, schedules)
 	task.RegistrationInfo.URI = taskPath
 
+	switch config.RunLevel {
+	case "lowest":
+		task.Principals.Principal.RunLevel = RunLevelLeastPrivilege
+
+	case "highest":
+		task.Principals.Principal.RunLevel = RunLevelHighest
+
+	default:
+		if permission == SystemAccount {
+			task.Principals.Principal.RunLevel = RunLevelHighest
+		} else {
+			task.Principals.Principal.RunLevel = RunLevelDefault
+		}
+	}
+
 	switch permission {
 	case SystemAccount:
 		task.Principals.Principal.LogonType = LogonTypeServiceForUser
-		task.Principals.Principal.RunLevel = RunLevelHighest
 		task.Principals.Principal.UserId = serviceAccount
 		task.RegistrationInfo.SecurityDescriptor = securityDescriptor // allow authenticated users to read the task status
 

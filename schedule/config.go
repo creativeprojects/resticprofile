@@ -12,6 +12,7 @@ type Config struct {
 	CommandName        string // restic command
 	Schedules          []string
 	Permission         string
+	RunLevel           string
 	WorkingDirectory   string
 	Command            string // path to resticprofile executable
 	Arguments          CommandArguments
