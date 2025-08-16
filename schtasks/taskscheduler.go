@@ -26,6 +26,7 @@ import (
 	"slices"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/calendar"
@@ -51,7 +52,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 			return fmt.Errorf("cannot delete existing task to replace it: %w", err)
 		}
 	}
-	task := createTaskDefinition(config, schedules)
+	task := createTaskDefinition(config, schedules, time.Time{})
 	task.RegistrationInfo.URI = taskPath
 
 	switch permission {
@@ -164,8 +165,12 @@ func getTaskPath(profileName, commandName string) string {
 	return fmt.Sprintf("%s%s %s", tasksPathPrefix, profileName, commandName)
 }
 
-func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {
-	task := NewTask()
+func createTaskDefinition(config *Config, schedules []*calendar.Event, from time.Time) Task {
+	options := make([]TaskOption, 0, 1)
+	if !from.IsZero() {
+		options = append(options, WithFromNow(from))
+	}
+	task := NewTask(options...)
 	task.RegistrationInfo.Description = config.JobDescription
 	task.AddExecAction(ExecAction{
 		Command:          config.Command,
