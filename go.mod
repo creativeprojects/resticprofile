@@ -1,13 +1,13 @@
 module github.com/creativeprojects/resticprofile
 
-go 1.24.5
+go 1.24.6
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/adrg/xdg v0.5.3
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/creativeprojects/clog v0.14.0
-	github.com/creativeprojects/go-selfupdate v1.5.0
+	github.com/creativeprojects/go-selfupdate v1.5.1
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.18.0
 	github.com/joho/godotenv v1.5.1
@@ -22,16 +22,16 @@ require (
 	github.com/spf13/cast v1.8.0
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.19.0
-	github.com/stretchr/testify v1.10.0
-	golang.org/x/sys v0.34.0
-	golang.org/x/term v0.33.0
-	golang.org/x/text v0.27.0
+	github.com/stretchr/testify v1.11.1
+	golang.org/x/sys v0.35.0
+	golang.org/x/term v0.34.0
+	golang.org/x/text v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
 )
 
 require (
-	code.gitea.io/sdk/gitea v0.21.0 // indirect
+	code.gitea.io/sdk/gitea v0.22.0 // indirect
 	github.com/42wim/httpsig v1.2.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -45,7 +45,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/govalues/decimal v0.1.36 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
@@ -66,14 +66,14 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
-	github.com/ulikunitz/xz v0.5.12 // indirect
+	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/time v0.11.0 // indirect
+	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )

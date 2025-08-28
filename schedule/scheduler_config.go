@@ -9,6 +9,8 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
+var singleLetterRegexp = regexp.MustCompile(`^[A-Za-z]$`)
+
 type SchedulerConfig interface {
 	// Type of scheduler config ("windows", "launchd", "crond", "systemd" or "" for OS default)
 	Type() string
@@ -78,7 +80,7 @@ func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 		if len(resource) > 0 {
 			if user, location, found := strings.Cut(resource, ":"); found {
 				user = strings.TrimSpace(user)
-				if !regexp.MustCompile(`^[A-Za-z]$`).MatchString(user) {
+				if !singleLetterRegexp.MatchString(user) {
 					if user == "" {
 						user = "-"
 					}

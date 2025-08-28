@@ -4,7 +4,7 @@ global:
     default-command: snapshots
     initialize: false
     priority: low
-    scheduler: crond
+    scheduler: crontab::crontab
 
 default:
     password-file: key
@@ -25,7 +25,7 @@ test_user1:
         schedule-log: backup-{{ .Profile.Name }}.log
     check:
         schedule: "*-*-1"
-        schedule-permission: user
+        schedule-permission: user_logged_on
         schedule-log: check-{{ .Profile.Name }}.log
 
 test_user2:
@@ -38,11 +38,9 @@ test_user2:
           - "/**/.git/"
           - "resticp\\*"
         schedule: "*:15,45"
-        schedule-permission: user
         schedule-log: backup-{{ .Profile.Name }}.log
     check:
         schedule: "*-*-15"
-        schedule-permission: user
         schedule-log: check-{{ .Profile.Name }}.log
 
 # test_root:

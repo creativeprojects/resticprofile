@@ -84,12 +84,13 @@ func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permi
 			job.Command+" "+job.Arguments.String(),
 			job.WorkingDirectory,
 		)
-		if h.config.Username != "" {
-			if permission == PermissionSystem {
-				entries[i] = entries[i].WithUser("root")
-			} else {
-				entries[i] = entries[i].WithUser(h.config.Username)
-			}
+
+		switch h.config.Username {
+		case "", "-":
+			// empty or "-" => do not set a user; let crond keep entries without a user field
+		default:
+			// explicit user or "*" placeholder
+			entries[i] = entries[i].WithUser(h.config.Username)
 		}
 	}
 	crontab := crond.NewCrontab(entries).
