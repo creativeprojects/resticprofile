@@ -3,17 +3,19 @@
 package schedule
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestReadingCrondScheduled(t *testing.T) {
+func TestCreateReadDeleteCrondSchedules(t *testing.T) {
 	hourly := calendar.NewEvent(func(e *calendar.Event) {
 		e.Minute.MustAddValue(0)
 		e.Second.MustAddValue(0)
@@ -47,7 +49,7 @@ func TestReadingCrondScheduled(t *testing.T) {
 				WorkingDirectory: "/resticprofile",
 				Schedules:        []string{"*-*-* *:00:00"},
 				ConfigFile:       "config file.yaml",
-				Permission:       "system",
+				Permission:       "user",
 			},
 			schedules: []*calendar.Event{
 				hourly,
@@ -171,6 +173,182 @@ func TestCheckPermission(t *testing.T) {
 			handler := NewHandler(SchedulerCrond{}).(*HandlerCrond)
 			result := handler.CheckPermission(user, tc.permission)
 			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestNeedsUserInCronEntry(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		config       SchedulerCrond
+		job          Config
+		expectedUser string
+	}{
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "user",
+			},
+			expectedUser: "",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "system",
+			},
+			expectedUser: "",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "-",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "user",
+			},
+			expectedUser: "",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "-",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "system",
+			},
+			expectedUser: "",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "*",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "user",
+			},
+			expectedUser: "",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "*",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "system",
+			},
+			expectedUser: "",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "testuser",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "user",
+			},
+			expectedUser: "testuser",
+		},
+		{
+			config: SchedulerCrond{
+				CrontabFile: "somefile",
+				Username:    "testuser",
+			},
+			job: Config{
+				ProfileName:      "self",
+				CommandName:      "check",
+				Command:          "/bin/resticprofile",
+				Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "profiles.yaml", "--name", "self", "check"}),
+				WorkingDirectory: "/resticprofile",
+				Schedules:        []string{"*-*-* *:00:00"},
+				ConfigFile:       "profiles.yaml",
+				Permission:       "system",
+			},
+			expectedUser: "testuser",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("config:%s permission:%s expected:%s", tc.config.Username, tc.job.Permission, tc.expectedUser), func(t *testing.T) {
+			t.Parallel()
+
+			fs := afero.NewMemMapFs()
+			handler := NewHandler(tc.config).(*HandlerCrond)
+			handler.fs = fs
+			err := handler.CreateJob(&tc.job, []*calendar.Event{calendar.NewEvent(func(e *calendar.Event) {
+				e.Minute.MustAddValue(0)
+				e.Second.MustAddValue(0)
+			})}, PermissionFromConfig(tc.job.Permission))
+			require.NoError(t, err)
+
+			crontab := crond.NewCrontab(nil).
+				SetFile(tc.config.CrontabFile).
+				SetBinary(tc.config.CrontabBinary).
+				SetFs(fs)
+			entries, err := crontab.GetEntries()
+			require.NoError(t, err)
+			require.Len(t, entries, 1)
+
+			if tc.config.Username == "*" && tc.expectedUser == "" {
+				assert.NotEmpty(t, entries[0].User())
+			} else {
+				assert.Equal(t, tc.expectedUser, entries[0].User())
+			}
 		})
 	}
 }

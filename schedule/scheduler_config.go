@@ -78,7 +78,7 @@ func NewSchedulerConfig(global *config.Global) SchedulerConfig {
 		if len(resource) > 0 {
 			if user, location, found := strings.Cut(resource, ":"); found {
 				user = strings.TrimSpace(user)
-				if !regexp.MustCompile(`^[A-Za-z]$`).MatchString(user) {
+				if !regexp.MustCompile(`^[A-Za-z]$`).MatchString(user) { // Checking the username is not a single letter?
 					if user == "" {
 						user = "-"
 					}
