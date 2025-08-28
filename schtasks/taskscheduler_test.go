@@ -279,3 +279,11 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 		})
 	}
 }
+
+func TestRunLevelOption(t *testing.T) {
+	// atm it's impossible to test `run-level` option
+	// due to lack info about task `run-level` in schtasks output
+	// such info only present in xml format, we are currently using csv
+	// see related: https://github.com/creativeprojects/resticprofile/issues/545
+	// TODO: implement test when possible
+}

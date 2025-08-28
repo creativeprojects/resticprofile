@@ -310,6 +310,7 @@ func TestShowSchedules(t *testing.T) {
 schedule backup@default:
     at:                   daily
     permission:           auto
+    run-level:            auto
     command-output:       auto
     priority:             standard
     lock-mode:            default
@@ -318,6 +319,7 @@ schedule backup@default:
 schedule check@default:
     at:                   weekly
     permission:           auto
+    run-level:            auto
     command-output:       auto
     priority:             standard
     lock-mode:            default
