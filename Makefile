@@ -54,6 +54,9 @@ ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
 
+TMPDIR ?= /tmp
+SSH_TESTS_TMPDIR=$(shell echo "$(TMPDIR)/resticprofile-ssh-tests" | tr -s /)
+
 TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
@@ -336,3 +339,25 @@ deploy-current: build-linux build-pi
 		rsync -avz --progress $(BINARY_PI) $$server: ; \
 		ssh $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
 	done
+
+.PHONY: start-ssh-server
+start-ssh-server:
+	@echo "[*] $@"
+	@mkdir -p $(SSH_TESTS_TMPDIR) && rm -f $(SSH_TESTS_TMPDIR)/id_rsa* || echo "Failed to create temporary directory"
+	@ssh-keygen -t rsa -b 2048 -f $(SSH_TESTS_TMPDIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
+	@cd ./ssh/test && \
+		USER_ID=$(shell id -u) GROUP_ID=$(shell id -g) SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) \
+		docker compose up -d --force-recreate
+	@sleep 1
+	@ssh-keyscan -p 2222 -H localhost > $(SSH_TESTS_TMPDIR)/known_hosts
+
+.PHONY: stop-ssh-server
+stop-ssh-server:
+	@echo "[*] $@"
+	cd ./ssh/test && SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) docker compose down --remove-orphans
+	@test -d "$(SSH_TESTS_TMPDIR)" && rm -rf "$(SSH_TESTS_TMPDIR)" || echo "temporary directory not found, nothing to remove"
+
+.PHONY: ssh-test
+ssh-test:
+	@echo "[*] $@"
+	@go test -run TestSSHClient -v -tags ssh ./ssh

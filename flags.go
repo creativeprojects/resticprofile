@@ -38,6 +38,7 @@ type commandLineFlags struct {
 	noPriority      bool
 	ignoreOnBattery int
 	usagesHelp      string
+	remote          string // url of the remote server to download configuration files from
 }
 
 func envValueOverride[T any](defaultValue T, keys ...string) T {
@@ -92,6 +93,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		noPriority:      envValueOverride(false, "RESTICPROFILE_NO_PRIORITY"),
 		wait:            envValueOverride(false, "RESTICPROFILE_WAIT"),
 		ignoreOnBattery: envValueOverride(0, "RESTICPROFILE_IGNORE_ON_BATTERY"),
+		remote:          envValueOverride("", "RESTICPROFILE_REMOTE"),
 	}
 
 	flagset.BoolVarP(&flags.help, "help", "h", flags.help, "display this help")
@@ -113,6 +115,9 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.BoolVarP(&flags.wait, "wait", "w", flags.wait, "wait at the end until the user presses the enter key")
 	flagset.IntVar(&flags.ignoreOnBattery, "ignore-on-battery", flags.ignoreOnBattery, "don't start the profile when the computer is running on battery. You can specify a value to ignore only when the % charge left is less or equal than the value")
 	flagset.Lookup("ignore-on-battery").NoOptDefVal = "100" // 0 is flag not set, 100 is for a flag with no value (meaning just battery discharge)
+	flagset.StringVarP(&flags.remote, "remote", "r", flags.remote, "remote server to download configuration files from")
+	// keep the "remote" flag hidden for now
+	_ = flagset.MarkHidden("remote")
 
 	flagset.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		switch name {

@@ -1,0 +1,20 @@
+---
+services:
+  openssh-server:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: openssh-server
+    hostname: openssh-server
+    environment:
+      - PUID=${USER_ID:-1000}
+      - PGID=${GROUP_ID:-1000}
+      - TZ=Europe/London
+      - PUBLIC_KEY_FILE=/id_rsa.pub
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=false
+      - USER_NAME=resticprofile
+      - LOG_STDOUT=true
+    volumes:
+      - ${PWD}/allow_tcp_forwarding.conf:/config/sshd/sshd_config.d/allow_tcp_forwarding.conf
+      - ${SSH_TESTS_TMPDIR}/id_rsa.pub:/id_rsa.pub
+    ports:
+      - 2222:2222

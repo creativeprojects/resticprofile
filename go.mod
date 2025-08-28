@@ -10,6 +10,7 @@ require (
 	github.com/creativeprojects/go-selfupdate v1.5.0
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.18.0
+	github.com/hanwen/go-fuse/v2 v2.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mackerelio/go-osstat v0.2.6
 	github.com/mattn/go-colorable v0.1.14
@@ -23,6 +24,7 @@ require (
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/crypto v0.40.0
 	golang.org/x/sys v0.34.0
 	golang.org/x/term v0.33.0
 	golang.org/x/text v0.27.0
@@ -70,7 +72,6 @@ require (
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
