@@ -190,6 +190,17 @@ If set to `true`, the schedule won't start if the system is running on battery (
 
 If set to a number, the schedule won't start if the system is running on battery and the charge is less than or equal to the specified number.
 
+## schedule-hide-window
+
+When `schedule-permission` is set to `user_logged_on`, Windows Task Scheduler runs tasks in the foreground.
+This behavior may interrupt the user's activity and is often undesirable.
+
+To prevent that, set this option to `true` to hide the task window by wrapping the execution in `conhost.exe --headless`.
+
+Note: It works only on Windows and makes sense only with `user_logged_on` permission.
+
+Note: The behavior of `conhost.exe` varies between Windows versions. It has been confirmed to work on Windows 11 (24H2) but not on Windows 10 (1607).
+
 ## Example 
 
 Here's an example of a scheduling configuration:
