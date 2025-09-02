@@ -24,6 +24,7 @@ type Config struct {
 	Flags              map[string]string // flags added to the command line
 	AfterNetworkOnline bool
 	SystemdDropInFiles []string
+	HideWindow         bool
 	removeOnly         bool
 }
 

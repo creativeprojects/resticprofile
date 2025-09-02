@@ -238,5 +238,6 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		Flags:              sched.Flags,
 		AfterNetworkOnline: sched.AfterNetworkOnline.IsTrue(),
 		SystemdDropInFiles: sched.SystemdDropInFiles,
+		HideWindow:         sched.HideWindow.IsTrue(),
 	}
 }

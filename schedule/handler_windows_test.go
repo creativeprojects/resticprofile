@@ -5,7 +5,9 @@ package schedule
 import (
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/calendar"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Support for Windows removed as it was broken
@@ -44,4 +46,35 @@ func TestDetectPermissionTaskScheduler(t *testing.T) {
 			assert.Equal(t, fixture.safe, safe)
 		})
 	}
+}
+
+func TestHideWindowOption(t *testing.T) {
+	job := Config{
+		ProfileName:      "TestHideWindowOption",
+		CommandName:      "backup",
+		Command:          "echo",
+		Arguments:        NewCommandArguments([]string{"hello", "there"}),
+		WorkingDirectory: "C:\\",
+		JobDescription:   "TestHideWindowOption",
+		HideWindow:       true,
+	}
+
+	handler := NewHandler(SchedulerWindows{}).(*HandlerWindows)
+
+	event := calendar.NewEvent()
+	err := event.Parse("2020-01-02 03:04") // will never get triggered
+	require.NoError(t, err)
+
+	err = handler.CreateJob(&job, []*calendar.Event{event}, PermissionUserLoggedOn)
+	assert.NoError(t, err)
+	defer func() {
+		_ = handler.RemoveJob(&job, PermissionUserLoggedOn)
+	}()
+
+	scheduledJobs, err := handler.Scheduled(job.ProfileName)
+	assert.NoError(t, err)
+	assert.Equal(t, len(scheduledJobs), 1)
+
+	assert.Equal(t, scheduledJobs[0].Command, "conhost.exe")
+	assert.Equal(t, scheduledJobs[0].Arguments.String(), "--headless echo hello there")
 }
