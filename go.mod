@@ -5,7 +5,7 @@ go 1.24.6
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/adrg/xdg v0.5.3
-	github.com/coreos/go-systemd/v22 v22.5.0
+	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/creativeprojects/clog v0.14.0
 	github.com/creativeprojects/go-selfupdate v1.5.1
 	github.com/distatus/battery v0.11.0
@@ -19,8 +19,8 @@ require (
 	github.com/rickb777/period v1.0.12
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/afero v1.14.0
-	github.com/spf13/cast v1.8.0
-	github.com/spf13/pflag v1.0.7
+	github.com/spf13/cast v1.9.2
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sys v0.35.0
@@ -66,7 +66,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
-	github.com/ulikunitz/xz v0.5.14 // indirect
+	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
