@@ -819,7 +819,7 @@
         "Name": "keep-daily",
         "Alias": "d",
         "Default": "0",
-        "Description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
+        "Description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots). The default value of 0 removes no snapshots. See https://restic.readthedocs.io/en/latest/060_forget.html#removing-all-snapshots",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -828,7 +828,7 @@
         "Name": "keep-hourly",
         "Alias": "H",
         "Default": "0",
-        "Description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
+        "Description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots). The default value of 0 removes no snapshots. See https://restic.readthedocs.io/en/latest/060_forget.html#removing-all-snapshots",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -837,7 +837,7 @@
         "Name": "keep-last",
         "Alias": "l",
         "Default": "0",
-        "Description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
+        "Description": "keep the last n snapshots (use 'unlimited' to keep all snapshots). The default value of 0 removes no snapshots. See https://restic.readthedocs.io/en/latest/060_forget.html#removing-all-snapshots",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -846,7 +846,7 @@
         "Name": "keep-monthly",
         "Alias": "m",
         "Default": "0",
-        "Description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
+        "Description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots). The default value of 0 removes no snapshots. See https://restic.readthedocs.io/en/latest/060_forget.html#removing-all-snapshots",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -864,7 +864,7 @@
         "Name": "keep-weekly",
         "Alias": "w",
         "Default": "0",
-        "Description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
+        "Description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots). The default value of 0 removes no snapshots. See https://restic.readthedocs.io/en/latest/060_forget.html#removing-all-snapshots",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -927,7 +927,7 @@
         "Name": "keep-yearly",
         "Alias": "y",
         "Default": "0",
-        "Description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
+        "Description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots). The default value of 0 removes no snapshots. See https://restic.readthedocs.io/en/latest/060_forget.html#removing-all-snapshots",
         "Once": true,
         "FromVersion": "",
         "RemovedInVersion": ""
