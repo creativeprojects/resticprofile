@@ -1,6 +1,6 @@
 module github.com/creativeprojects/resticprofile
 
-go 1.24.6
+go 1.24.7
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
@@ -18,14 +18,14 @@ require (
 	github.com/prometheus/common v0.65.0
 	github.com/rickb777/period v1.0.12
 	github.com/shirou/gopsutil/v3 v3.24.5
-	github.com/spf13/afero v1.14.0
-	github.com/spf13/cast v1.9.2
+	github.com/spf13/afero v1.15.0
+	github.com/spf13/cast v1.10.0
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sys v0.35.0
-	golang.org/x/term v0.34.0
-	golang.org/x/text v0.28.0
+	golang.org/x/sys v0.36.0
+	golang.org/x/term v0.35.0
+	golang.org/x/text v0.29.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
 )
