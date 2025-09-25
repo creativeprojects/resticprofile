@@ -58,6 +58,15 @@ TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
 
+# Default target
+.PHONY: help
+help: ## Show the help
+	@echo "Usage: make <target>"
+	@echo
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-26s\033[0m %s\n", $$1, $$2}'
+	@echo
+
 all: prepare_test test build
 .PHONY: test test-ci coverage
 .PHONY: download download-restic-key
@@ -65,7 +74,7 @@ all: prepare_test test build
 .PHONY: generate-config-reference generate-jsonschema generate-install generate-restic
 .PHONY: all verify prepare_test prepare_build install clean ramdisk rest-server nightly toc syslog checkdoc
 
-verify:
+verify: ## Verify go installation
 ifeq ($(wildcard $(GOPATH)/.),)
 	@echo "GOPATH not found, please check your go installation"
 	exit 1
@@ -85,7 +94,7 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --tag v2.53.3 --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" vektra/mockery --tag v2.53.5 --upgrade-only --to '$(GOBIN)'
 
 $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 	@echo "[*] $@"
@@ -95,81 +104,85 @@ $(GOBIN)/hugo: $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" gohugoio/hugo --tag v0.145.0 --upgrade-only --asset=extended_0 --to '$(GOBIN)'
 
+$(GOBIN)/muffet: verify $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" raviqqe/muffet --upgrade-only --to '$(GOBIN)'
+
 prepare_build: verify download
 	@echo "[*] $@"
 
-prepare_test: verify download $(GOBIN)/mockery
+prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
 	find . -path "*/mocks/*" -exec rm {} \;
 	"$(GOBIN)/mockery" --config .mockery.yaml
 
-download: verify
+download: verify ## Download dependencies
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOMOD) download
 
-download-restic-key:
+download-restic-key: ## Download restic GPG key
 	@echo "[*] $@"
 	KEY_FILE=$(abspath restic/gpg-key.asc)
 	curl https://restic.net/gpg-key-alex.asc > $(KEY_FILE)
 
-install: prepare_build
+install: prepare_build ## Install the binary (to $GOBIN)
 	@echo "[*] $@"
 	GOBIN="$(GOBIN)" \
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build: prepare_build
+build: prepare_build ## Build the binary
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-no-selfupdate: prepare_build
+build-no-selfupdate: prepare_build ## Build the binary without self-update feature
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -tags no_self_update -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-mac: prepare_build
+build-mac: prepare_build ## Build the binary for macOS
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="arm64" $(GOBUILD) -o $(BINARY_DARWIN_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-linux: prepare_build
+build-linux: prepare_build ## Build the binary for Linux
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o $(BINARY_LINUX_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-pi: prepare_build
+build-pi: prepare_build ## Build the binary for Raspberry Pi (armv6)
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-windows: prepare_build
+build-windows: prepare_build ## Build the binary for Windows
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="windows" GOARCH="arm64" $(GOBUILD) -o $(BINARY_WINDOWS_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-all: build-mac build-linux build-pi build-windows
+build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
-test: prepare_test
+test: prepare_test ## Run unit tests
 	@echo "[*] $@"
 	$(GOTEST) $(TESTS)
 
-test-ci: prepare_test
+test-ci: prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
 	$(GOTEST) -v -race -short -coverprofile='coverage.out' ./...
 
-coverage:
+coverage: ## Generate coverage report
 	@echo "[*] $@"
 	$(GOTEST) -coverprofile=$(COVERAGE_FILE) $(TESTS)
 	$(GOTOOL) cover -html=$(COVERAGE_FILE)
 
-clean:
+clean: ## Clean up the build artifacts
 	@echo "[*] $@"
 	$(GOCLEAN)
 	rm -rf $(BINARY) \
@@ -188,7 +201,7 @@ clean:
 	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
 
-ramdisk: ${TMP_MOUNT}
+ramdisk: ${TMP_MOUNT} ## Create a ramdisk for testing
 
 # Fixed size ramdisk for mac OS X
 ${TMP_MOUNT_DARWIN}:
@@ -200,7 +213,7 @@ ${TMP_MOUNT_LINUX}:
 	mkdir -p ${TMP_MOUNT_LINUX}
 	sudo mount -t tmpfs -o "rw,relatime,size=2097152k,uid=`id -u`,gid=`id -g`" tmpfs ${TMP_MOUNT_LINUX}
 
-rest-server:
+rest-server: ## Run rest-server docker container for testing
 	@echo "[*] $@"
 	REST_IMAGE=restic/rest-server
 	REST_CONTAINER=rest_server
@@ -210,7 +223,7 @@ rest-server:
 	docker pull ${REST_IMAGE}
 	docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
 
-nightly: $(GOBIN)/goreleaser
+nightly: $(GOBIN)/goreleaser ## Create a nightly release (for testing goreleaser setup)
 	@echo "[*] $@"
 	GITLAB_TOKEN= goreleaser --snapshot --skip=publish --clean
 
@@ -221,11 +234,11 @@ toc: $(GOBIN)/github-markdown-toc.go
 	sed -i ".2" "/${TOC_START}/r ${TOC_PATH}" "${README}"
 	rm ${README}.1 ${README}.2 ${TOC_PATH}
 
-generate-install:
+generate-install: ## Generate the install script using godownloader
 	@echo "[*] $@"
 	godownloader .godownloader.yml -r creativeprojects/resticprofile -o install.sh
 
-generate-restic:
+generate-restic: ## Generate the restic commands JSON file
 	@echo "[*] $@"
 	$(GOBUILD) -o $(RESTIC_GEN) $(abspath restic/generator)
 
@@ -246,7 +259,7 @@ generate-restic:
 
 	cp $(RESTIC_CMD) restic/commands.json
 
-generate-jsonschema: build
+generate-jsonschema: build ## Generate the JSON schema files
 	@echo "[*] $@"
 
 	mkdir -p $(JSONSCHEMA_DIR) || echo "$(JSONSCHEMA_DIR) exists"
@@ -261,7 +274,7 @@ generate-jsonschema: build
 		done ; \
 	done
 
-generate-config-reference: build
+generate-config-reference: build ## Generate the configuration reference documentation
 	@echo "[*] $@"
 
 	META_TITLE="Resticprofile configuration reference" \
@@ -276,12 +289,12 @@ generate-config-reference: build
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
 .PHONY: documentation
-documentation: generate-jsonschema generate-config-reference $(GOBIN)/hugo
+documentation: generate-jsonschema generate-config-reference $(GOBIN)/hugo ## Generate the documentation site
 	@echo "[*] $@"
 	cd docs && hugo --minify
 
 .PHONY: syslog-ng
-syslog-ng:
+syslog-ng: ## Run syslog-ng docker container for testing
 	@echo "[*] $@"
 	docker run -d \
 		--name=syslog-ng \
@@ -295,12 +308,12 @@ syslog-ng:
 		-v $(CURRENT_DIR)/log:/var/log \
 		lscr.io/linuxserver/syslog-ng:latest
 
-checkdoc:
+checkdoc: ## Check documentation
 	@echo "[*] $@"
 	$(GOCMD) run ./config/checkdoc -r docs/content -i changelog.md
 
 .PHONY: checklinks
-checklinks:
+checklinks: $(GOBIN)/muffet ## Check for broken links in the documentation site
 	@echo "[*] $@"
 	muffet --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 \
 	  --exclude="(linux\.die\.net|scoop\.sh|commit)" \
@@ -308,14 +321,14 @@ checklinks:
 	  http://127.0.0.1:1313/resticprofile/
 
 .PHONY: lint
-lint: $(GOBIN)/golangci-lint
+lint: $(GOBIN)/golangci-lint ## Run golangci-lint
 	@echo "[*] $@"
 	GOOS=darwin golangci-lint run
 	GOOS=linux golangci-lint run
 	GOOS=windows golangci-lint run
 
 .PHONY: fix
-fix: $(GOBIN)/golangci-lint
+fix: $(GOBIN)/golangci-lint ## Run golangci-lint with --fix
 	@echo "[*] $@"
 	$(GOCMD) mod tidy
 	$(GOCMD) fix ./...
@@ -329,10 +342,10 @@ deploy-current: build-linux build-pi
 	for server in $$(cat targets_amd64.txt); do \
 		echo "Deploying to $$server" ; \
 		rsync -avz --progress $(BINARY_LINUX_AMD64) $$server: ; \
-		ssh $$server "sudo -S install $(BINARY_LINUX_AMD64) /usr/local/bin/resticprofile" ; \
+		ssh -t $$server "sudo -S install $(BINARY_LINUX_AMD64) /usr/local/bin/resticprofile" ; \
 	done
 	for server in $$(cat targets_armv6.txt); do \
 		echo "Deploying to $$server" ; \
 		rsync -avz --progress $(BINARY_PI) $$server: ; \
-		ssh $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
+		ssh -t $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
 	done
