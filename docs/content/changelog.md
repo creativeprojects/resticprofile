@@ -5,6 +5,67 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.32.0 (2025-09-26)
+
+## 🍁 Autumn release 🍂
+
+This release brings significant improvements to scheduling, HTTP hooks, configuration handling, and copy operations, along with important bug fixes and dependency updates.
+
+### New Features
+
+#### Enhanced Copy Command Support
+- **Copy from repository**: Added support for specifying source repositories in copy operations with new `from-repository`, `from-password-file`, `from-password-command`, and other `from-*` configuration options.
+- This enables more flexible backup copying workflows between different repositories.
+
+#### Improved Windows Task Scheduler Integration
+- **Run Level Control**: New `schedule-run-level` option allows setting task privilege levels (`lowest`, `highest`, `auto`) for Windows Task Scheduler.
+- **Hide Window Option**: New `schedule-hide-window` option to prevent task windows from interrupting user activity when running with `user_logged_on` permission.
+- **Enhanced Task Management**: Completely rewritten task information parsing to fix issues with spaces in filenames.
+
+#### Template Function Enhancements
+- **Random Number Generation**: New `randInt` template function for generating pseudo-random numbers with seeded repeatability.
+- Usage: `{{ "seed" | randInt low high }}` - useful for creating variable schedules or unique identifiers.
+
+#### HTTP Hooks Improvements
+- **URL Encoding**: Automatic URL encoding applied to `ERROR`, `ERROR_COMMANDLINE`, and `ERROR_STDERR` environment variables when used in URLs.
+- **Environment Variable Resolution**: Enhanced environment variable resolution in both URL and body of HTTP hooks, with proper separation of URL and body processing.
+
+### Bug Fixes and Improvements
+
+#### Signal Handling
+- **Group Execution**: Fixed interrupt signal handling to properly stop execution of remaining profiles in a group when Ctrl+C is pressed.
+
+#### Path Resolution
+- **Executable Handling**: Enhanced executable path resolution on Linux to properly handle relative paths, PATH lookups, and working directory resolution.
+- **Configuration Escaping**: Fixed proper escaping of backup source paths in configuration to handle special characters and spaces.
+
+#### Scheduling Fixes
+- **Crontab Generation**: Fixed crontab file generation to work without user field, improving compatibility with various cron implementations.
+
+## New contributors
+Thanks to @lil5, @jeinwag, @hansmi and @zumm for their valuable help in making this new release 🎉 
+
+## Changelog
+* [Add "randInt" template function for random number (#540)](https://github.com/creativeprojects/resticprofile/commit/c7e87a13cb9c547ab7f330c560cdd7a495c887bb)
+* [Add copy from repository in configuration (#486)](https://github.com/creativeprojects/resticprofile/commit/f93ce20cfd89197cb5d907143ea0f58f5dce2d65)
+* [[Docs] Add ~/.config/resticprofile/ to macOS default paths (#509)](https://github.com/creativeprojects/resticprofile/commit/de391cb106b233a63079ecdb88353537420318c7)
+* [add Makefile help target](https://github.com/creativeprojects/resticprofile/commit/f222ed24006d6161767106cb8b9f38fe74266473)
+* [add field bytes_added_packed in status file etc. (#519)](https://github.com/creativeprojects/resticprofile/commit/63dee21a1beaa3d72df3666365363b43b40c26a4)
+* [enhance Executable function to handle relative paths (#537)](https://github.com/creativeprojects/resticprofile/commit/adf90cbd71229b207d98b55f7669abdea49bc3a0)
+* [feat(schedule): introduce `run-level` option (#546)](https://github.com/creativeprojects/resticprofile/commit/f98a2f573c5a134083f17f8e55cc19074bca9c51)
+* [feat(schedule): introduce `schtasks-hide-window` option (#541)](https://github.com/creativeprojects/resticprofile/commit/5f1c69d663c8f2caee744315e0e20b985b6871e1)
+* [fix(http-hooks): apply url encoding for ERROR_* env vars (#538)](https://github.com/creativeprojects/resticprofile/commit/461710bc42bcd9e8369c9dc5fb85258aac6542f5)
+* [fix(http-hooks): resolve profile env in url and body (#544)](https://github.com/creativeprojects/resticprofile/commit/f9039fa476a731c9251b3b1a9dbe7a89d72d5938)
+* [fix(schedule): generate crontab files without user field (#556)](https://github.com/creativeprojects/resticprofile/commit/1dce42831f559076b55398ca6b137a5aa6dd7a72)
+* [linux: don't resolve symlink on executable to keep a constant name when installed via homebrew (#508)](https://github.com/creativeprojects/resticprofile/commit/25c2f062ca40a57761cbf676f71bebc2f65aed38)
+* [optimize systemctl commands (#531)](https://github.com/creativeprojects/resticprofile/commit/859da21db16b275066e7f328b46bcba64ae190c2)
+* [read task info from list format instead of CSV (#547)](https://github.com/creativeprojects/resticprofile/commit/f74803217ccdcda44570871757d168817c0a95f6)
+* [stop running other profiles in group after receiving interrupt signal (#539)](https://github.com/creativeprojects/resticprofile/commit/99e6d33ad59f14302335f5029380e1d7ab177594)
+* [update Node.js version to 22 and upgrade dependencies in go.mod and go.sum (#543)](https://github.com/creativeprojects/resticprofile/commit/720d7ee7b0edb09c221c3ff3c0a1e8a0be12e953)
+* [update SonarCloud trigger condition to check for SONAR_TOKEN presence (#542)](https://github.com/creativeprojects/resticprofile/commit/f265fa26009c83e8ec5a4769224bf008c7faa944)
+
+
+
 # v0.31.0 (2025-05-26)
 
 ## 🍸 Spring Bank Holiday release 🌞 
