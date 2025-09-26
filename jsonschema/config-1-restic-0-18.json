@@ -774,6 +774,240 @@
         }
       }
     },
+    "id-244d81177d65734a926d920c2f4a4030": {
+      "title": "schedule",
+      "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure [deprecated]",
+      "anyOf": [
+        {
+          "description": "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "after-network-online": {
+              "title": "after-network-online",
+              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
+              "type": "boolean"
+            },
+            "at": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "title": "at...",
+                  "type": "array",
+                  "examples": [
+                    "hourly",
+                    "daily",
+                    "weekly",
+                    "monthly",
+                    "10:00,14:00,18:00,22:00",
+                    "Wed,Fri 17:48",
+                    "*-*-15 02:45",
+                    "Mon..Fri 00:30"
+                  ],
+                  "items": {
+                    "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "capture-environment": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "capture-environment...",
+                  "default": "RESTIC_*",
+                  "type": "array",
+                  "items": {
+                    "default": "RESTIC_*",
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "command-output": {
+              "title": "command-output",
+              "default": "auto",
+              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "log",
+                "console",
+                "all"
+              ],
+              "minLength": 0
+            },
+            "hide-window": {
+              "title": "hide-window",
+              "description": "Hide schedule window when running in foreground (Windows only)",
+              "type": "boolean"
+            },
+            "ignore-on-battery": {
+              "title": "ignore-on-battery",
+              "description": "Don't start this schedule when running on battery",
+              "type": "boolean"
+            },
+            "ignore-on-battery-less-than": {
+              "title": "ignore-on-battery-less-than",
+              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+              "type": "integer",
+              "examples": [
+                20,
+                33,
+                50,
+                75
+              ]
+            },
+            "lock-mode": {
+              "title": "lock-mode",
+              "default": "default",
+              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "default",
+                "fail",
+                "ignore"
+              ],
+              "minLength": 0
+            },
+            "lock-wait": {
+              "title": "lock-wait",
+              "description": "Set the maximum time to wait for acquiring locks when running on schedule",
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string",
+                  "examples": [
+                    "150s",
+                    "15m",
+                    "30m",
+                    "45m",
+                    "1h",
+                    "2h30m"
+                  ],
+                  "minLength": 2,
+                  "pattern": "^(\\d+(h|m|s|ms))+$"
+                }
+              ]
+            },
+            "log": {
+              "title": "log",
+              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "examples": [
+                "/resticprofile.log",
+                "syslog-tcp://syslog-server:514",
+                "syslog:server",
+                "syslog:"
+              ],
+              "minLength": 0
+            },
+            "permission": {
+              "title": "permission",
+              "default": "auto",
+              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "system",
+                "user",
+                "user_logged_on"
+              ],
+              "minLength": 0
+            },
+            "priority": {
+              "title": "priority",
+              "default": "standard",
+              "description": "Set the priority at which the schedule is run",
+              "type": "string",
+              "enum": [
+                "background",
+                "standard"
+              ],
+              "minLength": 0
+            },
+            "run-level": {
+              "title": "run-level",
+              "default": "auto",
+              "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+              "type": "string",
+              "enum": [
+                "auto",
+                "lowest",
+                "highest"
+              ],
+              "minLength": 0
+            },
+            "systemd-drop-in-files": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "schedule",
+          "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure [deprecated]",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
+            },
+            {
+              "title": "schedule...",
+              "deprecated": true,
+              "type": "array",
+              "examples": [
+                "hourly",
+                "daily",
+                "weekly",
+                "monthly",
+                "10:00,14:00,18:00,22:00",
+                "Wed,Fri 17:48",
+                "*-*-15 02:45",
+                "Mon..Fri 00:30"
+              ],
+              "items": {
+                "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
+        }
+      ]
+    },
     "id-259684dfd75be3116fd75f377c8f9866": {
       "title": "run-before",
       "description": "Run shell command(s) before a restic command",
@@ -1546,222 +1780,6 @@
         }
       ]
     },
-    "id-78782b807ee477a77d0f7f917d8308d0": {
-      "title": "schedule",
-      "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure",
-      "anyOf": [
-        {
-          "description": "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "after-network-online": {
-              "title": "after-network-online",
-              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
-              "type": "boolean"
-            },
-            "at": {
-              "title": "at",
-              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-                },
-                {
-                  "title": "at...",
-                  "type": "array",
-                  "examples": [
-                    "hourly",
-                    "daily",
-                    "weekly",
-                    "monthly",
-                    "10:00,14:00,18:00,22:00",
-                    "Wed,Fri 17:48",
-                    "*-*-15 02:45",
-                    "Mon..Fri 00:30"
-                  ],
-                  "items": {
-                    "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-                  },
-                  "minItems": 0,
-                  "uniqueItems": false
-                }
-              ]
-            },
-            "capture-environment": {
-              "title": "capture-environment",
-              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
-              "anyOf": [
-                {
-                  "default": "RESTIC_*",
-                  "type": "string",
-                  "minLength": 0
-                },
-                {
-                  "title": "capture-environment...",
-                  "default": "RESTIC_*",
-                  "type": "array",
-                  "items": {
-                    "default": "RESTIC_*",
-                    "type": "string",
-                    "minLength": 0
-                  },
-                  "minItems": 0,
-                  "uniqueItems": false
-                }
-              ]
-            },
-            "command-output": {
-              "title": "command-output",
-              "default": "auto",
-              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
-              "type": "string",
-              "enum": [
-                "auto",
-                "log",
-                "console",
-                "all"
-              ],
-              "minLength": 0
-            },
-            "ignore-on-battery": {
-              "title": "ignore-on-battery",
-              "description": "Don't start this schedule when running on battery",
-              "type": "boolean"
-            },
-            "ignore-on-battery-less-than": {
-              "title": "ignore-on-battery-less-than",
-              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
-              "type": "integer",
-              "examples": [
-                20,
-                33,
-                50,
-                75
-              ]
-            },
-            "lock-mode": {
-              "title": "lock-mode",
-              "default": "default",
-              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
-              "type": "string",
-              "enum": [
-                "default",
-                "fail",
-                "ignore"
-              ],
-              "minLength": 0
-            },
-            "lock-wait": {
-              "title": "lock-wait",
-              "description": "Set the maximum time to wait for acquiring locks when running on schedule",
-              "oneOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string",
-                  "examples": [
-                    "150s",
-                    "15m",
-                    "30m",
-                    "45m",
-                    "1h",
-                    "2h30m"
-                  ],
-                  "minLength": 2,
-                  "pattern": "^(\\d+(h|m|s|ms))+$"
-                }
-              ]
-            },
-            "log": {
-              "title": "log",
-              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
-              "type": "string",
-              "examples": [
-                "/resticprofile.log",
-                "syslog-tcp://syslog-server:514",
-                "syslog:server",
-                "syslog:"
-              ],
-              "minLength": 0
-            },
-            "permission": {
-              "title": "permission",
-              "default": "auto",
-              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
-              "type": "string",
-              "enum": [
-                "auto",
-                "system",
-                "user",
-                "user_logged_on"
-              ],
-              "minLength": 0
-            },
-            "priority": {
-              "title": "priority",
-              "default": "standard",
-              "description": "Set the priority at which the schedule is run",
-              "type": "string",
-              "enum": [
-                "background",
-                "standard"
-              ],
-              "minLength": 0
-            },
-            "systemd-drop-in-files": {
-              "title": "systemd-drop-in-files",
-              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "minLength": 0
-                },
-                {
-                  "title": "systemd-drop-in-files...",
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 0
-                  },
-                  "minItems": 0,
-                  "uniqueItems": false
-                }
-              ]
-            }
-          }
-        },
-        {
-          "title": "schedule",
-          "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-            },
-            {
-              "title": "schedule...",
-              "type": "array",
-              "examples": [
-                "hourly",
-                "daily",
-                "weekly",
-                "monthly",
-                "10:00,14:00,18:00,22:00",
-                "Wed,Fri 17:48",
-                "*-*-15 02:45",
-                "Mon..Fri 00:30"
-              ],
-              "items": {
-                "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
-        }
-      ]
-    },
     "id-7d3654de0d890ce874dc332214970cad": {
       "title": "keep-tag",
       "description": "keep snapshots with this taglist",
@@ -1923,223 +1941,6 @@
           },
           "minItems": 0,
           "uniqueItems": false
-        }
-      ]
-    },
-    "id-9a7b3b717f2437d91402fddb86ef22b7": {
-      "title": "schedule",
-      "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure [deprecated]",
-      "anyOf": [
-        {
-          "description": "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "after-network-online": {
-              "title": "after-network-online",
-              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
-              "type": "boolean"
-            },
-            "at": {
-              "title": "at",
-              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-                },
-                {
-                  "title": "at...",
-                  "type": "array",
-                  "examples": [
-                    "hourly",
-                    "daily",
-                    "weekly",
-                    "monthly",
-                    "10:00,14:00,18:00,22:00",
-                    "Wed,Fri 17:48",
-                    "*-*-15 02:45",
-                    "Mon..Fri 00:30"
-                  ],
-                  "items": {
-                    "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
-                  },
-                  "minItems": 0,
-                  "uniqueItems": false
-                }
-              ]
-            },
-            "capture-environment": {
-              "title": "capture-environment",
-              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
-              "anyOf": [
-                {
-                  "default": "RESTIC_*",
-                  "type": "string",
-                  "minLength": 0
-                },
-                {
-                  "title": "capture-environment...",
-                  "default": "RESTIC_*",
-                  "type": "array",
-                  "items": {
-                    "default": "RESTIC_*",
-                    "type": "string",
-                    "minLength": 0
-                  },
-                  "minItems": 0,
-                  "uniqueItems": false
-                }
-              ]
-            },
-            "command-output": {
-              "title": "command-output",
-              "default": "auto",
-              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
-              "type": "string",
-              "enum": [
-                "auto",
-                "log",
-                "console",
-                "all"
-              ],
-              "minLength": 0
-            },
-            "ignore-on-battery": {
-              "title": "ignore-on-battery",
-              "description": "Don't start this schedule when running on battery",
-              "type": "boolean"
-            },
-            "ignore-on-battery-less-than": {
-              "title": "ignore-on-battery-less-than",
-              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
-              "type": "integer",
-              "examples": [
-                20,
-                33,
-                50,
-                75
-              ]
-            },
-            "lock-mode": {
-              "title": "lock-mode",
-              "default": "default",
-              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
-              "type": "string",
-              "enum": [
-                "default",
-                "fail",
-                "ignore"
-              ],
-              "minLength": 0
-            },
-            "lock-wait": {
-              "title": "lock-wait",
-              "description": "Set the maximum time to wait for acquiring locks when running on schedule",
-              "oneOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string",
-                  "examples": [
-                    "150s",
-                    "15m",
-                    "30m",
-                    "45m",
-                    "1h",
-                    "2h30m"
-                  ],
-                  "minLength": 2,
-                  "pattern": "^(\\d+(h|m|s|ms))+$"
-                }
-              ]
-            },
-            "log": {
-              "title": "log",
-              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
-              "type": "string",
-              "examples": [
-                "/resticprofile.log",
-                "syslog-tcp://syslog-server:514",
-                "syslog:server",
-                "syslog:"
-              ],
-              "minLength": 0
-            },
-            "permission": {
-              "title": "permission",
-              "default": "auto",
-              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
-              "type": "string",
-              "enum": [
-                "auto",
-                "system",
-                "user",
-                "user_logged_on"
-              ],
-              "minLength": 0
-            },
-            "priority": {
-              "title": "priority",
-              "default": "standard",
-              "description": "Set the priority at which the schedule is run",
-              "type": "string",
-              "enum": [
-                "background",
-                "standard"
-              ],
-              "minLength": 0
-            },
-            "systemd-drop-in-files": {
-              "title": "systemd-drop-in-files",
-              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "minLength": 0
-                },
-                {
-                  "title": "systemd-drop-in-files...",
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 0
-                  },
-                  "minItems": 0,
-                  "uniqueItems": false
-                }
-              ]
-            }
-          }
-        },
-        {
-          "title": "schedule",
-          "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure [deprecated]",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
-            },
-            {
-              "title": "schedule...",
-              "deprecated": true,
-              "type": "array",
-              "examples": [
-                "hourly",
-                "daily",
-                "weekly",
-                "monthly",
-                "10:00,14:00,18:00,22:00",
-                "Wed,Fri 17:48",
-                "*-*-15 02:45",
-                "Mon..Fri 00:30"
-              ],
-              "items": {
-                "$ref": "#/$defs/id-2ca6a44f0bb5aa131cb5f092c9e98d10"
-              },
-              "minItems": 0,
-              "uniqueItems": false
-            }
-          ]
         }
       ]
     },
@@ -2350,6 +2151,239 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-a9d06f57192a84afe718f35cbec8ef78": {
+      "title": "schedule",
+      "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure",
+      "anyOf": [
+        {
+          "description": "Schedule configuration structure. Can be used to define schedules in profiles and groups.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "after-network-online": {
+              "title": "after-network-online",
+              "description": "Don't start this schedule when the network is offline (supported in \"systemd\")",
+              "type": "boolean"
+            },
+            "at": {
+              "title": "at",
+              "description": "Set the times at which the scheduled command is run (times are specified in systemd timer format)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                },
+                {
+                  "title": "at...",
+                  "type": "array",
+                  "examples": [
+                    "hourly",
+                    "daily",
+                    "weekly",
+                    "monthly",
+                    "10:00,14:00,18:00,22:00",
+                    "Wed,Fri 17:48",
+                    "*-*-15 02:45",
+                    "Mon..Fri 00:30"
+                  ],
+                  "items": {
+                    "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "capture-environment": {
+              "title": "capture-environment",
+              "description": "Set names (or glob expressions) of environment variables to capture during schedule creation. The captured environment is applied prior to \"profile.env\" when running the schedule. Whether capturing is supported depends on the type of scheduler being used (supported in \"systemd\" and \"launchd\")",
+              "anyOf": [
+                {
+                  "default": "RESTIC_*",
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "capture-environment...",
+                  "default": "RESTIC_*",
+                  "type": "array",
+                  "items": {
+                    "default": "RESTIC_*",
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            },
+            "command-output": {
+              "title": "command-output",
+              "default": "auto",
+              "description": "Sets the destination for command output (stderr/stdout). \"log\" sends output to the log file (if specified), \"console\" sends it to the console instead. \"auto\" sends it to \"both\" if console is a terminal otherwise to \"log\" only - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "log",
+                "console",
+                "all"
+              ],
+              "minLength": 0
+            },
+            "hide-window": {
+              "title": "hide-window",
+              "description": "Hide schedule window when running in foreground (Windows only)",
+              "type": "boolean"
+            },
+            "ignore-on-battery": {
+              "title": "ignore-on-battery",
+              "description": "Don't start this schedule when running on battery",
+              "type": "boolean"
+            },
+            "ignore-on-battery-less-than": {
+              "title": "ignore-on-battery-less-than",
+              "description": "Don't start this schedule when running on battery and the state of charge is less than this percentage",
+              "type": "integer",
+              "examples": [
+                20,
+                33,
+                50,
+                75
+              ]
+            },
+            "lock-mode": {
+              "title": "lock-mode",
+              "default": "default",
+              "description": "Specify how locks are used when running on schedule - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "default",
+                "fail",
+                "ignore"
+              ],
+              "minLength": 0
+            },
+            "lock-wait": {
+              "title": "lock-wait",
+              "description": "Set the maximum time to wait for acquiring locks when running on schedule",
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string",
+                  "examples": [
+                    "150s",
+                    "15m",
+                    "30m",
+                    "45m",
+                    "1h",
+                    "2h30m"
+                  ],
+                  "minLength": 2,
+                  "pattern": "^(\\d+(h|m|s|ms))+$"
+                }
+              ]
+            },
+            "log": {
+              "title": "log",
+              "description": "Redirect the output into a log file or to syslog when running on schedule - see https://creativeprojects.github.io/resticprofile/configuration/logs/",
+              "type": "string",
+              "examples": [
+                "/resticprofile.log",
+                "syslog-tcp://syslog-server:514",
+                "syslog:server",
+                "syslog:"
+              ],
+              "minLength": 0
+            },
+            "permission": {
+              "title": "permission",
+              "default": "auto",
+              "description": "Specify whether the schedule runs with system or user privileges - see https://creativeprojects.github.io/resticprofile/schedules/configuration/",
+              "type": "string",
+              "enum": [
+                "auto",
+                "system",
+                "user",
+                "user_logged_on"
+              ],
+              "minLength": 0
+            },
+            "priority": {
+              "title": "priority",
+              "default": "standard",
+              "description": "Set the priority at which the schedule is run",
+              "type": "string",
+              "enum": [
+                "background",
+                "standard"
+              ],
+              "minLength": 0
+            },
+            "run-level": {
+              "title": "run-level",
+              "default": "auto",
+              "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+              "type": "string",
+              "enum": [
+                "auto",
+                "lowest",
+                "highest"
+              ],
+              "minLength": 0
+            },
+            "systemd-drop-in-files": {
+              "title": "systemd-drop-in-files",
+              "description": "Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 0
+                },
+                {
+                  "title": "systemd-drop-in-files...",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 0
+                  },
+                  "minItems": 0,
+                  "uniqueItems": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "schedule",
+          "description": "Configures the scheduled execution of this profile section. Can be times in systemd timer format or a config structure",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+            },
+            {
+              "title": "schedule...",
+              "type": "array",
+              "examples": [
+                "hourly",
+                "daily",
+                "weekly",
+                "monthly",
+                "10:00,14:00,18:00,22:00",
+                "Wed,Fri 17:48",
+                "*-*-15 02:45",
+                "Mon..Fri 00:30"
+              ],
+              "items": {
+                "$ref": "#/$defs/id-c20492a9908e894b76ed0102f27c38dc"
+              },
+              "minItems": 0,
+              "uniqueItems": false
+            }
+          ]
         }
       ]
     },
@@ -3210,7 +3244,7 @@
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
-            "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
+            "$ref": "#/$defs/id-a9d06f57192a84afe718f35cbec8ef78"
           },
           "schedule-after-network-online": {
             "title": "schedule-after-network-online",
@@ -3219,6 +3253,11 @@
           },
           "schedule-capture-environment": {
             "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+          },
+          "schedule-hide-window": {
+            "title": "schedule-hide-window",
+            "description": "Hide schedule window when running in foreground (Windows only)",
+            "type": "boolean"
           },
           "schedule-ignore-on-battery": {
             "title": "schedule-ignore-on-battery",
@@ -3284,6 +3323,18 @@
             "enum": [
               "background",
               "standard"
+            ],
+            "minLength": 0
+          },
+          "schedule-run-level": {
+            "title": "schedule-run-level",
+            "default": "auto",
+            "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+            "type": "string",
+            "enum": [
+              "auto",
+              "lowest",
+              "highest"
             ],
             "minLength": 0
           },
@@ -3423,11 +3474,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -3442,6 +3488,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3883,7 +3934,7 @@
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
-            "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
+            "$ref": "#/$defs/id-a9d06f57192a84afe718f35cbec8ef78"
           },
           "schedule-after-network-online": {
             "title": "schedule-after-network-online",
@@ -3892,6 +3943,11 @@
           },
           "schedule-capture-environment": {
             "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+          },
+          "schedule-hide-window": {
+            "title": "schedule-hide-window",
+            "description": "Hide schedule window when running in foreground (Windows only)",
+            "type": "boolean"
           },
           "schedule-ignore-on-battery": {
             "title": "schedule-ignore-on-battery",
@@ -3957,6 +4013,18 @@
             "enum": [
               "background",
               "standard"
+            ],
+            "minLength": 0
+          },
+          "schedule-run-level": {
+            "title": "schedule-run-level",
+            "default": "auto",
+            "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+            "type": "string",
+            "enum": [
+              "auto",
+              "lowest",
+              "highest"
             ],
             "minLength": 0
           },
@@ -4060,8 +4128,8 @@
             "type": "string",
             "minLength": 0
           },
-          "from-repo": {
-            "title": "from-repo",
+          "from-repository": {
+            "title": "from-repository",
             "description": "source repository to copy snapshots from (default: $RESTIC_FROM_REPOSITORY) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
@@ -4198,7 +4266,7 @@
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
-            "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
+            "$ref": "#/$defs/id-a9d06f57192a84afe718f35cbec8ef78"
           },
           "schedule-after-network-online": {
             "title": "schedule-after-network-online",
@@ -4207,6 +4275,11 @@
           },
           "schedule-capture-environment": {
             "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+          },
+          "schedule-hide-window": {
+            "title": "schedule-hide-window",
+            "description": "Hide schedule window when running in foreground (Windows only)",
+            "type": "boolean"
           },
           "schedule-ignore-on-battery": {
             "title": "schedule-ignore-on-battery",
@@ -4272,6 +4345,18 @@
             "enum": [
               "background",
               "standard"
+            ],
+            "minLength": 0
+          },
+          "schedule-run-level": {
+            "title": "schedule-run-level",
+            "default": "auto",
+            "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+            "type": "string",
+            "enum": [
+              "auto",
+              "lowest",
+              "highest"
             ],
             "minLength": 0
           },
@@ -5109,6 +5194,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -5133,11 +5223,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -5338,7 +5423,7 @@
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
-            "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
+            "$ref": "#/$defs/id-a9d06f57192a84afe718f35cbec8ef78"
           },
           "schedule-after-network-online": {
             "title": "schedule-after-network-online",
@@ -5347,6 +5432,11 @@
           },
           "schedule-capture-environment": {
             "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+          },
+          "schedule-hide-window": {
+            "title": "schedule-hide-window",
+            "description": "Hide schedule window when running in foreground (Windows only)",
+            "type": "boolean"
           },
           "schedule-ignore-on-battery": {
             "title": "schedule-ignore-on-battery",
@@ -5412,6 +5502,18 @@
             "enum": [
               "background",
               "standard"
+            ],
+            "minLength": 0
+          },
+          "schedule-run-level": {
+            "title": "schedule-run-level",
+            "default": "auto",
+            "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+            "type": "string",
+            "enum": [
+              "auto",
+              "lowest",
+              "highest"
             ],
             "minLength": 0
           },
@@ -5714,6 +5816,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -5728,11 +5835,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5876,6 +5978,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
           },
@@ -5893,11 +6000,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6064,6 +6166,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -6078,11 +6185,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6748,6 +6850,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
@@ -6770,11 +6877,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7698,7 +7800,7 @@
             "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
           },
           "schedule": {
-            "$ref": "#/$defs/id-78782b807ee477a77d0f7f917d8308d0"
+            "$ref": "#/$defs/id-a9d06f57192a84afe718f35cbec8ef78"
           },
           "schedule-after-network-online": {
             "title": "schedule-after-network-online",
@@ -7707,6 +7809,11 @@
           },
           "schedule-capture-environment": {
             "$ref": "#/$defs/id-58bf71d644870ee03285502006c5f9ba"
+          },
+          "schedule-hide-window": {
+            "title": "schedule-hide-window",
+            "description": "Hide schedule window when running in foreground (Windows only)",
+            "type": "boolean"
           },
           "schedule-ignore-on-battery": {
             "title": "schedule-ignore-on-battery",
@@ -7772,6 +7879,18 @@
             "enum": [
               "background",
               "standard"
+            ],
+            "minLength": 0
+          },
+          "schedule-run-level": {
+            "title": "schedule-run-level",
+            "default": "auto",
+            "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+            "type": "string",
+            "enum": [
+              "auto",
+              "lowest",
+              "highest"
             ],
             "minLength": 0
           },
@@ -7841,6 +7960,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7855,11 +7979,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8003,6 +8122,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -8017,11 +8141,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8165,6 +8284,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -8179,11 +8303,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9158,7 +9277,7 @@
             "minLength": 0
           },
           "schedule": {
-            "$ref": "#/$defs/id-9a7b3b717f2437d91402fddb86ef22b7"
+            "$ref": "#/$defs/id-244d81177d65734a926d920c2f4a4030"
           },
           "schedule-after-network-online": {
             "title": "schedule-after-network-online",
@@ -9168,6 +9287,12 @@
           },
           "schedule-capture-environment": {
             "$ref": "#/$defs/id-e9dcb0415621db931adaa34883b6880b"
+          },
+          "schedule-hide-window": {
+            "title": "schedule-hide-window",
+            "deprecated": true,
+            "description": "Hide schedule window when running in foreground (Windows only) [deprecated]",
+            "type": "boolean"
           },
           "schedule-ignore-on-battery": {
             "title": "schedule-ignore-on-battery",
@@ -9236,6 +9361,18 @@
             "enum": [
               "background",
               "standard"
+            ],
+            "minLength": 0
+          },
+          "schedule-run-level": {
+            "title": "schedule-run-level",
+            "deprecated": true,
+            "description": "Specify the schedule privilege level (for Windows Task Scheduler only) [deprecated]",
+            "type": "string",
+            "enum": [
+              "auto",
+              "lowest",
+              "highest"
             ],
             "minLength": 0
           },
@@ -9906,6 +10043,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
           },
@@ -9923,11 +10065,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -10089,6 +10226,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -10103,11 +10245,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -10440,6 +10577,11 @@
               ],
               "minLength": 0
             },
+            "hide-window": {
+              "title": "hide-window",
+              "description": "Hide schedule window when running in foreground (Windows only)",
+              "type": "boolean"
+            },
             "ignore-on-battery": {
               "title": "ignore-on-battery",
               "description": "Don't start this schedule when running on battery",
@@ -10504,6 +10646,18 @@
               "enum": [
                 "background",
                 "standard"
+              ],
+              "minLength": 0
+            },
+            "run-level": {
+              "title": "run-level",
+              "default": "auto",
+              "description": "Specify the schedule privilege level (for Windows Task Scheduler only)",
+              "type": "string",
+              "enum": [
+                "auto",
+                "lowest",
+                "highest"
               ],
               "minLength": 0
             },
