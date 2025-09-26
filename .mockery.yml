@@ -1,0 +1,20 @@
+dir: '{{.InterfaceDir}}/mocks'
+structname: '{{.InterfaceName}}'
+filename: "{{.InterfaceName}}.go"
+pkgname: mocks
+template: testify
+template-data:
+  unroll-variadic: true
+packages:
+  github.com/creativeprojects/resticprofile/config:
+    interfaces:
+      NamedPropertySet: {}
+      ProfileInfo: {}
+      PropertyInfo: {}
+      SectionInfo: {}
+  github.com/creativeprojects/resticprofile/monitor:
+    interfaces:
+      OutputAnalysis: {}
+  github.com/creativeprojects/resticprofile/schedule:
+    interfaces:
+      Handler: {}
