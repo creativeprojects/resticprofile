@@ -125,6 +125,7 @@ type NumericRange struct {
 // profileInfo implements ProfileInfo
 type profileInfo struct {
 	propertySet
+
 	sections map[string]SectionInfo
 }
 
@@ -137,6 +138,7 @@ func (p *profileInfo) Sections() []string {
 // sectionInfo implements SectionInfo
 type sectionInfo struct {
 	namedPropertySet
+
 	command restic.CommandIf
 }
 
@@ -172,6 +174,7 @@ func (p *propertySet) IsAllOptions() bool {
 // namedPropertySet extends propertySet with Named
 type namedPropertySet struct {
 	propertySet
+
 	name, description string
 }
 
@@ -181,7 +184,7 @@ func (p *namedPropertySet) Description() string { return p.description }
 // accessibleProperty provides package local access to basicPropertyInfo and the backing struct field (when available)
 type accessibleProperty interface {
 	// sectionField returns or sets the field that declares the PropertySet that this property is in, or nil if unknown.
-	sectionField(*reflect.StructField) *reflect.StructField
+	sectionField(f *reflect.StructField) *reflect.StructField
 	// field returns the field that declares this property, or nil if the property is not based on a field
 	field() *reflect.StructField
 	// basic returns the mutable basicPropertyInfo (is never nil)
@@ -278,6 +281,7 @@ func (b *basicPropertyInfo) resetTypeInfo() *basicPropertyInfo {
 // propertyInfo implements PropertyInfo
 type propertyInfo struct {
 	basicPropertyInfo
+
 	description    string
 	defaults       []string
 	originField    *reflect.StructField
@@ -302,6 +306,7 @@ func (p *propertyInfo) sectionField(f *reflect.StructField) *reflect.StructField
 // resticPropertyInfo implements PropertyInfo for properties derived from restic.Option
 type resticPropertyInfo struct {
 	basicPropertyInfo
+
 	originField      *reflect.StructField
 	optionFlag       restic.Option
 	skipDefaultValue bool

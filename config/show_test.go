@@ -47,7 +47,8 @@ type testPointer struct {
 
 type testEmbedded struct {
 	EmbeddedStruct `mapstructure:",squash"`
-	InlineValue    int `mapstructure:"inline"`
+
+	InlineValue int `mapstructure:"inline"`
 }
 
 type EmbeddedStruct struct {

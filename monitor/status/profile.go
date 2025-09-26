@@ -30,6 +30,7 @@ type CommandStatus struct {
 // BackupStatus contains the last backup status
 type BackupStatus struct {
 	CommandStatus
+
 	FilesNew         int    `json:"files_new"`
 	FilesChanged     int    `json:"files_changed"`
 	FilesUnmodified  int    `json:"files_unmodified"`

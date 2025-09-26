@@ -2,6 +2,7 @@ package priority
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os/exec"
 	"testing"
@@ -71,7 +72,10 @@ func TestStartProcessWithPriority(t *testing.T) {
 }
 
 func runChildProcess() (string, error) {
-	cmd := exec.Command("go", "run", "./check")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "go", "run", "./check")
 	buffer := &bytes.Buffer{}
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer

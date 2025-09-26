@@ -24,10 +24,11 @@ const (
 )
 
 type schemaRoot struct {
-	Schema       string                `json:"$schema"`
-	Id           string                `json:"$id"`
-	Defs         map[string]SchemaType `json:"$defs,omitempty"`
-	schemaObject                       // cannot use SchemaType here as long as ",inline" support is missing in json.Marshal
+	schemaObject // cannot use SchemaType here as long as ",inline" support is missing in json.Marshal
+
+	Schema string                `json:"$schema"`
+	Id     string                `json:"$id"`
+	Defs   map[string]SchemaType `json:"$defs,omitempty"`
 }
 
 func newSchema(version config.Version, id string, content *schemaObject) (root *schemaRoot, err error) {
@@ -213,6 +214,7 @@ func (s *schemaTypeWithoutBase) describe(title, description string) {
 
 type schemaTypeList struct {
 	schemaTypeWithoutBase
+
 	OneOf []SchemaType `json:"oneOf,omitempty"`
 	AnyOf []SchemaType `json:"anyOf,omitempty"`
 }
@@ -256,6 +258,7 @@ func newSchemaTypeList(anyType bool, types ...SchemaType) *schemaTypeList {
 
 type schemaReference struct {
 	schemaTypeWithoutBase
+
 	Ref string `json:"$ref"`
 }
 
@@ -265,6 +268,7 @@ func newSchemaBool() *schemaTypeBase {
 
 type schemaObject struct {
 	schemaTypeBase
+
 	AdditionalProperties any                   `json:"additionalProperties,omitempty"`
 	PatternProperties    map[string]SchemaType `json:"patternProperties,omitempty"`
 	Properties           map[string]SchemaType `json:"properties,omitempty"`
@@ -315,6 +319,7 @@ func (s *schemaObject) verify() (err error) {
 
 type schemaArray struct {
 	schemaTypeBase
+
 	Items       SchemaType `json:"items"`
 	MinItems    uint64     `json:"minItems"`
 	MaxItems    *uint64    `json:"maxItems,omitempty"`
@@ -341,6 +346,7 @@ func (a *schemaArray) verify() (err error) {
 
 type schemaNumber struct {
 	schemaTypeBase
+
 	MultipleOf       *float64 `json:"multipleOf,omitempty"`
 	Minimum          *float64 `json:"minimum,omitempty"`
 	Maximum          *float64 `json:"maximum,omitempty"`
@@ -380,6 +386,7 @@ var validFormatNames = []stringFormat{
 
 type schemaString struct {
 	schemaTypeBase
+
 	MinLength        uint64       `json:"minLength"`
 	MaxLength        *uint64      `json:"maxLength,omitempty"`
 	ContentEncoding  string       `json:"contentEncoding,omitempty"`

@@ -206,6 +206,7 @@ func generateJsonSchema(output io.Writer, args []string) (err error) {
 // SectionInfoData is used as data for go templates that render profile section references
 type SectionInfoData struct {
 	templates.DefaultData
+
 	Section config.SectionInfo
 	Weight  int
 }

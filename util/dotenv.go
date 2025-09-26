@@ -70,7 +70,7 @@ func (f *EnvironmentFile) Name() string { return f.filename }
 // Valid returns true as the loaded values are in-sync with underlying dotenv file
 func (f *EnvironmentFile) Valid() bool {
 	if s, err := os.Stat(f.filename); err == nil && !s.IsDir() {
-		return f.fileInfo.Size() == s.Size() && f.fileInfo.ModTime() == s.ModTime()
+		return f.fileInfo.Size() == s.Size() && f.fileInfo.ModTime().Equal(s.ModTime())
 	}
 	return false
 }

@@ -14,6 +14,7 @@ import (
 // TemplateData contain the variables fed to a config template
 type TemplateData struct {
 	templates.DefaultData
+
 	Profile   ProfileTemplateData
 	Schedule  ScheduleTemplateData
 	ConfigDir string
@@ -53,6 +54,7 @@ func newTemplateData(configFile, profileName, scheduleName string) TemplateData 
 // TemplateInfoData is used as data for go templates that render config references
 type TemplateInfoData struct {
 	templates.DefaultData
+
 	Global, Group       PropertySet
 	Profile             ProfileInfo
 	KnownResticVersions []string

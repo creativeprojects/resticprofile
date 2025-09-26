@@ -367,7 +367,7 @@ func newLineLengthWriter(writer io.Writer, maxLineLength int) *lineLengthWriter 
 }
 
 func (l *lineLengthWriter) Write(p []byte) (n int, err error) {
-	written := 0
+	var written int
 	inAnsi := false
 	offset := l.lineLength
 	lineLength := func() int { return l.lineLength - l.ansiLength }

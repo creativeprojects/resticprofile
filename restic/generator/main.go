@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/restic"
 )
@@ -60,6 +62,9 @@ func generate() (err error) {
 }
 
 func install(includeManual bool) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
 	executable := path.Join(installDir, restic.Executable)
 
 	// Install if required
@@ -90,7 +95,7 @@ func install(includeManual bool) error {
 		manPage := path.Join(manualDir, "restic.1")
 		if _, err := os.Stat(manPage); os.IsNotExist(err) {
 			fmt.Println("creating man pages: " + manualDir)
-			cmd := exec.Command(executable, "generate", "--man", manualDir)
+			cmd := exec.CommandContext(ctx, executable, "generate", "--man", manualDir)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err = cmd.Run(); err != nil {

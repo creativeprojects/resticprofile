@@ -74,6 +74,7 @@ const (
 // templateInfo to create systemd unit
 type templateInfo struct {
 	templates.DefaultData
+
 	JobDescription       string
 	TimerDescription     string
 	WorkingDirectory     string

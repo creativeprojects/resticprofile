@@ -46,7 +46,7 @@ func (g *Group) Schedules() map[string]*Schedule {
 }
 
 // SchedulableCommands returns the list of commands that can be scheduled (whether they have schedules or not)
-func (g Group) SchedulableCommands() []string {
+func (g *Group) SchedulableCommands() []string {
 	// once the deprecated retention schedule is removed, we can use the list from profiles
 	// return NewProfile(g.config, "").SchedulableCommands()
 	return []string{

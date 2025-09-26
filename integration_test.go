@@ -23,7 +23,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 
 	// we can use the same files to test a glob pattern
 	globFiles := "\"" + strings.Join(files, "\" \"") + "\""
-	globFilesOnWindows := strings.Replace(globFiles, `\`, `\\`, -1)
+	globFilesOnWindows := strings.ReplaceAll(globFiles, `\`, `\\`)
 
 	integrationData := []struct {
 		profileName       string

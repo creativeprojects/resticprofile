@@ -201,6 +201,7 @@ profile:
 func TestBoolPointer(t *testing.T) {
 	fixtures := []struct {
 		testTemplate
+
 		continueOnError maybe.Bool
 	}{
 		{

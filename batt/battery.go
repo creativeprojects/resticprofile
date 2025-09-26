@@ -78,9 +78,10 @@ func detectRunningOnBattery(batteries []battery.Battery) bool {
 	pluggedIn := false
 	discharging := false
 	for _, bat := range batteries {
-		if bat.State.Raw == battery.Discharging || bat.State.Raw == battery.Empty {
+		switch bat.State.Raw {
+		case battery.Discharging, battery.Empty:
 			discharging = true
-		} else if bat.State.Raw == battery.Charging || bat.State.Raw == battery.Full || bat.State.Raw == battery.Idle || bat.State.Raw == battery.Unknown {
+		case battery.Charging, battery.Full, battery.Idle, battery.Unknown:
 			pluggedIn = true
 		}
 	}

@@ -82,14 +82,15 @@ func init() {
 				note = fmt.Sprintf(`Boolean true is replaced with the %ss from section "backup".`, propertyName)
 			}
 
-			if sectionName == constants.CommandBackup {
+			switch sectionName {
+			case constants.CommandBackup:
 				if propertyName != constants.ParameterHost {
 					info.examples = info.examples[1:] // remove "true" from examples of backup section
 					note = `Boolean true is unsupported in section "backup".`
 				} else {
 					note += suffixDefaultTrueV2
 				}
-			} else if sectionName == constants.SectionConfigurationRetention {
+			case constants.SectionConfigurationRetention:
 				if propertyName == constants.ParameterHost {
 					note = `Boolean true is replaced with the hostname that applies in section "backup".`
 				}

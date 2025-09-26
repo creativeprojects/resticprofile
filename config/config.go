@@ -247,7 +247,7 @@ func (c *Config) applyMixinsToProfile(profileName string) error {
 }
 
 func (c *Config) applyMatchingMixinsOnce(matcher func(useKey string) bool) error {
-	var matchingUses []map[string][]*mixinUse
+	matchingUses := make([]map[string][]*mixinUse, 0, len(c.mixinUses))
 
 	for _, allUses := range c.mixinUses {
 		usesToApply := make(map[string][]*mixinUse)
@@ -756,7 +756,7 @@ func traceConfig(profileName, name string, replace bool, config *bytes.Buffer) {
 			gutter = "%4d: "
 		}
 		for i := 0; i < len(lines); i++ {
-			output.WriteString(fmt.Sprintf(gutter, i+1))
+			fmt.Fprintf(output, gutter, i+1)
 			output.Write(lines[i])
 			output.WriteString("\n")
 		}
