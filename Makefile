@@ -94,7 +94,7 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --tag v2.53.5 --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" vektra/mockery --upgrade-only --to '$(GOBIN)'
 
 $(GOBIN)/golangci-lint: verify $(GOBIN)/eget
 	@echo "[*] $@"
@@ -114,7 +114,7 @@ prepare_build: verify download
 prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
 	find . -path "*/mocks/*" -exec rm {} \;
-	"$(GOBIN)/mockery" --config .mockery.yaml
+	"$(GOBIN)/mockery" --config .mockery.yml
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
