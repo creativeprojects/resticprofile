@@ -13,7 +13,7 @@ However, you must mount your backup source (and local destination, if applicable
 
 ### Registries
 
-The officiel image is available on docker hub
+The official image is available on docker hub
 ```shell
 docker pull creativeprojects/resticprofile:latest
 ```
