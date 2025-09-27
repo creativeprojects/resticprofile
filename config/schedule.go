@@ -168,11 +168,11 @@ func ScheduleOrigin(name, command string, kind ...ScheduleOriginType) (s Schedul
 
 // ScheduleConfig is the user configuration of a specific schedule bound to a command in a profile or group.
 type ScheduleConfig struct {
-	ScheduleBaseConfig `mapstructure:",squash"`
-
 	normalized bool
 	origin     ScheduleConfigOrigin `show:"noshow"`
 	Schedules  []string             `mapstructure:"at" examples:"hourly;daily;weekly;monthly;10:00,14:00,18:00,22:00;Wed,Fri 17:48;*-*-15 02:45;Mon..Fri 00:30" description:"Set the times at which the scheduled command is run (times are specified in systemd timer format)"`
+
+	ScheduleBaseConfig `mapstructure:",squash"`
 }
 
 // NewDefaultScheduleConfig returns a new schedule configuration that is initialized with defaults
