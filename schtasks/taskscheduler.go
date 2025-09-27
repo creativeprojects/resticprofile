@@ -1,5 +1,7 @@
 //go:build windows
 
+// Package schtasks
+//
 // Schedule types on Windows:
 // ==========================
 // 1. one time:

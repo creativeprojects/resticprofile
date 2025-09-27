@@ -45,7 +45,7 @@ func (s *Config) SetCommand(wd, command string, args []string) {
 	s.Arguments = NewCommandArguments(args)
 }
 
-// Priority is either "background" or "standard"
+// GetPriority is either "background" or "standard"
 func (s *Config) GetPriority() string {
 	s.Priority = strings.ToLower(s.Priority)
 	// default value for priority is "standard"

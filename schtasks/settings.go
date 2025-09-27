@@ -34,7 +34,7 @@ type IdleSettings struct {
 	WaitTimeout   period.Period `xml:"WaitTimeout"`   // the amount of time that the Task Scheduler will wait for an idle condition to occur
 }
 
-// For scripting, gets or sets an integer value that indicates which version of Task Scheduler a task is compatible with.
+// Compatibility is an integer value that indicates which version of Task Scheduler a task is compatible with.
 type Compatibility int
 
 const (
