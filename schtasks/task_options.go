@@ -5,7 +5,7 @@ package schtasks
 import "time"
 
 type TaskOption interface {
-	apply(*Task)
+	apply(t *Task)
 }
 
 type WithFromNowOption struct {
