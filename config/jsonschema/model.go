@@ -24,11 +24,10 @@ const (
 )
 
 type schemaRoot struct {
-	schemaObject // cannot use SchemaType here as long as ",inline" support is missing in json.Marshal
-
-	Schema string                `json:"$schema"`
-	Id     string                `json:"$id"`
-	Defs   map[string]SchemaType `json:"$defs,omitempty"`
+	Schema       string                `json:"$schema"`
+	Id           string                `json:"$id"`
+	Defs         map[string]SchemaType `json:"$defs,omitempty"`
+	schemaObject                       // cannot use SchemaType here as long as ",inline" support is missing in json.Marshal
 }
 
 func newSchema(version config.Version, id string, content *schemaObject) (root *schemaRoot, err error) {
