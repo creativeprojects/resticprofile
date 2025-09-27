@@ -47,10 +47,11 @@ Remove all schedules from the selected profile or all profiles using the `--all`
 
 Before `v0.30.0`, the `--all` flag did not remove schedules for deleted or renamed profiles.
 
-> [!NOTE]  
-> Starting with `v0.30.0`, the behavior of the `unschedule` command changed:  
-> - Without the `--all` flag, it deletes schedules associated with the profile name.  
-> - With the `--all` flag, it removes all profiles from the configuration file, including deleted and renamed ones.  
+{{% notice note %}}
+Starting with `v0.30.0`, the behavior of the `unschedule` command changed:  
+- Without the `--all` flag, it deletes schedules associated with the profile name.  
+- With the `--all` flag, it removes all profiles from the configuration file, including deleted and renamed ones.  
+{{% /notice %}}
 
 ### status command
 
