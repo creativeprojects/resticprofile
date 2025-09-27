@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 )
@@ -72,7 +73,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 }
 
 func runChildProcess() (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, "go", "run", "./check")

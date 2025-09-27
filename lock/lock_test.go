@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/shirou/gopsutil/v3/process"
@@ -27,7 +28,7 @@ var (
 func TestMain(m *testing.M) {
 	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
 		defer cancel()
 
 		tempDir, err := os.MkdirTemp("", "resticprofile-lock")

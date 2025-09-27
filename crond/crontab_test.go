@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -310,7 +310,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 }
 
 func TestUseCrontabBinary(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
 	defer cancel()
 
 	binary := filepath.Join(t.TempDir(), platform.Executable("crontab"))
