@@ -17,6 +17,7 @@ require (
 	github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/common v0.65.0
 	github.com/rickb777/period v1.0.12
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cast v1.10.0

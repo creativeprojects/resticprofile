@@ -4,12 +4,10 @@ package jsonschema
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io/fs"
 	"maps"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -24,115 +22,44 @@ import (
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/maybe"
+	"github.com/santhosh-tekuri/jsonschema/v6"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: Check if nodejs dependency for schema validation can be replaced with
-//       a pure go solution that is maintained and support required standards
-
-func findNpm(t *testing.T) string {
+func compileSchema(t *testing.T, version config.Version) *jsonschema.Schema {
 	t.Helper()
-	if npm, err := exec.LookPath("npm"); err != nil {
-		t.Log("npm not found, some tests may be skipped")
-		return ""
-	} else {
-		return npm
-	}
-}
 
-// npmRunnerFunc runs npm (node) during unit tests
-type npmRunnerFunc func(t *testing.T, args ...string) error
-
-func npmRunner(t *testing.T) npmRunnerFunc {
-	t.Helper()
-	npmExecutable := findNpm(t)
-	return func(t *testing.T, args ...string) (err error) {
-		t.Helper()
-		t.Log(args)
-		if npmExecutable != "" {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			defer cancel()
-
-			cmd := exec.CommandContext(ctx, npmExecutable, args...)
-			cmd.Dir = path.Join(".", ".node-env")
-			_ = os.MkdirAll(cmd.Dir, 0755)
-
-			var content []byte
-			content, err = cmd.CombinedOutput()
-			if err != nil {
-				err = fmt.Errorf("%s\nError: %w", string(content), err)
-			} else {
-				t.Log(string(content))
-			}
-		} else {
-			t.Log("nodejs not found, skipping npm command")
-		}
-		return
-	}
-}
-
-var npm npmRunnerFunc
-
-func initNpmEnv(t *testing.T) {
-	t.Helper()
-	if npm == nil {
-		npm = npmRunner(&testing.T{})
-		if npm(t, "list", "ajv") != nil {
-			t.Log("Installing AJV JSONSchema validator")
-			assert.NoError(t, npm(t, "install", "ajv-cli", "ajv-formats"))
-		}
-	}
-}
-
-func createSchema(t *testing.T, version config.Version) string {
-	t.Helper()
-	file, err := os.Create(path.Join(t.TempDir(), fmt.Sprintf("schema-%d.json", version)))
+	schemaBuffer := &bytes.Buffer{}
+	err := WriteJsonSchema(version, "", schemaBuffer)
 	require.NoError(t, err)
-
-	err = WriteJsonSchema(version, "", file)
+	schemaJSON, err := jsonschema.UnmarshalJSON(schemaBuffer)
 	require.NoError(t, err)
-	stat, err := file.Stat()
-	assert.NoError(t, err)
-	assert.Greater(t, stat.Size(), int64(8_000))
-	assert.NoError(t, file.Close())
-
-	return file.Name()
+	compiler := jsonschema.NewCompiler()
+	err = compiler.AddResource("schema.json", schemaJSON)
+	require.NoError(t, err)
+	schema, err := compiler.Compile("schema.json")
+	require.NoError(t, err)
+	return schema
 }
 
-func TestJsonSchema(t *testing.T) {
-	initNpmEnv(t)
+func TestJSONSchemaCompilation(t *testing.T) {
+	t.Parallel()
 
 	for _, version := range []config.Version{config.Version01, config.Version02} {
 		t.Run(fmt.Sprintf("config-%v", version), func(t *testing.T) {
-			filename := createSchema(t, version)
-
-			if npm != nil {
-				t.Parallel()
-				assert.NoError(t, npm(t, "exec", "--", "ajv",
-					"--all-errors",
-					"--strict=true",
-					"--validate-formats=true", "-c=ajv-formats",
-					"--allow-matching-properties",
-					"--spec=draft2019",
-					"compile", "-s", filename))
-			} else {
-				t.Log("short test: schema validation skipped")
-			}
+			compileSchema(t, version)
 		})
 	}
 }
 
-func TestJsonSchemaValidation(t *testing.T) {
-	initNpmEnv(t)
-	if npm == nil {
-		t.Skip()
-	}
+func TestJSONSchemaValidation(t *testing.T) {
+	t.Parallel()
 
-	schema1 := createSchema(t, config.Version01)
-	schema2 := createSchema(t, config.Version02)
+	schema1 := compileSchema(t, config.Version01)
+	schema2 := compileSchema(t, config.Version02)
 
 	rewriteToJson := func(t *testing.T, filename string) string {
 		t.Helper()
@@ -151,55 +78,97 @@ func TestJsonSchemaValidation(t *testing.T) {
 
 	extensionMatcher := regexp.MustCompile(`\.(conf|toml|yaml|json)$`)
 	version2Matcher := regexp.MustCompile(`"version":\s*"2`)
-	exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf|drop-in-example\.conf)$`)
-	testCount := 0
 
-	err := filepath.Walk("../../examples/", func(filename string, info fs.FileInfo, err error) error {
-		if !info.IsDir() && extensionMatcher.MatchString(filename) && !exclusions.MatchString(filename) {
-			content, e := os.ReadFile(filename)
-			require.NoError(t, e)
-			if bytes.Contains(content, []byte("{{ define")) || bytes.Contains(content, []byte("{{ template")) {
-				return nil // skip test for templates
+	t.Run("examples", func(t *testing.T) {
+		t.Parallel()
+
+		exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf|drop-in-example\.conf)$`)
+		testCount := 0
+
+		err := filepath.Walk("../../examples/", func(filename string, info fs.FileInfo, err error) error {
+			if !info.IsDir() && extensionMatcher.MatchString(filename) && !exclusions.MatchString(filename) {
+				content, e := os.ReadFile(filename)
+				require.NoError(t, e)
+				if bytes.Contains(content, []byte("{{ define")) || bytes.Contains(content, []byte("{{ template")) {
+					return nil // skip test for templates
+				}
+				testCount++
+
+				t.Run(path.Base(filename), func(t *testing.T) {
+					if !strings.HasSuffix(filename, ".json") {
+						filename = rewriteToJson(t, filename)
+					}
+					filename, _ = filepath.Abs(filename)
+
+					content, e = os.ReadFile(filename)
+					assert.NoError(t, e)
+					schema := schema1
+					if version2Matcher.Find(content) != nil {
+						schema = schema2
+					}
+
+					t.Parallel()
+					contentObject, err := jsonschema.UnmarshalJSON(bytes.NewReader(content))
+					require.NoError(t, err)
+
+					err = schema.Validate(contentObject)
+					if err != nil {
+						t.Log(string(content))
+					}
+
+					require.NoError(t, err)
+				})
 			}
-			testCount++
+			return err
+		})
 
-			t.Run(path.Base(filename), func(t *testing.T) {
-				if !strings.HasSuffix(filename, ".json") {
-					filename = rewriteToJson(t, filename)
-				}
-				filename, _ = filepath.Abs(filename)
-
-				content, e = os.ReadFile(filename)
-				assert.NoError(t, e)
-				schema := schema1
-				if version2Matcher.Find(content) != nil {
-					schema = schema2
-				}
-
-				t.Parallel()
-				err := npm(t, "exec", "--", "ajv",
-					"--all-errors",
-					"--strict=true",
-					"--validate-formats=true", "-c=ajv-formats",
-					"--allow-matching-properties",
-					"--spec=draft2019",
-					"validate", "-s", schema, "-d", filename)
-
-				if err != nil {
-					t.Log(string(content))
-				}
-
-				assert.NoError(t, err)
-			})
-		}
-		return err
+		assert.NoError(t, err)
+		assert.Greater(t, testCount, 8)
 	})
 
-	assert.NoError(t, err)
-	assert.Greater(t, testCount, 8)
+	t.Run("invalid", func(t *testing.T) {
+		t.Parallel()
+
+		err := filepath.Walk("./", func(filename string, info fs.FileInfo, err error) error {
+			if !info.IsDir() && extensionMatcher.MatchString(filename) {
+				content, e := os.ReadFile(filename)
+				require.NoError(t, e)
+
+				t.Run(path.Base(filename), func(t *testing.T) {
+					if !strings.HasSuffix(filename, ".json") {
+						filename = rewriteToJson(t, filename)
+					}
+					filename, _ = filepath.Abs(filename)
+
+					content, e = os.ReadFile(filename)
+					assert.NoError(t, e)
+					schema := schema1
+					if version2Matcher.Find(content) != nil {
+						schema = schema2
+					}
+
+					t.Parallel()
+					contentObject, err := jsonschema.UnmarshalJSON(bytes.NewReader(content))
+					require.NoError(t, err)
+
+					err = schema.Validate(contentObject)
+					if err == nil {
+						t.Log(string(content))
+					}
+
+					require.Error(t, err)
+				})
+			}
+			return err
+		})
+
+		assert.NoError(t, err)
+	})
 }
 
 func TestValueTypeConversion(t *testing.T) {
+	t.Parallel()
+
 	boolType := newSchemaBool()
 	intType := newSchemaNumber(true)
 	numType := newSchemaNumber(false)
@@ -237,6 +206,8 @@ func TestValueTypeConversion(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("%d_%s", i, test.value), func(t *testing.T) {
+			t.Parallel()
+
 			value := convertToType(test.value)
 			assert.IsType(t, test.valueType, value, "type %q", test.value)
 			assert.Equal(t, test.compat, isCompatibleValue(test.targetType, value), "value compat %q", test.value)
@@ -284,6 +255,8 @@ func setupMock(t *testing.T, m *mock.Mock, defs map[string]any) {
 }
 
 func TestDescription(t *testing.T) {
+	t.Parallel()
+
 	newInfo := func(option *restic.Option, deprecated bool) *mocks.PropertyInfo {
 		info := new(mocks.PropertyInfo)
 		info.EXPECT().Description().Return("property-description")
@@ -302,26 +275,36 @@ func TestDescription(t *testing.T) {
 	}
 
 	t.Run("simple", func(t *testing.T) {
+		t.Parallel()
+
 		info := newInfo(nil, false)
 		assertDescription(t, "property-description", info)
 	})
 
 	t.Run("deprecated", func(t *testing.T) {
+		t.Parallel()
+
 		info := newInfo(nil, true)
 		assertDescription(t, "property-description [deprecated]", info)
 	})
 
 	t.Run("removed-option", func(t *testing.T) {
+		t.Parallel()
+
 		info := newInfo(&restic.Option{RemovedInVersion: "1.24"}, true)
 		assertDescription(t, "property-description [deprecated, removed in 1.24]", info)
 	})
 
 	t.Run("new-option", func(t *testing.T) {
+		t.Parallel()
+
 		info := newInfo(&restic.Option{FromVersion: "1.6"}, false)
 		assertDescription(t, "property-description [restic >= 1.6]", info)
 	})
 
 	t.Run("legacy-option", func(t *testing.T) {
+		t.Parallel()
+
 		info := newInfo(&restic.Option{FromVersion: "1.2", RemovedInVersion: "1.6"}, true)
 		assertDescription(t, "property-description [deprecated, removed in 1.6, restic >= 1.2]", info)
 	})
@@ -353,6 +336,8 @@ func objectProperty(info *mocks.PropertyInfo, set config.NamedPropertySet) *mock
 }
 
 func TestSchemaForPropertySet(t *testing.T) {
+	t.Parallel()
+
 	newMock := func(config func(m *mocks.NamedPropertySet)) *mocks.NamedPropertySet {
 		nps := new(mocks.NamedPropertySet)
 		config(nps)
@@ -361,6 +346,8 @@ func TestSchemaForPropertySet(t *testing.T) {
 	}
 
 	t.Run("AdditionalProperties", func(t *testing.T) {
+		t.Parallel()
+
 		s := schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) { m.EXPECT().IsClosed().Return(false) }))
 		assert.Equal(t, true, s.AdditionalProperties)
 		s = schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) { m.EXPECT().IsClosed().Return(true) }))
@@ -368,6 +355,8 @@ func TestSchemaForPropertySet(t *testing.T) {
 	})
 
 	t.Run("TypedAdditionalProperty", func(t *testing.T) {
+		t.Parallel()
+
 		pi := new(mocks.PropertyInfo)
 		stringProperty(pi, "", "")
 		pi.EXPECT().IsSingle().Return(true)
@@ -384,16 +373,22 @@ func TestSchemaForPropertySet(t *testing.T) {
 	})
 
 	t.Run("Title", func(t *testing.T) {
+		t.Parallel()
+
 		s := schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) { m.EXPECT().Name().Return("t123") }))
 		assert.Equal(t, "t123", s.Title)
 	})
 
 	t.Run("Description", func(t *testing.T) {
+		t.Parallel()
+
 		s := schemaForPropertySet(newMock(func(m *mocks.NamedPropertySet) { m.EXPECT().Description().Return("d123") }))
 		assert.Equal(t, "d123", s.Description)
 	})
 
 	t.Run("Properties", func(t *testing.T) {
+		t.Parallel()
+
 		ps := new(mocks.NamedPropertySet)
 		setupMock(t, &ps.Mock, propertySetDefaults)
 
@@ -428,6 +423,8 @@ func TestSchemaForPropertySet(t *testing.T) {
 		assert.Len(t, schema.Properties, len(props)-1)
 
 		t.Run("single-str", func(t *testing.T) {
+			t.Parallel()
+
 			require.IsType(t, &schemaString{}, schema.Properties["single-str"])
 			if sp, ok := schema.Properties["single-str"].(*schemaString); ok {
 				assert.Equal(t, stringFormat("date"), sp.Format)
@@ -437,16 +434,22 @@ func TestSchemaForPropertySet(t *testing.T) {
 		})
 
 		t.Run("single-num", func(t *testing.T) {
+			t.Parallel()
+
 			assert.IsType(t, &schemaNumber{}, schema.Properties["single-num"])
 			assert.Contains(t, schema.Required, "single-num")
 		})
 
 		t.Run("single-nested", func(t *testing.T) {
+			t.Parallel()
+
 			assert.IsType(t, &schemaObject{}, schema.Properties["single-nested"])
 			assert.Contains(t, schema.Required, "single-nested")
 		})
 
 		t.Run("multiple-str", func(t *testing.T) {
+			t.Parallel()
+
 			require.IsType(t, &schemaTypeList{}, schema.Properties["multiple-str"])
 			if tl, ok := schema.Properties["multiple-str"].(*schemaTypeList); ok {
 				assert.IsType(t, &schemaString{}, tl.AnyOf[0])
@@ -458,6 +461,8 @@ func TestSchemaForPropertySet(t *testing.T) {
 }
 
 func TestTypesFromPropertyInfo(t *testing.T) {
+	t.Parallel()
+
 	nr := config.NumericRange{}
 	ps := new(mocks.NamedPropertySet)
 	setupMock(t, &ps.Mock, propertySetDefaults)
@@ -546,6 +551,8 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			t.Parallel()
+
 			setupMock(t, &test.info.Mock, propertyInfoDefaults)
 
 			types, index := typesFromPropertyInfo(test.info)
@@ -563,6 +570,8 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 }
 
 func TestDurationPattern(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		duration string
 		expected time.Duration
@@ -582,6 +591,8 @@ func TestDurationPattern(t *testing.T) {
 	pattern := regexp.MustCompile(durationPattern)
 	for _, test := range tests {
 		t.Run(test.duration, func(t *testing.T) {
+			t.Parallel()
+
 			duration, err := time.ParseDuration(test.duration)
 			if test.expected == 0 {
 				assert.False(t, pattern.MatchString(test.duration))
@@ -596,6 +607,8 @@ func TestDurationPattern(t *testing.T) {
 }
 
 func TestConfigureBasicInfo(t *testing.T) {
+	t.Parallel()
+
 	newType := func() SchemaType {
 		return newSchemaTypeList(true, newSchemaString(), newSchemaBool(), newSchemaNumber(true))
 	}
@@ -615,6 +628,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	}
 
 	t.Run("Default", func(t *testing.T) {
+		t.Parallel()
+
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("DefaultValue", []string{"1", "abc", "true", "3", "false", "0", ""}))
 		count := 0
@@ -635,6 +650,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	})
 
 	t.Run("Enum", func(t *testing.T) {
+		t.Parallel()
+
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("EnumValues", []string{"1", "abc", "true", "3"}))
 		each(schemaType, func(item SchemaType) {
@@ -643,6 +660,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	})
 
 	t.Run("Examples", func(t *testing.T) {
+		t.Parallel()
+
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("ExampleValues", []string{"1", "abc", "true", "3", "false", "0", ""}))
 		count := 0
@@ -663,6 +682,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	})
 
 	t.Run("Title", func(t *testing.T) {
+		t.Parallel()
+
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("Name", "n1"))
 		each(schemaType, func(item SchemaType) {
@@ -671,6 +692,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	})
 
 	t.Run("ArrayTitle", func(t *testing.T) {
+		t.Parallel()
+
 		schemaType := newSchemaArray(nil)
 		configureBasicInfo(schemaType, nil, newMock("Name", "n1"))
 		each(schemaType, func(item SchemaType) {
@@ -679,6 +702,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	})
 
 	t.Run("Deprecated", func(t *testing.T) {
+		t.Parallel()
+
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("IsDeprecated", true))
 		each(schemaType, func(item SchemaType) {
@@ -687,6 +712,8 @@ func TestConfigureBasicInfo(t *testing.T) {
 	})
 
 	t.Run("Nested", func(t *testing.T) {
+		t.Parallel()
+
 		nested := newSchemaObject()
 		schemaType := newSchemaTypeList(true, newSchemaString(), nested)
 		configureBasicInfo(schemaType, nested, newMock("Name", "n1"))
@@ -696,7 +723,11 @@ func TestConfigureBasicInfo(t *testing.T) {
 }
 
 func TestSchemaForConfigVersion(t *testing.T) {
+	t.Parallel()
+
 	t.Run("v1", func(t *testing.T) {
+		t.Parallel()
+
 		s := schemaForConfigVersion(config.Version01).(*schemaString)
 		assert.Equal(t, uint64(0), s.MinLength)
 		assert.Equal(t, util.CopyRef(uint64(1)), s.MaxLength)
@@ -705,6 +736,8 @@ func TestSchemaForConfigVersion(t *testing.T) {
 		assert.True(t, regexp.MustCompile(s.Pattern).MatchString(s.Default.(string)))
 	})
 	t.Run("v2", func(t *testing.T) {
+		t.Parallel()
+
 		s := schemaForConfigVersion(config.Version02).(*schemaString)
 		assert.Equal(t, uint64(1), s.MinLength)
 		assert.Nil(t, s.MaxLength)
