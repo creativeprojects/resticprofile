@@ -398,7 +398,7 @@ func (l *lineLengthWriter) Write(p []byte) (n int, err error) {
 				n += written + 1
 
 				_, _ = l.writer.Write(l.tokens[1:]) // write break (instead of WS at lastWhiteIndex)
-				for j := 0; j < l.breakLength; j++ {
+				for range l.breakLength {
 					_, _ = l.writer.Write(l.tokens[0:1]) // fill spaces for alignment
 				}
 

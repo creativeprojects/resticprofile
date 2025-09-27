@@ -36,7 +36,7 @@ func (c *CalendarInterval) clone() *CalendarInterval {
 	return clone
 }
 
-// getCalendarIntervalsFromSchedules converts schedules into launchd calendar events
+// GetCalendarIntervalsFromSchedules converts schedules into launchd calendar events
 // let's say we've setup these rules:
 //
 //	Mon-Fri *-*-* *:0,30:00  = every half hour
@@ -114,7 +114,7 @@ func setCalendarIntervalValueFromType(entry *CalendarInterval, value int, typeVa
 	}
 }
 
-// parseCalendarIntervals converts calendar intervals into a single calendar event.
+// ParseCalendarIntervals converts calendar intervals into a single calendar event.
 // TODO: find a pattern on how to split into multiple events when needed
 func ParseCalendarIntervals(intervals []CalendarInterval) []string {
 	event := calendar.NewEvent(func(e *calendar.Event) {

@@ -20,18 +20,18 @@ func main() {
 	flag.StringVar(&lockfile, "lock", "test.lock", "Name of the lock file")
 	flag.Parse()
 
+	// Catch CTR-C key
+	sigChan := make(chan os.Signal, 2)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	// remove signal catch before leaving
+	defer signal.Stop(sigChan)
+
 	l := lock.NewLock(lockfile)
 	if l.TryAcquire() {
 		defer func() {
 			l.Release()
 			fmt.Println("lock released")
 		}()
-
-		// Catch CTR-C key
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
-		// remove signal catch before leaving
-		defer signal.Stop(sigChan)
 
 		fmt.Println("lock acquired")
 

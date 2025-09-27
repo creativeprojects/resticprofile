@@ -104,7 +104,7 @@ func (h *HandlerWindows) RemoveJob(job *Config, _ Permission) error {
 	return nil
 }
 
-// DisplayStatus display some information about the task scheduler job
+// DisplayJobStatus display some information about the task scheduler job
 func (h *HandlerWindows) DisplayJobStatus(job *Config) error {
 	err := schtasks.Status(job.ProfileName, job.CommandName)
 	if err != nil {
@@ -139,7 +139,7 @@ func (h *HandlerWindows) Scheduled(profileName string) ([]Config, error) {
 	return configs, nil
 }
 
-// detectSchedulePermission returns the permission defined from the configuration,
+// DetectSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission.
 // safe specifies whether a guess may lead to a too broad or too narrow file access permission.
 func (h *HandlerWindows) DetectSchedulePermission(permission Permission) (Permission, bool) {

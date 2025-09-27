@@ -15,7 +15,7 @@ type Principal struct {
 	RunLevel  RunLevel  `xml:"RunLevel,omitempty"`
 }
 
-// LongType specifies the security logon method required to run those tasks associated with the principal.
+// LogonType specifies the security logon method required to run those tasks associated with the principal.
 // https://learn.microsoft.com/en-us/windows/win32/taskschd/taskschedulerschema-logontype-principaltype-element
 type LogonType string
 
@@ -25,7 +25,7 @@ const (
 	LogonTypeInteractiveToken LogonType = "InteractiveToken" // User must already be logged on. The task will be run only in an existing interactive session.
 )
 
-// The identifier that is used to specify the privilege level that is required to run the tasks that are associated with the principal.
+// RunLevel is the identifier that is used to specify the privilege level that is required to run the tasks that are associated with the principal.
 // https://learn.microsoft.com/en-us/windows/win32/taskschd/taskschedulerschema-runleveltype-simpletype
 type RunLevel string
 

@@ -93,6 +93,7 @@ func (h *HandlerSystemd) DisplaySchedules(profile, command string, schedules []s
 	return displaySystemdSchedules(profile, command, schedules)
 }
 
+// DisplayStatus displays the status of all the timers installed on that profile. Example:
 // Timers summary
 // ===============
 // NEXT                        LEFT       LAST                        PASSED  UNIT                                  ACTIVATES
@@ -318,7 +319,7 @@ func (h *HandlerSystemd) Scheduled(profileName string) ([]Config, error) {
 	return configs, nil
 }
 
-// detectSchedulePermission returns the permission defined from the configuration,
+// DetectSchedulePermission returns the permission defined from the configuration,
 // or the best guess considering the current user permission.
 // safe specifies whether a guess may lead to a too broad or too narrow file access permission.
 func (h *HandlerSystemd) DetectSchedulePermission(p Permission) (Permission, bool) {

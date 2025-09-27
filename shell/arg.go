@@ -71,7 +71,7 @@ func (a Arg) Clone() Arg {
 	}
 }
 
-// IsEmpty means the flag is specifically empty, not just a flag without a value
+// IsEmptyValue means the flag is specifically empty, not just a flag without a value
 // (e.g. --flag="")
 func (a Arg) IsEmptyValue() bool {
 	return a.empty
@@ -84,7 +84,7 @@ func (a Arg) HasValue() bool {
 	return a.empty || a.value != ""
 }
 
-// IsConfidential returns true if the argument may contain credentials.
+// HasConfidentialFilter returns true if the argument may contain credentials.
 func (a Arg) HasConfidentialFilter() bool {
 	return a.confidentialFilter != nil
 }

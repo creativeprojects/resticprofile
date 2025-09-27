@@ -86,7 +86,7 @@ func OsStdoutIsTerminal() bool {
 	return term.IsTerminal(fd)
 }
 
-// OsStdoutIsTerminal returns true as os.Stdout is a terminal session
+// OsStdoutTerminalSize returns true as os.Stdout is a terminal session
 func OsStdoutTerminalSize() (width, height int) {
 	fd := fdToInt(os.Stdout.Fd())
 	var err error

@@ -5,8 +5,8 @@ import "regexp"
 const maskReplacement = "×××"
 
 var (
-	// httpHeaderNames     = regexp.MustCompile("(?i)^(Authorization)$")
 	RepositoryConfidentialPart = regexp.MustCompile("[:/][^:/@]+?:([^:@]+?)@[^:/@]+?") // user:pass@host
+	// httpHeaderNames     = regexp.MustCompile("(?i)^(Authorization)$")
 	// urlEnvKeys          = regexp.MustCompile("(?i)^.+(_AUTH|_URL)$")
 	// hiddenEnvKeys       = regexp.MustCompile("(?i)^(.+_KEY|.+_TOKEN|.*PASSWORD.*|.*SECRET.*)$")
 )

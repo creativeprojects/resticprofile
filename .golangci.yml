@@ -22,7 +22,7 @@ linters:
     - gocheckcompilerdirectives
     - gochecksumtype
     # - gocritic
-    # - godoclint
+    - godoclint
     - goheader
     - gomoddirectives
     - gosec

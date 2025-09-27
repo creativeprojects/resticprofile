@@ -268,53 +268,57 @@ func TestLockWithNoInterruption(t *testing.T) {
 }
 
 func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
-	t.Parallel()
-
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
 	}
+	t.Parallel()
 	lockfile := getTempfile(t)
 
 	var err error
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command(helperBinary, "-wait", "2000", "-lock", lockfile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, helperBinary, "-wait", "2000", "-lock", lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
 	err = cmd.Start()
-	require.NoError(t, err)
+	require.NoError(t, err, "starting child process")
 
 	time.Sleep(300 * time.Millisecond)
 	err = cmd.Process.Signal(syscall.SIGINT)
-	require.NoError(t, err)
+	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	assert.NoError(t, err)
+	assert.NoError(t, err, "waiting for child process to finish")
 	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
 }
 
 func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
-	t.Parallel()
-
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
 	}
+	t.Parallel()
 	lockfile := getTempfile(t)
 
 	var err error
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command("sh", "-c", "exec "+helperBinary+" -wait 2000 -lock "+lockfile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "sh", "-c", "exec "+helperBinary+" -wait 2000 -lock "+lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
 	err = cmd.Start()
-	require.NoError(t, err)
+	require.NoError(t, err, "starting child process inside a shell")
 
 	time.Sleep(300 * time.Millisecond)
 	err = cmd.Process.Signal(syscall.SIGINT)
-	require.NoError(t, err)
+	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	assert.NoError(t, err)
+	assert.NoError(t, err, "waiting for child process to finish")
 	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
 }

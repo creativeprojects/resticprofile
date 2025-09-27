@@ -58,7 +58,7 @@ func envValueOverride[T any](defaultValue T, keys ...string) T {
 				v = value
 			}
 			if err == nil {
-				defaultValue = v.(T)
+				defaultValue = v.(T) //nolint:forcetypeassert
 			} else {
 				clog.Errorf("cannot convert env variable %s=%q: %s", key, value, err.Error())
 			}
