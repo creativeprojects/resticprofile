@@ -2,6 +2,7 @@ package shell
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,6 +28,9 @@ var (
 func TestMain(m *testing.M) {
 	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
+		ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
+		defer cancel()
+
 		tempDir, err := os.MkdirTemp("", "resticprofile-shell")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
@@ -38,7 +43,7 @@ func TestMain(m *testing.M) {
 		if platform.IsWindows() {
 			mockBinary += ".exe"
 		}
-		cmd := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
+		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
 		if output, err := cmd.CombinedOutput(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
 			return 1

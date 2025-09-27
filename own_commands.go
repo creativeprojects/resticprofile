@@ -10,6 +10,7 @@ import (
 // commandContext is the context for running a command.
 type commandContext struct {
 	Context
+
 	ownCommands *OwnCommands
 }
 

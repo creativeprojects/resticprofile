@@ -88,7 +88,7 @@ func (l *Lock) SetPID(pid int32) {
 		return
 	}
 	// just add the PID on a newline
-	_, _ = l.file.WriteString(fmt.Sprintf("\n%d", pid))
+	_, _ = fmt.Fprintf(l.file, "\n%d", pid)
 }
 
 // HasLocked check this instance (and only this one) has locked the file
@@ -142,7 +142,7 @@ func (l *Lock) lock() bool {
 	now := time.Now().Format(time.RFC850)
 
 	// No error checking... it's not a big deal if we cannot write that
-	_, _ = l.file.WriteString(fmt.Sprintf("%s on %s from %s", username, now, hostname))
+	_, _ = fmt.Fprintf(l.file, "%s on %s from %s", username, now, hostname)
 	return true
 }
 

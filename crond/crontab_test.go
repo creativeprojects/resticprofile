@@ -3,6 +3,7 @@
 package crond
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -308,10 +310,13 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 }
 
 func TestUseCrontabBinary(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
+	defer cancel()
+
 	binary := filepath.Join(t.TempDir(), platform.Executable("crontab"))
 	defer func() { _ = os.Remove(binary) }()
 
-	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", binary, "./mock")
+	cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", binary, "./mock")
 	require.NoError(t, cmd.Run())
 
 	crontab := NewCrontab(nil)

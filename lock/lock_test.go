@@ -2,6 +2,7 @@ package lock
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
 	"github.com/shirou/gopsutil/v3/process"
@@ -26,6 +28,9 @@ var (
 func TestMain(m *testing.M) {
 	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
+		ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
+		defer cancel()
+
 		tempDir, err := os.MkdirTemp("", "resticprofile-lock")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
@@ -36,7 +41,7 @@ func TestMain(m *testing.M) {
 
 		helperBinary = filepath.Join(tempDir, platform.Executable("locktest"))
 
-		cmd := exec.Command("go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
+		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
 		if err := cmd.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
 			return 1

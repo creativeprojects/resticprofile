@@ -111,6 +111,7 @@ func TestCompleter(t *testing.T) {
 
 			testValues := func(flagName string, expected []string) func(t *testing.T) {
 				return func(t *testing.T) {
+					t.Helper()
 
 					t.Run("ReturnsAllValues", func(t *testing.T) {
 						actual := completer.Complete(newArgs(fmt.Sprintf("--%s", flagName), ""))

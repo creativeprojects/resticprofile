@@ -4,6 +4,7 @@ package jsonschema
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/fs"
 	"maps"
@@ -52,7 +53,10 @@ func npmRunner(t *testing.T) npmRunnerFunc {
 		t.Helper()
 		t.Log(args)
 		if npmExecutable != "" {
-			cmd := exec.Command(npmExecutable, args...)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+
+			cmd := exec.CommandContext(ctx, npmExecutable, args...)
 			cmd.Dir = path.Join(".", ".node-env")
 			_ = os.MkdirAll(cmd.Dir, 0755)
 

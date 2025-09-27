@@ -80,9 +80,10 @@ func NewFinder() Finder {
 // FindConfigurationFile returns the path of the configuration file
 // If the file doesn't have an extension, it will search for all possible extensions
 func (f Finder) FindConfigurationFile(configFile string) (string, error) {
-	found := ""
+	var found, displayFile string
+
 	extension := filepath.Ext(configFile)
-	displayFile := ""
+
 	if extension != "" {
 		displayFile = fmt.Sprintf("'%s'", configFile)
 		// Search only once through the paths

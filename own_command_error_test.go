@@ -8,7 +8,7 @@ import (
 )
 
 func TestOwnCommandError(t *testing.T) {
-	var wrap error = errors.New("wrap")
+	wrap := errors.New("wrap")
 	var err error = newOwnCommandError(wrap, 10)
 
 	assert.Equal(t, "wrap", err.Error())

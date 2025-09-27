@@ -2,11 +2,13 @@ package priority
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os/exec"
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 )
@@ -71,7 +73,10 @@ func TestStartProcessWithPriority(t *testing.T) {
 }
 
 func runChildProcess() (string, error) {
-	cmd := exec.Command("go", "run", "./check")
+	ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "go", "run", "./check")
 	buffer := &bytes.Buffer{}
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,6 +24,9 @@ var (
 func TestMain(m *testing.M) {
 	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
+		ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
+		defer cancel()
+
 		tempDir, err := os.MkdirTemp("", "resticprofile-main")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
@@ -35,7 +39,7 @@ func TestMain(m *testing.M) {
 		if platform.IsWindows() {
 			mockBinary += ".exe"
 		}
-		cmdMock := exec.Command("go", "build", "-buildvcs=false", "-o", mockBinary, "./shell/mock")
+		cmdMock := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", mockBinary, "./shell/mock")
 		if output, err := cmdMock.CombinedOutput(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building shell/mock binary: %s\nCommand output: %s\n", err, string(output))
 			return 1
@@ -45,7 +49,7 @@ func TestMain(m *testing.M) {
 		if platform.IsWindows() {
 			echoBinary += ".exe"
 		}
-		cmdEcho := exec.Command("go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
+		cmdEcho := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
 		if output, err := cmdEcho.CombinedOutput(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
 			return 1

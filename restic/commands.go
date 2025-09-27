@@ -96,6 +96,7 @@ func (c *command) sortOptions() {
 
 type commandAtVersion struct {
 	command
+
 	includeRemoved bool
 	actualVersion  *semver.Version
 }

@@ -305,7 +305,7 @@ func setPriority(nice int, class string) error {
 	var err error
 
 	if class != "" {
-		if classID, ok := constants.PriorityValues[strings.ToLower(class)]; ok {
+		if classID, ok := priority.Values[strings.ToLower(class)]; ok {
 			err = priority.SetClass(classID)
 			if err != nil {
 				return err

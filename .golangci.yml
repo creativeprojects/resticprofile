@@ -1,28 +1,89 @@
+version: "2"
 linters:
   enable:
     - asasalint
     - asciicheck
     - bidichk
     - bodyclose
+    - canonicalheader
+    - containedctx
     - contextcheck
+    - copyloopvar
+    - decorder
+    - durationcheck
+    # - err113
+    - errcheck
+    - errchkjson
     - errname
+    # - errorlint
+    - exptostd
+    - fatcontext
+    # - forcetypeassert
     - gocheckcompilerdirectives
+    - gochecksumtype
+    # - gocritic
+    # - godoclint
+    - goheader
+    - gomoddirectives
     - gosec
-    # - maintidx
+    - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - ineffassign
+    # - intrange
+    # - ireturn
+    - loggercheck
+    - makezero
+    - mirror
     - misspell
+    - nilerr
+    - nilnesserr
     - nilnil
-    - noctx
+    # - nlreturn
+    # - noctx
     - nolintlint
+    - nosprintfhostport
+    # - perfsprint
+    - prealloc
     - predeclared
+    - promlinter
     - reassign
+    # - revive
+    - rowserrcheck
     - sloglint
     - spancheck
+    - staticcheck
+    - testableexamples
+    # - testifylint
+    - thelper
     - unconvert
     - unparam
+    - unused
     - usestdlibvars
-
-linters-settings:
-  gosec:
-    excludes:
-      - G204 # Audit the use of command execution
-      - G404 # Insecure random number source (rand)
+    # - usetesting
+    - wastedassign
+  settings:
+    gosec:
+      excludes:
+        - G204 # Audit use of command execution
+        - G404 # Insecure random number source (rand)
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

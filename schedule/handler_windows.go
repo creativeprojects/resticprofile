@@ -51,9 +51,10 @@ func (h *HandlerWindows) DisplayStatus(profileName string) error {
 func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
 	// default permission will be system
 	perm := schtasks.SystemAccount
-	if permission == PermissionUserBackground {
+	switch permission {
+	case PermissionUserBackground:
 		perm = schtasks.UserAccount
-	} else if permission == PermissionUserLoggedOn {
+	case PermissionUserLoggedOn:
 		perm = schtasks.UserLoggedOnAccount
 	}
 
