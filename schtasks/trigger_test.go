@@ -32,145 +32,169 @@ func TestTriggerCreationFromXML(t *testing.T) {
 		fixedDay = "Tuesday"
 	}
 
+	timezone := `(Z|[+-]\d{2}:\d{2})`
+
 	fixtures := []struct {
 		description        string
 		schedules          []string
 		expected           string
 		expectedMatchCount int
+		from               time.Time
 	}{
 		{
 			"only once",
 			[]string{"2020-01-02 03:04"},
-			`<TimeTrigger>\s*<StartBoundary>2020-01-02T03:04:00\+00:00</StartBoundary>\s*</TimeTrigger>`,
+			`<TimeTrigger>\s*<StartBoundary>2020-01-02T03:04:00` + timezone + `</StartBoundary>\s*</TimeTrigger>`,
 			1,
+			time.Time{},
 		},
 		// daily
 		{
 			"once every day",
 			[]string{"*-*-* 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00\+00:00</StartBoundary>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every hour",
 			[]string{"*-*-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every minute",
 			[]string{"*-*-* *:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every minute at 12",
 			[]string{"*-*-* 12:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		// daily - more than one
 		{
 			"three times a day",
 			[]string{"*-*-* 03..05:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT2H</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT2H</Duration>\s*</Repetition>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"twice every hour",
 			[]string{"*-*-* *:04..05"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+00:00</StartBoundary>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00` + timezone + `</StartBoundary>\s*<ScheduleByDay>\s*<DaysInterval>1</DaysInterval>\s*</ScheduleByDay>\s*</CalendarTrigger>`,
 			48,
+			time.Time{},
 		},
 		// weekly
 		{
 			"once weekly",
 			[]string{"mon *-*-* 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00\+00:00</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every hour on mondays",
 			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:04:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT23H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every minute on mondays",
 			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>P1D</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every minute at 12 on mondays",
 			[]string{"mon *-*-* 12:*"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T12:\d{2}:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT59M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		// more than once weekly
 		{
 			"twice weekly",
 			[]string{"mon *-*-* 03..04:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT1H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1H</Interval>\s*<Duration>PT1H</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"twice mondays and tuesdays",
 			[]string{"mon,tue *-*-* 03:04..06"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00\+00:00</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT2M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*<Tuesday></Tuesday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<Repetition>\s*<Interval>PT1M</Interval>\s*<Duration>PT2M</Duration>\s*</Repetition>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<Monday></Monday>\s*<Tuesday></Tuesday>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"twice on fixed day",
 			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04..05"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+00:00</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00` + timezone + `</StartBoundary>\s*<ScheduleByWeek>\s*<WeeksInterval>1</WeeksInterval>\s*<DaysOfWeek>\s*<` + fixedDay + `></` + fixedDay + `>\s*</DaysOfWeek>\s*</ScheduleByWeek>\s*</CalendarTrigger>`,
 			48,
+			time.Time{},
 		},
 		// monthly
 		{
 			"once monthly",
 			[]string{"*-01-* 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + generateEveryDayString() + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + generateEveryDayString() + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every hour in january",
 			[]string{"*-01-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + generateEveryDayString() + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*<January></January>\s*</Months>\s*<DaysOfMonth>\s*` + generateEveryDayString() + `</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24,
+			time.Time{},
 		},
 		// monthly with weekdays
 		{
 			"mondays in January",
 			[]string{"mon *-01-* 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January></January>\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T03:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January></January>\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every hour on Mondays in january",
 			[]string{"mon *-01-* *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January></January>\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-01-\d{2}T\d{2}:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonthDayOfWeek>\s*<Months>\s*<January></January>\s*</Months>\s*<Weeks>\s*<Week>1</Week>\s*<Week>2</Week>\s*<Week>3</Week>\s*<Week>4</Week>\s*<Week>Last</Week>\s*</Weeks>\s*<DaysOfWeek>\s*<Monday></Monday>\s*</DaysOfWeek>\s*</ScheduleByMonthDayOfWeek>\s*</CalendarTrigger>`,
 			24,
+			time.Time{},
 		},
 		// // some days every month
 		{
 			"one day per month",
 			[]string{"*-*-0" + dayOfTheMonth + " 03:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T03:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T03:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			1,
+			time.Time{},
 		},
 		{
 			"every hour on the 1st of each month",
 			[]string{"*-*-0" + dayOfTheMonth + " *:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			24, // 1 per hour
+			time.Time{},
 		},
 		// // more than once per month
 		{
 			"twice in one day per month",
 			[]string{"*-*-0" + dayOfTheMonth + " 03..04:04"},
-			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00\+00:00</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
+			`<CalendarTrigger>\s*<StartBoundary>\d{4}-\d{2}-0` + dayOfTheMonth + `T\d{2}:04:00` + timezone + `</StartBoundary>\s*<ScheduleByMonth>\s*<Months>\s*` + generateEveryMonthString() + `</Months>\s*<DaysOfMonth>\s*<Day>` + dayOfTheMonth + `</Day>\s*</DaysOfMonth>\s*</ScheduleByMonth>\s*</CalendarTrigger>`,
 			2,
+			time.Time{},
 		},
 	}
 
@@ -196,7 +220,8 @@ func TestTriggerCreationFromXML(t *testing.T) {
 				schedules[index] = event
 			}
 			buffer := &bytes.Buffer{}
-			task := createTaskDefinition(scheduleConfig, schedules)
+			task := createTaskDefinition(scheduleConfig, schedules, fixture.from)
+			taskInLocal(&task)
 			err = createTaskFile(task, buffer)
 			require.NoError(t, err)
 
@@ -225,4 +250,20 @@ func generateEveryMonthString() string {
 		everyMonth += `<` + time.Month(month).String() + `></` + time.Month(month).String() + `>\s*`
 	}
 	return everyMonth
+}
+
+func taskInLocal(task *Task) {
+	for i := range task.Triggers.TimeTrigger {
+		if task.Triggers.TimeTrigger[i].StartBoundary != nil {
+			*task.Triggers.TimeTrigger[i].StartBoundary = task.Triggers.TimeTrigger[i].StartBoundary.Local()
+		}
+	}
+	for i := range task.Triggers.CalendarTrigger {
+		if task.Triggers.CalendarTrigger[i].StartBoundary != nil {
+			*task.Triggers.CalendarTrigger[i].StartBoundary = task.Triggers.CalendarTrigger[i].StartBoundary.Local()
+		}
+		if task.Triggers.CalendarTrigger[i].EndBoundary != nil {
+			*task.Triggers.CalendarTrigger[i].EndBoundary = task.Triggers.CalendarTrigger[i].EndBoundary.Local()
+		}
+	}
 }
