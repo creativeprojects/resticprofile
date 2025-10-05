@@ -79,7 +79,7 @@ profile:
 
 * `user_logged_on`: **Not for crond** - Provides the same permissions as `user`, but runs only when the user is logged on. On Windows, it does not ask for your user password.
 
-* *empty*: resticprofile will guess based on how it was started (with sudo or as a normal user). The fallback is `system` on Windows and `user_logged_in` on other platforms.
+* *empty*: resticprofile will guess based on how it was started (with sudo or as a normal user). The fallback is `system` on Windows and `user_logged_on` on other platforms.
 
 ### Changing schedule-permission
 
