@@ -3,8 +3,6 @@ title: "Copy command"
 weight: 17
 ---
 
-
-
 ## Special case for the **copy** command section
 
 The copy command needs two repositories (and quite likely 2 different set of keys). You can configure a `copy` section like this:

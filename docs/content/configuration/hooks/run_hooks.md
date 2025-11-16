@@ -1,9 +1,8 @@
 ---
-title: "Command Hooks"
+title: "Hooks - Commands"
 weight: 20
 tags: [ "monitoring" ]
 ---
-
 
 ## Run commands before, after success or after failure
 

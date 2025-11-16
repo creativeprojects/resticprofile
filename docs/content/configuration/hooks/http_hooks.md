@@ -1,9 +1,8 @@
 ---
-title: "HTTP Hooks"
+title: "Hooks - HTTP"
 weight: 22
 tags: [ "monitoring", "healthchecks.io" ]
 ---
-
 
 ## Send HTTP messages before and after a job
 
