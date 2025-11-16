@@ -1,6 +1,5 @@
 +++
 archetype = "chapter"
-pre = "<b>4. </b>"
 title = "Schedules"
 weight = 4
 +++
