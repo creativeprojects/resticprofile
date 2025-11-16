@@ -29,7 +29,7 @@ HCL can be useful if you already use a tool from the Hashicorp stack; otherwise,
 
 We'll show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
 
-You can use any other editor that recognizes the [JSON schema]({{% relref "/configuration/jsonschema" %}}). The same JSON schema can be used for JSON, TOML, and YAML file formats.
+You can use any other editor that recognizes the [JSON schema]({{% relref "/reference/jsonschema" %}}). The same JSON schema can be used for JSON, TOML, and YAML file formats.
 
 ### TOML
 
@@ -138,7 +138,7 @@ default {
 
 ## Generate a secure password
 
-**resticprofile** can generate a [secure password file]({{% relref "/usage/keyfile" %}}) for you:
+**resticprofile** can generate a [secure password file]({{% relref "/usage/examples/keyfile" %}}) for you:
 
 ```shell
 resticprofile generate --random-key > password.txt
@@ -308,7 +308,7 @@ default {
 {{% /tab %}}
 {{< /tabs >}}
 
-**resticprofile** can [schedule]({{% relref "/schedules" %}}) work on macOS, Windows, most Unixes and Linux distributions: it is simply adding an entry in the default scheduler of your platform.
+**resticprofile** can [schedule]({{% relref "/configuration/schedules" %}}) work on macOS, Windows, most Unixes and Linux distributions: it is simply adding an entry in the default scheduler of your platform.
 
 To schedule the backup of the default profile, simply type the command:
 

@@ -8,11 +8,11 @@ weight = 4
 ## Scheduler
 
 resticprofile manages scheduled backups using:
-- **[launchd]({{% relref "/schedules/launchd" %}})** on macOS
-- **[Task Scheduler]({{% relref "/schedules/task_scheduler" %}})** on Windows
-- **[systemd]({{% relref "/schedules/systemd" %}})** on Linux and other BSDs
-- **[crond]({{% relref "/schedules/cron" %}})** as a fallback (requires `crontab` binary)
-- **[crontab]({{% relref "/schedules/cron" %}})** files (with or without a user column)
+- **[launchd]({{% relref "./scheduling_methods/launchd" %}})** on macOS
+- **[Task Scheduler]({{% relref "./scheduling_methods/task_scheduler" %}})** on Windows
+- **[systemd]({{% relref "./scheduling_methods/systemd" %}})** on Linux and other BSDs
+- **[crond]({{% relref "./scheduling_methods/cron" %}})** as a fallback (requires `crontab` binary)
+- **[crontab]({{% relref "./scheduling_methods/cron" %}})** files (with or without a user column)
 
 On Unix systems (excluding macOS), resticprofile uses **systemd** if available, otherwise it falls back to **crond**.
 
