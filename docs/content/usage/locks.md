@@ -3,8 +3,6 @@ title: "Locks"
 weight: 20
 ---
 
-
-
 restic is already using a lock to avoid running some operations at the same time.
 
 Since resticprofile can run several commands in a profile, it could be better to run the whole batch in a lock so nobody can interfere in the meantime.
