@@ -21,3 +21,7 @@ HCL can be useful if you already use a tool from the Hashicorp stack; otherwise,
 ## Configure Your Text Editor
 
 A guide on configurating your text editor can be found [here]({{% relref "editorConfig.md" %}}).
+
+## More Information
+
+{{% children %}}
