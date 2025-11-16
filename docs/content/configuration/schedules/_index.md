@@ -1,7 +1,8 @@
 +++
 archetype = "chapter"
 title = "Schedules"
-weight = 4
+weight = 40
+alwaysopen = false
 +++
 
 

@@ -5,8 +5,7 @@ title = "Configuration file"
 weight = 2
 +++
 
-
-* A configuration is a set of _profiles_.
+* A configuration is a set of [_profiles_]({{% relref "/configuration/profiles" %}}).
 * Each profile is in a new section that has the name of the profile.
 * Inside each profile, you can specify different flags for each command.
 * A command definition is in a subsection of the name of the command.

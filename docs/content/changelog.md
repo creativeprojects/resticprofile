@@ -1,6 +1,6 @@
 ---
 archetype: chapter
-pre: <b>8. </b>
+pre: <b>6. </b>
 title: Release Notes
 weight: 8
 ---

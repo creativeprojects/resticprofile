@@ -1,5 +1,6 @@
 ---
 title: Examples
+weight: 20
 ---
 
 Here are a few examples how to run resticprofile (using the main example configuration file)

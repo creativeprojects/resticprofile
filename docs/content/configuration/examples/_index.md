@@ -1,6 +1,7 @@
 ---
 title: "Examples"
-weight: 5
+weight: 40
+alwaysopen: false
 ---
 
 So let's say you normally use this simple command:

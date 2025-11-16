@@ -1,6 +1,7 @@
 ---
 title: "Logs"
-weight: 45
+weight: 50
+alwaysopen: false
 ---
 
 By default **resticprofile** will display all logs (from itself and **restic**) to the console.

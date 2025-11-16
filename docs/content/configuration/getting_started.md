@@ -1,49 +1,12 @@
 ---
 title: "Getting Started"
-weight: 2
+weight: 10
+alwaysopen: false
 ---
 
 ## Prerequisite
 
-**resticprofile** is an automation tool for restic, also known as a *wrapper*.
-
-In short, **resticprofile** provides a configuration file and a runner that generates all necessary calls to **restic**.
-
 Unless you're using the **resticprofile** [Docker image]({{% relref "/installation/docker/index.html" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
-
-## Choose Your Favorite Format
-
-The **resticprofile** configuration file can be written in:
-* [TOML](https://github.com/toml-lang/toml): configuration file with extension *.toml* or *.conf*
-* [YAML](https://en.wikipedia.org/wiki/YAML): configuration file with extension *.yaml*
-* [JSON](https://en.wikipedia.org/wiki/JSON): configuration file with extension *.json*
-* [HCL](https://github.com/hashicorp/hcl): configuration file with extension *.hcl*
-
-We recommend using either TOML or YAML.
-
-JSON is suitable for auto-generated configurations but is not the easiest format for humans to read and write.
-
-HCL can be useful if you already use a tool from the Hashicorp stack; otherwise, it's another format to learn.
-
-## Configure Your Text Editor
-
-We'll show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
-
-You can use any other editor that recognizes the [JSON schema]({{% relref "/reference/jsonschema" %}}). The same JSON schema can be used for JSON, TOML, and YAML file formats.
-
-### TOML
-
-In Visual Studio Code, install an extension that supports completion and syntax validation using a JSON schema.
-
-For example, install the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension:
-
-![TOML extension]({{< absolute "configuration/getting_started/TOML.png" nohtml >}})
-
-### YAML
-
-For YAML, install an extension like the one [provided by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) in Visual Studio Code to understand the shape of your configuration file.
-
-![YAML extension]({{< absolute "configuration/getting_started/YAML.png" nohtml >}})
 
 ## Write your first configuration file
 
