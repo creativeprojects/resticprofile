@@ -4,7 +4,7 @@ title: "Configuring your Editor"
 
 We'll show you how to get documentation and auto-completion for the **resticprofile** configuration using [Visual Studio Code](https://code.visualstudio.com/).
 
-You can use any other editor that recognizes the [JSON schema]({{% relref "/reference/jsonschema" %}}). The same JSON schema can be used for JSON, TOML, and YAML file formats.
+You can use any other editor that recognizes the [JSON schema]({{% relref "/reference/json-schema" %}}). The same JSON schema can be used for JSON, TOML, and YAML file formats.
 
 ### TOML
 
