@@ -5,4 +5,5 @@ title = "Installation"
 weight = 1
 +++
 
+Here are the multiple ways you can install resticprofile:
 {{% children  %}}

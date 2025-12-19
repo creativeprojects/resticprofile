@@ -3,6 +3,7 @@ title: "Linux"
 weight: 10
 ---
 
+{{< toc >}}
 
 ## Installation via a script
 
