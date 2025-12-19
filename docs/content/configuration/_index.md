@@ -5,6 +5,12 @@ title = "Configuration file"
 weight = 2
 +++
 
+The configuration file supports various formats:
+* [TOML](https://github.com/toml-lang/toml): files with extensions *.toml* and *.conf* (for compatibility with versions before 0.6.0)
+* [JSON](https://en.wikipedia.org/wiki/JSON): files with extension *.json*
+* [YAML](https://en.wikipedia.org/wiki/YAML): files with extension *.yaml*
+* [HCL](https://github.com/hashicorp/hcl): files with extension *.hcl*
+
 * A configuration is a set of [_profiles_]({{% relref "/configuration/profiles" %}}).
 * Each profile is in a new section that has the name of the profile.
 * Inside each profile, you can specify different flags for each command.

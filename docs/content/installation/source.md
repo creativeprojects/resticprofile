@@ -4,39 +4,23 @@ weight: 16
 ---
 
 ## Installation from source
+Requirements: `git`, [Go compiler](https://golang.org/dl/), `make`
 
-It's very easy to compile from the source code.
-
-Ensure your machine has the following:  
-- `git` (use `git-bash` on Windows)  
-- [Go compiler](https://golang.org/dl/)  
-- `GNU Make` (preinstalled on many Unix systems). On Debian-based distributions (e.g., Ubuntu), install the `build-essential` package.  
-
-Compilation:
+Clone the repository by running:
 ```shell
 git clone https://github.com/creativeprojects/resticprofile.git
 cd resticprofile
-make build
 ```
 
-Your compiled binary (`resticprofile` or `resticprofile.exe`) is available in the current folder.
+To compile the binary, run: `make build`
 
-To install the binary in your user path:
+To install the binary in your user path, run `make install`
 
-```shell
-make install
-```
+To build the binary for all common platforms (`build-mac`, `build-linux`, `build-pi` & `build-windows`), run: `make build-all`
 
-To build all common platforms (`build-mac`, `build-linux`, `build-pi` & `build-windows`):
-
-```shell
-make build-all
-```
-
+{{% notice style="tip" %}}
 Alternatively, a **go-only** build (without `GNU Make`) is accomplished with:
-
 ```shell
-git clone https://github.com/creativeprojects/resticprofile.git
-cd resticprofile
 go build -v -o resticprofile .
 ```
+{{% /notice %}}
