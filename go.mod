@@ -1,13 +1,13 @@
 module github.com/creativeprojects/resticprofile
 
-go 1.25.4
+go 1.25.5
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/adrg/xdg v0.5.3
 	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/creativeprojects/clog v0.14.0
-	github.com/creativeprojects/go-selfupdate v1.5.1
+	github.com/creativeprojects/go-selfupdate v1.5.2
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.18.0
 	github.com/joho/godotenv v1.5.1
@@ -24,15 +24,15 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sys v0.38.0
-	golang.org/x/term v0.37.0
-	golang.org/x/text v0.31.0
+	golang.org/x/sys v0.39.0
+	golang.org/x/term v0.38.0
+	golang.org/x/text v0.32.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
 )
 
 require (
-	code.gitea.io/sdk/gitea v0.22.0 // indirect
+	code.gitea.io/sdk/gitea v0.22.1 // indirect
 	github.com/42wim/httpsig v1.2.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -41,13 +41,13 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-fed/httpsig v1.1.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/google/go-github/v30 v30.1.0 // indirect
+	github.com/godbus/dbus/v5 v5.2.0 // indirect
+	github.com/google/go-github/v74 v74.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/govalues/decimal v0.1.36 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
-	github.com/hashicorp/go-version v1.7.0 // indirect
+	github.com/hashicorp/go-version v1.8.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
@@ -68,14 +68,14 @@ require (
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
-	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
+	gitlab.com/gitlab-org/api/client-go v1.9.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
-	golang.org/x/oauth2 v0.32.0 // indirect
-	golang.org/x/time v0.12.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6 // indirect
+	golang.org/x/oauth2 v0.34.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
