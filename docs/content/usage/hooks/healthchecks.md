@@ -1,5 +1,6 @@
 ---
 title: "Sending to healthchecks.io"
+weight: 20
 ---
 
 For more information, refer to [Hooks - HTTP]({{% relref "configuration/hooks/http_hooks/#send-http-messages-before-and-after-a-job" %}})

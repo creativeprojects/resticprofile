@@ -1,5 +1,6 @@
 ---
 title: "Message Body Template"
+weight: 30
 ---
 
 You can use a standard go template to build the webhook body. It has to be defined in a separate file (otherwise it would clash with the configuration as a go template itself).
