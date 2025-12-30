@@ -1,6 +1,6 @@
 ---
 title: "Path"
-weight: 10
+weight: 31
 ---
 
 ## How paths inside the configuration are resolved

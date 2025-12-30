@@ -83,7 +83,7 @@ profile:
 * *empty*: resticprofile will guess based on how it was started (with sudo or as a normal user). The fallback is `system` on Windows and `user_logged_on` on other platforms.
 
 {{% notice style="warning" %}}
-After changing this setting, you must update the schedule. More information can be found under [Changing Schedule Permissions]({{% relref "/usage/change-schedule" %}})
+After changing this setting, you must update the schedule. More information can be found under [Changing Schedule Permissions]({{% relref "/usage/scheduling/change-schedule" %}})
 {{% /notice %}}
 
 ## schedule-run-level

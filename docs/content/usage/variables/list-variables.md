@@ -1,5 +1,5 @@
 ---
-title: "Variables - Examples"
+title: "More on Variables"
 ---
 
 {{< toc >}}

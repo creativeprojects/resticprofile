@@ -1,7 +1,8 @@
 ---
-title: "Hooks"
-weight: 50
+title: "Variables"
+weight: 30
 alwaysopen: false
 ---
 
 {{% children sort="weight" %}}
+

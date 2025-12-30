@@ -1,5 +1,6 @@
 ---
-title: "Use stdin in configuration"
+title: "Example: stdin"
+weight: 40
 ---
 
 Simple example sending a file via stdin

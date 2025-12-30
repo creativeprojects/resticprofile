@@ -103,7 +103,7 @@ default {
 
 ## Generate a secure password
 
-**resticprofile** can generate a [secure password file]({{% relref "/usage/examples/keyfile" %}}) for you:
+**resticprofile** can generate a [secure password file]({{% relref "/usage/keyfile" %}}) for you:
 
 ```shell
 resticprofile generate --random-key > password.txt

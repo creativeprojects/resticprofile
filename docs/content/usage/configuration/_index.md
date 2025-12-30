@@ -1,6 +1,6 @@
 ---
-title: "Examples"
-weight: 40
+title: "Configuration Files"
+weight: 20
 alwaysopen: false
 ---
 
@@ -101,7 +101,3 @@ resticprofile --dry-run backup
 2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file password.txt --repo local:/backup --verbose /home
 2022/05/18 17:14:07 profile 'default': finished 'backup'
 ```
-
-## More Examples
-
-{{% children sort="weight" depth="2" %}}

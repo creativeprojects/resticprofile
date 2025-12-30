@@ -279,4 +279,4 @@ Now you can reuse the same generic configuration in another profile.
 
 You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
 
-More examples can be found [here]({{% relref "/usage/variable-example" %}}).
+More examples can be found [here]({{% relref "/usage/variables/list-variables" %}}).

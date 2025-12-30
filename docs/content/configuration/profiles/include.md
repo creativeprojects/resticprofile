@@ -1,6 +1,6 @@
 ---
 title: "Includes"
-weight: 15
+weight: 32
 ---
 
 The configuration may be split into multiple files by adding `includes = "glob-pattern"` to the main configuration file. 

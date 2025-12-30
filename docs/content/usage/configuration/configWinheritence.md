@@ -1,5 +1,6 @@
 ---
-title: "Configuration with inheritance"
+title: "Example: Using Inheritance"
+wieght: 20
 ---
 
 Here's a more complex configuration file showing profile inheritance and two backup profiles using the same repository:

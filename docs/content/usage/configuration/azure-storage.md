@@ -1,5 +1,6 @@
 ---
-title: "Simple Configuration with Azure Storage"
+title: "Example: Azure Storage"
+weight: 10
 ---
 
 Here's a simple configuration file using a Microsoft Azure backend. You will notice that the `env` section lets you define environment variables:

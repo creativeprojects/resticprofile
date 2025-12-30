@@ -1,6 +1,6 @@
 ---
 title: "Locks"
-weight: 20
+weight: 34
 ---
 
 restic is already using a lock to avoid running some operations at the same time.

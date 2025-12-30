@@ -1,5 +1,6 @@
 ---
 title: Changing Schedule Permission
+weight: 30
 ---
 
 When you update the `schedule-permission` field, you **must** unschedule and reschedule the profile to implement the change. 

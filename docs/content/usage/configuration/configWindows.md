@@ -1,5 +1,6 @@
 ---
-title: "Configuration example for Windows"
+title: "Example: Windows"
+weight: 30
 ---
 
 {{< tabs groupid="config-with-hcl" >}}

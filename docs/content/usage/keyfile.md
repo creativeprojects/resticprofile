@@ -1,5 +1,6 @@
 ---
 title: Generate Random Keys
+weight: 60
 ---
 
 Resticprofile includes a tool to generate cryptographically secure, base64-encoded random keys. Save the key to a file and use it as a strong key for Restic.

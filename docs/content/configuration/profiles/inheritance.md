@@ -1,6 +1,6 @@
 ---
 title: "Inheritance"
-weight: 16
+weight: 33
 ---
 
 {{% notice style="tip" %}}

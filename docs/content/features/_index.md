@@ -21,7 +21,7 @@ Here is a non-exhaustive list of what resticprofile offers:
     * Run a [shell command]({{% relref "/configuration/hooks/run_hooks" %}}) if an error occurs
     * Send a backup stream via _stdin_
     * Start restic at different [priorities]({{% relref "/configuration/profiles/priority" %}}) (Priority Class in Windows, *nice* in Unix, and/or _ionice_ in Linux)
-    * Automatically clear [stale locks]({{% relref "/usage/locks" %}})
+    * Automatically clear [stale locks]({{% relref "/configuration/profiles/locks" %}})
 * **Monitoring**
     * Generate a simple [status file]({{% relref "/configuration/monitoring/status" %}}) for monitoring software to ensure backups are running smoothly
     * Export a [prometheus]({{% relref "/configuration/monitoring/prometheus" %}}) file after a backup or send the report to a push gateway
@@ -29,10 +29,10 @@ Here is a non-exhaustive list of what resticprofile offers:
     * Send messages to [HTTP hooks]({{% relref "/configuration/hooks/http_hooks" %}}) before, after a successful or failed job (backup, forget, check, prune, copy)
     * Send resticprofile [logs]({{% relref "/configuration/monitoring/index" %}}) to a syslog server
 * **Checks**
-    * Check for [enough memory]({{% relref "/usage/memory" %}}) before starting a backup
+    * Check for [enough memory]({{% relref "/installation/#note-about-memory" %}}) before starting a backup
     * Avoid scheduling a job when the system is on battery
 * **Misc**
-    * Generate cryptographically secure random keys for a restic [key file]({{% relref "/usage/examples/keyfile" %}})
+    * Generate cryptographically secure random keys for a restic [key file]({{% relref "/usage/keyfile" %}})
     * Automatically [initialize the secondary repository]({{% relref "/configuration/hooks/copy" %}}) using the `copy-chunker-params` flag
     * Prevent the system from [idle sleeping]({{% relref "/configuration/schedules/configuration/#preventing-system-sleep" %}})
     * View help for both restic and resticprofile via the `help` command or `-h` flag
