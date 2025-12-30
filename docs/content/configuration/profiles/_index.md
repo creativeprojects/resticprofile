@@ -18,9 +18,9 @@ JSON is suitable for auto-generated configurations but is not the easiest format
 
 HCL can be useful if you already use a tool from the Hashicorp stack; otherwise, it's another format to learn.
 
-## Configure Your Text Editor
+## Debugging your template and variable expansion
 
-A guide on configurating your text editor can be found [here]({{% relref "editorConfig.md" %}}).
+If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the `--trace` flag.
 
 ## More Information
 

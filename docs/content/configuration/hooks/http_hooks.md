@@ -4,6 +4,8 @@ weight: 22
 tags: [ "monitoring", "healthchecks.io" ]
 ---
 
+{{< toc >}}
+
 ## Send HTTP messages before and after a job
 
 As well as being able to run [shell commands]({{% relref "run_hooks" %}}), you can now send HTTP messages before, after (success or failure) running a restic command.
@@ -38,257 +40,6 @@ The configuration is the same for each of these 4 types of hooks:
 | body-template | No | None | Template file to generate the body (in go template format) |
 
 
-### Example sending monitoring information to healthchecks.io:
-
-{{< tabs groupid="config-with-json" >}}
-{{% tab title="toml" %}}
-
-```toml
-version = "1"
-
-[profile]
-
-  [profile.backup]
-  source = "/source"
-  exclude = [ "/**/.git/" ]
-  schedule = [ "*:00,30" ]
-  schedule-permission = "user"
-
-    # you can have more than one target
-
-    [[profile.backup.send-before]]
-    method = "HEAD"
-    url = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start"
-
-    [[profile.backup.send-before]]
-    method = "HEAD"
-    url = "https://httpstat.us/400"
-
-    # you can have more than one target
-
-    [[profile.backup.send-after]]
-    method = "HEAD"
-    url = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650"
-
-    [[profile.backup.send-after]]
-    method = "HEAD"
-    url = "https://httpstat.us/500"
-
-    [profile.backup.send-after-fail]
-    method = "POST"
-    url = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail"
-    body = "${ERROR}\n\n${ERROR_STDERR}"
-
-      [[profile.backup.send-after-fail.headers]]
-      name = "Content-Type"
-      value = "text/plain; charset=UTF-8"
-
-  [profile.check]
-  schedule = [ "*:15" ]
-
-    [profile.check.send-before]
-    method = "HEAD"
-    url = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start"
-
-    [profile.check.send-after]
-    method = "HEAD"
-    url = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc"
-
-  [profile.retention]
-  after-backup = true
-
-
-```
-
-{{% /tab %}}
-{{% tab title="yaml" %}}
-
-```yaml
-version: "1"
-
-profile:
-
-    backup:
-        source: "/source"
-        exclude:
-          - "/**/.git/"
-        schedule:
-          - "*:00,30"
-        schedule-permission: user
-
-        # you can have more than one target
-        send-before:
-          - method: HEAD
-            url: https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start
-          - method: HEAD
-            url: https://httpstat.us/400
-
-        # you can have more than one target
-        send-after:
-          - method: HEAD
-            url: https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650
-          - method: HEAD
-            url: https://httpstat.us/500
-
-        send-after-fail:
-            method: POST
-            url: https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail
-            body: "${ERROR}\n\n${ERROR_STDERR}"
-            headers:
-              - name: Content-Type
-                value: "text/plain; charset=UTF-8"
-    check:
-        schedule:
-          - "*:15"
-
-        send-before:
-          method: HEAD
-          url: https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start
-
-        send-after:
-          method: HEAD
-          url: https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc
-          
-    retention:
-        after-backup: true
-
-```
-
-{{% /tab %}}
-{{% tab title="hcl" %}}
-
-```hcl
-"profile" {
-
-  "backup" = {
-    "source" = "/source"
-    "exclude" = ["/**/.git/"]
-    "schedule" = ["*:00,30"]
-    "schedule-permission" = "user"
-
-    "send-before" = {
-      "method" = "HEAD"
-      "url" = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start"
-    }
-
-    "send-before" = {
-      "method" = "HEAD"
-      "url" = "https://httpstat.us/400"
-    }
-
-    "send-after" = {
-      "method" = "HEAD"
-      "url" = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650"
-    }
-
-    "send-after" = {
-      "method" = "HEAD"
-      "url" = "https://httpstat.us/500"
-    }
-
-    "send-after-fail" = {
-      "method" = "POST"
-      "url" = "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail"
-      "body" = "${ERROR}\n\n${ERROR_STDERR}"
-      "headers" = {
-        "name" = "Content-Type"
-        "value" = "text/plain; charset=UTF-8"
-      }
-    }
-  }
-
-  "check" = {
-    "schedule" = ["*:15"]
-
-    "send-before" = {
-      "method" = "HEAD"
-      "url" = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start"
-    }
-
-    "send-after" = {
-      "method" = "HEAD"
-      "url" = "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc"
-    }
-  }
-
-  "retention" = {
-    "after-backup" = true
-  }
-}
-```
-
-{{% /tab %}}
-{{% tab title="json" %}}
-
-```json
-{
-  "version": "1",
-  "profile": {
-    "backup": {
-      "source": "/source",
-      "exclude": [
-        "/**/.git/"
-      ],
-      "schedule": [
-        "*:00,30"
-      ],
-      "schedule-permission": "user",
-      "send-before": [
-        {
-          "method": "HEAD",
-          "url": "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/start"
-        },
-        {
-          "method": "HEAD",
-          "url": "https://httpstat.us/400"
-        }
-      ],
-      "send-after": [
-        {
-          "method": "HEAD",
-          "url": "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650"
-        },
-        {
-          "method": "HEAD",
-          "url": "https://httpstat.us/500"
-        }
-      ],
-      "send-after-fail": {
-        "method": "POST",
-        "url": "https://hc-ping.com/831e288e-1293-46f8-ac31-70ea7f875650/fail",
-        "body": "${ERROR}\n\n${ERROR_STDERR}",
-        "headers": [
-          {
-            "name": "Content-Type",
-            "value": "text/plain; charset=UTF-8"
-          }
-        ]
-      }
-    },
-    "check": {
-      "schedule": [
-        "*:15"
-      ],
-      "send-before": {
-        "method": "HEAD",
-        "url": "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc/start"
-      },
-      "send-after": {
-        "method": "HEAD",
-        "url": "https://hc-ping.com/e0f62e41-b75f-450f-8cdd-7f25e466d2dc"
-      }
-    },
-    "retention": {
-      "after-backup": true
-    }
-  }
-}
-```
-
-{{% /tab %}}
-{{< /tabs >}}
-
-
 A few environment variables will be available to construct the url and the body:
 - `PROFILE_NAME`
 - `PROFILE_COMMAND`: backup, check, forget, etc.
@@ -305,35 +56,9 @@ The `send-finally` hooks are also getting the environment of `send-after-fail` w
 
 Failures in any `send-*` are logged but do not influence environment or return code.
 
-### order of `send-*`
+## body-template
 
-Here's the flow of HTTP hooks:
-
-```mermaid
-graph TD
-  LOCK(set resticprofile lock)
-  UNLOCK(delete resticprofile lock)
-  LOCK --> SB
-  SB('send-before') --> RUN
-  RUN(run restic command, or group of commands)
-  RUN -->|Success| SA
-  RUN -->|Error| SAF
-  SA('send-after') --> SF
-  SAF('send-after-fail') --> SF
-  SF('send-finally')
-  SF --> UNLOCK
-```
-
-{{% notice style="warning" title="resticprofile lock" %}}
-The local resticprofile lock is surrounding the whole process. It means that the `run-after-fail` target is not called if the lock cannot be obtained. This is a limitation of the current implementation. 
-{{% /notice %}}
-
-
-### body-template
-
-You can use a standard go template to build the webhook body. It has to be defined in a separate file (otherwise it would clash with the configuration as a go template itself).
-
-The object passed as an argument to the template is:
+Templates pull from the standard go template to build the webhook body. The object passed as an argument to the template is:
 
 - `ProfileName`    **string**
 - `ProfileCommand` **string**
@@ -346,117 +71,7 @@ The type **ErrorContext** is available after an error occurred (otherwise all fi
 - `ExitCode`    **string**
 - `Stderr`      **string**
 
-Here's an example of a body file:
-
-<!-- checkdoc-ignore -->
-```json
-{
-  "profileName": "{{ .ProfileName }}",
-  "profileCommand": "{{ .ProfileCommand }}",
-  "exitCode": "{{ .Error.ExitCode }}"
-}
-```
-
-The field `exitCode` will be blank if no error occured.
-
-And here's an example of a configuration using a body template:
-
-
-{{< tabs groupid="config-with-json" >}}
-{{% tab title="toml" %}}
-
-```toml
-version = "1"
-
-[profile]
-
-  [profile.backup]
-  source = "/source"
-
-    [profile.backup.send-finally]
-    method = "POST"
-    url = "https://my/monitoring.example.com/"
-    body-template = "body-template.json"
-
-      [[profile.backup.send-finally.headers]]
-      name = "Content-Type"
-      value = "application/json"
-
-```
-
-{{% /tab %}}
-{{% tab title="yaml" %}}
-
-```yaml
-version: "1"
-
-profile:
-
-    backup:
-        source: "/source"
-
-        send-finally:
-            method: POST
-            url: https://my/monitoring.example.com/
-            body-template: body-template.json
-            headers:
-              - name: Content-Type
-                value: "application/json"
-
-
-```
-
-{{% /tab %}}
-{{% tab title="hcl" %}}
-
-```hcl
-"profile" {
-
-  "backup" = {
-    "source" = "/source"
-
-    "send-finally" = {
-      "method" = "POST"
-      "url" = "https://my/monitoring.example.com/"
-      "body-template" = "body-template.json"
-      "headers" = {
-        "name" = "Content-Type"
-        "value" = "application/json"
-      }
-    }
-  }
-}
-```
-
-{{% /tab %}}
-{{% tab title="json" %}}
-
-```json
-{
-  "version": "1",
-  "profile": {
-    "backup": {
-      "source": "/source",
-      "send-finally": {
-        "method": "POST",
-        "url": "https://my/monitoring.example.com/",
-        "body-template": "body-template.json",
-        "headers": [
-          {
-            "name": "Content-Type",
-            "value": "application/json"
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-{{% /tab %}}
-{{< /tabs >}}
-
-### Self-signed certificates
+## Self-signed certificates
 
 If your monitoring system is using self-signed certificates, you can import them in resticprofile (and you don't need to rely on the `skip-tls-verification` flag)
 
@@ -529,3 +144,26 @@ global {
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## order of `send-*`
+
+Here's the flow of HTTP hooks:
+
+```mermaid
+graph TD
+  LOCK(set resticprofile lock)
+  UNLOCK(delete resticprofile lock)
+  LOCK --> SB
+  SB('send-before') --> RUN
+  RUN(run restic command, or group of commands)
+  RUN -->|Success| SA
+  RUN -->|Error| SAF
+  SA('send-after') --> SF
+  SAF('send-after-fail') --> SF
+  SF('send-finally')
+  SF --> UNLOCK
+```
+
+{{% notice style="warning" title="resticprofile lock" %}}
+The local resticprofile lock is surrounding the whole process. It means that the `run-after-fail` target is not called if the lock cannot be obtained. This is a limitation of the current implementation. 
+{{% /notice %}}

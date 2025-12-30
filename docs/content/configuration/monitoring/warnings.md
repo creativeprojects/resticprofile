@@ -1,6 +1,6 @@
 ---
 title: "Warnings"
-weight: 30
+weight: 54
 ---
 
 ## Warnings from restic

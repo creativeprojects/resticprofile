@@ -1,7 +1,7 @@
 ---
 title: "Monitoring - Prometheus"
 slug: prometheus
-weight: 10
+weight: 51
 tags: [ "monitoring" ]
 ---
 

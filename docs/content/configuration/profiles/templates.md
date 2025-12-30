@@ -410,10 +410,6 @@ azure-mysql:
 {{< /tabs >}}
 
 
-## Debugging your template and variable expansion
-
-If for some reason you don't understand why resticprofile is not loading your configuration file, you can display the generated configuration after executing the template (and replacing the variables and everything) using the `--trace` flag. We will see it in action in a moment.
-
 ## Limitations of using templates
 
 There's something to be aware of when dealing with templates: at the time the template is compiled, it has no knowledge of what the end configuration should look like: it has no knowledge of profiles for example. Here is a **non-working** example of what I mean:

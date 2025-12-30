@@ -3,6 +3,7 @@ title: "Schedule Configuration"
 weight: 10
 ---
 
+{{< toc >}}
 
 The schedule configuration includes several parameters that can be added to each profile:
 
@@ -81,15 +82,9 @@ profile:
 
 * *empty*: resticprofile will guess based on how it was started (with sudo or as a normal user). The fallback is `system` on Windows and `user_logged_on` on other platforms.
 
-### Changing schedule-permission
-
-To change the permission of a schedule, unschedule the profile first.
-
-Follow this order:
-
-- Unschedule the job first (before updating the permission in the configuration)
-- Change your permission (user to system, or system to user).
-- Schedule your updated profile.
+{{% notice style="warning" %}}
+After changing this setting, you must update the schedule. More information can be found under [Changing Schedule Permissions]({{% relref "/usage/change-schedule" %}})
+{{% /notice %}}
 
 ## schedule-run-level
 
@@ -201,128 +196,16 @@ Note: It works only on Windows and makes sense only with `user_logged_on` permis
 
 Note: The behavior of `conhost.exe` varies between Windows versions. It has been confirmed to work on Windows 11 (24H2) but not on Windows 10 (1607).
 
-## Example 
+## Preventing System Sleep
 
-Here's an example of a scheduling configuration:
+This feature is available for:
+- macOS
+- Windows
+- Linux with systemd ([logind](https://www.freedesktop.org/software/systemd/man/systemd-logind.service.html))
 
-{{< tabs groupid="config-with-json" >}}
-{{% tab title="toml" %}}
+There's a `global` parameter called `prevent-sleep` that you can set to `true`, and resticprofile will prevent your system from idle sleeping.
 
-```toml
-[default]
-  repository = "d:\\backup"
-  password-file = "key"
-
-[self]
-  inherit = "default"
-
-  [self.retention]
-    after-backup = true
-    keep-within = "14d"
-
-  [self.backup]
-    source = "."
-    schedule = [ "Mon..Fri *:00,15,30,45", "Sat,Sun 0,12:00" ]
-    schedule-permission = "user"
-    schedule-lock-wait = "10m"
-
-  [self.prune]
-    schedule = "sun 3:30"
-    schedule-permission = "user"
-    schedule-lock-wait = "1h"
-```
-
-{{% /tab %}}
-{{% tab title="yaml" %}}
-
-```yaml
-default:
-  repository: "d:\\backup"
-  password-file: key
-
-self:
-  inherit: default
-  retention:
-    after-backup: true
-    keep-within: 14d
-  backup:
-    source: "."
-    schedule:
-      - "Mon..Fri *:00,15,30,45" # every 15 minutes on weekdays
-      - "Sat,Sun 0,12:00"        # twice a day on week-ends
-    schedule-permission: user
-    schedule-lock-wait: 10m
-  prune:
-    schedule: "sun 3:30"
-    schedule-permission: user
-    schedule-lock-wait: 1h
-```
-
-{{% /tab %}}
-{{% tab title="hcl" %}}
-
-```hcl
-"default" = {
-  "repository" = "d:\\backup"
-  "password-file" = "key"
-}
-
-"self" = {
-  "inherit" = "default"
-
-  "retention" = {
-    "after-backup" = true
-    "keep-within" = "14d"
-  }
-
-  "backup" = {
-    "source" = "."
-    "schedule" = ["Mon..Fri *:00,15,30,45", "Sat,Sun 0,12:00"]
-    "schedule-permission" = "user"
-    "schedule-lock-wait" = "10m"
-  }
-
-  "prune" = {
-    "schedule" = "sun 3:30"
-    "schedule-permission" = "user"
-    "schedule-lock-wait" = "1h"
-  }
-}
-```
-
-{{% /tab %}}
-{{% tab title="json" %}}
-
-```json
-{
-  "default": {
-    "repository": "d:\\backup",
-    "password-file": "key"
-  },
-  "self": {
-    "inherit": "default",
-    "retention": {
-      "after-backup": true,
-      "keep-within": "14d"
-    },
-    "backup": {
-      "source": ".",
-      "schedule": [
-        "Mon..Fri *:00,15,30,45",
-        "Sat,Sun 0,12:00"
-      ],
-      "schedule-permission": "user",
-      "schedule-lock-wait": "10m"
-    },
-    "prune": {
-      "schedule": "sun 3:30",
-      "schedule-permission": "user",
-      "schedule-lock-wait": "1h"
-    }
-  }
-}
-```
-
-{{% /tab %}}
-{{< /tabs >}}
+Please note:
+- it will not prevent a sleep if the system is running on batteries
+- it will not prevent a sleep triggered by a user action: using the sleep button, closing the laptop lid, etc.
 

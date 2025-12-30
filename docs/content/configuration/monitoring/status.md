@@ -1,7 +1,7 @@
 ---
 title: "Monitoring - Status file"
 slug: status
-weight: 11
+weight: 52
 tags: [ "monitoring" ]
 aliases:
   - /status

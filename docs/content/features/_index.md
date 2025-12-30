@@ -34,5 +34,5 @@ Here is a non-exhaustive list of what resticprofile offers:
 * **Misc**
     * Generate cryptographically secure random keys for a restic [key file]({{% relref "/usage/examples/keyfile" %}})
     * Automatically [initialize the secondary repository]({{% relref "/configuration/hooks/copy" %}}) using the `copy-chunker-params` flag
-    * Prevent the system from [idle sleeping]({{% relref "/configuration/schedules/sleep" %}})
+    * Prevent the system from [idle sleeping]({{% relref "/configuration/schedules/configuration/#preventing-system-sleep" %}})
     * View help for both restic and resticprofile via the `help` command or `-h` flag

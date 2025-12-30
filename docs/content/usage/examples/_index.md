@@ -1,61 +1,107 @@
 ---
-title: Examples
-weight: 20
+title: "Examples"
+weight: 40
+alwaysopen: false
 ---
 
-Here are a few examples how to run resticprofile (using the main example configuration file)
-
-### See all snapshots of your `default` profile:
+So let's say you normally use this simple command:
 
 ```shell
-resticprofile
+restic --repo "local:/backup" --password-file "password.txt" --verbose backup /home
 ```
 
-### See all available profiles in your configuration file (and the restic commands where some flags are defined):
+For resticprofile to generate this command automatically for you, here's the configuration file:
+
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
+
+```toml
+# indentation is not needed but it makes it easier to read ;)
+#
+version = "1"
+
+[default]
+  repository = "local:/backup"
+  password-file = "password.txt"
+
+  [default.backup]
+    verbose = true
+    source = [ "/home" ]
+```
+
+{{% /tab %}}
+{{% tab title="yaml" %}}
+
+```yaml
+version: "1"
+
+default:
+  repository: "local:/backup"
+  password-file: "password.txt"
+
+  backup:
+    verbose: true
+    source:
+    - "/home"
+```
+
+{{% /tab %}}
+{{% tab title="hcl" %}}
+
+```hcl
+default {
+    repository = "local:/backup"
+    password-file = "password.txt"
+
+    backup = {
+        verbose = true
+        source = [ "/home" ]
+    }
+}
+```
+
+{{% /tab %}}
+{{% tab title="json" %}}
+
+```json
+{
+  "version": "1",
+  "default": {
+    "repository": "local:/backup",
+    "password-file": "password.txt",
+    "backup": {
+      "verbose": true,
+      "source": [
+        "/home"
+      ]
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+
+You may have noticed the `source` flag is accepting an array of values (inside brackets in TOML, list of values in YAML)
+
+Now, assuming this configuration file is named `profiles.conf` in the current folder (it's the default config file name), you can simply run
 
 ```shell
-resticprofile profiles
-
-Profiles available (name, sections, description):
-  root:           (backup, copy, forget, retention)
-  self:           (backup, check, copy, forget, retention)
-  src:            (backup, copy, retention, snapshots)
-
-Groups available (name, profiles, description):
-  full-backup:  [root, src]
-
+resticprofile backup
 ```
 
-### Backup root & src profiles (using _full-backup_ group shown earlier)
+and resticprofile will do its magic and generate the command line for you.
+
+If you have any doubt on what it's running, you can try a `--dry-run`:
 
 ```shell
-resticprofile --name "full-backup" backup
-```
-or using the alternative syntax:
-
-```shell
-resticprofile full-backup.backup
+resticprofile --dry-run backup
+2022/05/18 17:14:07 profile 'default': starting 'backup'
+2022/05/18 17:14:07 dry-run: /usr/bin/restic backup --password-file password.txt --repo local:/backup --verbose /home
+2022/05/18 17:14:07 profile 'default': finished 'backup'
 ```
 
-Assuming the _stdin_ profile from the configuration file shown before, the command to send a mysqldump to the backup is as simple as:
+## More Examples
 
-```shell
-mysqldump --all-databases --order-by-primary | resticprofile --name stdin backup
-```
-or using the alternative syntax:
-
-```shell
-mysqldump --all-databases --order-by-primary | resticprofile stdin.backup
-```
-
-### Mount the default profile (_default_) in /mnt/restic:
-
-```shell
-resticprofile mount /mnt/restic
-```
-
-### Display quick help
-
-```shell
-resticprofile --help
-```
+{{% children sort="weight" depth="2" %}}

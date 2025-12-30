@@ -3,6 +3,8 @@ title: "Schedule Commands"
 weight: 20
 ---
 
+{{< toc >}}
+
 resticprofile supports the following commands:  
 - **schedule**  
 - **unschedule**  
@@ -57,7 +59,7 @@ Starting with `v0.30.0`, the behavior of the `unschedule` command changed:
 
 Print the status of all installed schedules for the selected profiles.
 
-The `status` command output varies by OS. See the [examples]({{% relref "/configuration/schedules/examples" %}}) for details.
+The `status` command output varies by OS. See the [examples]({{% relref "/usage/examples/scheduling-examples" %}}) for details.
 
 ### run-schedule command
 

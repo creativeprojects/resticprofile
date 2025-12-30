@@ -4,6 +4,8 @@ weight: 10
 alwaysopen: false
 ---
 
+{{< toc >}}
+
 ## Prerequisite
 
 Unless you're using the **resticprofile** [Docker image]({{% relref "/installation/docker/index.html" %}}), you need to have **restic** [installed on your machine](https://restic.readthedocs.io/en/stable/).
@@ -331,7 +333,3 @@ Flags:
 [...]
 
 ```
-
-## Next
-
-Let's have a look at some [examples]({{% relref "/configuration/examples" %}})

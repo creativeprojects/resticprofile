@@ -4,6 +4,8 @@ weight: 20
 tags: [ "monitoring" ]
 ---
 
+{{< toc >}}
+
 ## Run commands before, after success or after failure
 
 resticprofile has 2 places where you can run commands around restic:
@@ -133,7 +135,7 @@ snapshot 3949d2fb saved
 == run-finally from profile documents after command backup
 ```
 
-### Order of `run-*` during a backup
+## Order of `run-*` during a backup
 
 The commands will be running in this order **during a backup**:
 - `run-before` from the profile - if error, go to `run-after-fail`
@@ -204,7 +206,7 @@ flowchart TB
 The local resticprofile lock is surrounding the whole process. It means that the `run-after-fail` target is not called if the lock cannot be obtained. This is a limitation of the current implementation. 
 {{% /notice %}}
 
-### Passing environment variables
+## Passing environment variables
 
 Environment variables can be adjusted and passed between shell commands & restic by writing one or more `VARIABLE=VALUE` into an `env-file` that is configured within the current profile.
 To simplify this for shell commands, the [template]({{% relref "templates" %}}) function `{{env}}` can be used to get a temporary dotenv file that is automatically appended to the `env-file` list of the current profile and reloaded whenever modified.
