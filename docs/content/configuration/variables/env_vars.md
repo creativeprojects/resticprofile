@@ -1,7 +1,29 @@
 ---
-title: Environment Variables
+title: Variable Reference
 weight: 7
 ---
+
+## Pre-defined Variables
+
+
+| Variable          | Type                                             | Description                                                      |
+|-------------------|--------------------------------------------------|------------------------------------------------------------------|
+| **.Profile.Name** | string                                           | Profile name                                                     |
+| **.Now**          | [time.Time](https://golang.org/pkg/time/) object | Now object: see explanation bellow                               |
+| **.StartupDir**   | string                                           | Current directory at the time resticprofile was started          |
+| **.CurrentDir**   | string                                           | Current directory at the time a profile is executed              |
+| **.ConfigDir**    | string                                           | Directory where the configuration was loaded from                |
+| **.TempDir**      | string                                           | OS temporary directory (might not exist)                         |
+| **.BinaryDir**    | string                                           | Directory where resticprofile was started from (since `v0.18.0`) |
+| **.OS**           | string                                           | GOOS name: "windows", "linux", "darwin", etc. (since `v0.21.0`)  |
+| **.Arch**         | string                                           | GOARCH name: "386", "amd64", "arm64", etc. (since `v0.21.0`)     |
+| **.Hostname**     | string                                           | Host name                                                        |
+| **.Env.{NAME}**   | string                                           | Environment variable `${NAME}` (see below)                       |
+
+
+## Environment Variables
+
+Example: `{{ .Env.HOME }}` will be replaced by your home directory (on unixes). The equivalent on Windows would be `{{ .Env.USERPROFILE }}`.
 
 Most flags for resticprofile can be set using environment variables. If both are specified, command line flags take the precedence.
 

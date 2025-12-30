@@ -81,7 +81,7 @@ Included files cannot include nested files. Specifying `includes` inside an incl
 
 ## Configuration Merging
 
-Loading a configuration file involves loading the physical file from disk and applying all [variables]({{% relref "/configuration/profiles/variables" %}}) and [templates]({{% relref "/configuration/profiles/templates" %}}) prior to parsing the file in a supported format `hcl`, `json`, `toml` and `yaml`. This means [variables]({{% relref "/configuration/profiles/variables" %}}) and [templates]({{% relref "/configuration/profiles/templates" %}}) must create valid configuration markup that can be parsed or loading will fail.
+Loading a configuration file involves loading the physical file from disk and applying all [variables]({{% relref "/configuration/variables" %}}) and [templates]({{% relref "/configuration/variables/templates" %}}) prior to parsing the file in a supported format `hcl`, `json`, `toml` and `yaml`. This means [variables]({{% relref "/configuration/variables" %}}) and [templates]({{% relref "/configuration/variables/templates" %}}) must create valid configuration markup that can be parsed or loading will fail.
 
 Configuration files are loaded and applied in a fixed order:
 

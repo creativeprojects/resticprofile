@@ -1,8 +1,8 @@
 ---
 archetype: "chapter"
-pre: "<b>3. </b>"
+pre: "<b>2. </b>"
 title: "Using resticprofile"
-weight: 3
+weight: 2
 ---
 
 A command is either a restic command or a resticprofile own command.

@@ -6,7 +6,7 @@ alwaysopen: false
 
 By default **resticprofile** will display all logs (from itself and **restic**) to the console.
 
-You can redirect the logs to a local file, [a temporary file]({{< relref "/configuration/monitoring/tempfilelogging" >}}) or a syslog server.
+You can redirect the logs to a local file, [a temporary file]({{% relref "/configuration/monitoring/tempfilelogging" %}}) or a syslog server.
 
 {{< toc >}}
 

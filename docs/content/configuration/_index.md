@@ -1,8 +1,8 @@
 +++
 archetype = "chapter"
-pre = "<b>2. </b>"
+pre = "<b>3. </b>"
 title = "Configuration file"
-weight = 2
+weight = 3
 +++
 
 The configuration file supports various formats:

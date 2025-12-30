@@ -3,7 +3,7 @@ title: "Monitoring - Temporary File"
 weight: 53
 ---
 
-This can be done by using the [template]({{% relref "/configuration/profiles/templates" %}}) function `tempFile`.
+This can be done by using the [template]({{% relref "/configuration/variables/templates" %}}) function `tempFile`.
 
 This is to cover a special case when you want to upload the logs one by one to a remote location in a `run-finally` or a `run-after-fail` target.
 
