@@ -17,4 +17,4 @@ docker run -it --rm -v $PWD/examples:/resticprofile ghcr.io/creativeprojects/res
 
 Resticprofile's docker images also include restic and rclone.
 
-For further reference, consult the [docker reference page](/reference/docker).
+For further reference, consult the [docker reference page]({{% relref "/reference/docker" %}}).

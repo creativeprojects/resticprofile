@@ -15,7 +15,7 @@ Generally, you don't need to worry about this: resticprofile will restart itself
 
 ### resticprofile is blocked from restarting in elevated mode
 
-![Unwanted software]({{< absolute "schedules/task_scheduler/unwanted_my_ass.png" nohtml >}})
+![Unwanted software](./unwanted_my_ass.png)
 
 I can't prevent this without buying a developer certificate. If you know any free or cheap certificate for open-source software, please let me know.
 
@@ -26,11 +26,11 @@ You'll need to start an elevated shell yourself.
 - Right-click on `Command Prompt`, `Windows Terminal`, or `Windows Powershell` (choose your favorite)
 - Click on `Run as administrator`
 
-![Start elevated command prompt]({{< absolute "schedules/task_scheduler/runas.png" nohtml >}})
+![Start elevated command prompt](./runas.png)
 
 It's easy to spot a terminal window opened with Administrator privileges:
 
-![Administrator prefix]({{< absolute "schedules/task_scheduler/administrator.png" nohtml >}})
+![Administrator prefix](./administrator.png)
 
 > [!IMPORTANT]
 > Running the schedule command might cause Windows to delete _resticprofile.exe_, treating it as a threat.

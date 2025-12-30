@@ -72,7 +72,7 @@ Setting the profile option `schedule-after-network-online: true` ensures schedul
 
 ## systemd drop-in files
 
-You can automatically populate `*.conf.d` [drop-in files](https://www.freedesktop.org/software/systemd/man/latest/systemd-system.conf.html#main-conf) for profiles, allowing easy overrides of generated services without [modifying service templates]({{% relref "./#how-to-change-the-default-systemd-unit-and-timer-file-using-a-template" %}}). For example:
+You can automatically populate `*.conf.d` [drop-in files](https://www.freedesktop.org/software/systemd/man/latest/systemd-system.conf.html#main-conf) for profiles, allowing easy overrides of generated services without [modifying service templates]({{% relref "#how-to-change-the-default-systemd-unit-and-timer-file-using-a-template" %}}). For example:
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}

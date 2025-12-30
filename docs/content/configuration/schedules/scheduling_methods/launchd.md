@@ -19,7 +19,7 @@ You can wait for the profile to start or start it manually. To start a backup pr
 
 Once you grant permission, the profile will run normally until you update resticprofile or restic. This is a macOS limitation.
 
-![access files popup window]({{< absolute "schedules/removable_volume.png" nohtml >}})
+![access files popup window]({{< absolute "configuration/schedules/removable_volume.png" nohtml >}})
 
 ## System permission
 

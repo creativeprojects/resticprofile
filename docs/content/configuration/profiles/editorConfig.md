@@ -12,10 +12,10 @@ In Visual Studio Code, install an extension that supports completion and syntax 
 
 For example, install the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension:
 
-![TOML extension]({{< absolute "configuration/getting_started/TOML.png" nohtml >}})
+![TOML extension]({{< absolute "configuration/profiles/TOML.png" nohtml >}})
 
 ### YAML
 
 For YAML, install an extension like the one [provided by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) in Visual Studio Code to understand the shape of your configuration file.
 
-![YAML extension]({{< absolute "configuration/getting_started/YAML.png" nohtml >}})
+![YAML extension]({{< absolute "configuration/profiles/YAML.png" nohtml >}})
