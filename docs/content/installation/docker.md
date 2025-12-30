@@ -17,4 +17,26 @@ docker run -it --rm -v $PWD/examples:/resticprofile ghcr.io/creativeprojects/res
 
 Resticprofile's docker images also include restic and rclone.
 
-For further reference, consult the [docker reference page]({{% relref "/reference/docker" %}}).
+{{< toc >}}
+
+## Configuration
+
+By default, the resticprofile container starts at `/resticprofile`. So you can feed a configuration this way:
+
+```shell
+docker run -it --rm -v $PWD/examples:/resticprofile ghcr.io/creativeprojects/resticprofile
+```
+
+## List profiles
+
+```shell
+docker run -it --rm -v $PWD/examples:/resticprofile ghcr.io/creativeprojects/resticprofile profiles
+```
+
+## Container host name
+
+To set a specific hostname, use the `-h` or `--hostname` flag with `docker run`:
+
+```shell
+docker run -it --rm -v $PWD:/resticprofile -h my-hostname ghcr.io/creativeprojects/resticprofile -n profile backup
+```
