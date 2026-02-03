@@ -183,9 +183,14 @@ func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
 
 func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *darwin.LaunchdJob {
 	name := getJobName(job.ProfileName, job.CommandName)
-	// we always set the log file in the job settings as a default
-	// if changed in the configuration via schedule-log the standard output will be empty anyway
-	logfile := name + ".log"
+	// Only set the log file when schedule-log is not configured.
+	// When schedule-log is set, resticprofile handles logging internally,
+	// so we omit StandardOutPath/StandardErrorPath from the plist to avoid
+	// creating empty log files (the plist fields have omitempty tags).
+	var logfile string
+	if job.Log == "" {
+		logfile = name + ".log"
+	}
 
 	// Format schedule env, adding PATH if not yet provided by the schedule config
 	env := util.NewDefaultEnvironment(job.Environment...)
