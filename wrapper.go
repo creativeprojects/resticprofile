@@ -646,7 +646,7 @@ func (r *resticWrapper) runShellCommands(commands []string, commandsType, comman
 
 // runFinalShellCommands runs all shell commands defined in "run-finally".
 func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
-	var commands []string
+	commands := make([]string, 0, 10)
 
 	profileCommands, sectionCommands := r.profile.GetRunShellCommandsSections(command)
 	commands = append(commands, sectionCommands.RunFinally...)

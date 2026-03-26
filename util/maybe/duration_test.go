@@ -67,7 +67,7 @@ func TestDurationDecoder(t *testing.T) {
 
 			decoded, err := decoder(from, to, fixture.source)
 			if fe, ok := fixture.expected.(error); ok {
-				assert.Equal(t, fe, err)
+				assert.Equal(t, fe.Error(), err.Error())
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, fixture.expected, decoded)

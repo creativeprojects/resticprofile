@@ -51,7 +51,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: '~> v2'
           args: release --clean --config .goreleaser-docker-only.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

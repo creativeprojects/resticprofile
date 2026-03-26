@@ -155,7 +155,7 @@ func TestReadingLaunchdScheduled(t *testing.T) {
 	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 	handler.fs = afero.NewMemMapFs()
 
-	expectedJobs := []Config{}
+	expectedJobs := make([]Config, 0, len(testCases))
 	for _, testCase := range testCases {
 		expectedJobs = append(expectedJobs, testCase.job)
 

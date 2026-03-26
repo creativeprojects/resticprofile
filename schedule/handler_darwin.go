@@ -166,7 +166,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 }
 
 func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
-	jobs := make([]Config, 0)
+	jobs := make([]Config, 0, 10)
 	if profileName == "" {
 		profileName = "*"
 	} else {
