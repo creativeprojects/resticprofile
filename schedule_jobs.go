@@ -240,5 +240,6 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		SystemdDropInFiles: sched.SystemdDropInFiles,
 		HideWindow:         sched.HideWindow.IsTrue(),
 		Log:                sched.Log,
+		StartWhenAvailable: sched.StartWhenAvailable.IsTrue(),
 	}
 }

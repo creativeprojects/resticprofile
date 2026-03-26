@@ -26,6 +26,7 @@ type Config struct {
 	SystemdDropInFiles []string
 	Log                string
 	HideWindow         bool
+	StartWhenAvailable bool
 	removeOnly         bool
 }
 

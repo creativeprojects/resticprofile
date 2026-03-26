@@ -201,6 +201,14 @@ Note: It works only on Windows and makes sense only with `user_logged_on` permis
 
 Note: The behavior of `conhost.exe` varies between Windows versions. It has been confirmed to work on Windows 11 (24H2) but not on Windows 10 (1607).
 
+## schedule-start-when-available
+
+When set to `true`, Windows Task Scheduler will start the task as soon as possible after a scheduled start is missed. This is useful when the computer might be asleep or off during the scheduled time.
+
+For example, if a backup is scheduled for 3:00 AM but the computer is off, enabling this option will run the backup when the computer is next available.
+
+Note: This option only works on Windows.
+
 ## Example 
 
 Here's an example of a scheduling configuration:

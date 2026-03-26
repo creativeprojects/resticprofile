@@ -326,6 +326,7 @@ type ScheduleBaseSection struct {
 	ScheduleIgnoreOnBatteryLessThan int            `mapstructure:"schedule-ignore-on-battery-less-than" show:"noshow" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	ScheduleAfterNetworkOnline      maybe.Bool     `mapstructure:"schedule-after-network-online" show:"noshow" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
 	ScheduleHideWindow              maybe.Bool     `mapstructure:"schedule-hide-window" show:"noshow" default:"false" description:"Hide schedule window when running in foreground (Windows only)"`
+	ScheduleStartWhenAvailable      maybe.Bool     `mapstructure:"schedule-start-when-available" show:"noshow" default:"false" description:"Start the task as soon as possible after a scheduled start is missed (Windows only)"`
 }
 
 func (s *ScheduleBaseSection) setRootPath(_ *Profile, _ string) {

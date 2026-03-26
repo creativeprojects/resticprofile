@@ -184,6 +184,7 @@ func getTaskPath(profileName, commandName string) string {
 func createTaskDefinition(config *Config, schedules []*calendar.Event) Task {
 	task := NewTask()
 	task.RegistrationInfo.Description = config.JobDescription
+	task.Settings.StartWhenAvailable = config.StartWhenAvailable
 	task.AddExecAction(ExecAction{
 		Command:          config.Command,
 		Arguments:        config.Arguments,

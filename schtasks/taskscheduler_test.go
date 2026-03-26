@@ -287,3 +287,57 @@ func TestRunLevelOption(t *testing.T) {
 	// see related: https://github.com/creativeprojects/resticprofile/issues/545
 	// TODO: implement test when possible
 }
+
+func TestStartWhenAvailableOption(t *testing.T) {
+	config := &Config{
+		ProfileName:        "test-start-when-available",
+		CommandName:        "backup",
+		Command:            "echo",
+		Arguments:          "hello",
+		WorkingDirectory:   "C:\\",
+		JobDescription:     "test StartWhenAvailable option",
+		StartWhenAvailable: true,
+	}
+
+	event := calendar.NewEvent()
+	err := event.Parse("2099-01-02 03:04") // far future, will never trigger
+	require.NoError(t, err)
+	schedules := []*calendar.Event{event}
+
+	file, err := os.CreateTemp(t.TempDir(), "*.xml")
+	require.NoError(t, err)
+	defer file.Close()
+
+	taskPath := getTaskPath(config.ProfileName, config.CommandName)
+	sourceTask := createTaskDefinition(config, schedules)
+	sourceTask.RegistrationInfo.URI = taskPath
+
+	// Verify StartWhenAvailable is set in source task
+	assert.True(t, sourceTask.Settings.StartWhenAvailable)
+
+	err = createTaskFile(sourceTask, file)
+	require.NoError(t, err)
+	file.Close()
+
+	result, err := createTask(taskPath, file.Name(), "", "")
+	t.Log(result)
+	require.NoError(t, err)
+	defer func() {
+		_, _ = deleteTask(taskPath)
+	}()
+
+	// Export and verify the task was created with StartWhenAvailable
+	taskXML, err := exportTaskDefinition(taskPath)
+	require.NoError(t, err)
+
+	buffer := bytes.NewBuffer(taskXML)
+	decoder := xml.NewDecoder(buffer)
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		return input, nil
+	}
+	readTask := &Task{}
+	err = decoder.Decode(&readTask)
+	require.NoError(t, err)
+
+	assert.True(t, readTask.Settings.StartWhenAvailable, "StartWhenAvailable should be true in the created task")
+}

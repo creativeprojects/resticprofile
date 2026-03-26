@@ -78,3 +78,31 @@ func TestHideWindowOption(t *testing.T) {
 	assert.Equal(t, scheduledJobs[0].Command, "conhost.exe")
 	assert.Equal(t, scheduledJobs[0].Arguments.String(), "--headless echo hello there")
 }
+
+func TestStartWhenAvailableOption(t *testing.T) {
+	job := Config{
+		ProfileName:        "TestStartWhenAvailableOption",
+		CommandName:        "backup",
+		Command:            "echo",
+		Arguments:          NewCommandArguments([]string{"hello", "there"}),
+		WorkingDirectory:   "C:\\",
+		JobDescription:     "TestStartWhenAvailableOption",
+		StartWhenAvailable: true,
+	}
+
+	handler := NewHandler(SchedulerWindows{}).(*HandlerWindows)
+
+	event := calendar.NewEvent()
+	err := event.Parse("2020-01-02 03:04") // will never get triggered
+	require.NoError(t, err)
+
+	err = handler.CreateJob(&job, []*calendar.Event{event}, PermissionUserLoggedOn)
+	assert.NoError(t, err)
+	defer func() {
+		_ = handler.RemoveJob(&job, PermissionUserLoggedOn)
+	}()
+
+	scheduledJobs, err := handler.Scheduled(job.ProfileName)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(scheduledJobs))
+}
