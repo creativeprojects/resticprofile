@@ -189,7 +189,7 @@ func TestCompleter(t *testing.T) {
 					prefix := fmt.Sprintf("%s.", profile)
 					completions := completer.Complete(newArgs("--config", DevConfig, prefix))
 
-					var expected []string
+					expected := make([]string, 0, len(commands)+1)
 					for _, commandName := range commands {
 						expected = append(expected, prefix+commandName)
 					}

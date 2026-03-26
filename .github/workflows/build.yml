@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go_version: ['1.25']
+        go_version: ['1.26']
         os: [ubuntu-latest, windows-latest, macos-latest]
     env:
       OS: ${{ matrix.os }}
@@ -39,7 +39,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.5.0
+          version: v2.9.0
           args: --timeout=30m
 
       - name: Test
@@ -51,10 +51,10 @@ jobs:
         run: make build
 
       - name: Code coverage with codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           env_vars: OS,GO
-          file: ./coverage.out
+          files: ./coverage.out
           flags: unittests
           fail_ci_if_error: false
           verbose: true

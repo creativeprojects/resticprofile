@@ -359,8 +359,8 @@ func convertMonths(input []int) Months {
 func convertDaysOfMonth(input []int) DaysOfMonth {
 	if len(input) == 0 {
 		all := make([]int, 31)
-		for i := 1; i <= 31; i++ {
-			all[i-1] = i
+		for i := 0; i <= 30; i++ {
+			all[i] = i + 1
 		}
 		return DaysOfMonth{all}
 	}

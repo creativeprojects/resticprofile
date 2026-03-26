@@ -86,7 +86,7 @@ func TestReadingSystemdScheduled(t *testing.T) {
 
 	handler := NewHandler(SchedulerSystemd{}).(*HandlerSystemd)
 
-	expectedJobs := []Config{}
+	expectedJobs := make([]Config, 0, len(testCases))
 	for _, testCase := range testCases {
 		job := testCase.job
 		err := handler.CreateJob(&job, testCase.schedules, PermissionFromConfig(schedulePermission))

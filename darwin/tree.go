@@ -31,7 +31,7 @@ func generateTreeOfSchedules(event *calendar.Event) []*treeElement {
 		}
 		subTree := getElements(values, currentTypeValue)
 		if len(*currentElements) > 0 {
-			newCurrentElements := make([]*treeElement, 0)
+			newCurrentElements := make([]*treeElement, 0, len(*currentElements)*len(subTree))
 			for _, element := range *currentElements {
 				// add each new element to the child of all the current elements
 				element.subElements = make([]*treeElement, len(subTree))
