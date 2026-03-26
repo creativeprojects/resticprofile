@@ -55,7 +55,7 @@ func NewTask() Task {
 		},
 		Settings: Settings{
 			Compatibility:              TaskCompatibilityAT,
-			DisallowStartIfOnBatteries: true,
+			DisallowStartIfOnBatteries: false,
 			IdleSettings: IdleSettings{
 				Duration:      period.NewHMS(0, 10, 0), // PT10M
 				WaitTimeout:   period.NewHMS(1, 0, 0),  // PT1H
