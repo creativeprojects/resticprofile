@@ -77,13 +77,14 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 	}
 
 	jobConfig := &schtasks.Config{
-		ProfileName:      job.ProfileName,
-		CommandName:      job.CommandName,
-		Command:          command,
-		Arguments:        arguments.String(),
-		WorkingDirectory: job.WorkingDirectory,
-		JobDescription:   job.JobDescription,
-		RunLevel:         job.RunLevel,
+		ProfileName:        job.ProfileName,
+		CommandName:        job.CommandName,
+		Command:            command,
+		Arguments:          arguments.String(),
+		WorkingDirectory:   job.WorkingDirectory,
+		JobDescription:     job.JobDescription,
+		RunLevel:           job.RunLevel,
+		StartWhenAvailable: job.StartWhenAvailable,
 	}
 	err := schtasks.Create(jobConfig, schedules, perm)
 	if err != nil {

@@ -25,6 +25,7 @@ type Config struct {
 	AfterNetworkOnline bool
 	SystemdDropInFiles []string
 	HideWindow         bool
+	StartWhenAvailable bool
 	removeOnly         bool
 }
 

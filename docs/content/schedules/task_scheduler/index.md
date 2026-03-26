@@ -34,3 +34,16 @@ It's easy to spot a terminal window opened with Administrator privileges:
 
 > [!IMPORTANT]
 > Running the schedule command might cause Windows to delete _resticprofile.exe_, treating it as a threat.
+
+## Start when available
+
+If your computer might be asleep or off during a scheduled backup time, you can enable `schedule-start-when-available` to run the task as soon as the computer becomes available.
+
+```yaml
+profile:
+  backup:
+    schedule: "03:00"
+    schedule-start-when-available: true
+```
+
+This sets the "Start the task as soon as possible after a scheduled start is missed" option in Windows Task Scheduler.

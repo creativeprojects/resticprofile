@@ -47,6 +47,7 @@ type ScheduleBaseConfig struct {
 	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
 	SystemdDropInFiles      []string       `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	HideWindow              maybe.Bool     `mapstructure:"hide-window" default:"false" description:"Hide schedule window when running in foreground (Windows only)"`
+	StartWhenAvailable      maybe.Bool     `mapstructure:"start-when-available" default:"false" description:"Start the task as soon as possible after a scheduled start is missed (Windows only)"`
 }
 
 // scheduleBaseConfigDefaults declares built-in scheduling defaults
@@ -100,6 +101,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	if !s.HideWindow.HasValue() {
 		s.HideWindow = defaults.HideWindow
 	}
+	if !s.StartWhenAvailable.HasValue() {
+		s.StartWhenAvailable = defaults.StartWhenAvailable
+	}
 }
 
 func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
@@ -116,6 +120,7 @@ func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
 	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
 	s.HideWindow = section.ScheduleHideWindow
+	s.StartWhenAvailable = section.ScheduleStartWhenAvailable
 	// re-init with defaults
 	s.init(&defaults)
 }
