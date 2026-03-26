@@ -10,6 +10,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDurationDecoder(t *testing.T) {
@@ -67,6 +68,7 @@ func TestDurationDecoder(t *testing.T) {
 
 			decoded, err := decoder(from, to, fixture.source)
 			if fe, ok := fixture.expected.(error); ok {
+				require.Error(t, err)
 				assert.Equal(t, fe.Error(), err.Error())
 			} else {
 				assert.NoError(t, err)
