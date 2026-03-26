@@ -94,7 +94,7 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --tag v3.5.5 --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" vektra/mockery --tag v3.7.0 --upgrade-only --to '$(GOBIN)'
 
 $(GOBIN)/golangci-lint-v2: verify $(GOBIN)/eget
 	@echo "[*] $@"
