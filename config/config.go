@@ -421,11 +421,6 @@ func (c *Config) GetConfigFile() string {
 	return c.configFile
 }
 
-// Get the value from the key
-func (c *Config) Get(key ...string) any {
-	return c.viper.Get(c.flatKey(key...))
-}
-
 // HasProfile returns true if the profile exists in the configuration
 func (c *Config) HasProfile(profileKey string) bool {
 	return c.IsSet(c.getProfilePath(profileKey))
