@@ -50,7 +50,7 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Code coverage with codecov
+      - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
           env_vars: OS,GO
@@ -60,10 +60,11 @@ jobs:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # - name: Upload test results to Codecov
-      #   if: ${{ !cancelled() }}
-      #   uses: codecov/codecov-action@v6
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     report_type: test_results
-      #     files: ./unit-tests.xml
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v6
+        with:
+          env_vars: OS,GO
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: ./unit-tests.xml

@@ -9,7 +9,7 @@ import (
 
 // getStack returns a simplified stack trace
 func getStack(skip int) string {
-	var stack strings.Builder
+	stack := new(strings.Builder)
 	pc := make([]uintptr, 20)        // stack of 20 traces max
 	n := runtime.Callers(skip+1, pc) // skip call to runtime.Callers
 	if n == 0 {
@@ -29,7 +29,7 @@ func getStack(skip int) string {
 			break
 		}
 
-		stack.WriteString(fmt.Sprintf("%s\n\t%s:%d\n", frame.Function, frame.File, frame.Line))
+		fmt.Fprintf(stack, "%s\n\t%s:%d\n", frame.Function, frame.File, frame.Line)
 
 		if !more {
 			break
