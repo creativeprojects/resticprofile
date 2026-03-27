@@ -6,26 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCopyRef(t *testing.T) {
-	num := new(1.1)
-	str := new("1")
-	b := new(true)
-
-	assert.NotNil(t, num)
-	assert.Equal(t, 1.1, *num)
-	assert.NotNil(t, str)
-	assert.Equal(t, "1", *str)
-	assert.NotNil(t, b)
-	assert.Equal(t, true, *b)
-
-	// check it is a copy
-	sl := []string{"a"}
-	slp := new(sl)
-	*slp = append(*slp, "b")
-	assert.Equal(t, []string{"a"}, sl)
-	assert.Equal(t, []string{"a", "b"}, *slp)
-}
-
 func TestNilHelpers(t *testing.T) {
 	num := new(1.1)
 	str := new("1")

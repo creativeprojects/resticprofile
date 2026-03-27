@@ -2,9 +2,11 @@
 
 package darwin
 
-import "maps"
+import (
+	"maps"
 
-import "github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/calendar"
+)
 
 const (
 	intervalMinute  = "Minute"
