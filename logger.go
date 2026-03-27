@@ -106,7 +106,10 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 				logfile = logfile[1:]
 			}
 			logfile = filepath.Join(tempDir, logfile)
-			_ = os.MkdirAll(filepath.Dir(logfile), 0755)
+			err = os.MkdirAll(filepath.Dir(logfile), 0755) //nolint:gosec
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to create log file directory: %w", err)
+			}
 		}
 	}
 
@@ -228,7 +231,7 @@ func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) 
 			return
 		}
 		if file == nil {
-			file, lastError = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+			file, lastError = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //nolint:gosec
 		}
 		if file != nil {
 			var written int

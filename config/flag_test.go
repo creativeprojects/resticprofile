@@ -239,7 +239,7 @@ func TestTryAddEmptyArg(t *testing.T) {
 
 			t.Run("addArgsFromStruct", func(t *testing.T) {
 				if allowedEmptyParameter != constants.ParameterKeepTag {
-					t.Skip()
+					t.Skip("only testing struct tags for keep-tag because other parameters don't have struct tags")
 				}
 				args := shell.NewArgs()
 				addArgsFromStruct(args, struct {
@@ -253,7 +253,7 @@ func TestTryAddEmptyArg(t *testing.T) {
 }
 
 func BenchmarkFormatInt(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		var value int64 = 123456
 		str := strconv.FormatInt(value, 10)
 		if str == "" {
@@ -263,7 +263,7 @@ func BenchmarkFormatInt(b *testing.B) {
 }
 
 func BenchmarkFormatUint(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		var value uint64 = 123456
 		str := strconv.FormatUint(value, 10)
 		if str == "" {
@@ -273,7 +273,7 @@ func BenchmarkFormatUint(b *testing.B) {
 }
 
 func BenchmarkFormatFloat(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		var value float64 = 123456
 		str := strconv.FormatFloat(value, 'f', -1, 64)
 		if str == "" {
@@ -283,7 +283,7 @@ func BenchmarkFormatFloat(b *testing.B) {
 }
 
 func BenchmarkSprintfInt(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		var value int64 = 123456
 		str := fmt.Sprintf("%d", value)
 		if str == "" {
@@ -293,7 +293,7 @@ func BenchmarkSprintfInt(b *testing.B) {
 }
 
 func BenchmarkSprintfFloat(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		var value float64 = 123456
 		str := fmt.Sprintf("%f", value)
 		if str == "" {

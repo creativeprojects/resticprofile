@@ -258,7 +258,10 @@ func TestLockWithNoInterruption(t *testing.T) {
 
 	var err error
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command(helperBinary, "-wait", "1", "-lock", lockfile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, helperBinary, "-wait", "1", "-lock", lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 

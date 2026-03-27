@@ -55,7 +55,7 @@ func setPriorityClass(class uint32) error {
 	clog.Debugf("setting priority class %s", GetPriorityClassName(class))
 	err := windows.SetPriorityClass(handle, class)
 	if err != nil {
-		return fmt.Errorf("error setting priority class: %v", err)
+		return fmt.Errorf("error setting priority class: %w", err)
 	}
 	return nil
 }

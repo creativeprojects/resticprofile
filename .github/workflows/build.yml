@@ -37,9 +37,9 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.9.0
+          version: v2.11.4
           args: --timeout=30m
 
       - name: Test
@@ -50,12 +50,21 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Code coverage with codecov
+      - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
           env_vars: OS,GO
-          files: ./coverage.out
+          files: ./coverage.out,./unit-tests.xml
           flags: unittests
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v6
+        with:
+          env_vars: OS,GO
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: ./unit-tests.xml

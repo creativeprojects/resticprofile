@@ -54,7 +54,7 @@ func TestFixUnixPaths(t *testing.T) {
 
 func TestFixWindowsPaths(t *testing.T) {
 	if runtime.GOOS != "windows" {
-		t.SkipNow()
+		t.Skip("only testing Windows paths on Windows")
 	}
 
 	home, err := os.UserHomeDir()

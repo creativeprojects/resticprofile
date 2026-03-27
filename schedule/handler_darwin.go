@@ -4,6 +4,7 @@ package schedule
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -414,7 +415,7 @@ func domainTarget(permission Permission) string {
 
 func launchctlCommand(arg ...string) *exec.Cmd {
 	clog.Debugf("running command: '%s %s'", launchctlBin, strings.Join(arg, " "))
-	return exec.Command(launchctlBin, arg...)
+	return exec.CommandContext(context.TODO(), launchctlBin, arg...)
 }
 
 func parsePrintStatus(output []byte) map[string]string {

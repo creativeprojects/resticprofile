@@ -57,7 +57,7 @@ var versionCommandPattern = regexp.MustCompile(`restic ([\d.]+)[ -].+`)
 
 // GetVersion returns the version of the executable
 func GetVersion(executable string) (string, error) {
-	cmd := exec.Command(executable, "version")
+	cmd := exec.CommandContext(context.TODO(), executable, "version")
 	if output, err := cmd.Output(); err == nil {
 		if match := versionCommandPattern.FindSubmatch(output); match != nil {
 			return string(match[1]), nil

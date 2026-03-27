@@ -48,7 +48,7 @@ func main() {
 
 	args := os.Args[1:]
 	_, flags, flagErr := loadFlags(args)
-	if flagErr != nil && flagErr != pflag.ErrHelp {
+	if flagErr != nil && !errors.Is(flagErr, pflag.ErrHelp) {
 		term.Println(flagErr)
 		_ = displayHelpCommand(os.Stdout, commandContext{
 			ownCommands: ownCommands,

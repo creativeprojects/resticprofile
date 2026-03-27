@@ -13,7 +13,7 @@ import (
 
 func TestUpdate(t *testing.T) {
 	if testing.Short() {
-		t.SkipNow()
+		t.Skip("don't run update in short mode")
 	}
 	// can't run in Parallel because it changes the default logger
 	clog.SetTestLog(t)

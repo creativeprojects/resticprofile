@@ -4,6 +4,7 @@ package schedule
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -452,7 +453,7 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 		return fmt.Errorf("cannot find %q: %w", journalctlBinary, err)
 	}
 	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
-	cmd := exec.Command(binary, args...)
+	cmd := exec.CommandContext(context.TODO(), binary, args...)
 	cmd.Stdout = term.GetOutput()
 	cmd.Stderr = term.GetErrorOutput()
 	err = cmd.Run()
@@ -593,7 +594,7 @@ func systemctlCommand(args ...string) (*exec.Cmd, error) {
 		return nil, fmt.Errorf("cannot find %q: %w", systemctlBinary, err)
 	}
 	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
-	return exec.Command(binary, args...), nil
+	return exec.CommandContext(context.TODO(), binary, args...), nil
 }
 
 func displaySystemdSchedules(profile, command string, schedules []string) error {
@@ -608,7 +609,7 @@ func displaySystemdSchedules(profile, command string, schedules []string) error 
 		}
 		displayHeader(profile, command, index+1, len(schedules))
 
-		cmd := exec.Command(binary, "calendar", schedule)
+		cmd := exec.CommandContext(context.TODO(), binary, "calendar", schedule)
 		cmd.Stdout = term.GetOutput()
 		cmd.Stderr = term.GetErrorOutput()
 		err = cmd.Run()

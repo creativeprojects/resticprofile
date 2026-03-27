@@ -4,6 +4,7 @@ package schtasks
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"encoding/xml"
 	"errors"
@@ -74,7 +75,7 @@ func createTask(taskName, filename, username, password string) (string, error) {
 	}
 
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, params...)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, params...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err = cmd.Run()
@@ -90,7 +91,7 @@ func exportTaskDefinition(taskName string) ([]byte, error) {
 		return nil, err
 	}
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
 	err = cmd.Run()
 	return buffer.Bytes(), err
@@ -98,7 +99,7 @@ func exportTaskDefinition(taskName string) ([]byte, error) {
 
 func listRegisteredTasks() ([]byte, error) {
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/nh", "/fo", "csv")
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/query", "/nh", "/fo", "csv")
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err := cmd.Run()
@@ -114,7 +115,7 @@ func deleteTask(taskName string) (string, error) {
 		return "", err
 	}
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/delete", "/f", "/tn", taskName)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/delete", "/f", "/tn", taskName)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err = cmd.Run()
@@ -131,7 +132,7 @@ func readTaskInfo(taskName string, output io.Writer) error {
 		return err
 	}
 	stderr := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/fo", "list", "/v", "/tn", taskName)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/query", "/fo", "list", "/v", "/tn", taskName)
 	cmd.Stdout = output
 	cmd.Stderr = stderr
 	err = cmd.Run()

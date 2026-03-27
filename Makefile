@@ -28,6 +28,7 @@ README=README.md
 
 TESTS=./...
 COVERAGE_FILE=coverage.out
+JUNIT_FILE=unit-tests.xml
 
 BUILD=build/
 
@@ -98,7 +99,7 @@ $(GOBIN)/mockery: verify $(GOBIN)/eget
 
 $(GOBIN)/golangci-lint-v2: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" golangci/golangci-lint --tag v2.9.0 --asset=tar.gz --upgrade-only --to '$(GOBIN)/golangci-lint-v2'
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v2.11.4 --asset=tar.gz --upgrade-only --to '$(GOBIN)/golangci-lint-v2'
 
 $(GOBIN)/hugo: $(GOBIN)/eget
 	@echo "[*] $@"
@@ -107,6 +108,10 @@ $(GOBIN)/hugo: $(GOBIN)/eget
 $(GOBIN)/muffet: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" raviqqe/muffet --upgrade-only --to '$(GOBIN)'
+
+$(GOBIN)/gotestsum: verify $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" gotestyourself/gotestsum --upgrade-only --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"
@@ -173,9 +178,9 @@ test: prepare_test ## Run unit tests
 	@echo "[*] $@"
 	$(GOTEST) $(TESTS)
 
-test-ci: prepare_test ## Run unit tests with coverage (for CI)
+test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
-	$(GOTEST) -v -race -short -coverprofile='coverage.out' ./...
+	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"
@@ -194,6 +199,7 @@ clean: ## Clean up the build artifacts
 	       $(BINARY_WINDOWS_AMD64) \
 	       $(BINARY_WINDOWS_ARM64) \
 	       $(COVERAGE_FILE) \
+		   $(JUNIT_FILE) \
 	       restic_*_linux_amd64* \
 	       ${BUILD}restic* \
 	       ${BUILD}rclone* \

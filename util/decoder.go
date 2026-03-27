@@ -38,14 +38,14 @@ func NewUTF8Reader(reader io.ReadSeeker) io.Reader {
 
 func utfDecoder() DecoderFunc {
 	var utfBoms = [][]byte{
-		{0xef, 0xbb, 0xbf}, //UTF-8
-		{0xfe, 0xff},       //UTF16-BE
-		{0xff, 0xfe},       //UTF16-LE
+		{0xef, 0xbb, 0xbf}, // UTF-8
+		{0xfe, 0xff},       // UTF16-BE
+		{0xff, 0xfe},       // UTF16-LE
 	}
 
 	return func(reader io.ReadSeeker) transform.Transformer {
 		head := make([]byte, 3)
-		if headLen, err := reader.Read(head); err == nil || err == io.EOF {
+		if headLen, err := reader.Read(head); err == nil || errors.Is(err, io.EOF) {
 			defer mustRewindToStart(reader)
 
 			for _, bom := range utfBoms {
@@ -89,7 +89,7 @@ func isInvalidUTF(reader io.ReadSeeker, readSize, scanSize int) (invalid bool, e
 	for n := 1; n > 0; {
 		n, err = validator.Read(buf)
 		invalid = errors.Is(err, encoding.ErrInvalidUTF8)
-		if invalid || err == io.EOF {
+		if invalid || errors.Is(err, io.EOF) {
 			err = nil
 			break
 		}
@@ -100,7 +100,7 @@ func isInvalidUTF(reader io.ReadSeeker, readSize, scanSize int) (invalid bool, e
 func mustRewindToStart(seeker io.Seeker) {
 	if offset, err := seeker.Seek(0, io.SeekStart); offset != 0 {
 		panic(fmt.Errorf("failed reverting read offset to start: offset was %d", offset))
-	} else if err != nil && err != io.EOF {
+	} else if err != nil && !errors.Is(err, io.EOF) {
 		panic(fmt.Errorf("failed reverting read offset to start: %w", err))
 	}
 }

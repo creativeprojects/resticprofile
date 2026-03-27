@@ -791,7 +791,8 @@ func (r *resticWrapper) getErrorContext(err error) hook.ErrorContext {
 	}
 	ctx.Message = err.Error()
 
-	if fail, ok := err.(*commandError); ok {
+	fail := &commandError{}
+	if errors.As(err, &fail) {
 		exitCode := -1
 		if code, err := fail.ExitCode(); err == nil {
 			exitCode = code

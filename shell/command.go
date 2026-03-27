@@ -2,6 +2,7 @@ package shell
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -90,7 +91,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	}
 
 	// clog.Tracef("command: %s %q", command, args)
-	cmd := exec.Command(command, args...)
+	cmd := exec.CommandContext(context.TODO(), command, args...)
 
 	if c.ScanStdout != nil {
 		// install a pipe for scanning the output

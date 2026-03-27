@@ -1,6 +1,7 @@
 package batt
 
 import (
+	"errors"
 	"math"
 
 	"github.com/creativeprojects/clog"
@@ -46,28 +47,29 @@ func IsRunningOnBattery() (bool, int, error) {
 
 // isFatalError returns an error if we can't detect any battery state
 func isFatalError(err error) error {
-	switch perr := err.(type) {
-
-	case battery.ErrFatal: // complete failure
-		return err
-
-	case battery.Errors: // range of errors per battery
-		for _, err := range perr {
-			if err != nil {
-				err = isFatalError(err)
+	{
+		var perr battery.ErrFatal
+		var perr1 battery.Errors
+		var perr2 battery.ErrPartial
+		switch {
+		case errors.As(err, &perr):
+			return err
+		case errors.As(err, &perr1):
+			for _, err := range perr1 {
 				if err != nil {
-					return err
+					err = isFatalError(err)
+					if err != nil {
+						return err
+					}
 				}
 			}
+			return nil
+		case errors.As(err, &perr2):
+			if perr2.State != nil {
+				return perr2.State
+			}
+			return nil
 		}
-		return nil
-
-	case battery.ErrPartial: // only some errors on one battery
-		if perr.State != nil {
-			return perr.State
-		}
-		// we're only interested in the state
-		return nil
 	}
 
 	return err
