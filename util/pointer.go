@@ -1,12 +1,5 @@
 package util
 
-// CopyRef returns a pointer to a copy of value
-//
-//go:fix inline
-func CopyRef[T any](value T) *T {
-	return new(value)
-}
-
 // NilOr returns true if value is nil or expected
 func NilOr[T comparable](value *T, expected T) bool {
 	return value == nil || *value == expected

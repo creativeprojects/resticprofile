@@ -8,7 +8,6 @@ import (
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
-	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -262,16 +261,15 @@ func TestPropertySetFromType(t *testing.T) {
 	})
 
 	t.Run("range", func(t *testing.T) {
-		ref := util.CopyRef[float64]
 		tests := []struct {
 			property string
 			expects  NumericRange
 		}{
-			{property: "closed-range", expects: NumericRange{From: ref(-100), To: ref(200)}},
-			{property: "lopen-range", expects: NumericRange{FromExclusive: true, To: ref(200)}},
-			{property: "ropen-range", expects: NumericRange{From: ref(-100), ToExclusive: true}},
-			{property: "lex-range", expects: NumericRange{From: ref(-100), FromExclusive: true, To: ref(0)}},
-			{property: "rex-range", expects: NumericRange{From: ref(0), To: ref(200), ToExclusive: true}},
+			{property: "closed-range", expects: NumericRange{From: new(-100.0), To: new(200.0)}},
+			{property: "lopen-range", expects: NumericRange{FromExclusive: true, To: new(200.0)}},
+			{property: "ropen-range", expects: NumericRange{From: new(-100.0), ToExclusive: true}},
+			{property: "lex-range", expects: NumericRange{From: new(-100.0), FromExclusive: true, To: new(0.0)}},
+			{property: "rex-range", expects: NumericRange{From: new(0.0), To: new(200.0), ToExclusive: true}},
 		}
 
 		for _, test := range tests {
