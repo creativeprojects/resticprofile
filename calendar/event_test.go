@@ -210,7 +210,7 @@ func BenchmarkNextTrigger(b *testing.B) {
 			event := NewEvent()
 			_ = event.Parse(testItem.event)
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				next := event.Next(ref).String()
 				if next == "" {
 					b.Fail()

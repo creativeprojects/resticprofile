@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -38,7 +39,7 @@ func TestExecutable(t *testing.T) {
 	helperBinary := filepath.Join(tempDir, "executable_test_helper")
 	assert.True(t, filepath.IsAbs(helperBinary), "Helper binary path should be absolute")
 
-	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", helperBinary, "./test_executable")
+	cmd := exec.CommandContext(context.TODO(), "go", "build", "-buildvcs=false", "-o", helperBinary, "./test_executable")
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("Error building helper binary: %s\n", err)
 	}
@@ -48,7 +49,7 @@ func TestExecutable(t *testing.T) {
 	require.NoError(t, err, "Failed to create symlink for helper binary")
 
 	t.Run("absolute", func(t *testing.T) {
-		cmd = exec.Command(helperBinary)
+		cmd = exec.CommandContext(context.TODO(), helperBinary)
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
@@ -58,7 +59,7 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("absolute symlink", func(t *testing.T) {
-		cmd = exec.Command(symlinkBinary)
+		cmd = exec.CommandContext(context.TODO(), symlinkBinary)
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
@@ -68,7 +69,7 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("relative", func(t *testing.T) {
-		cmd = exec.Command("./" + filepath.Base(helperBinary))
+		cmd = exec.CommandContext(context.TODO(), "./"+filepath.Base(helperBinary))
 		cmd.Dir = tempDir // Set the working directory to the temp directory
 		output, err := cmd.Output()
 		if err != nil {
@@ -79,7 +80,7 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("relative symlink", func(t *testing.T) {
-		cmd = exec.Command("./" + filepath.Base(symlinkBinary))
+		cmd = exec.CommandContext(context.TODO(), "./"+filepath.Base(symlinkBinary))
 		cmd.Dir = tempDir // Set the working directory to the temp directory
 		output, err := cmd.Output()
 		if err != nil {
@@ -97,7 +98,7 @@ func TestExecutable(t *testing.T) {
 		os.Setenv("PATH", tempDir+string(os.PathListSeparator)+path) // Add tempDir to PATH for this test
 		t.Logf("Using PATH: %s", os.Getenv("PATH"))
 
-		cmd = exec.Command(filepath.Base(helperBinary))
+		cmd = exec.CommandContext(context.TODO(), filepath.Base(helperBinary))
 		cmd.Dir = tempDir // Set the working directory to the temp directory
 		output, err := cmd.Output()
 		if err != nil {
@@ -115,7 +116,7 @@ func TestExecutable(t *testing.T) {
 		os.Setenv("PATH", tempDir+string(os.PathListSeparator)+path) // Add tempDir to PATH for this test
 		t.Logf("Using PATH: %s", os.Getenv("PATH"))
 
-		cmd = exec.Command(filepath.Base(symlinkBinary))
+		cmd = exec.CommandContext(context.TODO(), filepath.Base(symlinkBinary))
 		cmd.Dir = tempDir // Set the working directory to the temp directory
 		output, err := cmd.Output()
 		if err != nil {

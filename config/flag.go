@@ -43,7 +43,7 @@ func addArgsFromStruct(args *shell.Args, section any) {
 	}
 
 	typeOf := valueOf.Type()
-	for i := 0; i < typeOf.NumField(); i++ {
+	for i := range typeOf.NumField() {
 		field := typeOf.Field(i)
 		if argument, ok := field.Tag.Lookup("argument"); ok {
 			if argument != "" {

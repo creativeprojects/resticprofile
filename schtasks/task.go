@@ -282,7 +282,7 @@ func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
 func compileDifferences(recurrences []time.Time) ([]time.Duration, []time.Duration) {
 	// now calculate the difference in between each
 	differences := make([]time.Duration, len(recurrences)-1)
-	for i := 0; i < len(recurrences)-1; i++ {
+	for i := range len(recurrences) - 1 {
 		differences[i] = recurrences[i+1].Sub(recurrences[i])
 	}
 	// check if they're all the same
@@ -359,7 +359,7 @@ func convertMonths(input []int) Months {
 func convertDaysOfMonth(input []int) DaysOfMonth {
 	if len(input) == 0 {
 		all := make([]int, 31)
-		for i := 0; i <= 30; i++ {
+		for i := range 31 {
 			all[i] = i + 1
 		}
 		return DaysOfMonth{all}

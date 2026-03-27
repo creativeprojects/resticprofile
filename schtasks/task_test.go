@@ -49,7 +49,7 @@ func TestCompileDifferences(t *testing.T) {
 
 func TestConvertDaysOfMonth(t *testing.T) {
 	allDays := make([]int, 31)
-	for i := 0; i <= 30; i++ {
+	for i := range 31 {
 		allDays[i] = i + 1
 	}
 

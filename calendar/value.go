@@ -101,7 +101,7 @@ func (v *Value) HasContiguousRange() bool {
 		return false
 	}
 
-	for i := 0; i < v.maxRange-v.minRange; i++ {
+	for i := range v.maxRange - v.minRange {
 		if v.rangeValues[i] && v.rangeValues[i+1] {
 			return true
 		}
@@ -115,7 +115,7 @@ func (v *Value) HasLongContiguousRange() bool {
 		return false
 	}
 
-	for i := 0; i < v.maxRange-v.minRange-1; i++ {
+	for i := range v.maxRange - v.minRange - 1 {
 		if v.rangeValues[i] && v.rangeValues[i+1] && v.rangeValues[i+2] {
 			return true
 		}

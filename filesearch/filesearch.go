@@ -1,6 +1,7 @@
 package filesearch
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -210,7 +211,7 @@ func ShellExpand(filename string) (string, error) {
 	if platform.IsWindows() {
 		return filename, nil
 	}
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s", strings.ReplaceAll(filename, " ", `\ `)))
+	cmd := exec.CommandContext(context.TODO(), "sh", "-c", fmt.Sprintf("echo %s", strings.ReplaceAll(filename, " ", `\ `)))
 	result, err := cmd.Output()
 	if err != nil {
 		return filename, err

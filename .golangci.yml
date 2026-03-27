@@ -43,7 +43,7 @@ linters:
     - nilnesserr
     - nilnil
     # - nlreturn
-    # - noctx
+    - noctx
     - nolintlint
     - nosprintfhostport
     # - perfsprint
