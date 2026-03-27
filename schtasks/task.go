@@ -43,7 +43,7 @@ func NewTask(options ...TaskOption) Task {
 		Version: taskSchemaVersion,
 		Xmlns:   taskSchema,
 		RegistrationInfo: RegistrationInfo{
-			Date:   time.Now().Format(dateFormat),
+			Date:   time.Now().Format(dateFormat), // this will be overridden by setFromNow if needed
 			Author: constants.ApplicationName,
 		},
 		Principals: Principals{
@@ -70,7 +70,7 @@ func NewTask(options ...TaskOption) Task {
 		Actions: Actions{
 			Context: author,
 		},
-		fromNow: time.Now(),
+		fromNow: time.Now(), // default will be overridden by setFromNow if needed
 	}
 
 	for _, option := range options {

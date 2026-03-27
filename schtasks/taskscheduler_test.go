@@ -347,7 +347,7 @@ func TestStartWhenAvailableOption(t *testing.T) {
 	defer file.Close()
 
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
-	sourceTask := createTaskDefinition(config, schedules)
+	sourceTask := createTaskDefinition(config, schedules, time.Now())
 	sourceTask.RegistrationInfo.URI = taskPath
 
 	// Verify StartWhenAvailable is set in source task
