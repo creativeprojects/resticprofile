@@ -125,98 +125,125 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 	fixtures := []struct {
 		description string
 		schedules   []string
+		fromNow     time.Time
 	}{
 		{
 			"only once",
 			[]string{"2020-01-02 03:04"},
+			time.Time{},
 		},
 		// daily
 		{
 			"once every day",
 			[]string{"*-*-* 03:04"},
+			time.Time{},
 		},
 		{
 			"every hour",
 			[]string{"*-*-* *:04"},
+			time.Time{},
 		},
 		{
 			"every minute",
 			[]string{"*-*-* *:*"},
+			time.Time{},
 		},
 		{
-			"every minute at 12",
+			"every minute at 12 (before 12)",
 			[]string{"*-*-* 12:*"},
+			time.Date(2025, 7, 27, 11, 20, 0, 0, time.UTC),
+		},
+		{
+			"every minute at 12 (after 12)",
+			[]string{"*-*-* 12:*"},
+			time.Date(2025, 7, 27, 13, 20, 0, 0, time.UTC),
 		},
 		// daily - more than one
 		{
 			"three times a day",
 			[]string{"*-*-* 03..05:04"},
+			time.Time{},
 		},
 		{
 			"twice every hour",
 			[]string{"*-*-* *:04..05"},
+			time.Time{},
 		},
 		// weekly
 		{
 			"once weekly",
 			[]string{"mon *-*-* 03:04"},
+			time.Time{},
 		},
 		{
 			"every hour on mondays",
 			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:04"},
+			time.Time{},
 		},
 		{
 			"every minute on mondays",
 			[]string{strings.ToLower(fixedDay)[:3] + " *-*-* *:*"},
+			time.Time{},
 		},
 		{
 			"every minute at 12 on mondays",
 			[]string{"mon *-*-* 12:*"},
+			time.Time{},
 		},
 		// more than once weekly
 		{
 			"twice weekly",
 			[]string{"mon *-*-* 03..04:04"},
+			time.Time{},
 		},
 		{
 			"twice mondays and tuesdays",
 			[]string{"mon,tue *-*-* 03:04..06"},
+			time.Time{},
 		},
 		{
 			"twice on fridays",
 			[]string{"fri *-*-* *:04..05"},
+			time.Time{},
 		},
 		// monthly
 		{
 			"once monthly",
 			[]string{"*-01-* 03:04"},
+			time.Time{},
 		},
 		{
 			"every hour in january",
 			[]string{"*-01-* *:04"},
+			time.Time{},
 		},
 		// monthly with weekdays
 		{
 			"mondays in January",
 			[]string{"mon *-01-* 03:04"},
+			time.Time{},
 		},
 		{
 			"every hour on Mondays in january",
 			[]string{"mon *-01-* *:04"},
+			time.Time{},
 		},
 		// some days every month
 		{
 			"one day per month",
 			[]string{"*-*-0" + dayOfTheMonth + " 03:04"},
+			time.Time{},
 		},
 		{
 			"every hour on the 1st of each month",
 			[]string{"*-*-0" + dayOfTheMonth + " *:04"},
+			time.Time{},
 		},
 		// more than once per month
 		{
 			"twice in one day per month",
 			[]string{"*-*-0" + dayOfTheMonth + " 03..04:04"},
+			time.Time{},
 		},
 	}
 
@@ -247,15 +274,16 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 			defer file.Close()
 
 			taskPath := getTaskPath(config.ProfileName, config.CommandName)
-			sourceTask := createTaskDefinition(config, schedules)
+			sourceTask := createTaskDefinition(config, schedules, fixture.fromNow)
 			sourceTask.RegistrationInfo.URI = taskPath
 
 			err = createTaskFile(sourceTask, file)
 			require.NoError(t, err)
 			file.Close()
 
-			result, err := createTask(taskPath, file.Name(), "", "")
-			t.Log(result)
+			t.Logf("task contains %d time triggers and %d calendar triggers", len(sourceTask.Triggers.TimeTrigger), len(sourceTask.Triggers.CalendarTrigger))
+
+			_, err = createTask(taskPath, file.Name(), "", "")
 			require.NoError(t, err)
 
 			taskXML, err := exportTaskDefinition(taskPath)
@@ -267,14 +295,16 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 				// no need for character conversion
 				return input, nil
 			}
-			readTask := &Task{}
+			readTask := Task{}
 			err = decoder.Decode(&readTask)
 			require.NoError(t, err)
 
-			assert.Equal(t, sourceTask, *readTask)
+			sourceTask.fromNow = time.Time{} // ignore fromNow in the source task
+			taskInUTC(&sourceTask)
+			taskInUTC(&readTask)
+			assert.Equal(t, sourceTask, readTask)
 
-			result, err = deleteTask(taskPath)
-			t.Log(result)
+			err = deleteTask(taskPath)
 			require.NoError(t, err)
 		})
 	}
@@ -309,7 +339,7 @@ func TestStartWhenAvailableOption(t *testing.T) {
 	defer file.Close()
 
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
-	sourceTask := createTaskDefinition(config, schedules)
+	sourceTask := createTaskDefinition(config, schedules, time.Now())
 	sourceTask.RegistrationInfo.URI = taskPath
 
 	// Verify StartWhenAvailable is set in source task
@@ -323,7 +353,7 @@ func TestStartWhenAvailableOption(t *testing.T) {
 	t.Log(result)
 	require.NoError(t, err)
 	defer func() {
-		_, _ = deleteTask(taskPath)
+		_ = deleteTask(taskPath)
 	}()
 
 	// Export and verify the task was created with StartWhenAvailable
@@ -340,4 +370,22 @@ func TestStartWhenAvailableOption(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.True(t, readTask.Settings.StartWhenAvailable, "StartWhenAvailable should be true in the created task")
+}
+
+func taskInUTC(task *Task) {
+	// Windows Task Scheduler is using the current timezone when loading dates into the XML definition.
+	// This is a workaround to ensure that the tests run consistently.
+	for i := range task.Triggers.TimeTrigger {
+		if task.Triggers.TimeTrigger[i].StartBoundary != nil {
+			*task.Triggers.TimeTrigger[i].StartBoundary = task.Triggers.TimeTrigger[i].StartBoundary.UTC()
+		}
+	}
+	for i := range task.Triggers.CalendarTrigger {
+		if task.Triggers.CalendarTrigger[i].StartBoundary != nil {
+			*task.Triggers.CalendarTrigger[i].StartBoundary = task.Triggers.CalendarTrigger[i].StartBoundary.UTC()
+		}
+		if task.Triggers.CalendarTrigger[i].EndBoundary != nil {
+			*task.Triggers.CalendarTrigger[i].EndBoundary = task.Triggers.CalendarTrigger[i].EndBoundary.UTC()
+		}
+	}
 }

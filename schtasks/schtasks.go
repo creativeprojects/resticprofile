@@ -109,20 +109,20 @@ func listRegisteredTasks() ([]byte, error) {
 	return stdout.Bytes(), err
 }
 
-func deleteTask(taskName string) (string, error) {
+func deleteTask(taskName string) error {
 	taskName, err := sanitizeTaskName(taskName)
 	if err != nil {
-		return "", err
+		return err
 	}
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := exec.CommandContext(context.TODO(), binaryPath, "/delete", "/f", "/tn", taskName)
-	cmd.Stdout = stdout
+	cmd.Stdout = stdout // we're not actually interested in the output, but we need to capture it to avoid it being printed to the console
 	cmd.Stderr = stderr
 	err = cmd.Run()
 	if err != nil {
-		return "", schTasksError(stderr.String())
+		return schTasksError(stderr.String())
 	}
-	return stdout.String(), nil
+	return nil
 }
 
 // readTaskInfo returns the raw output from querying the task name (via schtasks.exe)
