@@ -128,45 +128,38 @@ func TestPropertySetFromType(t *testing.T) {
 		i1 string `mapstructure:"nested-string"`
 	}
 
-	var testData struct {
-		hidden string
-		an1    any       `mapstructure:"simple-any"`
-		an     []any     `mapstructure:"simple-any-array"`
-		b1     bool      `mapstructure:"simple-bool"`
-		b2     []bool    `mapstructure:"simple-bool-array"`
-		i0     *int      `mapstructure:"simple-integer-pointer"`
-		i1     int       `mapstructure:"simple-integer"`
-		i2     []int64   `mapstructure:"simple-integer-array"`
-		f1     float64   `mapstructure:"simple-float"`
-		f2     []float32 `mapstructure:"simple-float-array"`
-		s1     string    `mapstructure:"simple-string"`
-		s2     []string  `mapstructure:"simple-string-array"`
-
-		d1 string `mapstructure:"simple-deprecated" deprecated:""`
-
-		desc string `mapstructure:"description" description:"desc2"`
-		def  string `mapstructure:"default" default:"dv1;dvesc;;;dv2"`
-		ex   string `mapstructure:"examples" examples:"e1;e2;esc;;"`
-		en   string `mapstructure:"enum" enum:";;vesc;v1;v2;v3"`
-		fmt  string `mapstructure:"format" format:"uri"`
-		fmti string `mapstructure:"format-invalid" format:"invalid"`
-		ptn  string `mapstructure:"pattern" pattern:"[0-9]+"`
-
-		r1 int `mapstructure:"closed-range" range:"[-100 : 200]"`
-		r2 int `mapstructure:"lopen-range" range:"[ :200]"`
-		r3 int `mapstructure:"ropen-range" range:"[-100: ]"`
-		r4 int `mapstructure:"lex-range" range:"|-100:0]"`
-		r5 int `mapstructure:"rex-range" range:"[0:200|"`
-
-		m1 map[string]string     `mapstructure:"string-map"`
-		m2 map[string]any        `mapstructure:"any-map"`
-		m3 map[string]nestedData `mapstructure:"nested-map"`
-
-		nested1 nestedData   `mapstructure:"nested"`
-		nested2 []nestedData `mapstructure:"nested-array"`
-	}
-
-	set := propertySetFromType(reflect.TypeOf(testData))
+	set := propertySetFromType(reflect.TypeFor[struct {
+		hidden  string
+		an1     any                   "mapstructure:\"simple-any\""
+		an      []any                 "mapstructure:\"simple-any-array\""
+		b1      bool                  "mapstructure:\"simple-bool\""
+		b2      []bool                "mapstructure:\"simple-bool-array\""
+		i0      *int                  "mapstructure:\"simple-integer-pointer\""
+		i1      int                   "mapstructure:\"simple-integer\""
+		i2      []int64               "mapstructure:\"simple-integer-array\""
+		f1      float64               "mapstructure:\"simple-float\""
+		f2      []float32             "mapstructure:\"simple-float-array\""
+		s1      string                "mapstructure:\"simple-string\""
+		s2      []string              "mapstructure:\"simple-string-array\""
+		d1      string                "mapstructure:\"simple-deprecated\" deprecated:\"\""
+		desc    string                "mapstructure:\"description\" description:\"desc2\""
+		def     string                "mapstructure:\"default\" default:\"dv1;dvesc;;;dv2\""
+		ex      string                "mapstructure:\"examples\" examples:\"e1;e2;esc;;\""
+		en      string                "mapstructure:\"enum\" enum:\";;vesc;v1;v2;v3\""
+		fmt     string                "mapstructure:\"format\" format:\"uri\""
+		fmti    string                "mapstructure:\"format-invalid\" format:\"invalid\""
+		ptn     string                "mapstructure:\"pattern\" pattern:\"[0-9]+\""
+		r1      int                   "mapstructure:\"closed-range\" range:\"[-100 : 200]\""
+		r2      int                   "mapstructure:\"lopen-range\" range:\"[ :200]\""
+		r3      int                   "mapstructure:\"ropen-range\" range:\"[-100: ]\""
+		r4      int                   "mapstructure:\"lex-range\" range:\"|-100:0]\""
+		r5      int                   "mapstructure:\"rex-range\" range:\"[0:200|\""
+		m1      map[string]string     "mapstructure:\"string-map\""
+		m2      map[string]any        "mapstructure:\"any-map\""
+		m3      map[string]nestedData "mapstructure:\"nested-map\""
+		nested1 nestedData            "mapstructure:\"nested\""
+		nested2 []nestedData          "mapstructure:\"nested-array\""
+	}]())
 
 	propertyInfo := func(t *testing.T, propertyName string) (info PropertyInfo) {
 		t.Helper()

@@ -3,8 +3,6 @@ package maybe
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/creativeprojects/resticprofile/util"
 )
 
 type Optional[T any] struct {
@@ -29,7 +27,7 @@ func (m Optional[T]) Value() T {
 
 func (m Optional[T]) Nilable() *T {
 	if m.HasValue() {
-		return util.CopyRef(m.value)
+		return new(m.value)
 	}
 	return nil
 }

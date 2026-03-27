@@ -106,7 +106,7 @@ func TestTemplateFuncs(t *testing.T) {
 		require.NotNil(t, tpl)
 		assert.Nil(t, received)
 
-		for i := 0; i < 3; i++ {
+		for range 3 {
 			received = nil
 			buffer.Reset()
 			err = tpl.Execute(buffer, nil)

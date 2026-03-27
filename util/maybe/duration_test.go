@@ -60,9 +60,9 @@ func TestDurationDecoder(t *testing.T) {
 		decoder := maybe.DurationDecoder()
 
 		t.Run(fmt.Sprintf("%d", index), func(t *testing.T) {
-			to := reflect.TypeOf(maybe.Duration{})
+			to := reflect.TypeFor[maybe.Duration]()
 			if fixture.toUnexpected {
-				to = reflect.TypeOf(false)
+				to = reflect.TypeFor[bool]()
 			}
 			from := reflect.TypeOf(fixture.source)
 

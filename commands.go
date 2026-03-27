@@ -355,7 +355,7 @@ func elevated() error {
 		return errors.New("only available on Windows platform")
 	}
 
-	done := make(chan interface{})
+	done := make(chan any)
 	err := remote.StartServer(done)
 	if err != nil {
 		return err

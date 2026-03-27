@@ -112,7 +112,7 @@ func TestValidArgumentsFilter(t *testing.T) {
 			arg + " ka=va extra2",
 		}
 
-		for i := 0; i < 20; i++ {
+		for range 20 {
 			rand.Shuffle(len(list), func(i, j int) { list[i], list[j] = list[j], list[i] })
 			args = args[:0]
 			for _, item := range list {
@@ -700,7 +700,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 
 	fillBufferCommand := func() (cmds []string) {
 		cmd := "echo " + strings.Repeat("-", 240)
-		for i := 0; i < 35; i++ { // 35 * 240 = 8400 (buffer is 8192)
+		for range 35 { // 35 * 240 = 8400 (buffer is 8192)
 			cmds = append(cmds, cmd)
 		}
 		return
@@ -778,7 +778,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 		expectedResult := strings.Repeat(fmt.Sprintln(expected), 3)
 
 		// can be retried, test multiple invocations
-		for i := 0; i < 3; i++ {
+		for range 3 {
 			content, err := run(t, wrapper)
 			assert.NoError(t, err)
 			assert.Equal(t, expectedResult, strings.ReplaceAll(content, "\r\n", "\n"))

@@ -148,7 +148,7 @@ func newFilteredLogger(flags commandLineFlags, handler clog.Handler) *clog.Logge
 		_ = handler.LogEntry(clog.LogEntry{
 			Level:  clog.LevelWarning,
 			Format: "you specified -quiet (-q) and -verbose (-v) at the same time. So let's flip a coin! ... and the winner is ... %s.",
-			Values: []interface{}{coin},
+			Values: []any{coin},
 		})
 	}
 	minLevel := clog.LevelInfo

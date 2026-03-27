@@ -19,7 +19,6 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/config/mocks"
 	"github.com/creativeprojects/resticprofile/restic"
-	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/santhosh-tekuri/jsonschema/v6"
@@ -495,32 +494,32 @@ func TestTypesFromPropertyInfo(t *testing.T) {
 		{info: stringProperty(objectProperty(new(mocks.PropertyInfo), ps), "", ""), types: []any{"string", "object"}, nested: 2},
 
 		// number range
-		{info: np(config.NumericRange{From: util.CopyRef(1.0)}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
+		{info: np(config.NumericRange{From: new(1.0)}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
 			t.Helper()
 			n := types[0].(*schemaNumber)
-			assert.Equal(t, util.CopyRef(1.0), n.Minimum)
+			assert.Equal(t, new(1.0), n.Minimum)
 			assert.Nil(t, n.Maximum)
 			assert.Nil(t, n.ExclusiveMinimum)
 			assert.Nil(t, n.ExclusiveMaximum)
 		}},
-		{info: np(config.NumericRange{To: util.CopyRef(1.0)}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
+		{info: np(config.NumericRange{To: new(1.0)}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
 			t.Helper()
 			n := types[0].(*schemaNumber)
 			assert.Nil(t, n.Minimum)
-			assert.Equal(t, util.CopyRef(1.0), n.Maximum)
+			assert.Equal(t, new(1.0), n.Maximum)
 			assert.Nil(t, n.ExclusiveMinimum)
 			assert.Nil(t, n.ExclusiveMaximum)
 		}},
 		{info: np(config.NumericRange{
-			From:          util.CopyRef(0.1),
-			To:            util.CopyRef(1.0),
+			From:          new(0.1),
+			To:            new(1.0),
 			FromExclusive: true,
 			ToExclusive:   true,
 		}), types: []any{"number"}, check: func(t *testing.T, types []SchemaType) {
 			t.Helper()
 			n := types[0].(*schemaNumber)
-			assert.Equal(t, util.CopyRef(0.1), n.ExclusiveMinimum)
-			assert.Equal(t, util.CopyRef(1.0), n.ExclusiveMaximum)
+			assert.Equal(t, new(0.1), n.ExclusiveMinimum)
+			assert.Equal(t, new(1.0), n.ExclusiveMaximum)
 			assert.Nil(t, n.Minimum)
 			assert.Nil(t, n.Maximum)
 		}},
@@ -730,7 +729,7 @@ func TestSchemaForConfigVersion(t *testing.T) {
 
 		s := schemaForConfigVersion(config.Version01).(*schemaString)
 		assert.Equal(t, uint64(0), s.MinLength)
-		assert.Equal(t, util.CopyRef(uint64(1)), s.MaxLength)
+		assert.Equal(t, new(uint64(1)), s.MaxLength)
 		assert.Equal(t, version1Pattern, s.Pattern)
 		assert.Equal(t, "1", s.Default)
 		assert.True(t, regexp.MustCompile(s.Pattern).MatchString(s.Default.(string)))

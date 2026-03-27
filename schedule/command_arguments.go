@@ -69,8 +69,8 @@ func (ca CommandArguments) ConfigFile() string {
 			if i+1 < len(ca.args) {
 				lastConfig = ca.args[i+1]
 			}
-		} else if strings.HasPrefix(arg, configPrefix) {
-			lastConfig = strings.TrimPrefix(arg, configPrefix)
+		} else if after, ok := strings.CutPrefix(arg, configPrefix); ok {
+			lastConfig = after
 		}
 	}
 	return lastConfig

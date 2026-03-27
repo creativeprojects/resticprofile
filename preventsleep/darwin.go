@@ -39,9 +39,7 @@ func (c *Caffeinate) Start() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		err := cmd.Wait()
 		if err != nil {
 			if err.Error() != signalInterrupt {
@@ -50,7 +48,7 @@ func (c *Caffeinate) Start() error {
 		}
 		cmd = nil
 		c.cmd.Store(cmd)
-	}()
+	})
 	return nil
 }
 

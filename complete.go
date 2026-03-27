@@ -195,7 +195,7 @@ func (c *Completer) completeOwnCommandFlags(name, word string) (completions []st
 			for names := range command.flags { // e.g. "-q, --quiet, --size [size|"
 				var flagNames []string
 
-				for _, flag := range strings.Split(names, ",") {
+				for flag := range strings.SplitSeq(names, ",") {
 					flag = strings.Split(strings.TrimSpace(flag), " ")[0] // strip value (if any)
 					flagNames = append(flagNames, flag)
 

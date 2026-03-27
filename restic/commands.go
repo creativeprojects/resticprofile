@@ -212,7 +212,7 @@ func parseStream(input io.Reader, commandName string) (cmd *command, err error) 
 					}
 					option = &Option{Once: !strings.Contains(line, "=[]")}
 					paramAndDefault := strings.Split(line, "=")
-					for _, param := range strings.Split(paramAndDefault[0], ",") {
+					for param := range strings.SplitSeq(paramAndDefault[0], ",") {
 						param = strings.TrimSpace(param)
 						if strings.HasPrefix(param, "--") {
 							if len(option.Name) == 0 {

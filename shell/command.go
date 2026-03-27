@@ -46,7 +46,7 @@ type Command struct {
 	SetPID     SetPID
 	ScanStdout ScanOutput
 	sigChan    chan os.Signal
-	done       chan interface{}
+	done       chan any
 	analyser   *OutputAnalyser
 }
 
@@ -67,7 +67,7 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 		Arguments: args,
 		Environ:   []string{},
 		sigChan:   c,
-		done:      make(chan interface{}),
+		done:      make(chan any),
 		analyser:  NewOutputAnalyser(),
 	}
 }
@@ -385,7 +385,7 @@ func removeQuotes(args []string) []string {
 	singleQuote := `'`
 	doubleQuote := `"`
 
-	for i := 0; i < len(args); i++ {
+	for i := range args {
 		if strings.HasPrefix(args[i], doubleQuote) && strings.HasSuffix(args[i], doubleQuote) {
 			args[i] = strings.Trim(args[i], doubleQuote)
 

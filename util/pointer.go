@@ -1,8 +1,10 @@
 package util
 
 // CopyRef returns a pointer to a copy of value
+//
+//go:fix inline
 func CopyRef[T any](value T) *T {
-	return &value
+	return new(value)
 }
 
 // NilOr returns true if value is nil or expected

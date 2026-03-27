@@ -50,7 +50,7 @@ func addArgsFromStruct(args *shell.Args, section any) {
 				convert, ok := stringifyConfidentialValue(valueOf.Field(i))
 				if ok {
 					// FIXME quick hack for now
-					isConfidential := valueOf.Field(i).Type() == reflect.TypeOf(ConfidentialValue{})
+					isConfidential := valueOf.Field(i).Type() == reflect.TypeFor[ConfidentialValue]()
 					flags := make([]shell.Arg, 0, len(convert))
 					for _, v := range convert {
 						flags = append(flags, shell.NewArg(v, getArgType(field), shell.NewConfidentialArgOption(isConfidential)))
@@ -67,8 +67,8 @@ func addArgsFromStruct(args *shell.Args, section any) {
 func argAliasesFromStruct(section any) map[string]string {
 	aliases := make(map[string]string)
 	if t := util.ElementType(reflect.TypeOf(section)); t.Kind() == reflect.Struct {
-		for i := 0; i < t.NumField(); i++ {
-			field := t.Field(i)
+		for field := range t.Fields() {
+			field := field
 			if argument, ok := field.Tag.Lookup("argument"); ok {
 				if alias, ok := field.Tag.Lookup("mapstructure"); ok && alias != argument {
 					aliases[alias] = argument
@@ -107,12 +107,12 @@ func getArgType(field reflect.StructField) shell.ArgType {
 }
 
 // stringifyValueOf returns a string representation of the value, and if it has any value at all
-func stringifyValueOf(value interface{}) ([]string, bool) {
+func stringifyValueOf(value any) ([]string, bool) {
 	return stringifyAnyValueOf(value, true)
 }
 
 // stringifyAnyValueOf returns a string representation of the value, and if it has any value at all
-func stringifyAnyValueOf(value interface{}, onlySimplyValues bool) ([]string, bool) {
+func stringifyAnyValueOf(value any, onlySimplyValues bool) ([]string, bool) {
 	if value == nil {
 		return emptyStringArray, false
 	}
@@ -121,7 +121,7 @@ func stringifyAnyValueOf(value interface{}, onlySimplyValues bool) ([]string, bo
 
 // stringifyConfidentialValue returns a string representation of the value including confidential parts
 func stringifyConfidentialValue(value reflect.Value) ([]string, bool) {
-	if value.Type() == reflect.TypeOf(ConfidentialValue{}) {
+	if value.Type() == reflect.TypeFor[ConfidentialValue]() {
 		method := value.MethodByName("Value")
 		if method.IsValid() {
 			values := method.Call([]reflect.Value{})
@@ -199,7 +199,7 @@ func stringify(value reflect.Value, onlySimplyValues bool) ([]string, bool) {
 	case reflect.Slice, reflect.Array:
 		n := value.Len()
 		sliceVal := make([]string, n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			v, _ := stringify(value.Index(i), onlySimplyValues)
 			if len(v) > 1 {
 				if onlySimplyValues {

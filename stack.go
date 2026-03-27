@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"runtime"
 	"runtime/debug"
+	"strings"
 )
 
 // getStack returns a simplified stack trace
 func getStack(skip int) string {
-	stack := ""
+	var stack strings.Builder
 	pc := make([]uintptr, 20)        // stack of 20 traces max
 	n := runtime.Callers(skip+1, pc) // skip call to runtime.Callers
 	if n == 0 {
@@ -28,15 +29,15 @@ func getStack(skip int) string {
 			break
 		}
 
-		stack += fmt.Sprintf("%s\n\t%s:%d\n", frame.Function, frame.File, frame.Line)
+		stack.WriteString(fmt.Sprintf("%s\n\t%s:%d\n", frame.Function, frame.File, frame.Line))
 
 		if !more {
 			break
 		}
 	}
-	if stack == "" {
+	if stack.String() == "" {
 		// the stack trace is suspiciously empty, let's try another way instead
 		return string(debug.Stack())
 	}
-	return stack
+	return stack.String()
 }

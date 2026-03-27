@@ -12,23 +12,23 @@ import (
 )
 
 type showStructData struct {
-	input  interface{}
+	input  any
 	output string
 }
 
 type testObject struct {
-	Id         int                    `mapstructure:"id"`
-	Name       string                 `mapstructure:"name"`
-	Person     testPerson             `mapstructure:"person"`
-	Persons    []testPerson           `mapstructure:"persons"`
-	Pointer    *testPointer           `mapstructure:"pointer"`
-	OtherShown string                 `show:"other-shown"`
-	Other      string                 `mapstructure:"other" show:"noshow"`
-	Hidden     string                 `mapstructure:""`
-	AlsoHidden string                 `mapstructure:"use"`
-	Map        map[string]interface{} `mapstructure:",remain"`
-	RemainMap  map[string]interface{} `show:",remain"`
-	IsValid    maybe.Bool             `mapstructure:"valid"`
+	Id         int            `mapstructure:"id"`
+	Name       string         `mapstructure:"name"`
+	Person     testPerson     `mapstructure:"person"`
+	Persons    []testPerson   `mapstructure:"persons"`
+	Pointer    *testPointer   `mapstructure:"pointer"`
+	OtherShown string         `show:"other-shown"`
+	Other      string         `mapstructure:"other" show:"noshow"`
+	Hidden     string         `mapstructure:""`
+	AlsoHidden string         `mapstructure:"use"`
+	Map        map[string]any `mapstructure:",remain"`
+	RemainMap  map[string]any `show:",remain"`
+	IsValid    maybe.Bool     `mapstructure:"valid"`
 }
 
 type testPerson struct {
@@ -70,7 +70,7 @@ func TestShowStruct(t *testing.T) {
 			output: " id:  11\n\n person:\n  name:   test\n  valid:  true\n",
 		},
 		{
-			input:  testObject{Id: 11, Map: map[string]interface{}{"person": testPerson{Name: "test", IsValid: true}}},
+			input:  testObject{Id: 11, Map: map[string]any{"person": testPerson{Name: "test", IsValid: true}}},
 			output: " id:  11\n\n person:\n  name:   test\n  valid:  true\n",
 		},
 		{
@@ -78,7 +78,7 @@ func TestShowStruct(t *testing.T) {
 			output: " id:  11\n\n persons:\n  name:   p1\n  valid:  true\n  -\n  name:  p2\n",
 		},
 		{
-			input:  testObject{Id: 11, Map: map[string]interface{}{"persons": []testPerson{{Name: "p1", IsValid: true}, {Name: "p2", IsValid: false}}}},
+			input:  testObject{Id: 11, Map: map[string]any{"persons": []testPerson{{Name: "p1", IsValid: true}, {Name: "p2", IsValid: false}}}},
 			output: " id:  11\n\n persons:\n  name:   p1\n  valid:  true\n  -\n  name:  p2\n",
 		},
 		{
@@ -96,21 +96,21 @@ func TestShowStruct(t *testing.T) {
 			output: " id:  11\n\n person.properties:\n  list:  one\n      two\n      three\n",
 		},
 		{
-			input:  testObject{Id: 11, Name: "test", Map: map[string]interface{}{"left": []string{"over"}}},
+			input:  testObject{Id: 11, Name: "test", Map: map[string]any{"left": []string{"over"}}},
 			output: " id: 11\n name:  test\n left:  over\n",
 		},
 		{
-			input:  testObject{Id: 11, Name: "test", RemainMap: map[string]interface{}{"left": []string{"over"}}},
+			input:  testObject{Id: 11, Name: "test", RemainMap: map[string]any{"left": []string{"over"}}},
 			output: " id: 11\n name:  test\n left:  over\n",
 		},
 		{
-			input: testObject{Map: map[string]interface{}{
+			input: testObject{Map: map[string]any{
 				// "use" is hidden
 				constants.SectionConfigurationMixinUse: []string{"u1", "u2", "u3"},
 				// List with map and list
-				"list": []interface{}{
+				"list": []any{
 					"one",
-					map[string]interface{}{
+					map[string]any{
 						"a":                                    "b",
 						"x":                                    []string{"y1", "y2"},
 						constants.SectionConfigurationMixinUse: "deep-use-is-shown",
@@ -118,9 +118,9 @@ func TestShowStruct(t *testing.T) {
 					"three",
 				},
 				// Map with map and list
-				"a-map": map[string]interface{}{
+				"a-map": map[string]any{
 					"mk1": []string{"my1", "my2"},
-					"mk2": map[string]interface{}{"ck1": "cv", "ck2": []string{"cky1", "cky2"}},
+					"mk2": map[string]any{"ck1": "cv", "ck2": []string{"cky1", "cky2"}},
 				},
 			}},
 			output: " a-map:  mk1:{my1,my2}\n   mk2:{ck1:cv,ck2:{cky1,cky2}}\n list:   one\n   {a:b,use:deep-use-is-shown,x:{y1,y2}}\n   three\n",
@@ -136,7 +136,7 @@ func TestShowStruct(t *testing.T) {
 			output: " id: 11\n name:  test\n",
 		},
 		{
-			input: testObject{Map: map[string]interface{}{
+			input: testObject{Map: map[string]any{
 				"tag":      "", // special field should show empty string
 				"keep-tag": "", // special field should show empty string
 				"group-by": "", // special field should show empty string

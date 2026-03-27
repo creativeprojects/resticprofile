@@ -92,7 +92,7 @@ func TestFileHandler(t *testing.T) {
 	{
 		lines := readTail(t, logFile, 10)
 		require.Len(t, lines, 3)
-		for i := 0; i < 3; i++ {
+		for i := range 3 {
 			assert.Regexp(t, fmt.Sprintf(`^.+\slog-line-%d$`, i+1), lines[i])
 		}
 	}

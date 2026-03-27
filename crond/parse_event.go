@@ -50,8 +50,8 @@ func parseField(field string, eventField *calendar.Value) error {
 	}
 	// list of values
 	if strings.Contains(field, ",") {
-		parts := strings.Split(field, ",")
-		for _, part := range parts {
+		parts := strings.SplitSeq(field, ",")
+		for part := range parts {
 			err := parseField(part, eventField)
 			if err != nil {
 				return err

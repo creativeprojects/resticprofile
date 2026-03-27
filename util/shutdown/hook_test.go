@@ -13,7 +13,7 @@ func TestAddAndRunInOrder(t *testing.T) {
 	AddHook(func() { n += 2 })
 	AddHook(func() { n *= 2 })
 
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		RunHooks()
 		assert.Equal(t, 144, n)
 	}

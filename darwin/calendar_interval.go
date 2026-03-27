@@ -2,6 +2,8 @@
 
 package darwin
 
+import "maps"
+
 import "github.com/creativeprojects/resticprofile/calendar"
 
 const (
@@ -30,9 +32,7 @@ func newCalendarInterval() *CalendarInterval {
 
 func (c *CalendarInterval) clone() *CalendarInterval {
 	clone := newCalendarInterval()
-	for key, value := range *c {
-		(*clone)[key] = value
-	}
+	maps.Copy((*clone), *c)
 	return clone
 }
 

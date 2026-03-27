@@ -119,16 +119,12 @@ func (p *Metrics) Push(url, format, jobName string) error {
 }
 
 func mergeLabels(labels prometheus.Labels, add map[string]string) prometheus.Labels {
-	for key, value := range add {
-		labels[key] = value
-	}
+	maps.Copy(labels, add)
 	return labels
 }
 
 func cloneLabels(labels prometheus.Labels) prometheus.Labels {
 	clone := make(prometheus.Labels, len(labels))
-	for key, value := range labels {
-		clone[key] = value
-	}
+	maps.Copy(clone, labels)
 	return clone
 }
