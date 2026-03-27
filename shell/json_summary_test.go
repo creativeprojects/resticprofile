@@ -33,8 +33,7 @@ func TestScanJsonSummary(t *testing.T) {
 	// Start writing into the pipe, line by line
 	go func(t *testing.T) {
 		t.Helper()
-		lines := strings.SplitSeq(resticOutput, "\n")
-		for line := range lines {
+		for line := range strings.SplitSeq(resticOutput, "\n") {
 			line = strings.TrimRight(line, "\r")
 			if platform.IsWindows() {
 				// https://github.com/restic/restic/issues/3111
@@ -87,8 +86,7 @@ Is there a repository at the following location?
 	// Start writing into the pipe, line by line
 	go func(t *testing.T) {
 		t.Helper()
-		lines := strings.SplitSeq(resticOutput, "\n")
-		for line := range lines {
+		for line := range strings.SplitSeq(resticOutput, "\n") {
 			line = strings.TrimRight(line, "\r")
 			_, err := writer.WriteString(line + platform.LineSeparator)
 			assert.NoError(t, err)

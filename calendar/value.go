@@ -287,8 +287,7 @@ func (v *Value) Parse(input string, postProcess ...postProcessFunc) error {
 		return nil
 	}
 
-	parts := strings.SplitSeq(input, ",")
-	for part := range parts {
+	for part := range strings.SplitSeq(input, ",") {
 		if part == "" {
 			continue
 		}

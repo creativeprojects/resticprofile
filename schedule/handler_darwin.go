@@ -419,8 +419,7 @@ func launchctlCommand(arg ...string) *exec.Cmd {
 
 func parsePrintStatus(output []byte) map[string]string {
 	info := make(map[string]string, 10)
-	lines := bytes.SplitSeq(output, []byte{'\n'})
-	for line := range lines {
+	for line := range bytes.SplitSeq(output, []byte{'\n'}) {
 		line = bytes.TrimSpace(line)
 		if len(line) == 0 {
 			continue

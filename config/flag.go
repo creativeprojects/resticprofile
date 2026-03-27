@@ -68,7 +68,6 @@ func argAliasesFromStruct(section any) map[string]string {
 	aliases := make(map[string]string)
 	if t := util.ElementType(reflect.TypeOf(section)); t.Kind() == reflect.Struct {
 		for field := range t.Fields() {
-			field := field
 			if argument, ok := field.Tag.Lookup("argument"); ok {
 				if alias, ok := field.Tag.Lookup("mapstructure"); ok && alias != argument {
 					aliases[alias] = argument

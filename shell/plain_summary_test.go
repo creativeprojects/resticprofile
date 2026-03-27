@@ -36,8 +36,7 @@ snapshot 07ab30a5 saved
 
 	// Start writing into the pipe, line by line
 	go func() {
-		lines := strings.SplitSeq(source, "\n")
-		for line := range lines {
+		for line := range strings.SplitSeq(source, "\n") {
 			line = strings.TrimRight(line, "\r")
 			_, _ = writer.WriteString(line + platform.LineSeparator)
 		}
