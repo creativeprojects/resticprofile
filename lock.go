@@ -46,7 +46,7 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-cha
 		} else if errors.Is(err, fs.ErrNotExist) {
 			locker = "none"
 		} else {
-			return fmt.Errorf("another process left the lockfile unreadable: %s", err)
+			return fmt.Errorf("another process left the lockfile unreadable: %w", err)
 		}
 
 		// should we try to force our way?

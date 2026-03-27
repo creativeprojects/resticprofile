@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -105,8 +106,15 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 			if len(logfile) > 0 && os.IsPathSeparator(logfile[0]) {
 				logfile = logfile[1:]
 			}
+			logfile = strings.TrimLeft(logfile, string(filepath.Separator))
+			if !fs.ValidPath(logfile) {
+				return nil, nil, fmt.Errorf("invalid log file path: %s", logfile)
+			}
 			logfile = filepath.Join(tempDir, logfile)
-			_ = os.MkdirAll(filepath.Dir(logfile), 0755)
+			err = os.MkdirAll(filepath.Dir(logfile), 0755) //nolint:gosec
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to create log file directory: %w", err)
+			}
 		}
 	}
 
@@ -228,7 +236,7 @@ func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) 
 			return
 		}
 		if file == nil {
-			file, lastError = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+			file, lastError = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //nolint:gosec
 		}
 		if file != nil {
 			var written int

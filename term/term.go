@@ -98,7 +98,7 @@ func OsStdoutTerminalSize() (width, height int) {
 }
 
 func fdToInt(fd uintptr) int {
-	return int(fd)
+	return int(fd) //nolint:gosec
 }
 
 type LockedWriter struct {
