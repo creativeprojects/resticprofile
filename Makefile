@@ -28,6 +28,7 @@ README=README.md
 
 TESTS=./...
 COVERAGE_FILE=coverage.out
+JUNIT_FILE=unit-tests.xml
 
 BUILD=build/
 
@@ -179,7 +180,7 @@ test: prepare_test ## Run unit tests
 
 test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum --junitfile unit-tests.xml -- -race -short -coverprofile='coverage.out' ./...
+	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"
@@ -198,6 +199,7 @@ clean: ## Clean up the build artifacts
 	       $(BINARY_WINDOWS_AMD64) \
 	       $(BINARY_WINDOWS_ARM64) \
 	       $(COVERAGE_FILE) \
+		   $(JUNIT_FILE) \
 	       restic_*_linux_amd64* \
 	       ${BUILD}restic* \
 	       ${BUILD}rclone* \
