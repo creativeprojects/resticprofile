@@ -108,6 +108,10 @@ $(GOBIN)/muffet: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" raviqqe/muffet --upgrade-only --to '$(GOBIN)'
 
+$(GOBIN)/gotestsum: verify $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" gotestyourself/gotestsum --upgrade-only --to '$(GOBIN)'
+
 prepare_build: verify download
 	@echo "[*] $@"
 
@@ -173,9 +177,9 @@ test: prepare_test ## Run unit tests
 	@echo "[*] $@"
 	$(GOTEST) $(TESTS)
 
-test-ci: prepare_test ## Run unit tests with coverage (for CI)
+test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
-	$(GOTEST) -v -race -short -coverprofile='coverage.out' ./...
+	$(GOBIN)/gotestsum --junitfile unit-tests.xml -- -race -short -coverprofile='coverage.out' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"

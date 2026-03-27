@@ -239,7 +239,7 @@ func TestTryAddEmptyArg(t *testing.T) {
 
 			t.Run("addArgsFromStruct", func(t *testing.T) {
 				if allowedEmptyParameter != constants.ParameterKeepTag {
-					t.Skip()
+					t.Skip("only testing struct tags for keep-tag because other parameters don't have struct tags")
 				}
 				args := shell.NewArgs()
 				addArgsFromStruct(args, struct {
