@@ -20,7 +20,7 @@ var (
 )
 
 // StartServer starts a http server
-func StartServer(done chan interface{}) error {
+func StartServer(done chan any) error {
 	// let the system chose a port
 	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:0")
 	if err != nil {

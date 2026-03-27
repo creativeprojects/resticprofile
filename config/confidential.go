@@ -83,10 +83,10 @@ func NewConfidentialValue(value string) ConfidentialValue {
 }
 
 // confidentialValueDecoder implements parsing config parsing for ConfidentialValue
-func confidentialValueDecoder() func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-	confidentialValueType := reflect.TypeOf(ConfidentialValue{})
+func confidentialValueDecoder() func(from reflect.Type, to reflect.Type, data any) (any, error) {
+	confidentialValueType := reflect.TypeFor[ConfidentialValue]()
 
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+	return func(from reflect.Type, to reflect.Type, data any) (any, error) {
 		if to != confidentialValueType {
 			return data, nil
 		}

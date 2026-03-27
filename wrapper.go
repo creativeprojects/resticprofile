@@ -405,10 +405,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Add retry-lock (supported from restic 0.16, depends on filter being enabled)
 	if lockRetryTime, enabled := r.remainingLockRetryTime(); enabled && filter != nil {
 		// limiting the retry handling in restic, we need to make sure we can retry internally so that unlock is called.
-		lockRetryTime = lockRetryTime - r.global.ResticLockRetryAfter - constants.MinResticLockRetryDelay
-		if lockRetryTime > constants.MaxResticLockRetryTimeArgument {
-			lockRetryTime = constants.MaxResticLockRetryTimeArgument
-		}
+		lockRetryTime = min(lockRetryTime-r.global.ResticLockRetryAfter-constants.MinResticLockRetryDelay, constants.MaxResticLockRetryTimeArgument)
 		lockRetryTime = lockRetryTime.Truncate(time.Minute)
 
 		if lockRetryTime > 0 && !r.containsArguments(args.GetAll(), fmt.Sprintf("--%s", constants.ParameterRetryLock)) {
@@ -864,10 +861,7 @@ func (r *resticWrapper) canRetryAfterRemoteLockFailure(output monitor.OutputAnal
 	staleConditionText := ""
 
 	if lockAge, ok := output.GetRemoteLockedSince(); ok {
-		requiredAge := r.global.ResticStaleLockAge
-		if requiredAge < constants.MinResticStaleLockAge {
-			requiredAge = constants.MinResticStaleLockAge
-		}
+		requiredAge := max(r.global.ResticStaleLockAge, constants.MinResticStaleLockAge)
 
 		staleLock = lockAge >= requiredAge
 		staleConditionText = fmt.Sprintf("lock age %s >= %s", lockAge, requiredAge)

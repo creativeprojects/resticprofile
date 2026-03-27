@@ -12,7 +12,7 @@ import (
 )
 
 func TestStartAndStopServer(t *testing.T) {
-	done := make(chan interface{})
+	done := make(chan any)
 	err := remote.StartServer(done)
 	require.NoError(t, err)
 
@@ -28,7 +28,7 @@ func TestStartAndStopServer(t *testing.T) {
 }
 
 func TestClient(t *testing.T) {
-	done := make(chan interface{})
+	done := make(chan any)
 	err := remote.StartServer(done)
 	require.NoError(t, err)
 
@@ -39,7 +39,7 @@ func TestClient(t *testing.T) {
 	client := remote.NewClient(remote.GetPort())
 	err = client.LogEntry(clog.LogEntry{
 		Level:  clog.LevelWarning,
-		Values: []interface{}{"Hello, World!"},
+		Values: []any{"Hello, World!"},
 	})
 	require.NoError(t, err)
 

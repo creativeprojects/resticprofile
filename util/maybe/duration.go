@@ -18,8 +18,8 @@ func SetDuration(value time.Duration) Duration { return Duration{Set(value)} }
 
 // DurationDecoder implements config parsing for maybe.Duration
 func DurationDecoder() func(from, to reflect.Type, data any) (any, error) {
-	fromType := reflect.TypeOf(time.Duration(0))
-	valueType := reflect.TypeOf(Duration{})
+	fromType := reflect.TypeFor[time.Duration]()
+	valueType := reflect.TypeFor[Duration]()
 
 	return func(from, to reflect.Type, data any) (result any, err error) {
 		result = data

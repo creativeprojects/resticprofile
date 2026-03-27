@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 
 	"github.com/creativeprojects/resticprofile/constants"
@@ -135,10 +136,10 @@ func (c *Config) unmarshalConfigV1() viper.DecoderConfigOption {
 
 // sliceOfMapsToMapHookFunc merges a slice of maps to a map
 func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+	return func(from reflect.Type, to reflect.Type, data any) (any, error) {
 		if from.Kind() == reflect.Slice && from.Elem().Kind() == reflect.Map {
 			// unpack single slice always (needed for nested maps like OtherFlags)
-			source, ok := data.([]map[string]interface{})
+			source, ok := data.([]map[string]any)
 			if !ok {
 				return data, nil
 			}
@@ -150,11 +151,9 @@ func sliceOfMapsToMapHookFunc() mapstructure.DecodeHookFunc {
 			}
 			// flatten slice of maps into one map
 			if to.Kind() == reflect.Struct || to.Kind() == reflect.Map {
-				convert := make(map[string]interface{})
+				convert := make(map[string]any)
 				for _, mapItem := range source {
-					for key, value := range mapItem {
-						convert[key] = value
-					}
+					maps.Copy(convert, mapItem)
 				}
 				return convert, nil
 			}

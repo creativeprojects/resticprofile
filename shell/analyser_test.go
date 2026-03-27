@@ -72,8 +72,8 @@ func TestCustomErrorCallback(t *testing.T) {
 	t.Run("RequiresMinCountForEachCall", func(t *testing.T) {
 		require.NoError(t, init(t, 3, 4, false))
 
-		for c := 0; c < 2; c++ {
-			for i := 0; i < 3; i++ {
+		for c := range 2 {
+			for range 3 {
 				assert.Equal(t, c, invoked)
 				writeTrigger(t)
 			}

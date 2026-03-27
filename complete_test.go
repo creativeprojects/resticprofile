@@ -211,7 +211,7 @@ func TestCompleter(t *testing.T) {
 				commands = append(commands, command.name)
 			}
 			for flag := range command.flags {
-				for _, v := range strings.Split(flag, ",") {
+				for v := range strings.SplitSeq(flag, ",") {
 					v = strings.Split(strings.TrimSpace(v), " ")[0]
 					commandValues[command.name] = append(commandValues[command.name], v)
 					sort.Strings(commandValues[command.name])

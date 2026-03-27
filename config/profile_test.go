@@ -210,7 +210,7 @@ inherit = "parent"
 	require.NoError(t, err)
 
 	// rerun on same config instance to ensure inheritance and list append returns consistent results
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		profile, err := config.getProfile("profile")
 		require.NoError(t, err)
 		assert.NotNil(t, profile)

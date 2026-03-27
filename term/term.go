@@ -169,28 +169,26 @@ func FlushAllOutput() {
 // Print formats using the default formats for its operands and writes to standard output.
 // Spaces are added between operands when neither is a string.
 // It returns the number of bytes written and any write error encountered.
-func Print(a ...interface{}) (n int, err error) {
-	if PrintToError {
-		return fmt.Fprint(errorOutput, a...)
-	}
-	return fmt.Fprint(terminalOutput, a...)
+func Print(a ...any) (n int, err error) {
+	return fmt.Fprint(outputWriter(), a...)
 }
 
 // Println formats using the default formats for its operands and writes to standard output.
 // Spaces are always added between operands and a newline is appended.
 // It returns the number of bytes written and any write error encountered.
-func Println(a ...interface{}) (n int, err error) {
-	if PrintToError {
-		return fmt.Fprintln(errorOutput, a...)
-	}
-	return fmt.Fprintln(terminalOutput, a...)
+func Println(a ...any) (n int, err error) {
+	return fmt.Fprintln(outputWriter(), a...)
 }
 
 // Printf formats according to a format specifier and writes to standard output.
 // It returns the number of bytes written and any write error encountered.
-func Printf(format string, a ...interface{}) (n int, err error) {
+func Printf(format string, a ...any) (n int, err error) {
+	return fmt.Fprintf(outputWriter(), format, a...)
+}
+
+func outputWriter() io.Writer {
 	if PrintToError {
-		return fmt.Fprintf(errorOutput, format, a...)
+		return errorOutput
 	}
-	return fmt.Fprintf(terminalOutput, format, a...)
+	return terminalOutput
 }

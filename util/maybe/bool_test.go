@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 )
@@ -62,12 +61,12 @@ func TestBoolCreators(t *testing.T) {
 	assert.Equal(t, maybe.False(), maybe.SetBool(false))
 
 	assert.Equal(t, maybe.UnsetBool(), maybe.BoolFromNilable(nil))
-	assert.Equal(t, maybe.True(), maybe.BoolFromNilable(util.CopyRef(true)))
-	assert.Equal(t, maybe.False(), maybe.BoolFromNilable(util.CopyRef(false)))
+	assert.Equal(t, maybe.True(), maybe.BoolFromNilable(new(true)))
+	assert.Equal(t, maybe.False(), maybe.BoolFromNilable(new(false)))
 
 	assert.Nil(t, maybe.UnsetBool().Nilable())
-	assert.Equal(t, util.CopyRef(true), maybe.True().Nilable())
-	assert.Equal(t, util.CopyRef(false), maybe.False().Nilable())
+	assert.Equal(t, new(true), maybe.True().Nilable())
+	assert.Equal(t, new(false), maybe.False().Nilable())
 }
 
 func TestBoolDecoder(t *testing.T) {
@@ -78,50 +77,50 @@ func TestBoolDecoder(t *testing.T) {
 		expected any
 	}{
 		{
-			from:     reflect.TypeOf(struct{}{}),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[struct{}](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   struct{}{},
 			expected: struct{}{}, // same value returned as the "from" type in unexpected
 		},
 		{
-			from:     reflect.TypeOf(true),
-			to:       reflect.TypeOf(""),
+			from:     reflect.TypeFor[bool](),
+			to:       reflect.TypeFor[string](),
 			source:   false,
 			expected: false, // same value returned as the "to" type in unexpected
 		},
 		{
-			from:     reflect.TypeOf(""),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[string](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   "",
 			expected: "", // same value returned as the original value in unexpected
 		},
 		{
-			from:     reflect.TypeOf(""),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[string](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   "true",
 			expected: maybe.True(),
 		},
 		{
-			from:     reflect.TypeOf(""),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[string](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   "t",
 			expected: maybe.True(),
 		},
 		{
-			from:     reflect.TypeOf(""),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[string](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   "f",
 			expected: maybe.False(),
 		},
 		{
-			from:     reflect.TypeOf(true),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[bool](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   true,
 			expected: maybe.True(),
 		},
 		{
-			from:     reflect.TypeOf(true),
-			to:       reflect.TypeOf(maybe.Bool{}),
+			from:     reflect.TypeFor[bool](),
+			to:       reflect.TypeFor[maybe.Bool](),
 			source:   false,
 			expected: maybe.False(),
 		},

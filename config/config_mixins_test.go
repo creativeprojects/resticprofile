@@ -13,18 +13,18 @@ import (
 )
 
 func mixinsTestTools() (
-	makeMap func(kv ...interface{}) (mapped map[string]interface{}),
-	makeList func(v ...interface{}) []interface{},
+	makeMap func(kv ...any) (mapped map[string]any),
+	makeList func(v ...any) []any,
 ) {
-	makeMap = func(kv ...interface{}) (mapped map[string]interface{}) {
-		mapped = make(map[string]interface{})
+	makeMap = func(kv ...any) (mapped map[string]any) {
+		mapped = make(map[string]any)
 		for i := 0; i < len(kv); i += 2 {
 			mapped[cast.ToString(kv[i])] = kv[i+1]
 		}
 		return
 	}
 
-	makeList = func(v ...interface{}) []interface{} {
+	makeList = func(v ...any) []any {
 		return v
 	}
 	return
@@ -119,7 +119,7 @@ func TestMixin(t *testing.T) {
 }
 
 func TestRevolveAppendToListKeys(t *testing.T) {
-	load := func(t *testing.T, config map[string]interface{}) *viper.Viper {
+	load := func(t *testing.T, config map[string]any) *viper.Viper {
 		t.Helper()
 		v := viper.New()
 		require.NoError(t, v.MergeConfigMap(config))
@@ -130,7 +130,7 @@ func TestRevolveAppendToListKeys(t *testing.T) {
 
 	tests := []struct {
 		name                    string
-		config, mixin, expected map[string]interface{}
+		config, mixin, expected map[string]any
 	}{
 		{
 			name:     "append-string-to-string",

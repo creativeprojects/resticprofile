@@ -421,11 +421,6 @@ func (c *Config) GetConfigFile() string {
 	return c.configFile
 }
 
-// Get the value from the key
-func (c *Config) Get(key ...string) interface{} {
-	return c.viper.Get(c.flatKey(key...))
-}
-
 // HasProfile returns true if the profile exists in the configuration
 func (c *Config) HasProfile(profileKey string) bool {
 	return c.IsSet(c.getProfilePath(profileKey))
@@ -726,7 +721,7 @@ func (c *Config) unmarshalConfig() viper.DecoderConfigOption {
 }
 
 // unmarshalKey is a wrapper around viper.UnmarshalKey with the right decoder config options
-func (c *Config) unmarshalKey(key string, rawVal interface{}) error {
+func (c *Config) unmarshalKey(key string, rawVal any) error {
 	if c.GetVersion() >= Version02 && c.format == FormatHCL {
 		return fmt.Errorf("HCL format is not supported in version %d, please use version 1 or another file format", c.GetVersion())
 	}
@@ -755,7 +750,7 @@ func traceConfig(profileName, name string, replace bool, config *bytes.Buffer) {
 		if len(lines) > 999 {
 			gutter = "%4d: "
 		}
-		for i := 0; i < len(lines); i++ {
+		for i := range lines {
 			fmt.Fprintf(output, gutter, i+1)
 			output.Write(lines[i])
 			output.WriteString("\n")

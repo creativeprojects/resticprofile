@@ -125,7 +125,7 @@ func init() {
 	})
 
 	// Profile or Group: special handling for ConfidentialValue
-	confidentialType := reflect.TypeOf(ConfidentialValue{})
+	confidentialType := reflect.TypeFor[ConfidentialValue]()
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if field := property.field(); field != nil {
 			if util.ElementType(field.Type).AssignableTo(confidentialType) {
@@ -140,7 +140,7 @@ func init() {
 	})
 
 	// Profile or Group: special handling for maybe.Bool
-	maybeBoolType := reflect.TypeOf(maybe.Bool{})
+	maybeBoolType := reflect.TypeFor[maybe.Bool]()
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if field := property.field(); field != nil {
 			if util.ElementType(field.Type).AssignableTo(maybeBoolType) {
@@ -152,7 +152,7 @@ func init() {
 	})
 
 	// Profile or Group: special handling for maybe.Duration
-	maybeDurationType := reflect.TypeOf(maybe.Duration{})
+	maybeDurationType := reflect.TypeFor[maybe.Duration]()
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if field := property.field(); field != nil {
 			if util.ElementType(field.Type).AssignableTo(maybeDurationType) {

@@ -281,10 +281,7 @@ https://creativeprojects.github.io/resticprofile/
 					assert.Equal(t, len(input), n)
 				default:
 					for len(input) > 0 && err == nil {
-						length := test.scale * chunkSize
-						if length > len(input) {
-							length = len(input)
-						}
+						length := min(test.scale*chunkSize, len(input))
 						n, err = writer.Write(input[:length])
 						assert.Equal(t, length, n)
 						input = input[length:]
