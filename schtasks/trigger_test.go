@@ -272,19 +272,3 @@ func generateEveryMonthString() string {
 	}
 	return everyMonth
 }
-
-func taskInLocal(task *Task) {
-	for i := range task.Triggers.TimeTrigger {
-		if task.Triggers.TimeTrigger[i].StartBoundary != nil {
-			*task.Triggers.TimeTrigger[i].StartBoundary = task.Triggers.TimeTrigger[i].StartBoundary.Local()
-		}
-	}
-	for i := range task.Triggers.CalendarTrigger {
-		if task.Triggers.CalendarTrigger[i].StartBoundary != nil {
-			*task.Triggers.CalendarTrigger[i].StartBoundary = task.Triggers.CalendarTrigger[i].StartBoundary.Local()
-		}
-		if task.Triggers.CalendarTrigger[i].EndBoundary != nil {
-			*task.Triggers.CalendarTrigger[i].EndBoundary = task.Triggers.CalendarTrigger[i].EndBoundary.Local()
-		}
-	}
-}

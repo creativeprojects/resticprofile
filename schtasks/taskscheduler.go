@@ -49,7 +49,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 	taskPath := getTaskPath(config.ProfileName, config.CommandName)
 	if slices.Contains(list, taskPath) {
 		clog.Debugf("task %q already exists: deleting before creating", taskPath)
-		_, err = deleteTask(taskPath)
+		err = deleteTask(taskPath)
 		if err != nil {
 			return fmt.Errorf("cannot delete existing task to replace it: %w", err)
 		}
@@ -112,8 +112,7 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 // Delete a task
 func Delete(title, subtitle string) error {
 	taskName := getTaskPath(title, subtitle)
-	_, err := deleteTask(taskName)
-	return err
+	return deleteTask(taskName)
 }
 
 // Status returns the status of a task

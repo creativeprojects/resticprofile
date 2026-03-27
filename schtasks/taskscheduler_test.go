@@ -304,7 +304,7 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 			taskInUTC(&readTask)
 			assert.Equal(t, sourceTask, readTask)
 
-			_, err = deleteTask(taskPath)
+			err = deleteTask(taskPath)
 			require.NoError(t, err)
 		})
 	}
@@ -353,7 +353,7 @@ func TestStartWhenAvailableOption(t *testing.T) {
 	t.Log(result)
 	require.NoError(t, err)
 	defer func() {
-		_, _ = deleteTask(taskPath)
+		_ = deleteTask(taskPath)
 	}()
 
 	// Export and verify the task was created with StartWhenAvailable

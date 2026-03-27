@@ -177,9 +177,9 @@ func (t *Task) addDailyTrigger(schedule *calendar.Event) {
 		return
 	}
 	// install them all
-	for _, recurrence := range recurrences {
+	for i := range recurrences {
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: &recurrence,
+			StartBoundary: &recurrences[i],
 			ScheduleByDay: &ScheduleByDay{
 				DaysInterval: 1,
 			},
@@ -231,9 +231,9 @@ func (t *Task) addWeeklyTrigger(schedule *calendar.Event) {
 		return
 	}
 	// install them all
-	for _, recurrence := range recurrences {
+	for i := range recurrences {
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: &recurrence,
+			StartBoundary: &recurrences[i],
 			ScheduleByWeek: &ScheduleByWeek{
 				WeeksInterval: 1,
 				DaysOfWeek:    convertWeekdays(schedule.WeekDay.GetRangeValues()),
@@ -256,14 +256,14 @@ func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
 		return
 	}
 	// install them all
-	for _, recurrence := range recurrences {
+	for i := range recurrences {
 		if schedule.WeekDay.HasValue() && schedule.Day.HasValue() {
 			clog.Warningf("task scheduler does not support a day of the month and a day of the week in the same trigger: %s", schedule.String())
 			return
 		}
 		if schedule.WeekDay.HasValue() {
 			t.addCalendarTrigger(CalendarTrigger{
-				StartBoundary: &recurrence,
+				StartBoundary: &recurrences[i],
 				ScheduleByMonthDayOfWeek: &ScheduleByMonthDayOfWeek{
 					DaysOfWeek: convertWeekdays(schedule.WeekDay.GetRangeValues()),
 					Weeks:      AllWeeks,
@@ -273,7 +273,7 @@ func (t *Task) addMonthlyTrigger(schedule *calendar.Event) {
 			continue
 		}
 		t.addCalendarTrigger(CalendarTrigger{
-			StartBoundary: &recurrence,
+			StartBoundary: &recurrences[i],
 			ScheduleByMonth: &ScheduleByMonth{
 				DaysOfMonth: convertDaysOfMonth(schedule.Day.GetRangeValues()),
 				Months:      convertMonths(schedule.Month.GetRangeValues()),
