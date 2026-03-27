@@ -235,7 +235,14 @@ func TestTriggerCreationFromXML(t *testing.T) {
 			}
 			buffer := &bytes.Buffer{}
 			task := createTaskDefinition(scheduleConfig, schedules, fixture.from)
-			taskInLocal(&task)
+
+			if len(task.Triggers.CalendarTrigger) > 0 {
+				t.Logf("calendar triggers %+v", task.Triggers.CalendarTrigger)
+			}
+			if len(task.Triggers.TimeTrigger) > 0 {
+				t.Logf("time triggers %+v", task.Triggers.TimeTrigger)
+			}
+
 			err = createTaskFile(task, buffer)
 			require.NoError(t, err)
 

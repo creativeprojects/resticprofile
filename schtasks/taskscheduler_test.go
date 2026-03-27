@@ -153,12 +153,6 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 			[]string{"*-*-* 12:*"},
 			time.Date(2025, 7, 27, 11, 20, 0, 0, time.UTC),
 		},
-		// this creates 60 triggers
-		// {
-		// 	"every minute at 12",
-		// 	[]string{"*-*-* 12:*"},
-		// 	time.Date(2025, 7, 27, 12, 20, 0, 0, time.UTC),
-		// },
 		{
 			"every minute at 12 (after 12)",
 			[]string{"*-*-* 12:*"},
@@ -289,8 +283,7 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 
 			t.Logf("task contains %d time triggers and %d calendar triggers", len(sourceTask.Triggers.TimeTrigger), len(sourceTask.Triggers.CalendarTrigger))
 
-			result, err := createTask(taskPath, file.Name(), "", "")
-			t.Log(result)
+			_, err = createTask(taskPath, file.Name(), "", "")
 			require.NoError(t, err)
 
 			taskXML, err := exportTaskDefinition(taskPath)
@@ -302,17 +295,16 @@ func TestTaskSchedulerIntegration(t *testing.T) {
 				// no need for character conversion
 				return input, nil
 			}
-			readTask := &Task{}
+			readTask := Task{}
 			err = decoder.Decode(&readTask)
 			require.NoError(t, err)
 
 			sourceTask.fromNow = time.Time{} // ignore fromNow in the source task
 			taskInUTC(&sourceTask)
-			taskInUTC(readTask)
-			assert.Equal(t, sourceTask, *readTask)
+			taskInUTC(&readTask)
+			assert.Equal(t, sourceTask, readTask)
 
-			result, err = deleteTask(taskPath)
-			t.Log(result)
+			_, err = deleteTask(taskPath)
 			require.NoError(t, err)
 		})
 	}
