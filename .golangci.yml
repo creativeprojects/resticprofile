@@ -22,7 +22,7 @@ linters:
     # - forcetypeassert
     - gocheckcompilerdirectives
     - gochecksumtype
-    - gocritic
+    # - gocritic
     - godoclint
     - goheader
     - gomoddirectives
@@ -33,7 +33,7 @@ linters:
     - importas
     - inamedparam
     - ineffassign
-    # - intrange
+    - intrange
     # - ireturn
     - loggercheck
     - makezero

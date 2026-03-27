@@ -489,7 +489,7 @@ func TestBuiltInCommandsTable(t *testing.T) {
 		"forget", "generate", "init", "key",
 		"list", "ls", "migrate", "mount",
 		"prune", "recover",
-		//"repair", "repair-index", "repair-snapshots",
+		// "repair", "repair-index", "repair-snapshots",
 		"restore", "rewrite",
 		"self-update", "snapshots", "stats", "tag",
 		"unlock", "version",

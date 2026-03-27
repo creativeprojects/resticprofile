@@ -38,9 +38,9 @@ func NewUTF8Reader(reader io.ReadSeeker) io.Reader {
 
 func utfDecoder() DecoderFunc {
 	var utfBoms = [][]byte{
-		{0xef, 0xbb, 0xbf}, //UTF-8
-		{0xfe, 0xff},       //UTF16-BE
-		{0xff, 0xfe},       //UTF16-LE
+		{0xef, 0xbb, 0xbf}, // UTF-8
+		{0xfe, 0xff},       // UTF16-BE
+		{0xff, 0xfe},       // UTF16-LE
 	}
 
 	return func(reader io.ReadSeeker) transform.Transformer {
