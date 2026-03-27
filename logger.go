@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -105,10 +104,6 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 			logfile = logfile[len(constants.TemporaryDirMarker):]
 			if len(logfile) > 0 && os.IsPathSeparator(logfile[0]) {
 				logfile = logfile[1:]
-			}
-			logfile = strings.TrimLeft(logfile, string(filepath.Separator))
-			if !fs.ValidPath(logfile) {
-				return nil, nil, fmt.Errorf("invalid log file path: %s", logfile)
 			}
 			logfile = filepath.Join(tempDir, logfile)
 			err = os.MkdirAll(filepath.Dir(logfile), 0755) //nolint:gosec
