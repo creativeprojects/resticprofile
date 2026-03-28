@@ -12,8 +12,8 @@ This configuration executes the following:
     - Keeps every daily backup for the past week (7 backups), every weekly backup for the past month (4 backups), and a monthly backup for 75 years.
 
 {{< tabs groupid="example-ntfy" >}}
-{{% tab title="toml" %}}
-```toml
+{{% tab title="yaml" %}}
+```yaml
 default:
   insecure-no-password: true
   backup: 
