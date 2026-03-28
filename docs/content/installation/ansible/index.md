@@ -1,13 +1,15 @@
 ---
 title: "Ansible"
-weight: 15
+weight: 16
 ---
+
+{{% notice style="caution" %}}
+This is a work in progress documentation.
+{{% /notice %}}
 
 ## Installation using Ansible
 
 Installation using Ansible is not streamlined, but here's the playbook I'm using on my servers:
-
-<!-- {{% resources style="info" title="Playbooks" icon="paperclip" sort="asc" /%}} -->
 
 {{% notice style="secondary" title="Playbooks" icon="paperclip" %}}
 * [resticprofile.yml]({{< absolute "installation/ansible/resticprofile.yml" nohtml >}})

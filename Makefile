@@ -297,6 +297,7 @@ generate-config-reference: build ## Generate the configuration reference documen
 .PHONY: documentation
 documentation: generate-jsonschema generate-config-reference $(GOBIN)/hugo ## Generate the documentation site
 	@echo "[*] $@"
+	git submodule init && git submodule update --depth=1
 	cd docs && hugo --minify
 
 .PHONY: syslog-ng
