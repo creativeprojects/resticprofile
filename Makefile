@@ -28,6 +28,7 @@ README=README.md
 
 TESTS=./...
 COVERAGE_FILE=coverage.out
+COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
 BUILD=build/
@@ -193,20 +194,22 @@ coverage: ## Generate coverage report
 clean: ## Clean up the build artifacts
 	@echo "[*] $@"
 	$(GOCLEAN)
-	rm -rf $(BINARY) \
-	       $(BINARY_DARWIN_AMD64) \
-	       $(BINARY_DARWIN_ARM64) \
-	       $(BINARY_LINUX_AMD64) \
-	       $(BINARY_LINUX_ARM64) \
-	       $(BINARY_PI) \
-	       $(BINARY_WINDOWS_AMD64) \
-	       $(BINARY_WINDOWS_ARM64) \
-	       $(COVERAGE_FILE) \
-		   $(JUNIT_FILE) \
-	       restic_*_linux_amd64* \
-	       ${BUILD}restic* \
-	       ${BUILD}rclone* \
-	       dist/*
+	rm -rf \ 
+		$(BINARY) \
+		$(BINARY_DARWIN_AMD64) \
+		$(BINARY_DARWIN_ARM64) \
+		$(BINARY_LINUX_AMD64) \
+		$(BINARY_LINUX_ARM64) \
+		$(BINARY_PI) \
+		$(BINARY_WINDOWS_AMD64) \
+		$(BINARY_WINDOWS_ARM64) \
+		$(COVERAGE_FILE) \
+		$(COVERAGE_SSH_FILE) \
+		$(JUNIT_FILE) \
+		restic_*_linux_amd64* \
+		${BUILD}restic* \
+		${BUILD}rclone* \
+		dist/*
 	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
 
@@ -379,4 +382,4 @@ stop-ssh-server:
 .PHONY: ssh-test
 ssh-test:
 	@echo "[*] $@"
-	@go test -run TestSSHClient -v -tags ssh ./ssh
+	@go test -run TestSSHClient -v -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh

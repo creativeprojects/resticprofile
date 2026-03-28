@@ -86,3 +86,12 @@ jobs:
           make start-ssh-server
           make ssh-test
           make stop-ssh-server
+
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          name: code-coverage-ssh-report
+          files: ./coverage-ssh.out
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
