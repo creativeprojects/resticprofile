@@ -83,7 +83,7 @@ func main() {
 	}
 
 	if stdin {
-		if _, err := io.CopyN(os.Stdout, os.Stdin, 1024); err != nil && err != io.EOF {
+		if _, err := io.CopyN(os.Stdout, os.Stdin, 1024); err != nil && !errors.Is(err, io.EOF) {
 			fmt.Printf("failed reading stdin")
 			exit = 512
 		}

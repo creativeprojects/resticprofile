@@ -3,6 +3,7 @@
 package preventsleep
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"sync"
@@ -34,14 +35,12 @@ func (c *Caffeinate) Start() error {
 	if ok {
 		return ErrAlreadyStarted
 	}
-	cmd = exec.Command(command, flag)
+	cmd = exec.CommandContext(context.TODO(), command, flag)
 	c.cmd.Store(cmd)
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		err := cmd.Wait()
 		if err != nil {
 			if err.Error() != signalInterrupt {
@@ -50,7 +49,7 @@ func (c *Caffeinate) Start() error {
 		}
 		cmd = nil
 		c.cmd.Store(cmd)
-	}()
+	})
 	return nil
 }
 

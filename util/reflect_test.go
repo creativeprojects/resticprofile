@@ -15,11 +15,11 @@ func TestUnpackValue(t *testing.T) {
 		value    any
 		expected reflect.Type
 	}{
-		{value: "v", expected: reflect.TypeOf("")},
-		{value: CopyRef("v"), expected: reflect.TypeOf("")},
-		{value: CopyRef(io.Writer(nil)), expected: nil},
-		{value: CopyRef(io.Writer(&strings.Builder{})), expected: reflect.TypeOf(strings.Builder{})},
-		{value: io.Writer(&strings.Builder{}), expected: reflect.TypeOf(strings.Builder{})},
+		{value: "v", expected: reflect.TypeFor[string]()},
+		{value: new("v"), expected: reflect.TypeFor[string]()},
+		{value: new(io.Writer(nil)), expected: nil},
+		{value: new(io.Writer(&strings.Builder{})), expected: reflect.TypeFor[strings.Builder]()},
+		{value: io.Writer(&strings.Builder{}), expected: reflect.TypeFor[strings.Builder]()},
 	}
 
 	for i, test := range tests {
@@ -40,12 +40,12 @@ func TestElementType(t *testing.T) {
 		value    any
 		expected reflect.Type
 	}{
-		{value: "v", expected: reflect.TypeOf("")},
-		{value: map[int]string{}, expected: reflect.TypeOf("")},
-		{value: &map[int]string{}, expected: reflect.TypeOf("")},
-		{value: []string{}, expected: reflect.TypeOf("")},
-		{value: append([]string{}, "v"), expected: reflect.TypeOf("")},
-		{value: make(chan string), expected: reflect.TypeOf("")},
+		{value: "v", expected: reflect.TypeFor[string]()},
+		{value: map[int]string{}, expected: reflect.TypeFor[string]()},
+		{value: &map[int]string{}, expected: reflect.TypeFor[string]()},
+		{value: []string{}, expected: reflect.TypeFor[string]()},
+		{value: append([]string{}, "v"), expected: reflect.TypeFor[string]()},
+		{value: make(chan string), expected: reflect.TypeFor[string]()},
 	}
 
 	for i, test := range tests {

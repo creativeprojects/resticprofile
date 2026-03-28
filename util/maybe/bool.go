@@ -48,11 +48,11 @@ func BoolFromNilable(value *bool) Bool {
 }
 
 // BoolDecoder implements config parsing for maybe.Bool
-func BoolDecoder() func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-	fromType := reflect.TypeOf(true)
-	valueType := reflect.TypeOf(Bool{})
+func BoolDecoder() func(from reflect.Type, to reflect.Type, data any) (any, error) {
+	fromType := reflect.TypeFor[bool]()
+	valueType := reflect.TypeFor[Bool]()
 
-	return func(from reflect.Type, to reflect.Type, data interface{}) (result interface{}, err error) {
+	return func(from reflect.Type, to reflect.Type, data any) (result any, err error) {
 		result = data
 		if to != valueType {
 			return

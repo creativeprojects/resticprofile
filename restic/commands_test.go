@@ -39,7 +39,7 @@ func optionIs(name, description, def string, once bool) func(t *testing.T, cmd C
 	return func(t *testing.T, cmd CommandIf, err error) {
 		t.Helper()
 		assert.NoError(t, err)
-		for _, n := range strings.Split(name, ",") {
+		for n := range strings.SplitSeq(name, ",") {
 			option, found := cmd.Lookup(n)
 			require.Truef(t, found, "name %s not found", n)
 			assert.Contains(t, cmd.GetOptions(), option, "lookup found an option that is not in GetOptions")
@@ -426,7 +426,7 @@ func TestLoadAndSave(t *testing.T) {
 		LoadEmbeddedCommands()
 
 		contents := make([][]byte, 2)
-		for i := 0; i < 2; i++ {
+		for i := range 2 {
 			err := StoreCommands(file)
 			assert.NoError(t, err)
 			contents[i], err = os.ReadFile(file)
@@ -441,7 +441,7 @@ func TestLoadAndSave(t *testing.T) {
 		names, idx := CommandNames(), 0
 		sort.Strings(names)
 		for _, name := range names {
-			index := bytes.Index(contents[0], []byte(fmt.Sprintf(`%s    "Name": "%s"`, "\n", name)))
+			index := bytes.Index(contents[0], fmt.Appendf(nil, `%s    "Name": "%s"`, "\n", name))
 			assert.Greater(t, index, idx, "index of %s greater %d", name, idx)
 			idx = index
 		}
@@ -489,7 +489,7 @@ func TestBuiltInCommandsTable(t *testing.T) {
 		"forget", "generate", "init", "key",
 		"list", "ls", "migrate", "mount",
 		"prune", "recover",
-		//"repair", "repair-index", "repair-snapshots",
+		// "repair", "repair-index", "repair-snapshots",
 		"restore", "rewrite",
 		"self-update", "snapshots", "stats", "tag",
 		"unlock", "version",

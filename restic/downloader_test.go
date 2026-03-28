@@ -14,7 +14,7 @@ import (
 func TestDownloadBinary(t *testing.T) {
 	t.Parallel()
 	if testing.Short() {
-		t.Skip()
+		t.Skip("don't run download tests in short mode")
 	}
 
 	versions := []string{

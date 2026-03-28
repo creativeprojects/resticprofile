@@ -16,31 +16,31 @@ import (
 
 // mixin describes a parsed mixin definition (mixins: ...)
 type mixin struct {
-	DefaultVariables map[string]interface{} `mapstructure:"default-vars" description:"default values for mixin variables"`
-	Source           map[string]interface{} `mapstructure:",remain"`
+	DefaultVariables map[string]any `mapstructure:"default-vars" description:"default values for mixin variables"`
+	Source           map[string]any `mapstructure:",remain"`
 }
 
 // Resolve applies variables and returns a resolved copy of Source
-func (m *mixin) Resolve(variables map[string]interface{}) map[string]interface{} {
+func (m *mixin) Resolve(variables map[string]any) map[string]any {
 	return m.translate(m.Source, variables)
 }
 
-func (m *mixin) translate(source, variables map[string]interface{}) map[string]interface{} {
-	target := make(map[string]interface{})
+func (m *mixin) translate(source, variables map[string]any) map[string]any {
+	target := make(map[string]any)
 
 	for name, rawValue := range source {
 		switch value := rawValue.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			target[name] = m.translate(value, variables)
 		case string:
 			target[name] = m.expandVariables(value, variables)
-		case []interface{}:
-			resolved := make([]interface{}, len(value))
-			for i := 0; i < len(value); i++ {
+		case []any:
+			resolved := make([]any, len(value))
+			for i := range value {
 				switch item := value[i].(type) {
 				case string:
 					resolved[i] = m.expandVariables(item, variables)
-				case map[string]interface{}:
+				case map[string]any:
 					resolved[i] = m.translate(item, variables)
 				default:
 					resolved[i] = item
@@ -55,7 +55,7 @@ func (m *mixin) translate(source, variables map[string]interface{}) map[string]i
 	return target
 }
 
-func (m *mixin) expandVariables(value string, variables map[string]interface{}) string {
+func (m *mixin) expandVariables(value string, variables map[string]any) string {
 	return os.Expand(value, func(name string) string {
 		if name == "$" {
 			return "$" // allow to escape "$" as "$$"
@@ -80,7 +80,7 @@ func (m *mixin) expandVariables(value string, variables map[string]interface{}) 
 	})
 }
 
-func keysToUpper(items map[string]interface{}) map[string]interface{} {
+func keysToUpper(items map[string]any) map[string]any {
 	for key, value := range items {
 		if lk := strings.ToUpper(key); lk != key {
 			delete(items, key)
@@ -95,7 +95,7 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 	mixins := map[string]*mixin{}
 	definitions := config.GetStringMap(constants.SectionConfigurationMixins)
 	for name, def := range definitions {
-		if definition, ok := def.(map[string]interface{}); ok {
+		if definition, ok := def.(map[string]any); ok {
 			clog.Trace(func() string {
 				buffer := &strings.Builder{}
 				_ = yaml.NewEncoder(buffer).Encode(definition)
@@ -117,9 +117,9 @@ func parseMixins(config *viper.Viper) map[string]*mixin {
 
 // mixinUse the use of a mixin within the configuration (profiles.name.use: ...)
 type mixinUse struct {
-	Name              string                 `mapstructure:"name" description:"name of the mixin to use"`
-	Variables         map[string]interface{} `mapstructure:"vars" description:"mixin variables to apply"`
-	ImplicitVariables map[string]interface{} `mapstructure:",remain"`
+	Name              string         `mapstructure:"name" description:"name of the mixin to use"`
+	Variables         map[string]any `mapstructure:"vars" description:"mixin variables to apply"`
+	ImplicitVariables map[string]any `mapstructure:",remain"`
 }
 
 func (u *mixinUse) normalizeVariables() {
@@ -141,12 +141,12 @@ func (u *mixinUse) normalizeVariables() {
 }
 
 // parseMixinUses parses a mixin use config value (the value of a key with ".use" suffix)
-func parseMixinUses(rawValue interface{}) (uses []*mixinUse, err error) {
+func parseMixinUses(rawValue any) (uses []*mixinUse, err error) {
 	if rawValue != nil {
 		switch value := rawValue.(type) {
 		case string:
 			uses = append(uses, &mixinUse{Name: value})
-		case []interface{}:
+		case []any:
 			for _, rawItem := range value {
 				use := new(mixinUse)
 				uses = append(uses, use)
@@ -203,10 +203,10 @@ func collectAllMixinUses(config *viper.Viper, keyDelimiter string) (allUses map[
 	return
 }
 
-func mergeConfigMap(config *viper.Viper, configKey, keyDelimiter string, content map[string]interface{}) error {
+func mergeConfigMap(config *viper.Viper, configKey, keyDelimiter string, content map[string]any) error {
 	path := strings.Split(configKey, keyDelimiter)
 	for i := len(path) - 1; i >= 0; i-- {
-		container := make(map[string]interface{})
+		container := make(map[string]any)
 		container[path[i]], content = content, container
 	}
 	return config.MergeConfigMap(content)
@@ -275,12 +275,12 @@ func parseAppendToListKey(key string) (targetKey string, operation mixinAppendTo
 }
 
 // revolveAppendToListKeys resolves "key__APPEND" and "key__PREPEND" in content using config as base
-func revolveAppendToListKeys(config *viper.Viper, content map[string]interface{}) {
+func revolveAppendToListKeys(config *viper.Viper, content map[string]any) {
 	for name, value := range content {
 		targetName, operation := parseAppendToListKey(name)
 
 		if operation == mixinNoAppend {
-			if child, ok := value.(map[string]interface{}); ok {
+			if child, ok := value.(map[string]any); ok {
 				var cc *viper.Viper
 				if config != nil {
 					cc = config.Sub(name)
@@ -297,13 +297,13 @@ func revolveAppendToListKeys(config *viper.Viper, content map[string]interface{}
 			sourceValue = config.Get(targetName)
 		}
 
-		var source, appendable []interface{}
+		var source, appendable []any
 		if source = cast.ToSlice(sourceValue); source == nil && sourceValue != nil {
-			source = []interface{}{sourceValue}
+			source = []any{sourceValue}
 		}
 
 		if appendable = cast.ToSlice(value); appendable == nil && value != nil {
-			appendable = []interface{}{value}
+			appendable = []any{value}
 		}
 
 		switch operation {

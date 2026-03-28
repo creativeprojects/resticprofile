@@ -400,7 +400,7 @@ func TestParseTemplate(t *testing.T) {
 
 func TestResponseSanitizer(t *testing.T) {
 	var tests [][]string
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		if (i < 32 && i != '\f' && i != '\t' && i != '\r' && i != '\n') || i > 127 {
 			tests = append(tests, []string{string([]byte{byte(i)}), " "})
 		}

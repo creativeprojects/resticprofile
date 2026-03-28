@@ -10,12 +10,13 @@ linters:
     - contextcheck
     - copyloopvar
     - decorder
+    - dupl
     - durationcheck
     # - err113
     - errcheck
     - errchkjson
     - errname
-    # - errorlint
+    - errorlint
     - exptostd
     - fatcontext
     # - forcetypeassert
@@ -32,7 +33,7 @@ linters:
     - importas
     - inamedparam
     - ineffassign
-    # - intrange
+    - intrange
     # - ireturn
     - loggercheck
     - makezero
@@ -42,7 +43,7 @@ linters:
     - nilnesserr
     - nilnil
     # - nlreturn
-    # - noctx
+    - noctx
     - nolintlint
     - nosprintfhostport
     # - perfsprint
@@ -80,6 +81,12 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      # Exclude some linters from running on tests files.
+      - path: _test\.go
+        linters:
+          - dupl
+          - gosec
 formatters:
   exclusions:
     generated: lax

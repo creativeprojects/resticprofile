@@ -4,6 +4,7 @@ package schedule
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -166,7 +167,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 }
 
 func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
-	jobs := make([]Config, 0)
+	jobs := make([]Config, 0, 10)
 	if profileName == "" {
 		profileName = "*"
 	} else {
@@ -183,9 +184,14 @@ func (h *HandlerLaunchd) Scheduled(profileName string) ([]Config, error) {
 
 func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event) *darwin.LaunchdJob {
 	name := getJobName(job.ProfileName, job.CommandName)
-	// we always set the log file in the job settings as a default
-	// if changed in the configuration via schedule-log the standard output will be empty anyway
-	logfile := name + ".log"
+	// Only set the log file when schedule-log is not configured.
+	// When schedule-log is set, resticprofile handles logging internally,
+	// so we omit StandardOutPath/StandardErrorPath from the plist to avoid
+	// creating empty log files (the plist fields have omitempty tags).
+	var logfile string
+	if job.Log == "" {
+		logfile = name + ".log"
+	}
 
 	// Format schedule env, adding PATH if not yet provided by the schedule config
 	env := util.NewDefaultEnvironment(job.Environment...)
@@ -409,13 +415,12 @@ func domainTarget(permission Permission) string {
 
 func launchctlCommand(arg ...string) *exec.Cmd {
 	clog.Debugf("running command: '%s %s'", launchctlBin, strings.Join(arg, " "))
-	return exec.Command(launchctlBin, arg...)
+	return exec.CommandContext(context.TODO(), launchctlBin, arg...)
 }
 
 func parsePrintStatus(output []byte) map[string]string {
 	info := make(map[string]string, 10)
-	lines := bytes.Split(output, []byte{'\n'})
-	for _, line := range lines {
+	for line := range bytes.SplitSeq(output, []byte{'\n'}) {
 		line = bytes.TrimSpace(line)
 		if len(line) == 0 {
 			continue

@@ -16,12 +16,10 @@ const selfPID = 0
 func main() {
 	// run it in a go routine in case it would make a difference
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		displayProcessAndGroup()
 		displayPriority()
-	}()
+	})
 	wg.Wait()
 }
 

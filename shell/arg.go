@@ -147,7 +147,7 @@ func (a Arg) String() string {
 func escapeString(value string, chars []byte) string {
 	output := &strings.Builder{}
 	escape := 0
-	for i := 0; i < len(value); i++ {
+	for i := range len(value) {
 		if value[i] == '\\' {
 			escape++
 		} else {

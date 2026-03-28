@@ -69,7 +69,7 @@ func (r *schemaRoot) createReferences(minContentLength int) {
 	names := make(map[SchemaType]string)
 
 	// 3 passes (1: ref-count, 2: array-ref-count, 3: all type-lists)
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		refs := make(map[SchemaType]int)
 
 		switch i {

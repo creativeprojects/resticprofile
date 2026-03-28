@@ -46,7 +46,7 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-cha
 		} else if errors.Is(err, fs.ErrNotExist) {
 			locker = "none"
 		} else {
-			return fmt.Errorf("another process left the lockfile unreadable: %s", err)
+			return fmt.Errorf("another process left the lockfile unreadable: %w", err)
 		}
 
 		// should we try to force our way?
@@ -69,10 +69,7 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-cha
 				lockName := fmt.Sprintf("%s locked by %s", lockFile, locker)
 				lockWaitLogged = logLockWait(lockName, start, lockWaitLogged, 0, *lockWait)
 
-				sleep := constants.LocalLockRetryDelay
-				if sleep > *lockWait {
-					sleep = *lockWait
-				}
+				sleep := min(constants.LocalLockRetryDelay, *lockWait)
 				err := interruptibleSleep(sleep, sigChan)
 				if err != nil {
 					return err

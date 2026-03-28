@@ -66,7 +66,7 @@ func TestNewSchedule(t *testing.T) {
 			schedule = "daily"
 		`)
 		t.Run("schedule-defaults apply", func(t *testing.T) {
-			for i := 0; i < 2; i++ {
+			for i := range 2 {
 				var schedule *Schedule
 				if i == 0 {
 					schedule = NewDefaultSchedule(p.config, origin)
@@ -274,7 +274,7 @@ func TestNewScheduleFromGroup(t *testing.T) {
 			at = "daily"
 		`)
 		t.Run("schedule-defaults apply", func(t *testing.T) {
-			for i := 0; i < 2; i++ {
+			for i := range 2 {
 				var schedule *Schedule
 				if i == 0 {
 					schedule = NewDefaultSchedule(g.config, origin)

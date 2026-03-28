@@ -127,13 +127,12 @@ func TestHostTagPathProperty(t *testing.T) {
 }
 
 func TestConfidentialProperty(t *testing.T) {
-	var testType = struct {
-		Simple ConfidentialValue            `mapstructure:"simple"`
-		List   []ConfidentialValue          `mapstructure:"list"`
-		Mapped map[string]ConfidentialValue `mapstructure:"mapped"`
-	}{}
 
-	set := propertySetFromType(reflect.TypeOf(testType))
+	set := propertySetFromType(reflect.TypeFor[struct {
+		Simple ConfidentialValue            "mapstructure:\"simple\""
+		List   []ConfidentialValue          "mapstructure:\"list\""
+		Mapped map[string]ConfidentialValue "mapstructure:\"mapped\""
+	}]())
 
 	assert.ElementsMatch(t, []string{"simple", "list", "mapped"}, set.Properties())
 	for _, name := range set.Properties() {
@@ -174,11 +173,10 @@ func TestConfidentialProperty(t *testing.T) {
 }
 
 func TestMaybeBoolProperty(t *testing.T) {
-	var testType = struct {
-		Simple maybe.Bool `mapstructure:"simple"`
-	}{}
 
-	set := propertySetFromType(reflect.TypeOf(testType))
+	set := propertySetFromType(reflect.TypeFor[struct {
+		Simple maybe.Bool "mapstructure:\"simple\""
+	}]())
 
 	assert.ElementsMatch(t, []string{"simple"}, set.Properties())
 	for _, name := range set.Properties() {
@@ -205,11 +203,10 @@ func TestMaybeBoolProperty(t *testing.T) {
 }
 
 func TestMaybeDurationProperty(t *testing.T) {
-	var testType = struct {
-		Simple maybe.Duration `mapstructure:"simple"`
-	}{}
 
-	set := propertySetFromType(reflect.TypeOf(testType))
+	set := propertySetFromType(reflect.TypeFor[struct {
+		Simple maybe.Duration "mapstructure:\"simple\""
+	}]())
 
 	assert.ElementsMatch(t, []string{"simple"}, set.Properties())
 	for _, name := range set.Properties() {
@@ -239,11 +236,10 @@ func TestMaybeDurationProperty(t *testing.T) {
 }
 
 func TestScheduleProperty(t *testing.T) {
-	var testType = struct {
-		Schedule any `mapstructure:"schedule"`
-	}{}
 
-	set := propertySetFromType(reflect.TypeOf(testType))
+	set := propertySetFromType(reflect.TypeFor[struct {
+		Schedule any "mapstructure:\"schedule\""
+	}]())
 
 	assert.ElementsMatch(t, []string{"schedule"}, set.Properties())
 	for _, name := range set.Properties() {
@@ -274,11 +270,10 @@ func TestScheduleProperty(t *testing.T) {
 }
 
 func TestDeprecatedSection(t *testing.T) {
-	var testType = struct {
-		ScheduleBaseSection `mapstructure:",squash" deprecated:"true"`
-	}{}
 
-	set := propertySetFromType(reflect.TypeOf(testType))
+	set := propertySetFromType(reflect.TypeFor[struct {
+		ScheduleBaseSection "mapstructure:\",squash\" deprecated:\"true\""
+	}]())
 	require.False(t, set.PropertyInfo("schedule").IsDeprecated())
 
 	customizeProperties("any", set.properties)

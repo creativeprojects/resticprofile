@@ -2,6 +2,7 @@ package calendar
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -100,7 +101,7 @@ func (v *Value) HasContiguousRange() bool {
 		return false
 	}
 
-	for i := 0; i < v.maxRange-v.minRange; i++ {
+	for i := range v.maxRange - v.minRange {
 		if v.rangeValues[i] && v.rangeValues[i+1] {
 			return true
 		}
@@ -114,7 +115,7 @@ func (v *Value) HasLongContiguousRange() bool {
 		return false
 	}
 
-	for i := 0; i < v.maxRange-v.minRange-1; i++ {
+	for i := range v.maxRange - v.minRange - 1 {
 		if v.rangeValues[i] && v.rangeValues[i+1] && v.rangeValues[i+2] {
 			return true
 		}
@@ -246,12 +247,7 @@ func (v *Value) GetRanges() []Range {
 
 // IsInRange check the parameter is in range of Value
 func (v *Value) IsInRange(ref int) bool {
-	for _, current := range v.GetRangeValues() {
-		if current == ref {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(v.GetRangeValues(), ref)
 }
 
 // String representation
@@ -291,8 +287,7 @@ func (v *Value) Parse(input string, postProcess ...postProcessFunc) error {
 		return nil
 	}
 
-	parts := strings.Split(input, ",")
-	for _, part := range parts {
+	for part := range strings.SplitSeq(input, ",") {
 		if part == "" {
 			continue
 		}

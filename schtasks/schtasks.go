@@ -4,6 +4,7 @@ package schtasks
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"encoding/xml"
 	"errors"
@@ -74,7 +75,7 @@ func createTask(taskName, filename, username, password string) (string, error) {
 	}
 
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, params...)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, params...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err = cmd.Run()
@@ -90,7 +91,7 @@ func exportTaskDefinition(taskName string) ([]byte, error) {
 		return nil, err
 	}
 	buffer := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/xml", "/tn", taskName)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/query", "/xml", "/tn", taskName)
 	cmd.Stdout = buffer
 	err = cmd.Run()
 	return buffer.Bytes(), err
@@ -98,7 +99,7 @@ func exportTaskDefinition(taskName string) ([]byte, error) {
 
 func listRegisteredTasks() ([]byte, error) {
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/nh", "/fo", "csv")
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/query", "/nh", "/fo", "csv")
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err := cmd.Run()
@@ -108,20 +109,20 @@ func listRegisteredTasks() ([]byte, error) {
 	return stdout.Bytes(), err
 }
 
-func deleteTask(taskName string) (string, error) {
+func deleteTask(taskName string) error {
 	taskName, err := sanitizeTaskName(taskName)
 	if err != nil {
-		return "", err
+		return err
 	}
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/delete", "/f", "/tn", taskName)
-	cmd.Stdout = stdout
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/delete", "/f", "/tn", taskName)
+	cmd.Stdout = stdout // we're not actually interested in the output, but we need to capture it to avoid it being printed to the console
 	cmd.Stderr = stderr
 	err = cmd.Run()
 	if err != nil {
-		return "", schTasksError(stderr.String())
+		return schTasksError(stderr.String())
 	}
-	return stdout.String(), nil
+	return nil
 }
 
 // readTaskInfo returns the raw output from querying the task name (via schtasks.exe)
@@ -131,7 +132,7 @@ func readTaskInfo(taskName string, output io.Writer) error {
 		return err
 	}
 	stderr := &bytes.Buffer{}
-	cmd := exec.Command(binaryPath, "/query", "/fo", "list", "/v", "/tn", taskName)
+	cmd := exec.CommandContext(context.TODO(), binaryPath, "/query", "/fo", "list", "/v", "/tn", taskName)
 	cmd.Stdout = output
 	cmd.Stderr = stderr
 	err = cmd.Run()

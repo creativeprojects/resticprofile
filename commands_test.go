@@ -137,7 +137,9 @@ _ = 0
 `
 	allProfiles := []string{"default", "2nd", "3rd"}
 	allGroups := []string{"others", "default"}
-	allProfilesAndGroups := append(allProfiles, allGroups...)
+	allProfilesAndGroups := make([]string, 0, len(allProfiles)+len(allGroups))
+	allProfilesAndGroups = append(allProfilesAndGroups, allProfiles...)
+	allProfilesAndGroups = append(allProfilesAndGroups, allGroups...)
 
 	cfg, err := config.Load(bytes.NewBufferString(testConfig), "toml")
 	assert.Nil(t, err)

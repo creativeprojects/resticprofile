@@ -2,6 +2,7 @@ package shell
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -46,7 +47,7 @@ type Command struct {
 	SetPID     SetPID
 	ScanStdout ScanOutput
 	sigChan    chan os.Signal
-	done       chan interface{}
+	done       chan any
 	analyser   *OutputAnalyser
 }
 
@@ -67,7 +68,7 @@ func NewSignalledCommand(command string, args []string, c chan os.Signal) *Comma
 		Arguments: args,
 		Environ:   []string{},
 		sigChan:   c,
-		done:      make(chan interface{}),
+		done:      make(chan any),
 		analyser:  NewOutputAnalyser(),
 	}
 }
@@ -90,7 +91,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	}
 
 	// clog.Tracef("command: %s %q", command, args)
-	cmd := exec.Command(command, args...)
+	cmd := exec.CommandContext(context.TODO(), command, args...)
 
 	if c.ScanStdout != nil {
 		// install a pipe for scanning the output
@@ -385,7 +386,7 @@ func removeQuotes(args []string) []string {
 	singleQuote := `'`
 	doubleQuote := `"`
 
-	for i := 0; i < len(args); i++ {
+	for i := range args {
 		if strings.HasPrefix(args[i], doubleQuote) && strings.HasSuffix(args[i], doubleQuote) {
 			args[i] = strings.Trim(args[i], doubleQuote)
 

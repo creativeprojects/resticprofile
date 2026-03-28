@@ -1,7 +1,7 @@
 # 
 # Makefile for resticprofile
 # 
-GOCMD=go
+GOCMD=$(shell command -v go)
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
 GORUN=$(GOCMD) run
@@ -28,6 +28,7 @@ README=README.md
 
 TESTS=./...
 COVERAGE_FILE=coverage.out
+JUNIT_FILE=unit-tests.xml
 
 BUILD=build/
 
@@ -75,7 +76,7 @@ all: prepare_test test build
 .PHONY: all verify prepare_test prepare_build install clean ramdisk rest-server nightly toc syslog checkdoc
 
 verify: ## Verify go installation
-ifeq ($(wildcard $(GOPATH)/.),)
+ifeq ($(GOPATH),)
 	@echo "GOPATH not found, please check your go installation"
 	exit 1
 endif
@@ -94,11 +95,11 @@ $(GOBIN)/github-markdown-toc.go: verify $(GOBIN)/eget
 
 $(GOBIN)/mockery: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" vektra/mockery --tag v3.5.5 --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" vektra/mockery --tag v3.7.0 --upgrade-only --to '$(GOBIN)'
 
-$(GOBIN)/golangci-lint: verify $(GOBIN)/eget
+$(GOBIN)/golangci-lint-v2: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" golangci/golangci-lint --tag v2.5.0 --asset=tar.gz --upgrade-only --to '$(GOBIN)'
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v2.11.4 --asset=tar.gz --upgrade-only --to '$(GOBIN)/golangci-lint-v2'
 
 $(GOBIN)/hugo: $(GOBIN)/eget
 	@echo "[*] $@"
@@ -107,6 +108,10 @@ $(GOBIN)/hugo: $(GOBIN)/eget
 $(GOBIN)/muffet: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" raviqqe/muffet --upgrade-only --to '$(GOBIN)'
+
+$(GOBIN)/gotestsum: verify $(GOBIN)/eget
+	@echo "[*] $@"
+	"$(GOBIN)/eget" gotestyourself/gotestsum --upgrade-only --to '$(GOBIN)'
 
 prepare_build: verify download
 	@echo "[*] $@"
@@ -173,9 +178,9 @@ test: prepare_test ## Run unit tests
 	@echo "[*] $@"
 	$(GOTEST) $(TESTS)
 
-test-ci: prepare_test ## Run unit tests with coverage (for CI)
+test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
-	$(GOTEST) -v -race -short -coverprofile='coverage.out' ./...
+	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"
@@ -194,6 +199,7 @@ clean: ## Clean up the build artifacts
 	       $(BINARY_WINDOWS_AMD64) \
 	       $(BINARY_WINDOWS_ARM64) \
 	       $(COVERAGE_FILE) \
+		   $(JUNIT_FILE) \
 	       restic_*_linux_amd64* \
 	       ${BUILD}restic* \
 	       ${BUILD}rclone* \
@@ -322,20 +328,20 @@ checklinks: $(GOBIN)/muffet ## Check for broken links in the documentation site
 	  http://127.0.0.1:1313/resticprofile/
 
 .PHONY: lint
-lint: $(GOBIN)/golangci-lint ## Run golangci-lint
+lint: $(GOBIN)/golangci-lint-v2 ## Run golangci-lint
 	@echo "[*] $@"
-	GOOS=darwin golangci-lint run
-	GOOS=linux golangci-lint run
-	GOOS=windows golangci-lint run
+	GOOS=darwin $(GOBIN)/golangci-lint-v2 run
+	GOOS=linux $(GOBIN)/golangci-lint-v2 run
+	GOOS=windows $(GOBIN)/golangci-lint-v2 run
 
 .PHONY: fix
-fix: $(GOBIN)/golangci-lint ## Run golangci-lint with --fix
+fix: $(GOBIN)/golangci-lint-v2 ## Run golangci-lint with --fix
 	@echo "[*] $@"
 	$(GOCMD) mod tidy
 	$(GOCMD) fix ./...
-	GOOS=darwin golangci-lint run --fix
-	GOOS=linux golangci-lint run --fix
-	GOOS=windows golangci-lint run --fix
+	GOOS=darwin $(GOBIN)/golangci-lint-v2 run --fix
+	GOOS=linux $(GOBIN)/golangci-lint-v2 run --fix
+	GOOS=windows $(GOBIN)/golangci-lint-v2 run --fix
 
 .PHONY: deploy-current
 deploy-current: build-linux build-pi

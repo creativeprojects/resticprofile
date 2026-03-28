@@ -249,7 +249,7 @@ func detectNeedsUserColumn(crontab string) bool {
 
 	var header, userHeader int
 	var entries, userEntries float32
-	for _, line := range strings.Split(crontab, "\n") {
+	for line := range strings.SplitSeq(crontab, "\n") {
 		if m := headerR.FindStringSubmatch(line); m != nil {
 			header++
 			if len(m) == 3 && strings.HasPrefix(strings.TrimSpace(m[1]), "user") {

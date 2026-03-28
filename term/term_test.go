@@ -71,6 +71,7 @@ func TestAskYesNo(t *testing.T) {
 }
 
 func ExamplePrint() {
+	PrintToError = false
 	SetOutput(os.Stdout)
 	_, err := Print("ExamplePrint")
 	if err != nil {
@@ -80,10 +81,27 @@ func ExamplePrint() {
 }
 
 func TestCanRedirectTermOutput(t *testing.T) {
+	PrintToError = false
 	message := "TestCanRedirectTermOutput"
-	buffer := &bytes.Buffer{}
-	SetOutput(buffer)
+	outputBuffer := &bytes.Buffer{}
+	errorBuffer := &bytes.Buffer{}
+	SetOutput(outputBuffer)
+	SetErrorOutput(errorBuffer)
 	_, err := Print(message)
 	assert.NoError(t, err)
-	assert.Equal(t, message, buffer.String())
+	assert.Equal(t, message, outputBuffer.String())
+	assert.Empty(t, errorBuffer.String())
+}
+
+func TestCanRedirectTermErrorOutput(t *testing.T) {
+	PrintToError = true
+	message := "TestCanRedirectTermOutput"
+	outputBuffer := &bytes.Buffer{}
+	errorBuffer := &bytes.Buffer{}
+	SetOutput(outputBuffer)
+	SetErrorOutput(errorBuffer)
+	_, err := Print(message)
+	assert.NoError(t, err)
+	assert.Equal(t, message, errorBuffer.String())
+	assert.Empty(t, outputBuffer.String())
 }

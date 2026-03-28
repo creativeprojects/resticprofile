@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -105,7 +106,7 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 	var initialReader io.Reader
 	{
 		initialBytes := make([]byte, 512)
-		if n, err := pipeReader.Read(initialBytes); err == nil || err == io.EOF {
+		if n, err := pipeReader.Read(initialBytes); err == nil || errors.Is(err, io.EOF) {
 			clog.Debugf("initial %d bytes successfully read from 'stdin-command'", n)
 			initialReader = bytes.NewReader(initialBytes[:n])
 		} else {

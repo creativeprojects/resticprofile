@@ -442,7 +442,7 @@ func TestSummaryDurationCommand(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {
-		t.SkipNow()
+		t.Skip("don't run this test in short mode")
 	}
 	buffer := &bytes.Buffer{}
 
@@ -466,7 +466,7 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {
-		t.SkipNow()
+		t.Skip("don't run this test in short mode")
 	}
 	buffer := &bytes.Buffer{}
 

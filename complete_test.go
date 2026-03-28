@@ -189,7 +189,7 @@ func TestCompleter(t *testing.T) {
 					prefix := fmt.Sprintf("%s.", profile)
 					completions := completer.Complete(newArgs("--config", DevConfig, prefix))
 
-					var expected []string
+					expected := make([]string, 0, len(commands)+1)
 					for _, commandName := range commands {
 						expected = append(expected, prefix+commandName)
 					}
@@ -211,7 +211,7 @@ func TestCompleter(t *testing.T) {
 				commands = append(commands, command.name)
 			}
 			for flag := range command.flags {
-				for _, v := range strings.Split(flag, ",") {
+				for v := range strings.SplitSeq(flag, ",") {
 					v = strings.Split(strings.TrimSpace(v), " ")[0]
 					commandValues[command.name] = append(commandValues[command.name], v)
 					sort.Strings(commandValues[command.name])

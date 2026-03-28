@@ -10,7 +10,6 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
-	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/spf13/cast"
 )
@@ -315,7 +314,7 @@ func schemaForConfigVersion(version config.Version) SchemaType {
 	schema.Description = "configuration format version"
 	if version <= config.Version01 {
 		schema.Default = "1"
-		schema.MaxLength = util.CopyRef(uint64(1))
+		schema.MaxLength = new(uint64(1))
 		schema.Pattern = version1Pattern
 	} else {
 		schema.Default = "2"

@@ -3,6 +3,7 @@
 package crond
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -27,7 +28,7 @@ func loadCrontab(fs afero.Fs, file, crontabBinary string) (content, charset stri
 	if file == "" && crontabBinary != "" {
 		buffer := new(strings.Builder)
 		{
-			cmd := exec.Command(crontabBinary, "-l")
+			cmd := exec.CommandContext(context.TODO(), crontabBinary, "-l")
 			cmd.Stdout = buffer
 			cmd.Stderr = buffer
 			err = cmd.Run()
@@ -51,7 +52,7 @@ func loadCrontab(fs afero.Fs, file, crontabBinary string) (content, charset stri
 
 func saveCrontab(fs afero.Fs, file, content, charset, crontabBinary string) (err error) {
 	if file == "" && crontabBinary != "" {
-		cmd := exec.Command(crontabBinary, "-")
+		cmd := exec.CommandContext(context.TODO(), crontabBinary, "-")
 		cmd.Stdin = strings.NewReader(content)
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
