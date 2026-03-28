@@ -69,6 +69,9 @@ func TestSSHClient(t *testing.T) {
 					return
 				}
 				require.NoError(t, err)
+
+				err = client.Run("uname", "-a")
+				require.NoError(t, err)
 			})
 		}
 	}
