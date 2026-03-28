@@ -21,7 +21,7 @@ var _ = (fs.NodeGetattrer)((*fsFile)(nil))
 
 func (fsf *fsFile) Getattr(ctx context.Context, f fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
 	out.Attr = fsf.attr
-	return 0
+	return fs.OK
 }
 
 // Open only needs to send the flags back to the kernel
