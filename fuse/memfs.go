@@ -1,6 +1,6 @@
 //go:build !windows
 
-// Simple implementation of a read-only filesystem in memory.
+// Package fuse implements a simple in-memory read-only filesystem.
 //
 // Based on the examples at https://pkg.go.dev/github.com/hanwen/go-fuse/v2/fs#pkg-examples
 package fuse
@@ -53,7 +53,7 @@ func (memfs *memFS) OnAdd(ctx context.Context) {
 		dir, base := filepath.Split(filepath.Clean(file.name))
 
 		p := memfs.EmbeddedInode()
-		for _, comp := range strings.Split(dir, "/") {
+		for comp := range strings.SplitSeq(dir, "/") {
 			if len(comp) == 0 {
 				continue
 			}

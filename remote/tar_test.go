@@ -3,7 +3,9 @@ package remote
 import (
 	"archive/tar"
 	"bytes"
+	"errors"
 	"io"
+	"slices"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -112,13 +114,7 @@ func TestSendFiles(t *testing.T) {
 			// Check each expected file exists and has correct content
 			for name, expectedContent := range tt.files {
 				// Only check files that were in the filePaths list
-				included := false
-				for _, path := range tt.filePaths {
-					if path == name {
-						included = true
-						break
-					}
-				}
+				included := slices.Contains(tt.filePaths, name)
 
 				if !included {
 					continue
@@ -159,7 +155,7 @@ func extractTarToFs(tarData []byte, fs afero.Fs) error {
 			if err != nil {
 				return err
 			}
-			if _, err := io.CopyN(file, tr, 1000); err != nil && err != io.EOF {
+			if _, err := io.CopyN(file, tr, 1000); err != nil && !errors.Is(err, io.EOF) {
 				file.Close()
 				return err
 			}

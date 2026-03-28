@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -102,7 +103,7 @@ func (s *InternalClient) Connect() error {
 		}
 		// Serve HTTP with your SSH server acting as a reverse proxy.
 		err := s.server.Serve(s.tunnel)
-		if err != nil && err != http.ErrServerClosed && err != io.EOF {
+		if err != nil && err != http.ErrServerClosed && !errors.Is(err, io.EOF) {
 			clog.Warningf("unable to serve http: %s", err)
 		}
 	}()

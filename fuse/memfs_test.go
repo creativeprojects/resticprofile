@@ -24,7 +24,7 @@ var memfsContents = map[string]string{
 func TestMemFS(t *testing.T) {
 	const fileMode = 0o764
 
-	files := make([]File, 0)
+	files := make([]File, 0, len(memfsContents))
 	now := time.Now()
 	for filename, fileContents := range memfsContents {
 		h := &tar.Header{

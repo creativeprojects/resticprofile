@@ -63,7 +63,8 @@ func (c *OpenSSHClient) Connect() error {
 
 func (c *OpenSSHClient) startFileServer() error {
 	var err error
-	c.listener, err = net.Listen("tcp", "localhost:0")
+	listenConfig := net.ListenConfig{}
+	c.listener, err = listenConfig.Listen(context.Background(), "tcp", "localhost:0")
 	if err != nil {
 		return err
 	}
@@ -71,9 +72,7 @@ func (c *OpenSSHClient) startFileServer() error {
 		Handler:           c.config.Handler,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		defer c.listener.Close()
 
 		clog.Debugf("file server listening locally on %s", c.listener.Addr().String())
@@ -81,7 +80,7 @@ func (c *OpenSSHClient) startFileServer() error {
 		if err != nil && err != http.ErrServerClosed {
 			clog.Error("error while serving HTTP:", err)
 		}
-	}()
+	})
 	return nil
 }
 

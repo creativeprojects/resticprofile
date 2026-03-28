@@ -146,7 +146,7 @@ func sendRemoteFiles(remoteConfig *config.Remote, remoteName string, extraArgs [
 func sendError(resp http.ResponseWriter, status int, err error) {
 	resp.Header().Set("Content-Type", "text/plain")
 	resp.WriteHeader(status)
-	_, _ = resp.Write([]byte(err.Error()))
+	_, _ = resp.Write([]byte(err.Error())) //nolint:gosec // G705: XSS via taint analysis
 	_, _ = resp.Write([]byte("\n"))
 	clog.Error(err)
 }

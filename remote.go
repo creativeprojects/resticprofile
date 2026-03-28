@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -48,7 +49,7 @@ func loadRemoteFiles(ctx context.Context, endpoint string) ([]fuse.File, *remote
 	reader := tar.NewReader(resp.Body)
 	for {
 		hdr, err := reader.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break // End of archive
 		}
 		if err != nil {
