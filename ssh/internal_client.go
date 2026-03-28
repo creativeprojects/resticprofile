@@ -37,7 +37,7 @@ func (s *InternalClient) Name() string {
 	return "InternalSSH"
 }
 
-func (s *InternalClient) Connect() error {
+func (s *InternalClient) Connect(_ context.Context) error {
 	err := s.config.Validate()
 	if err != nil {
 		return err
@@ -144,7 +144,7 @@ func (s *InternalClient) Run(command string, arguments ...string) error {
 	return nil
 }
 
-func (s *InternalClient) Close() {
+func (s *InternalClient) Close(ctx context.Context) {
 	// close the tunnel first otherwise it fails with error: "ssh: cancel-tcpip-forward failed"
 	if s.tunnel != nil {
 		err := s.tunnel.Close()
@@ -153,7 +153,7 @@ func (s *InternalClient) Close() {
 		}
 	}
 	if s.server != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 		err := s.server.Shutdown(ctx)
 		if err != nil {

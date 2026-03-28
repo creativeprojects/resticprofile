@@ -10,7 +10,7 @@ require (
 	github.com/creativeprojects/go-selfupdate v1.5.2
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.19.0
-	github.com/hanwen/go-fuse/v2 v2.8.0
+	github.com/hanwen/go-fuse/v2 v2.9.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mackerelio/go-osstat v0.2.7
 	github.com/mattn/go-colorable v0.1.14

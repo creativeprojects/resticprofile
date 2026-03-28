@@ -40,31 +40,31 @@ func (c *OpenSSHClient) Name() string {
 
 // Connect establishes the SSH connection and starts the file server.
 // It returns an error if the connection or server setup fails.
-func (c *OpenSSHClient) Connect() error {
+func (c *OpenSSHClient) Connect(ctx context.Context) error {
 	c.sshHost, c.sshPort = parseHost(c.config.Host)
 	c.sshUserHost = c.sshHost
 	if c.config.Username != "" {
 		c.sshUserHost = fmt.Sprintf("%s@%s", c.config.Username, c.sshHost)
 	}
-	err := c.startFileServer()
+	err := c.startFileServer(ctx)
 	if err != nil {
 		return err
 	}
-	err = c.startSSH(context.Background())
+	err = c.startSSH(ctx)
 	if err != nil {
 		return fmt.Errorf("error while starting SSH connection: %w", err)
 	}
-	err = c.startTunnel(context.Background())
+	err = c.startTunnel(ctx)
 	if err != nil {
 		return fmt.Errorf("error while starting SSH tunnel: %w", err)
 	}
 	return nil
 }
 
-func (c *OpenSSHClient) startFileServer() error {
+func (c *OpenSSHClient) startFileServer(ctx context.Context) error {
 	var err error
 	listenConfig := net.ListenConfig{}
-	c.listener, err = listenConfig.Listen(context.Background(), "tcp", "localhost:0")
+	c.listener, err = listenConfig.Listen(ctx, "tcp", "localhost:0")
 	if err != nil {
 		return err
 	}
@@ -166,8 +166,7 @@ func (c *OpenSSHClient) startTunnel(ctx context.Context) error {
 	return nil
 }
 
-func (c *OpenSSHClient) Close() {
-	ctx := context.Background()
+func (c *OpenSSHClient) Close(ctx context.Context) {
 	if c.server != nil {
 		err := c.server.Shutdown(ctx)
 		if err != nil {

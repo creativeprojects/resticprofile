@@ -3,9 +3,11 @@
 package ssh
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -55,9 +57,12 @@ func TestSSHClient(t *testing.T) {
 	for _, fixture := range fixtures {
 		for _, client := range []Client{NewOpenSSHClient(fixture.config), NewInternalClient(fixture.config)} {
 			t.Run(client.Name()+" "+fixture.name, func(t *testing.T) {
-				defer client.Close()
+				defer client.Close(context.Background())
 
-				err := client.Connect()
+				ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+				defer cancel()
+
+				err := client.Connect(ctx)
 				if fixture.connectErr {
 					require.Error(t, err)
 					t.Log(err)

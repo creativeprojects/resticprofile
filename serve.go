@@ -98,9 +98,9 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	}
 	// cnx := ssh.NewInternalClient(sshConfig)
 	cnx := ssh.NewOpenSSHClient(sshConfig)
-	defer cnx.Close()
+	defer cnx.Close(context.Background())
 
-	err = cnx.Connect()
+	err = cnx.Connect(context.Background())
 	if err != nil {
 		return err
 	}
