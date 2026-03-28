@@ -282,6 +282,7 @@ func TestFindResticBinaryWithTilde(t *testing.T) {
 		t.Skip("not supported on Windows")
 		return
 	}
+
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
@@ -336,7 +337,6 @@ func TestShellExpand(t *testing.T) {
 func TestFindConfigurationIncludes(t *testing.T) {
 	t.Parallel()
 
-	fs := afero.NewMemMapFs()
 	testID := fmt.Sprintf("%x", time.Now().UnixNano())
 	tempDir := os.TempDir()
 	files := []string{
@@ -346,6 +346,7 @@ func TestFindConfigurationIncludes(t *testing.T) {
 		filepath.Join(tempDir, "inc3."+testID+".conf"),
 	}
 
+	fs := afero.NewMemMapFs()
 	for _, file := range files {
 		require.NoError(t, afero.WriteFile(fs, file, []byte{}, iofs.ModePerm))
 	}
