@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -29,7 +30,8 @@ func TestSendRemoteFiles(t *testing.T) {
 // getFreePort returns a TCP port number that is currently free on localhost.
 func getFreePort(t *testing.T) int {
 	t.Helper()
-	l, err := net.Listen("tcp", "localhost:0")
+	listenConfig := net.ListenConfig{}
+	l, err := listenConfig.Listen(context.Background(), "tcp", "localhost:0")
 	require.NoError(t, err)
 	port := l.Addr().(*net.TCPAddr).Port
 	_ = l.Close()
@@ -42,7 +44,9 @@ func waitForServer(t *testing.T, url string) {
 	client := &http.Client{Timeout: 200 * time.Millisecond}
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
-		resp, err := client.Get(url)
+		request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		require.NoError(t, err)
+		resp, err := client.Do(request)
 		if err == nil {
 			resp.Body.Close()
 			return
@@ -85,7 +89,9 @@ func TestServeCommandHTTPRemoteNotFound(t *testing.T) {
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	waitForServer(t, baseURL+"/configuration/probe")
 
-	resp, err := http.Get(baseURL + "/configuration/nonexistent")
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, baseURL+"/configuration/nonexistent", http.NoBody)
+	require.NoError(t, err)
+	resp, err := http.DefaultClient.Do(request)
 	require.NoError(t, err)
 	resp.Body.Close()
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
@@ -125,7 +131,9 @@ remotes:
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	waitForServer(t, baseURL+"/configuration/probe")
 
-	resp, err := http.Get(baseURL + "/configuration/" + remoteName)
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, baseURL+"/configuration/"+remoteName, http.NoBody)
+	require.NoError(t, err)
+	resp, err := http.DefaultClient.Do(request)
 	require.NoError(t, err)
 	resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -156,7 +164,9 @@ func TestServeCommandHTTPMethodNotAllowed(t *testing.T) {
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	waitForServer(t, baseURL+"/configuration/probe")
 
-	resp, err := http.Post(baseURL+"/configuration/myremote", "application/json", http.NoBody)
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodPost, baseURL+"/configuration/myremote", http.NoBody)
+	require.NoError(t, err)
+	resp, err := http.DefaultClient.Do(request)
 	require.NoError(t, err)
 	resp.Body.Close()
 	// The ServeMux pattern is method-specific; POST should not match
