@@ -79,6 +79,7 @@ func getOwnCommands() []ownCommand {
 				"--json-schema [--version 0.15] [v1|v2]":         "generate a JSON schema that validates resticprofile configuration files in YAML or JSON format",
 				"--bash-completion":                              "generate a shell completion script for bash",
 				"--zsh-completion":                               "generate a shell completion script for zsh",
+				"--fish-completion":                              "generate a shell completion script for fish",
 			},
 		},
 		// commands that need the configuration
@@ -182,7 +183,7 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 
 	// Parse requester as first argument. Format "[kind]:v[version]", e.g. "bash:v1"
 	if len(args) > 0 {
-		matcher := regexp.MustCompile(`^(bash|zsh):v(\d+)$`)
+		matcher := regexp.MustCompile(`^(bash|zsh|fish):v(\d+)$`)
 		if matches := matcher.FindStringSubmatch(args[0]); matches != nil {
 			requester = matches[1]
 			if v, err := strconv.Atoi(matches[2]); err == nil {
@@ -202,7 +203,12 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 		return nil
 	}
 
-	completions := NewCompleter(ctx.ownCommands.All(), DefaultFlagsLoader).Complete(args)
+	includeDescription := false
+	if requester == "fish" {
+		includeDescription = true
+	}
+
+	completions := NewCompleter(ctx.ownCommands.All(), DefaultFlagsLoader, includeDescription).Complete(args)
 	if len(completions) > 0 {
 		for _, completion := range completions {
 			fmt.Fprintln(output, completion)

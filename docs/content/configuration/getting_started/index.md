@@ -344,6 +344,7 @@ Flags:
   --json-schema [--version 0.15] [v1|v2]          generate a JSON schema that validates resticprofile configuration files in YAML or JSON format
   --random-key [size]                             generate a cryptographically secure random key to use as a restic keyfile (size defaults to 1024 when omitted)
   --zsh-completion                                generate a shell completion script for zsh
+  --fish-completion                               generate a shell completion script for fish
 
 ```
 

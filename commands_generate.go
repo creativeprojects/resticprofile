@@ -26,6 +26,9 @@ var bashCompletionScript string
 //go:embed contrib/completion/zsh-completion.sh
 var zshCompletionScript string
 
+//go:embed contrib/completion/fish-completion.fish
+var fishCompletionScript string
+
 func generateCommand(output io.Writer, ctx commandContext) (err error) {
 	args := ctx.request.arguments
 	// enforce no-log
@@ -44,6 +47,8 @@ func generateCommand(output io.Writer, ctx commandContext) (err error) {
 		err = randomKey(output, ctx)
 	} else if slices.Contains(args, "--zsh-completion") {
 		_, err = fmt.Fprintln(output, zshCompletionScript)
+	} else if slices.Contains(args, "--fish-completion") {
+		_, err = fmt.Fprintln(output, fishCompletionScript)
 	} else {
 		err = fmt.Errorf("nothing to generate for: %s", strings.Join(args, ", "))
 	}

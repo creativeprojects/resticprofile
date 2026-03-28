@@ -168,7 +168,7 @@ _ = 0
 }
 
 func TestCompleteCall(t *testing.T) {
-	completer := NewCompleter(ownCommands.All(), DefaultFlagsLoader)
+	completer := NewCompleter(ownCommands.All(), DefaultFlagsLoader, false)
 	completer.init(nil)
 	newline := fmt.Sprintln("")
 	expectedFlags := strings.Join(completer.completeFlagSet(""), newline) + newline
@@ -180,6 +180,10 @@ func TestCompleteCall(t *testing.T) {
 	expectedCommands := strings.Join(commandNames, newline) + newline +
 		RequestResticCompletion + newline
 
+	completerWithDescriptions := NewCompleter(ownCommands.All(), DefaultFlagsLoader, true)
+	completerWithDescriptions.init(nil)
+	expectedFlagsWithDescriptions := strings.Join(completerWithDescriptions.completeFlagSet(""), newline) + newline
+
 	testTable := []struct {
 		args     []string
 		expected string
@@ -187,6 +191,7 @@ func TestCompleteCall(t *testing.T) {
 		{args: []string{"--"}, expected: expectedFlags},
 		{args: []string{"--config=does-not-exist", ""}, expected: expectedCommands},
 		{args: []string{"bash:v1", "--"}, expected: expectedFlags},
+		{args: []string{"fish:v1", "--"}, expected: expectedFlagsWithDescriptions},
 		{args: []string{"bash:v10", "--"}, expected: ""},
 		{args: []string{"zsh:v1", "--"}, expected: ""},
 	}
@@ -223,6 +228,13 @@ func TestGenerateCommand(t *testing.T) {
 		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--zsh-completion"})))
 		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
+	})
+
+	t.Run("--fish-completion", func(t *testing.T) {
+		buffer.Reset()
+		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--fish-completion"})))
+		assert.Equal(t, strings.TrimSpace(fishCompletionScript), strings.TrimSpace(buffer.String()))
+		assert.Contains(t, fishCompletionScript, "#!/usr/bin/env fish")
 	})
 
 	t.Run("--config-reference", func(t *testing.T) {
