@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -74,6 +75,10 @@ func TestServeCommandMissingPortArg(t *testing.T) {
 }
 
 func TestServeCommandHTTPRemoteNotFound(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("skipping test on Windows, which does not support signals in the same way")
+	}
+
 	cfg, err := config.Load(bytes.NewBufferString("version: 2\n"), "yaml")
 	require.NoError(t, err)
 
@@ -106,6 +111,10 @@ func TestServeCommandHTTPRemoteNotFound(t *testing.T) {
 }
 
 func TestServeCommandHTTPRemoteFound(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("skipping test on Windows, which does not support signals in the same way")
+	}
+
 	const remoteName = "myremote"
 	cfgYAML := fmt.Sprintf(`version: 2
 remotes:
@@ -149,6 +158,10 @@ remotes:
 }
 
 func TestServeCommandHTTPMethodNotAllowed(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("skipping test on Windows, which does not support signals in the same way")
+	}
+
 	cfg, err := config.Load(bytes.NewBufferString("version: 2\n"), "yaml")
 	require.NoError(t, err)
 
