@@ -30,39 +30,42 @@ func (t *Tar) WithFs(fs afero.Fs) *Tar {
 
 func (t *Tar) SendFiles(files []string) error {
 	for _, filename := range files {
-		fileInfo, err := t.fs.Stat(filename)
+		err := t.sendFile(filename)
 		if err != nil {
-			clog.Errorf("unable to stat file %s: %v", filename, err)
-			continue
+			return err
 		}
-		fileHeader, err := tar.FileInfoHeader(fileInfo, "")
-		if err != nil {
-			clog.Errorf("unable to create tar header for file %s: %v", filename, err)
-			continue
-		}
-		err = t.writer.WriteHeader(fileHeader)
-		if err != nil {
-			clog.Errorf("unable to write tar header for file %s: %v", filename, err)
-			break
-		}
-		file, err := t.fs.Open(filename)
-		if err != nil {
-			clog.Errorf("unable to open file %s: %v", filename, err)
-			continue
-		}
-		defer file.Close()
-
-		written, err := io.Copy(t.writer, file)
-		if err != nil {
-			clog.Errorf("unable to write file %s: %v", filename, err)
-			break
-		}
-		if written != fileInfo.Size() {
-			clog.Errorf("file %s: written %d bytes, expected %d", filename, written, fileInfo.Size())
-			break
-		}
-		clog.Debugf("file %s: written %d bytes", filename, written)
 	}
+	return nil
+}
+
+// sendFile sends a single file to the tar writer
+func (t *Tar) sendFile(filename string) error {
+	fileInfo, err := t.fs.Stat(filename)
+	if err != nil {
+		return fmt.Errorf("unable to stat file %s: %w", filename, err)
+	}
+	fileHeader, err := tar.FileInfoHeader(fileInfo, "")
+	if err != nil {
+		return fmt.Errorf("unable to create tar header for file %s: %w", filename, err)
+	}
+	err = t.writer.WriteHeader(fileHeader)
+	if err != nil {
+		return fmt.Errorf("unable to write tar header for file %s: %w", filename, err)
+	}
+	file, err := t.fs.Open(filename)
+	if err != nil {
+		return fmt.Errorf("unable to open file %s: %w", filename, err)
+	}
+	defer file.Close()
+
+	written, err := io.Copy(t.writer, file)
+	if err != nil {
+		return fmt.Errorf("unable to write file %s: %w", filename, err)
+	}
+	if written != fileInfo.Size() {
+		return fmt.Errorf("file %s: written %d bytes, expected %d", filename, written, fileInfo.Size())
+	}
+	clog.Debugf("file %s: written %d bytes", filename, written)
 	return nil
 }
 

@@ -65,24 +65,28 @@ func TestSendFiles(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name      string
-		files     map[string]string
-		filePaths []string
+		name        string
+		files       map[string]string
+		filePaths   []string
+		expectError bool
 	}{
 		{
-			name:      "send multiple files",
-			files:     map[string]string{"file1.txt": "content1", "file2.txt": "content2"},
-			filePaths: []string{"file1.txt", "file2.txt"},
+			name:        "send multiple files",
+			files:       map[string]string{"file1.txt": "content1", "file2.txt": "content2"},
+			filePaths:   []string{"file1.txt", "file2.txt"},
+			expectError: false,
 		},
 		{
-			name:      "send empty file among others",
-			files:     map[string]string{"empty.txt": "", "notempty.txt": "content"},
-			filePaths: []string{"empty.txt", "notempty.txt"},
+			name:        "send empty file among others",
+			files:       map[string]string{"empty.txt": "", "notempty.txt": "content"},
+			filePaths:   []string{"empty.txt", "notempty.txt"},
+			expectError: false,
 		},
 		{
-			name:      "send non-existent file",
-			files:     map[string]string{"exists.txt": "content"},
-			filePaths: []string{"exists.txt", "nonexistent.txt"},
+			name:        "send non-existent file",
+			files:       map[string]string{"exists.txt": "content"},
+			filePaths:   []string{"exists.txt", "nonexistent.txt"},
+			expectError: true,
 		},
 	}
 
@@ -103,8 +107,13 @@ func TestSendFiles(t *testing.T) {
 
 			// Execute
 			err := tar.SendFiles(tt.filePaths)
-			require.NoError(t, err)
 			tar.Close()
+
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
 
 			// Verify the tar contains the correct files
 			outputFs := afero.NewMemMapFs()

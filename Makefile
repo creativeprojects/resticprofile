@@ -194,7 +194,7 @@ coverage: ## Generate coverage report
 clean: ## Clean up the build artifacts
 	@echo "[*] $@"
 	$(GOCLEAN)
-	rm -rf \ 
+	rm -rf \
 		$(BINARY) \
 		$(BINARY_DARWIN_AMD64) \
 		$(BINARY_DARWIN_ARM64) \

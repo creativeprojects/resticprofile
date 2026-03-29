@@ -3,6 +3,7 @@ package ssh
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -24,6 +25,7 @@ type OpenSSHClient struct {
 	listener       net.Listener
 	server         *http.Server
 	wg             sync.WaitGroup
+	tempDir        string // Temporary directory for SSH socket
 	socket         string
 	peerTunnelPort int
 }
@@ -85,7 +87,12 @@ func (c *OpenSSHClient) startFileServer(ctx context.Context) error {
 }
 
 func (c *OpenSSHClient) startSSH(ctx context.Context) error {
-	c.socket = filepath.Join(os.TempDir(), fmt.Sprintf("ssh-%d.sock", os.Getpid()))
+	var err error
+	c.tempDir, err = os.MkdirTemp("", "resticprofile")
+	if err != nil {
+		return fmt.Errorf("error creating temporary directory for SSH socket: %w", err)
+	}
+	c.socket = filepath.Join(c.tempDir, fmt.Sprintf("ssh-%d.sock", os.Getpid()))
 	args := make([]string, 0, 10)
 	args = append(args,
 		"-f",           // Requests ssh to go to background just before command execution
@@ -110,7 +117,7 @@ func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	clog.Debugf("running command: %s", cmd.String())
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error while running ssh command: %w", err)
 	}
@@ -119,7 +126,7 @@ func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 
 func (c *OpenSSHClient) stopSSH(ctx context.Context) error {
 	if c.socket == "" {
-		return nil
+		return errors.New("SSH connection not established")
 	}
 	args := []string{
 		"-S", c.socket, // Specifies the location of the control socket
@@ -139,7 +146,7 @@ func (c *OpenSSHClient) stopSSH(ctx context.Context) error {
 
 func (c *OpenSSHClient) startTunnel(ctx context.Context) error {
 	if c.socket == "" {
-		return nil
+		return errors.New("SSH connection not established")
 	}
 	args := []string{
 		"-S", c.socket, // Specifies the location of the control socket
@@ -179,11 +186,18 @@ func (c *OpenSSHClient) Close(ctx context.Context) {
 		clog.Warningf("unable to stop SSH connection: %s", err)
 	}
 	c.wg.Wait()
+	if c.tempDir != "" {
+		err := os.RemoveAll(c.tempDir)
+		if err != nil {
+			clog.Warningf("unable to remove temporary directory: %s", err)
+		}
+		c.tempDir = ""
+	}
 }
 
 func (c *OpenSSHClient) Run(command string, arguments ...string) error {
 	if c.socket == "" {
-		return nil
+		return errors.New("SSH connection not established")
 	}
 	args := append([]string{
 		"-t",           // Force pseudo-terminal allocation
