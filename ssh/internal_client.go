@@ -42,10 +42,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 	if err != nil {
 		return err
 	}
-	var hostKeyCallback ssh.HostKeyCallback = func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-		clog.Debugf("initiating SSH connection to %s using internal client", remote.String())
-		return nil
-	}
+	var hostKeyCallback ssh.HostKeyCallback
 	if s.config.KnownHostsPath != "" && s.config.KnownHostsPath != "none" && s.config.KnownHostsPath != "/dev/null" {
 		hostKeyCallback, err = knownhosts.New(s.config.KnownHostsPath)
 		if err != nil {
@@ -62,6 +59,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse private key: %w", err)
 	}
+	clog.Debugf("using ssh keys of type %q", signer.PublicKey().Type())
 
 	// The algorithms returned by ssh.SupportedAlgorithms() are different from
 	// the default ones and do not include algorithms that are considered
@@ -75,7 +73,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 			// Use the PublicKeys method for remote authentication.
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback:   hostKeyCallback,
+		HostKeyCallback:   getHostKeyCallback(hostKeyCallback),
 		HostKeyAlgorithms: algorithms.HostKeys,
 		Config: ssh.Config{
 			KeyExchanges: algorithms.KeyExchanges,
@@ -136,9 +134,11 @@ func (s *InternalClient) Run(_ context.Context, command string, arguments ...str
 
 	// Once a Session is created, we can execute a single command on
 	// the remote side using the Run method.
+	cmdline := command + " " + strings.Join(arguments, " ")
+	clog.Debugf("running command: %s", cmdline)
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
-	if err := session.Run(command + " " + strings.Join(arguments, " ")); err != nil {
+	if err := session.Run(cmdline); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
 	return nil
@@ -165,6 +165,20 @@ func (s *InternalClient) Close(ctx context.Context) {
 		if err != nil {
 			clog.Warningf("unable to close ssh connection: %s", err)
 		}
+	}
+}
+
+func getHostKeyCallback(next ssh.HostKeyCallback) ssh.HostKeyCallback {
+	return func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		clog.Debugf("initiating SSH connection to %s using internal client", remote.String())
+		if next != nil {
+			err := next(hostname, remote, key)
+			if err != nil {
+				clog.Warningf("host key verification failed: %w", err)
+			}
+			return err
+		}
+		return nil
 	}
 }
 

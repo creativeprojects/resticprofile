@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Config struct {
@@ -38,8 +37,7 @@ func (c *Config) Validate() error {
 		}
 		c.KnownHostsPath = filepath.Join(home, ".ssh/known_hosts")
 	}
-	if !strings.Contains(c.Host, ":") {
-		c.Host = c.Host + ":22"
-	}
+	host, port := parseHost(c.Host)
+	c.Host = fmt.Sprintf("%s:%d", host, port)
 	return nil
 }

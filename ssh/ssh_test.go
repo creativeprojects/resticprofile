@@ -11,10 +11,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSSHClient(t *testing.T) {
+	clog.SetTestLog(t)
+	defer clog.CloseTestLog()
+
 	tmpDir := os.Getenv("SSH_TESTS_TMPDIR")
 	if tmpDir == "" {
 		tmpDir = filepath.Join(os.TempDir(), "resticprofile-ssh-tests")

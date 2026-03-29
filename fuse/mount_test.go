@@ -56,22 +56,37 @@ func TestMemFS(t *testing.T) {
 	require.NoError(t, err, "cannot mount FS")
 	defer closeMount()
 
-	for filename, fileContents := range memfsContents {
-		fullPath := filepath.Join(mnt, filename)
+	// wrap up the tests in a subtest so that we can run them in parallel
+	t.Run("reading files", func(t *testing.T) {
+		for filename, fileContents := range memfsContents {
+			t.Run(filename, func(t *testing.T) {
+				t.Parallel()
 
-		filestat, err := os.Stat(fullPath)
-		require.NoErrorf(t, err, "os.Stat %q", filename)
+				fullPath := filepath.Join(mnt, filename)
 
-		if strings.HasSuffix(filename, "/") {
-			assert.True(t, filestat.IsDir(), "is dir %q", filename)
+				filestat, err := os.Stat(fullPath)
+				require.NoErrorf(t, err, "os.Stat %q", filename)
 
-		} else {
-			assert.False(t, filestat.IsDir(), "is file %q", filename)
+				if strings.HasSuffix(filename, "/") {
+					assert.True(t, filestat.IsDir(), "is dir %q", filename)
 
-			contents, err := os.ReadFile(fullPath)
-			assert.NoErrorf(t, err, "read %q", filename)
+				} else {
+					assert.False(t, filestat.IsDir(), "is file %q", filename)
 
-			assert.Equalf(t, fileContents, string(contents), "file %q", filename)
+					contents, err := os.ReadFile(fullPath)
+					assert.NoErrorf(t, err, "read %q", filename)
+
+					assert.Equalf(t, fileContents, string(contents), "file %q", filename)
+				}
+			})
 		}
-	}
+
+		t.Run("non existent", func(t *testing.T) {
+			t.Parallel()
+
+			fullPath := filepath.Join(mnt, "not-existing.txt")
+			_, err := os.Stat(fullPath)
+			assert.Error(t, err)
+		})
+	})
 }
