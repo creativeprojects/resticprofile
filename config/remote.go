@@ -3,7 +3,7 @@ package config
 type Remote struct {
 	name              string
 	config            *Config
-	Connection        string   `mapstructure:"connection" default:"ssh" description:"Connection type to use to connect to the remote client"`
+	Connection        string   `mapstructure:"connection" default:"ssh" enum:"ssh;openssh" description:"Connection type to use to connect to the remote client"`
 	Host              string   `mapstructure:"host" description:"Address of the remote client. Format: <host>:<port>"`
 	Username          string   `mapstructure:"username" description:"User to connect to the remote client"`
 	PrivateKeyPath    string   `mapstructure:"private-key" description:"Path to the private key to use for authentication"`

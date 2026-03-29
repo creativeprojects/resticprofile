@@ -96,14 +96,22 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		SSHConfigPath:  remoteConfig.SSHConfig,
 		Handler:        handler,
 	}
-	// cnx := ssh.NewInternalClient(sshConfig)
-	cnx := ssh.NewOpenSSHClient(sshConfig)
-	defer cnx.Close(context.Background())
+	var cnx ssh.Client
+	switch remoteConfig.Connection {
+	case "ssh":
+		cnx = ssh.NewInternalClient(sshConfig)
+	case "openssh":
+		cnx = ssh.NewOpenSSHClient(sshConfig)
+	default:
+		return fmt.Errorf("unsupported connection type %q for remote %q", remoteConfig.Connection, remoteName)
+	}
 
 	err = cnx.Connect(context.Background())
 	if err != nil {
 		return err
 	}
+	defer cnx.Close(context.Background())
+
 	binaryPath := remoteConfig.BinaryPath
 	if binaryPath == "" {
 		binaryPath = "resticprofile"

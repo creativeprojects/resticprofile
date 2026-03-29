@@ -15,7 +15,7 @@ func TestParseHost(t *testing.T) {
 			name:     "host only",
 			host:     "example.com",
 			wantHost: "example.com",
-			wantPort: 22,
+			wantPort: 0,
 		},
 		{
 			name:     "host with port",
@@ -45,13 +45,13 @@ func TestParseHost(t *testing.T) {
 			name:     "IPv6 without port",
 			host:     "2001:db8::1",
 			wantHost: "2001:db8::1",
-			wantPort: 22,
+			wantPort: 0,
 		},
 		{
 			name:     "local IPv6 without port",
 			host:     "::1",
 			wantHost: "::1",
-			wantPort: 22,
+			wantPort: 0,
 		},
 		{
 			name:     "local IPv6 with port",
@@ -69,7 +69,7 @@ func TestParseHost(t *testing.T) {
 			name:     "invalid port",
 			host:     "example.com:abc",
 			wantHost: "example.com",
-			wantPort: 22,
+			wantPort: 0,
 		},
 	}
 
