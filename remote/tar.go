@@ -12,20 +12,33 @@ import (
 )
 
 type Tar struct {
-	writer *tar.Writer
-	fs     afero.Fs
+	writer        *tar.Writer
+	fs            afero.Fs
+	preparedFiles map[string]os.FileInfo
 }
 
 func NewTar(w io.Writer) *Tar {
 	return &Tar{
-		writer: tar.NewWriter(w),
-		fs:     afero.NewOsFs(),
+		writer:        tar.NewWriter(w),
+		fs:            afero.NewOsFs(),
+		preparedFiles: make(map[string]os.FileInfo),
 	}
 }
 
 func (t *Tar) WithFs(fs afero.Fs) *Tar {
 	t.fs = fs
 	return t
+}
+
+func (t *Tar) PrepareFiles(files []string) error {
+	for _, filename := range files {
+		fileInfo, err := t.fs.Stat(filename)
+		if err != nil {
+			return fmt.Errorf("unable to stat file %s: %w", filename, err)
+		}
+		t.preparedFiles[filename] = fileInfo
+	}
+	return nil
 }
 
 func (t *Tar) SendFiles(files []string) error {
@@ -40,9 +53,13 @@ func (t *Tar) SendFiles(files []string) error {
 
 // sendFile sends a single file to the tar writer
 func (t *Tar) sendFile(filename string) error {
-	fileInfo, err := t.fs.Stat(filename)
-	if err != nil {
-		return fmt.Errorf("unable to stat file %s: %w", filename, err)
+	var err error
+	fileInfo, ok := t.preparedFiles[filename]
+	if !ok {
+		fileInfo, err = t.fs.Stat(filename)
+		if err != nil {
+			return fmt.Errorf("unable to stat file %s: %w", filename, err)
+		}
 	}
 	fileHeader, err := tar.FileInfoHeader(fileInfo, "")
 	if err != nil {

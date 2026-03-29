@@ -134,13 +134,29 @@ func sendRemoteFiles(remoteConfig *config.Remote, remoteName string, extraArgs [
 	}
 
 	clog.Debugf("sending configuration for %q", remoteName)
-	resp.Header().Set("Content-Type", "application/x-tar")
-	resp.WriteHeader(http.StatusOK)
 
 	tar := remote.NewTar(resp)
 	defer tar.Close()
-	_ = tar.SendFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
-	_ = tar.SendFile(constants.ManifestFilename, manifestData)
+
+	err = tar.PrepareFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+	if err != nil {
+		sendError(resp, http.StatusInternalServerError, fmt.Errorf("error while preparing files to send for remote %q: %w", remoteName, err))
+		return
+	}
+
+	resp.Header().Set("Content-Type", "application/x-tar")
+	resp.WriteHeader(http.StatusOK)
+
+	err = tar.SendFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+	if err != nil {
+		clog.Error(err)
+		return
+	}
+	err = tar.SendFile(constants.ManifestFilename, manifestData)
+	if err != nil {
+		clog.Error(err)
+		return
+	}
 }
 
 func sendError(resp http.ResponseWriter, status int, err error) {
