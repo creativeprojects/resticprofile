@@ -12,7 +12,6 @@ on:
       - 'docs/**'
 
 jobs:
-
   build:
     name: Build and test
     runs-on: ${{ matrix.os }}
@@ -25,7 +24,6 @@ jobs:
       GO: ${{ matrix.go_version }}
 
     steps:
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@v6
 
@@ -53,8 +51,9 @@ jobs:
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
+          name: code-coverage-report-${{ matrix.os }}
           env_vars: OS,GO
-          files: ./coverage.out,./unit-tests.xml
+          files: ./coverage.out
           flags: unittests
           fail_ci_if_error: false
           verbose: true
@@ -68,3 +67,31 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
           files: ./unit-tests.xml
+
+  test-ssh:
+    name: Test SSH client
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.26
+
+      - name: Run tests
+        run: |
+          make start-ssh-server
+          make ssh-test
+          make stop-ssh-server
+
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          name: code-coverage-ssh-report
+          files: ./coverage-ssh.out
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
