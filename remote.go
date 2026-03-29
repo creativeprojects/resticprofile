@@ -67,7 +67,7 @@ func loadRemoteFiles(ctx context.Context, endpoint string) ([]fuse.File, *remote
 		} else {
 			clog.Debugf("downloading file %s (%d bytes)", hdr.Name, hdr.Size)
 			data := make([]byte, hdr.Size)
-			read, err := reader.Read(data)
+			read, err := reader.Read(data) // is there a possibility that the file is read in multiple chunks? if so, we would need to loop until we read the entire file
 			if err != nil && err != io.EOF {
 				return nil, nil, fmt.Errorf("failed to download file content: %w", err)
 			}
@@ -96,6 +96,9 @@ func setupRemoteConfiguration(ctx context.Context, remoteEndpoint string) (func(
 	files, parameters, err := loadRemoteFiles(ctx, remoteEndpoint)
 	if err != nil {
 		return nil, nil, err
+	}
+	if parameters == nil {
+		return nil, nil, fmt.Errorf("manifest file %q not found in remote configuration", constants.ManifestFilename)
 	}
 
 	closeMountpoint := func() {}

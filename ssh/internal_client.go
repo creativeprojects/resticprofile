@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -94,7 +93,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 	// Request the remote side to open a local port
 	s.tunnel, err = s.client.Listen("tcp", fmt.Sprintf("localhost:%d", s.port)) // increment the port in a loop in case of an error
 	if err != nil {
-		log.Fatal("unable to register tcp forward: ", err)
+		return fmt.Errorf("unable to register tcp forward: %w", err)
 	}
 
 	go func() {

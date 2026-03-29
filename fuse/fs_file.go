@@ -32,6 +32,9 @@ func (fsf *fsFile) Open(ctx context.Context, flags uint32) (fs.FileHandle, uint3
 
 // Read simply returns the data from the file
 func (fsf *fsFile) Read(ctx context.Context, f fs.FileHandle, dest []byte, off int64) (fuse.ReadResult, syscall.Errno) {
+	if off < 0 || off >= int64(len(fsf.file.data)) {
+		return fuse.ReadResultData(nil), syscall.EINVAL
+	}
 	end := min(int(off)+len(dest), len(fsf.file.data))
 	return fuse.ReadResultData(fsf.file.data[off:end]), fs.OK
 }
