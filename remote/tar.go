@@ -30,6 +30,8 @@ func (t *Tar) WithFs(fs afero.Fs) *Tar {
 	return t
 }
 
+// PrepareFiles stats the given files and stores their FileInfo for later use in SendFiles.
+// This way, if a file is missing, we can return an error before starting to write the tar stream.
 func (t *Tar) PrepareFiles(files []string) error {
 	for _, filename := range files {
 		fileInfo, err := t.fs.Stat(filename)
@@ -41,8 +43,9 @@ func (t *Tar) PrepareFiles(files []string) error {
 	return nil
 }
 
-func (t *Tar) SendFiles(files []string) error {
-	for _, filename := range files {
+// SendFiles sends all prepared files to the tar writer
+func (t *Tar) SendFiles() error {
+	for filename := range t.preparedFiles {
 		err := t.sendFile(filename)
 		if err != nil {
 			return err

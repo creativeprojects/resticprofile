@@ -147,7 +147,7 @@ func sendRemoteFiles(remoteConfig *config.Remote, remoteName string, extraArgs [
 	resp.Header().Set("Content-Type", "application/x-tar")
 	resp.WriteHeader(http.StatusOK)
 
-	err = tar.SendFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
+	err = tar.SendFiles()
 	if err != nil {
 		clog.Error(err)
 		return

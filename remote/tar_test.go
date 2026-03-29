@@ -106,13 +106,16 @@ func TestSendFiles(t *testing.T) {
 			tar.WithFs(memFs)
 
 			// Execute
-			err := tar.SendFiles(tt.filePaths)
-			tar.Close()
+			err := tar.PrepareFiles(tt.filePaths)
 
 			if tt.expectError {
 				assert.Error(t, err)
 				return
 			}
+			require.NoError(t, err)
+
+			err = tar.SendFiles()
+			tar.Close()
 			require.NoError(t, err)
 
 			// Verify the tar contains the correct files

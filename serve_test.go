@@ -21,10 +21,10 @@ import (
 func TestSendRemoteFiles(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	sendRemoteFiles(&config.Remote{
-		ConfigurationFile: "test_config.json",
+		ConfigurationFile: "examples/dev.yaml", // this file should exist in the test environment
 		ProfileName:       "test_profile",
 	}, "test_remote", []string{"arg1", "arg2"}, recorder)
-	assert.Equal(t, recorder.Code, 200)
+	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Equal(t, recorder.Header().Get("Content-Type"), "application/x-tar")
 }
 
@@ -122,6 +122,7 @@ remotes:
     host: example.com:22
     username: testuser
     profile-name: default
+    configuration-file: examples/dev.yaml
 `, remoteName)
 
 	cfg, err := config.Load(bytes.NewBufferString(cfgYAML), "yaml")
