@@ -363,10 +363,12 @@ deploy-current: build-linux build-pi
 	done
 
 .PHONY: start-ssh-server
-start-ssh-server:
+start-ssh-server: ## Start the SSH server for testing
 	@echo "[*] $@"
-	@mkdir -p $(SSH_TESTS_TMPDIR) && rm -f $(SSH_TESTS_TMPDIR)/id_rsa* || echo "Failed to create temporary directory"
+	@mkdir -p $(SSH_TESTS_TMPDIR) && rm -f $(SSH_TESTS_TMPDIR)/id_* || echo "Failed to create temporary directory"
 	@ssh-keygen -t rsa -b 2048 -f $(SSH_TESTS_TMPDIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
+	@ssh-keygen -t ecdsa -b 521 -f $(SSH_TESTS_TMPDIR)/id_ecdsa -N "" -C "resticprofile@$(shell hostname)"
+	@ssh-keygen -t ed25519 -f $(SSH_TESTS_TMPDIR)/id_ed25519 -N "" -C "resticprofile@$(shell hostname)"
 	@cd ./ssh/test && \
 		USER_ID=$(shell id -u) GROUP_ID=$(shell id -g) SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) \
 		docker compose up -d --force-recreate
@@ -374,12 +376,12 @@ start-ssh-server:
 	@ssh-keyscan -p 2222 -H localhost > $(SSH_TESTS_TMPDIR)/known_hosts
 
 .PHONY: stop-ssh-server
-stop-ssh-server:
+stop-ssh-server: ## Stop the SSH server and clean up temporary files
 	@echo "[*] $@"
 	cd ./ssh/test && SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) docker compose down --remove-orphans
 	@test -d "$(SSH_TESTS_TMPDIR)" && rm -rf "$(SSH_TESTS_TMPDIR)" || echo "temporary directory not found, nothing to remove"
 
 .PHONY: ssh-test
-ssh-test:
+ssh-test: ## Run SSH client tests
 	@echo "[*] $@"
 	@go test -run TestSSHClient -v -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh

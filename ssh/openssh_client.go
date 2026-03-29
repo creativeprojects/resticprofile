@@ -88,11 +88,11 @@ func (c *OpenSSHClient) startFileServer(ctx context.Context) error {
 
 func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 	var err error
-	c.tempDir, err = os.MkdirTemp("", "resticprofile")
+	c.tempDir, err = os.MkdirTemp("", "rp-ssh")
 	if err != nil {
 		return fmt.Errorf("error creating temporary directory for SSH socket: %w", err)
 	}
-	c.socket = filepath.Join(c.tempDir, fmt.Sprintf("ssh-%d.sock", os.Getpid()))
+	c.socket = filepath.Join(c.tempDir, "ssh.sock")
 	args := make([]string, 0, 10)
 	args = append(args,
 		"-f",           // Requests ssh to go to background just before command execution
@@ -150,8 +150,8 @@ func (c *OpenSSHClient) startTunnel(ctx context.Context) error {
 	}
 	args := []string{
 		"-S", c.socket, // Specifies the location of the control socket
-		"-O", "forward", // Requests the master to exit
-		fmt.Sprintf("-R 0:localhost:%d", c.listener.Addr().(*net.TCPAddr).Port), // Forward random remote port to local port
+		"-O", "forward", // Requests the master to do a port forward
+		"-R", fmt.Sprintf("0:localhost:%d", c.listener.Addr().(*net.TCPAddr).Port), // Forward random remote port to local port
 		c.sshUserHost, // Not used in this case, but required by ssh
 	}
 	cmd := exec.CommandContext(ctx, "ssh", args...)
@@ -195,7 +195,7 @@ func (c *OpenSSHClient) Close(ctx context.Context) {
 	}
 }
 
-func (c *OpenSSHClient) Run(command string, arguments ...string) error {
+func (c *OpenSSHClient) Run(ctx context.Context, command string, arguments ...string) error {
 	if c.socket == "" {
 		return errors.New("SSH connection not established")
 	}
@@ -206,7 +206,7 @@ func (c *OpenSSHClient) Run(command string, arguments ...string) error {
 		c.sshUserHost, // Not used in this case, but required by ssh
 		command,
 	}, arguments...)
-	cmd := exec.CommandContext(context.Background(), "ssh", args...)
+	cmd := exec.CommandContext(ctx, "ssh", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	clog.Debugf("running command: %s", cmd.String())

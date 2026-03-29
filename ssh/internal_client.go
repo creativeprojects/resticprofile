@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -115,7 +116,7 @@ func (s *InternalClient) TunnelPeerPort() int {
 	return s.port
 }
 
-func (s *InternalClient) Run(command string, arguments ...string) error {
+func (s *InternalClient) Run(_ context.Context, command string, arguments ...string) error {
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := s.client.NewSession()
@@ -138,7 +139,7 @@ func (s *InternalClient) Run(command string, arguments ...string) error {
 	// the remote side using the Run method.
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
-	if err := session.Run(command); err != nil {
+	if err := session.Run(command + " " + strings.Join(arguments, " ")); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
 	return nil

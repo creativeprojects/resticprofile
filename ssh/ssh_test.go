@@ -4,6 +4,8 @@ package ssh
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -43,12 +45,41 @@ func TestSSHClient(t *testing.T) {
 			connectErr: true,
 		},
 		{
-			name: "successful connection",
+			name: "successful connection using RSA key",
 			config: Config{
 				Host:           "localhost:2222",
 				Username:       "resticprofile",
 				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPath: filepath.Join(tmpDir, "id_rsa"),
+				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+					resp.Write([]byte("Connection successful using RSA key\n"))
+				}),
+			},
+			connectErr: false,
+		},
+		{
+			name: "successful connection using ECDSA key",
+			config: Config{
+				Host:           "localhost:2222",
+				Username:       "resticprofile",
+				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPath: filepath.Join(tmpDir, "id_ecdsa"),
+				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+					resp.Write([]byte("Connection successful using ECDSA key\n"))
+				}),
+			},
+			connectErr: false,
+		},
+		{
+			name: "successful connection using ED25519 key",
+			config: Config{
+				Host:           "localhost:2222",
+				Username:       "resticprofile",
+				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPath: filepath.Join(tmpDir, "id_ed25519"),
+				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+					resp.Write([]byte("Connection successful using ED25519 key\n"))
+				}),
 			},
 			connectErr: false,
 		},
@@ -70,7 +101,7 @@ func TestSSHClient(t *testing.T) {
 				}
 				require.NoError(t, err)
 
-				err = client.Run("uname", "-a")
+				err = client.Run(ctx, "curl", fmt.Sprintf("http://localhost:%d/", client.TunnelPeerPort()))
 				require.NoError(t, err)
 			})
 		}

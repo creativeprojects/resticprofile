@@ -8,13 +8,15 @@ services:
       - PUID=${USER_ID:-1000}
       - PGID=${GROUP_ID:-1000}
       - TZ=Europe/London
-      - PUBLIC_KEY_FILE=/id_rsa.pub
+      - PUBLIC_KEY_DIR=/publickeys
       - SUDO_ACCESS=false
       - PASSWORD_ACCESS=false
       - USER_NAME=resticprofile
       - LOG_STDOUT=true
     volumes:
       - ${PWD}/allow_tcp_forwarding.conf:/config/sshd/sshd_config.d/allow_tcp_forwarding.conf
-      - ${SSH_TESTS_TMPDIR}/id_rsa.pub:/id_rsa.pub
+      - ${SSH_TESTS_TMPDIR}/id_rsa.pub:/publickeys/id_rsa.pub
+      - ${SSH_TESTS_TMPDIR}/id_ecdsa.pub:/publickeys/id_ecdsa.pub
+      - ${SSH_TESTS_TMPDIR}/id_ed25519.pub:/publickeys/id_ed25519.pub
     ports:
       - 2222:2222

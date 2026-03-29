@@ -112,7 +112,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		"-v",
 		"-r", fmt.Sprintf("http://localhost:%d/configuration/%s", cnx.TunnelPeerPort(), remoteName),
 	}
-	err = cnx.Run(binaryPath, arguments...)
+	err = cnx.Run(context.Background(), binaryPath, arguments...)
 	if err != nil {
 		return fmt.Errorf("failed to run resticprofile on peer: %w", err)
 	}
