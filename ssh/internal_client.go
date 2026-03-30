@@ -51,17 +51,27 @@ func (s *InternalClient) Connect(_ context.Context) error {
 			return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
 		}
 	}
-	key, err := os.ReadFile(s.config.PrivateKeyPaths[0])
-	if err != nil {
-		return fmt.Errorf("unable to read private key: %w", err)
-	}
 
-	// Create the Signer for this private key.
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return fmt.Errorf("unable to parse private key: %w", err)
+	authMethods := make([]ssh.AuthMethod, 0, len(s.config.PrivateKeyPaths))
+	for _, privateKeyPath := range s.config.PrivateKeyPaths {
+		key, err := os.ReadFile(privateKeyPath)
+		if err != nil {
+			clog.Errorf("unable to read private key: %s", err)
+			continue
+		}
+
+		// Create the Signer for this private key.
+		signer, err := ssh.ParsePrivateKey(key)
+		if err != nil {
+			clog.Errorf("unable to parse private key: %s", err)
+			continue
+		}
+		clog.Debugf("using ssh key of type %q", signer.PublicKey().Type())
+		authMethods = append(authMethods, ssh.PublicKeys(signer))
 	}
-	clog.Debugf("using ssh keys of type %q", signer.PublicKey().Type())
+	if len(authMethods) == 0 {
+		return errors.New("no ssh key found")
+	}
 
 	// The algorithms returned by ssh.SupportedAlgorithms() are different from
 	// the default ones and do not include algorithms that are considered
@@ -70,11 +80,8 @@ func (s *InternalClient) Connect(_ context.Context) error {
 	algorithms := ssh.SupportedAlgorithms()
 
 	config := &ssh.ClientConfig{
-		User: s.config.Username,
-		Auth: []ssh.AuthMethod{
-			// Use the PublicKeys method for remote authentication.
-			ssh.PublicKeys(signer),
-		},
+		User:              s.config.Username,
+		Auth:              authMethods,
 		HostKeyCallback:   getHostKeyCallback(hostKeyCallback),
 		HostKeyAlgorithms: algorithms.HostKeys,
 		Config: ssh.Config{

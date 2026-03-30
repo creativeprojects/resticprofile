@@ -48,6 +48,16 @@ func TestSSHClient(t *testing.T) {
 			},
 			connectErr: true,
 		},
+		// {
+		// 	name: "invalid known hosts file",
+		// 	config: Config{
+		// 		Host:            "localhost:2222",
+		// 		Username:        "resticprofile",
+		// 		KnownHostsPath:  filepath.Join(tmpDir, "file-not-found"),
+		// 		PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_rsa")},
+		// 	},
+		// 	connectErr: true,
+		// },
 		{
 			name: "successful connection using RSA key",
 			config: Config{
