@@ -43,6 +43,7 @@ jobs:
       - name: Test
         run: make test-ci
         env:
+          TEST_FUSE: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
