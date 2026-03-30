@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/remote"
@@ -194,4 +196,47 @@ func TestLoadMultipleRemoteFiles(t *testing.T) {
 	require.NotNil(t, params)
 	assert.Equal(t, "myprofile", params.ProfileName)
 	assert.Len(t, files, 2)
+}
+
+func TestLoadRemoteFilesWithBigFile(t *testing.T) {
+	var size int64 = 10 * 1024 * 1024
+	buffer := make([]byte, size) // 10 MB
+	_, err := rand.NewChaCha8([32]byte{}).Read(buffer)
+	require.NoError(t, err)
+
+	entries := []struct{ name, content string }{
+		{"bigfile", string(buffer)},
+	}
+	tarBody := buildTar(t, entries)
+
+	srv := newTarServer(t, tarBody)
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	files, _, err := loadRemoteFiles(ctx, srv.URL)
+	require.NoError(t, err)
+	assert.Len(t, files, 1)
+	assert.Equal(t, "bigfile", files[0].Name())
+	assert.Equal(t, size, files[0].FileInfo().Size())
+}
+
+func TestLoadRemoteFilesWithEmptyFile(t *testing.T) {
+	entries := []struct{ name, content string }{
+		{"emptyfile", ""},
+	}
+	tarBody := buildTar(t, entries)
+
+	srv := newTarServer(t, tarBody)
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	files, _, err := loadRemoteFiles(ctx, srv.URL)
+	require.NoError(t, err)
+	assert.Len(t, files, 1)
+	assert.Equal(t, "emptyfile", files[0].Name())
+	assert.Equal(t, int64(0), files[0].FileInfo().Size())
 }

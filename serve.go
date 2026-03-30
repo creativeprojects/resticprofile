@@ -112,10 +112,10 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	}
 
 	err = cnx.Connect(context.Background())
+	defer cnx.Close(context.Background())
 	if err != nil {
 		return err
 	}
-	defer cnx.Close(context.Background())
 
 	binaryPath := remoteConfig.BinaryPath
 	if binaryPath == "" {

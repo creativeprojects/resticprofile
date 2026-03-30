@@ -167,7 +167,7 @@ func extractTarToFs(tarData []byte, fs afero.Fs) error {
 			if err != nil {
 				return err
 			}
-			if _, err := io.CopyN(file, tr, 1000); err != nil && !errors.Is(err, io.EOF) {
+			if _, err := io.Copy(file, tr); err != nil && !errors.Is(err, io.EOF) {
 				file.Close()
 				return err
 			}

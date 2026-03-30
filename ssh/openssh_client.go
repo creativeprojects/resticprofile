@@ -42,23 +42,23 @@ func (c *OpenSSHClient) Name() string {
 
 // Connect establishes the SSH connection and starts the file server.
 // It returns an error if the connection or server setup fails.
+// You SHOULD run the Close() method even after a connection failure.
 func (c *OpenSSHClient) Connect(ctx context.Context) error {
 	err := c.config.ValidateOpenSSH()
 	if err != nil {
 		return err
 	}
-	c.sshHost, c.sshPort = parseHost(c.config.Host)
-	c.sshUserHost = c.sshHost
+	c.sshHost, c.sshPort, c.sshUserHost = c.config.Host, c.config.Port, c.config.Host
 	if c.config.Username != "" {
 		c.sshUserHost = fmt.Sprintf("%s@%s", c.config.Username, c.sshHost)
-	}
-	err = c.startFileServer(ctx)
-	if err != nil {
-		return err
 	}
 	err = c.startSSH(ctx)
 	if err != nil {
 		return fmt.Errorf("error while starting SSH connection: %w", err)
+	}
+	err = c.startFileServer(ctx)
+	if err != nil {
+		return err
 	}
 	err = c.startTunnel(ctx)
 	if err != nil {

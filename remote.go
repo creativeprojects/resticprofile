@@ -58,6 +58,9 @@ func loadRemoteFiles(ctx context.Context, endpoint string) ([]fuse.File, *remote
 		if !filepath.IsLocal(hdr.Name) {
 			return nil, nil, fmt.Errorf("invalid file name: %s", hdr.Name)
 		}
+		if hdr.Size < 0 {
+			return nil, nil, fmt.Errorf("invalid file size %d", hdr.Size)
+		}
 		if hdr.Name == constants.ManifestFilename {
 			clog.Debugf("downloading manifest (%d bytes)", hdr.Size)
 			parameters, err = getManifestParameters(reader)
@@ -67,7 +70,7 @@ func loadRemoteFiles(ctx context.Context, endpoint string) ([]fuse.File, *remote
 		} else {
 			clog.Debugf("downloading file %s (%d bytes)", hdr.Name, hdr.Size)
 			data := make([]byte, hdr.Size)
-			read, err := reader.Read(data) // is there a possibility that the file is read in multiple chunks? if so, we would need to loop until we read the entire file
+			read, err := reader.Read(data) // will read the entire file
 			if err != nil && err != io.EOF {
 				return nil, nil, fmt.Errorf("failed to download file content: %w", err)
 			}

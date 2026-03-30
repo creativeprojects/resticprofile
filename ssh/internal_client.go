@@ -7,7 +7,9 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/netip"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,21 +19,18 @@ import (
 	"golang.org/x/crypto/ssh/knownhosts"
 )
 
-const startPort = 10001
-
 type InternalClient struct {
-	config Config
-	port   int
-	client *ssh.Client
-	tunnel net.Listener
-	server *http.Server
-	wg     sync.WaitGroup
+	config     Config
+	tunnelPort int
+	client     *ssh.Client
+	tunnel     net.Listener
+	server     *http.Server
+	wg         sync.WaitGroup
 }
 
 func NewInternalClient(config Config) *InternalClient {
 	return &InternalClient{
 		config: config,
-		port:   startPort,
 	}
 }
 
@@ -39,6 +38,9 @@ func (s *InternalClient) Name() string {
 	return "InternalSSH"
 }
 
+// Connect establishes the SSH connection and starts the file server.
+// It returns an error if the connection or server setup fails.
+// You SHOULD run the Close() method even after a connection failure.
 func (s *InternalClient) Connect(_ context.Context) error {
 	err := s.config.ValidateInternal()
 	if err != nil {
@@ -91,17 +93,27 @@ func (s *InternalClient) Connect(_ context.Context) error {
 		},
 	}
 
+	host := s.config.Host
+	if s.config.Port > 0 {
+		host = net.JoinHostPort(s.config.Host, strconv.Itoa(s.config.Port))
+	}
 	// Connect to the remote server and perform the SSH handshake.
-	s.client, err = ssh.Dial("tcp", s.config.Host, config)
+	s.client, err = ssh.Dial("tcp", host, config)
 	if err != nil {
 		return fmt.Errorf("unable to connect: %w", err)
 	}
 
 	// Request the remote side to open a local port
-	s.tunnel, err = s.client.Listen("tcp", fmt.Sprintf("localhost:%d", s.port)) // increment the port in a loop in case of an error
+	s.tunnel, err = s.client.Listen("tcp", "localhost:0")
 	if err != nil {
 		return fmt.Errorf("unable to register tcp forward: %w", err)
 	}
+	// the return type is net.Addr only but we also need the allocated port
+	addrWithPort, ok := s.tunnel.Addr().(interface{ AddrPort() netip.AddrPort })
+	if !ok {
+		return fmt.Errorf("cannot determine remote tunnel port")
+	}
+	s.tunnelPort = int(addrWithPort.AddrPort().Port())
 
 	s.wg.Go(func() {
 		s.server = &http.Server{
@@ -119,7 +131,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 }
 
 func (s *InternalClient) TunnelPeerPort() int {
-	return s.port
+	return s.tunnelPort
 }
 
 func (s *InternalClient) Run(_ context.Context, command string, arguments ...string) error {
@@ -184,7 +196,7 @@ func getHostKeyCallback(next ssh.HostKeyCallback) ssh.HostKeyCallback {
 		if next != nil {
 			err := next(hostname, remote, key)
 			if err != nil {
-				clog.Warningf("host key verification failed: %w", err)
+				clog.Warningf("host key verification failed: %s", err)
 			}
 			return err
 		}

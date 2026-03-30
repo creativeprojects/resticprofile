@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/batt"
@@ -140,8 +141,9 @@ func main() {
 	banner()
 
 	if flags.remote != "" {
-		ctx := context.TODO()
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 		closeFS, remoteParameters, err := setupRemoteConfiguration(ctx, flags.remote)
+		cancel()
 		if err != nil {
 			// need to setup console logging to display the error message
 			closeLogger := setupLogging(nil)

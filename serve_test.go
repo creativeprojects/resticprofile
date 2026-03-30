@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -28,6 +29,9 @@ func TestSendRemoteFiles(t *testing.T) {
 }
 
 func TestSendRemoteFilesNotFound(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("Windows delivers a different error message")
+	}
 	recorder := httptest.NewRecorder()
 	sendRemoteFiles(&config.Remote{
 		ConfigurationFile: "file-not-found", // this file should exist in the test environment

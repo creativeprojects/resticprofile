@@ -16,6 +16,14 @@ func NewFile(name string, fileInfo fs.FileInfo, data []byte) *File {
 	}
 }
 
+func (f *File) Name() string {
+	return f.name
+}
+
+func (f *File) FileInfo() fs.FileInfo {
+	return f.fileInfo
+}
+
 func (f *File) Close() {
 	// emptying file data
 	for i := range f.data {

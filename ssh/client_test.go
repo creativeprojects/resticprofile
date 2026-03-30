@@ -32,7 +32,8 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "no public key",
 			config: Config{
-				Host:           "localhost:2222",
+				Host:           "localhost",
+				Port:           2222,
 				Username:       "resticprofile",
 				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
 			},
@@ -41,7 +42,8 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "wrong username",
 			config: Config{
-				Host:            "localhost:2222",
+				Host:            "localhost",
+				Port:            2222,
 				Username:        "otheruser",
 				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_rsa")},
@@ -51,7 +53,8 @@ func TestSSHClient(t *testing.T) {
 		// {
 		// 	name: "invalid known hosts file",
 		// 	config: Config{
-		// 		Host:            "localhost:2222",
+		// 		Host:            "localhost",
+		// 		Port:            2222,
 		// 		Username:        "resticprofile",
 		// 		KnownHostsPath:  filepath.Join(tmpDir, "file-not-found"),
 		// 		PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_rsa")},
@@ -61,7 +64,8 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "successful connection using RSA key",
 			config: Config{
-				Host:            "localhost:2222",
+				Host:            "localhost",
+				Port:            2222,
 				Username:        "resticprofile",
 				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_rsa")},
@@ -74,7 +78,8 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "successful connection using ECDSA key",
 			config: Config{
-				Host:            "localhost:2222",
+				Host:            "localhost",
+				Port:            2222,
 				Username:        "resticprofile",
 				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_ecdsa")},
@@ -87,7 +92,8 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "successful connection using ED25519 key",
 			config: Config{
-				Host:            "localhost:2222",
+				Host:            "localhost",
+				Port:            2222,
 				Username:        "resticprofile",
 				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
 				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_ed25519")},
