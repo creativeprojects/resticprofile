@@ -103,6 +103,7 @@ func setupRemoteConfiguration(ctx context.Context, remoteEndpoint string) (func(
 	if parameters == nil {
 		return nil, nil, fmt.Errorf("manifest file %q not found in remote configuration", constants.ManifestFilename)
 	}
+	clog.Debugf("using configuration file from manifest: %q", parameters.ConfigurationFile)
 
 	closeMountpoint := func() {}
 	mountpoint := parameters.Mountpoint

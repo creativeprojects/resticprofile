@@ -69,7 +69,6 @@ func (t *Tar) sendFile(filename string) error {
 	if err != nil {
 		return fmt.Errorf("unable to create tar header for file %s: %w", filename, err)
 	}
-	fileHeader.Name = filename
 
 	err = t.writer.WriteHeader(fileHeader)
 	if err != nil {

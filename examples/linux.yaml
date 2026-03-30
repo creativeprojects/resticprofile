@@ -163,3 +163,23 @@ stdin:
         tag: stdin
     snapshots:
         tag: stdin
+
+remote:
+    inherit: default
+    initialize: true
+    backup:
+        check-before: true
+        exclude:
+            - /**/.git
+        exclude-caches: true
+        one-file-system: false
+        run-after: echo All Done!
+        run-before:
+            - echo Starting!
+        source:
+            - /var/backups
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        keep-within: 30d
