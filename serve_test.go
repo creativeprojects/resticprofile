@@ -4,16 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,6 +25,17 @@ func TestSendRemoteFiles(t *testing.T) {
 	}, "test_remote", []string{"arg1", "arg2"}, recorder)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Equal(t, recorder.Header().Get("Content-Type"), "application/x-tar")
+}
+
+func TestSendRemoteFilesNotFound(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	sendRemoteFiles(&config.Remote{
+		ConfigurationFile: "file-not-found", // this file should exist in the test environment
+		ProfileName:       "test_profile",
+	}, "test_remote", []string{"arg1", "arg2"}, recorder)
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	assert.Equal(t, recorder.Header().Get("Content-Type"), "text/plain")
+	assert.Equal(t, "error while preparing files to send for remote \"test_remote\": unable to stat file file-not-found: stat file-not-found: no such file or directory\n", recorder.Body.String())
 }
 
 // getFreePort returns a TCP port number that is currently free on localhost.
@@ -57,39 +67,14 @@ func waitForServer(t *testing.T, url string) {
 	t.Fatal("server did not become ready in time")
 }
 
-// stopServeCommand sends SIGINT to the current process, causing serveCommand's signal
-// handler to trigger a graceful HTTP server shutdown.
-func stopServeCommand(t *testing.T) {
-	t.Helper()
-	p, err := os.FindProcess(os.Getpid())
-	require.NoError(t, err)
-	require.NoError(t, p.Signal(os.Interrupt))
-}
-
-func TestServeCommandMissingPortArg(t *testing.T) {
-	err := serveCommand(io.Discard, commandContext{Context: Context{
-		flags: commandLineFlags{resticArgs: []string{"serve"}},
-	}})
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "missing argument: port")
-}
-
 func TestServeCommandHTTPRemoteNotFound(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip("skipping test on Windows, which does not support signals in the same way")
-	}
-
 	cfg, err := config.Load(bytes.NewBufferString("version: 2\n"), "yaml")
 	require.NoError(t, err)
 
 	port := getFreePort(t)
-	cmd := commandContext{Context: Context{
-		flags:  commandLineFlags{resticArgs: []string{"serve", fmt.Sprintf("%d", port)}},
-		config: cfg,
-	}}
-
+	quit := make(chan os.Signal, 1)
 	done := make(chan error, 1)
-	go func() { done <- serveCommand(io.Discard, cmd) }()
+	go func() { done <- serveProfiles(strconv.Itoa(port), cfg, quit) }()
 
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	waitForServer(t, baseURL+"/configuration/probe")
@@ -101,7 +86,7 @@ func TestServeCommandHTTPRemoteNotFound(t *testing.T) {
 	resp.Body.Close()
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 
-	stopServeCommand(t)
+	quit <- os.Interrupt
 	select {
 	case err := <-done:
 		assert.NoError(t, err)
@@ -111,10 +96,6 @@ func TestServeCommandHTTPRemoteNotFound(t *testing.T) {
 }
 
 func TestServeCommandHTTPRemoteFound(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip("skipping test on Windows, which does not support signals in the same way")
-	}
-
 	const remoteName = "myremote"
 	cfgYAML := fmt.Sprintf(`version: 2
 remotes:
@@ -130,13 +111,9 @@ remotes:
 	require.True(t, cfg.HasRemote(remoteName), "config should have the remote")
 
 	port := getFreePort(t)
-	cmd := commandContext{Context: Context{
-		flags:  commandLineFlags{resticArgs: []string{"serve", fmt.Sprintf("%d", port)}},
-		config: cfg,
-	}}
-
+	quit := make(chan os.Signal, 1)
 	done := make(chan error, 1)
-	go func() { done <- serveCommand(io.Discard, cmd) }()
+	go func() { done <- serveProfiles(strconv.Itoa(port), cfg, quit) }()
 
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	waitForServer(t, baseURL+"/configuration/probe")
@@ -149,7 +126,7 @@ remotes:
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, "application/x-tar", resp.Header.Get("Content-Type"))
 
-	stopServeCommand(t)
+	quit <- os.Interrupt
 	select {
 	case err := <-done:
 		assert.NoError(t, err)
@@ -159,21 +136,13 @@ remotes:
 }
 
 func TestServeCommandHTTPMethodNotAllowed(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip("skipping test on Windows, which does not support signals in the same way")
-	}
-
 	cfg, err := config.Load(bytes.NewBufferString("version: 2\n"), "yaml")
 	require.NoError(t, err)
 
 	port := getFreePort(t)
-	cmd := commandContext{Context: Context{
-		flags:  commandLineFlags{resticArgs: []string{"serve", fmt.Sprintf("%d", port)}},
-		config: cfg,
-	}}
-
+	quit := make(chan os.Signal, 1)
 	done := make(chan error, 1)
-	go func() { done <- serveCommand(io.Discard, cmd) }()
+	go func() { done <- serveProfiles(strconv.Itoa(port), cfg, quit) }()
 
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	waitForServer(t, baseURL+"/configuration/probe")
@@ -186,7 +155,7 @@ func TestServeCommandHTTPMethodNotAllowed(t *testing.T) {
 	// The ServeMux pattern is method-specific; POST should not match
 	assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
 
-	stopServeCommand(t)
+	quit <- os.Interrupt
 	select {
 	case err := <-done:
 		assert.NoError(t, err)

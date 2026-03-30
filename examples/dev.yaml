@@ -364,3 +364,9 @@ nopwd:
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     insecure-no-password: true
 
+inject-repository:
+    initialize: true
+    password-file: key
+    run-before:
+     - "echo \"/Volumes/RAMDisk/{{ .Profile.Name }}\" > /Volumes/RAMDisk/repository.txt"
+     - "echo RESTIC_REPOSITORY_FILE=/Volumes/RAMDisk/repository.txt >> {{ env }}"

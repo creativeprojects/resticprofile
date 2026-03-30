@@ -43,12 +43,16 @@ func (c *OpenSSHClient) Name() string {
 // Connect establishes the SSH connection and starts the file server.
 // It returns an error if the connection or server setup fails.
 func (c *OpenSSHClient) Connect(ctx context.Context) error {
+	err := c.config.ValidateOpenSSH()
+	if err != nil {
+		return err
+	}
 	c.sshHost, c.sshPort = parseHost(c.config.Host)
 	c.sshUserHost = c.sshHost
 	if c.config.Username != "" {
 		c.sshUserHost = fmt.Sprintf("%s@%s", c.config.Username, c.sshHost)
 	}
-	err := c.startFileServer(ctx)
+	err = c.startFileServer(ctx)
 	if err != nil {
 		return err
 	}
@@ -109,9 +113,10 @@ func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 	if c.config.KnownHostsPath != "" {
 		args = append(args, "-o", fmt.Sprintf("UserKnownHostsFile=%s", c.config.KnownHostsPath))
 	}
-	if c.config.PrivateKeyPath != "" {
-		args = append(args, "-i", c.config.PrivateKeyPath)
+	for _, privateKeyPath := range c.config.PrivateKeyPaths {
+		args = append(args, "-i", privateKeyPath)
 	}
+
 	args = append(args, c.sshUserHost)
 	cmd := exec.CommandContext(ctx, "ssh", args...)
 	cmd.Stdout = os.Stdout

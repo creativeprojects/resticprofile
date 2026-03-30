@@ -6,7 +6,7 @@ type Remote struct {
 	Connection        string   `mapstructure:"connection" default:"ssh" enum:"ssh;openssh" description:"Connection type to use to connect to the remote client"`
 	Host              string   `mapstructure:"host" description:"Address of the remote client. Format: <host>:<port>"`
 	Username          string   `mapstructure:"username" description:"User to connect to the remote client"`
-	PrivateKeyPath    string   `mapstructure:"private-key" description:"Path to the private key to use for authentication"`
+	PrivateKeyPaths   []string `mapstructure:"private-keys" description:"Path to the private key(s) to use for authentication"`
 	KnownHostsPath    string   `mapstructure:"known-hosts" description:"Path to the known hosts file"`
 	BinaryPath        string   `mapstructure:"binary-path" description:"Path to the resticprofile binary to use on the remote client"`
 	ConfigurationFile string   `mapstructure:"configuration-file" description:"Path to the configuration file to transfer to the remote client"`
@@ -25,7 +25,9 @@ func NewRemote(config *Config, name string) *Remote {
 
 // SetRootPath changes the path of all the relative paths and files in the configuration
 func (r *Remote) SetRootPath(rootPath string) {
-	r.PrivateKeyPath = fixPath(r.PrivateKeyPath, expandEnv, absolutePrefix(rootPath))
+	for i := range r.PrivateKeyPaths {
+		r.PrivateKeyPaths[i] = fixPath(r.PrivateKeyPaths[i], expandEnv, absolutePrefix(rootPath))
+	}
 	r.KnownHostsPath = fixPath(r.KnownHostsPath, expandEnv, absolutePrefix(rootPath))
 	r.ConfigurationFile = fixPath(r.ConfigurationFile, expandEnv, absolutePrefix(rootPath))
 	r.SSHConfig = fixPath(r.SSHConfig, expandEnv, absolutePrefix(rootPath))

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -24,6 +25,7 @@ type InternalClient struct {
 	client *ssh.Client
 	tunnel net.Listener
 	server *http.Server
+	wg     sync.WaitGroup
 }
 
 func NewInternalClient(config Config) *InternalClient {
@@ -38,7 +40,7 @@ func (s *InternalClient) Name() string {
 }
 
 func (s *InternalClient) Connect(_ context.Context) error {
-	err := s.config.Validate()
+	err := s.config.ValidateInternal()
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 			return fmt.Errorf("cannot load host keys from known_hosts: %w", err)
 		}
 	}
-	key, err := os.ReadFile(s.config.PrivateKeyPath)
+	key, err := os.ReadFile(s.config.PrivateKeyPaths[0])
 	if err != nil {
 		return fmt.Errorf("unable to read private key: %w", err)
 	}
@@ -94,7 +96,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 		return fmt.Errorf("unable to register tcp forward: %w", err)
 	}
 
-	go func() {
+	s.wg.Go(func() {
 		s.server = &http.Server{
 			Handler:           s.config.Handler,
 			ReadHeaderTimeout: 5 * time.Second,
@@ -104,8 +106,8 @@ func (s *InternalClient) Connect(_ context.Context) error {
 		if err != nil && err != http.ErrServerClosed && !errors.Is(err, io.EOF) {
 			clog.Warningf("unable to serve http: %s", err)
 		}
-	}()
-	time.Sleep(100 * time.Millisecond) // wait for the server to start
+	})
+	// do we need to wait for the server to start?
 	return nil
 }
 
@@ -166,6 +168,7 @@ func (s *InternalClient) Close(ctx context.Context) {
 			clog.Warningf("unable to close ssh connection: %s", err)
 		}
 	}
+	s.wg.Wait()
 }
 
 func getHostKeyCallback(next ssh.HostKeyCallback) ssh.HostKeyCallback {

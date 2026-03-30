@@ -41,20 +41,20 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "wrong username",
 			config: Config{
-				Host:           "localhost:2222",
-				Username:       "otheruser",
-				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
-				PrivateKeyPath: filepath.Join(tmpDir, "id_rsa"),
+				Host:            "localhost:2222",
+				Username:        "otheruser",
+				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_rsa")},
 			},
 			connectErr: true,
 		},
 		{
 			name: "successful connection using RSA key",
 			config: Config{
-				Host:           "localhost:2222",
-				Username:       "resticprofile",
-				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
-				PrivateKeyPath: filepath.Join(tmpDir, "id_rsa"),
+				Host:            "localhost:2222",
+				Username:        "resticprofile",
+				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_rsa")},
 				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 					resp.Write([]byte("Connection successful using RSA key\n"))
 				}),
@@ -64,10 +64,10 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "successful connection using ECDSA key",
 			config: Config{
-				Host:           "localhost:2222",
-				Username:       "resticprofile",
-				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
-				PrivateKeyPath: filepath.Join(tmpDir, "id_ecdsa"),
+				Host:            "localhost:2222",
+				Username:        "resticprofile",
+				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_ecdsa")},
 				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 					resp.Write([]byte("Connection successful using ECDSA key\n"))
 				}),
@@ -77,10 +77,10 @@ func TestSSHClient(t *testing.T) {
 		{
 			name: "successful connection using ED25519 key",
 			config: Config{
-				Host:           "localhost:2222",
-				Username:       "resticprofile",
-				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
-				PrivateKeyPath: filepath.Join(tmpDir, "id_ed25519"),
+				Host:            "localhost:2222",
+				Username:        "resticprofile",
+				KnownHostsPath:  filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPaths: []string{filepath.Join(tmpDir, "id_ed25519")},
 				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 					resp.Write([]byte("Connection successful using ED25519 key\n"))
 				}),

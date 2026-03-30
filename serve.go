@@ -22,14 +22,23 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 	if len(cmdCtx.flags.resticArgs) < 2 {
 		return fmt.Errorf("missing argument: port")
 	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	defer signal.Stop(quit)
+
+	return serveProfiles(cmdCtx.flags.resticArgs[1], cmdCtx.config, quit)
+}
+
+func serveProfiles(port string, config *config.Config, quit chan os.Signal) error {
 	handler := http.NewServeMux()
 	handler.HandleFunc("GET /configuration/{remote}", func(resp http.ResponseWriter, req *http.Request) {
 		remoteName := req.PathValue("remote")
-		if !cmdCtx.config.HasRemote(remoteName) {
+		if !config.HasRemote(remoteName) {
 			sendError(resp, http.StatusNotFound, fmt.Errorf("remote %q not found", remoteName))
 			return
 		}
-		remoteConfig, err := cmdCtx.config.GetRemote(remoteName)
+		remoteConfig, err := config.GetRemote(remoteName)
 		if err != nil {
 			sendError(resp, http.StatusBadRequest, fmt.Errorf("error while getting remote configuration: %w", err))
 			return
@@ -38,12 +47,8 @@ func serveCommand(w io.Writer, cmdCtx commandContext) error {
 		sendRemoteFiles(remoteConfig, remoteName, nil, resp)
 	})
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	defer signal.Stop(quit)
-
 	server := &http.Server{
-		Addr:              fmt.Sprintf("localhost:%s", cmdCtx.flags.resticArgs[1]),
+		Addr:              "localhost:" + port,
 		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
@@ -89,12 +94,12 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		sendRemoteFiles(remoteConfig, remoteName, cmdCtx.flags.resticArgs[2:], resp)
 	})
 	sshConfig := ssh.Config{
-		Host:           remoteConfig.Host,
-		Username:       remoteConfig.Username,
-		PrivateKeyPath: remoteConfig.PrivateKeyPath,
-		KnownHostsPath: remoteConfig.KnownHostsPath,
-		SSHConfigPath:  remoteConfig.SSHConfig,
-		Handler:        handler,
+		Host:            remoteConfig.Host,
+		Username:        remoteConfig.Username,
+		PrivateKeyPaths: remoteConfig.PrivateKeyPaths,
+		KnownHostsPath:  remoteConfig.KnownHostsPath,
+		SSHConfigPath:   remoteConfig.SSHConfig,
+		Handler:         handler,
 	}
 	var cnx ssh.Client
 	switch remoteConfig.Connection {
@@ -144,13 +149,12 @@ func sendRemoteFiles(remoteConfig *config.Remote, remoteName string, extraArgs [
 	clog.Debugf("sending configuration for %q", remoteName)
 
 	tar := remote.NewTar(resp)
-	defer tar.Close()
-
 	err = tar.PrepareFiles(append(remoteConfig.SendFiles, remoteConfig.ConfigurationFile))
 	if err != nil {
 		sendError(resp, http.StatusInternalServerError, fmt.Errorf("error while preparing files to send for remote %q: %w", remoteName, err))
 		return
 	}
+	defer tar.Close()
 
 	resp.Header().Set("Content-Type", "application/x-tar")
 	resp.WriteHeader(http.StatusOK)
