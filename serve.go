@@ -95,6 +95,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 	})
 	sshConfig := ssh.Config{
 		Host:            remoteConfig.Host,
+		Port:            remoteConfig.Port,
 		Username:        remoteConfig.Username,
 		PrivateKeyPaths: remoteConfig.PrivateKeyPaths,
 		KnownHostsPath:  remoteConfig.KnownHostsPath,

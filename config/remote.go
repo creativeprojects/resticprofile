@@ -4,7 +4,8 @@ type Remote struct {
 	name              string
 	config            *Config
 	Connection        string   `mapstructure:"connection" default:"ssh" enum:"ssh;openssh" description:"Connection type to use to connect to the remote client"`
-	Host              string   `mapstructure:"host" description:"Address of the remote client. Format: <host>:<port>"`
+	Host              string   `mapstructure:"host" description:"Address of the remote client (without port)."`
+	Port              int      `mapstructure:"port" description:"Port to connect to on the remote client. If not specified, the default SSH port (22) will be used."`
 	Username          string   `mapstructure:"username" description:"User to connect to the remote client"`
 	PrivateKeyPaths   []string `mapstructure:"private-keys" description:"Path to the private key(s) to use for authentication"`
 	KnownHostsPath    string   `mapstructure:"known-hosts" description:"Path to the known hosts file"`
