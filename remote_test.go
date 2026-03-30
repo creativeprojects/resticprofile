@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -285,6 +286,9 @@ func TestSetupRemoteConfigurationCancelledContext(t *testing.T) {
 }
 
 func TestSetupRemoteConfigurationSuccess(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("FUSE not available on Windows")
+	}
 	if os.Getenv("TEST_FUSE") == "" {
 		t.Skip("set TEST_FUSE=1 to run FUSE-dependent tests")
 	}
@@ -343,6 +347,9 @@ func TestSetupRemoteConfigurationSuccess(t *testing.T) {
 }
 
 func TestSetupRemoteConfigurationCustomMountpoint(t *testing.T) {
+	if platform.IsWindows() {
+		t.Skip("FUSE not available on Windows")
+	}
 	if os.Getenv("TEST_FUSE") == "" {
 		t.Skip("set TEST_FUSE=1 to run FUSE-dependent tests")
 	}

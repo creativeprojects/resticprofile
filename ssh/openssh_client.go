@@ -131,7 +131,8 @@ func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 
 func (c *OpenSSHClient) stopSSH(ctx context.Context) error {
 	if c.socket == "" {
-		return errors.New("SSH connection not established")
+		// connection not established
+		return nil
 	}
 	args := []string{
 		"-S", c.socket, // Specifies the location of the control socket
