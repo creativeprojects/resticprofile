@@ -6,5 +6,7 @@ const (
 	ExitErrorInvalidFlags
 	ExitRunningOnBattery
 	ExitCannotSetupRemoteConfiguration
+	ExitNotEnoughMemory
+	ExitResticBinaryNotFound
 	ExitErrorChildHasNoParentPort = 10
 )

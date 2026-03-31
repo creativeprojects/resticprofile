@@ -61,7 +61,7 @@ func main() {
 				},
 			},
 		})
-		exitCode = 2
+		exitCode = constants.ExitErrorInvalidFlags
 		return
 	}
 
@@ -76,7 +76,7 @@ func main() {
 
 	if flags.isChild {
 		if flags.parentPort == 0 {
-			exitCode = 10
+			exitCode = constants.ExitErrorChildHasNoParentPort
 			return
 		}
 	}
@@ -182,7 +182,7 @@ func main() {
 			err = ownCommands.Run(ctx)
 			if err != nil {
 				clog.Error(err)
-				exitCode = 1
+				exitCode = constants.ExitGeneralError
 				var ownCommandError *ownCommandError
 				if errors.As(err, &ownCommandError) {
 					exitCode = ownCommandError.ExitCode()
@@ -199,13 +199,13 @@ func main() {
 	defer closeLogger()
 	if err != nil {
 		clog.Error(err)
-		exitCode = 1
+		exitCode = constants.ExitGeneralError
 		return
 	}
 
 	// check if we're running on battery
 	if shouldStopOnBattery(ctx.stopOnBattery) {
-		exitCode = 3
+		exitCode = constants.ExitRunningOnBattery
 		return
 	}
 
@@ -234,7 +234,7 @@ func main() {
 		avail := free()
 		if avail > 0 && avail < ctx.global.MinMemory {
 			clog.Errorf("available memory is < %v MB (option 'min-memory' in the 'global' section)", ctx.global.MinMemory)
-			exitCode = 1
+			exitCode = constants.ExitNotEnoughMemory
 			return
 		}
 	}
@@ -257,7 +257,7 @@ func main() {
 	if err != nil {
 		clog.Error(err)
 		clog.Warning("you can specify the path of the restic binary in the global section of the configuration file (restic-binary)")
-		exitCode = 1
+		exitCode = constants.ExitResticBinaryNotFound
 		return
 	}
 	ctx = ctx.WithBinary(resticBinary)
@@ -267,7 +267,7 @@ func main() {
 		err = ownCommands.Run(ctx)
 		if err != nil {
 			clog.Error(err)
-			exitCode = 1
+			exitCode = constants.ExitGeneralError
 			var ownCommandError *ownCommandError
 			if errors.As(err, &ownCommandError) {
 				exitCode = ownCommandError.ExitCode()
@@ -288,7 +288,7 @@ func main() {
 			displayProfiles(os.Stdout, ctx.config, flags)
 			displayGroups(os.Stdout, ctx.config, flags)
 		}
-		exitCode = 1
+		exitCode = constants.ExitGeneralError
 		return
 	}
 }
