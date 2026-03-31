@@ -364,3 +364,11 @@ nopwd:
     repository: "/Volumes/RAMDisk/{{ .Profile.Name }}"
     insecure-no-password: true
 
+inject-repository:
+    initialize: true
+    password-file: key
+    run-before:
+        - "echo RESTIC_REPOSITORY_FILE=$(mktemp -p /Volumes/RAMDisk) >> {{ env }}"
+        - "echo \"/Volumes/RAMDisk/{{ .Profile.Name }}\" > $RESTIC_REPOSITORY_FILE"
+    run-finally:
+        - "rm -f $RESTIC_REPOSITORY_FILE"

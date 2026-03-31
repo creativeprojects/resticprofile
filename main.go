@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -8,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/batt"
@@ -137,6 +139,28 @@ func main() {
 	defer showPanicData()
 
 	banner()
+
+	if flags.remote != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		closeFS, remoteParameters, err := setupRemoteConfiguration(ctx, flags.remote)
+		cancel()
+		if err != nil {
+			// need to setup console logging to display the error message
+			closeLogger := setupLogging(nil)
+			defer closeLogger()
+			clog.Error(err)
+			exitCode = constants.ExitCannotSetupRemoteConfiguration
+			return
+		}
+		if flags.config == constants.DefaultConfigurationFile && remoteParameters.ConfigurationFile != "" {
+			flags.config = remoteParameters.ConfigurationFile
+		}
+		if flags.name == constants.DefaultProfileName && remoteParameters.ProfileName != "" {
+			flags.name = remoteParameters.ProfileName
+		}
+		flags.resticArgs = remoteParameters.CommandLineArguments
+		shutdown.AddHook(closeFS)
+	}
 
 	// resticprofile own commands (configuration file may not be loaded)
 	if len(flags.resticArgs) > 0 {
@@ -270,7 +294,13 @@ func main() {
 }
 
 func banner() {
-	clog.Debugf("resticprofile %s compiled with %s", version, runtime.Version())
+	clog.Debugf(
+		"resticprofile %s compiled with %s %s/%s",
+		version,
+		runtime.Version(),
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 }
 
 func loadConfig(flags commandLineFlags, silent bool) (cfg *config.Config, global *config.Global, err error) {

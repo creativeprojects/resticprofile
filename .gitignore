@@ -15,6 +15,7 @@
 
 # test output
 /coverage.out
+/coverage-ssh.out
 /unit-tests.xml
 
 # mock binaries

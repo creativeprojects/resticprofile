@@ -106,7 +106,15 @@ self:
             at: "*:15,20,25"
             permission: system
             after-network-online: true
+        exclude-file:
+            - root-excludes
+            - excludes
     check:
+        schedule:
+          at: "*:15"
+          permission: system
+    copy:
+        initialize: true
         schedule-permission: user
         schedule:
             - "*:15"
@@ -131,9 +139,8 @@ src:
         run-after: echo All Done!
         run-before:
             - echo Starting!
-            - ls -al ~/go
         source:
-            - ~/go
+            - ~/go/src/github.com/creativeprojects/resticprofile
         tag:
             - test
             - dev
@@ -156,3 +163,23 @@ stdin:
         tag: stdin
     snapshots:
         tag: stdin
+
+remote:
+    inherit: default
+    initialize: true
+    backup:
+        check-before: true
+        exclude:
+            - /**/.git
+        exclude-caches: true
+        one-file-system: false
+        run-after: echo All Done!
+        run-before:
+            - echo Starting!
+        source:
+            - /var/backups
+    retention:
+        after-backup: true
+        before-backup: false
+        compact: false
+        keep-within: 30d
