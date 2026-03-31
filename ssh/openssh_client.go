@@ -215,6 +215,11 @@ func (c *OpenSSHClient) Run(ctx context.Context, command string, arguments ...st
 	cmd := exec.CommandContext(ctx, "ssh", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Cancel = func() error {
+		return cmd.Process.Signal(os.Interrupt)
+	}
+	cmd.WaitDelay = 10 * time.Second
+
 	clog.Debugf("running command: %s", cmd.String())
 	err := cmd.Run()
 	if err != nil {
