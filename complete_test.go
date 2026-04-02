@@ -13,7 +13,7 @@ import (
 )
 
 func TestCompleter(t *testing.T) {
-	completer := NewCompleter(ownCommands.All(), DefaultFlagsLoader)
+	completer := NewCompleter(ownCommands.All(), DefaultFlagsLoader, false)
 	completer.init(nil)
 
 	expectedProfiles := func() []string {
