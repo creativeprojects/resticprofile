@@ -44,27 +44,27 @@ jobs:
           extended: true
 
       - name: Build
+        id: build_hugo
         run: |
           cd docs
           sed -i "s/canonifyURLs = true/canonifyURLs = false/g" hugo.toml
           export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
           echo "BRANCH_NAME=${BRANCH_NAME}" >> "$GITHUB_ENV"
+          echo "branch_name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
           hugo --minify --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
 
       - name: Check broken links
-        uses: ruzickap/action-my-broken-link-checker@v2
+        uses: ruzickap/action-my-broken-link-checker@v3
         with:
-          url: "https://${{ env.BRANCH_NAME }}.resticprofile.pages.dev/"
+          url: "https://${{ steps.build_hugo.outputs.branch_name }}.resticprofile.pages.dev/"
           pages_path: ./public/
           cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|commit)" --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 --color=always --skip-tls-verification --header="User-Agent: Muffet/2.10.8" --timeout=20'
 
       - name: Publish to pages.dev
         continue-on-error: true # secrets are not set for PRs from forks
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: 'resticprofile'
-          directory: 'public'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref_name }}
+          command: pages deploy public --project-name=resticprofile --branch=${{ github.ref_name }}
