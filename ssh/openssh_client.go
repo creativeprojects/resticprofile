@@ -113,6 +113,9 @@ func (c *OpenSSHClient) startSSH(ctx context.Context) error {
 	if c.config.KnownHostsPath != "" {
 		args = append(args, "-o", fmt.Sprintf("UserKnownHostsFile=%s", c.config.KnownHostsPath))
 	}
+	if c.config.ConnectTimeout > 0 {
+		args = append(args, "-o", fmt.Sprintf("ConnectTimeout=%d", int(c.config.ConnectTimeout.Seconds())))
+	}
 	for _, privateKeyPath := range c.config.PrivateKeyPaths {
 		args = append(args, "-i", privateKeyPath)
 	}
@@ -216,6 +219,9 @@ func (c *OpenSSHClient) Run(ctx context.Context, command string, arguments ...st
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Cancel = func() error {
+		if cmd.Process == nil {
+			return os.ErrProcessDone
+		}
 		return cmd.Process.Signal(os.Interrupt)
 	}
 	cmd.WaitDelay = 10 * time.Second

@@ -384,4 +384,4 @@ stop-ssh-server: ## Stop the SSH server and clean up temporary files
 .PHONY: ssh-test
 ssh-test: ## Run SSH client tests
 	@echo "[*] $@"
-	@go test -run TestSSHClient -v -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh
+	@go test -run TestSSHClient -v -race -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh

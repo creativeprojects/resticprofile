@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -103,6 +104,26 @@ func TestSSHClient(t *testing.T) {
 			},
 			connectErr: false,
 		},
+		{
+			name: "successful connection using any of the provided key",
+			config: Config{
+				Host:           "localhost",
+				Port:           2222,
+				Username:       "resticprofile",
+				KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
+				PrivateKeyPaths: []string{
+					filepath.Join(tmpDir, "file-not-found"), // Next key should be used
+					filepath.Join(tmpDir, "id_ed25519"),
+					filepath.Join(tmpDir, "id_ecdsa"),
+					filepath.Join(tmpDir, "id_rsa"),
+				},
+				Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+					resp.Write([]byte("Connection successful any of the provided key\n"))
+				}),
+				ConnectTimeout: 10 * time.Second,
+			},
+			connectErr: false,
+		},
 	}
 
 	for _, fixture := range fixtures {
@@ -125,5 +146,85 @@ func TestSSHClient(t *testing.T) {
 				require.NoError(t, err)
 			})
 		}
+	}
+}
+
+func TestSSHClientRunCommandWithCancelledContext(t *testing.T) {
+	clog.SetTestLog(t)
+	defer clog.CloseTestLog()
+
+	tmpDir := os.Getenv("SSH_TESTS_TMPDIR")
+	if tmpDir == "" {
+		tmpDir = filepath.Join(os.TempDir(), "resticprofile-ssh-tests")
+	}
+
+	config := Config{
+		Host:           "localhost",
+		Port:           2222,
+		Username:       "resticprofile",
+		KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
+		PrivateKeyPaths: []string{
+			filepath.Join(tmpDir, "id_ed25519"),
+			filepath.Join(tmpDir, "id_ecdsa"),
+			filepath.Join(tmpDir, "id_rsa"),
+		},
+		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+			t.Error("should not have been called")
+		}),
+	}
+
+	for _, client := range []Client{NewOpenSSHClient(config), NewInternalClient(config)} {
+		t.Run(client.Name(), func(t *testing.T) {
+			defer client.Close(context.Background())
+
+			ctx, cancel := context.WithCancel(context.Background())
+
+			err := client.Connect(ctx)
+			require.NoError(t, err)
+
+			cancel()
+
+			err = client.Run(ctx, "curl", fmt.Sprintf("http://localhost:%d/", client.TunnelPeerPort()))
+			require.Error(t, err)
+			assert.ErrorIs(t, err, context.Canceled)
+		})
+	}
+}
+
+func TestSSHClientRunCommandThenCancelContext(t *testing.T) {
+	clog.SetTestLog(t)
+	defer clog.CloseTestLog()
+
+	tmpDir := os.Getenv("SSH_TESTS_TMPDIR")
+	if tmpDir == "" {
+		tmpDir = filepath.Join(os.TempDir(), "resticprofile-ssh-tests")
+	}
+
+	config := Config{
+		Host:           "localhost",
+		Port:           2222,
+		Username:       "resticprofile",
+		KnownHostsPath: filepath.Join(tmpDir, "known_hosts"),
+		PrivateKeyPaths: []string{
+			filepath.Join(tmpDir, "id_ed25519"),
+			filepath.Join(tmpDir, "id_ecdsa"),
+			filepath.Join(tmpDir, "id_rsa"),
+		},
+	}
+
+	for _, client := range []Client{NewOpenSSHClient(config), NewInternalClient(config)} {
+		t.Run(client.Name(), func(t *testing.T) {
+			defer client.Close(context.Background())
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+
+			err := client.Connect(ctx)
+			require.NoError(t, err)
+
+			err = client.Run(ctx, "sleep", "10")
+			require.Error(t, err)
+			t.Log(err)
+		})
 	}
 }

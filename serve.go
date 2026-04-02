@@ -102,6 +102,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		KnownHostsPath:  remoteConfig.KnownHostsPath,
 		SSHConfigPath:   remoteConfig.SSHConfig,
 		Handler:         handler,
+		ConnectTimeout:  20 * time.Second,
 	}
 	var cnx ssh.Client
 	switch remoteConfig.Connection {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // Config holds the configuration to connect to the SSH server
@@ -16,6 +17,7 @@ type Config struct {
 	KnownHostsPath  string
 	SSHConfigPath   string // Path to the OpenSSH config file, if any
 	Handler         http.Handler
+	ConnectTimeout  time.Duration
 }
 
 func (c *Config) ValidateOpenSSH() error {
