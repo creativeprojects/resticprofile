@@ -91,6 +91,7 @@ func (s *InternalClient) Connect(_ context.Context) error {
 			Ciphers:      algorithms.Ciphers,
 			MACs:         algorithms.MACs,
 		},
+		Timeout: s.config.ConnectTimeout,
 	}
 
 	host := s.config.Host
@@ -115,11 +116,11 @@ func (s *InternalClient) Connect(_ context.Context) error {
 	}
 	s.tunnelPort = int(addrWithPort.AddrPort().Port())
 
+	s.server = &http.Server{
+		Handler:           s.config.Handler,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
 	s.wg.Go(func() {
-		s.server = &http.Server{
-			Handler:           s.config.Handler,
-			ReadHeaderTimeout: 5 * time.Second,
-		}
 		// Serve HTTP with your SSH server acting as a reverse proxy.
 		err := s.server.Serve(s.tunnel)
 		if err != nil && err != http.ErrServerClosed && !errors.Is(err, io.EOF) {
@@ -134,7 +135,10 @@ func (s *InternalClient) TunnelPeerPort() int {
 	return s.tunnelPort
 }
 
-func (s *InternalClient) Run(_ context.Context, command string, arguments ...string) error {
+func (s *InternalClient) Run(ctx context.Context, command string, arguments ...string) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := s.client.NewSession()
@@ -142,6 +146,27 @@ func (s *InternalClient) Run(_ context.Context, command string, arguments ...str
 		return fmt.Errorf("failed to create session: %w", err)
 	}
 	defer session.Close()
+
+	done := make(chan struct{})
+	wg := sync.WaitGroup{}
+	wg.Go(func() {
+		select {
+		case <-ctx.Done():
+			if session != nil {
+				err := session.Signal(ssh.SIGINT)
+				if err != nil {
+					clog.Warningf("unable to send interrupt signal to ssh session: %s", err)
+				}
+			}
+			return
+		case <-done:
+			return
+		}
+	})
+	defer func() {
+		close(done)
+		wg.Wait()
+	}()
 
 	// request a pseudo terminal to display colors
 	if termType := os.Getenv("TERM"); termType != "" {
@@ -162,7 +187,7 @@ func (s *InternalClient) Run(_ context.Context, command string, arguments ...str
 	if err := session.Run(cmdline); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
-	return nil
+	return ctx.Err() // in case the context was cancelled
 }
 
 func (s *InternalClient) Close(ctx context.Context) {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"syscall"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -101,6 +102,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		KnownHostsPath:  remoteConfig.KnownHostsPath,
 		SSHConfigPath:   remoteConfig.SSHConfig,
 		Handler:         handler,
+		ConnectTimeout:  20 * time.Second,
 	}
 	var cnx ssh.Client
 	switch remoteConfig.Connection {
@@ -112,8 +114,11 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		return fmt.Errorf("unsupported connection type %q for remote %q", remoteConfig.Connection, remoteName)
 	}
 
-	err = cnx.Connect(context.Background())
-	defer cnx.Close(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	defer cancel()
+
+	err = cnx.Connect(ctx)
+	defer cnx.Close(context.WithoutCancel(ctx))
 	if err != nil {
 		return err
 	}
@@ -126,7 +131,7 @@ func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
 		"-v",
 		"-r", fmt.Sprintf("http://localhost:%d/configuration/%s", cnx.TunnelPeerPort(), remoteName),
 	}
-	err = cnx.Run(context.Background(), binaryPath, arguments...)
+	err = cnx.Run(ctx, binaryPath, arguments...)
 	if err != nil {
 		return fmt.Errorf("failed to run resticprofile on peer: %w", err)
 	}
