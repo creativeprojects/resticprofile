@@ -163,6 +163,10 @@ func (s *InternalClient) Run(ctx context.Context, command string, arguments ...s
 			return
 		}
 	})
+	defer func() {
+		close(done)
+		wg.Wait()
+	}()
 
 	// request a pseudo terminal to display colors
 	if termType := os.Getenv("TERM"); termType != "" {
@@ -183,8 +187,6 @@ func (s *InternalClient) Run(ctx context.Context, command string, arguments ...s
 	if err := session.Run(cmdline); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
-	close(done)
-	wg.Wait()
 	return ctx.Err() // in case the context was cancelled
 }
 
