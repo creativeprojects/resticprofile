@@ -221,10 +221,7 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 		return nil
 	}
 
-	includeDescription := false
-	if requester == "fish" {
-		includeDescription = true
-	}
+	includeDescription := requester == "fish"
 
 	completions := NewCompleter(ctx.ownCommands.All(), DefaultFlagsLoader, includeDescription).Complete(args)
 	if len(completions) > 0 {
