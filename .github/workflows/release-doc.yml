@@ -45,7 +45,7 @@ jobs:
           cp -r ./public ./www/resticprofile
 
       - name: Check broken links
-        uses: ruzickap/action-my-broken-link-checker@v2
+        uses: ruzickap/action-my-broken-link-checker@v3
         with:
           url: https://creativeprojects.github.io/resticprofile/
           pages_path: ./www/
@@ -66,11 +66,9 @@ jobs:
           hugo --minify --baseURL https://resticprofile.creativeprojects.tech/
 
       - name: Publish to pages.dev
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: 'resticprofile'
-          directory: 'public'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          command: pages deploy public --project-name=resticprofile --branch=main
