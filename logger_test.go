@@ -2,9 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,7 +43,8 @@ func TestFileHandlerWithTemporaryDirMarker(t *testing.T) {
 	logFile := filepath.Join(util.MustGetTempDir(), "sub", "file.log")
 	assert.NoFileExists(t, logFile)
 
-	handler, _, err := getFileHandler(filepath.Join(constants.TemporaryDirMarker, "sub", "file.log"))
+	filepath := getLogfilePath(filepath.Join(constants.TemporaryDirMarker, "sub", "file.log"))
+	handler, _, err := getFileHandler(filepath)
 	require.NoError(t, err)
 	assert.FileExists(t, logFile)
 
@@ -141,4 +147,35 @@ func TestCloseFileHandler(t *testing.T) {
 	assert.NoError(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: "log-line-1"}))
 	handler.Close()
 	assert.Error(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: "log-line-2"}))
+}
+
+func TestLogUploadFailed(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body.Close()
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	closer, err := setupTargetLogger(commandLineFlags{}, filepath.Join(constants.TemporaryDirMarker, "file.log"), server.URL, "log")
+	assert.NoError(t, err)
+	assert.ErrorContains(t, closer.Close(), "log-upload: Got invalid http status "+strconv.Itoa(http.StatusInternalServerError))
+}
+
+func TestLogUpload(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buffer := bytes.Buffer{}
+		_, err := buffer.ReadFrom(r.Body)
+		assert.NoError(t, err)
+		r.Body.Close()
+
+		w.WriteHeader(http.StatusOK)
+		assert.Equal(t, strings.Trim(buffer.String(), "\r\n"), "TestLogLine")
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	closer, err := setupTargetLogger(commandLineFlags{}, filepath.Join(constants.TemporaryDirMarker, "file.log"), server.URL, "log")
+	assert.NoError(t, err)
+	_, err = term.Println("TestLogLine")
+	assert.NoError(t, err)
+	assert.NoError(t, closer.Close())
 }
