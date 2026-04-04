@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows || netbsd || openbsd || solaris
 
 package fuse
 

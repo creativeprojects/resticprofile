@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build !windows && !netbsd && !openbsd && !solaris
 
 // Package fuse implements a simple in-memory read-only filesystem.
 //

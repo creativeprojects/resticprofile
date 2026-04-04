@@ -27,14 +27,14 @@ With resticprofile:
 * Get backup statistics in your status file
 * Automatically clear up stale locks
 * Export a **prometheus** file after a backup, or send the report to a push gateway automatically
-* **[new for v0.17.0]** Run shell commands in the background when non fatal errors are detected from restic
-* **[new for v0.18.0]** Send messages to HTTP hooks before, after a successful or failed job (backup, forget, check, prune, copy)
-* **[new for v0.18.0]** Automatically initialize the secondary repository using `copy-chunker-params` flag
-* **[new for v0.18.0]** Send resticprofile logs to a syslog server
-* **[new for v0.19.0]** Preventing your system from idle sleeping
-* **[new for v0.21.0]** See the help from both restic and resticprofile via the `help` command or `-h` flag
-* **[new for v0.24.0]** Don't schedule a job when the system is running on battery
-* **[new for v0.29.0]** Scheduling a group of profiles is finally available (configuration `v2` only)
+* Run shell commands in the background when non fatal errors are detected from restic
+* Send messages to HTTP hooks before, after a successful or failed job (backup, forget, check, prune, copy)
+* Automatically initialize the secondary repository using `copy-chunker-params` flag
+* Send resticprofile logs to a syslog server
+* Preventing your system from idle sleeping
+* See the help from both restic and resticprofile via the `help` command or `-h` flag
+* Don't schedule a job when the system is running on battery
+* **[new for v0.29.0]** Scheduling a group of profiles (configuration `v2` only)
 
 The configuration file accepts various formats:
 * [TOML](https://github.com/toml-lang/toml) : configuration file with extension _.toml_ and _.conf_ to keep compatibility with versions before 0.6.0

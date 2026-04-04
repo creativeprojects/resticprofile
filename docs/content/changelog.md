@@ -5,6 +5,65 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.33.0 (2026-04-02)
+
+## 🌸 Easter release 🥚
+
+This release delivers a preview of a new Client/Server mode, Fish shell completions, Windows scheduling enhancements, and several dependency and toolchain upgrades.
+
+*Please note the documentation for the Client/Server mode is not available yet.*
+
+### New Features
+
+#### Client/Server Mode [PREVIEW]
+- **Remote configuration delivery**: resticprofile can now send a configuration profile to a remote server, enabling centralized management of backup profiles across multiple hosts.
+- A new `remote` section in the configuration allows specifying the server address and credentials for the client/server communication.
+
+#### Fish Shell Completions
+- **Fish shell support**: Added shell completion script generation for the Fish shell (`--fish-completion` flag in the `generate` command).
+
+#### Windows Scheduling: Start When Available
+- **New `schedule-start-when-available` option**: When a scheduled task is missed (e.g. because the machine was off), Windows Task Scheduler will now start it as soon as the machine is available again.
+
+### Bug Fixes
+
+#### Scheduling Fixes
+- **Battery power**: Fixed a bug where Windows Task Scheduler tasks were incorrectly set to not start when running on battery power, regardless of battery state.
+- **launchd log paths**: When `schedule-log` is configured in a profile, resticprofile now omits the `StandardOutPath`/`StandardErrorPath` entries from the launchd plist, preventing the creation of empty log files.
+
+### Maintenance and Toolchain
+
+- Upgraded to **Go 1.26**
+- Upgraded **golangci-lint** to v2
+
+### ⚠️ Breaking changes ⚠️
+
+This release introduces two breaking changes in resticprofile **exit codes during a failure**:
+
+#### Failure because of low memory
+When resticprofile failed to start because the memory remaining is under the threshold in the configuration, the exit code is now **5** and no longer **1**
+
+#### Failure to find any restic binary
+When resticprofile failed to start because it couldn't find any `restic` binary, it now fails with exit code **6** and no longer **1**
+
+## New contributors
+Thanks to @Ryan (holler+git@hollowhemlock.com) and other contributors for their help in this release 🎉
+
+## Changelog
+* [Add Fish Shell Completions (#601)](https://github.com/creativeprojects/resticprofile/commit/41815987353b7d1ffa86aa0637eb992000b1d451)
+* [Client/Server mode: sending configuration profile to a remote server (#377)](https://github.com/creativeprojects/resticprofile/commit/81a47cfcb722036d917e382ef08fd73d408fdc7e)
+* [Feature/589 windows start when available (#590)](https://github.com/creativeprojects/resticprofile/commit/a64f02c9a41e9d2953c5cce2c8b9affbfe89c43d)
+* [fix(schedule): allow task scheduling when on battery power (#609)](https://github.com/creativeprojects/resticprofile/commit/dd15110e33f32ac9a74e3169fe1c1f12d5a6f7e1)
+* [fix(schedule): omit launchd log paths when schedule-log is configured (#600)](https://github.com/creativeprojects/resticprofile/commit/b4984afceeb041bd5fa8ace9b0c73892376a5054)
+* [refactor: replace magic numbers with named exit codes (#615)](https://github.com/creativeprojects/resticprofile/commit/70fd44b8e9d4325a1bc38555114c213fd9a56b7b)
+* [chore: upgrade to go 1.26 (#610)](https://github.com/creativeprojects/resticprofile/commit/cc27dd21e0aa93c45202e029d910b6a3b482b47c)
+* [Upgrade golangci lint to v2 (#562)](https://github.com/creativeprojects/resticprofile/commit/ca2ff90aa4eb179d30b7b10f813847d731573cfa)
+* [upgrade mockery to v3 (#561)](https://github.com/creativeprojects/resticprofile/commit/b2e0ea9a9f1f7b77d8a2835e60504a26502d7e31)
+* [refactor: remove Node.js dependency and update JSON schema tests to use Go-based validation (#563)](https://github.com/creativeprojects/resticprofile/commit/00f3f2d379daa5e6a4b288e32b0530bcf9c92892)
+* [Fix windows scheduler flaky tests (#533)](https://github.com/creativeprojects/resticprofile/commit/e2ffdfb09916a217ab222db04fee20fc2089d554)
+
+
+
 # v0.32.0 (2025-09-26)
 
 ## 🍁 Autumn release 🍂

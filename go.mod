@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/adrg/xdg v0.5.3
-	github.com/coreos/go-systemd/v22 v22.7.0
+	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/creativeprojects/clog v0.14.0
 	github.com/creativeprojects/go-selfupdate v1.5.2
 	github.com/distatus/battery v0.11.0
