@@ -117,7 +117,7 @@ func (h *HandlerSystemd) DisplayStatus(profileName string) error {
 		// fail silently
 		return nil //nolint:nilerr
 	}
-	fmt.Fprintf(term.GetOutput(), "\nTimers summary\n===============\n%s\n", status)
+	fmt.Fprintf(term.Get().Stdout(), "\nTimers summary\n===============\n%s\n", status)
 	return nil
 }
 
@@ -424,8 +424,9 @@ func runSystemctlOnUnit(timerName, command string, unitType systemd.UnitType, si
 		return err
 	}
 	if !silent {
-		cmd.Stdout = term.GetOutput()
-		cmd.Stderr = term.GetErrorOutput()
+		terminal := term.Get()
+		cmd.Stdout = terminal.Stdout()
+		cmd.Stderr = terminal.Stderr()
 	}
 	err = cmd.Run()
 	if command == systemctlStatus && cmd.ProcessState.ExitCode() == codeStatusUnitNotFound {
@@ -454,8 +455,9 @@ func runJournalCtlCommand(timerName string, unitType systemd.UnitType) error {
 	}
 	clog.Debugf("starting command \"%s %s\"", binary, strings.Join(args, " "))
 	cmd := exec.CommandContext(context.TODO(), binary, args...)
-	cmd.Stdout = term.GetOutput()
-	cmd.Stderr = term.GetErrorOutput()
+	terminal := term.Get()
+	cmd.Stdout = terminal.Stdout()
+	cmd.Stderr = terminal.Stderr()
 	err = cmd.Run()
 	fmt.Println("")
 	return err
@@ -470,8 +472,9 @@ func runSystemctlReload(unitType systemd.UnitType) error {
 	if err != nil {
 		return err
 	}
-	cmd.Stdout = term.GetOutput()
-	cmd.Stderr = term.GetErrorOutput()
+	terminal := term.Get()
+	cmd.Stdout = terminal.Stdout()
+	cmd.Stderr = terminal.Stderr()
 	err = cmd.Run()
 	if err != nil {
 		return err

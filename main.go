@@ -127,7 +127,6 @@ func main() {
 					clog.Debugf("redirecting console to stderr for command %q", ctx.request.command)
 					flags.stderr = true
 				}
-				term.PrintToError = flags.stderr
 				terminal = term.Set(term.NewTerminal(term.WithStdout(os.Stderr), term.WithColors(!flags.noAnsi)))
 			}
 			if logTarget != "" && logTarget != "-" {
