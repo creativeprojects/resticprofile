@@ -4,6 +4,7 @@ ignore:
   - priority/check/
   - util/test_executable/
   - term/remote.go
+  - term/test/
   - deprecation.go
   - logger.go
   - systemd.go
