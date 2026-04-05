@@ -115,17 +115,6 @@ func (t *Terminal) getColorableWriter(w io.Writer) io.Writer {
 	return colorable.NewNonColorable(w)
 }
 
-// Size returns the width and height of the terminal session
-func (t *Terminal) Size() (width, height int) {
-	fd := fdToInt(os.Stdout.Fd())
-	var err error
-	width, height, err = term.GetSize(fd)
-	if err != nil {
-		width, height = 0, 0
-	}
-	return
-}
-
 // FlushAllOutput flushes all buffered output (if supported by the underlying Writer).
 func (t *Terminal) FlushAllOutput() {
 	for _, writer := range []io.Writer{t.colorableStdout, t.colorableStderr, t.stdout, t.stderr} {

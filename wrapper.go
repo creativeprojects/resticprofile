@@ -22,7 +22,6 @@ import (
 	"github.com/creativeprojects/resticprofile/monitor/hook"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
-	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 )
@@ -438,8 +437,8 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	rCommand := newShellCommand(binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
-	rCommand.stdout = term.GetOutput()
-	rCommand.stderr = term.GetErrorOutput()
+	rCommand.stdout = r.ctx.terminal.Stdout()
+	rCommand.stderr = r.ctx.terminal.Stderr()
 	rCommand.streamError = r.profile.StreamError
 	rCommand.dir = dir
 
@@ -545,7 +544,7 @@ func (r *resticWrapper) runCommand(command string) error {
 			if len(r.progress) > 0 {
 				if r.profile.Backup.ExtendedStatus {
 					rCommand.scanOutput = shell.ScanBackupJson
-				} else if !term.OsStdoutIsTerminal() {
+				} else if !r.ctx.terminal.StdoutIsTerminal() {
 					// restic detects its output is not a terminal and no longer displays the monitor.
 					// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
 					rCommand.scanOutput = shell.ScanBackupPlain
@@ -629,9 +628,9 @@ func (r *resticWrapper) runShellCommands(commands []string, commandsType, comman
 		// creating command
 		rCommand := newShellCommand(shellCommand, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 		// stdout are stderr are coming from the default terminal (in case they're redirected)
-		rCommand.stdout = term.GetOutput()
-		rCommand.stderr = term.GetErrorOutput()
-		term.FlushAllOutput()
+		rCommand.stdout = r.ctx.terminal.Stdout()
+		rCommand.stderr = r.ctx.terminal.Stderr()
+		r.ctx.terminal.FlushAllOutput()
 		_, stderr, err := runShellCommand(rCommand)
 		if err != nil {
 			err = fmt.Errorf("%s on profile '%s': %w", commandsType, r.profile.Name, err)
@@ -659,9 +658,9 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 			// creating command
 			rCommand := newShellCommand(cmd, nil, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
 			// stdout are stderr are coming from the default terminal (in case they're redirected)
-			rCommand.stdout = term.GetOutput()
-			rCommand.stderr = term.GetErrorOutput()
-			term.FlushAllOutput()
+			rCommand.stdout = r.ctx.terminal.Stdout()
+			rCommand.stderr = r.ctx.terminal.Stderr()
+			r.ctx.terminal.FlushAllOutput()
 			_, _, err := runShellCommand(rCommand)
 			if err != nil {
 				clog.Errorf("run-finally command %d/%d failed ('%s' on profile '%s'): %s",
@@ -694,7 +693,7 @@ func (r *resticWrapper) sendFinally(monitoring config.SendMonitoringSections, co
 func (r *resticWrapper) sendMonitoring(sections []config.SendMonitoringSection, command, sendType string, err error) {
 	for i, section := range sections {
 		clog.Debugf("starting %q from %s %d/%d", sendType, command, i+1, len(sections))
-		term.FlushAllOutput()
+		r.ctx.terminal.FlushAllOutput()
 		err := r.sender.Send(section, r.getContextWithError(err), r.profile.GetEnvironment(true))
 		if err != nil {
 			clog.Warningf("%q returned an error: %s", sendType, err.Error())

@@ -22,9 +22,9 @@ import (
 )
 
 func displayWriter(terminal *term.Terminal) (out func(args ...any) io.Writer, closer func()) {
-	var output io.Writer = terminal
+	var output io.Writer = terminal.Stdout()
 	if terminal.StdoutIsTerminal() {
-		if width, _ := terminal.Size(); width > 10 {
+		if width, _ := term.Size(); width > 10 {
 			output = ansi.NewLineLengthWriter(terminal, width)
 		}
 	}
