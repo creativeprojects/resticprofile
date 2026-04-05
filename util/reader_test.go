@@ -97,8 +97,6 @@ func TestFilterReadCloserClose(t *testing.T) {
 }
 
 func TestFilterReadCloserCloseCalledTwice(t *testing.T) {
-	// Close() uses a value receiver so the nil-guard mutation does not persist;
-	// calling Close twice invokes the close func both times.
 	calls := 0
 	inner := strings.NewReader("")
 	rc := NewFilterReadCloser(inner.Read, func() error {
@@ -108,7 +106,7 @@ func TestFilterReadCloserCloseCalledTwice(t *testing.T) {
 
 	_ = rc.Close()
 	_ = rc.Close()
-	assert.Equal(t, 2, calls)
+	assert.Equal(t, 1, calls)
 }
 
 func TestFilterReadCloserCloseError(t *testing.T) {
@@ -138,8 +136,6 @@ func TestFilterReadCloserNilCloseFunc(t *testing.T) {
 }
 
 func TestFilterReadCloserReadAfterClose(t *testing.T) {
-	// Close() uses a value receiver so read is NOT cleared on the original;
-	// reads after close continue to work via the underlying reader.
 	inner := strings.NewReader("data")
 	rc := NewFilterReadCloser(inner.Read, func() error { return nil })
 
@@ -147,8 +143,8 @@ func TestFilterReadCloserReadAfterClose(t *testing.T) {
 
 	buf := make([]byte, 4)
 	n, err := rc.Read(buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "data", string(buf[:n]))
+	assert.Error(t, err)
+	assert.Equal(t, 0, n)
 }
 
 // syncReader tests

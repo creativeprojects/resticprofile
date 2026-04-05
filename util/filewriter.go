@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -86,7 +87,7 @@ func NewAsyncFileWriter(filename string, options ...asyncFileWriterOption) (io.W
 
 	closeFile := func() {
 		if file != nil {
-			lastError = file.Close()
+			lastError = errors.Join(lastError, file.Close())
 			file = nil
 		}
 	}
@@ -110,11 +111,11 @@ func NewAsyncFileWriter(filename string, options ...asyncFileWriterOption) (io.W
 			} else {
 				buffer = buffer[:0]
 			}
-		}
-		if w.keepOpen {
-			_ = file.Sync()
-		} else {
-			closeFile()
+			if w.keepOpen {
+				_ = file.Sync()
+			} else {
+				closeFile()
+			}
 		}
 	}
 
@@ -195,6 +196,7 @@ type asyncFileWriter struct {
 	perm        os.FileMode
 	keepOpen    bool
 	interval    time.Duration
+	closeOnce   sync.Once
 }
 
 func (w *asyncFileWriter) Close() error {

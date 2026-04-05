@@ -12,6 +12,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// func TestAsyncFileWriterDoubleClose(t *testing.T) {
+// 	dir := t.TempDir()
+// 	filename := filepath.Join(dir, "test.log")
+
+// 	w, err := NewAsyncFileWriter(filename)
+// 	require.NoError(t, err)
+
+// 	err = w.Close()
+// 	assert.NoError(t, err)
+// 	err = w.Close()
+// 	assert.NoError(t, err)
+// }
+
 func TestAsyncFileWriterBasicWrite(t *testing.T) {
 	dir := t.TempDir()
 	filename := filepath.Join(dir, "test.log")

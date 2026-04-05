@@ -33,7 +33,7 @@ type filterReadCloser struct {
 	close CloseFunc
 }
 
-func (c filterReadCloser) Close() error {
+func (c *filterReadCloser) Close() error {
 	defer func() {
 		c.close = nil
 		c.read = nil
