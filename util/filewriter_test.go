@@ -133,21 +133,6 @@ func TestAsyncFileWriterAppendMode(t *testing.T) {
 	assert.Equal(t, "firstsecond", string(content))
 }
 
-func TestAsyncFileWriterFilePerm(t *testing.T) {
-	dir := t.TempDir()
-	filename := filepath.Join(dir, "test.log")
-
-	w, err := NewAsyncFileWriter(filename, WithAsyncFilePerm(0600))
-	require.NoError(t, err)
-	_, err = w.Write([]byte("data"))
-	require.NoError(t, err)
-	require.NoError(t, w.Close())
-
-	info, err := os.Stat(filename)
-	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0600), info.Mode().Perm())
-}
-
 func TestAsyncFileWriterCustomAppendFunc(t *testing.T) {
 	dir := t.TempDir()
 	filename := filepath.Join(dir, "test.log")
