@@ -69,7 +69,7 @@ func (h *HandlerLaunchd) DisplaySchedules(profile, command string, schedules []s
 	if err != nil {
 		return err
 	}
-	displayParsedSchedules(profile, command, events)
+	displayParsedSchedules(term.Get(), profile, command, events)
 	return nil
 }
 

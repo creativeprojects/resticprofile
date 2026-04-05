@@ -91,7 +91,7 @@ func (h *HandlerSystemd) ParseSchedules(schedules []string) ([]*calendar.Event, 
 
 // DisplaySchedules displays the schedules through the systemd-analyze command
 func (h *HandlerSystemd) DisplaySchedules(profile, command string, schedules []string) error {
-	return displaySystemdSchedules(profile, command, schedules)
+	return displaySystemdSchedules(term.Get(), profile, command, schedules)
 }
 
 // DisplayStatus displays the status of all the timers installed on that profile. Example:
@@ -597,7 +597,7 @@ func systemctlCommand(args ...string) (*exec.Cmd, error) {
 	return exec.CommandContext(context.TODO(), binary, args...), nil
 }
 
-func displaySystemdSchedules(profile, command string, schedules []string) error {
+func displaySystemdSchedules(terminal *term.Terminal, profile, command string, schedules []string) error {
 	binary, err := exec.LookPath(analyzeBinary)
 	if err != nil {
 		return fmt.Errorf("cannot find %q: %w", analyzeBinary, err)
@@ -607,17 +607,17 @@ func displaySystemdSchedules(profile, command string, schedules []string) error 
 		if schedule == "" {
 			return errors.New("empty schedule")
 		}
-		displayHeader(profile, command, index+1, len(schedules))
+		displayHeader(terminal, profile, command, index+1, len(schedules))
 
 		cmd := exec.CommandContext(context.TODO(), binary, "calendar", schedule)
-		cmd.Stdout = term.GetOutput()
-		cmd.Stderr = term.GetErrorOutput()
+		cmd.Stdout = terminal.Stdout()
+		cmd.Stderr = terminal.Stderr()
 		err = cmd.Run()
 		if err != nil {
 			return err
 		}
 	}
-	term.Print(platform.LineSeparator)
+	terminal.Print(platform.LineSeparator)
 	return nil
 }
 

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"runtime"
 
@@ -32,19 +31,19 @@ func init() {
 	config.ExcludeProfileSection(def.name)
 }
 
-func selfUpdate(_ io.Writer, ctx commandContext) error {
+func selfUpdate(ctx commandContext) error {
 	quiet := ctx.flags.quiet
 	if !quiet && len(ctx.request.arguments) > 0 && (ctx.request.arguments[0] == "-q" || ctx.request.arguments[0] == "--quiet") {
 		quiet = true
 	}
-	err := confirmAndSelfUpdate(quiet, ctx.flags.verbose, version, true)
+	err := confirmAndSelfUpdate(ctx.terminal, quiet, ctx.flags.verbose, version, true)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) error {
+func confirmAndSelfUpdate(terminal *term.Terminal, quiet, debug bool, version string, prerelease bool) error {
 	if debug {
 		selfupdate.SetLogger(clog.NewStandardLogger(clog.LevelDebug, clog.GetDefaultLogger()))
 	}
@@ -70,8 +69,8 @@ func confirmAndSelfUpdate(quiet, debug bool, version string, prerelease bool) er
 	}
 
 	// don't ask in quiet mode
-	if !quiet && !term.AskYesNo(os.Stdin, fmt.Sprintf("Do you want to update to version %s", latest.Version()), true) {
-		term.Println("Never mind")
+	if !quiet && !terminal.AskYesNo(fmt.Sprintf("Do you want to update to version %s", latest.Version()), true) {
+		terminal.Println("Never mind")
 		return nil
 	}
 

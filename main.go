@@ -48,29 +48,37 @@ func main() {
 	// run shutdown hooks just before returning an exit code
 	defer shutdown.RunHooks()
 
+	terminal := term.Set(term.NewTerminal())
+
 	args := os.Args[1:]
 	_, flags, flagErr := loadFlags(args)
 	if flagErr != nil && !errors.Is(flagErr, pflag.ErrHelp) {
-		term.Println(flagErr)
-		_ = displayHelpCommand(os.Stdout, commandContext{
+		terminal.Println(flagErr)
+		_ = displayHelpCommand(commandContext{
 			ownCommands: ownCommands,
 			Context: Context{
 				flags: flags,
 				request: Request{
 					arguments: args,
 				},
+				terminal: terminal,
 			},
 		})
 		exitCode = constants.ExitErrorInvalidFlags
 		return
 	}
 
+	// Configure terminal color
+	if flags.noAnsi || flags.theme == "none" {
+		terminal = term.Set(term.NewTerminal(term.WithColors(false))) // disable colors
+	}
+
 	if flags.wait {
 		// keep the console running at the end of the program
 		// so we can see what's going on
 		defer func() {
-			term.Println("\n\nPress the Enter Key to continue...")
-			_, _ = fmt.Scanln()
+			terminal.Println("\n\nPress Enter to continue...")
+			_, _ = terminal.Scanln()
 		}()
 	}
 
@@ -83,13 +91,14 @@ func main() {
 
 	// help
 	if flags.help || errors.Is(flagErr, pflag.ErrHelp) {
-		_ = displayHelpCommand(os.Stdout, commandContext{
+		_ = displayHelpCommand(commandContext{
 			ownCommands: ownCommands,
 			Context: Context{
 				flags: flags,
 				request: Request{
 					arguments: args,
 				},
+				terminal: terminal,
 			},
 		})
 		return
@@ -106,7 +115,8 @@ func main() {
 			setupRemoteLogger(flags, client)
 
 			// also redirect the terminal through the client
-			term.SetAllOutput(term.NewRemoteTerm(client))
+			remoteTerm := term.NewRemoteTerm(client)
+			terminal = term.Set(term.NewTerminal(term.WithStdout(remoteTerm), term.WithStderr(remoteTerm), term.WithColors(!flags.noAnsi)))
 		} else {
 			logTarget, commandOutput := "", ""
 			if ctx != nil {
@@ -118,6 +128,7 @@ func main() {
 					flags.stderr = true
 				}
 				term.PrintToError = flags.stderr
+				terminal = term.Set(term.NewTerminal(term.WithStdout(os.Stderr), term.WithColors(!flags.noAnsi)))
 			}
 			if logTarget != "" && logTarget != "-" {
 				if closer, err := setupTargetLogger(flags, logTarget, commandOutput); err == nil {
@@ -171,6 +182,7 @@ func main() {
 					command:   flags.resticArgs[0],
 					arguments: flags.resticArgs[1:],
 				},
+				terminal: terminal,
 			}
 			// try to load the config and setup logging for own command
 			cfg, global, err := loadConfig(flags, true)
@@ -202,6 +214,8 @@ func main() {
 		exitCode = constants.ExitGeneralError
 		return
 	}
+
+	ctx = ctx.WithTerminal(terminal)
 
 	// check if we're running on battery
 	if shouldStopOnBattery(ctx.stopOnBattery) {
@@ -285,8 +299,9 @@ func main() {
 	if err != nil {
 		clog.Error(err)
 		if errors.Is(err, ErrProfileNotFound) {
-			displayProfiles(os.Stdout, ctx.config, flags)
-			displayGroups(os.Stdout, ctx.config, flags)
+			commandContext := commandContext{Context: *ctx}
+			displayProfiles(commandContext)
+			displayGroups(commandContext)
 		}
 		exitCode = constants.ExitGeneralError
 		return

@@ -2,7 +2,6 @@ package schedule
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/term"
@@ -37,11 +36,10 @@ func TestDisplayParseSchedules(t *testing.T) {
 	events, err := parseSchedules([]string{"daily"})
 	require.NoError(t, err)
 
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	buffer := new(bytes.Buffer)
+	terminal := term.NewTerminal(term.WithStdout(buffer))
 
-	displayParsedSchedules("profile", "command", events)
+	displayParsedSchedules(terminal, "profile", "command", events)
 	output := buffer.String()
 	assert.Contains(t, output, "Original form: daily\n")
 	assert.Contains(t, output, "Normalized form: *-*-* 00:00:00\n")
@@ -51,11 +49,10 @@ func TestDisplayParseSchedulesWillNeverRun(t *testing.T) {
 	events, err := parseSchedules([]string{"2020-01-01"})
 	require.NoError(t, err)
 
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	buffer := new(bytes.Buffer)
+	terminal := term.NewTerminal(term.WithStdout(buffer))
 
-	displayParsedSchedules("profile", "command", events)
+	displayParsedSchedules(terminal, "profile", "command", events)
 	output := buffer.String()
 	assert.Contains(t, output, "Next elapse: never\n")
 }
@@ -64,11 +61,10 @@ func TestDisplayParseSchedulesIndexAndTotal(t *testing.T) {
 	events, err := parseSchedules([]string{"daily", "monthly", "yearly"})
 	require.NoError(t, err)
 
-	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	buffer := new(bytes.Buffer)
+	terminal := term.NewTerminal(term.WithStdout(buffer))
 
-	displayParsedSchedules("profile", "command", events)
+	displayParsedSchedules(terminal, "profile", "command", events)
 	output := buffer.String()
 	assert.Contains(t, output, "schedule 1/3")
 	assert.Contains(t, output, "schedule 2/3")

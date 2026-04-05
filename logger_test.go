@@ -53,8 +53,8 @@ func TestFileHandler(t *testing.T) {
 	require.NoError(t, err)
 	defer handler.Close()
 
-	require.Implements(t, (*term.Flusher)(nil), writer)
-	flusher := writer.(term.Flusher)
+	require.Implements(t, (*util.Flusher)(nil), writer)
+	flusher := writer.(util.Flusher)
 
 	log := func(line string) {
 		assert.NoError(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: line}))

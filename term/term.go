@@ -2,65 +2,164 @@ package term
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-	"sync"
+	"sync/atomic"
+	"time"
 
-	colorable "github.com/mattn/go-colorable"
+	"github.com/creativeprojects/resticprofile/util"
+	"github.com/creativeprojects/resticprofile/util/ansi"
+	"github.com/mattn/go-colorable"
 	"golang.org/x/term"
 )
 
 var (
-	terminalOutput io.Writer = os.Stdout
-	errorOutput    io.Writer = os.Stderr
-	PrintToError             = false
+	termOutput        atomic.Pointer[io.Writer]
+	errorOutput       atomic.Pointer[io.Writer]
+	colorOutput       atomic.Pointer[io.Writer]
+	enableColors      atomic.Bool
+	statusChannel     = make(chan []string)
+	statusWaitChannel = make(chan chan bool)
+	PrintToError      = false
 )
 
-// Flusher allows a Writer to declare it may buffer content that can be flushed
-type Flusher interface {
-	// Flush writes any pending bytes to output
-	Flush() error
+const (
+	StatusFPS = 10
+)
+
+func init() {
+	enableColors.Store(true)
+	go handleStatus()
+	// must be last
+	{
+		setOutput(os.Stdout)
+		setErrorOutput(os.Stderr)
+	}
 }
 
-// AskYesNo prompts the user for a message asking for a yes/no answer
-func AskYesNo(reader io.Reader, message string, defaultAnswer bool) bool {
-	if !strings.HasSuffix(message, "?") {
-		message += "?"
+func handleStatus() {
+	ticker := time.NewTicker(time.Second / StatusFPS)
+	defer ticker.Stop()
+
+	var waiting []chan bool
+	respondWaiting := func(result bool) {
+		for _, request := range waiting {
+			request <- result
+			close(request)
+		}
+		waiting = nil
 	}
-	var question, input string
-	if defaultAnswer {
-		question = "(Y/n)"
-		input = "y"
-	} else {
-		question = "(y/N)"
-		input = "n"
-	}
-	fmt.Printf("%s %s: ", message, question)
-	scanner := bufio.NewScanner(reader)
-	if scanner.Scan() {
-		input = strings.TrimSpace(strings.ToLower(scanner.Text()))
-		if len(input) > 1 {
-			// take only the first character
-			input = input[:1]
+	defer respondWaiting(false)
+
+	var newStatus, status []string
+	buffer := &bytes.Buffer{}
+	for {
+		select {
+		case lines := <-statusChannel:
+			newStatus = lines
+
+		case request := <-statusWaitChannel:
+			waiting = append(waiting, request)
+
+		case <-ticker.C:
+			if status != nil && OutputIsTerminal() {
+				width, height := OsStdoutTerminalSize()
+				noAnsi := !IsColorableOutput()
+				if height < 1 {
+					continue
+				} else if noAnsi {
+					newStatus = newStatus[1:] // strip first empty line
+					height = 1
+				}
+				if width >= 60 {
+					width -= 2
+				} else if width >= 80 {
+					width -= 4 // right margin
+				}
+
+				last := truncate(status, height)
+				printable := truncate(newStatus, height)
+				removedLines := len(last) - len(printable)
+				if removedLines > 0 {
+					filler := make([]string, removedLines, removedLines+len(printable))
+					printable = append(filler, printable...)
+				}
+
+				if len(printable) > 0 {
+					buffer.Reset()
+					for index, line := range printable {
+						runes := []rune(strings.ReplaceAll(line, "\n", " "))
+						_, maxIndex := ansi.RunesLength(runes, width)
+						runes = truncate(runes, maxIndex)
+
+						if noAnsi {
+							if remaining := width - len(runes); remaining > 0 {
+								for remaining > 0 {
+									runes = append(runes, ' ')
+									remaining--
+								}
+							}
+							_, _ = fmt.Fprintf(buffer, "\r%s\r", string(runes))
+						} else {
+							eol := "\n"
+							if index+1 == len(printable) {
+								eol = "\r"
+							}
+							_, _ = fmt.Fprintf(buffer, "\r%s%s%s%s", ansi.ClearLine, string(runes), ansi.Reset, eol)
+						}
+					}
+
+					if !noAnsi {
+						buffer.WriteString(ansi.CursorUpLeftN(len(printable) - 1))
+					}
+
+					_, _ = buffer.WriteTo(getColorableOutput())
+					buffer.Reset()
+				}
+			}
+			status = newStatus
+			respondWaiting(true)
 		}
 	}
+}
 
-	if input == "" {
-		return defaultAnswer
+func truncate[E any](src []E, maxLength int) []E {
+	if len(src) > maxLength {
+		return src[:maxLength]
 	}
-	if input == "y" {
-		return true
+	return src
+}
+
+// SetStatus sets a status line(s) that is printed when the output is an interactive terminal
+//
+// Deprecated: use term.Terminal instead
+func SetStatus(line []string) {
+	// Clone lines and add empty line on top (= cursor position after printing status)
+	if line != nil {
+		line = append([]string{""}, line...)
 	}
-	return false
+	statusChannel <- line
+}
+
+// WaitForStatus blocks until the previously provided status was applied
+//
+// Deprecated: use term.Terminal instead
+func WaitForStatus() bool {
+	request := make(chan bool, 1)
+	statusWaitChannel <- request
+	return <-request
 }
 
 // ReadPassword reads a password without echoing it to the terminal.
+//
+// Deprecated: use term.Terminal instead
 func ReadPassword() (string, error) {
 	stdin := fdToInt(os.Stdin.Fd())
 	if !term.IsTerminal(stdin) {
-		return ReadLine()
+		return readLine()
 	}
 	line, err := term.ReadPassword(stdin)
 	_, _ = fmt.Fprintln(os.Stderr)
@@ -70,8 +169,8 @@ func ReadPassword() (string, error) {
 	return string(line), nil
 }
 
-// ReadLine reads some input
-func ReadLine() (string, error) {
+// readLine reads some input
+func readLine() (string, error) {
 	buf := bufio.NewReader(os.Stdin)
 	line, err := buf.ReadString('\n')
 	if err != nil {
@@ -81,12 +180,15 @@ func ReadLine() (string, error) {
 }
 
 // OsStdoutIsTerminal returns true as os.Stdout is a terminal session
+//
+// Deprecated: use term.Terminal instead
 func OsStdoutIsTerminal() bool {
-	fd := fdToInt(os.Stdout.Fd())
-	return term.IsTerminal(fd)
+	return isTerminal(os.Stdout)
 }
 
-// OsStdoutTerminalSize returns the current width and height of os.Stdout
+// OsStdoutTerminalSize returns the width and height of the terminal session
+//
+// Deprecated: use term.Terminal instead
 func OsStdoutTerminalSize() (width, height int) {
 	fd := fdToInt(os.Stdout.Fd())
 	var err error
@@ -97,98 +199,170 @@ func OsStdoutTerminalSize() (width, height int) {
 	return
 }
 
-func fdToInt(fd uintptr) int {
-	return int(fd) //nolint:gosec
+// OutputIsTerminal returns true if GetOutput sends to an interactive terminal
+//
+// Deprecated: use term.Terminal instead
+func OutputIsTerminal() bool {
+	return GetOutput() == os.Stdout && OsStdoutIsTerminal()
 }
 
-type LockedWriter struct {
-	writer io.Writer
-	mutex  *sync.Mutex
+// SetOutput changes the default output for the Print* functions
+//
+// Deprecated: use term.Terminal instead
+func SetOutput(w io.Writer) {
+	if w == os.Stdout && isTerminal(os.Stdout) {
+		setOutput(os.Stdout)
+	} else {
+		setOutput(util.NewSyncWriter(w))
+	}
 }
 
-func (w *LockedWriter) Write(p []byte) (n int, err error) {
-	w.mutex.Lock()
-	defer w.mutex.Unlock()
-	return w.writer.Write(p)
+func setOutput(w io.Writer) {
+	if w == nil {
+		w = io.Discard
+	}
+	termOutput.Store(&w)
+	colorOutput.Store(nil)
+	SetStatus(nil)
 }
 
-func (w *LockedWriter) Flush() (err error) {
-	w.mutex.Lock()
-	defer w.mutex.Unlock()
-	if f, ok := w.writer.(Flusher); ok {
-		err = f.Flush()
+// GetOutput returns the default output of the Print* functions
+//
+// Deprecated: use term.Terminal instead
+func GetOutput() (out io.Writer) {
+	if v := termOutput.Load(); v != nil {
+		out = *v
 	}
 	return
 }
 
-// SetOutput changes the default output for the Print* functions
-func SetOutput(w io.Writer) {
-	terminalOutput = &LockedWriter{writer: w, mutex: new(sync.Mutex)}
-}
-
-// GetOutput returns the default output of the Print* functions
-func GetOutput() io.Writer {
-	return terminalOutput
-}
-
-// GetColorableOutput returns an output supporting ANSI color if output is a terminal
-func GetColorableOutput() io.Writer {
-	out := GetOutput()
-	if out == os.Stdout && OsStdoutIsTerminal() {
-		return colorable.NewColorable(os.Stdout)
+// getColorableOutput returns an output supporting ANSI color if output is a terminal
+func getColorableOutput() (out io.Writer) {
+	if v := colorOutput.Load(); v != nil {
+		out = *v
 	}
-	return colorable.NewNonColorable(out)
+	if out == nil {
+		if IsColorableOutput() {
+			out = colorable.NewColorable(os.Stdout)
+		} else {
+			out = colorable.NewNonColorable(outputWriter())
+		}
+		colorOutput.Store(&out)
+	}
+	return out
+}
+
+// IsColorableOutput tells whether GetColorableOutput supports ANSI color (and control characters) or discards ANSI
+//
+// Deprecated: use term.Terminal instead
+func IsColorableOutput() bool {
+	return enableColors.Load() && OutputIsTerminal()
 }
 
 // SetErrorOutput changes the error output for the Print* functions
+//
+// Deprecated: use term.Terminal instead
 func SetErrorOutput(w io.Writer) {
-	errorOutput = &LockedWriter{writer: w, mutex: new(sync.Mutex)}
-}
-
-// GetErrorOutput returns the error output of the Print* functions
-func GetErrorOutput() io.Writer {
-	return errorOutput
-}
-
-// SetAllOutput changes the default and error output for the Print* functions
-func SetAllOutput(w io.Writer) {
-	single := new(sync.Mutex)
-	terminalOutput = &LockedWriter{writer: w, mutex: single}
-	errorOutput = &LockedWriter{writer: w, mutex: single}
-}
-
-// FlushAllOutput flushes all buffered output (if supported by the underlying Writer).
-func FlushAllOutput() {
-	for _, writer := range []io.Writer{terminalOutput, errorOutput} {
-		if f, ok := writer.(Flusher); ok {
-			_ = f.Flush()
-		}
+	if w == os.Stderr && isTerminal(os.Stderr) {
+		setErrorOutput(os.Stderr)
+	} else {
+		setErrorOutput(util.NewSyncWriter(w))
 	}
 }
 
-// Print formats using the default formats for its operands and writes to standard output.
-// Spaces are added between operands when neither is a string.
-// It returns the number of bytes written and any write error encountered.
-func Print(a ...any) (n int, err error) {
-	return fmt.Fprint(outputWriter(), a...)
+func setErrorOutput(w io.Writer) {
+	if w == nil {
+		w = io.Discard
+	}
+	errorOutput.Store(&w)
 }
 
-// Println formats using the default formats for its operands and writes to standard output.
-// Spaces are always added between operands and a newline is appended.
-// It returns the number of bytes written and any write error encountered.
-func Println(a ...any) (n int, err error) {
-	return fmt.Fprintln(outputWriter(), a...)
+// GetErrorOutput returns the error output of the Print* functions
+//
+// Deprecated: use term.Terminal instead
+func GetErrorOutput() (out io.Writer) {
+	if v := errorOutput.Load(); v != nil {
+		out = *v
+	}
+	return
 }
 
-// Printf formats according to a format specifier and writes to standard output.
-// It returns the number of bytes written and any write error encountered.
-func Printf(format string, a ...any) (n int, err error) {
-	return fmt.Fprintf(outputWriter(), format, a...)
+// SetAllOutput changes the default and error output for the Print* functions
+//
+// Deprecated: use term.Terminal instead
+func SetAllOutput(w io.Writer) {
+	SetOutput(w)
+	setErrorOutput(GetOutput())
+}
+
+// FlushAllOutput flushes all buffered output (if supported by the underlying Writer).
+//
+// Deprecated: use term.Terminal instead
+func FlushAllOutput() {
+	for _, writer := range []io.Writer{GetOutput(), GetErrorOutput()} {
+		_, _ = util.FlushWriter(writer)
+	}
+}
+
+var recording = &outputRecording{}
+
+// Deprecated: use term.Terminal instead
+func StartRecording(mode RecordMode) {
+	recording.lock.Lock()
+	defer recording.lock.Unlock()
+	if recording.buffer != nil {
+		return
+	}
+
+	recording.buffer = new(bytes.Buffer)
+	recording.writer = util.NewSyncWriterMutex(recording.buffer, &recording.lock)
+
+	if mode != RecordError {
+		recording.output = GetOutput()
+		setOutput(recording.writer)
+	}
+	if mode != RecordOutput {
+		recording.error = GetErrorOutput()
+		setErrorOutput(recording.writer)
+	}
+}
+
+// Deprecated: use term.Terminal instead
+func ReadRecording() (content string) {
+	recording.lock.Lock()
+	defer recording.lock.Unlock()
+	if recording.buffer != nil {
+		content = recording.buffer.String()
+		recording.buffer.Reset()
+	}
+	return
+}
+
+// Deprecated: use term.Terminal instead
+func StopRecording() (content string) {
+	recording.lock.Lock()
+	defer recording.lock.Unlock()
+	if recording.buffer != nil {
+		if recording.output != nil && recording.writer == GetOutput() {
+			setOutput(recording.output)
+			recording.output = nil
+		}
+
+		if recording.error != nil && recording.writer == GetErrorOutput() {
+			setErrorOutput(recording.error)
+			recording.error = nil
+		}
+
+		content = recording.buffer.String()
+		recording.writer = nil
+		recording.buffer = nil
+	}
+	return
 }
 
 func outputWriter() io.Writer {
 	if PrintToError {
-		return errorOutput
+		return GetErrorOutput()
 	}
-	return terminalOutput
+	return GetOutput()
 }

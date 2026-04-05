@@ -29,7 +29,7 @@ var zshCompletionScript string
 //go:embed contrib/completion/fish-completion.fish
 var fishCompletionScript string
 
-func generateCommand(output io.Writer, ctx commandContext) (err error) {
+func generateCommand(ctx commandContext) (err error) {
 	args := ctx.request.arguments
 	// enforce no-log
 	logger := clog.GetDefaultLogger()
@@ -37,18 +37,18 @@ func generateCommand(output io.Writer, ctx commandContext) (err error) {
 	logger.SetHandler(clog.NewDiscardHandler())
 
 	if slices.Contains(args, "--bash-completion") {
-		_, err = fmt.Fprintln(output, bashCompletionScript)
+		_, err = ctx.terminal.Println(bashCompletionScript)
 	} else if slices.Contains(args, "--config-reference") {
-		err = generateConfigReference(output, args[slices.Index(args, "--config-reference")+1:])
+		err = generateConfigReference(ctx.terminal, args[slices.Index(args, "--config-reference")+1:])
 	} else if slices.Contains(args, "--json-schema") {
-		err = generateJsonSchema(output, args[slices.Index(args, "--json-schema")+1:])
+		err = generateJsonSchema(ctx.terminal, args[slices.Index(args, "--json-schema")+1:])
 	} else if slices.Contains(args, "--random-key") {
 		ctx.flags.resticArgs = args[slices.Index(args, "--random-key"):]
-		err = randomKey(output, ctx)
+		err = randomKey(ctx)
 	} else if slices.Contains(args, "--zsh-completion") {
-		_, err = fmt.Fprintln(output, zshCompletionScript)
+		_, err = ctx.terminal.Println(zshCompletionScript)
 	} else if slices.Contains(args, "--fish-completion") {
-		_, err = fmt.Fprintln(output, fishCompletionScript)
+		_, err = ctx.terminal.Println(fishCompletionScript)
 	} else {
 		err = fmt.Errorf("nothing to generate for: %s", strings.Join(args, ", "))
 	}

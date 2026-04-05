@@ -6,6 +6,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/term"
 )
 
 type Request struct {
@@ -17,8 +18,8 @@ type Request struct {
 }
 
 // Context for running a profile command.
-// Not everything is always available,
-// but any information should be added to the context as soon as known.
+// All fields are not always populated at the same time,
+// as the context is built up step by step when running a profile command.
 type Context struct {
 	request       Request
 	flags         commandLineFlags
@@ -35,6 +36,7 @@ type Context struct {
 	noLock        bool             // skip profile lock file
 	lockWait      time.Duration    // wait up to duration to acquire a lock
 	legacyArgs    bool             // I'm not even sure it's been used by anyone?
+	terminal      *term.Terminal
 }
 
 func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Config, ownCommands *OwnCommands) (*Context, error) {
@@ -132,6 +134,12 @@ func (c *Context) WithProfile(profileName string) *Context {
 	newContext.request.schedule = ""
 	newContext.profile = nil
 	newContext.schedule = nil
+	return newContext
+}
+
+func (c *Context) WithTerminal(terminal *term.Terminal) *Context {
+	newContext := c.clone()
+	newContext.terminal = terminal
 	return newContext
 }
 

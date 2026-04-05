@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schedule"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,29 +19,31 @@ import (
 
 func TestPanicCommand(t *testing.T) {
 	assert.Panics(t, func() {
-		_ = panicCommand(nil, commandContext{})
+		_ = panicCommand(commandContext{})
 	})
 }
 
 func TestRandomKeyOfInvalidSize(t *testing.T) {
-	assert.Error(t, randomKey(os.Stdout, commandContext{
+	assert.Error(t, randomKey(commandContext{
 		Context: Context{
-			flags: commandLineFlags{resticArgs: []string{"restic", "size"}},
+			flags:    commandLineFlags{resticArgs: []string{"restic", "size"}},
+			terminal: term.NewTerminal(),
 		},
 	}))
 }
 
 func TestRandomKeyOfZeroSize(t *testing.T) {
-	assert.Error(t, randomKey(os.Stdout, commandContext{
+	assert.Error(t, randomKey(commandContext{
 		Context: Context{
-			flags: commandLineFlags{resticArgs: []string{"restic", "0"}},
+			flags:    commandLineFlags{resticArgs: []string{"restic", "0"}},
+			terminal: term.NewTerminal(),
 		},
 	}))
 }
 
 func TestRandomKey(t *testing.T) {
 	// doesn't look like much, but it's testing the random generator is not throwing an error
-	assert.NoError(t, randomKey(os.Stdout, commandContext{}))
+	assert.NoError(t, randomKey(commandContext{Context: Context{terminal: term.NewTerminal()}}))
 }
 
 func TestRemovableSchedules(t *testing.T) {
@@ -199,9 +201,12 @@ func TestCompleteCall(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(strings.Join(test.args, " "), func(t *testing.T) {
 			buffer := &strings.Builder{}
-			assert.Nil(t, completeCommand(buffer, commandContext{
+			assert.Nil(t, completeCommand(commandContext{
 				ownCommands: ownCommands,
-				Context:     Context{request: Request{arguments: test.args}},
+				Context: Context{
+					request:  Request{arguments: test.args},
+					terminal: term.NewTerminal(term.WithStdout(buffer)),
+				},
 			}))
 			assert.Equal(t, test.expected, buffer.String())
 		})
@@ -213,33 +218,38 @@ func TestGenerateCommand(t *testing.T) {
 
 	contextWithArguments := func(args []string) commandContext {
 		t.Helper()
-		return commandContext{Context: Context{request: Request{arguments: args}}}
+		return commandContext{
+			Context: Context{
+				request:  Request{arguments: args},
+				terminal: term.NewTerminal(term.WithStdout(buffer)),
+			},
+		}
 	}
 
 	t.Run("--bash-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--bash-completion"})))
+		assert.Nil(t, generateCommand(contextWithArguments([]string{"--bash-completion"})))
 		assert.Equal(t, strings.TrimSpace(bashCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, bashCompletionScript, "#!/usr/bin/env bash")
 	})
 
 	t.Run("--zsh-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--zsh-completion"})))
+		assert.Nil(t, generateCommand(contextWithArguments([]string{"--zsh-completion"})))
 		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
 	})
 
 	t.Run("--fish-completion", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--fish-completion"})))
+		assert.Nil(t, generateCommand(contextWithArguments([]string{"--fish-completion"})))
 		assert.Equal(t, strings.TrimSpace(fishCompletionScript), strings.TrimSpace(buffer.String()))
 		assert.Contains(t, fishCompletionScript, "#!/usr/bin/env fish")
 	})
 
 	t.Run("--config-reference", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--config-reference", "--to", t.TempDir()})))
+		assert.NoError(t, generateCommand(contextWithArguments([]string{"--config-reference", "--to", t.TempDir()})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "generating reference.gomd")
 		assert.Contains(t, ref, "generating profile section")
@@ -248,7 +258,7 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema global", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "global"})))
+		assert.NoError(t, generateCommand(contextWithArguments([]string{"--json-schema", "global"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, `"$schema"`)
 		assert.Contains(t, ref, "/jsonschema/config-1.json")
@@ -262,24 +272,24 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema no-option", func(t *testing.T) {
 		buffer.Reset()
-		assert.Error(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema"})))
+		assert.Error(t, generateCommand(contextWithArguments([]string{"--json-schema"})))
 	})
 
 	t.Run("--json-schema invalid-option", func(t *testing.T) {
 		buffer.Reset()
-		assert.Error(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "_invalid_"})))
+		assert.Error(t, generateCommand(contextWithArguments([]string{"--json-schema", "_invalid_"})))
 	})
 
 	t.Run("--json-schema v1", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "v1"})))
+		assert.NoError(t, generateCommand(contextWithArguments([]string{"--json-schema", "v1"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1.json")
 	})
 
 	t.Run("--json-schema v2", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "v2"})))
+		assert.NoError(t, generateCommand(contextWithArguments([]string{"--json-schema", "v2"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "\"profiles\":")
 		assert.Contains(t, ref, "/jsonschema/config-2.json")
@@ -287,14 +297,14 @@ func TestGenerateCommand(t *testing.T) {
 
 	t.Run("--json-schema --version 0.13 v1", func(t *testing.T) {
 		buffer.Reset()
-		assert.NoError(t, generateCommand(buffer, contextWithArguments([]string{"--json-schema", "--version", "0.13", "v1"})))
+		assert.NoError(t, generateCommand(contextWithArguments([]string{"--json-schema", "--version", "0.13", "v1"})))
 		ref := buffer.String()
 		assert.Contains(t, ref, "/jsonschema/config-1-restic-0-13.json")
 	})
 
 	t.Run("--random-key", func(t *testing.T) {
 		buffer.Reset()
-		assert.Nil(t, generateCommand(buffer, contextWithArguments([]string{"--random-key", "512"})))
+		assert.Nil(t, generateCommand(contextWithArguments([]string{"--random-key", "512"})))
 		assert.Equal(t, 684, len(strings.TrimSpace(buffer.String())))
 	})
 
@@ -303,7 +313,7 @@ func TestGenerateCommand(t *testing.T) {
 		opts := []string{"", "invalid", "--unknown"}
 		for _, option := range opts {
 			buffer.Reset()
-			err := generateCommand(buffer, contextWithArguments([]string{option}))
+			err := generateCommand(contextWithArguments([]string{option}))
 			assert.EqualError(t, err, fmt.Sprintf("nothing to generate for: %s", option))
 			assert.Equal(t, 0, buffer.Len())
 		}
@@ -348,7 +358,7 @@ func TestCreateScheduleWhenNoneAvailable(t *testing.T) {
 	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
 	assert.NoError(t, err)
 
-	err = createSchedule(nil, commandContext{
+	err = createSchedule(commandContext{
 		Context: Context{
 			config: cfg,
 			flags: commandLineFlags{
@@ -366,7 +376,7 @@ func TestCreateScheduleAll(t *testing.T) {
 	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
 	assert.NoError(t, err)
 
-	err = createSchedule(nil, commandContext{
+	err = createSchedule(commandContext{
 		Context: Context{
 			config: cfg,
 			request: Request{
@@ -426,7 +436,7 @@ func TestRunScheduleNoScheduleName(t *testing.T) {
 	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
 	assert.NoError(t, err)
 
-	err = runSchedule(nil, commandContext{
+	err = runSchedule(commandContext{
 		Context: Context{
 			config: cfg,
 			flags: commandLineFlags{
@@ -443,7 +453,7 @@ func TestRunScheduleWrongScheduleName(t *testing.T) {
 	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
 	assert.NoError(t, err)
 
-	err = runSchedule(nil, commandContext{
+	err = runSchedule(commandContext{
 		Context: Context{
 			request: Request{arguments: []string{"wrong"}},
 			config:  cfg,
@@ -461,7 +471,7 @@ func TestRunScheduleProfileUnknown(t *testing.T) {
 	cfg, err := config.Load(bytes.NewBufferString("[default]"), "toml")
 	assert.NoError(t, err)
 
-	err = runSchedule(nil, commandContext{
+	err = runSchedule(commandContext{
 		Context: Context{
 			request: Request{arguments: []string{"backup@profile"}},
 			config:  cfg,
@@ -472,6 +482,6 @@ func TestRunScheduleProfileUnknown(t *testing.T) {
 
 func TestBatteryCommand(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	err := batteryCommand(buffer, commandContext{})
+	err := batteryCommand(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer))}})
 	require.NoError(t, err)
 }

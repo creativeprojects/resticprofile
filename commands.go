@@ -22,7 +22,6 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
-	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/win"
 	"github.com/distatus/battery"
 )
@@ -190,11 +189,11 @@ func getOwnCommands() []ownCommand {
 	}
 }
 
-func panicCommand(_ io.Writer, _ commandContext) error {
+func panicCommand(_ commandContext) error {
 	panic("you asked for it")
 }
 
-func completeCommand(output io.Writer, ctx commandContext) error {
+func completeCommand(ctx commandContext) error {
 	args := ctx.request.arguments
 	requester := "unknown"
 	requesterVersion := 0
@@ -226,13 +225,13 @@ func completeCommand(output io.Writer, ctx commandContext) error {
 	completions := NewCompleter(ctx.ownCommands.All(), DefaultFlagsLoader, includeDescription).Complete(args)
 	if len(completions) > 0 {
 		for _, completion := range completions {
-			fmt.Fprintln(output, completion)
+			ctx.terminal.Println(completion)
 		}
 	}
 	return nil
 }
 
-func showProfileOrGroup(output io.Writer, ctx commandContext) error {
+func showProfileOrGroup(ctx commandContext) error {
 	c := ctx.config
 	flags := ctx.flags
 
@@ -270,21 +269,21 @@ func showProfileOrGroup(output io.Writer, ctx commandContext) error {
 	}
 
 	// Show global
-	err = config.ShowStruct(output, global, constants.SectionConfigurationGlobal)
+	err = config.ShowStruct(ctx.terminal, global, constants.SectionConfigurationGlobal)
 	if err != nil {
 		clog.Errorf("cannot show global section: %s", err.Error())
 	}
-	_, _ = fmt.Fprintln(output)
+	_, _ = ctx.terminal.Println()
 
 	// Show profile or group
-	err = config.ShowStruct(output, profileOrGroup, profileOrGroup.Kind()+" "+flags.name)
+	err = config.ShowStruct(ctx.terminal, profileOrGroup, profileOrGroup.Kind()+" "+flags.name)
 	if err != nil {
 		clog.Errorf("cannot show profile or group '%s': %s", flags.name, err.Error())
 	}
-	_, _ = fmt.Fprintln(output)
+	_, _ = ctx.terminal.Println()
 
 	// Show schedules
-	showSchedules(output, slices.Collect(maps.Values(profileOrGroup.Schedules())))
+	showSchedules(ctx.terminal, slices.Collect(maps.Values(profileOrGroup.Schedules())))
 
 	if profile, ok := profileOrGroup.(*config.Profile); ok {
 		// Show deprecation notice
@@ -309,7 +308,7 @@ func showSchedules(output io.Writer, schedules []*config.Schedule) {
 }
 
 // randomKey simply display a base64'd random key to the console
-func randomKey(output io.Writer, ctx commandContext) error {
+func randomKey(ctx commandContext) error {
 	var err error
 	flags := ctx.flags
 	size := uint64(1024)
@@ -329,19 +328,19 @@ func randomKey(output io.Writer, ctx commandContext) error {
 	if err != nil {
 		return err
 	}
-	encoder := base64.NewEncoder(base64.StdEncoding, output)
+	encoder := base64.NewEncoder(base64.StdEncoding, ctx.terminal)
 	_, err = encoder.Write(buffer)
 	encoder.Close()
-	fmt.Fprintln(output, "")
+	ctx.terminal.Println()
 	return err
 }
 
-func testElevationCommand(_ io.Writer, ctx commandContext) error {
+func testElevationCommand(ctx commandContext) error {
 	if ctx.flags.isChild {
 		client := remote.NewClient(ctx.flags.parentPort)
-		term.Print("first line", "\n")
-		term.Println("second", "one")
-		term.Printf("value = %d\n", 11)
+		ctx.terminal.Print("first line", "\n")
+		ctx.terminal.Println("second", "one")
+		ctx.terminal.Printf("value = %d\n", 11)
 		err := client.Done()
 		if err != nil {
 			return err
@@ -395,7 +394,7 @@ func elevated() error {
 	return nil
 }
 
-func batteryCommand(stdout io.Writer, _ commandContext) error {
+func batteryCommand(ctx commandContext) error {
 	all, err := batt.Batteries()
 	if err != nil {
 		if errors.Is(err, battery.ErrFatal{}) {
@@ -407,13 +406,13 @@ func batteryCommand(stdout io.Writer, _ commandContext) error {
 		clog.Info("no battery detected")
 		return nil
 	}
-	fmt.Fprintln(stdout, "")
-	w := tabwriter.NewWriter(stdout, 2, 2, 2, ' ', tabwriter.AlignRight)
+	ctx.terminal.Println()
+	w := tabwriter.NewWriter(ctx.terminal, 2, 2, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintf(w, "Battery\tStatus\tCurrent capacity\tFull capacity\tDesign Capacity\tCharge Rate\tVoltage\t\n")
 	for index, batt := range all {
 		fmt.Fprintf(w, "#%d\t%s\t%.2f mWh\t%.2f mWh\t%.2f mWh\t%.2f mWh\t%.2f V\t\n", index, batt.State, batt.Current, batt.Full, batt.Design, batt.ChargeRate, batt.Voltage)
 	}
 	w.Flush()
-	fmt.Fprintln(stdout, "")
+	ctx.terminal.Println()
 	return nil
 }
