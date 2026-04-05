@@ -131,8 +131,11 @@ func main() {
 				terminal = term.Set(term.NewTerminal(term.WithStdout(os.Stderr), term.WithColors(!flags.noAnsi)))
 			}
 			if logTarget != "" && logTarget != "-" {
-				if closer, err := setupTargetLogger(flags, logTarget, commandOutput); err == nil {
+				if closer, newTerminal, err := setupTargetLogger(flags, terminal, logTarget, commandOutput); err == nil {
 					logCloser = func() { _ = closer.Close() }
+					if newTerminal != nil {
+						terminal = term.Set(newTerminal)
+					}
 				} else {
 					// fallback to a console logger
 					setupConsoleLogger(flags)

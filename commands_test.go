@@ -321,7 +321,6 @@ func TestGenerateCommand(t *testing.T) {
 }
 
 func TestShowSchedules(t *testing.T) {
-	buffer := &bytes.Buffer{}
 	create := func(command string, at ...string) *config.Schedule {
 		origin := config.ScheduleOrigin("default", command)
 		return config.NewDefaultSchedule(nil, origin, at...)
@@ -349,7 +348,9 @@ schedule check@default:
     lock-mode:            default
     capture-environment:  RESTIC_*
 `)
-	showSchedules(buffer, schedules)
+	buffer := &bytes.Buffer{}
+	terminal := term.NewTerminal(term.WithStdout(buffer))
+	showSchedules(terminal.Stdout(), schedules)
 	assert.Equal(t, expected, strings.TrimSpace(buffer.String()))
 }
 

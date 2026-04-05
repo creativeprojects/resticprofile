@@ -49,7 +49,7 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, terminal *term.Terminal, logTarget, commandOutput string) (io.Closer, *term.Terminal, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
@@ -63,29 +63,36 @@ func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) 
 		handler, file, err = getFileHandler(logTarget)
 	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// use the console handler as a backup
 	logger := newFilteredLogger(flags, clog.NewSafeHandler(handler, clog.NewConsoleHandler("", log.LstdFlags)))
 	// default logger added with level filtering
 	clog.SetDefaultLogger(logger)
 
+	var newTerminal *term.Terminal
+
 	// also redirect all terminal output
 	if file != nil {
-		if all, toLog := parseCommandOutput(commandOutput); all {
-			term.SetOutput(io.MultiWriter(file, term.GetOutput()))
-			term.SetErrorOutput(io.MultiWriter(file, term.GetErrorOutput()))
+		if all, toLog := parseCommandOutput(terminal, commandOutput); all {
+			newTerminal = term.NewTerminal(
+				term.WithStdout(io.MultiWriter(file, terminal.Stdout())),
+				term.WithStderr(io.MultiWriter(file, terminal.Stderr())),
+			)
 		} else if toLog {
-			term.SetAllOutput(file)
+			newTerminal = term.NewTerminal(
+				term.WithStdout(file),
+				term.WithStderr(file),
+			)
 		}
 	}
 	// and return the handler (so we can close it at the end)
-	return handler, nil
+	return handler, newTerminal, nil
 }
 
-func parseCommandOutput(commandOutput string) (all, log bool) {
+func parseCommandOutput(terminal *term.Terminal, commandOutput string) (all, log bool) {
 	if strings.TrimSpace(commandOutput) == "auto" {
-		if term.OsStdoutIsTerminal() {
+		if terminal.StdoutIsTerminal() {
 			commandOutput = "log,console"
 		} else {
 			commandOutput = "log"

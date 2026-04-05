@@ -59,7 +59,7 @@ var (
 
 func asyncWriterReturnToPool(data []byte) {
 	if cap(data) == asyncWriterBlockSize {
-		asyncWriterBufferPool.Put(data[:0])
+		asyncWriterBufferPool.Put(data[:0]) //nolint:staticcheck
 	}
 }
 

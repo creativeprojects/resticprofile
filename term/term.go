@@ -13,13 +13,11 @@ import (
 )
 
 var (
-	termOutput        atomic.Pointer[io.Writer]
-	errorOutput       atomic.Pointer[io.Writer]
-	colorOutput       atomic.Pointer[io.Writer]
-	enableColors      atomic.Bool
-	statusChannel     = make(chan []string)
-	statusWaitChannel = make(chan chan bool)
-	PrintToError      = false
+	termOutput   atomic.Pointer[io.Writer]
+	errorOutput  atomic.Pointer[io.Writer]
+	colorOutput  atomic.Pointer[io.Writer]
+	enableColors atomic.Bool
+	PrintToError = false
 )
 
 const (
@@ -33,13 +31,6 @@ func init() {
 		setOutput(os.Stdout)
 		setErrorOutput(os.Stderr)
 	}
-}
-
-func truncate[E any](src []E, maxLength int) []E {
-	if len(src) > maxLength {
-		return src[:maxLength]
-	}
-	return src
 }
 
 // ReadPassword reads a password without echoing it to the terminal.
@@ -66,13 +57,6 @@ func readLine() (string, error) {
 		return "", fmt.Errorf("failed to read line: %w", err)
 	}
 	return strings.TrimSpace(line), nil
-}
-
-// OsStdoutIsTerminal returns true as os.Stdout is a terminal session
-//
-// Deprecated: use term.Terminal instead
-func OsStdoutIsTerminal() bool {
-	return isTerminal(os.Stdout)
 }
 
 // SetOutput changes the default output for the Print* functions
@@ -130,12 +114,4 @@ func GetErrorOutput() (out io.Writer) {
 		out = *v
 	}
 	return
-}
-
-// SetAllOutput changes the default and error output for the Print* functions
-//
-// Deprecated: use term.Terminal instead
-func SetAllOutput(w io.Writer) {
-	SetOutput(w)
-	setErrorOutput(GetOutput())
 }

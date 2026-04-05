@@ -151,7 +151,7 @@ func (h *HandlerLaunchd) DisplayJobStatus(job *Config) error {
 		// output was not parsed, it could mean output format has changed
 		clog.Warning("output of 'launchctl print' was either empty or using an incompatible format")
 	}
-	writer := tabwriter.NewWriter(term.GetOutput(), 1, 1, 1, ' ', tabwriter.AlignRight)
+	writer := tabwriter.NewWriter(term.Get().Stdout(), 1, 1, 1, ' ', tabwriter.AlignRight)
 	for _, key := range launchctlPrintKeys {
 		key, value := presentStatus(key, status[key])
 		if len(value) == 0 {
