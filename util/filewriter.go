@@ -2,10 +2,10 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/platform"
@@ -188,6 +188,8 @@ func NewAsyncFileWriter(filename string, options ...asyncFileWriterOption) (io.W
 	return w, lastError
 }
 
+var errAlreadyClosed = errors.New("file writer already closed")
+
 type asyncFileWriter struct {
 	done, flush chan chan error
 	data        chan []byte
@@ -196,28 +198,31 @@ type asyncFileWriter struct {
 	perm        os.FileMode
 	keepOpen    bool
 	interval    time.Duration
-	closeOnce   sync.Once
+	closed      atomic.Bool
 }
 
 func (w *asyncFileWriter) Close() error {
+	if !w.closed.CompareAndSwap(false, true) {
+		return errAlreadyClosed
+	}
 	req := make(chan error)
 	w.done <- req
 	return <-req
 }
 
 func (w *asyncFileWriter) Flush() error {
+	if w.closed.Load() {
+		return errAlreadyClosed
+	}
 	req := make(chan error)
 	w.flush <- req
 	return <-req
 }
 
 func (w *asyncFileWriter) Write(data []byte) (n int, err error) {
-	defer func() {
-		msg := recover()
-		if msg != nil {
-			err = fmt.Errorf("panic: %v", msg)
-		}
-	}()
+	if w.closed.Load() {
+		return 0, errAlreadyClosed
+	}
 	var buffer []byte
 	if len(data) <= asyncWriterBlockSize {
 		buffer = asyncWriterBufferPool.Get().([]byte)[:len(data)]
