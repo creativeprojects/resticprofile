@@ -1,0 +1,119 @@
+package write
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"sync"
+	"sync/atomic"
+	"time"
+)
+
+const (
+	asyncWriterDataChanSize  = 64
+	asyncWriterFlushChanSize = 16
+	asyncWriterBlockSize     = 4 * 1024
+	asyncWriterMaxBlockSize  = asyncWriterDataChanSize * asyncWriterBlockSize
+)
+
+var ErrAlreadyClosed = errors.New("writer already closed")
+
+type Async struct {
+	handler     io.Writer
+	interval    time.Duration
+	data        chan []byte
+	flusher     chan chan struct{}
+	done        chan struct{}
+	systemGroup sync.WaitGroup
+	closeOnce   sync.Once
+	closed      atomic.Bool
+}
+
+// NewAsync creates a writer that accumulates Write requests and writes them at a fixed rate (every 250 ms by default)
+func NewAsync(handler io.Writer, options ...AsyncOption) *Async {
+	w := &Async{
+		handler:  handler,
+		interval: 250 * time.Millisecond,
+		data:     make(chan []byte, asyncWriterDataChanSize),
+		flusher:  make(chan chan struct{}, asyncWriterFlushChanSize),
+		done:     make(chan struct{}),
+	}
+	for _, option := range options {
+		option(w)
+	}
+	w.systemGroup.Go(func() {
+		w.intervalFlush()
+	})
+	w.systemGroup.Go(func() {
+		w.recvFlush()
+	})
+	return w
+}
+
+func (w *Async) intervalFlush() {
+	ticker := time.NewTicker(w.interval)
+	for {
+		select {
+		case <-ticker.C:
+			go w.Flush()
+		case <-w.done:
+			ticker.Stop()
+			return
+		}
+	}
+}
+
+func (w *Async) recvFlush() {
+	for done := range w.flusher {
+		w.flush()
+		close(done)
+	}
+}
+
+// Close the writer. Any more call to Write will be ignored.
+func (w *Async) Close() error {
+	var err error
+	w.closeOnce.Do(func() {
+		w.closed.Store(true)
+		close(w.done)
+		_ = w.Flush()
+		close(w.flusher)
+		w.systemGroup.Wait()
+	})
+	return err
+}
+
+func (w *Async) Flush() error {
+	done := make(chan struct{})
+	w.flusher <- done
+	// wait until the flusher is done
+	<-done
+	return nil
+}
+
+func (w *Async) flush() error {
+	for {
+		// keep reading from the channel until it's empty
+		select {
+		case data := <-w.data:
+			_, err := w.handler.Write(data)
+			if err != nil {
+				return err
+			}
+		default:
+			return nil
+		}
+	}
+}
+
+// Write asynchronously to the handler
+func (w *Async) Write(data []byte) (n int, err error) {
+	if w.closed.Load() {
+		return 0, fmt.Errorf("cannot write: %w", ErrAlreadyClosed)
+	}
+
+	buffer := make([]byte, len(data))
+	n = copy(buffer, data)
+	w.data <- buffer
+	return n, nil
+}

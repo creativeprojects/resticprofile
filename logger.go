@@ -17,6 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/write"
 	"github.com/fatih/color"
 )
 
@@ -120,7 +121,7 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 	}
 
 	// create a platform aware log file appender
-	var appender util.AsyncFileWriterAppendFunc
+	var appender write.WriterAppendFunc
 	if platform.IsWindows() {
 		appender = func(dst []byte, c byte) []byte {
 			switch c {
@@ -133,14 +134,11 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 		}
 	}
 
-	writer, err := util.NewAsyncFileWriter(
-		logfile,
-		util.WithAsyncFileAppendFunc(appender),
-		util.WithAsyncFilePerm(0644),
-	)
+	file, err := write.NewFile(logfile, write.WithFilePerm(0644))
 	if err != nil {
 		return nil, nil, err
 	}
+	writer := write.NewAsync(write.NewAppend(file, appender))
 
 	return clog.NewStandardLogHandler(writer, "", log.LstdFlags), writer, nil
 }

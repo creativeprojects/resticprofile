@@ -10,7 +10,7 @@ import (
 
 type TerminalOption func(t *Terminal)
 
-func WithNoStdin(stdin io.Reader) TerminalOption {
+func WithNoStdin() TerminalOption {
 	return func(t *Terminal) {
 		t.stdin = nilReader{}
 	}
@@ -22,7 +22,7 @@ func WithNoStdout() TerminalOption {
 	}
 }
 
-func WithNoStderr(stderr io.Writer) TerminalOption {
+func WithNoStderr() TerminalOption {
 	return func(t *Terminal) {
 		t.stderr = io.Discard
 	}
