@@ -49,7 +49,7 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, terminal *term.Terminal, logTarget, commandOutput string) (io.Closer, *term.Terminal, error) {
+func setupTargetLogger(flags commandLineFlags, terminal *term.Terminal, logTarget, commandOutput string) (io.Closer, []term.TerminalOption, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
@@ -70,24 +70,24 @@ func setupTargetLogger(flags commandLineFlags, terminal *term.Terminal, logTarge
 	// default logger added with level filtering
 	clog.SetDefaultLogger(logger)
 
-	var newTerminal *term.Terminal
-
+	var terminalOptions []term.TerminalOption
 	// also redirect all terminal output
 	if file != nil {
 		if all, toLog := parseCommandOutput(terminal, commandOutput); all {
-			newTerminal = term.NewTerminal(
-				term.WithStdout(io.MultiWriter(file, terminal.Stdout())),
-				term.WithStderr(io.MultiWriter(file, terminal.Stderr())),
-			)
+			clog.Debugf("sending a copy of the console logs to %q", logTarget)
+			terminalOptions = []term.TerminalOption{
+				term.WithStdoutCopy(file),
+				term.WithStderrCopy(file),
+			}
 		} else if toLog {
-			newTerminal = term.NewTerminal(
+			terminalOptions = []term.TerminalOption{
 				term.WithStdout(file),
 				term.WithStderr(file),
-			)
+			}
 		}
 	}
 	// and return the handler (so we can close it at the end)
-	return handler, newTerminal, nil
+	return handler, terminalOptions, nil
 }
 
 func parseCommandOutput(terminal *term.Terminal, commandOutput string) (all, log bool) {

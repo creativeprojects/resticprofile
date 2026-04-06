@@ -22,6 +22,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/remote"
+	"github.com/creativeprojects/resticprofile/util/ansi"
 	"github.com/creativeprojects/resticprofile/win"
 	"github.com/distatus/battery"
 )
@@ -338,9 +339,10 @@ func randomKey(ctx commandContext) error {
 func testElevationCommand(ctx commandContext) error {
 	if ctx.flags.isChild {
 		client := remote.NewClient(ctx.flags.parentPort)
-		ctx.terminal.Print("first line", "\n")
-		ctx.terminal.Println("second", "one")
+		ctx.terminal.Print("simple line", "\n")
 		ctx.terminal.Printf("value = %d\n", 11)
+		ctx.terminal.Println(ansi.Bold("in bold"))
+		clog.Info("log content")
 		err := client.Done()
 		if err != nil {
 			return err

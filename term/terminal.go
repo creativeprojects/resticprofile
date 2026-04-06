@@ -13,6 +13,13 @@ import (
 	"golang.org/x/term"
 )
 
+// Journey of a message sent to the terminal:
+// 1. entrypoint is inputStdout/inputStderr
+// 2. data is sent to colorableStdout/colorableStderr
+// 3. a copy of the data is also sent to copyStdout/Stderr if enabled (final writer for the copy)
+// 4. the data is finally written to the stdin/stdout writers (coming from colorable writers)
+
+// Terminal gives access to the standard terminal input/output
 type Terminal struct {
 	stdin           io.Reader
 	stdout          io.Writer // final writer
@@ -20,9 +27,13 @@ type Terminal struct {
 	enableColors    maybe.Bool
 	colorableStdout io.Writer // colorable writer
 	colorableStderr io.Writer // colorable writer
+	copyStdout      io.Writer // stdout duplicate
+	copyStderr      io.Writer // stderr duplicate
+	inputStdout     io.Writer // entry for stdout
+	inputStderr     io.Writer // entry for stderr
 }
 
-func NewTerminal(options ...terminalOption) *Terminal {
+func NewTerminal(options ...TerminalOption) *Terminal {
 	t := &Terminal{
 		stdin:  os.Stdin,
 		stdout: os.Stdout,
@@ -35,6 +46,20 @@ func NewTerminal(options ...terminalOption) *Terminal {
 
 	t.colorableStdout = t.getColorableWriter(t.stdout)
 	t.colorableStderr = t.getColorableWriter(t.stderr)
+	if t.copyStdout == nil {
+		// no copy, we send to colorable directly
+		t.inputStdout = t.colorableStdout
+	} else {
+		// send to both the output and the copy
+		t.inputStdout = io.MultiWriter(t.colorableStdout, t.getColorableWriter(t.copyStdout))
+	}
+	if t.copyStderr == nil {
+		// no copy, we send to colorable directly
+		t.inputStderr = t.colorableStderr
+	} else {
+		// send to both the output and the copy
+		t.inputStderr = io.MultiWriter(t.colorableStderr, t.getColorableWriter(t.copyStderr))
+	}
 
 	return t
 }
@@ -108,16 +133,17 @@ func (t *Terminal) getColorableWriter(w io.Writer) io.Writer {
 	if file, ok := w.(*os.File); ok && t.enableColors.IsTrueOrUndefined() && (isTerminal(file) || t.enableColors.IsTrue()) {
 		return colorable.NewColorable(file)
 	}
-	if t.enableColors.IsTrue() {
-		// output is not a file, but the user doesn't want to strip the colors
-		return w
-	}
 	return colorable.NewNonColorable(w)
 }
 
 // FlushAllOutput flushes all buffered output (if supported by the underlying Writer).
 func (t *Terminal) FlushAllOutput() {
-	for _, writer := range []io.Writer{t.colorableStdout, t.colorableStderr, t.stdout, t.stderr} {
+	for _, writer := range []io.Writer{
+		t.inputStdout, t.inputStderr,
+		t.copyStdout, t.copyStderr,
+		t.colorableStdout, t.colorableStderr,
+		t.stdout, t.stderr,
+	} {
 		_, _ = util.FlushWriter(writer)
 	}
 }
@@ -126,20 +152,20 @@ func (t *Terminal) FlushAllOutput() {
 // Spaces are added between operands when neither is a string.
 // It returns the number of bytes written and any write error encountered.
 func (t *Terminal) Print(a ...any) (n int, err error) {
-	return fmt.Fprint(t.colorableStdout, a...)
+	return fmt.Fprint(t.inputStdout, a...)
 }
 
 // Println formats using the default formats for its operands and writes to standard output.
 // Spaces are always added between operands and a newline is appended.
 // It returns the number of bytes written and any write error encountered.
 func (t *Terminal) Println(a ...any) (n int, err error) {
-	return fmt.Fprintln(t.colorableStdout, a...)
+	return fmt.Fprintln(t.inputStdout, a...)
 }
 
 // Printf formats according to a format specifier and writes to standard output.
 // It returns the number of bytes written and any write error encountered.
 func (t *Terminal) Printf(format string, a ...any) (n int, err error) {
-	return fmt.Fprintf(t.colorableStdout, format, a...)
+	return fmt.Fprintf(t.inputStdout, format, a...)
 }
 
 func (t *Terminal) Scanln(a ...any) (n int, err error) {
@@ -148,15 +174,15 @@ func (t *Terminal) Scanln(a ...any) (n int, err error) {
 
 // Write implements the io.Writer interface, writing to the terminal's stdout.
 func (t *Terminal) Write(p []byte) (n int, err error) {
-	return t.colorableStdout.Write(p)
+	return t.inputStdout.Write(p)
 }
 
 func (t *Terminal) Stdout() io.Writer {
-	return t.colorableStdout
+	return t.inputStdout
 }
 
 func (t *Terminal) Stderr() io.Writer {
-	return t.colorableStderr
+	return t.inputStderr
 }
 
 func isTerminalWriter(w io.Writer) bool {
