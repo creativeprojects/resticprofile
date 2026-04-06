@@ -22,7 +22,7 @@ type Async struct {
 	handler     io.Writer
 	interval    time.Duration
 	data        chan []byte
-	flusher     chan chan struct{}
+	flusher     chan chan error
 	done        chan struct{}
 	systemGroup sync.WaitGroup
 	closeOnce   sync.Once
@@ -35,7 +35,7 @@ func NewAsync(handler io.Writer, options ...AsyncOption) *Async {
 		handler:  handler,
 		interval: 250 * time.Millisecond,
 		data:     make(chan []byte, asyncWriterDataChanSize),
-		flusher:  make(chan chan struct{}, asyncWriterFlushChanSize),
+		flusher:  make(chan chan error, asyncWriterFlushChanSize),
 		done:     make(chan struct{}),
 	}
 	for _, option := range options {
@@ -65,8 +65,8 @@ func (w *Async) intervalFlush() {
 
 func (w *Async) recvFlush() {
 	for done := range w.flusher {
-		w.flush()
-		close(done)
+		err := w.flush()
+		done <- err
 	}
 }
 
@@ -76,7 +76,7 @@ func (w *Async) Close() error {
 	w.closeOnce.Do(func() {
 		w.closed.Store(true)
 		close(w.done)
-		_ = w.Flush()
+		err = w.Flush()
 		close(w.flusher)
 		w.systemGroup.Wait()
 	})
@@ -84,11 +84,12 @@ func (w *Async) Close() error {
 }
 
 func (w *Async) Flush() error {
-	done := make(chan struct{})
+	done := make(chan error)
 	w.flusher <- done
 	// wait until the flusher is done
-	<-done
-	return nil
+	err := <-done
+	close(done)
+	return err
 }
 
 func (w *Async) flush() error {
