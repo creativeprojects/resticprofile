@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/lock"
@@ -27,9 +26,10 @@ func main() {
 }
 
 func run(wait int, lockfile string) int {
-	// Catch CTR-C key
+	// Catch user defined signals
 	sigChan := make(chan os.Signal, 2)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	signal.Ignore()
+	signal.Notify(sigChan, os.Interrupt)
 	// remove signal catch before leaving
 	defer signal.Stop(sigChan)
 

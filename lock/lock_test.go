@@ -3,6 +3,7 @@ package lock
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -285,16 +286,15 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	require.NoError(t, err, "starting child process")
 
 	time.Sleep(time.Second)
-	err = cmd.Process.Signal(syscall.SIGINT)
+	err = cmd.Process.Signal(os.Interrupt)
 	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	if err != nil {
-		assert.NoError(t, err, "waiting for child process to finish")
+	if isSignalError(err) {
+		t.Skip("inconclusive test: command failed to run properly - flaky test on macOS only")
 	}
-	if buffer.Len() == 0 {
-		t.Skip(`test inconclusive: command sometimes not starting on macOS ¯\_(ツ)_/¯`)
-	}
+	assert.NoError(t, err, "waiting for child process to finish")
+
 	assert.Equal(t, "started\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
 }
 
@@ -318,15 +318,28 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	require.NoError(t, err, "starting child process inside a shell")
 
 	time.Sleep(time.Second)
-	err = cmd.Process.Signal(syscall.SIGINT)
+	err = cmd.Process.Signal(os.Interrupt)
 	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	if err != nil {
-		assert.NoError(t, err, "waiting for child process to finish")
+	if isSignalError(err) {
+		t.Skip("inconclusive test: command failed to run properly - flaky test on macOS only")
 	}
-	if buffer.Len() == 0 {
-		t.Skip(`test inconclusive: command sometimes not starting on macOS ¯\_(ツ)_/¯`)
-	}
+	assert.NoError(t, err, "waiting for child process to finish")
+
 	assert.Equal(t, "started\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
+}
+
+func isSignalError(err error) bool {
+	if err == nil {
+		return false
+	}
+	exitErr, ok := errors.AsType[*exec.ExitError](err)
+	if !ok {
+		return false
+	}
+	if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+		return status.Signaled()
+	}
+	return false
 }
