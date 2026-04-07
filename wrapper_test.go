@@ -447,7 +447,7 @@ func TestRunRedirectOutputOfEchoProfile(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "test", strings.TrimSpace(term.ReadRecording()))
+	assert.Equal(t, "test", strings.TrimSpace(buffer.String()))
 }
 
 func TestDryRun(t *testing.T) {
@@ -463,7 +463,7 @@ func TestDryRun(t *testing.T) {
 	})
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "", term.ReadRecording())
+	assert.Equal(t, "", buffer.String())
 }
 
 func TestEnvProfileName(t *testing.T) {
@@ -481,7 +481,7 @@ func TestEnvProfileName(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "profile name = TestEnvProfileName\ntest\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
+	assert.Equal(t, "profile name = TestEnvProfileName\ntest\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
 func TestEnvProfileCommand(t *testing.T) {
@@ -499,7 +499,7 @@ func TestEnvProfileCommand(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.NoError(t, err)
-	assert.Equal(t, "profile command = test-command\ntest-command\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
+	assert.Equal(t, "profile command = test-command\ntest-command\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
 func TestEnvError(t *testing.T) {
@@ -517,7 +517,7 @@ func TestEnvError(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
+	assert.Equal(t, "error: 1 on profile 'name': exit status 1\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
 func TestEnvErrorCommandLine(t *testing.T) {
@@ -535,7 +535,7 @@ func TestEnvErrorCommandLine(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "cmd: \"exit\" \"1\"\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
+	assert.Equal(t, "cmd: \"exit\" \"1\"\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
 func TestEnvErrorExitCode(t *testing.T) {
@@ -553,7 +553,7 @@ func TestEnvErrorExitCode(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "exit-code: 5\n", strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n"))
+	assert.Equal(t, "exit-code: 5\n", strings.ReplaceAll(buffer.String(), "\r\n", "\n"))
 }
 
 func TestEnvStderr(t *testing.T) {
@@ -572,7 +572,7 @@ func TestEnvStderr(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.Error(t, err)
-	assert.Equal(t, "stderr: error_message", strings.TrimSpace(strings.ReplaceAll(term.ReadRecording(), "\r\n", "\n")))
+	assert.Equal(t, "stderr: error_message", strings.TrimSpace(strings.ReplaceAll(buffer.String(), "\r\n", "\n")))
 }
 
 func TestRunProfileWithSetPIDCallback(t *testing.T) {
@@ -1138,7 +1138,7 @@ func TestRunStreamErrorHandler(t *testing.T) {
 
 	err := wrapper.runProfile()
 	require.NoError(t, err)
-	assert.Contains(t, term.ReadRecording(), "detected error in backup")
+	assert.Contains(t, buffer.String(), "detected error in backup")
 }
 
 func TestRunStreamErrorHandlerDoesNotBreakCommand(t *testing.T) {
