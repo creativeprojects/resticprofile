@@ -20,11 +20,20 @@ func main() {
 	flag.StringVar(&lockfile, "lock", "test.lock", "Name of the lock file")
 	flag.Parse()
 
+	code := run(wait, lockfile)
+	if code > 0 {
+		os.Exit(code)
+	}
+}
+
+func run(wait int, lockfile string) int {
 	// Catch CTR-C key
 	sigChan := make(chan os.Signal, 2)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
 	// remove signal catch before leaving
 	defer signal.Stop(sigChan)
+
+	fmt.Println("started")
 
 	l := lock.NewLock(lockfile)
 	if l.TryAcquire() {
@@ -41,9 +50,9 @@ func main() {
 		case <-time.After(time.Duration(wait) * time.Millisecond):
 			fmt.Println("task finished")
 		}
-
-	} else {
-		fmt.Println("cannot acquire lock")
-		os.Exit(1)
+		return 0
 	}
+
+	fmt.Println("cannot acquire lock")
+	return 1
 }

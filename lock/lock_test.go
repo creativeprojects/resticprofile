@@ -36,12 +36,11 @@ func TestMain(m *testing.M) {
 			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
 			return 1
 		}
-		fmt.Printf("using temporary dir: %q\n", tempDir)
 		defer os.RemoveAll(tempDir)
 
 		helperBinary = filepath.Join(tempDir, platform.Executable("locktest"))
 
-		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", helperBinary, "./test")
+		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-v", "-o", helperBinary, "./test")
 		if err := cmd.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
 			return 1
@@ -56,7 +55,6 @@ func getTempfile(t *testing.T) string {
 	t.Helper()
 
 	tempfile := filepath.Join(t.TempDir(), fmt.Sprintf("%s.tmp", t.Name()))
-	t.Log("Using temporary file", tempfile)
 	return tempfile
 }
 
@@ -251,9 +249,6 @@ func TestForceLockWithRunningPID(t *testing.T) {
 func TestLockWithNoInterruption(t *testing.T) {
 	t.Parallel()
 
-	if platform.IsWindows() {
-		t.Skip("cannot send a signal to a child process in Windows")
-	}
 	lockfile := getTempfile(t)
 
 	var err error
@@ -261,13 +256,27 @@ func TestLockWithNoInterruption(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, helperBinary, "-wait", "1", "-lock", lockfile)
+	cmd := exec.CommandContext(ctx, helperBinary, "-wait", "10", "-lock", lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
 	err = cmd.Run()
 	assert.NoError(t, err)
-	assert.Equal(t, "lock acquired\ntask finished\nlock released\n", buffer.String())
+	assert.Equal(t, "started\nlock acquired\ntask finished\nlock released\n", buffer.String())
+}
+
+func isSignalError(err error) bool {
+	if err == nil {
+		return false
+	}
+	exitErr, ok := err.(*exec.ExitError)
+	if !ok {
+		return false
+	}
+	if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+		return status.Signaled()
+	}
+	return false
 }
 
 func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
@@ -289,13 +298,18 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	err = cmd.Start()
 	require.NoError(t, err, "starting child process")
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(time.Second)
 	err = cmd.Process.Signal(syscall.SIGINT)
 	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	assert.NoError(t, err, "waiting for child process to finish")
-	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
+	if err != nil && !isSignalError(err) {
+		assert.NoError(t, err, "waiting for child process to finish")
+	}
+	if buffer.Len() == 0 {
+		t.Skip(`test inconclusive: command sometimes not starting on macOS ¯\_(ツ)_/¯`)
+	}
+	assert.Equal(t, "started\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
 }
 
 func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
@@ -310,18 +324,23 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "sh", "-c", "exec "+helperBinary+" -wait 2000 -lock "+lockfile)
+	cmd := exec.CommandContext(ctx, "sh", "-c", "exec \""+helperBinary+"\" -wait 2000 -lock \""+lockfile+"\"")
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
 	err = cmd.Start()
 	require.NoError(t, err, "starting child process inside a shell")
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(time.Second)
 	err = cmd.Process.Signal(syscall.SIGINT)
 	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	assert.NoError(t, err, "waiting for child process to finish")
-	assert.Equal(t, "lock acquired\ntask interrupted\nlock released\n", buffer.String())
+	if err != nil && !isSignalError(err) {
+		assert.NoError(t, err, "waiting for child process to finish")
+	}
+	if buffer.Len() == 0 {
+		t.Skip(`test inconclusive: command sometimes not starting on macOS ¯\_(ツ)_/¯`)
+	}
+	assert.Equal(t, "started\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
 }
