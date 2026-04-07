@@ -23,6 +23,7 @@ import (
 	"github.com/creativeprojects/resticprofile/monitor/hook"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
 )
