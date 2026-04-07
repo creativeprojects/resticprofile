@@ -81,6 +81,52 @@ func (_c *OutputAnalysis_ContainsRemoteLockFailure_Call) RunAndReturn(run func()
 	return _c
 }
 
+// GetFailedFiles provides a mock function for the type OutputAnalysis
+func (_mock *OutputAnalysis) GetFailedFiles() []string {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetFailedFiles")
+	}
+
+	var r0 []string
+	if returnFunc, ok := ret.Get(0).(func() []string); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	return r0
+}
+
+// OutputAnalysis_GetFailedFiles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetFailedFiles'
+type OutputAnalysis_GetFailedFiles_Call struct {
+	*mock.Call
+}
+
+// GetFailedFiles is a helper method to define mock.On call
+func (_e *OutputAnalysis_Expecter) GetFailedFiles() *OutputAnalysis_GetFailedFiles_Call {
+	return &OutputAnalysis_GetFailedFiles_Call{Call: _e.mock.On("GetFailedFiles")}
+}
+
+func (_c *OutputAnalysis_GetFailedFiles_Call) Run(run func()) *OutputAnalysis_GetFailedFiles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *OutputAnalysis_GetFailedFiles_Call) Return(strings []string) *OutputAnalysis_GetFailedFiles_Call {
+	_c.Call.Return(strings)
+	return _c
+}
+
+func (_c *OutputAnalysis_GetFailedFiles_Call) RunAndReturn(run func() []string) *OutputAnalysis_GetFailedFiles_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetRemoteLockedBy provides a mock function for the type OutputAnalysis
 func (_mock *OutputAnalysis) GetRemoteLockedBy() (string, bool) {
 	ret := _mock.Called()

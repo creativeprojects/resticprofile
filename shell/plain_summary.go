@@ -5,45 +5,62 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"runtime"
 	"strings"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/monitor"
 )
 
-// ScanBackupPlain should populate the backup summary values from the standard output
-var ScanBackupPlain ScanOutput = func(r io.Reader, summary *monitor.Summary, w io.Writer) error {
-	eol := "\n"
-	if runtime.GOOS == "windows" {
-		eol = "\r\n"
-	}
-	rawBytes, rawBytesStored, unit, unitStored, duration := 0.0, 0.0, "", "", ""
-	scanner := bufio.NewScanner(r)
+// scanBackupPlain should populate the backup summary values from the standard output
+var scanBackupPlain ScanOutput = func(r io.Reader, provider monitor.Provider, w io.Writer) error {
+	scanner := bufio.NewScanner(io.TeeReader(r, w))
 	for scanner.Scan() {
-		_, err := w.Write([]byte(scanner.Text() + eol))
-		if err != nil {
-			return err
-		}
-		// scan content - it's all right if the line does not match
-		_, _ = fmt.Sscanf(scanner.Text(), "Files: %d new, %d changed, %d unmodified", &summary.FilesNew, &summary.FilesChanged, &summary.FilesUnmodified)
-		_, _ = fmt.Sscanf(scanner.Text(), "Dirs: %d new, %d changed, %d unmodified", &summary.DirsNew, &summary.DirsChanged, &summary.DirsUnmodified)
+		line := scanner.Text()
 
-		n, err := fmt.Sscanf(scanner.Text(), "Added to the repository: %f %3s (%f %3s stored)", &rawBytes, &unit, &rawBytesStored, &unitStored)
-		if n == 4 && err == nil {
-			summary.BytesAdded = unformatBytes(rawBytes, unit)
-			summary.BytesAddedPacked = unformatBytes(rawBytesStored, unitStored)
-		}
+		provider.UpdateSummary(func(summary *monitor.Summary) {
+			// scan content - it's all right if the line does not match
+			_, _ = fmt.Sscanf(line, "Files: %d new, %d changed, %d unmodified", &summary.FilesNew, &summary.FilesChanged, &summary.FilesUnmodified)
+			_, _ = fmt.Sscanf(line, "Dirs: %d new, %d changed, %d unmodified", &summary.DirsNew, &summary.DirsChanged, &summary.DirsUnmodified)
+			_, _ = fmt.Sscanf(line, "snapshot %s saved", &summary.SnapshotID)
 
-		n, err = fmt.Sscanf(scanner.Text(), "processed %d files, %f %3s in %s", &summary.FilesTotal, &rawBytes, &unit, &duration)
-		if n == 4 && err == nil {
-			summary.BytesTotal = unformatBytes(rawBytes, unit)
-		}
+			// restic < 14
+			bytes, unit := 0.0, ""
+			n, _ := fmt.Sscanf(line, "Added to the repo: %f %3s", &bytes, &unit)
+			if n == 2 {
+				summary.BytesAdded = unformatBytes(bytes, unit)
+			}
+
+			// restic >=14
+			storedBytes, storedUnit, addVerb := 0.0, "", ""
+			n, _ = fmt.Sscanf(line, "%s to the repository: %f %3s (%f %3s stored)", &addVerb, &bytes, &unit, &storedBytes, &storedUnit)
+			if n >= 3 && addVerb == "Added" || addVerb == "Would add" {
+				summary.DryRun = strings.HasPrefix(addVerb, "Would")
+				summary.BytesAdded = unformatBytes(bytes, unit)
+				if n == 5 {
+					summary.BytesStored = unformatBytes(storedBytes, storedUnit)
+				}
+			}
+
+			duration := ""
+			n, _ = fmt.Sscanf(line, "processed %d files, %f %3s in %s", &summary.FilesTotal, &bytes, &unit, &duration)
+			if n == 4 {
+				summary.BytesTotal = unformatBytes(bytes, unit)
+
+				duration = strings.TrimSpace(duration)
+				if len(duration) == 4 || len(duration) == 6 {
+					duration = "0" + duration
+				}
+				if len(duration) == 5 {
+					duration = "00:" + duration
+				}
+				if p, err := time.Parse(time.TimeOnly, duration); err == nil {
+					summary.Duration = p.Sub(
+						time.Date(p.Year(), p.Month(), p.Day(), 0, 0, 0, 0, p.Location()))
+				}
+			}
+		})
 	}
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
+	return scanner.Err()
 }
 
 func unformatBytes(value float64, unit string) uint64 {

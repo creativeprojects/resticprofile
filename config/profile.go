@@ -38,6 +38,21 @@ type RunShellCommands interface {
 	GetRunShellCommands() *RunShellCommandsSection
 }
 
+type OutputHidden int
+
+const (
+	ShowOutput = OutputHidden(iota)
+	HideJsonOutput
+	HideOutput
+)
+
+// RedirectOutput provides access to output redirection settings
+type RedirectOutput interface {
+	IsOutputHidden(commandName string, jsonRequested bool) OutputHidden
+	IsOutputRedirected() bool
+	GetRedirectOutput() *RedirectOutputSection
+}
+
 // OtherFlags provides access to dynamic commandline flags
 type OtherFlags interface {
 	GetOtherFlags() map[string]any
@@ -112,6 +127,7 @@ type GenericSection struct {
 	OtherFlagsSection       `mapstructure:",squash"`
 	RunShellCommandsSection `mapstructure:",squash"`
 	SendMonitoringSections  `mapstructure:",squash"`
+	RedirectOutputSection   `mapstructure:",squash"`
 }
 
 func (g *GenericSection) setRootPath(p *Profile, rootPath string) {
@@ -176,22 +192,22 @@ type BackupSection struct {
 	GenericSectionWithSchedule `mapstructure:",squash"`
 
 	unresolvedSource  []string
-	CheckBefore       bool     `mapstructure:"check-before" description:"Check the repository before starting the backup command"`
-	CheckAfter        bool     `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
-	UseStdin          bool     `mapstructure:"stdin" argument:"stdin"`
-	StdinCommand      []string `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
-	SourceRelative    bool     `mapstructure:"source-relative" description:"Enable backup with relative source paths. This will change the working directory of the \"restic backup\" command to \"source-base\", and will not expand \"source\" to an absolute path."`
-	SourceBase        string   `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
-	Source            []string `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
-	Exclude           []string `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
-	Iexclude          []string `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
-	ExcludeFile       []string `mapstructure:"exclude-file" argument:"exclude-file"`
-	IexcludeFile      []string `mapstructure:"iexclude-file" argument:"iexclude-file"`
-	FilesFrom         []string `mapstructure:"files-from" argument:"files-from"`
-	FilesFromRaw      []string `mapstructure:"files-from-raw" argument:"files-from-raw"`
-	FilesFromVerbatim []string `mapstructure:"files-from-verbatim" argument:"files-from-verbatim"`
-	ExtendedStatus    bool     `mapstructure:"extended-status" argument:"json"`
-	NoErrorOnWarning  bool     `mapstructure:"no-error-on-warning" description:"Do not fail the backup when some files could not be read"`
+	CheckBefore       bool       `mapstructure:"check-before" description:"Check the repository before starting the backup command"`
+	CheckAfter        bool       `mapstructure:"check-after" description:"Check the repository after the backup command succeeded"`
+	UseStdin          bool       `mapstructure:"stdin" argument:"stdin"`
+	StdinCommand      []string   `mapstructure:"stdin-command" description:"Shell command(s) that generate content to redirect into the stdin of restic. When set, the flag \"stdin\" is always set to \"true\"."`
+	SourceRelative    bool       `mapstructure:"source-relative" description:"Enable backup with relative source paths. This will change the working directory of the \"restic backup\" command to \"source-base\", and will not expand \"source\" to an absolute path."`
+	SourceBase        string     `mapstructure:"source-base" examples:"/;$PWD;C:\\;%cd%" description:"The base path to resolve relative backup paths against. Defaults to current directory if unset or empty (see also \"base-dir\" in profile)"`
+	Source            []string   `mapstructure:"source" examples:"/opt/;/home/user/;C:\\Users\\User\\Documents" description:"The paths to backup"`
+	Exclude           []string   `mapstructure:"exclude" argument:"exclude" argument-type:"no-glob"`
+	Iexclude          []string   `mapstructure:"iexclude" argument:"iexclude" argument-type:"no-glob"`
+	ExcludeFile       []string   `mapstructure:"exclude-file" argument:"exclude-file"`
+	IexcludeFile      []string   `mapstructure:"iexclude-file" argument:"iexclude-file"`
+	FilesFrom         []string   `mapstructure:"files-from" argument:"files-from"`
+	FilesFromRaw      []string   `mapstructure:"files-from-raw" argument:"files-from-raw"`
+	FilesFromVerbatim []string   `mapstructure:"files-from-verbatim" argument:"files-from-verbatim"`
+	ExtendedStatus    maybe.Bool `mapstructure:"extended-status" argument:"json"`
+	NoErrorOnWarning  bool       `mapstructure:"no-error-on-warning" description:"Do not fail the backup when some files could not be read"`
 }
 
 func (s *BackupSection) IsEmpty() bool { return s == nil }
@@ -202,6 +218,10 @@ func (b *BackupSection) resolve(profile *Profile) {
 	// Ensure UseStdin is set when Backup.StdinCommand is defined
 	if len(b.StdinCommand) > 0 {
 		b.UseStdin = true
+	}
+	// Enable ExtendedStatus if unset and required for full functionality
+	if b.ExtendedStatus.IsUndefined() && len(profile.StatusFile)+len(profile.PrometheusSaveToFile)+len(profile.PrometheusPush) != 0 {
+		b.ExtendedStatus = maybe.True()
 	}
 	// Resolve symlinks if we send relative paths to restic (to match paths in snapshots)
 	if b.SourceRelative {
@@ -526,6 +546,37 @@ type RunShellCommandsSection struct {
 }
 
 func (r *RunShellCommandsSection) GetRunShellCommands() *RunShellCommandsSection { return r }
+
+// RedirectOutputSection contains settings to redirect restic command output
+type RedirectOutputSection struct {
+	StdoutHidden  maybe.Bool `mapstructure:"stdout-hidden" description:"Toggles whether stdout is hidden in console & log"`
+	StdoutFile    []string   `mapstructure:"stdout-file" description:"Redirect restic stdout to file(s)"`
+	StdoutCommand []string   `mapstructure:"stdout-command" description:"Pipe restic stdout to shell command(s)"`
+}
+
+func (r *RedirectOutputSection) GetRedirectOutput() *RedirectOutputSection { return r }
+
+func (r *RedirectOutputSection) IsOutputRedirected() bool {
+	return r != nil &&
+		(len(r.StdoutFile) > 0 || len(r.StdoutCommand) > 0)
+}
+
+func (r *RedirectOutputSection) IsOutputHidden(commandName string, jsonRequested bool) (hidden OutputHidden) {
+	if r != nil {
+		if r.StdoutHidden.IsTrue() {
+			hidden = HideOutput
+		} else if !r.StdoutHidden.IsStrictlyFalse() {
+			if commandName == constants.CommandDump || commandName == constants.CommandCat {
+				if r.IsOutputRedirected() {
+					hidden = HideOutput
+				}
+			} else if commandName == constants.CommandBackup && jsonRequested {
+				hidden = HideJsonOutput
+			}
+		}
+	}
+	return
+}
 
 // OtherFlagsSection contains additional restic command line flags
 type OtherFlagsSection struct {

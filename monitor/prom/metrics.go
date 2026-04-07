@@ -93,7 +93,7 @@ func (p *Metrics) BackupResults(status Status, summary monitor.Summary) {
 
 	p.backup.filesTotal.With(p.labels).Set(float64(summary.FilesTotal))
 	p.backup.bytesAdded.With(p.labels).Set(float64(summary.BytesAdded))
-	p.backup.bytesAddedPacked.With(p.labels).Set(float64(summary.BytesAddedPacked))
+	p.backup.bytesAddedPacked.With(p.labels).Set(float64(summary.BytesStored))
 	p.backup.bytesTotal.With(p.labels).Set(float64(summary.BytesTotal))
 	p.backup.status.With(p.labels).Set(float64(status))
 	p.backup.time.With(p.labels).Set(float64(time.Now().Unix()))

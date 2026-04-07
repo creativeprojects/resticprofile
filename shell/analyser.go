@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -36,10 +37,11 @@ type OutputAnalyser struct {
 }
 
 var outputAnalyserPatterns = map[string]*regexp.Regexp{
-	"lock-failure,who":    regexp.MustCompile(`unable to create lock.+already locked.+?by (.+)$`),
-	"lock-failure,age":    regexp.MustCompile(`lock was created at.+\(([^()]+)\s+ago\)`),
-	"lock-failure,stale":  regexp.MustCompile(`the\W+unlock\W+command can be used to remove stale locks`),
-	"lock-retry,max-wait": regexp.MustCompile(`repo already locked, waiting up to (\S+) for the lock`),
+	"lock-failure,who":        regexp.MustCompile(`unable to create lock.+already locked.+?by (.+)$`),
+	"lock-failure,age":        regexp.MustCompile(`lock was created at.+\(([^()]+)\s+ago\)`),
+	"lock-failure,stale":      regexp.MustCompile(`the\W+unlock\W+command can be used to remove stale locks`),
+	"lock-retry,max-wait":     regexp.MustCompile(`repo already locked, waiting up to (\S+) for the lock`),
+	"file-read,archival,keep": regexp.MustCompile(`^\{"message_type":"error",.+,"during":"archival","item":"([^"]+)".*}$`),
 }
 
 func NewOutputAnalyser() *OutputAnalyser {
@@ -176,6 +178,12 @@ func (a *OutputAnalyser) GetRemoteLockedBy() (string, bool) {
 	return "", false
 }
 
+func (a OutputAnalyser) GetFailedFiles() []string {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	return slices.Clone(a.matches["file-read,archival,keep"])
+}
+
 func (a *OutputAnalyser) AnalyseStringLines(output string) error {
 	return a.AnalyseLines(strings.NewReader(output))
 }
@@ -203,9 +211,14 @@ func (a *OutputAnalyser) analyseLine(line string) (err error) {
 	for _, pattern := range a.patterns {
 		match := pattern.expression.FindStringSubmatch(line)
 		if match != nil {
-			a.matches[pattern.name] = match
+			name := strings.Split(pattern.name, ",")
+			if name[len(name)-1] == "keep" {
+				a.matches[pattern.name] = append(a.matches[pattern.name], match[1:]...)
+			} else {
+				a.matches[pattern.name] = match
+			}
 
-			baseName := strings.Split(pattern.name, ",")[0]
+			baseName := name[0]
 			a.counts[baseName]++
 
 			if err == nil {

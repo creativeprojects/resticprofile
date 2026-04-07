@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -538,18 +539,10 @@ func (r *resticWrapper) runCommand(command string) error {
 		}
 
 		rCommand := r.prepareCommand(command, args, true)
+		jsonRequested := slices.Contains(rCommand.args, "--json")
 
 		if command == constants.CommandBackup && r.profile.Backup != nil {
-			// Add output scanners
-			if len(r.progress) > 0 {
-				if r.profile.Backup.ExtendedStatus {
-					rCommand.scanOutput = shell.ScanBackupJson
-				} else if !r.ctx.terminal.StdoutIsTerminal() {
-					// restic detects its output is not a terminal and no longer displays the monitor.
-					// Scan plain output only if resticprofile is not run from a terminal (e.g. schedule)
-					rCommand.scanOutput = shell.ScanBackupPlain
-				}
-			}
+			jsonRequested = jsonRequested || r.profile.Backup.ExtendedStatus.IsTrue()
 
 			// Redirect a stream source to stdin of restic if configured
 			if source, err := r.prepareStreamSource(); err == nil {
@@ -559,6 +552,37 @@ func (r *resticWrapper) runCommand(command string) error {
 				}
 			} else {
 				return newCommandError(rCommand, "", fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
+			}
+		}
+
+		// Add output scanner
+		if len(r.progress) > 0 {
+			rCommand.scanOutput = shell.GetOutputScanner(command, jsonRequested)
+			rCommand.receivers = r.progress
+
+			if term.OutputIsTerminal() && !jsonRequested {
+				clog.Warningf("%d modules configured to receive restic status but \"extended-status\" not set. Status won't be forwarded when run from terminal console")
+				rCommand.scanOutput = nil
+			}
+
+			// Set how often the current progress is reported to the terminal per second (for supported restic commands)
+			if rCommand.scanOutput != nil &&
+				term.OutputIsTerminal() &&
+				!slices.ContainsFunc(rCommand.env, regexp.MustCompile(`^RESTIC_PROGRESS_FPS=.*`).MatchString) {
+				rCommand.env = append(rCommand.env, fmt.Sprintf("RESTIC_PROGRESS_FPS=%d", term.StatusFPS))
+			}
+		}
+
+		// Add output redirection / filter
+		if redirect, ok := config.GetSectionWith[config.RedirectOutput](r.profile, command); ok {
+			switch redirect.IsOutputHidden(command, jsonRequested) {
+			case config.HideOutput:
+				rCommand.stdout = io.Discard
+			case config.HideJsonOutput:
+				rCommand.stdout = shell.HideJson(rCommand.stdout)
+			}
+			if redirect.IsOutputRedirected() {
+				// TODO: Setup
 			}
 		}
 
