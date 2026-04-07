@@ -27,9 +27,9 @@ func main() {
 }
 
 func run(wait int, lockfile string) int {
-	// Catch CTR-C key
 	sigChan := make(chan os.Signal, 2)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	signal.Ignore()
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	// remove signal catch before leaving
 	defer signal.Stop(sigChan)
 

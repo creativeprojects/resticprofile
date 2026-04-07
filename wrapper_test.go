@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -914,38 +915,40 @@ func TestBackupWithError(t *testing.T) {
 func TestBackupWithResticLockFailureRetried(t *testing.T) {
 	t.Parallel()
 
-	lockWait := constants.MinResticLockRetryDelay + time.Second
-	lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
-		"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
-		"storage ID c8a44e77" + platform.LineSeparator +
-		"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
-	tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureRetried.txt")
-	err := os.WriteFile(tempfile, []byte(lockMessage), 0o600)
-	require.NoError(t, err)
-	defer os.Remove(tempfile)
+	synctest.Test(t, func(t *testing.T) {
+		lockWait := constants.MinResticLockRetryDelay + time.Second
+		lockMessage := "unable to create lock in backend: repository is already locked exclusively by PID 60485 on VM by user (UID 503, GID 23)" + platform.LineSeparator +
+			"lock was created at 2023-09-24 15:29:57 (69.406ms ago)" + platform.LineSeparator +
+			"storage ID c8a44e77" + platform.LineSeparator +
+			"the `unlock` command can be used to remove stale locks" + platform.LineSeparator
+		tempfile := filepath.Join(t.TempDir(), "TestBackupWithResticLockFailureRetried.txt")
+		err := os.WriteFile(tempfile, []byte(lockMessage), 0o600)
+		require.NoError(t, err)
+		defer os.Remove(tempfile)
 
-	sigChan := make(chan os.Signal, 1)
-	global := &config.Global{
-		ResticLockRetryAfter: lockWait,
-	}
-	profile := config.NewProfile(nil, "name")
-	profile.Backup = &config.BackupSection{}
-	ctx := &Context{
-		global:   global,
-		binary:   mockBinary,
-		profile:  profile,
-		command:  "",
-		request:  Request{arguments: []string{"--stderr", "@" + tempfile, "--exit", "1"}},
-		sigChan:  sigChan,
-		terminal: term.NewTerminal(),
-	}
-	wrapper := newResticWrapper(ctx)
-	wrapper.lockWait = &lockWait
-	wrapper.startTime = time.Now()
+		sigChan := make(chan os.Signal, 1)
+		global := &config.Global{
+			ResticLockRetryAfter: lockWait,
+		}
+		profile := config.NewProfile(nil, "name")
+		profile.Backup = &config.BackupSection{}
+		ctx := &Context{
+			global:   global,
+			binary:   mockBinary,
+			profile:  profile,
+			command:  "",
+			request:  Request{arguments: []string{"--stderr", "@" + tempfile, "--exit", "1"}},
+			sigChan:  sigChan,
+			terminal: term.NewTerminal(),
+		}
+		wrapper := newResticWrapper(ctx)
+		wrapper.lockWait = &lockWait
+		wrapper.startTime = time.Now()
 
-	err = wrapper.runCommand("backup")
-	assert.Error(t, err)
-	assert.NotErrorIs(t, err, errInterrupt)
+		err = wrapper.runCommand("backup")
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, errInterrupt)
+	})
 }
 
 func TestBackupWithResticLockFailureCancelled(t *testing.T) {
