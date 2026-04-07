@@ -265,20 +265,6 @@ func TestLockWithNoInterruption(t *testing.T) {
 	assert.Equal(t, "started\nlock acquired\ntask finished\nlock released\n", buffer.String())
 }
 
-func isSignalError(err error) bool {
-	if err == nil {
-		return false
-	}
-	exitErr, ok := err.(*exec.ExitError)
-	if !ok {
-		return false
-	}
-	if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
-		return status.Signaled()
-	}
-	return false
-}
-
 func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
@@ -303,7 +289,7 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	if err != nil && !isSignalError(err) {
+	if err != nil {
 		assert.NoError(t, err, "waiting for child process to finish")
 	}
 	if buffer.Len() == 0 {
@@ -336,7 +322,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	require.NoError(t, err, "sending interrupt signal to child process")
 
 	err = cmd.Wait()
-	if err != nil && !isSignalError(err) {
+	if err != nil {
 		assert.NoError(t, err, "waiting for child process to finish")
 	}
 	if buffer.Len() == 0 {
