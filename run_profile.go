@@ -11,6 +11,7 @@ import (
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/monitor/console"
 	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
 )
@@ -195,6 +196,7 @@ func runProfile(ctx *Context) error {
 	}
 
 	// add progress receivers if necessary
+	wrapper.addProgress(console.NewProgress(profile))
 	if profile.StatusFile != "" {
 		wrapper.addProgress(status.NewProgress(profile, status.NewStatus(profile.StatusFile)))
 	}

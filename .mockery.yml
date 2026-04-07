@@ -15,6 +15,7 @@ packages:
   github.com/creativeprojects/resticprofile/monitor:
     interfaces:
       OutputAnalysis: {}
+      Receiver: {}
   github.com/creativeprojects/resticprofile/schedule:
     interfaces:
       Handler: {}
