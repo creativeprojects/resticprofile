@@ -126,3 +126,15 @@ func TestFileCanFlush(t *testing.T) {
 
 	assert.NoError(t, w.Flush())
 }
+
+func TestFileWriteOnClosedFile(t *testing.T) {
+	dir := t.TempDir()
+	filename := filepath.Join(dir, "testfile")
+
+	w, err := NewFile(filename, WithFileKeepOpen(true))
+	require.NoError(t, err)
+	assert.NoError(t, w.Close())
+
+	_, err = w.Write([]byte("aaa"))
+	assert.ErrorIs(t, err, ErrAttemptToWriteOnClosedFile)
+}

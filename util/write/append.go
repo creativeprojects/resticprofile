@@ -27,3 +27,13 @@ func (a *Append) Write(data []byte) (int, error) {
 	}
 	return a.next.Write(dst)
 }
+
+// Close will close the destination writer if accessible
+func (a *Append) Close() error {
+	if closer, ok := a.next.(io.Closer); ok {
+		return closer.Close()
+	}
+	return nil
+}
+
+var _ io.WriteCloser = &Append{}

@@ -36,3 +36,16 @@ func TestAppendLinesWithAppender(t *testing.T) {
 
 	assert.Equal(t, "a\r\nb\r\nc\r\n", buffer.String())
 }
+
+func TestAppendCallsCloseOnTarget(t *testing.T) {
+	called := 0
+	mockClose := newMockWriteCloser(nil, func() error {
+		called++
+		return nil
+	})
+
+	a := NewAppend(mockClose, nil)
+	a.Close()
+
+	assert.Equal(t, 1, called)
+}

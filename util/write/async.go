@@ -54,7 +54,9 @@ func (w *Async) intervalFlush() {
 	for {
 		select {
 		case <-ticker.C:
+			ticker.Stop() // don't keep piling up if the flusher channel is already full
 			w.flusher <- nil
+			ticker.Reset(w.interval)
 		case <-w.done:
 			ticker.Stop()
 			return
@@ -81,6 +83,9 @@ func (w *Async) Close() error {
 		w.flusherClosed.Store(true)
 		close(w.flusher)
 		w.systemGroup.Wait()
+		if closer, ok := w.handler.(io.Closer); ok {
+			err = errors.Join(err, closer.Close())
+		}
 	})
 	return err
 }

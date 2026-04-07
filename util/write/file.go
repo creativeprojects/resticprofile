@@ -10,6 +10,8 @@ import (
 	"github.com/creativeprojects/resticprofile/platform"
 )
 
+var ErrAttemptToWriteOnClosedFile = errors.New("cannot write to a closed or unopened file")
+
 type File struct {
 	filename        string
 	perm            os.FileMode
@@ -55,8 +57,8 @@ func (f *File) open() error {
 		return nil
 	}
 	var err error
-	f.handle, err = os.OpenFile(f.filename, f.flag, f.perm)
 	f.fileOpenCount.Add(1)
+	f.handle, err = os.OpenFile(f.filename, f.flag, f.perm)
 	return err
 }
 
@@ -65,8 +67,8 @@ func (f *File) Close() error {
 	defer f.mutex.Unlock()
 
 	if f.handle != nil {
-		err := f.handle.Close()
 		f.fileCloseCount.Add(1)
+		err := f.handle.Close()
 		f.handle = nil
 		return err
 	}
@@ -92,6 +94,11 @@ func (f *File) Write(data []byte) (n int, err error) {
 		}
 		defer f.resetCloseTimer()
 	}
+
+	if f.handle == nil {
+		return 0, ErrAttemptToWriteOnClosedFile
+	}
+
 	n, err = f.handle.Write(data)
 	return
 }
