@@ -139,7 +139,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.SetInterspersed(false)
 
 	// Store usage help for help command
-	width, _ := term.OsStdoutTerminalSize()
+	width, _ := term.Size()
 	flags.usagesHelp = flagset.FlagUsagesWrapped(width)
 
 	if err := flagset.Parse(args); err != nil {

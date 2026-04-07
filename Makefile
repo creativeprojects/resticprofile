@@ -178,9 +178,9 @@ build-windows: prepare_build ## Build the binary for Windows
 
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
-test: prepare_test ## Run unit tests
+test: $(GOBIN)/gotestsum prepare_test ## Run unit tests
 	@echo "[*] $@"
-	$(GOTEST) $(TESTS)
+	$(GOBIN)/gotestsum $(TESTS)
 
 test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"

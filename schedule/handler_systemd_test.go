@@ -262,16 +262,15 @@ func TestPermissionToSystemd(t *testing.T) {
 }
 
 func TestDisplaySystemdSchedulesWithEmpty(t *testing.T) {
-	err := displaySystemdSchedules("profile", "command", []string{""})
+	err := displaySystemdSchedules(term.NewTerminal(), "profile", "command", []string{""})
 	require.Error(t, err)
 }
 
 func TestDisplaySystemdSchedules(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	term.SetOutput(buffer)
-	defer term.SetOutput(os.Stdout)
+	terminal := term.NewTerminal(term.WithStdout(buffer))
 
-	err := displaySystemdSchedules("profile", "command", []string{"daily"})
+	err := displaySystemdSchedules(terminal, "profile", "command", []string{"daily"})
 	require.NoError(t, err)
 
 	output := buffer.String()

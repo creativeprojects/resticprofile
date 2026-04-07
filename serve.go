@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,7 +18,7 @@ import (
 	"github.com/creativeprojects/resticprofile/ssh"
 )
 
-func serveCommand(w io.Writer, cmdCtx commandContext) error {
+func serveCommand(cmdCtx commandContext) error {
 	if len(cmdCtx.flags.resticArgs) < 2 {
 		return fmt.Errorf("missing argument: port")
 	}
@@ -78,7 +77,7 @@ func serveProfiles(port string, config *config.Config, quit chan os.Signal) erro
 	return nil
 }
 
-func sendProfileCommand(w io.Writer, cmdCtx commandContext) error {
+func sendProfileCommand(cmdCtx commandContext) error {
 	if len(cmdCtx.flags.resticArgs) < 2 {
 		return fmt.Errorf("missing argument: remote name")
 	}

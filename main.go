@@ -48,29 +48,40 @@ func main() {
 	// run shutdown hooks just before returning an exit code
 	defer shutdown.RunHooks()
 
+	// prepare a default terminal before loading the terminal configuration
+	terminal := term.Set(term.NewTerminal())
+	terminalOptions := make([]term.TerminalOption, 0, 5)
+
 	args := os.Args[1:]
 	_, flags, flagErr := loadFlags(args)
 	if flagErr != nil && !errors.Is(flagErr, pflag.ErrHelp) {
-		term.Println(flagErr)
-		_ = displayHelpCommand(os.Stdout, commandContext{
+		terminal.Println(flagErr)
+		_ = displayHelpCommand(commandContext{
 			ownCommands: ownCommands,
 			Context: Context{
 				flags: flags,
 				request: Request{
 					arguments: args,
 				},
+				terminal: terminal,
 			},
 		})
 		exitCode = constants.ExitErrorInvalidFlags
 		return
 	}
 
+	// Now that we have loaded the flags, configure terminal color
+	if flags.noAnsi || flags.theme == "none" {
+		terminalOptions = append(terminalOptions, term.WithColors(false)) // disable colors
+		terminal = term.Set(term.NewTerminal(terminalOptions...))
+	}
+
 	if flags.wait {
 		// keep the console running at the end of the program
 		// so we can see what's going on
 		defer func() {
-			term.Println("\n\nPress the Enter Key to continue...")
-			_, _ = fmt.Scanln()
+			terminal.Println("\n\nPress Enter to continue...")
+			_, _ = terminal.Scanln()
 		}()
 	}
 
@@ -83,13 +94,14 @@ func main() {
 
 	// help
 	if flags.help || errors.Is(flagErr, pflag.ErrHelp) {
-		_ = displayHelpCommand(os.Stdout, commandContext{
+		_ = displayHelpCommand(commandContext{
 			ownCommands: ownCommands,
 			Context: Context{
 				flags: flags,
 				request: Request{
 					arguments: args,
 				},
+				terminal: terminal,
 			},
 		})
 		return
@@ -106,34 +118,44 @@ func main() {
 			setupRemoteLogger(flags, client)
 
 			// also redirect the terminal through the client
-			term.SetAllOutput(term.NewRemoteTerm(client))
-		} else {
-			logTarget, commandOutput := "", ""
-			if ctx != nil {
-				logTarget = ctx.logTarget
-				commandOutput = ctx.commandOutput
-				if ctx.request.command == constants.CommandCat ||
-					ctx.request.command == constants.CommandDump {
-					clog.Debugf("redirecting console to stderr for command %q", ctx.request.command)
-					flags.stderr = true
-				}
-				term.PrintToError = flags.stderr
+			remoteTerm := term.NewRemoteTerm(client)
+			terminalOptions = append(terminalOptions, term.WithStdout(remoteTerm), term.WithStderr(remoteTerm))
+
+			return
+		}
+		logTarget, commandOutput := "", ""
+		if ctx != nil {
+			logTarget = ctx.logTarget
+			commandOutput = ctx.commandOutput
+			if ctx.request.command == constants.CommandCat ||
+				ctx.request.command == constants.CommandDump {
+				clog.Debugf("redirecting console to stderr for command %q", ctx.request.command)
+				flags.stderr = true
 			}
-			if logTarget != "" && logTarget != "-" {
-				if closer, err := setupTargetLogger(flags, logTarget, commandOutput); err == nil {
-					logCloser = func() { _ = closer.Close() }
-				} else {
-					// fallback to a console logger
-					setupConsoleLogger(flags)
-					clog.Errorf("cannot open log target: %s", err)
-				}
-			} else {
-				// use the console logger
-				setupConsoleLogger(flags)
+			if flags.stderr {
+				terminalOptions = append(terminalOptions, term.WithStdout(os.Stderr))
 			}
 		}
+		if logTarget != "" && logTarget != "-" {
+			if closer, options, err := setupTargetLogger(flags, terminal, logTarget, commandOutput); err == nil {
+				logCloser = func() { _ = closer.Close() }
+				terminalOptions = append(terminalOptions, options...)
+				return
+			}
+			// fallback to a console logger
+			setupConsoleLogger(flags)
+			clog.Errorf("cannot open log target: %s", err)
+
+			return
+		}
+		// use the console logger
+		setupConsoleLogger(flags)
+
 		return
 	}
+
+	// refresh terminal with new config
+	terminal = term.Set(term.NewTerminal(terminalOptions...))
 
 	// keep this one last if possible (so it will be first at the end)
 	defer showPanicData()
@@ -141,7 +163,7 @@ func main() {
 	banner()
 
 	if flags.remote != "" {
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 		closeFS, remoteParameters, err := setupRemoteConfiguration(ctx, flags.remote)
 		cancel()
 		if err != nil {
@@ -171,14 +193,22 @@ func main() {
 					command:   flags.resticArgs[0],
 					arguments: flags.resticArgs[1:],
 				},
+				logTarget:     flags.log,
+				commandOutput: flags.commandOutput,
 			}
+
 			// try to load the config and setup logging for own command
 			cfg, global, err := loadConfig(flags, true)
 			if err == nil {
 				ctx = ctx.WithConfig(cfg, global)
 			}
 			closeLogger := setupLogging(ctx)
-			defer closeLogger()
+			shutdown.AddHook(closeLogger)
+
+			// refresh terminal with new logging config
+			terminal = term.Set(term.NewTerminal(terminalOptions...))
+			ctx = ctx.WithTerminal(terminal)
+
 			err = ownCommands.Run(ctx)
 			if err != nil {
 				clog.Error(err)
@@ -196,12 +226,16 @@ func main() {
 	// Load the now mandatory configuration and setup logging (before returning an error)
 	ctx, err := loadContext(flags)
 	closeLogger := setupLogging(ctx)
-	defer closeLogger()
+	shutdown.AddHook(closeLogger)
 	if err != nil {
 		clog.Error(err)
 		exitCode = constants.ExitGeneralError
 		return
 	}
+
+	// refresh terminal with new config
+	terminal = term.Set(term.NewTerminal(terminalOptions...))
+	ctx = ctx.WithTerminal(terminal)
 
 	// check if we're running on battery
 	if shouldStopOnBattery(ctx.stopOnBattery) {
@@ -220,14 +254,14 @@ func main() {
 		}
 	}
 	// and stop at the end
-	defer func() {
+	shutdown.AddHook(func() {
 		if caffeinate != nil {
 			err = caffeinate.Stop()
 			if err != nil {
 				clog.Error(err)
 			}
 		}
-	}()
+	})
 
 	// Check memory pressure
 	if ctx.global.MinMemory > 0 {
@@ -285,8 +319,9 @@ func main() {
 	if err != nil {
 		clog.Error(err)
 		if errors.Is(err, ErrProfileNotFound) {
-			displayProfiles(os.Stdout, ctx.config, flags)
-			displayGroups(os.Stdout, ctx.config, flags)
+			commandContext := commandContext{Context: *ctx}
+			displayProfiles(commandContext)
+			displayGroups(commandContext)
 		}
 		exitCode = constants.ExitGeneralError
 		return
@@ -412,14 +447,15 @@ func free() uint64 {
 
 func showPanicData() {
 	if r := recover(); r != nil {
+		terminal := term.Get()
 		message := `
-===============================================================
-uh-oh! resticprofile crashed miserably :-(
-Can you please open an issue on github including these details:
-===============================================================
+=================================================================
+ uh-oh! resticprofile crashed miserably :-(
+ Can you please open an issue on github including these details:
+=================================================================
 `
-		fmt.Fprint(os.Stderr, message)
-		w := tabwriter.NewWriter(os.Stderr, 0, 0, 3, ' ', 0)
+		fmt.Fprint(terminal.Stderr(), message)
+		w := tabwriter.NewWriter(terminal.Stderr(), 0, 0, 3, ' ', 0)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "os", runtime.GOOS)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "arch", runtime.GOARCH)
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "version", version)
@@ -429,6 +465,6 @@ Can you please open an issue on github including these details:
 		_, _ = fmt.Fprintf(w, "\t%s:\t%s\n", "error", r)
 		_, _ = fmt.Fprintf(w, "\t%s:\n%s\n", "stack", getStack(3)) // skip calls to getStack - showPanicData - panic
 		w.Flush()
-		fmt.Fprint(os.Stderr, "===============================================================\n")
+		fmt.Fprintln(terminal.Stderr(), "=================================================================")
 	}
 }

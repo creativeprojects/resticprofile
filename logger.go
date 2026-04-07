@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
@@ -18,6 +17,7 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
+	"github.com/creativeprojects/resticprofile/util/write"
 	"github.com/fatih/color"
 )
 
@@ -50,7 +50,7 @@ func setupRemoteLogger(flags commandLineFlags, client *remote.Client) {
 	clog.SetDefaultLogger(logger)
 }
 
-func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) (io.Closer, error) {
+func setupTargetLogger(flags commandLineFlags, terminal *term.Terminal, logTarget, commandOutput string) (io.Closer, []term.TerminalOption, error) {
 	var (
 		handler LogCloser
 		file    io.Writer
@@ -64,29 +64,36 @@ func setupTargetLogger(flags commandLineFlags, logTarget, commandOutput string) 
 		handler, file, err = getFileHandler(logTarget)
 	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// use the console handler as a backup
 	logger := newFilteredLogger(flags, clog.NewSafeHandler(handler, clog.NewConsoleHandler("", log.LstdFlags)))
 	// default logger added with level filtering
 	clog.SetDefaultLogger(logger)
 
+	var terminalOptions []term.TerminalOption
 	// also redirect all terminal output
 	if file != nil {
-		if all, toLog := parseCommandOutput(commandOutput); all {
-			term.SetOutput(io.MultiWriter(file, term.GetOutput()))
-			term.SetErrorOutput(io.MultiWriter(file, term.GetErrorOutput()))
+		if all, toLog := parseCommandOutput(terminal, commandOutput); all {
+			clog.Debugf("sending a copy of the console logs to %q", logTarget)
+			terminalOptions = []term.TerminalOption{
+				term.WithStdoutCopy(file),
+				term.WithStderrCopy(file),
+			}
 		} else if toLog {
-			term.SetAllOutput(file)
+			terminalOptions = []term.TerminalOption{
+				term.WithStdout(file),
+				term.WithStderr(file),
+			}
 		}
 	}
 	// and return the handler (so we can close it at the end)
-	return handler, nil
+	return handler, terminalOptions, nil
 }
 
-func parseCommandOutput(commandOutput string) (all, log bool) {
+func parseCommandOutput(terminal *term.Terminal, commandOutput string) (all, log bool) {
 	if strings.TrimSpace(commandOutput) == "auto" {
-		if term.OsStdoutIsTerminal() {
+		if terminal.StdoutIsTerminal() {
 			commandOutput = "log,console"
 		} else {
 			commandOutput = "log"
@@ -114,9 +121,8 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 	}
 
 	// create a platform aware log file appender
-	keepOpen, appender := true, appendFunc(nil)
+	var appender write.WriterAppendFunc
 	if platform.IsWindows() {
-		keepOpen = false
 		appender = func(dst []byte, c byte) []byte {
 			switch c {
 			case '\n':
@@ -128,10 +134,11 @@ func getFileHandler(logfile string) (*clog.StandardLogHandler, io.Writer, error)
 		}
 	}
 
-	writer, err := newDeferredFileWriter(logfile, keepOpen, appender)
+	file, err := write.NewFile(logfile, write.WithFilePerm(0644))
 	if err != nil {
 		return nil, nil, err
 	}
+	writer := write.NewAsync(write.NewAppend(file, appender))
 
 	return clog.NewStandardLogHandler(writer, "", log.LstdFlags), writer, nil
 }
@@ -172,141 +179,4 @@ func changeLevelFilter(level clog.LogLevel) {
 	if ok {
 		filter.SetLevel(level)
 	}
-}
-
-// deferredFileWriter accumulates Write requests and writes them at a fixed rate (every 250 ms)
-type deferredFileWriter struct {
-	done, flush chan chan error
-	data        chan []byte
-}
-
-func (d *deferredFileWriter) Close() error {
-	req := make(chan error)
-	d.done <- req
-	return <-req
-}
-
-func (d *deferredFileWriter) Flush() error {
-	req := make(chan error)
-	d.flush <- req
-	return <-req
-}
-
-func (d *deferredFileWriter) Write(data []byte) (n int, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("panic: %v", r)
-		}
-	}()
-	c := make([]byte, len(data))
-	n = copy(c, data)
-	d.data <- c
-	return
-}
-
-type appendFunc func(dst []byte, c byte) []byte
-
-func newDeferredFileWriter(filename string, keepOpen bool, appender appendFunc) (io.WriteCloser, error) {
-	d := &deferredFileWriter{
-		flush: make(chan chan error),
-		done:  make(chan chan error),
-		data:  make(chan []byte, 64),
-	}
-
-	var (
-		buffer    []byte
-		lastError error
-		file      *os.File
-	)
-
-	closeFile := func() {
-		if file != nil {
-			lastError = file.Close()
-			file = nil
-		}
-	}
-
-	flush := func(alsoEmpty bool) {
-		if len(buffer) == 0 && !alsoEmpty {
-			return
-		}
-		if file == nil {
-			file, lastError = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //nolint:gosec
-		}
-		if file != nil {
-			var written int
-			written, lastError = file.Write(buffer)
-			if written == len(buffer) {
-				buffer = buffer[:0]
-			} else {
-				buffer = buffer[written:]
-			}
-		}
-		if keepOpen {
-			_ = file.Sync()
-		} else {
-			closeFile()
-		}
-	}
-
-	// test if we can create the file
-	buffer = make([]byte, 0, 4096)
-	flush(true)
-
-	// data appending
-	addToBuffer := func(data []byte) {
-		buffer = append(buffer, data...) // fast path
-	}
-	if appender != nil {
-		addToBuffer = func(data []byte) {
-			for _, c := range data {
-				buffer = appender(buffer, c)
-			}
-		}
-	}
-
-	addPendingData := func(size int) {
-		for ; size > 0; size-- {
-			select {
-			case data, ok := <-d.data:
-				if ok {
-					addToBuffer(data)
-				} else {
-					return // closed
-				}
-			default:
-				return // no-more-data
-			}
-		}
-	}
-
-	// data transport
-	go func() {
-		ticker := time.NewTicker(250 * time.Millisecond)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case data := <-d.data:
-				addToBuffer(data)
-			case <-ticker.C:
-				flush(false)
-			case req := <-d.flush:
-				addPendingData(1024)
-				flush(false)
-				req <- lastError
-			case req := <-d.done:
-				close(d.done)
-				close(d.flush)
-				close(d.data)
-				addPendingData(1024)
-				flush(false)
-				closeFile()
-				req <- lastError
-				return
-			}
-		}
-	}()
-
-	return d, lastError
 }

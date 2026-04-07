@@ -53,8 +53,8 @@ func TestFileHandler(t *testing.T) {
 	require.NoError(t, err)
 	defer handler.Close()
 
-	require.Implements(t, (*term.Flusher)(nil), writer)
-	flusher := writer.(term.Flusher)
+	require.Implements(t, (*util.Flusher)(nil), writer)
+	flusher := writer.(util.Flusher)
 
 	log := func(line string) {
 		assert.NoError(t, handler.LogEntry(clog.LogEntry{Level: clog.LevelInfo, Format: line}))
@@ -99,12 +99,13 @@ func TestFileHandler(t *testing.T) {
 }
 
 func TestParseCommandOutput(t *testing.T) {
+	terminal := term.NewTerminal()
 	tests := []struct {
 		co       string
 		all, log bool
 	}{
 		{co: "", all: false, log: false},
-		{co: "auto", all: term.OsStdoutIsTerminal(), log: true},
+		{co: "auto", all: terminal.StdoutIsTerminal(), log: true},
 		{co: "log", all: false, log: true},
 		{co: "console", all: false, log: false},
 		{co: "all", all: true, log: false},
@@ -114,7 +115,7 @@ func TestParseCommandOutput(t *testing.T) {
 		{co: "log,a", all: false, log: true},
 		{co: "console,a", all: false, log: false},
 
-		{co: " auto ", all: term.OsStdoutIsTerminal(), log: true},
+		{co: " auto ", all: terminal.StdoutIsTerminal(), log: true},
 		{co: " all ", all: true, log: false},
 		{co: " log ", all: false, log: true},
 		{co: " console ", all: false, log: false},
@@ -124,7 +125,7 @@ func TestParseCommandOutput(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			a, l := parseCommandOutput(test.co)
+			a, l := parseCommandOutput(terminal, test.co)
 			assert.Equal(t, test.all, a, "all")
 			assert.Equal(t, test.log, l, "log")
 		})

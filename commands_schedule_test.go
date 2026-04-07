@@ -108,6 +108,10 @@ func TestStatusScheduleIntegrationUsingCrontab(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, global)
 
+			output := &bytes.Buffer{}
+			terminal := term.Set(term.NewTerminal(term.WithStdout(output)))
+			defer term.Set(nil)
+
 			ctx := commandContext{
 				Context: Context{
 					config: cfg,
@@ -115,13 +119,11 @@ func TestStatusScheduleIntegrationUsingCrontab(t *testing.T) {
 					request: Request{
 						profile: tc.profileName,
 					},
+					terminal: terminal,
 				},
 			}
-			output := &bytes.Buffer{}
-			term.SetOutput(output)
-			defer term.SetOutput(os.Stdout)
 
-			err = statusSchedule(output, ctx)
+			err = statusSchedule(ctx)
 			if tc.err != nil {
 				assert.ErrorIs(t, err, tc.err)
 				return
@@ -157,6 +159,10 @@ func TestRemoveScheduleIntegrationUsingCrontab(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, global)
 
+	output := &bytes.Buffer{}
+	terminal := term.Set(term.NewTerminal(term.WithStdout(output)))
+	defer term.Set(nil)
+
 	ctx := commandContext{
 		Context: Context{
 			config: cfg,
@@ -164,14 +170,12 @@ func TestRemoveScheduleIntegrationUsingCrontab(t *testing.T) {
 			request: Request{
 				profile: "profile",
 			},
+			terminal: terminal,
 		},
 	}
-	output := &bytes.Buffer{}
-	term.SetOutput(output)
-	defer term.SetOutput(os.Stdout)
 
 	// this should remove the 2 lines that resemble a resticprofile schedule
-	err = removeSchedule(output, ctx)
+	err = removeSchedule(ctx)
 	require.NoError(t, err)
 
 	result, err := os.ReadFile(crontab)
@@ -179,7 +183,7 @@ func TestRemoveScheduleIntegrationUsingCrontab(t *testing.T) {
 	fmt.Println(string(result))
 
 	// but one line in error should be left in the crontab
-	err = statusSchedule(output, ctx)
+	err = statusSchedule(ctx)
 	require.ErrorIs(t, err, crond.ErrEntryNoMatch)
 }
 
@@ -202,6 +206,10 @@ func TestCreateScheduleIntegrationUsingCrontab(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, global)
 
+	output := &bytes.Buffer{}
+	terminal := term.Set(term.NewTerminal(term.WithStdout(output)))
+	defer term.Set(nil)
+
 	ctx := commandContext{
 		Context: Context{
 			config: cfg,
@@ -209,14 +217,12 @@ func TestCreateScheduleIntegrationUsingCrontab(t *testing.T) {
 			request: Request{
 				profile: "profile-schedule-struct",
 			},
+			terminal: terminal,
 		},
 	}
-	output := &bytes.Buffer{}
-	term.SetOutput(output)
-	defer term.SetOutput(os.Stdout)
 
 	// create one schedule
-	err = createSchedule(output, ctx)
+	err = createSchedule(ctx)
 	require.NoError(t, err)
 
 	result, err := os.ReadFile(crontab)
@@ -225,7 +231,7 @@ func TestCreateScheduleIntegrationUsingCrontab(t *testing.T) {
 	fmt.Println(string(result))
 
 	output.Reset()
-	err = statusSchedule(output, ctx)
+	err = statusSchedule(ctx)
 	require.NoError(t, err)
 
 	// verify the new schedule was added
@@ -258,6 +264,10 @@ func TestCreateScheduleOverwriteExistingIntegrationUsingCrontab(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, global)
 
+	output := &bytes.Buffer{}
+	terminal := term.Set(term.NewTerminal(term.WithStdout(output)))
+	defer term.Set(nil)
+
 	ctx := commandContext{
 		Context: Context{
 			config: cfg,
@@ -265,14 +275,12 @@ func TestCreateScheduleOverwriteExistingIntegrationUsingCrontab(t *testing.T) {
 			request: Request{
 				arguments: []string{"--all", "--reload", "--no-start"},
 			},
+			terminal: terminal,
 		},
 	}
-	output := &bytes.Buffer{}
-	term.SetOutput(output)
-	defer term.SetOutput(os.Stdout)
 
 	// create (or update) two schedules
-	err = createSchedule(output, ctx)
+	err = createSchedule(ctx)
 	require.NoError(t, err)
 
 	result, err := os.ReadFile(crontab)
@@ -282,7 +290,7 @@ func TestCreateScheduleOverwriteExistingIntegrationUsingCrontab(t *testing.T) {
 	fmt.Println(string(result))
 
 	output.Reset()
-	err = statusSchedule(output, ctx)
+	err = statusSchedule(ctx)
 	require.NoError(t, err)
 
 	// verify the schedule was replaced
