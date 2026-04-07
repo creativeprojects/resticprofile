@@ -270,7 +270,7 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
 	}
-	t.Parallel()
+	// don't run in parallel
 	lockfile := getTempfile(t)
 
 	var err error
@@ -302,7 +302,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	if platform.IsWindows() {
 		t.Skip("cannot send a signal to a child process in Windows")
 	}
-	t.Parallel()
+	// don't run in parallel
 	lockfile := getTempfile(t)
 
 	var err error
