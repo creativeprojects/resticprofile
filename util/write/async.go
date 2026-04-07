@@ -12,21 +12,20 @@ import (
 const (
 	asyncWriterDataChanSize  = 64
 	asyncWriterFlushChanSize = 16
-	asyncWriterBlockSize     = 4 * 1024
-	asyncWriterMaxBlockSize  = asyncWriterDataChanSize * asyncWriterBlockSize
 )
 
 var ErrAlreadyClosed = errors.New("writer already closed")
 
 type Async struct {
-	handler     io.Writer
-	interval    time.Duration
-	data        chan []byte
-	flusher     chan chan error
-	done        chan struct{}
-	systemGroup sync.WaitGroup
-	closeOnce   sync.Once
-	closed      atomic.Bool
+	handler       io.Writer
+	interval      time.Duration
+	data          chan []byte
+	flusher       chan chan error
+	done          chan struct{}
+	systemGroup   sync.WaitGroup
+	closeOnce     sync.Once
+	closed        atomic.Bool
+	flusherClosed atomic.Bool
 }
 
 // NewAsync creates a writer that accumulates Write requests and writes them at a fixed rate (every 250 ms by default)
@@ -36,7 +35,7 @@ func NewAsync(handler io.Writer, options ...AsyncOption) *Async {
 		interval: 250 * time.Millisecond,
 		data:     make(chan []byte, asyncWriterDataChanSize),
 		flusher:  make(chan chan error, asyncWriterFlushChanSize),
-		done:     make(chan struct{}),
+		done:     make(chan struct{}), // channel closed after the first call to Close()
 	}
 	for _, option := range options {
 		option(w)
@@ -55,7 +54,7 @@ func (w *Async) intervalFlush() {
 	for {
 		select {
 		case <-ticker.C:
-			go w.Flush()
+			w.flusher <- nil
 		case <-w.done:
 			ticker.Stop()
 			return
@@ -66,7 +65,9 @@ func (w *Async) intervalFlush() {
 func (w *Async) recvFlush() {
 	for done := range w.flusher {
 		err := w.flush()
-		done <- err
+		if done != nil { // some calls don't need to wait for the answer
+			done <- err
+		}
 	}
 }
 
@@ -77,6 +78,7 @@ func (w *Async) Close() error {
 		w.closed.Store(true)
 		close(w.done)
 		err = w.Flush()
+		w.flusherClosed.Store(true)
 		close(w.flusher)
 		w.systemGroup.Wait()
 	})
@@ -84,6 +86,9 @@ func (w *Async) Close() error {
 }
 
 func (w *Async) Flush() error {
+	if w.flusherClosed.Load() {
+		return fmt.Errorf("cannot write: %w", ErrAlreadyClosed)
+	}
 	done := make(chan error)
 	w.flusher <- done
 	// wait until the flusher is done

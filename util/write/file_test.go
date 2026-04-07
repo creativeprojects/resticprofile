@@ -97,3 +97,32 @@ func TestFileNoTimeToCloseAfterWrite(t *testing.T) {
 	assert.Equal(t, int32(2), opened) // 1 during instantiation + 1 for both write
 	assert.Equal(t, int32(2), closed) // 1 during instantiation + 1 for both write
 }
+
+func TestFileCanFlush(t *testing.T) {
+	dir := t.TempDir()
+	filename := filepath.Join(dir, "testfile")
+
+	w, err := NewFile(filename)
+	require.NoError(t, err)
+	assert.NoError(t, w.Flush())
+
+	n, err := w.Write([]byte("hello"))
+	assert.NoError(t, err)
+	assert.Equal(t, 5, n)
+	assert.NoError(t, w.Flush())
+
+	n, err = w.Write([]byte(" world"))
+	assert.NoError(t, err)
+	assert.Equal(t, 6, n)
+	assert.NoError(t, w.Flush())
+
+	content, err := os.ReadFile(filename)
+	require.NoError(t, err)
+	assert.Equal(t, "hello world", string(content))
+
+	assert.NoError(t, w.Flush())
+	err = w.Close()
+	assert.NoError(t, err)
+
+	assert.NoError(t, w.Flush())
+}
