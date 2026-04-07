@@ -1,12 +1,21 @@
 package write
 
-import "os"
+import (
+	"os"
+	"time"
+)
 
 type FileOption func(f *File)
 
 // WithFileKeepOpen toggles whether the file is kept open between writes. Defaults to true for all OS except Windows.
 func WithFileKeepOpen(keepOpen bool) FileOption {
 	return func(f *File) { f.keepOpen = keepOpen }
+}
+
+// WithFileKeepOpenTimeout will automatically close the file after there was no more write during `timeout`.
+// It defaults to 10ms.
+func WithFileKeepOpenTimeout(timeout time.Duration) FileOption {
+	return func(f *File) { f.keepOpenTimeout = timeout }
 }
 
 // WithFilePerm sets file perms to apply when creating the file
