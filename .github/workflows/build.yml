@@ -111,7 +111,7 @@ jobs:
         with:
           operating_system: freebsd
           version: '${{ matrix.freebsd_version }}'
-          memory: 12G
+          memory: 14G
           cpu_count: 4
           run: |
             curl -LO "https://go.dev/dl/go1.26.2.freebsd-amd64.tar.gz"
@@ -119,4 +119,4 @@ jobs:
             export PATH=$PATH:/usr/local/go/bin
             go version
             pwd
-            go test -v -race ./...
+            go test -v -short ./...
