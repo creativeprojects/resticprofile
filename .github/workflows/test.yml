@@ -1,0 +1,91 @@
+name: Run tests on BSDs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-freebsd:
+    name: Run tests on FreeBSD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        freebsd_version: ['14.3', '15.0']
+    env:
+      GO_VERSION: '1.26.2'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Test
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: freebsd
+          version: '${{ matrix.freebsd_version }}'
+          memory: 15G
+          cpu_count: 4
+          environment_variables: GO_VERSION
+          run: |
+            curl -LO "https://go.dev/dl/go${GO_VERSION}.freebsd-amd64.tar.gz"
+            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${GO_VERSION}.freebsd-amd64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin
+            go version
+            pwd
+            go build ./...
+            go test -v -short ./...
+
+  test-netbsd:
+    name: Run tests on NetBSD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        netbsd_version: ['10.1']
+    env:
+      GO_VERSION: '1.26.2'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Test
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: netbsd
+          version: '${{ matrix.netbsd_version }}'
+          memory: 15G
+          cpu_count: 4
+          environment_variables: GO_VERSION
+          run: |
+            curl -LO "https://go.dev/dl/go${GO_VERSION}.netbsd-amd64.tar.gz"
+            sudo mkdir -p /usr/local
+            sudo rm -rf /usr/local/go
+            sudo tar -C /usr/local -xzf go${GO_VERSION}.netbsd-amd64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin
+            go version
+            pwd
+            go build ./...
+            go test -v -short ./...
+
+  test-openbsd:
+    name: Run tests on OpenBSD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        openbsd_version: ['7.8']
+    env:
+      GO_VERSION: '1.26.2'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Test
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: openbsd
+          version: '${{ matrix.openbsd_version }}'
+          memory: 15G
+          cpu_count: 4
+          environment_variables: GO_VERSION
+          run: |
+            curl -LO "https://go.dev/dl/go${GO_VERSION}.openbsd-amd64.tar.gz"
+            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${GO_VERSION}.openbsd-amd64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin
+            go version
+            pwd
+            go build ./...
+            go test -v -short ./...

@@ -72,7 +72,6 @@ jobs:
   test-ssh:
     name: Test SSH client
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v6
