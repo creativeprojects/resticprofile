@@ -1,4 +1,4 @@
-//go:build !darwin && !windows
+//go:build !darwin && !windows && !openbsd && !netbsd
 
 package schedule
 
@@ -15,6 +15,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestHandlerSystemd(t *testing.T) {
+	handler := NewHandler(SchedulerSystemd{})
+	assert.IsType(t, &HandlerSystemd{}, handler)
+}
 
 func TestReadingSystemdScheduled(t *testing.T) {
 	event := calendar.NewEvent()
