@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"strings"
 )
 
 func main() {
@@ -18,48 +16,48 @@ func main() {
 	}
 }
 
-func prepareFreeBSD(ctx context.Context, version string) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("os.UserHomeDir: %w", err)
-	}
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("os.Getwd: %w", err)
-	}
-	err = unXZ(ctx,
-		filepath.Join(home, "Downloads", version+".xz"),
-		filepath.Join(currentDir, version),
-	)
-	if err != nil {
-		return fmt.Errorf("unXZ: %w", err)
-	}
-	return nil
-}
+// func prepareFreeBSD(ctx context.Context, version string) error {
+// 	home, err := os.UserHomeDir()
+// 	if err != nil {
+// 		return fmt.Errorf("os.UserHomeDir: %w", err)
+// 	}
+// 	currentDir, err := os.Getwd()
+// 	if err != nil {
+// 		return fmt.Errorf("os.Getwd: %w", err)
+// 	}
+// 	err = unXZ(ctx,
+// 		filepath.Join(home, "Downloads", version+".xz"),
+// 		filepath.Join(currentDir, version),
+// 	)
+// 	if err != nil {
+// 		return fmt.Errorf("unXZ: %w", err)
+// 	}
+// 	return nil
+// }
 
-func unXZ(ctx context.Context, source, target string) error {
-	cmd := exec.CommandContext(ctx, "xz",
-		"--verbose",
-		"--keep",
-		"--decompress",
-		source,
-	)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("xz: %w", err)
-	}
+// func unXZ(ctx context.Context, source, target string) error {
+// 	cmd := exec.CommandContext(ctx, "xz",
+// 		"--verbose",
+// 		"--keep",
+// 		"--decompress",
+// 		source,
+// 	)
+// 	cmd.Stdout = os.Stdout
+// 	cmd.Stderr = os.Stderr
+// 	err := cmd.Run()
+// 	if err != nil {
+// 		return fmt.Errorf("xz: %w", err)
+// 	}
 
-	cmd = exec.CommandContext(ctx, "mv", "-v", strings.TrimSuffix(source, ".xz"), target)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("mv: %w", err)
-	}
-	return nil
-}
+// 	cmd = exec.CommandContext(ctx, "mv", "-v", strings.TrimSuffix(source, ".xz"), target)
+// 	cmd.Stdout = os.Stdout
+// 	cmd.Stderr = os.Stderr
+// 	err = cmd.Run()
+// 	if err != nil {
+// 		return fmt.Errorf("mv: %w", err)
+// 	}
+// 	return nil
+// }
 
 func runFreeBSD(ctx context.Context, diskImage string) error {
 	cmd := exec.CommandContext(ctx, "qemu-system-aarch64",
