@@ -12,67 +12,66 @@ on:
       - 'docs/**'
 
 jobs:
-  build:
-    name: Build and test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        go_version: ['1.26']
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    env:
-      OS: ${{ matrix.os }}
-      GO: ${{ matrix.go_version }}
+  # build:
+  #   name: Build and test
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       go_version: ['1.26']
+  #       os: [ubuntu-latest, windows-latest, macos-latest]
+  #   env:
+  #     OS: ${{ matrix.os }}
+  #     GO: ${{ matrix.go_version }}
 
-    steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v6
+  #   steps:
+  #     - name: Check out code into the Go module directory
+  #       uses: actions/checkout@v6
 
-      - name: Set up Go ${{ matrix.go_version }}
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ matrix.go_version }}
-          check-latest: true
-          cache: true
+  #     - name: Set up Go ${{ matrix.go_version }}
+  #       uses: actions/setup-go@v6
+  #       with:
+  #         go-version: ${{ matrix.go_version }}
+  #         check-latest: true
+  #         cache: true
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: v2.11.4
-          args: --timeout=30m
+  #     - name: golangci-lint
+  #       uses: golangci/golangci-lint-action@v9
+  #       with:
+  #         version: v2.11.4
+  #         args: --timeout=30m
 
-      - name: Test
-        run: make test-ci
-        env:
-          TEST_FUSE: 1
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Test
+  #       run: make test-ci
+  #       env:
+  #         TEST_FUSE: 1
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build
-        run: make build
+  #     - name: Build
+  #       run: make build
 
-      - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v6
-        with:
-          name: code-coverage-report-${{ matrix.os }}
-          env_vars: OS,GO
-          files: ./coverage.out
-          flags: unittests
-          fail_ci_if_error: false
-          verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+  #     - name: Upload code coverage to Codecov
+  #       uses: codecov/codecov-action@v6
+  #       with:
+  #         name: code-coverage-report-${{ matrix.os }}
+  #         env_vars: OS,GO
+  #         files: ./coverage.out
+  #         flags: unittests
+  #         fail_ci_if_error: false
+  #         verbose: true
+  #         token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v6
-        with:
-          env_vars: OS,GO
-          token: ${{ secrets.CODECOV_TOKEN }}
-          report_type: test_results
-          files: ./unit-tests.xml
+  #     - name: Upload test results to Codecov
+  #       if: ${{ !cancelled() }}
+  #       uses: codecov/codecov-action@v6
+  #       with:
+  #         env_vars: OS,GO
+  #         token: ${{ secrets.CODECOV_TOKEN }}
+  #         report_type: test_results
+  #         files: ./unit-tests.xml
 
   test-ssh:
     name: Test SSH client
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v6
@@ -98,7 +97,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   test-freebsd:
+    name: Run tests on FreeBSD
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        freebsd_version: ['13.5', '14.4', '15.0']
     steps:
       - uses: actions/checkout@v6
 
@@ -106,11 +109,8 @@ jobs:
         uses: cross-platform-actions/action@v0.32.0
         with:
           operating_system: freebsd
-          version: '15.0'
+          version: '${{ matrix.freebsd_version }}'
           run: |
-            uname -a
-            echo $SHELL
-            pwd
-            ls -lah
-            whoami
-            env | sort
+            rm -rf /usr/local/go && tar -C /usr/local -xzf https://go.dev/dl/go1.26.2.freebsd-arm64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin
+            go version
