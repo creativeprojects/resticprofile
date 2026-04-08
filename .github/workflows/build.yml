@@ -111,6 +111,7 @@ jobs:
           operating_system: freebsd
           version: '${{ matrix.freebsd_version }}'
           run: |
-            rm -rf /usr/local/go && tar -C /usr/local -xzf https://go.dev/dl/go1.26.2.freebsd-arm64.tar.gz
-            export PATH=$PATH:/usr/local/go/bin
+            curl -LO "https://go.dev/dl/go1.26.2.freebsd-amd64.tar.gz"
+            rm -rf /home/runner/go && tar -C /home/runner -xzf go1.26.2.freebsd-amd64.tar.gz
+            export PATH=$PATH:/home/runner/go/bin
             go version
