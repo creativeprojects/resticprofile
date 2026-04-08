@@ -35,11 +35,7 @@ func main() {
 				sb := new(strings.Builder)
 				if _, err := io.Copy(sb, os.Stdin); err == nil {
 					if stdin := strings.TrimSpace(sb.String()); stdin != crontab {
-						err = fmt.Errorf("%q != %q", crontab, stdin)
-						if err != nil {
-							fmt.Fprintln(os.Stderr, err)
-							// os.Exit(1)
-						}
+						fmt.Fprintf(os.Stderr, "%q != %q\n", crontab, stdin)
 					}
 				}
 			} else {
