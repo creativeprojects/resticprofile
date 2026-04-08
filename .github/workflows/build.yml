@@ -113,12 +113,12 @@ jobs:
         with:
           operating_system: freebsd
           version: '${{ matrix.freebsd_version }}'
-          memory: 12G
+          memory: 14G
           cpu_count: 4
           environment_variables: GO_VERSION
           run: |
-            curl -LO "https://go.dev/dl/go1.26.2.freebsd-amd64.tar.gz"
-            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.26.2.freebsd-amd64.tar.gz
+            curl -LO "https://go.dev/dl/go${GO_VERSION}.freebsd-amd64.tar.gz"
+            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${GO_VERSION}.freebsd-amd64.tar.gz
             export PATH=$PATH:/usr/local/go/bin
             go version
             pwd
@@ -130,7 +130,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        netbsd_version: ['9.4', '10.1']
+        netbsd_version: ['10.1']
     env:
       GO_VERSION: '1.26.2'
     steps:
@@ -141,12 +141,14 @@ jobs:
         with:
           operating_system: netbsd
           version: '${{ matrix.netbsd_version }}'
-          memory: 12G
+          memory: 14G
           cpu_count: 4
           environment_variables: GO_VERSION
           run: |
             curl -LO "https://go.dev/dl/go1.26.2.netbsd-amd64.tar.gz"
-            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.26.2.netbsd-amd64.tar.gz
+            sudo mkdir -p /usr/local
+            sudo rm -rf /usr/local/go
+            sudo tar -C /usr/local -xzf go1.26.2.netbsd-amd64.tar.gz
             export PATH=$PATH:/usr/local/go/bin
             go version
             pwd
@@ -169,7 +171,7 @@ jobs:
         with:
           operating_system: openbsd
           version: '${{ matrix.openbsd_version }}'
-          memory: 12G
+          memory: 14G
           cpu_count: 4
           environment_variables: GO_VERSION
           run: |
