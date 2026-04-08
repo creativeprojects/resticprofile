@@ -96,3 +96,21 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-freebsd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Test
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: freebsd
+          version: '15.0'
+          run: |
+            uname -a
+            echo $SHELL
+            pwd
+            ls -lah
+            whoami
+            env | sort
