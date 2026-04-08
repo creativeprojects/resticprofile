@@ -7,7 +7,6 @@ jobs:
   test-freebsd:
     name: Run tests on FreeBSD
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         freebsd_version: ['14.3', '15.0']
@@ -36,7 +35,6 @@ jobs:
   test-netbsd:
     name: Run tests on NetBSD
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         netbsd_version: ['10.1']
@@ -67,7 +65,6 @@ jobs:
   test-openbsd:
     name: Run tests on OpenBSD
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         openbsd_version: ['7.8']

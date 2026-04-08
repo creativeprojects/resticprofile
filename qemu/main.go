@@ -79,7 +79,7 @@ func runFreeBSD(ctx context.Context, diskImage string) error {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("xz: %w", err)
+		return fmt.Errorf("qemu-system-aarch64: %w", err)
 	}
 	return nil
 }

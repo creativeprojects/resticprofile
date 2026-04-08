@@ -1,4 +1,4 @@
-//go:build !darwin && !windows
+//go:build openbsd || netbsd || freebsd
 
 package schedule
 
@@ -10,5 +10,5 @@ import (
 
 func TestHandlerDefaultOS(t *testing.T) {
 	handler := NewHandler(SchedulerDefaultOS{})
-	assert.IsType(t, &HandlerSystemd{}, handler)
+	assert.IsType(t, &HandlerCrond{}, handler)
 }

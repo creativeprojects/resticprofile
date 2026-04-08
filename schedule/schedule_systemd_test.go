@@ -1,4 +1,4 @@
-//go:build !windows && !darwin && !openbsd && !netbsd
+//go:build !windows && !darwin && !openbsd && !netbsd && !freebsd
 
 package schedule
 
