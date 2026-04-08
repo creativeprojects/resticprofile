@@ -111,6 +111,8 @@ jobs:
         with:
           operating_system: freebsd
           version: '${{ matrix.freebsd_version }}'
+          memory: 12G
+          cpu_count: 4
           run: |
             curl -LO "https://go.dev/dl/go1.26.2.freebsd-amd64.tar.gz"
             sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.26.2.freebsd-amd64.tar.gz
