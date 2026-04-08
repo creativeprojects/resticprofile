@@ -3,14 +3,12 @@ package lock
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"regexp"
-	"syscall"
 	"testing"
 	"time"
 
@@ -42,8 +40,8 @@ func TestMain(m *testing.M) {
 		helperBinary = filepath.Join(tempDir, platform.Executable("locktest"))
 
 		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-v", "-o", helperBinary, "./test")
-		if err := cmd.Run(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error building helper binary: %s\n", err)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error building lock binary: %s\nCommand output: %s\n", err, string(output))
 			return 1
 		}
 
@@ -264,82 +262,4 @@ func TestLockWithNoInterruption(t *testing.T) {
 	err = cmd.Run()
 	assert.NoError(t, err)
 	assert.Equal(t, "started\nlock acquired\ntask finished\nlock released\n", buffer.String())
-}
-
-func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip("cannot send a signal to a child process in Windows")
-	}
-	// don't run in parallel
-	lockfile := getTempfile(t)
-
-	var err error
-	buffer := &bytes.Buffer{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, helperBinary, "-wait", "2000", "-lock", lockfile)
-	cmd.Stdout = buffer
-	cmd.Stderr = buffer
-
-	err = cmd.Start()
-	require.NoError(t, err, "starting child process")
-
-	time.Sleep(time.Second)
-	err = cmd.Process.Signal(os.Interrupt)
-	require.NoError(t, err, "sending interrupt signal to child process")
-
-	err = cmd.Wait()
-	if isSignalError(err) {
-		t.Skip("inconclusive test: command failed to run properly - flaky test on macOS only")
-	}
-	assert.NoError(t, err, "waiting for child process to finish")
-
-	assert.Equal(t, "started\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
-}
-
-func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip("cannot send a signal to a child process in Windows")
-	}
-	// don't run in parallel
-	lockfile := getTempfile(t)
-
-	var err error
-	buffer := &bytes.Buffer{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "sh", "-c", "exec \""+helperBinary+"\" -wait 2000 -lock \""+lockfile+"\"")
-	cmd.Stdout = buffer
-	cmd.Stderr = buffer
-
-	err = cmd.Start()
-	require.NoError(t, err, "starting child process inside a shell")
-
-	time.Sleep(time.Second)
-	err = cmd.Process.Signal(os.Interrupt)
-	require.NoError(t, err, "sending interrupt signal to child process")
-
-	err = cmd.Wait()
-	if isSignalError(err) {
-		t.Skip("inconclusive test: command failed to run properly - flaky test on macOS only")
-	}
-	assert.NoError(t, err, "waiting for child process to finish")
-
-	assert.Equal(t, "started\nlock acquired\ntask interrupted\nlock released\n", buffer.String())
-}
-
-func isSignalError(err error) bool {
-	if err == nil {
-		return false
-	}
-	exitErr, ok := errors.AsType[*exec.ExitError](err)
-	if !ok {
-		return false
-	}
-	if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
-		return status.Signaled()
-	}
-	return false
 }

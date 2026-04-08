@@ -20,5 +20,5 @@
         "master"
     ],
     "makefile.configureOnOpen": false,
-    "go.buildTags": "ssh"
+    "go.buildTags": "ssh fuse"
 }

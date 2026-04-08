@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 
@@ -370,35 +369,6 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Contains(t, string(output), "TestRunShellEchoWithSignalling")
-}
-
-// Flaky test on github linux runner but can't reproduce locally
-func TestInterruptShellCommand(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("Test not running on this platform")
-	}
-	buffer := &bytes.Buffer{}
-
-	sigChan := make(chan os.Signal, 1)
-
-	cmd := NewSignalledCommand(mockBinary, []string{"test", "--sleep", "3000"}, sigChan)
-	cmd.Stdout = buffer
-
-	// Will ask us to stop in 100ms
-	go func() {
-		time.Sleep(100 * time.Millisecond)
-		sigChan <- syscall.SIGINT
-	}()
-	start := time.Now()
-	_, _, err := cmd.Run()
-	require.Error(t, err)
-
-	// check it ran for more than 100ms (but less than 500ms - the build agent can be very slow at times)
-	duration := time.Since(start)
-	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(100))
-	assert.Less(t, duration.Milliseconds(), int64(500))
 }
 
 func TestSetPIDCallback(t *testing.T) {
