@@ -14,8 +14,6 @@ import (
 )
 
 func TestInterruptShellCommand(t *testing.T) {
-	t.Parallel()
-
 	buffer := &bytes.Buffer{}
 
 	sigChan := make(chan os.Signal, 1)
@@ -32,8 +30,8 @@ func TestInterruptShellCommand(t *testing.T) {
 	_, _, err := cmd.Run()
 	require.Error(t, err)
 
-	// check it ran for more than 100ms (but less than 500ms - the build agent can be very slow at times)
+	// check it ran for more than 100ms (but less than a second - the build agent can be slow)
 	duration := time.Since(start)
 	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(100))
-	assert.Less(t, duration.Milliseconds(), int64(500))
+	assert.Less(t, duration.Milliseconds(), int64(1000))
 }

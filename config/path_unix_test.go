@@ -14,9 +14,6 @@ import (
 )
 
 func TestFixUnixPaths(t *testing.T) {
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-
 	usr, err := user.Current()
 	require.NoError(t, err)
 
@@ -27,10 +24,10 @@ func TestFixUnixPaths(t *testing.T) {
 		{"", ""},
 		{"dir", "/prefix/dir"},
 		{"/dir", "/dir"},
-		{"~/dir", filepath.Join(home, "dir")},
-		{"~" + usr.Username + "/dir", filepath.Join(home, "dir")},
-		{"~" + usr.Username, home},
-		{"~", home},
+		{"~/dir", filepath.Join(usr.HomeDir, "dir")},
+		{"~" + usr.Username + "/dir", filepath.Join(usr.HomeDir, "dir")},
+		{"~" + usr.Username, usr.HomeDir},
+		{"~", usr.HomeDir},
 		{"~file", "/prefix/~file"},
 		{"$TEMP_TEST_DIR/dir", "/home/dir"},
 		{"some file.txt", "/prefix/some file.txt"},
