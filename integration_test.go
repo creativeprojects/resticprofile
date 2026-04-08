@@ -145,7 +145,7 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 						if fixture.expectedOnWindows != "" {
 							expected = fixture.expectedOnWindows
 						} else {
-							t.SkipNow()
+							t.Skipf("integration test using config=%q, profile=%q, command=%q not running on Windows", configFile, fixture.profileName, fixture.commandName)
 						}
 					}
 					assert.Equal(t, expected, strings.TrimSpace(stdout))

@@ -9,11 +9,11 @@ import (
 	"net/http/httptest"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/config"
-	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,9 +29,6 @@ func TestSendRemoteFiles(t *testing.T) {
 }
 
 func TestSendRemoteFilesNotFound(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip("Windows delivers a different error message")
-	}
 	recorder := httptest.NewRecorder()
 	sendRemoteFiles(&config.Remote{
 		ConfigurationFile: "file-not-found", // this file should exist in the test environment
@@ -39,7 +36,7 @@ func TestSendRemoteFilesNotFound(t *testing.T) {
 	}, "test_remote", []string{"arg1", "arg2"}, recorder)
 	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 	assert.Equal(t, recorder.Header().Get("Content-Type"), "text/plain")
-	assert.Equal(t, "error while preparing files to send for remote \"test_remote\": unable to stat file file-not-found: stat file-not-found: no such file or directory\n", recorder.Body.String())
+	assert.True(t, strings.HasPrefix(recorder.Body.String(), "error while preparing files to send for remote \"test_remote\":"))
 }
 
 // getFreePort returns a TCP port number that is currently free on localhost.

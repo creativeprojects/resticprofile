@@ -1,5 +1,3 @@
-//go:build !ajv_test
-
 package jsonschema
 
 import (

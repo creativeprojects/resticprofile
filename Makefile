@@ -184,7 +184,7 @@ test: $(GOBIN)/gotestsum prepare_test ## Run unit tests
 
 test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -coverprofile='$(COVERAGE_FILE)' ./...
+	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"

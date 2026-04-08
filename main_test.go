@@ -35,20 +35,16 @@ func TestMain(m *testing.M) {
 		fmt.Printf("using temporary dir: %q\n", tempDir)
 		defer os.RemoveAll(tempDir)
 
-		mockBinary = filepath.Join(tempDir, "shellmock")
-		if platform.IsWindows() {
-			mockBinary += ".exe"
-		}
+		mockBinary = filepath.Join(tempDir, platform.Executable("shellmock"))
+
 		cmdMock := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", mockBinary, "./shell/mock")
 		if output, err := cmdMock.CombinedOutput(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building shell/mock binary: %s\nCommand output: %s\n", err, string(output))
 			return 1
 		}
 
-		echoBinary = filepath.Join(tempDir, "shellecho")
-		if platform.IsWindows() {
-			echoBinary += ".exe"
-		}
+		echoBinary = filepath.Join(tempDir, platform.Executable("shellecho"))
+
 		cmdEcho := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
 		if output, err := cmdEcho.CombinedOutput(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))

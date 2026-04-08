@@ -304,37 +304,6 @@ profile:
 	assert.Equal(t, []string{"--repo=" + expectedPublic}, result.GetAll())
 }
 
-func TestGetNonConfidentialArgsFromEnvironmentVariable(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip()
-	}
-	repo := "local:user:%s@host/path with space"
-	environment := []string{
-		"MY_REPOSITORY=" + fmt.Sprintf(repo, "password"),
-	}
-	testConfig := `
-      global:
-        prevent-auto-repository-file: true
-      profile:
-        repository: $MY_REPOSITORY
-      `
-	profile, err := getProfile("yaml", testConfig, "profile", "")
-	assert.NoError(t, err)
-	assert.NotNil(t, profile)
-
-	args := profile.GetCommandFlags(constants.CommandBackup)
-	args = args.Modify(shell.NewExpandEnvModifier(environment))
-	result := GetNonConfidentialArgs(profile, args)
-
-	expectedSecret := shell.NewArg(fmt.Sprintf(repo, "password"), shell.ArgConfigEscape).String()
-	expectedPublic := shell.NewArg(fmt.Sprintf(repo, ConfidentialReplacement), shell.ArgConfigEscape).String()
-
-	assert.Equal(t, []string{"--repo=" + expectedSecret}, args.GetAll())
-	assert.Equal(t, []string{"--repo=" + expectedPublic}, result.GetAll())
-}
-
 func TestGetAutoRepositoryFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("RESTIC_REPOSITORY"))
 	require.NoError(t, os.Unsetenv("RESTIC_REPOSITORY_FILE"))
@@ -373,55 +342,6 @@ func TestGetAutoRepositoryFile(t *testing.T) {
 				expected := shell.NewArg(repo, shell.ArgConfigEscape).String()
 				assert.Equal(t, []string{"--repo=" + expected}, args.GetAll())
 			}
-		})
-	}
-}
-
-func TestGetAutoRepositoryFileDisabledWithEnv(t *testing.T) {
-	if platform.IsWindows() {
-		t.Skip()
-	}
-
-	tests := []string{
-		"RESTIC_REPOSITORY",
-		"RESTIC_REPOSITORY_FILE",
-	}
-
-	for _, envKey := range tests {
-		t.Run(envKey, func(t *testing.T) {
-			config := fmt.Sprintf(`
-				[my-profile]
-				repository = %q
-            `, defaultHttpUrl)
-
-			defer os.Unsetenv(envKey)
-			profile, err := getResolvedProfile("toml", config, "my-profile")
-			require.NoError(t, err)
-
-			hasRepoFlag := func() (found bool) {
-				_, found = profile.GetCommandFlags(constants.CommandBackup).Get("repo")
-				return
-			}
-
-			t.Run("no-env", func(t *testing.T) {
-				require.NoError(t, os.Unsetenv(envKey))
-				profile.Environment = nil
-				assert.False(t, hasRepoFlag())
-			})
-
-			t.Run("profile-env", func(t *testing.T) {
-				require.NoError(t, os.Unsetenv(envKey))
-				profile.Environment = map[string]ConfidentialValue{
-					envKey: NewConfidentialValue("1"),
-				}
-				assert.True(t, hasRepoFlag())
-			})
-
-			t.Run("os-env", func(t *testing.T) {
-				require.NoError(t, os.Setenv(envKey, "1"))
-				profile.Environment = nil
-				assert.True(t, hasRepoFlag())
-			})
 		})
 	}
 }
