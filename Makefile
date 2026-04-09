@@ -195,9 +195,10 @@ test-race: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests
 	@echo "[*] $@"
 	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
 
+test-ci: export TEST_HELPER=$(BUILD)test-helper
 test-ci: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
-	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
+	@$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"
