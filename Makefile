@@ -31,8 +31,7 @@ COVERAGE_FILE=coverage.out
 COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
-BUILD_=$(realpath build)/
-BUILD=$(subst \,/,$(BUILD_))
+BUILD=$(realpath build)/
 
 RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
