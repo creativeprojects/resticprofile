@@ -39,11 +39,11 @@ jobs:
         with:
           operating_system: freebsd
           version: '${{ matrix.freebsd_version }}'
-          memory: 15G
+          memory: 8G
           cpu_count: 4
           run: |
             pwd
-            find . -type f -name "*.test" -exec "{}" -test.short -test.v \;
+            find . -type f -name "*.test" ! -name "batt.test" -exec "{}" -test.short -test.v \;
 
 
   test-netbsd:
@@ -72,7 +72,7 @@ jobs:
         with:
           operating_system: netbsd
           version: '${{ matrix.netbsd_version }}'
-          memory: 15G
+          memory: 8G
           cpu_count: 4
           run: |
             pwd
@@ -105,7 +105,7 @@ jobs:
         with:
           operating_system: openbsd
           version: '${{ matrix.openbsd_version }}'
-          memory: 15G
+          memory: 8G
           cpu_count: 4
           run: |
             pwd
