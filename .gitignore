@@ -47,3 +47,4 @@ go.work.sum
 /*.txt
 output.xml
 /qemu/disk_images/
+/*.test
