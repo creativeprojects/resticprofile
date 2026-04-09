@@ -30,7 +30,7 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./util/ansi ./util/collect ./util/maybe
+        run: go test -c ./batt ./calendar ./util/ansi ./util/collect ./util/maybe
         env:
           GOOS: freebsd
 
@@ -63,7 +63,7 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./util/ansi ./util/collect ./util/maybe
+        run: go test -c ./batt ./calendar ./util/ansi ./util/collect ./util/maybe
         env:
           GOOS: netbsd
 
@@ -96,7 +96,7 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./util/ansi ./util/collect ./util/maybe
+        run: go test -c ./batt ./calendar ./util/ansi ./util/collect ./util/maybe
         env:
           GOOS: openbsd
 
