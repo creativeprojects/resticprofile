@@ -30,7 +30,7 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./util/ansi
+        run: go test -c ./util/ansi ./util/collect ./util/maybe
         env:
           GOOS: freebsd
 
@@ -43,7 +43,8 @@ jobs:
           cpu_count: 4
           run: |
             pwd
-            ./ansi.test -test.short -test.v
+            find . -type f -name "*.test" -exec "{}" -test.short -test.v \;
+
 
   test-netbsd:
     name: Run tests on NetBSD
@@ -62,7 +63,7 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./util/ansi
+        run: go test -c ./util/ansi ./util/collect ./util/maybe
         env:
           GOOS: netbsd
 
@@ -75,7 +76,8 @@ jobs:
           cpu_count: 4
           run: |
             pwd
-            ./ansi.test -test.short -test.v
+            find . -type f -name "*.test" -exec "{}" -test.short -test.v \;
+
 
   test-openbsd:
     name: Run tests on OpenBSD
@@ -94,7 +96,7 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./util/ansi
+        run: go test -c ./util/ansi ./util/collect ./util/maybe
         env:
           GOOS: openbsd
 
@@ -107,4 +109,5 @@ jobs:
           cpu_count: 4
           run: |
             pwd
-            ./ansi.test -test.short -test.v
+            find . -type f -name "*.test" -exec "{}" -test.short -test.v \;
+
