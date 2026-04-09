@@ -10,7 +10,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	err := runFreeBSD(ctx, "freebsd-15.0-arm64.qcow2")
+	err := runFreeBSD(ctx, "qemu/disk_images/freebsd-15.0-arm64.qcow2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,8 +83,3 @@ func runFreeBSD(ctx context.Context, diskImage string) error {
 	}
 	return nil
 }
-
-// curl -LO https://go.dev/dl/go1.26.2.freebsd-arm64.tar.gz
-// sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.26.2.freebsd-arm64.tar.gz
-// export PATH=$PATH:/usr/local/go/bin
-// go version
