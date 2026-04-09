@@ -222,6 +222,11 @@ clean: ## Clean up the build artifacts
 		restic_*_linux_amd64* \
 		${BUILD}restic* \
 		${BUILD}rclone* \
+		${BUILD}test* \
+		*.test \
+		*.log \
+		*.out \
+		*.xml \
 		dist/*
 	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup

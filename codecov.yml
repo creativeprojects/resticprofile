@@ -18,6 +18,7 @@ ignore:
   - user/user_systemd.go
   - qemu/
   - "**/mocks/*.go"
+  - testhelper/
 
 codecov:
   notify:
