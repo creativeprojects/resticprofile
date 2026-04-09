@@ -6,6 +6,7 @@
 /examples/*-log.txt
 /build/restic*
 /build/rclone*
+/build/test-*
 /dist
 /crontab
 

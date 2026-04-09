@@ -31,7 +31,7 @@ COVERAGE_FILE=coverage.out
 COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
-BUILD=build/
+BUILD=$(realpath build)/
 
 RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
@@ -122,8 +122,12 @@ prepare_build: verify download
 
 prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
-	find . -path "*/mocks/*" -exec rm {} \;
-	"$(GOBIN)/mockery" --config .mockery.yml
+	@find . -path "*/mocks/*" -exec rm {} \;
+	@"$(GOBIN)/mockery" --config .mockery.yml
+
+ $(BUILD)test-helper: $(BUILD) ## Build the test helper binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-helper ./testhelper
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
@@ -178,13 +182,21 @@ build-windows: prepare_build ## Build the binary for Windows
 
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
-test: $(GOBIN)/gotestsum prepare_test ## Run unit tests
+test: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum $(TESTS)
+	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -count=1 $(TESTS)
 
-test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
+test-short: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests in short mode
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
+	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -short -count=1 $(TESTS)
+
+test-race: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests with race detector
+	@echo "[*] $@"
+	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
+
+test-ci: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests with coverage (for CI)
+	@echo "[*] $@"
+	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"

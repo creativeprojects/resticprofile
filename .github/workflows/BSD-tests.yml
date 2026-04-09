@@ -30,7 +30,12 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./batt ./calendar ./util/ansi ./util/collect ./util/maybe
+        run: |
+          go build -o test-helper ./testhelper
+          go test -c ./batt ./calendar ./util/...
+          echo "export TEST_HELPER=$PWD/test-helper" >./run-tests.sh
+          chmod +x ./run-tests.sh
+          find . -type f -name "*.test" ! -name "batt.test" | xargs -I % echo "echo === % === && % -test.short -test.v" >>./run-tests.sh
         env:
           GOOS: freebsd
 
@@ -43,7 +48,7 @@ jobs:
           cpu_count: 4
           run: |
             pwd
-            find . -type f -name "*.test" ! -name "batt.test" -exec "{}" -test.short -test.v \;
+            ./run-tests.sh
 
 
   test-netbsd:
@@ -63,7 +68,12 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./batt ./calendar ./util/ansi ./util/collect ./util/maybe
+        run: |
+          go build -o test-helper ./testhelper
+          go test -c ./batt ./calendar ./util/...
+          echo "export TEST_HELPER=$PWD/test-helper" >./run-tests.sh
+          chmod +x ./run-tests.sh
+          find . -type f -name "*.test" | xargs -I % echo "echo === % === && % -test.short -test.v" >>./run-tests.sh
         env:
           GOOS: netbsd
 
@@ -76,7 +86,7 @@ jobs:
           cpu_count: 4
           run: |
             pwd
-            find . -type f -name "*.test" -exec "{}" -test.short -test.v \;
+            ./run-tests.sh
 
 
   test-openbsd:
@@ -96,7 +106,12 @@ jobs:
           cache: true
 
       - name: Build tests
-        run: go test -c ./batt ./calendar ./util/ansi ./util/collect ./util/maybe
+        run: |
+          go build -o test-helper ./testhelper
+          go test -c ./batt ./calendar ./util/...
+          echo "export TEST_HELPER=$PWD/test-helper" >./run-tests.sh
+          chmod +x ./run-tests.sh
+          find . -type f -name "*.test" | xargs -I % echo "echo === % === && % -test.short -test.v" >>./run-tests.sh
         env:
           GOOS: openbsd
 
@@ -109,5 +124,4 @@ jobs:
           cpu_count: 4
           run: |
             pwd
-            find . -type f -name "*.test" -exec "{}" -test.short -test.v \;
-
+            ./run-tests.sh

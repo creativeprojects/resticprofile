@@ -4,41 +4,45 @@ package util
 
 import (
 	"context"
+	"errors"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	helperExecutableCommand = "executable"
+	testTimeout             = 5 * time.Second
+)
+
 func TestExecutable(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "resticprofile-executable")
-	if err != nil {
-		t.Fatalf("failed to create temp dir: %v", err)
+	helperBinary := os.Getenv("TEST_HELPER")
+	if helperBinary == "" {
+		helperBinary = "./test-helper"
+	}
+	helperBinary, err := filepath.Abs(helperBinary)
+	require.NoError(t, err, "Failed to get absolute path of helper binary")
+
+	if _, err := os.Stat(helperBinary); errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("Helper binary does not exist at expected path: %q\n", helperBinary)
 	}
 
-	t.Cleanup(func() {
-		if err := os.RemoveAll(tempDir); err != nil {
-			t.Errorf("failed to remove temp dir: %v", err)
-		}
-	})
-
-	helperBinary := filepath.Join(tempDir, "executable_test_helper")
-	assert.True(t, filepath.IsAbs(helperBinary), "Helper binary path should be absolute")
-
-	cmd := exec.CommandContext(context.TODO(), "go", "build", "-buildvcs=false", "-o", helperBinary, "./test_executable")
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("Error building helper binary: %s\n", err)
-	}
-
+	tempDir := t.TempDir()
 	symlinkBinary := filepath.Join(tempDir, "executable_test_symlink")
 	err = os.Symlink(helperBinary, symlinkBinary)
 	require.NoError(t, err, "Failed to create symlink for helper binary")
 
 	t.Run("absolute", func(t *testing.T) {
-		cmd = exec.CommandContext(context.TODO(), helperBinary)
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, helperBinary, helperExecutableCommand)
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
@@ -48,7 +52,10 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("absolute symlink", func(t *testing.T) {
-		cmd = exec.CommandContext(context.TODO(), symlinkBinary)
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, symlinkBinary, helperExecutableCommand)
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
@@ -58,8 +65,11 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("relative", func(t *testing.T) {
-		cmd = exec.CommandContext(context.TODO(), "./"+filepath.Base(helperBinary))
-		cmd.Dir = tempDir // Set the working directory to the temp directory
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, "./"+filepath.Base(helperBinary), helperExecutableCommand)
+		cmd.Dir = filepath.Dir(helperBinary) // Set the working directory to the helper binary's directory
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
@@ -69,7 +79,10 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("relative symlink", func(t *testing.T) {
-		cmd = exec.CommandContext(context.TODO(), "./"+filepath.Base(symlinkBinary))
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, "./"+filepath.Base(symlinkBinary), helperExecutableCommand)
 		cmd.Dir = tempDir // Set the working directory to the temp directory
 		output, err := cmd.Output()
 		if err != nil {
@@ -81,14 +94,13 @@ func TestExecutable(t *testing.T) {
 
 	t.Run("from PATH", func(t *testing.T) {
 		path := os.Getenv("PATH")
-		t.Cleanup(func() {
-			os.Setenv("PATH", path) // Restore original PATH after test
-		})
-		os.Setenv("PATH", tempDir+string(os.PathListSeparator)+path) // Add tempDir to PATH for this test
+		t.Setenv("PATH", filepath.Dir(helperBinary)+string(os.PathListSeparator)+path) // Add tempDir to PATH for this test
 		t.Logf("Using PATH: %s", os.Getenv("PATH"))
 
-		cmd = exec.CommandContext(context.TODO(), filepath.Base(helperBinary))
-		cmd.Dir = tempDir // Set the working directory to the temp directory
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, filepath.Base(helperBinary), helperExecutableCommand)
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
@@ -99,14 +111,13 @@ func TestExecutable(t *testing.T) {
 
 	t.Run("symlink from PATH", func(t *testing.T) {
 		path := os.Getenv("PATH")
-		t.Cleanup(func() {
-			os.Setenv("PATH", path) // Restore original PATH after test
-		})
-		os.Setenv("PATH", tempDir+string(os.PathListSeparator)+path) // Add tempDir to PATH for this test
+		t.Setenv("PATH", tempDir+string(os.PathListSeparator)+path) // Add tempDir to PATH for this test
 		t.Logf("Using PATH: %s", os.Getenv("PATH"))
 
-		cmd = exec.CommandContext(context.TODO(), filepath.Base(symlinkBinary))
-		cmd.Dir = tempDir // Set the working directory to the temp directory
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, filepath.Base(symlinkBinary), helperExecutableCommand)
 		output, err := cmd.Output()
 		if err != nil {
 			t.Fatalf("Error executing helper binary: %s\n", err)
