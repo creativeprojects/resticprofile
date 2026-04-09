@@ -32,7 +32,7 @@ COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
 BUILD_=$(realpath build)/
-BUILD=$(subst /,\,$(BUILD_))
+BUILD=$(subst \,/,$(BUILD_))
 
 RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
@@ -398,3 +398,9 @@ stop-ssh-server: ## Stop the SSH server and clean up temporary files
 ssh-test: ## Run SSH client tests
 	@echo "[*] $@"
 	@go test -run TestSSHClient -v -race -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh
+
+.PHONY: write-run-tests
+write-run-tests: $(BUILD)test-helper ## Generate the run-tests.sh script for BSD tests
+	@echo "[*] $@"
+	@$(GOTEST) -c ./batt ./calendar ./util/...
+	@TEST_HELPER=$(BUILD)test-helper ./scripts/write-run-tests.sh
