@@ -31,7 +31,7 @@ jobs:
 
       - name: Build tests
         run: |
-          make write-run-tests
+          make compile-tests
         env:
           GOOS: freebsd
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Build tests
         run: |
-          make write-run-tests
+          make compile-tests
         env:
           GOOS: netbsd
 
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build tests
         run: |
-          make write-run-tests
+          make compile-tests
         env:
           GOOS: openbsd
 

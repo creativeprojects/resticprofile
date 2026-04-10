@@ -420,9 +420,9 @@ ssh-test: ## Run SSH client tests
 	@echo "[*] $@"
 	@go test -run TestSSHClient -v -race -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh
 
-.PHONY: write-run-tests
-write-run-tests: export TEST_HELPERS=$(BUILD)
-write-run-tests: test-helpers ## Generate the run-tests.sh script for BSD tests
+.PHONY: compile-tests
+compile-tests: export TEST_HELPERS=$(BUILD)
+compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@echo "[*] $@"
+	@$(GOGENERATE) ./...
 	@$(GOTEST) -c . ./batt ./calendar ./crond ./lock ./util/...
-	@./scripts/write-run-tests.sh

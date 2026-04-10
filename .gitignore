@@ -49,4 +49,3 @@ go.work.sum
 output.xml
 /qemu/disk_images/
 /*.test
-/scripts/run-tests.sh
