@@ -26,7 +26,7 @@ func TestLockIsRemovedAfterInterruptSignal(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, helperBinary, "-wait", "2000", "-lock", lockfile)
+	cmd := exec.CommandContext(ctx, lockBinary, "lock", "-wait", "2000", "-lock", lockfile)
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 
@@ -55,7 +55,7 @@ func TestLockIsRemovedAfterInterruptSignalInsideShell(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "sh", "-c", "exec \""+helperBinary+"\" -wait 2000 -lock \""+lockfile+"\"")
+	cmd := exec.CommandContext(ctx, "sh", "-c", "exec \""+lockBinary+"\" lock -wait 2000 -lock \""+lockfile+"\"")
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer
 

@@ -6,6 +6,7 @@
 /examples/*-log.txt
 /build/restic*
 /build/rclone*
+/build/test-*
 /dist
 /crontab
 
@@ -47,3 +48,4 @@ go.work.sum
 /*.txt
 output.xml
 /qemu/disk_images/
+/*.test

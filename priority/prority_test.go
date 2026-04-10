@@ -4,23 +4,35 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStartProcessWithPriority(t *testing.T) {
+	helpersPath := os.Getenv("TEST_HELPERS")
+	if helpersPath == "" {
+		helpersPath = "../build"
+	}
+	testBinary := filepath.Join(helpersPath, platform.Executable("test-args"))
+	testBinary, err := filepath.Abs(testBinary)
+	require.NoError(t, err, "Failed to get absolute path of test-args helper binary", testBinary)
+	require.FileExists(t, testBinary, "test-args helper binary is not available at expected path")
+
 	t.Run("WithNormalPriority", func(t *testing.T) {
 		err := SetClass(Normal)
 		if err != nil {
 			t.Error(err)
 		}
 
-		output, err := runChildProcess()
+		output, err := runChildProcess(testBinary)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -39,7 +51,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 			t.Error(err)
 		}
 
-		output, err := runChildProcess()
+		output, err := runChildProcess(testBinary)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -58,7 +70,7 @@ func TestStartProcessWithPriority(t *testing.T) {
 			t.Error(err)
 		}
 
-		output, err := runChildProcess()
+		output, err := runChildProcess(testBinary)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -72,11 +84,11 @@ func TestStartProcessWithPriority(t *testing.T) {
 	time.Sleep(30 * time.Millisecond)
 }
 
-func runChildProcess() (string, error) {
+func runChildProcess(testBinary string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "go", "run", "./check")
+	cmd := exec.CommandContext(ctx, testBinary, "priority")
 	buffer := &bytes.Buffer{}
 	cmd.Stdout = buffer
 	cmd.Stderr = buffer

@@ -9,6 +9,7 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOTOOL=$(GOCMD) tool
 GOMOD=$(GOCMD) mod
+GOGENERATE=$(GOCMD) generate
 GOPATH=$(shell $(GOCMD) env GOPATH)
 GOBIN=$(shell $(GOCMD) env GOBIN)
 
@@ -31,7 +32,7 @@ COVERAGE_FILE=coverage.out
 COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
-BUILD=build/
+BUILD=$(realpath build)/
 
 RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
@@ -122,8 +123,27 @@ prepare_build: verify download
 
 prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
-	find . -path "*/mocks/*" -exec rm {} \;
-	"$(GOBIN)/mockery" --config .mockery.yml
+	@find . -path "*/mocks/*" -exec rm {} \;
+	@"$(GOBIN)/mockery" --config .mockery.yml
+
+ $(BUILD)test-args: ./testhelpers/args/*.go ## Build the test-args binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-args ./testhelpers/args
+
+ $(BUILD)test-echo: ./testhelpers/echo/*.go ## Build the test-echo binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-echo ./testhelpers/echo
+
+ $(BUILD)test-crontab: ./testhelpers/crontab/*.go ## Build the test-crontab binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-crontab ./testhelpers/crontab
+
+ $(BUILD)test-shell: ./testhelpers/shell/*.go ## Build the test-shell binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-shell ./testhelpers/shell
+
+.PHONY: test-helpers
+test-helpers: $(BUILD)test-args $(BUILD)test-echo $(BUILD)test-crontab  $(BUILD)test-shell ## Build all test helper binaries
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
@@ -178,13 +198,26 @@ build-windows: prepare_build ## Build the binary for Windows
 
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
-test: $(GOBIN)/gotestsum prepare_test ## Run unit tests
+test: export TEST_HELPERS=$(BUILD)
+test: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum $(TESTS)
+	@$(GOBIN)/gotestsum -- -count=1 $(TESTS)
 
-test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
+test-short: export TEST_HELPERS=$(BUILD)
+test-short: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests in short mode
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
+	@$(GOBIN)/gotestsum -- -short -count=1 $(TESTS)
+
+test-race: export TEST_HELPERS=$(BUILD)
+test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with race detector
+	@echo "[*] $@"
+	@$(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
+
+test-ci: export TEST_HELPERS=$(BUILD)
+test-ci: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with coverage (for CI)
+	@echo "[*] $@"
+	@$(GOGENERATE) ./...
+	@$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"
@@ -209,6 +242,11 @@ clean: ## Clean up the build artifacts
 		restic_*_linux_amd64* \
 		${BUILD}restic* \
 		${BUILD}rclone* \
+		${BUILD}test* \
+		*.test \
+		*.log \
+		*.out \
+		*.xml \
 		dist/*
 	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
@@ -385,3 +423,10 @@ stop-ssh-server: ## Stop the SSH server and clean up temporary files
 ssh-test: ## Run SSH client tests
 	@echo "[*] $@"
 	@go test -run TestSSHClient -v -race -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh
+
+.PHONY: compile-tests
+compile-tests: export TEST_HELPERS=$(BUILD)
+compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
+	@echo "[*] $@"
+	@$(GOGENERATE) ./...
+	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...

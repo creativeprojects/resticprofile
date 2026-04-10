@@ -83,6 +83,9 @@ func TestJSONSchemaValidation(t *testing.T) {
 		testCount := 0
 
 		err := filepath.Walk("../../examples/", func(filename string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if !info.IsDir() && extensionMatcher.MatchString(filename) && !exclusions.MatchString(filename) {
 				content, e := os.ReadFile(filename)
 				require.NoError(t, e)

@@ -1,11 +1,5 @@
 ignore:
-  - crond/mock/
-  - shell/mock/
-  - lock/test/
-  - priority/check/
-  - util/test_executable/
   - term/remote.go
-  - term/test/
   - deprecation.go
   - logger.go
   - systemd.go
@@ -18,6 +12,7 @@ ignore:
   - user/user_systemd.go
   - qemu/
   - "**/mocks/*.go"
+  - testhelpers/
 
 codecov:
   notify:

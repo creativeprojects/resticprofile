@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/batt"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/schedule"
@@ -484,5 +485,9 @@ func TestRunScheduleProfileUnknown(t *testing.T) {
 func TestBatteryCommand(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	err := batteryCommand(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer))}})
+	if err != nil {
+		require.ErrorIs(t, err, batt.ErrBatteryInfoNotSupported)
+		return
+	}
 	require.NoError(t, err)
 }

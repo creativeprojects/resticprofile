@@ -1,0 +1,115 @@
+name: Run tests on BSDs
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ master ]
+  #   paths-ignore:
+  #     - 'docs/**'
+
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+  #   paths-ignore:
+  #     - 'docs/**'
+
+jobs:
+  test-freebsd:
+    name: Run tests on FreeBSD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        freebsd_version: ['14.3', '15.0']
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+          check-latest: true
+          cache: true
+
+      - name: Build tests
+        run: |
+          make compile-tests
+        env:
+          GOOS: freebsd
+
+      - name: Run tests in VM
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: freebsd
+          version: '${{ matrix.freebsd_version }}'
+          memory: 8G
+          cpu_count: 4
+          run: |
+            pwd
+            ./scripts/run-tests.sh
+
+
+  test-netbsd:
+    name: Run tests on NetBSD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        netbsd_version: ['10.1']
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+          check-latest: true
+          cache: true
+
+      - name: Build tests
+        run: |
+          make compile-tests
+        env:
+          GOOS: netbsd
+
+      - name: Run tests in VM
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: netbsd
+          version: '${{ matrix.netbsd_version }}'
+          memory: 8G
+          cpu_count: 4
+          run: |
+            pwd
+            ./scripts/run-tests.sh
+
+
+  test-openbsd:
+    name: Run tests on OpenBSD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        openbsd_version: ['7.8']
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+          check-latest: true
+          cache: true
+
+      - name: Build tests
+        run: |
+          make compile-tests
+        env:
+          GOOS: openbsd
+
+      - name: Run tests in VM
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: openbsd
+          version: '${{ matrix.openbsd_version }}'
+          memory: 8G
+          cpu_count: 4
+          run: |
+            pwd
+            ./scripts/run-tests.sh
