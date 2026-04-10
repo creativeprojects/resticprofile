@@ -487,6 +487,7 @@ func TestBatteryCommand(t *testing.T) {
 	err := batteryCommand(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer))}})
 	if err != nil {
 		require.ErrorIs(t, err, batt.ErrBatteryInfoNotSupported)
+		return
 	}
 	require.NoError(t, err)
 }
