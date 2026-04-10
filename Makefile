@@ -9,6 +9,7 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOTOOL=$(GOCMD) tool
 GOMOD=$(GOCMD) mod
+GOGENERATE=$(GOCMD) generate
 GOPATH=$(shell $(GOCMD) env GOPATH)
 GOBIN=$(shell $(GOCMD) env GOBIN)
 
@@ -133,8 +134,12 @@ prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
 	@$(GOBUILD) -v -o $(BUILD)test-echo ./testhelpers/echo
 
+ $(BUILD)test-crontab: ./testhelpers/crontab/*.go ## Build the test-crontab binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-crontab ./testhelpers/crontab
+
 .PHONY: test-helpers
-test-helpers: $(BUILD)test-args $(BUILD)test-echo ## Build all test helper binaries
+test-helpers: $(BUILD)test-args $(BUILD)test-echo $(BUILD)test-crontab ## Build all test helper binaries
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
@@ -207,6 +212,7 @@ test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with r
 test-ci: export TEST_HELPERS=$(BUILD)
 test-ci: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
+	@$(GOGENERATE) ./...
 	@$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
@@ -418,5 +424,5 @@ ssh-test: ## Run SSH client tests
 write-run-tests: export TEST_HELPERS=$(BUILD)
 write-run-tests: test-helpers ## Generate the run-tests.sh script for BSD tests
 	@echo "[*] $@"
-	@$(GOTEST) -c . ./batt ./calendar ./util/...
+	@$(GOTEST) -c . ./batt ./calendar ./crond ./lock ./util/...
 	@./scripts/write-run-tests.sh

@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +21,11 @@ const (
 )
 
 func TestExecutable(t *testing.T) {
-	helperBinary := filepath.Join(os.Getenv("TEST_HELPERS"), "test-args")
+	helpersPath := os.Getenv("TEST_HELPERS")
+	if helpersPath == "" {
+		helpersPath = "../build"
+	}
+	helperBinary := filepath.Join(helpersPath, platform.Executable("test-args"))
 	helperBinary, err := filepath.Abs(helperBinary)
 	require.NoError(t, err, "Failed to get absolute path of helper binary", helperBinary)
 	require.FileExists(t, helperBinary, "Helper binary is not available at expected path")

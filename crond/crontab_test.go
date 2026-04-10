@@ -3,17 +3,14 @@
 package crond
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -310,17 +307,17 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 }
 
 func TestUseCrontabBinary(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
-	defer cancel()
-
-	binary := filepath.Join(t.TempDir(), platform.Executable("crontab"))
-	defer func() { _ = os.Remove(binary) }()
-
-	cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", binary, "./mock")
-	require.NoError(t, cmd.Run())
+	helpersPath := os.Getenv("TEST_HELPERS")
+	if helpersPath == "" {
+		helpersPath = "../build"
+	}
+	crontabBinary := filepath.Join(helpersPath, platform.Executable("test-crontab"))
+	crontabBinary, err := filepath.Abs(crontabBinary)
+	require.NoError(t, err, "Failed to get absolute path of crontab helper binary", crontabBinary)
+	require.FileExists(t, crontabBinary, "crontab helper binary is not available at expected path")
 
 	crontab := NewCrontab(nil)
-	crontab.SetBinary(binary)
+	crontab.SetBinary(crontabBinary)
 
 	t.Run("load-error", func(t *testing.T) {
 		result, err := crontab.LoadCurrent()

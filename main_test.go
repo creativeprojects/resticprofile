@@ -43,7 +43,11 @@ func TestMain(m *testing.M) {
 			return 1
 		}
 
-		echoBinary = filepath.Join(os.Getenv("TEST_HELPERS"), "test-echo")
+		helpersPath := os.Getenv("TEST_HELPERS")
+		if helpersPath == "" {
+			helpersPath = "./build"
+		}
+		echoBinary = filepath.Join(helpersPath, platform.Executable("test-echo"))
 		echoBinary, err = filepath.Abs(echoBinary)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to get absolute path of test-echo binary: %v\n", err)
