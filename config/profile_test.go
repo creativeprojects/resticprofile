@@ -1664,6 +1664,8 @@ url = "http://example.com"
 }
 
 func getExamplesDirectory(t *testing.T) string {
+	t.Helper()
+
 	for _, dir := range []string{"../examples", "./examples", "./testdata/examples"} {
 		examples, err := filepath.Abs(dir)
 		require.NoError(t, err)

@@ -30,9 +30,7 @@ func TestStartProcessWithIOPriority(t *testing.T) {
 	t.Run("WithNormalIOPriority", func(t *testing.T) {
 
 		output, err := runChildProcess(testBinary)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		t.Log(output)
 		assert.Contains(t, output, "IOPriority: class = 0, value = 4")
 
@@ -41,14 +39,10 @@ func TestStartProcessWithIOPriority(t *testing.T) {
 	t.Run("WithBestEffortIOPriority", func(t *testing.T) {
 
 		err := SetIONice(2, 6)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		output, err := runChildProcess(testBinary)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		t.Log(output)
 		assert.Contains(t, output, "IOPriority: class = 2, value = 6")
 
@@ -57,14 +51,10 @@ func TestStartProcessWithIOPriority(t *testing.T) {
 	t.Run("WithIdlePriority", func(t *testing.T) {
 
 		err := SetIONice(3, 4)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		output, err := runChildProcess(testBinary)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		t.Log(output)
 		assert.Contains(t, output, "IOPriority: class = 3, value = 4")
 
