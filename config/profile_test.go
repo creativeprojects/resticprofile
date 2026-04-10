@@ -534,8 +534,8 @@ func TestFillGenericSections(t *testing.T) {
 }
 
 func TestResolveGlobSourcesInBackup(t *testing.T) {
-	examples, err := filepath.Abs("../examples")
-	require.NoError(t, err)
+	examples := getExamplesDirectory(t)
+
 	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
 	testConfig := `
 [profile.backup]
@@ -634,7 +634,7 @@ func TestResolveSourcesAgainstBase(t *testing.T) {
 func TestPathAndTagInRetention(t *testing.T) {
 	cwd, err := filepath.Abs(".")
 	require.NoError(t, err)
-	examples := filepath.Join(cwd, "../examples")
+	examples := getExamplesDirectory(t)
 	hostname := "rt-test-host"
 	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
 	backupSource, err := filepath.Glob(sourcePattern)
@@ -1661,4 +1661,17 @@ url = "http://example.com"
 			assert.Empty(t, monitoring.SendAfter)
 		})
 	}
+}
+
+func getExamplesDirectory(t *testing.T) string {
+	for _, dir := range []string{"../examples", "./examples", "./testdata/examples"} {
+		examples, err := filepath.Abs(dir)
+		require.NoError(t, err)
+
+		if _, err := os.Stat(examples); err == nil {
+			return examples
+		}
+	}
+	t.Skip("examples directory not found")
+	return ""
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/util/maybe"
 	"github.com/stretchr/testify/assert"
 )
@@ -181,7 +182,8 @@ func TestShowStruct(t *testing.T) {
 	for i, testItem := range testData {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			b := &strings.Builder{}
-			err := ShowStruct(b, testItem.input, "top-level")
+			terminal := term.NewTerminal(term.WithStdout(b))
+			err := ShowStruct(terminal.Stdout(), testItem.input, "top-level")
 			assert.NoError(t, err)
 			assert.Equal(t, "top-level:\n"+testItem.output, strings.ReplaceAll(b.String(), "    ", " "))
 		})

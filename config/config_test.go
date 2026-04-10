@@ -662,7 +662,9 @@ func TestRequireVersionAssertions(t *testing.T) {
 // I wanted to give it a try but it might just be useless
 func FuzzConfigTOML(f *testing.F) {
 	examples, err := os.ReadDir("../examples")
-	require.NoError(f, err)
+	if err != nil {
+		f.Skipf("examples directory not found at %s", "../examples")
+	}
 
 	// use files in example dir as seeds
 	for _, example := range examples {
