@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -21,6 +22,7 @@ func run() int {
 	}
 
 	switch os.Args[1] {
+
 	case "executable":
 		executable, err := util.Executable()
 		if err != nil {
@@ -29,6 +31,19 @@ func run() int {
 		}
 		fmt.Printf("%q\n", executable)
 		return 0
+
+	case "lock":
+		wait := 0
+		lockfile := ""
+		flags := flag.NewFlagSet("lock", flag.ContinueOnError)
+		flags.IntVar(&wait, "wait", 1000, "Wait n milliseconds before unlocking")
+		flags.StringVar(&lockfile, "lock", "test.lock", "Name of the lock file")
+		if err := flags.Parse(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "parsing flags: %s", err)
+			return 1
+		}
+
+		return runLock(wait, lockfile)
 
 	default:
 		fmt.Printf("command argument %q not supported\n", os.Args[1])

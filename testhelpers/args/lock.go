@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,22 +10,7 @@ import (
 	"github.com/creativeprojects/resticprofile/lock"
 )
 
-// quick command to put a lock, wait for some time, then release the lock
-
-func main() {
-	wait := 0
-	lockfile := ""
-	flag.IntVar(&wait, "wait", 1000, "Wait n milliseconds before unlocking")
-	flag.StringVar(&lockfile, "lock", "test.lock", "Name of the lock file")
-	flag.Parse()
-
-	code := run(wait, lockfile)
-	if code > 0 {
-		os.Exit(code)
-	}
-}
-
-func run(wait int, lockfile string) int {
+func runLock(wait int, lockfile string) int {
 	sigChan := make(chan os.Signal, 2)
 	signal.Ignore()
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)

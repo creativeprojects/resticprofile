@@ -3,8 +3,8 @@ OUTPUT=./scripts/run-tests.sh
 
 echo "#!/bin/sh" >$OUTPUT
 chmod +x $OUTPUT
-echo "export TEST_HELPER=$TEST_HELPER" >>$OUTPUT
-find . -type f -name "*.test" | xargs -I % echo "echo \"=== % ===\" && % -test.short -test.v || command_failed=1" >>$OUTPUT
+echo "export TEST_HELPERS=\"$TEST_HELPERS\"" >>$OUTPUT
+find . -type f -name "*.test" -print0 | xargs -0 -I % echo "echo \"=== % ===\" && % -test.short -test.v || command_failed=1" >>$OUTPUT
 echo "if [ \${command_failed:-0} -eq 1 ]" >>$OUTPUT
 echo "then" >>$OUTPUT
 echo "  echo \"-> FAIL\"" >>$OUTPUT

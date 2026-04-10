@@ -4,8 +4,6 @@ package util
 
 import (
 	"context"
-	"errors"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,16 +20,10 @@ const (
 )
 
 func TestExecutable(t *testing.T) {
-	helperBinary := os.Getenv("TEST_HELPER")
-	if helperBinary == "" {
-		helperBinary = "./test-helper"
-	}
+	helperBinary := filepath.Join(os.Getenv("TEST_HELPERS"), "test-args")
 	helperBinary, err := filepath.Abs(helperBinary)
-	require.NoError(t, err, "Failed to get absolute path of helper binary")
-
-	if _, err := os.Stat(helperBinary); errors.Is(err, fs.ErrNotExist) {
-		t.Fatalf("Helper binary does not exist at expected path: %q\n", helperBinary)
-	}
+	require.NoError(t, err, "Failed to get absolute path of helper binary", helperBinary)
+	require.FileExists(t, helperBinary, "Helper binary is not available at expected path")
 
 	tempDir := t.TempDir()
 	symlinkBinary := filepath.Join(tempDir, "executable_test_symlink")
@@ -44,11 +36,10 @@ func TestExecutable(t *testing.T) {
 
 		cmd := exec.CommandContext(ctx, helperBinary, helperExecutableCommand)
 		output, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("Error executing helper binary: %s\n", err)
-		}
+		require.NoError(t, err)
+
 		t.Log(string(output))
-		assert.Equal(t, string(output), "\""+helperBinary+"\"\n", "Output should match the helper binary path")
+		assert.Equal(t, "\""+helperBinary+"\"\n", string(output), "Output should match the helper binary path")
 	})
 
 	t.Run("absolute symlink", func(t *testing.T) {
@@ -57,11 +48,10 @@ func TestExecutable(t *testing.T) {
 
 		cmd := exec.CommandContext(ctx, symlinkBinary, helperExecutableCommand)
 		output, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("Error executing helper binary: %s\n", err)
-		}
+		require.NoError(t, err)
+
 		t.Log(string(output))
-		assert.Equal(t, string(output), "\""+symlinkBinary+"\"\n", "Output should match the helper binary path")
+		assert.Equal(t, "\""+symlinkBinary+"\"\n", string(output), "Output should match the helper binary path")
 	})
 
 	t.Run("relative", func(t *testing.T) {
@@ -71,11 +61,10 @@ func TestExecutable(t *testing.T) {
 		cmd := exec.CommandContext(ctx, "./"+filepath.Base(helperBinary), helperExecutableCommand)
 		cmd.Dir = filepath.Dir(helperBinary) // Set the working directory to the helper binary's directory
 		output, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("Error executing helper binary: %s\n", err)
-		}
+		require.NoError(t, err)
+
 		t.Log(string(output))
-		assert.Equal(t, string(output), "\""+helperBinary+"\"\n", "Output should match the helper binary path")
+		assert.Equal(t, "\""+helperBinary+"\"\n", string(output), "Output should match the helper binary path")
 	})
 
 	t.Run("relative symlink", func(t *testing.T) {
@@ -85,11 +74,10 @@ func TestExecutable(t *testing.T) {
 		cmd := exec.CommandContext(ctx, "./"+filepath.Base(symlinkBinary), helperExecutableCommand)
 		cmd.Dir = tempDir // Set the working directory to the temp directory
 		output, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("Error executing helper binary: %s\n", err)
-		}
+		require.NoError(t, err)
+
 		t.Log(string(output))
-		assert.Equal(t, string(output), "\""+symlinkBinary+"\"\n", "Output should match the helper binary path")
+		assert.Equal(t, "\""+symlinkBinary+"\"\n", string(output), "Output should match the helper binary path")
 	})
 
 	t.Run("from PATH", func(t *testing.T) {
@@ -102,11 +90,10 @@ func TestExecutable(t *testing.T) {
 
 		cmd := exec.CommandContext(ctx, filepath.Base(helperBinary), helperExecutableCommand)
 		output, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("Error executing helper binary: %s\n", err)
-		}
+		require.NoError(t, err)
+
 		t.Log(string(output))
-		assert.Equal(t, string(output), "\""+helperBinary+"\"\n", "Output should match the helper binary path")
+		assert.Equal(t, "\""+helperBinary+"\"\n", string(output), "Output should match the helper binary path")
 	})
 
 	t.Run("symlink from PATH", func(t *testing.T) {
@@ -119,10 +106,9 @@ func TestExecutable(t *testing.T) {
 
 		cmd := exec.CommandContext(ctx, filepath.Base(symlinkBinary), helperExecutableCommand)
 		output, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("Error executing helper binary: %s\n", err)
-		}
+		require.NoError(t, err)
+
 		t.Log(string(output))
-		assert.Equal(t, string(output), "\""+symlinkBinary+"\"\n", "Output should match the helper binary path")
+		assert.Equal(t, "\""+symlinkBinary+"\"\n", string(output), "Output should match the helper binary path")
 	})
 }

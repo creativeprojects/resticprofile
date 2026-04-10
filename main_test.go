@@ -43,11 +43,14 @@ func TestMain(m *testing.M) {
 			return 1
 		}
 
-		echoBinary = filepath.Join(tempDir, platform.Executable("shellecho"))
-
-		cmdEcho := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", echoBinary, "./shell/echo")
-		if output, err := cmdEcho.CombinedOutput(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error building shell/echo binary: %s\nCommand output: %s\n", err, string(output))
+		echoBinary = filepath.Join(os.Getenv("TEST_HELPERS"), "test-echo")
+		echoBinary, err = filepath.Abs(echoBinary)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to get absolute path of test-echo binary: %v\n", err)
+			return 1
+		}
+		if _, err := os.Stat(echoBinary); err != nil {
+			fmt.Fprintf(os.Stderr, "test-echo binary is not available at expected path: %s\n", echoBinary)
 			return 1
 		}
 

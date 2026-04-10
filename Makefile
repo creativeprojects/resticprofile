@@ -125,9 +125,16 @@ prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@find . -path "*/mocks/*" -exec rm {} \;
 	@"$(GOBIN)/mockery" --config .mockery.yml
 
- $(BUILD)test-helper: $(BUILD) ## Build the test helper binary
+ $(BUILD)test-args: ./testhelpers/args/*.go ## Build the test-args binary
 	@echo "[*] $@"
-	@$(GOBUILD) -v -o $(BUILD)test-helper ./testhelper
+	@$(GOBUILD) -v -o $(BUILD)test-args ./testhelpers/args
+
+ $(BUILD)test-echo: ./testhelpers/echo/*.go ## Build the test-echo binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-echo ./testhelpers/echo
+
+.PHONY: test-helpers
+test-helpers: $(BUILD)test-args $(BUILD)test-echo ## Build all test helper binaries
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
@@ -182,20 +189,23 @@ build-windows: prepare_build ## Build the binary for Windows
 
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
-test: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests
+test: export TEST_HELPERS=$(BUILD)
+test: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests
 	@echo "[*] $@"
-	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -count=1 $(TESTS)
+	@$(GOBIN)/gotestsum -- -count=1 $(TESTS)
 
-test-short: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests in short mode
+test-short: export TEST_HELPERS=$(BUILD)
+test-short: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests in short mode
 	@echo "[*] $@"
-	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -short -count=1 $(TESTS)
+	@$(GOBIN)/gotestsum -- -short -count=1 $(TESTS)
 
-test-race: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests with race detector
+test-race: export TEST_HELPERS=$(BUILD)
+test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with race detector
 	@echo "[*] $@"
-	@TEST_HELPER=$(BUILD)test-helper $(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
+	@$(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
 
-test-ci: export TEST_HELPER=$(BUILD)test-helper
-test-ci: $(GOBIN)/gotestsum prepare_test $(BUILD)test-helper ## Run unit tests with coverage (for CI)
+test-ci: export TEST_HELPERS=$(BUILD)
+test-ci: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
 	@$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
@@ -405,7 +415,8 @@ ssh-test: ## Run SSH client tests
 	@go test -run TestSSHClient -v -race -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh
 
 .PHONY: write-run-tests
-write-run-tests: $(BUILD)test-helper ## Generate the run-tests.sh script for BSD tests
+write-run-tests: export TEST_HELPERS=$(BUILD)
+write-run-tests: test-helpers ## Generate the run-tests.sh script for BSD tests
 	@echo "[*] $@"
-	@$(GOTEST) -c ./batt ./calendar ./util/...
-	@TEST_HELPER=$(BUILD)test-helper ./scripts/write-run-tests.sh
+	@$(GOTEST) -c . ./batt ./calendar ./util/...
+	@./scripts/write-run-tests.sh
