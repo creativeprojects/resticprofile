@@ -3,9 +3,13 @@
 package priority
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStartProcessWithIOPriority(t *testing.T) {
@@ -13,10 +17,19 @@ func TestStartProcessWithIOPriority(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 
+	helpersPath := os.Getenv("TEST_HELPERS")
+	if helpersPath == "" {
+		helpersPath = "../build"
+	}
+	testBinary := filepath.Join(helpersPath, platform.Executable("test-args"))
+	testBinary, err := filepath.Abs(testBinary)
+	require.NoError(t, err, "Failed to get absolute path of test-args helper binary", testBinary)
+	require.FileExists(t, testBinary, "test-args helper binary is not available at expected path")
+
 	// Run these 3 tests inside one test, so we don't have concurrency issue
 	t.Run("WithNormalIOPriority", func(t *testing.T) {
 
-		output, err := runChildProcess()
+		output, err := runChildProcess(testBinary)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -32,7 +45,7 @@ func TestStartProcessWithIOPriority(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		output, err := runChildProcess()
+		output, err := runChildProcess(testBinary)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -48,7 +61,7 @@ func TestStartProcessWithIOPriority(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		output, err := runChildProcess()
+		output, err := runChildProcess(testBinary)
 		if err != nil {
 			t.Fatal(err)
 		}

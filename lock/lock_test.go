@@ -24,10 +24,13 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
 		var err error
-		lockBinary = filepath.Join(os.Getenv("TEST_HELPERS"), platform.Executable("test-args"))
+		helpersPath := os.Getenv("TEST_HELPERS")
+		if helpersPath == "" {
+			helpersPath = "../build"
+		}
+		lockBinary = filepath.Join(helpersPath, platform.Executable("test-args"))
 		lockBinary, err = filepath.Abs(lockBinary)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to get absolute path of test-args binary: %v\n", err)

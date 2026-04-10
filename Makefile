@@ -138,8 +138,12 @@ prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
 	@$(GOBUILD) -v -o $(BUILD)test-crontab ./testhelpers/crontab
 
+ $(BUILD)test-shell: ./testhelpers/shell/*.go ## Build the test-shell binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-shell ./testhelpers/shell
+
 .PHONY: test-helpers
-test-helpers: $(BUILD)test-args $(BUILD)test-echo $(BUILD)test-crontab ## Build all test helper binaries
+test-helpers: $(BUILD)test-args $(BUILD)test-echo $(BUILD)test-crontab  $(BUILD)test-shell ## Build all test helper binaries
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
@@ -425,4 +429,4 @@ compile-tests: export TEST_HELPERS=$(BUILD)
 compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
-	@$(GOTEST) -c . ./batt ./calendar ./crond ./lock ./util/...
+	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...

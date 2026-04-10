@@ -45,6 +45,9 @@ func run() int {
 
 		return runLock(wait, lockfile)
 
+	case "priority":
+		return runPriority()
+
 	default:
 		fmt.Printf("command argument %q not supported\n", os.Args[1])
 		return 1

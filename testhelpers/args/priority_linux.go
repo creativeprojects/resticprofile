@@ -1,4 +1,4 @@
-//go:build !windows && !linux
+//go:build linux
 
 package main
 
@@ -7,20 +7,24 @@ import (
 	"os"
 	"sync"
 
+	"github.com/creativeprojects/resticprofile/priority"
 	"golang.org/x/sys/unix"
 )
 
 const selfPID = 0
 
-// This is only displaying the priority of the current process (for testing)
-func main() {
+func runPriority() int {
 	// run it in a go routine in case it would make a difference
 	wg := sync.WaitGroup{}
-	wg.Go(func() {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		displayProcessAndGroup()
 		displayPriority()
-	})
+		displayIOPriority()
+	}()
 	wg.Wait()
+	return 0
 }
 
 func displayProcessAndGroup() {
@@ -47,7 +51,7 @@ func getProcessNice() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return pri, nil
+	return 20 - pri, nil
 }
 
 // GetProcessNice returns the nice value of the current process group
@@ -56,5 +60,14 @@ func getGroupNice() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return pri, nil
+	return 20 - pri, nil
+}
+
+func displayIOPriority() {
+	class, value, err := priority.GetIONice()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("IOPriority: class = %d, value = %d\n", class, value)
 }

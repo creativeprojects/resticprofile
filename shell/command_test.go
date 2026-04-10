@@ -2,11 +2,9 @@ package shell
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"regexp"
@@ -14,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,28 +22,23 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
-		ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
-		defer cancel()
-
-		tempDir, err := os.MkdirTemp("", "resticprofile-shell")
+		var err error
+		helpersPath := os.Getenv("TEST_HELPERS")
+		if helpersPath == "" {
+			helpersPath = "../build"
+		}
+		mockBinary = filepath.Join(helpersPath, platform.Executable("test-shell"))
+		mockBinary, err = filepath.Abs(mockBinary)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to get absolute path of test-shell binary: %v\n", err)
 			return 1
 		}
-		fmt.Printf("using temporary dir: %q\n", tempDir)
-		defer os.RemoveAll(tempDir)
+		if _, err := os.Stat(mockBinary); err != nil {
+			fmt.Fprintf(os.Stderr, "test-shell binary is not available at expected path: %s\n", mockBinary)
+			return 1
+		}
 
-		mockBinary = filepath.Join(tempDir, "shellmock")
-		if platform.IsWindows() {
-			mockBinary += ".exe"
-		}
-		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
-		if output, err := cmd.CombinedOutput(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
-			return 1
-		}
 		return m.Run()
 	}()
 	os.Exit(exitCode)
