@@ -217,7 +217,7 @@ func completeCommand(ctx commandContext) error {
 	}
 
 	// Ensure newer completion scripts will not fail on outdated resticprofile
-	if requester == "zsh" || requesterVersion > 9 {
+	if requesterVersion > 9 {
 		return nil
 	}
 

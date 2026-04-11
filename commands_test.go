@@ -196,7 +196,7 @@ func TestCompleteCall(t *testing.T) {
 		{args: []string{"bash:v1", "--"}, expected: expectedFlags},
 		{args: []string{"fish:v1", "--"}, expected: expectedFlagsWithDescriptions},
 		{args: []string{"bash:v10", "--"}, expected: ""},
-		{args: []string{"zsh:v1", "--"}, expected: ""},
+		{args: []string{"zsh:v1", "--"}, expected: expectedFlags},
 	}
 
 	for _, test := range testTable {
@@ -238,7 +238,7 @@ func TestGenerateCommand(t *testing.T) {
 		buffer.Reset()
 		assert.Nil(t, generateCommand(contextWithArguments([]string{"--zsh-completion"})))
 		assert.Equal(t, strings.TrimSpace(zshCompletionScript), strings.TrimSpace(buffer.String()))
-		assert.Contains(t, zshCompletionScript, "#!/usr/bin/env zsh")
+		assert.Contains(t, zshCompletionScript, "#compdef resticprofile")
 	})
 
 	t.Run("--fish-completion", func(t *testing.T) {
