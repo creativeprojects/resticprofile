@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/creativeprojects/resticprofile/qemu"
 )
 
 func main() {
 	ctx := context.Background()
-	err := runFreeBSD(ctx, "qemu/disk_images/freebsd-15.0-arm64.qcow2")
+	err := runFreeBSD(ctx, "qemu/disk_images/FreeBSD-14.3-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-ufs.qcow2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,20 +62,32 @@ func main() {
 // }
 
 func runFreeBSD(ctx context.Context, diskImage string) error {
-	cmd := exec.CommandContext(ctx, "qemu-system-aarch64",
-		"-m", "4096M", "-M", "virt,accel=hvf",
-		"-cpu", "cortex-a57",
-		"-bios", "edk2-aarch64-code.fd",
-		"-rtc", "base=localtime,clock=rt",
-		"-nographic",
-		"-serial", "mon:stdio",
-		"-device", "qemu-xhci",
-		"-device", "usb-kbd",
-		"-device", "usb-tablet",
-		"-device", "virtio-net,netdev=net0",
-		"-netdev", "user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::3389-:3389",
-		"-drive", "if=virtio,file="+diskImage+",format=qcow2,cache=writethrough",
-	)
+	// cmd := exec.CommandContext(ctx, "qemu-system-aarch64",
+	// 	"-m", "4096M", "-M", "virt,accel=hvf",
+	// 	"-cpu", "cortex-a57",
+	// 	"-bios", "edk2-aarch64-code.fd",
+	// 	"-rtc", "base=localtime,clock=rt",
+	// 	"-nographic",
+	// 	"-serial", "mon:stdio",
+	// 	"-device", "qemu-xhci",
+	// 	"-device", "usb-kbd",
+	// 	"-device", "usb-tablet",
+	// 	"-device", "virtio-net,netdev=net0",
+	// 	"-netdev", "user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::3389-:3389",
+	// 	"-drive", "if=virtio,file="+diskImage+",format=qcow2,cache=writethrough",
+	// )
+	vm := qemu.VM{
+		Architecture: qemu.ArchitectureARM64,
+		Memory:       4096,
+		CPUCores:     4,
+		Disks: []qemu.Disk{
+			{
+				File:   diskImage,
+				Format: "qcow2",
+			},
+		},
+	}
+	cmd := exec.CommandContext(ctx, "qemu-system-aarch64", vm.Args()...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
