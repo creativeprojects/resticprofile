@@ -23,7 +23,7 @@ const pathTemplates = "contrib/templates"
 //go:embed contrib/completion/bash-completion.sh
 var bashCompletionScript string
 
-//go:embed contrib/completion/zsh-completion.sh
+//go:embed contrib/completion/zsh-completion.zsh
 var zshCompletionScript string
 
 //go:embed contrib/completion/fish-completion.fish

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"os"
 	"regexp"
 	"slices"
 	"strconv"
@@ -199,6 +200,8 @@ func completeCommand(ctx commandContext) error {
 	requester := "unknown"
 	requesterVersion := 0
 
+	debugCompletion(fmt.Sprintf("args: `%s`", strings.Join(args, "`, `")))
+
 	// Parse requester as first argument. Format "[kind]:v[version]", e.g. "bash:v1"
 	if len(args) > 0 {
 		matcher := regexp.MustCompile(`^(bash|zsh|fish):v(\d+)$`)
@@ -228,8 +231,20 @@ func completeCommand(ctx commandContext) error {
 		for _, completion := range completions {
 			ctx.terminal.Println(completion)
 		}
+		debugCompletion(fmt.Sprintf("completions: `%s`", strings.Join(completions, "`, `")))
 	}
 	return nil
+}
+
+func debugCompletion(line string) {
+	debugFile := os.Getenv("RESTICPROFILE_DEBUG_COMPLETION")
+	if debugFile != "" {
+		f, err := os.OpenFile(debugFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err == nil {
+			defer f.Close()
+			fmt.Fprintln(f, line)
+		}
+	}
 }
 
 func showProfileOrGroup(ctx commandContext) error {
