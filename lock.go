@@ -81,8 +81,25 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-cha
 		}
 	}
 
-	// Run locked
-	defer runLock.Release()
+	// Run locked.
+	// Also install a signal watcher: if the process is terminated via a signal
+	// while run() is executing, os.Exit() in main's deferred function bypasses
+	// defer runLock.Release() — so we release the lock from a goroutine first.
+	released := make(chan struct{})
+	if sigChan != nil {
+		go func() {
+			select {
+			case <-sigChan:
+				runLock.Release()
+			case <-released:
+				// normal exit — defer below handles cleanup
+			}
+		}()
+	}
+	defer func() {
+		close(released)
+		runLock.Release()
+	}()
 	return run(runLock.SetPID)
 }
 

@@ -118,3 +118,31 @@ func TestLockRunWithLockAndCancel(t *testing.T) {
 	assert.Equal(t, 0, called)
 	assert.FileExists(t, lockfile)
 }
+
+func TestLockRunReleasesLockOnSignal(t *testing.T) {
+	// Verify that the lockfile is removed even when a signal fires during run(),
+	// simulating the os.Exit() path in main that bypasses defer chains.
+	lockfile := filepath.Join(t.TempDir(), "lockfile")
+	sigChan := make(chan os.Signal, 1)
+
+	started := make(chan struct{})
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		_ = lockRun(lockfile, false, nil, sigChan, func(setPID lock.SetPID) error {
+			close(started) // signal that we're inside run
+			// block until the signal goroutine has had time to fire
+			time.Sleep(200 * time.Millisecond)
+			return nil
+		})
+	}()
+
+	<-started
+	// send signal while run() is executing
+	sigChan <- os.Interrupt
+	<-done
+
+	// Lock file must be gone regardless of which cleanup path ran
+	assert.NoFileExists(t, lockfile)
+}
