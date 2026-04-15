@@ -2445,8 +2445,8 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "json": {
-            "title": "json",
+          "extended-status": {
+            "title": "extended-status",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
@@ -3363,6 +3363,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -3372,11 +3377,6 @@
           },
           "host": {
             "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
           },
           "keep-daily": {
             "title": "keep-daily",
@@ -4011,13 +4011,13 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
-          "host": {
-            "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
-          },
-          "json": {
-            "title": "json",
+          "extended-status": {
+            "title": "extended-status",
             "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
+          },
+          "host": {
+            "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
           },
           "key-hint": {
             "title": "key-hint",
@@ -4142,14 +4142,14 @@
             "description": "auto remove old cache directories",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "force": {
             "title": "force",
             "description": "apply a migration a second time",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5083,6 +5083,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -5092,11 +5097,6 @@
           },
           "host": {
             "$ref": "#/$defs/id-9eb097550c08524117d0906abd0d2a05"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
           },
           "keep-daily": {
             "title": "keep-daily",
