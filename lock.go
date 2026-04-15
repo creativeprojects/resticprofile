@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/creativeprojects/clog"
@@ -82,25 +84,40 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-cha
 	}
 
 	// Run locked.
-	// Also install a signal watcher: if the process is terminated via a signal
-	// while run() is executing, os.Exit() in main's deferred function bypasses
-	// defer runLock.Release() — so we release the lock from a goroutine first.
+	// Install a signal watcher: if the process is terminated via a signal while
+	// run() is executing, os.Exit() in main's deferred function bypasses normal
+	// defer chains, so the goroutine must release the lock first.
+	//
+	// Ownership rule: exactly one path calls Release() --
+	//   signal branch: goroutine calls it, sets signalReleased
+	//   normal branch: caller calls it after wg.Wait()
+	// sync.Once inside Lock.Release() is an extra safety layer.
+	var wg sync.WaitGroup
 	released := make(chan struct{})
+	var signalReleased atomic.Bool
+
 	if sigChan != nil {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			select {
 			case <-sigChan:
+				signalReleased.Store(true)
 				runLock.Release()
 			case <-released:
-				// normal exit — defer below handles cleanup
+				// normal exit -- caller owns Release()
 			}
 		}()
 	}
-	defer func() {
-		close(released)
+
+	err := run(runLock.SetPID)
+	close(released) // unblock goroutine if still waiting
+	wg.Wait()       // goroutine fully exited before we return
+
+	if !signalReleased.Load() {
 		runLock.Release()
-	}()
-	return run(runLock.SetPID)
+	}
+	return err
 }
 
 const logLockWaitEvery = 5 * time.Minute
