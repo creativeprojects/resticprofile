@@ -514,3 +514,78 @@ func TestGetEntries(t *testing.T) {
 		assert.Equal(t, "/some/bin/resticprofile --no-ansi --config config.yaml run-schedule backup@profile", entries[0].commandLine)
 	})
 }
+
+func TestAddWeekDays(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        string
+		expectError  bool
+		expectedDays []int
+	}{
+		{
+			name:         "empty string",
+			input:        "",
+			expectError:  false,
+			expectedDays: nil,
+		},
+		{
+			name:         "single day with trailing &&",
+			input:        `test $(date '+\%w') -eq 2 &&`,
+			expectError:  false,
+			expectedDays: []int{2},
+		},
+		{
+			name:         "single day with trailing && and spaces",
+			input:        `test $(date '+\%w') -eq 5 && `,
+			expectError:  false,
+			expectedDays: []int{5},
+		},
+		{
+			name:         "two days with trailing &&",
+			input:        `test $(date '+\%w') -eq 2 || test $(date '+\%w') -eq 3 &&`,
+			expectError:  false,
+			expectedDays: []int{2, 3},
+		},
+		{
+			name:         "three days with trailing &&",
+			input:        `test $(date '+\%w') -eq 1 || test $(date '+\%w') -eq 3 || test $(date '+\%w') -eq 5 &&`,
+			expectError:  false,
+			expectedDays: []int{1, 3, 5},
+		},
+		{
+			name:         "sunday (day 0)",
+			input:        `test $(date '+\%w') -eq 0 &&`,
+			expectError:  false,
+			expectedDays: []int{0},
+		},
+		{
+			name:         "saturday (day 6)",
+			input:        `test $(date '+\%w') -eq 6 &&`,
+			expectError:  false,
+			expectedDays: []int{6},
+		},
+		{
+			name:        "invalid day out of range",
+			input:       `test $(date '+\%w') -eq 9 &&`,
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event := calendar.NewEvent()
+			err := addWeekDays(tt.input, event)
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			if len(tt.expectedDays) == 0 {
+				assert.False(t, event.WeekDay.HasValue())
+			} else {
+				assert.True(t, event.WeekDay.HasValue())
+				assert.Equal(t, tt.expectedDays, event.WeekDay.GetRangeValues())
+			}
+		})
+	}
+}
