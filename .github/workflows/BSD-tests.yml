@@ -2,15 +2,15 @@ name: Run tests on BSDs
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [ master ]
-  #   paths-ignore:
-  #     - 'docs/**'
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
 
-  # pull_request:
-  #   types: [opened, synchronize, reopened]
-  #   paths-ignore:
-  #     - 'docs/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   test-freebsd:
@@ -36,7 +36,7 @@ jobs:
           GOOS: freebsd
 
       - name: Run tests in VM
-        uses: cross-platform-actions/action@v0.32.0
+        uses: cross-platform-actions/action@v1
         with:
           operating_system: freebsd
           version: '${{ matrix.freebsd_version }}'
@@ -70,7 +70,7 @@ jobs:
           GOOS: netbsd
 
       - name: Run tests in VM
-        uses: cross-platform-actions/action@v0.32.0
+        uses: cross-platform-actions/action@v1
         with:
           operating_system: netbsd
           version: '${{ matrix.netbsd_version }}'
@@ -104,7 +104,7 @@ jobs:
           GOOS: openbsd
 
       - name: Run tests in VM
-        uses: cross-platform-actions/action@v0.32.0
+        uses: cross-platform-actions/action@v1
         with:
           operating_system: openbsd
           version: '${{ matrix.openbsd_version }}'

@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux || freebsd || openbsd || netbsd
 
 package util
 
@@ -36,7 +36,7 @@ func TestResolveExecutable(t *testing.T) {
 	})
 
 	t.Run("command in PATH", func(t *testing.T) {
-		// Testing with "ls" which should be available on most Linux systems
+		// Testing with "ls" which should be available on all unix systems
 		path, err := resolveExecutable("ls")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, path)
