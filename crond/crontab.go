@@ -56,9 +56,8 @@ const (
 )
 
 var (
-	legacyPattern          = regexp.MustCompile(timeExp + userExp + workDirExp + legacyExp)
-	runSchedulePattern     = regexp.MustCompile(timeExp + userExp + dayOfWeekExtra + workDirExp + runScheduleExp)
-	singleDayOfWeekPattern = regexp.MustCompile(singleDayOfWeekExp)
+	legacyPattern      = regexp.MustCompile(timeExp + userExp + workDirExp + legacyExp)
+	runSchedulePattern = regexp.MustCompile(timeExp + userExp + dayOfWeekExtra + workDirExp + runScheduleExp)
 )
 
 var (
@@ -454,6 +453,6 @@ func addWeekDays(weekDaysExtra string, event *calendar.Event) {
 		}
 		digit := part[len(part)-1]
 		dayNum := int(digit - '0')
-		event.WeekDay.AddValue(dayNum)
+		_ = event.WeekDay.AddValue(dayNum)
 	}
 }
