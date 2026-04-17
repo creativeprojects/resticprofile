@@ -86,6 +86,14 @@ func TestDeleteLine(t *testing.T) {
 		{"#\n#\n#\n00,30 * * * *	cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
 		{"#\n#\n#\n00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
 		{"#\n#\n#\n00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n00,30 * * * *	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
+		{"#\n#\n#\n00,30 * * * *	user	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 0 && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 0 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n00,30 * * * *	test $(date '+\\%w') -eq 0 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
+		{"#\n#\n#\n00,30 * * * *	user	test $(date '+\\%w') -eq 0 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
 	}
 
 	for _, testRun := range testData {
