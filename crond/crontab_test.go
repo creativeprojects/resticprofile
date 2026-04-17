@@ -373,6 +373,20 @@ func TestParseEntry(t *testing.T) {
 		_ = e.Minute.AddValue(0)
 		_ = e.Minute.AddValue(30)
 	})
+	scheduledEventOnMondays := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+		_ = e.WeekDay.AddValue(1)
+	})
+
+	scheduledEventOnSundaysAndWednesdays := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+		_ = e.WeekDay.AddValue(0)
+		_ = e.WeekDay.AddValue(3)
+	})
 	testData := []struct {
 		source      string
 		expectEntry *Entry
@@ -416,6 +430,23 @@ func TestParseEntry(t *testing.T) {
 		{
 			source:      "00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
 			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+		},
+		// with day of week extra
+		{
+			source:      "00,30 * * * *	test $(date '+\\%w') -eq 1 && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "", event: scheduledEventOnMondays, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+		},
+		{
+			source:      "00,30 * * * *	user	test $(date '+\\%w') -eq 0 || test $(date '+\\%w') -eq 3 && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", event: scheduledEventOnSundaysAndWednesdays, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+		},
+		{
+			source:      "00,30 * * * *	test $(date '+\\%w') -eq 0 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", event: scheduledEventOnSundaysAndWednesdays, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+		},
+		{
+			source:      "00,30 * * * *	user	test $(date '+\\%w') -eq 1 && cd /workdir && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", event: scheduledEventOnMondays, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
 		},
 	}
 

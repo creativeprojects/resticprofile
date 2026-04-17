@@ -75,7 +75,7 @@ func (e Entry) String() string {
 			days := e.event.WeekDay.GetRangeValues()
 			dayTests := make([]string, len(days))
 			for i, day := range days {
-				dayTests[i] = fmt.Sprintf("test $(date '+\\%%u') -eq %s ", formatWeekDay(day))
+				dayTests[i] = fmt.Sprintf("test $(date '+\\%%w') -eq %s ", formatWeekDay(day))
 			}
 			dayTest = strings.Join(dayTests, "|| ") + "&& "
 		}
