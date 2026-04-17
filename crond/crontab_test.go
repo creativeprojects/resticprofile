@@ -86,6 +86,14 @@ func TestDeleteLine(t *testing.T) {
 		{"#\n#\n#\n00,30 * * * *	cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
 		{"#\n#\n#\n00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
 		{"#\n#\n#\n00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n00,30 * * * *	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
+		{"#\n#\n#\n00,30 * * * *	user	test $(date '+\\%w') -eq 2 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 0 && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n# 00,30 * * * *	test $(date '+\\%w') -eq 0 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", false},
+		{"#\n#\n#\n00,30 * * * *	test $(date '+\\%w') -eq 0 && cd /workdir && /home/resticprofile --no-ansi --config \"config.yaml\" run-schedule backup@profile\n", true},
+		{"#\n#\n#\n00,30 * * * *	user	test $(date '+\\%w') -eq 0 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile\n", true},
 	}
 
 	for _, testRun := range testData {
@@ -373,6 +381,20 @@ func TestParseEntry(t *testing.T) {
 		_ = e.Minute.AddValue(0)
 		_ = e.Minute.AddValue(30)
 	})
+	scheduledEventOnMondays := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+		_ = e.WeekDay.AddValue(1)
+	})
+
+	scheduledEventOnSundaysAndWednesdays := calendar.NewEvent(func(e *calendar.Event) {
+		_ = e.Second.AddValue(0)
+		_ = e.Minute.AddValue(0)
+		_ = e.Minute.AddValue(30)
+		_ = e.WeekDay.AddValue(0)
+		_ = e.WeekDay.AddValue(3)
+	})
 	testData := []struct {
 		source      string
 		expectEntry *Entry
@@ -416,6 +438,23 @@ func TestParseEntry(t *testing.T) {
 		{
 			source:      "00,30 * * * *	user	cd /workdir && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
 			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", event: scheduledEvent, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+		},
+		// with day of week extra
+		{
+			source:      "00,30 * * * *	test $(date '+\\%w') -eq 1 && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "", event: scheduledEventOnMondays, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+		},
+		{
+			source:      "00,30 * * * *	user	test $(date '+\\%w') -eq 0 || test $(date '+\\%w') -eq 3 && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", event: scheduledEventOnSundaysAndWednesdays, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
+		},
+		{
+			source:      "00,30 * * * *	test $(date '+\\%w') -eq 0 || test $(date '+\\%w') -eq 3 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", event: scheduledEventOnSundaysAndWednesdays, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+		},
+		{
+			source:      "00,30 * * * *	user	test $(date '+\\%w') -eq 1 && cd /workdir && /home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config file.yaml", profileName: "profile", commandName: "backup", user: "user", workDir: "/workdir", event: scheduledEventOnMondays, commandLine: "/home/resticprofile --no-ansi --config \"config file.yaml\" run-schedule backup@profile"},
 		},
 	}
 
@@ -474,4 +513,79 @@ func TestGetEntries(t *testing.T) {
 		assert.Equal(t, "workdir", entries[0].workDir)
 		assert.Equal(t, "/some/bin/resticprofile --no-ansi --config config.yaml run-schedule backup@profile", entries[0].commandLine)
 	})
+}
+
+func TestAddWeekDays(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        string
+		expectError  bool
+		expectedDays []int
+	}{
+		{
+			name:         "empty string",
+			input:        "",
+			expectError:  false,
+			expectedDays: nil,
+		},
+		{
+			name:         "single day with trailing &&",
+			input:        `test $(date '+\%w') -eq 2 &&`,
+			expectError:  false,
+			expectedDays: []int{2},
+		},
+		{
+			name:         "single day with trailing && and spaces",
+			input:        `test $(date '+\%w') -eq 5 && `,
+			expectError:  false,
+			expectedDays: []int{5},
+		},
+		{
+			name:         "two days with trailing &&",
+			input:        `test $(date '+\%w') -eq 2 || test $(date '+\%w') -eq 3 &&`,
+			expectError:  false,
+			expectedDays: []int{2, 3},
+		},
+		{
+			name:         "three days with trailing &&",
+			input:        `test $(date '+\%w') -eq 1 || test $(date '+\%w') -eq 3 || test $(date '+\%w') -eq 5 &&`,
+			expectError:  false,
+			expectedDays: []int{1, 3, 5},
+		},
+		{
+			name:         "sunday (day 0)",
+			input:        `test $(date '+\%w') -eq 0 &&`,
+			expectError:  false,
+			expectedDays: []int{0},
+		},
+		{
+			name:         "saturday (day 6)",
+			input:        `test $(date '+\%w') -eq 6 &&`,
+			expectError:  false,
+			expectedDays: []int{6},
+		},
+		{
+			name:        "invalid day out of range",
+			input:       `test $(date '+\%w') -eq 9 &&`,
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event := calendar.NewEvent()
+			err := addWeekDays(tt.input, event)
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			if len(tt.expectedDays) == 0 {
+				assert.False(t, event.WeekDay.HasValue())
+			} else {
+				assert.True(t, event.WeekDay.HasValue())
+				assert.Equal(t, tt.expectedDays, event.WeekDay.GetRangeValues())
+			}
+		})
+	}
 }
