@@ -4,6 +4,8 @@ package lock
 
 import (
 	"bytes"
+	"os"
+	"os/signal"
 	"path/filepath"
 	"testing"
 
@@ -36,4 +38,34 @@ func TestProcessPID(t *testing.T) {
 	running, err := process.PidExists(childPID)
 	assert.NoError(t, err)
 	assert.False(t, running)
+}
+
+func TestForceLockWithExpiredPID(t *testing.T) {
+	t.Parallel()
+
+	tempfile := getTempfile(t)
+	lock := NewLock(tempfile)
+	defer lock.Release()
+
+	assert.True(t, lock.TryAcquire())
+	assert.True(t, lock.HasLocked())
+
+	// run a child process
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	defer signal.Reset(os.Interrupt)
+
+	cmd := shell.NewSignalledCommand("echo", []string{"Hello World!"}, c)
+	cmd.SetPID = lock.SetPID
+	_, _, err := cmd.Run()
+	require.NoError(t, err)
+
+	// child process should be finished
+	// let's close the lockfile handle manually (unix doesn't actually care, but windows would complain)
+	lock.file.Close()
+
+	other := NewLock(tempfile)
+	defer other.Release()
+	assert.True(t, other.ForceAcquire())
+	assert.True(t, other.HasLocked())
 }
