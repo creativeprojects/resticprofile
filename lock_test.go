@@ -118,3 +118,24 @@ func TestLockRunWithLockAndCancel(t *testing.T) {
 	assert.Equal(t, 0, called)
 	assert.FileExists(t, lockfile)
 }
+
+func TestLockRunReleasesLockOnSignal(t *testing.T) {
+	lockfile := filepath.Join(t.TempDir(), "lockfile")
+	sigChan := make(chan os.Signal, 1)
+
+	started := make(chan struct{})
+
+	go func() {
+		<-started
+		sigChan <- os.Interrupt
+	}()
+
+	_ = lockRun(lockfile, false, nil, sigChan, func(setPID lock.SetPID) error {
+		close(started)
+		time.Sleep(200 * time.Millisecond)
+		return nil
+	})
+
+	// Lock file must be gone
+	assert.NoFileExists(t, lockfile)
+}
