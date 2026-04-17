@@ -1,4 +1,4 @@
-//go:build linux
+//go:build !darwin && !windows
 
 package util
 
