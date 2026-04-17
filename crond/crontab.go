@@ -19,7 +19,7 @@ const (
 	endMarker          = "### end of resticprofile content, please leave this line intact ###\n"
 	timeExp            = `^(([\d,\/\-\*]+[ \t]?){5})`
 	userExp            = `[\t]+(\w+[\t]+)?`
-	singleDayOfWeekExp = `test\s+\$\(date\s+'\+\\%w'\)\s+-eq\s+\d+`
+	singleDayOfWeekExp = `test\s+\$\(date\s+'\+\\%w'\)\s+-eq\s+\d`
 	dayOfWeekExtra     = `((?:` + singleDayOfWeekExp + `)(?:\s*\|\|\s*` + singleDayOfWeekExp + `)*\s*&&\s*)?`
 	workDirExp         = `(cd .+ && )?`
 	configExp          = `[^\s]+.+--config[ =]"?([^"\n]+)"?`
@@ -408,13 +408,15 @@ func parseEntry(line string) (*Entry, error) {
 	// then try the current pattern
 	matches = runSchedulePattern.FindStringSubmatch(line)
 	if len(matches) == indexCount {
-		fmt.Printf("matches: %q", matches)
 		event, err := parseEvent(matches[indexEvent])
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse %q: %w", matches[indexEvent], err)
 		}
 		if len(matches[indexDayOfWeekTest]) > 0 {
-			addWeekDays(matches[indexDayOfWeekTest], event)
+			err := addWeekDays(matches[indexDayOfWeekTest], event)
+			if err != nil {
+				return nil, fmt.Errorf("parsing %q: %w", matches[indexDayOfWeekTest], err)
+			}
 		}
 		return &Entry{
 			event:       event,
@@ -437,9 +439,9 @@ func getWorkdirValue(workdir string) string {
 	return strings.TrimSuffix(strings.TrimPrefix(workdir, "cd "), " && ")
 }
 
-func addWeekDays(weekDaysExtra string, event *calendar.Event) {
+func addWeekDays(weekDaysExtra string, event *calendar.Event) error {
 	if len(weekDaysExtra) == 0 {
-		return
+		return nil
 	}
 	weekDaysExtra = strings.TrimSpace(weekDaysExtra)
 	weekDaysExtra = strings.TrimSuffix(weekDaysExtra, "&&")
@@ -453,6 +455,10 @@ func addWeekDays(weekDaysExtra string, event *calendar.Event) {
 		}
 		digit := part[len(part)-1]
 		dayNum := int(digit - '0')
-		_ = event.WeekDay.AddValue(dayNum)
+		err := event.WeekDay.AddValue(dayNum)
+		if err != nil {
+			return fmt.Errorf("invalid weekday %d: %w", dayNum, err)
+		}
 	}
+	return nil
 }
