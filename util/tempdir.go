@@ -61,8 +61,11 @@ func createTempDir(path string) (tempDir string, tempDirErr error) {
 	} else {
 		cacheDir, err := os.UserCacheDir()
 		if err == nil {
-			if temp, err = os.MkdirTemp(cacheDir, tempDirPattern); err == nil {
-				tempDir = temp
+			// the cache dir might not be existing
+			if err = os.MkdirAll(cacheDir, 0o700); err == nil {
+				if temp, err = os.MkdirTemp(cacheDir, tempDirPattern); err == nil {
+					tempDir = temp
+				}
 			}
 		}
 		if err != nil {
