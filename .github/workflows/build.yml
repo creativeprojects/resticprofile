@@ -30,7 +30,7 @@ jobs:
       - name: Dotenv Action
         uses: falti/dotenv-action@v1
         with:
-          path: .github/workflows/.env
+          path: .github/workflows/env
           log-variables: true
 
       - name: Set up Go ${{ matrix.go_version }}
