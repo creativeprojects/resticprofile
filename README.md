@@ -7,6 +7,7 @@
 [![Test on NetBSD](https://github.com/creativeprojects/resticprofile/actions/workflows/netbsd.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/netbsd.yml)
 
 [![Test SSH client](https://github.com/creativeprojects/resticprofile/actions/workflows/ssh.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/ssh.yml)
+[![Build Documentation](https://github.com/creativeprojects/resticprofile/actions/workflows/doc.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/doc.yml)
 
 [![codecov](https://codecov.io/gh/creativeprojects/resticprofile/branch/master/graph/badge.svg?token=cUozgF9j4I)](https://codecov.io/gh/creativeprojects/resticprofile)
 
