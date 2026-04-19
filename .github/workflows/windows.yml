@@ -1,4 +1,4 @@
-name: Build and run tests on Linux
+name: Build and run tests on macOS
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
 
 jobs:
   build:
-    name: Build and run tests on Linux
+    name: Build and run tests on macOS
     uses: ./.github/workflows/run-tests-os.yml
     with:
-      os: 'ubuntu-latest'
+      os: 'macos-latest'
     secrets: inherit

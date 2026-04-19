@@ -1,4 +1,4 @@
-name: Build and run tests on Linux
+name: Build and run tests on Windows
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
 
 jobs:
   build:
-    name: Build and run tests on Linux
+    name: Build and run tests on Windows
     uses: ./.github/workflows/run-tests-os.yml
     with:
-      os: 'ubuntu-latest'
+      os: 'windows-latest'
     secrets: inherit
