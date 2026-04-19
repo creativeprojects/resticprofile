@@ -1,4 +1,4 @@
-name: Test on FreeBSD
+name: Test on NetBSD
 
 on:
   workflow_dispatch:
@@ -17,9 +17,9 @@ jobs:
     name: Run tests
     strategy:
       matrix:
-        freebsd_version: ['14.3', '15.0']
+        netbsd_version: ['10.1']
     uses: ./.github/workflows/run-tests-vm.yml
     with:
-      os: 'freebsd'
-      os_version: '${{ matrix.freebsd_version }}'
+      os: 'netbsd'
+      os_version: '${{ matrix.netbsd_version }}'
     secrets: inherit

@@ -17,10 +17,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
+      - name: Dotenv Action
+        id: dotenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: .github/workflows/env
+          log-variables: true
+
+      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
         uses: actions/setup-go@v6
         with:
-          go-version: "1.26"
+          go-version: ${{ steps.dotenv.outputs.go_version }}
           check-latest: true
           cache: true
 

@@ -1,4 +1,4 @@
-name: Build and run tests on macOS
+name: Test on Windows
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
 
 jobs:
   build:
-    name: Build and run tests on macOS
+    name: Build and run tests on Windows
     uses: ./.github/workflows/run-tests-os.yml
     with:
-      os: 'macos-latest'
+      os: 'windows-latest'
     secrets: inherit
