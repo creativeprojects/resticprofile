@@ -1,59 +1,53 @@
-name: Build
+name: Run tests workflow
 
 on:
-  push:
-    branches: [ master ]
-    paths-ignore:
-      - 'docs/**'
-
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths-ignore:
-      - 'docs/**'
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+      go_version:
+        required: true
+        type: string
+      lint_version:
+        required: true
+        type: string
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+      CODECOV_TOKEN:
+        required: true
 
 jobs:
   build:
-    name: Build and test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    name: Build and run test on ${{ inputs.os }}
+    runs-on: ${{ inputs.os }}
     env:
-      OS: ${{ matrix.os }}
-      GO: '1.26'
+      OS: ${{ inputs.os }}
+      GO: ${{ inputs.go_version }}
 
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v6
-
-      - name: Dotenv Action
-        id: dotenv
-        uses: falti/dotenv-action@v1
-        with:
-          path: .github/workflows/env
-          log-variables: true
-
-      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
+      - name: Set up Go ${{ inputs.go_version }}
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ steps.dotenv.outputs.go_version }}
+          go-version: ${{ inputs.go_version }}
           check-latest: true
           cache: true
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: ${{ steps.dotenv.outputs.lint_version }}
+          version: ${{ inputs.lint_version }}
           args: --timeout=30m
+
+      - name: Build
+        run: make build
 
       - name: Test
         run: make test-ci
         env:
           TEST_FUSE: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build
-        run: make build
 
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v6
