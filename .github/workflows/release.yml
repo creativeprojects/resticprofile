@@ -1,4 +1,4 @@
-name: goreleaser
+name: Publish release
 
 on:
   workflow_dispatch:
@@ -17,11 +17,19 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
 
-      - name: Set up Go
+      - name: Dotenv Action
+        id: dotenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: .github/workflows/env
+          log-variables: true
+
+      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
         uses: actions/setup-go@v6
         with:
-          go-version: ~1.26
+          go-version: ${{ steps.dotenv.outputs.go_version }}
           check-latest: true
+          cache: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4

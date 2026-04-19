@@ -1,6 +1,15 @@
-![Build](https://github.com/creativeprojects/resticprofile/workflows/Build/badge.svg)
-![Run tests on FreeBSD, OpenBSD, NetBSD](https://github.com/creativeprojects/resticprofile/actions/workflows/BSD-tests.yml/badge.svg)
+[![Test on Linux](https://github.com/creativeprojects/resticprofile/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/ubuntu.yml)
+[![Test on macOS](https://github.com/creativeprojects/resticprofile/actions/workflows/macos.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/macos.yml)
+[![Test on Windows](https://github.com/creativeprojects/resticprofile/actions/workflows/windows.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/windows.yml)
+
+[![Test on OpenBSD](https://github.com/creativeprojects/resticprofile/actions/workflows/openbsd.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/openbsd.yml)
+[![Test on FreeBSD](https://github.com/creativeprojects/resticprofile/actions/workflows/freebsd.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/freebsd.yml)
+[![Test on NetBSD](https://github.com/creativeprojects/resticprofile/actions/workflows/netbsd.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/netbsd.yml)
+
+[![Test SSH client](https://github.com/creativeprojects/resticprofile/actions/workflows/ssh.yml/badge.svg)](https://github.com/creativeprojects/resticprofile/actions/workflows/ssh.yml)
+
 [![codecov](https://codecov.io/gh/creativeprojects/resticprofile/branch/master/graph/badge.svg?token=cUozgF9j4I)](https://codecov.io/gh/creativeprojects/resticprofile)
+
 
 # resticprofile
 Configuration profiles manager for [restic backup](https://restic.net/)
