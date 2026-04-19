@@ -1,0 +1,25 @@
+name: Test on NetBSD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  build:
+    name: Run tests
+    strategy:
+      matrix:
+        netbsd_version: ['10.1']
+    uses: ./.github/workflows/run-tests-vm.yml
+    with:
+      os: 'netbsd'
+      os_version: '${{ matrix.netbsd_version }}'
+    secrets: inherit

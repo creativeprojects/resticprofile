@@ -1,0 +1,25 @@
+name: Test on OpenBSD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  build:
+    name: Run tests
+    strategy:
+      matrix:
+        Openbsd_version: ['7.8']
+    uses: ./.github/workflows/run-tests-vm.yml
+    with:
+      os: 'openbsd'
+      os_version: '${{ matrix.Openbsd_version }}'
+    secrets: inherit

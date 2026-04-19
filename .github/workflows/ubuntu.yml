@@ -1,0 +1,20 @@
+name: Test on Linux
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  build:
+    name: Build and run tests on Linux
+    uses: ./.github/workflows/run-tests-os.yml
+    with:
+      os: 'ubuntu-latest'
+    secrets: inherit
