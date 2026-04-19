@@ -1,0 +1,25 @@
+name: Run tests on FreeBSD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  build:
+    name: FreeBSD
+    strategy:
+      matrix:
+        freebsd_version: ['14.3', '15.0']
+    uses: ./.github/workflows/run-tests-vm.yml
+    with:
+      os: 'freebsd'
+      os_version: '${{ matrix.freebsd_version }}'
+    secrets: inherit
