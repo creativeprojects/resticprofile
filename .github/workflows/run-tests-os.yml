@@ -51,7 +51,7 @@ jobs:
           OS: ${{ inputs.os }}
           GO: ${{ steps.dotenv.outputs.go_version }}
         with:
-          name: code-coverage-report-${{ matrix.os }}
+          name: code-coverage-report-${{ inputs.os }}
           env_vars: OS,GO
           files: ./coverage.out
           flags: unittests
