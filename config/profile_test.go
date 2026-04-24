@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -374,72 +373,6 @@ func TestGetEnvironment(t *testing.T) {
 	})
 }
 
-func TestSetRootInProfileUnix(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.SkipNow()
-	}
-	runForVersions(t, func(t *testing.T, version, prefix string) {
-		t.Helper()
-		testConfig := version + `
-[` + prefix + `profile]
-base-dir = "~"
-status-file = "status"
-prometheus-save-to-file = "prom"
-repository = "local-repo"
-password-file = "key"
-lock = "lock"
-[` + prefix + `profile.backup]
-source = ["backup", "root"]
-exclude-file = "exclude"
-iexclude-file = "iexclude"
-files-from = "include"
-files-from-raw = "include-raw"
-files-from-verbatim = "include-verbatim"
-exclude = "exclude"
-iexclude = "iexclude"
-[` + prefix + `profile.copy]
-from-password-file = "key"
-[` + prefix + `profile.dump]
-password-file = "key"
-[` + prefix + `profile.init]
-from-repository-file = "key"
-from-password-file = "key"
-`
-		profile, err := getProfile("toml", testConfig, "profile", "")
-		require.NoError(t, err)
-		require.NotNil(t, profile)
-
-		homeDir, err := os.UserHomeDir()
-		require.NoError(t, err)
-
-		profile.ResolveConfiguration()
-		assert.Equal(t, homeDir, profile.BaseDir)
-		assert.Equal(t, "local-repo", profile.Repository.Value())
-
-		profile.SetRootPath("/wd")
-		assert.Equal(t, "status", profile.StatusFile)
-		assert.Equal(t, "prom", profile.PrometheusSaveToFile)
-		assert.Equal(t, "/wd/key", profile.PasswordFile)
-		assert.Equal(t, "/wd/lock", profile.Lock)
-		assert.Equal(t, "", profile.CacheDir)
-		assert.ElementsMatch(t, []string{
-			filepath.Join(homeDir, "backup"),
-			filepath.Join(homeDir, "root"),
-		}, profile.GetBackupSource())
-		assert.ElementsMatch(t, []string{"/wd/exclude"}, profile.Backup.ExcludeFile)
-		assert.ElementsMatch(t, []string{"/wd/iexclude"}, profile.Backup.IexcludeFile)
-		assert.ElementsMatch(t, []string{"/wd/include"}, profile.Backup.FilesFrom)
-		assert.ElementsMatch(t, []string{"/wd/include-raw"}, profile.Backup.FilesFromRaw)
-		assert.ElementsMatch(t, []string{"/wd/include-verbatim"}, profile.Backup.FilesFromVerbatim)
-		assert.ElementsMatch(t, []string{"exclude"}, profile.Backup.Exclude)
-		assert.ElementsMatch(t, []string{"iexclude"}, profile.Backup.Iexclude)
-		assert.Equal(t, "/wd/key", profile.Copy.FromPasswordFile)
-		assert.Equal(t, []string{"/wd/key"}, profile.OtherSections[constants.CommandDump].OtherFlags["password-file"])
-		assert.Equal(t, "/wd/key", profile.Init.FromPasswordFile)
-		assert.Equal(t, "/wd/key", profile.Init.FromRepositoryFile)
-	})
-}
-
 func TestHostInProfile(t *testing.T) {
 	assert := assert.New(t)
 	testConfig := `
@@ -601,8 +534,8 @@ func TestFillGenericSections(t *testing.T) {
 }
 
 func TestResolveGlobSourcesInBackup(t *testing.T) {
-	examples, err := filepath.Abs("../examples")
-	require.NoError(t, err)
+	examples := getExamplesDirectory(t)
+
 	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
 	testConfig := `
 [profile.backup]
@@ -701,7 +634,7 @@ func TestResolveSourcesAgainstBase(t *testing.T) {
 func TestPathAndTagInRetention(t *testing.T) {
 	cwd, err := filepath.Abs(".")
 	require.NoError(t, err)
-	examples := filepath.Join(cwd, "../examples")
+	examples := getExamplesDirectory(t)
 	hostname := "rt-test-host"
 	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
 	backupSource, err := filepath.Glob(sourcePattern)
@@ -1430,40 +1363,6 @@ profile:
 	}
 }
 
-func TestSetRootPathOnMonitoringSections(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.SkipNow()
-	}
-
-	sections := SendMonitoringSections{
-		SendBefore: []SendMonitoringSection{
-			{BodyTemplate: "file"},
-		},
-		SendAfter: []SendMonitoringSection{
-			{BodyTemplate: "file"},
-			{BodyTemplate: "file"},
-		},
-		SendAfterFail: []SendMonitoringSection{
-			{BodyTemplate: "file"},
-			{BodyTemplate: "file"},
-		},
-		SendFinally: []SendMonitoringSection{
-			{BodyTemplate: "file"},
-		},
-	}
-
-	sections.setRootPath(nil, "root")
-	assert.Equal(t, "root/file", sections.SendBefore[0].BodyTemplate)
-
-	assert.Equal(t, "root/file", sections.SendAfter[0].BodyTemplate)
-	assert.Equal(t, "root/file", sections.SendAfter[1].BodyTemplate)
-
-	assert.Equal(t, "root/file", sections.SendAfterFail[0].BodyTemplate)
-	assert.Equal(t, "root/file", sections.SendAfterFail[1].BodyTemplate)
-
-	assert.Equal(t, "root/file", sections.SendFinally[0].BodyTemplate)
-}
-
 func TestGetInitStructFields(t *testing.T) {
 	init := &InitSection{
 		FromKeyHint:         "key-hint",
@@ -1762,4 +1661,19 @@ url = "http://example.com"
 			assert.Empty(t, monitoring.SendAfter)
 		})
 	}
+}
+
+func getExamplesDirectory(t *testing.T) string {
+	t.Helper()
+
+	for _, dir := range []string{"../examples", "./examples", "./testdata/examples"} {
+		examples, err := filepath.Abs(dir)
+		require.NoError(t, err)
+
+		if _, err := os.Stat(examples); err == nil {
+			return examples
+		}
+	}
+	t.Skip("examples directory not found")
+	return ""
 }

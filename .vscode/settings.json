@@ -19,5 +19,6 @@
     "githubPullRequests.ignoredPullRequestBranches": [
         "master"
     ],
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+    "go.buildTags": "ssh fuse"
 }

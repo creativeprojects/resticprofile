@@ -1,0 +1,48 @@
+name: Run tests inside a QEMU VM
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+      os_version:
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Dotenv Action
+        id: dotenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: .github/workflows/env
+          log-variables: true
+
+      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ steps.dotenv.outputs.go_version }}
+          check-latest: true
+          cache: true
+
+      - name: Build tests
+        run: |
+          make compile-tests
+        env:
+          GOOS: ${{ inputs.os }}
+
+      - name: Run tests in VM
+        uses: cross-platform-actions/action@v1
+        with:
+          operating_system: ${{ inputs.os }}
+          version: '${{ inputs.os_version }}'
+          memory: 8G
+          cpu_count: 4
+          run: |
+            ./scripts/run-tests.sh

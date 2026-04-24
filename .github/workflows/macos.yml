@@ -1,0 +1,20 @@
+name: Test on macOS
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  build:
+    name: Build and run tests on macOS
+    uses: ./.github/workflows/run-tests-os.yml
+    with:
+      os: 'macos-latest'
+    secrets: inherit

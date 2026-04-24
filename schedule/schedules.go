@@ -11,16 +11,16 @@ import (
 	"github.com/creativeprojects/resticprofile/term"
 )
 
-func displayHeader(profile, command string, index, total int) {
-	term.Print(platform.LineSeparator)
+func displayHeader(terminal *term.Terminal, profile, command string, index, total int) {
+	terminal.Print(platform.LineSeparator)
 	header := fmt.Sprintf("Profile (or Group) %s: %s schedule", profile, command)
 	if total > 1 {
 		header += fmt.Sprintf(" %d/%d", index, total)
 	}
-	term.Print(header)
-	term.Print(platform.LineSeparator)
-	term.Print(strings.Repeat("=", len(header)))
-	term.Print(platform.LineSeparator)
+	terminal.Print(header)
+	terminal.Print(platform.LineSeparator)
+	terminal.Print(strings.Repeat("=", len(header)))
+	terminal.Print(platform.LineSeparator)
 }
 
 // parseSchedules creates a *calendar.Event from a string
@@ -40,20 +40,20 @@ func parseSchedules(schedules []string) ([]*calendar.Event, error) {
 	return events, nil
 }
 
-func displayParsedSchedules(profile, command string, events []*calendar.Event) {
+func displayParsedSchedules(terminal *term.Terminal, profile, command string, events []*calendar.Event) {
 	now := time.Now().Round(time.Second)
 	for index, event := range events {
-		displayHeader(profile, command, index+1, len(events))
+		displayHeader(terminal, profile, command, index+1, len(events))
 		next := event.Next(now)
-		term.Printf("  Original form: %s\n", event.Input())
-		term.Printf("Normalized form: %s\n", event.String())
+		terminal.Printf("  Original form: %s\n", event.Input())
+		terminal.Printf("Normalized form: %s\n", event.String())
 		if next.IsZero() {
-			term.Print("    Next elapse: never\n")
+			terminal.Print("    Next elapse: never\n")
 			continue
 		}
-		term.Printf("    Next elapse: %s\n", next.Format(time.UnixDate))
-		term.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
-		term.Printf("       From now: %s left\n", next.Sub(now))
+		terminal.Printf("    Next elapse: %s\n", next.Format(time.UnixDate))
+		terminal.Printf("       (in UTC): %s\n", next.UTC().Format(time.UnixDate))
+		terminal.Printf("       From now: %s left\n", next.Sub(now))
 	}
-	term.Print(platform.LineSeparator)
+	terminal.Print(platform.LineSeparator)
 }

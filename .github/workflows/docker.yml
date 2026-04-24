@@ -8,6 +8,7 @@ on:
 
 jobs:
   goreleaser:
+    name: Rebuild docker image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,11 +22,19 @@ jobs:
           export LATEST_TAG=`git describe --tags --abbrev=0`
           git checkout $LATEST_TAG
 
-      - name: Set up Go
+      - name: Dotenv Action
+        id: dotenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: .github/workflows/env
+          log-variables: true
+
+      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
         uses: actions/setup-go@v6
         with:
-          go-version: ~1.26
+          go-version: ${{ steps.dotenv.outputs.go_version }}
           check-latest: true
+          cache: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4

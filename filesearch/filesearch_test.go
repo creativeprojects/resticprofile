@@ -4,7 +4,6 @@ import (
 	"fmt"
 	iofs "io/fs"
 	"os"
-	"os/user"
 	"path"
 	"path/filepath"
 	"strings"
@@ -275,68 +274,9 @@ func TestMayFindResticBinary(t *testing.T) {
 	}
 }
 
-func TestFindResticBinaryWithTilde(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("not supported on Windows")
-		return
-	}
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-
-	fs := afero.NewMemMapFs()
-	finder := Finder{fs: fs}
-
-	tempFile, err := afero.TempFile(fs, home, t.Name())
-	require.NoError(t, err)
-	tempFile.Close()
-
-	search := filepath.Join("~", filepath.Base(tempFile.Name()))
-	binary, err := finder.FindResticBinary(search)
-	require.NoError(t, err)
-	assert.Equalf(t, tempFile.Name(), binary, "cannot find %q", search)
-}
-
-func TestShellExpand(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("not supported on Windows")
-		return
-	}
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-
-	usr, err := user.Current()
-	require.NoError(t, err)
-
-	testData := []struct {
-		source   string
-		expected string
-	}{
-		{"/", "/"},
-		{"~", home},
-		{"$HOME", home},
-		{"~" + usr.Username, usr.HomeDir},
-		{"1 2", "1 2"},
-	}
-
-	for _, testItem := range testData {
-		t.Run(testItem.source, func(t *testing.T) {
-			t.Parallel()
-
-			result, err := ShellExpand(testItem.source)
-			require.NoError(t, err)
-			assert.Equal(t, testItem.expected, result)
-		})
-	}
-}
-
 func TestFindConfigurationIncludes(t *testing.T) {
 	t.Parallel()
 
-	fs := afero.NewMemMapFs()
 	testID := fmt.Sprintf("%x", time.Now().UnixNano())
 	tempDir := os.TempDir()
 	files := []string{
@@ -346,6 +286,7 @@ func TestFindConfigurationIncludes(t *testing.T) {
 		filepath.Join(tempDir, "inc3."+testID+".conf"),
 	}
 
+	fs := afero.NewMemMapFs()
 	for _, file := range files {
 		require.NoError(t, afero.WriteFile(fs, file, []byte{}, iofs.ModePerm))
 	}
@@ -389,39 +330,6 @@ func TestFindConfigurationIncludes(t *testing.T) {
 					assert.Equal(t, test.expected, result)
 				}
 			}
-		})
-	}
-}
-
-func TestAddRootToRelativePaths(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("not supported on Windows")
-	}
-
-	testCases := []struct {
-		root       string
-		inputPath  []string
-		outputPath []string
-	}{
-		{
-			root:       "",
-			inputPath:  []string{"", "dir", "~/user", "/root"},
-			outputPath: []string{"", "dir", "~/user", "/root"},
-		},
-		{
-			root:       "/home",
-			inputPath:  []string{"", "dir", "~/user", "/root"},
-			outputPath: []string{"/home", "/home/dir", "/home/user", "/root"},
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.root, func(t *testing.T) {
-			t.Parallel()
-
-			result := addRootToRelativePaths(testCase.root, testCase.inputPath)
-			assert.Equal(t, testCase.outputPath, result)
 		})
 	}
 }

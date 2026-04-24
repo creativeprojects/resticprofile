@@ -1,18 +1,15 @@
+//go:build !windows
+
 package shell
 
 import (
 	"testing"
 
-	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExpandEnvModifier(t *testing.T) {
 	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("Not running on Windows")
-	}
 
 	testCases := []struct {
 		environment  []string

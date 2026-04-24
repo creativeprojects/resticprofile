@@ -125,7 +125,7 @@ func Status(title, subtitle string) error {
 	if len(info) < 2 {
 		return ErrNotRegistered
 	}
-	writer := tabwriter.NewWriter(term.GetOutput(), 2, 2, 2, ' ', tabwriter.AlignRight)
+	writer := tabwriter.NewWriter(term.Get().Stdout(), 2, 2, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintf(writer, "Task:\t %s\n", getFirstField(info, "TaskName"))
 	fmt.Fprintf(writer, "User:\t %s\n", getFirstField(info, "Run As User"))
 	fmt.Fprintf(writer, "Logon Mode:\t %s\n", getFirstField(info, "Logon Mode"))

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/config"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,6 +55,13 @@ func TestContextWithGroup(t *testing.T) {
 	ctx = ctx.WithGroup("test2")
 	assert.Equal(t, "test2", ctx.request.group)
 	assert.NotEmpty(t, ctx.request.command)
+}
+
+func TestContextWithTerminal(t *testing.T) {
+	terminal := term.NewTerminal()
+	ctx := &Context{}
+	ctx = ctx.WithTerminal(terminal)
+	assert.Same(t, terminal, ctx.terminal)
 }
 
 func TestContextWithProfile(t *testing.T) {

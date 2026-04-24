@@ -40,7 +40,7 @@ func userCredentials() (string, string, error) {
 
 	fmt.Printf("\nCreating task for user %s\n", userName)
 	fmt.Printf("Task Scheduler requires your Windows password to validate the task: ")
-	userPassword, err = term.ReadPassword()
+	userPassword, err = term.Get().ReadPassword()
 	if err != nil {
 		return "", "", err
 	}

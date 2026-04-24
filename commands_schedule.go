@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"maps"
 	"slices"
 	"strings"
@@ -20,7 +19,7 @@ const (
 )
 
 // createSchedule command
-func createSchedule(_ io.Writer, ctx commandContext) error {
+func createSchedule(ctx commandContext) error {
 	c := ctx.config
 	request := ctx.request
 	args := ctx.request.arguments
@@ -76,7 +75,7 @@ func createSchedule(_ io.Writer, ctx commandContext) error {
 	return nil
 }
 
-func removeSchedule(_ io.Writer, ctx commandContext) error {
+func removeSchedule(ctx commandContext) error {
 	var err error
 	c := ctx.config
 	request := ctx.request
@@ -116,7 +115,7 @@ func removeSchedule(_ io.Writer, ctx commandContext) error {
 	return nil
 }
 
-func statusSchedule(w io.Writer, ctx commandContext) error {
+func statusSchedule(ctx commandContext) error {
 	c := ctx.config
 	request := ctx.request
 	args := ctx.request.arguments
@@ -345,7 +344,7 @@ func prepareScheduledProfile(ctx *Context) {
 	}
 }
 
-func runSchedule(_ io.Writer, cmdCtx commandContext) error {
+func runSchedule(cmdCtx commandContext) error {
 	err := startProfileOrGroup(&cmdCtx.Context, runProfile)
 	if err != nil {
 		return err

@@ -6,6 +6,7 @@
 /examples/*-log.txt
 /build/restic*
 /build/rclone*
+/build/test-*
 /dist
 /crontab
 
@@ -15,6 +16,7 @@
 
 # test output
 /coverage.out
+/coverage-ssh.out
 /unit-tests.xml
 
 # mock binaries
@@ -45,3 +47,5 @@ go.work.sum
 
 /*.txt
 output.xml
+/qemu/disk_images/
+/*.test

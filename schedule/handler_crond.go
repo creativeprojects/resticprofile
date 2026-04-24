@@ -12,6 +12,7 @@ import (
 	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/shell"
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
 )
@@ -63,7 +64,7 @@ func (h *HandlerCrond) DisplaySchedules(profile, command string, schedules []str
 	if err != nil {
 		return err
 	}
-	displayParsedSchedules(profile, command, events)
+	displayParsedSchedules(term.Get(), profile, command, events)
 	return nil
 }
 

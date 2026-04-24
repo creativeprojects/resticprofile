@@ -17,8 +17,8 @@ func TestCreateTempDir(t *testing.T) {
 	t.Run("create-os.TempDir", func(t *testing.T) {
 		dir, err := createTempDir("")
 		defer removeTempDir(dir, err)
+		require.NoError(t, err)
 
-		assert.NoError(t, err)
 		assert.Equal(t, filepath.Clean(os.TempDir()), filepath.Dir(dir))
 		assert.True(t, strings.HasPrefix(filepath.Base(dir), tempDirPrefix))
 		assert.NotEqual(t, filepath.Base(dir), tempDirPrefix)
@@ -27,7 +27,7 @@ func TestCreateTempDir(t *testing.T) {
 	t.Run("create-UserCacheDir-fallback", func(t *testing.T) {
 		dir, err := createTempDir("non-existing-path")
 		defer removeTempDir(dir, err)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cdir, err := os.UserCacheDir()
 		require.NoError(t, err)

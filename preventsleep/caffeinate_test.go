@@ -1,3 +1,5 @@
+//go:build darwin || windows || linux
+
 package preventsleep_test
 
 import (

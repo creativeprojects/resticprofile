@@ -9,6 +9,7 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOTOOL=$(GOCMD) tool
 GOMOD=$(GOCMD) mod
+GOGENERATE=$(GOCMD) generate
 GOPATH=$(shell $(GOCMD) env GOPATH)
 GOBIN=$(shell $(GOCMD) env GOBIN)
 
@@ -26,11 +27,12 @@ BINARY_WINDOWS_AMD64=$(BINARY).exe
 BINARY_WINDOWS_ARM64=$(BINARY)_arm64.exe
 README=README.md
 
-TESTS=./...
+TESTS?=./...
 COVERAGE_FILE=coverage.out
+COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
-BUILD=build/
+BUILD?=$(realpath build)/
 
 RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-
@@ -54,6 +56,9 @@ endif
 ifeq ($(UNAME),Darwin)
 	TMP_MOUNT=${TMP_MOUNT_DARWIN}
 endif
+
+TMPDIR ?= /tmp
+SSH_TESTS_TMPDIR=$(shell echo "$(TMPDIR)/resticprofile-ssh-tests" | tr -s /)
 
 TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
@@ -118,8 +123,27 @@ prepare_build: verify download
 
 prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
-	find . -path "*/mocks/*" -exec rm {} \;
-	"$(GOBIN)/mockery" --config .mockery.yml
+	@find . -path "*/mocks/*" -exec rm {} \;
+	@"$(GOBIN)/mockery" --config .mockery.yml
+
+ $(BUILD)test-args: ./testhelpers/args/*.go ## Build the test-args binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-args ./testhelpers/args
+
+ $(BUILD)test-echo: ./testhelpers/echo/*.go ## Build the test-echo binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-echo ./testhelpers/echo
+
+ $(BUILD)test-crontab: ./testhelpers/crontab/*.go ## Build the test-crontab binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-crontab ./testhelpers/crontab
+
+ $(BUILD)test-shell: ./testhelpers/shell/*.go ## Build the test-shell binary
+	@echo "[*] $@"
+	@$(GOBUILD) -v -o $(BUILD)test-shell ./testhelpers/shell
+
+.PHONY: test-helpers
+test-helpers: $(BUILD)test-args $(BUILD)test-echo $(BUILD)test-crontab  $(BUILD)test-shell ## Build all test helper binaries
 
 download: verify ## Download dependencies
 	@echo "[*] $@"
@@ -174,13 +198,26 @@ build-windows: prepare_build ## Build the binary for Windows
 
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
-test: prepare_test ## Run unit tests
+test: export TEST_HELPERS=$(BUILD)
+test: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests
 	@echo "[*] $@"
-	$(GOTEST) $(TESTS)
+	@$(GOBIN)/gotestsum -- -count=1 $(TESTS)
 
-test-ci: $(GOBIN)/gotestsum prepare_test ## Run unit tests with coverage (for CI)
+test-short: export TEST_HELPERS=$(BUILD)
+test-short: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests in short mode
 	@echo "[*] $@"
-	$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -coverprofile='$(COVERAGE_FILE)' ./...
+	@$(GOBIN)/gotestsum -- -short -count=1 $(TESTS)
+
+test-race: export TEST_HELPERS=$(BUILD)
+test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with race detector
+	@echo "[*] $@"
+	@$(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
+
+test-ci: export TEST_HELPERS=$(BUILD)
+test-ci: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with coverage (for CI)
+	@echo "[*] $@"
+	@$(GOGENERATE) ./...
+	@$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
 
 coverage: ## Generate coverage report
 	@echo "[*] $@"
@@ -190,20 +227,27 @@ coverage: ## Generate coverage report
 clean: ## Clean up the build artifacts
 	@echo "[*] $@"
 	$(GOCLEAN)
-	rm -rf $(BINARY) \
-	       $(BINARY_DARWIN_AMD64) \
-	       $(BINARY_DARWIN_ARM64) \
-	       $(BINARY_LINUX_AMD64) \
-	       $(BINARY_LINUX_ARM64) \
-	       $(BINARY_PI) \
-	       $(BINARY_WINDOWS_AMD64) \
-	       $(BINARY_WINDOWS_ARM64) \
-	       $(COVERAGE_FILE) \
-		   $(JUNIT_FILE) \
-	       restic_*_linux_amd64* \
-	       ${BUILD}restic* \
-	       ${BUILD}rclone* \
-	       dist/*
+	rm -rf \
+		$(BINARY) \
+		$(BINARY_DARWIN_AMD64) \
+		$(BINARY_DARWIN_ARM64) \
+		$(BINARY_LINUX_AMD64) \
+		$(BINARY_LINUX_ARM64) \
+		$(BINARY_PI) \
+		$(BINARY_WINDOWS_AMD64) \
+		$(BINARY_WINDOWS_ARM64) \
+		$(COVERAGE_FILE) \
+		$(COVERAGE_SSH_FILE) \
+		$(JUNIT_FILE) \
+		restic_*_linux_amd64* \
+		${BUILD}restic* \
+		${BUILD}rclone* \
+		${BUILD}test* \
+		*.test \
+		*.log \
+		*.out \
+		*.xml \
+		dist/*
 	find . -path "*/mocks/*" -exec rm {} \;
 	restic cache --cleanup
 
@@ -323,7 +367,7 @@ checkdoc: ## Check documentation
 checklinks: $(GOBIN)/muffet ## Check for broken links in the documentation site
 	@echo "[*] $@"
 	muffet --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 \
-	  --exclude="(linux\.die\.net|scoop\.sh|commit)" \
+	  --exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" \
 	  --header="User-Agent: Muffet/$$(muffet --version)" \
 	  http://127.0.0.1:1313/resticprofile/
 
@@ -356,3 +400,34 @@ deploy-current: build-linux build-pi
 		rsync -avz --progress $(BINARY_PI) $$server: ; \
 		ssh -t $$server "sudo -S install $(BINARY_PI) /usr/local/bin/resticprofile" ; \
 	done
+
+.PHONY: start-ssh-server
+start-ssh-server: ## Start the SSH server for testing
+	@echo "[*] $@"
+	@mkdir -p $(SSH_TESTS_TMPDIR) && rm -f $(SSH_TESTS_TMPDIR)/id_* || echo "Failed to create temporary directory"
+	@ssh-keygen -t rsa -b 2048 -f $(SSH_TESTS_TMPDIR)/id_rsa -N "" -C "resticprofile@$(shell hostname)"
+	@ssh-keygen -t ecdsa -b 521 -f $(SSH_TESTS_TMPDIR)/id_ecdsa -N "" -C "resticprofile@$(shell hostname)"
+	@ssh-keygen -t ed25519 -f $(SSH_TESTS_TMPDIR)/id_ed25519 -N "" -C "resticprofile@$(shell hostname)"
+	@cd ./ssh/test && \
+		USER_ID=$(shell id -u) GROUP_ID=$(shell id -g) SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) \
+		docker compose up -d --force-recreate
+	@sleep 1
+	@ssh-keyscan -p 2222 -H localhost > $(SSH_TESTS_TMPDIR)/known_hosts
+
+.PHONY: stop-ssh-server
+stop-ssh-server: ## Stop the SSH server and clean up temporary files
+	@echo "[*] $@"
+	cd ./ssh/test && SSH_TESTS_TMPDIR=$(SSH_TESTS_TMPDIR) docker compose down --remove-orphans
+	@test -d "$(SSH_TESTS_TMPDIR)" && rm -rf "$(SSH_TESTS_TMPDIR)" || echo "temporary directory not found, nothing to remove"
+
+.PHONY: ssh-test
+ssh-test: ## Run SSH client tests
+	@echo "[*] $@"
+	@go test -run TestSSHClient -v -race -tags ssh -coverprofile='$(COVERAGE_SSH_FILE)' ./ssh
+
+.PHONY: compile-tests
+compile-tests: export TEST_HELPERS=$(BUILD)
+compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
+	@echo "[*] $@"
+	@$(GOGENERATE) ./...
+	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...

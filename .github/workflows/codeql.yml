@@ -50,11 +50,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
 
-    - name: Set up Go (latest version)
+    - name: Dotenv Action
+      id: dotenv
+      uses: falti/dotenv-action@v1
+      with:
+        path: .github/workflows/env
+        log-variables: true
+
+    - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
       uses: actions/setup-go@v6
       with:
-        go-version: '>=1.26.0'
+        go-version: ${{ steps.dotenv.outputs.go_version }}
         check-latest: true
+        cache: true
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

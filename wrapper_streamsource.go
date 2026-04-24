@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/term"
 )
 
 func (r *resticWrapper) prepareStreamSource() (io.ReadCloser, error) {
@@ -77,7 +76,7 @@ func (r *resticWrapper) prepareCommandStreamSource() (io.ReadCloser, error) {
 			clog.Debugf("starting 'stdin-command' command %d/%d: %s", i+1, len(r.profile.Backup.StdinCommand), sourceCommand)
 			rCommand := newShellCommand(sourceCommand, nil, env, r.getShell(), r.dryRun, commandSignals, nil)
 			rCommand.stdout = bufferedWriter
-			rCommand.stderr = term.GetErrorOutput()
+			rCommand.stderr = r.ctx.terminal.Stderr()
 
 			_, stderr, err := runShellCommand(rCommand)
 			if err != nil {

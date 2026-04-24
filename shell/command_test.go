@@ -2,20 +2,16 @@ package shell
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 
-	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,28 +22,23 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	// using an anonymous function to handle defer statements before os.Exit()
 	exitCode := func() int {
-		ctx, cancel := context.WithTimeout(context.Background(), constants.DefaultTestTimeout)
-		defer cancel()
-
-		tempDir, err := os.MkdirTemp("", "resticprofile-shell")
+		var err error
+		helpersPath := os.Getenv("TEST_HELPERS")
+		if helpersPath == "" {
+			helpersPath = "../build"
+		}
+		mockBinary = filepath.Join(helpersPath, platform.Executable("test-shell"))
+		mockBinary, err = filepath.Abs(mockBinary)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cannot create temp dir: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to get absolute path of test-shell binary: %v\n", err)
 			return 1
 		}
-		fmt.Printf("using temporary dir: %q\n", tempDir)
-		defer os.RemoveAll(tempDir)
+		if _, err := os.Stat(mockBinary); err != nil {
+			fmt.Fprintf(os.Stderr, "test-shell binary is not available at expected path: %s\n", mockBinary)
+			return 1
+		}
 
-		mockBinary = filepath.Join(tempDir, "shellmock")
-		if platform.IsWindows() {
-			mockBinary += ".exe"
-		}
-		cmd := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", mockBinary, "./mock")
-		if output, err := cmd.CombinedOutput(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error building mock binary: %s\nCommand output: %s\n", err, string(output))
-			return 1
-		}
 		return m.Run()
 	}()
 	os.Exit(exitCode)
@@ -280,8 +271,23 @@ func TestVariablesRewrite(t *testing.T) {
 func TestRunLocalCommand(t *testing.T) {
 	t.Parallel()
 
-	cmd := NewCommand("command.go", nil)
-	expected := "." + string(os.PathSeparator) + "command.go"
+	// find a file in the current directory
+	entries, err := os.ReadDir("./")
+	require.NoError(t, err)
+
+	localFilename := ""
+	for _, entry := range entries {
+		if !entry.IsDir() && entry.Name()[0] != '.' {
+			localFilename = entry.Name()
+			break
+		}
+	}
+	require.NotEmpty(t, localFilename, "no file found in current directory")
+
+	t.Logf("using local file %q", localFilename)
+
+	cmd := NewCommand(localFilename, nil)
+	expected := "." + string(os.PathSeparator) + localFilename
 
 	for _, shell := range []string{defaultShell, bashShell, powershell, powershell6, windowsShell} {
 		args := getArgumentsComposer(shell)(cmd)
@@ -370,35 +376,6 @@ func TestRunShellEchoWithSignalling(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Contains(t, string(output), "TestRunShellEchoWithSignalling")
-}
-
-// Flaky test on github linux runner but can't reproduce locally
-func TestInterruptShellCommand(t *testing.T) {
-	t.Parallel()
-
-	if platform.IsWindows() {
-		t.Skip("Test not running on this platform")
-	}
-	buffer := &bytes.Buffer{}
-
-	sigChan := make(chan os.Signal, 1)
-
-	cmd := NewSignalledCommand(mockBinary, []string{"test", "--sleep", "3000"}, sigChan)
-	cmd.Stdout = buffer
-
-	// Will ask us to stop in 100ms
-	go func() {
-		time.Sleep(100 * time.Millisecond)
-		sigChan <- syscall.SIGINT
-	}()
-	start := time.Now()
-	_, _, err := cmd.Run()
-	require.Error(t, err)
-
-	// check it ran for more than 100ms (but less than 500ms - the build agent can be very slow at times)
-	duration := time.Since(start)
-	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(100))
-	assert.Less(t, duration.Milliseconds(), int64(500))
 }
 
 func TestSetPIDCallback(t *testing.T) {

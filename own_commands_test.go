@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
-	"io"
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/term"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,15 +40,15 @@ func fakeCommands() *OwnCommands {
 	return ownCommands
 }
 
-func firstCommand(_ io.Writer, _ commandContext) error {
+func firstCommand(_ commandContext) error {
 	return errors.New("first")
 }
 
-func secondCommand(_ io.Writer, _ commandContext) error {
+func secondCommand(_ commandContext) error {
 	return errors.New("second")
 }
 
-func thirdCommand(_ io.Writer, _ commandContext) error {
+func thirdCommand(_ commandContext) error {
 	return errors.New("third")
 }
 
@@ -58,13 +58,15 @@ func pre(_ *Context) error {
 
 func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
-	displayOwnCommands(buffer, commandContext{ownCommands: fakeCommands()})
+	terminal := term.NewTerminal(term.WithStdout(buffer))
+	displayOwnCommands(commandContext{ownCommands: fakeCommands(), Context: Context{terminal: terminal}})
 	assert.Equal(t, "  first   first first\n  second  second second\n", buffer.String())
 }
 
 func TestDisplayOwnCommand(t *testing.T) {
 	buffer := &strings.Builder{}
-	displayOwnCommandHelp(buffer, "second", commandContext{ownCommands: fakeCommands()})
+	terminal := term.NewTerminal(term.WithStdout(buffer))
+	displayOwnCommandHelp(commandContext{ownCommands: fakeCommands(), Context: Context{terminal: terminal}}, "second")
 	assert.Equal(t, `Purpose: second second
 
 Usage:

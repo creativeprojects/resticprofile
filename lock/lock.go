@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shirou/gopsutil/v3/process"
+	"github.com/shirou/gopsutil/v4/process"
 )
 
 // SetPID is a callback that writes the PID in the lockfile

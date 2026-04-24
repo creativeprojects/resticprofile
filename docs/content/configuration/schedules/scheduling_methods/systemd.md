@@ -6,9 +6,13 @@ weight: 105
 
 **systemd** is a common service manager used by many Linux distributions. resticprofile can create systemd timer and service files.
 
-User systemd units are created under the user's systemd profile (`~/.config/systemd/user`).
+The type of unit created depends on the `schedule-permission` setting:
 
-System units are created in `/etc/systemd/system`.
+| Permission         | Unit location                  |
+|--------------------|-------------------------------|
+| `system`           | `/etc/systemd/system/`        |
+| `user`             | `/etc/systemd/system/` (with `User=` field set) |
+| `user_logged_on`   | `~/.config/systemd/user/`     |
 
 ## systemd calendars
 
@@ -57,11 +61,19 @@ Until version v0.30.0, the `user` permission was actually `user_logged_on` unles
 
 This is now fixed:
 
-| Permission         | Type of unit                              | Without lingering                | With lingering      |
-|--------------------|-------------------------------------------|----------------------------------|---------------------|
-| **system**         | system service                            | can run any time                 | can run any time    |
-| **user**           | system service with User= field defined   | can run any time                 | can run any time    |
-| **user_logged_on** | user service                              | runs only when user is logged on | can run any time    |
+| Permission         | Type of unit                              | Without lingering                | With lingering      | Requires sudo to schedule |
+|--------------------|-------------------------------------------|----------------------------------|---------------------|---------------------------|
+| **system**         | system service                            | can run any time                 | can run any time    | yes                       |
+| **user**           | system service with User= field defined   | can run any time                 | can run any time    | yes                       |
+| **user_logged_on** | user service                              | runs only when user is logged on | can run any time    | no                        |
+
+{{% notice tip %}}
+If you want to run backups as a regular user without root privileges at scheduling time, use `permission: user_logged_on`. To allow the schedule to run even when the user is not logged in, enable [lingering](https://wiki.archlinux.org/title/Systemd/User#Automatic_start-up_of_systemd_user_instances) for your user:
+
+```shell
+loginctl enable-linger $USER
+```
+{{% /notice %}}
 
 
 

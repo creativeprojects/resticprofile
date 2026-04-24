@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"os"
 	"strings"
+
+	"github.com/creativeprojects/clog"
 )
 
 // commandContext is the context for running a command.
@@ -18,13 +18,14 @@ type ownCommand struct {
 	name              string
 	description       string
 	longDescription   string
-	pre               func(*Context) error                  // pre-command action (for checking the context)
-	action            func(io.Writer, commandContext) error // run command action
-	needConfiguration bool                                  // true if the action needs a configuration file loaded
-	hide              bool                                  // don't display the command in help and completion
-	hideInCompletion  bool                                  // don't display the command in completion
-	noProfile         bool                                  // true if the command doesn't need a profile name
-	flags             map[string]string                     // own command flags should be simple enough to be handled manually for now
+	pre               func(*Context) error       // pre-command action (for checking the context)
+	action            func(commandContext) error // run command action
+	needConfiguration bool                       // true if the action needs a configuration file loaded
+	hide              bool                       // don't display the command in help and completion
+	hideInCompletion  bool                       // don't display the command in completion
+	noProfile         bool                       // true if the command doesn't need a profile name
+	experimental      bool                       // display a warning when using this command
+	flags             map[string]string          // own command flags should be simple enough to be handled manually for now
 }
 
 // OwnCommands is a list of resticprofile commands
@@ -62,7 +63,10 @@ func (o *OwnCommands) Run(ctx *Context) error {
 	if command == nil {
 		return fmt.Errorf("command not found: %v", ctx.request.command)
 	}
-	return command.action(os.Stdout, commandContext{
+	if command.experimental {
+		clog.Warningf("%s: this command is experimental and its behaviour may change in the future", ctx.request.command)
+	}
+	return command.action(commandContext{
 		ownCommands: o,
 		Context:     *ctx,
 	})

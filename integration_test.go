@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -121,22 +120,23 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NoError(t, err)
 					require.NotNil(t, profile)
 
+					buffer := new(bytes.Buffer)
+					terminal := term.NewTerminal(term.WithStdout(buffer))
+
 					ctx := &Context{
 						request: Request{
 							profile:   fixture.profileName,
 							arguments: fixture.cmdlineArgs,
 						},
-						binary:  echoBinary,
-						profile: profile,
-						command: fixture.commandName,
+						binary:   echoBinary,
+						profile:  profile,
+						command:  fixture.commandName,
+						terminal: terminal,
 					}
 					wrapper := newResticWrapper(ctx)
-					buffer := &bytes.Buffer{}
-					// setting the output via the package global setter could lead to some issues
-					// when some tests are running in parallel. I should fix that at some point :-/
-					term.SetOutput(buffer)
+
 					err = wrapper.runCommand(fixture.commandName)
-					term.SetOutput(os.Stdout)
+					stdout := buffer.String()
 
 					require.NoError(t, err)
 
@@ -145,10 +145,10 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 						if fixture.expectedOnWindows != "" {
 							expected = fixture.expectedOnWindows
 						} else {
-							t.SkipNow()
+							t.Skipf("integration test using config=%q, profile=%q, command=%q not running on Windows", configFile, fixture.profileName, fixture.commandName)
 						}
 					}
-					assert.Equal(t, expected, strings.TrimSpace(buffer.String()))
+					assert.Equal(t, expected, strings.TrimSpace(stdout))
 				})
 
 				if platform.IsWindows() {
@@ -161,6 +161,9 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 					require.NoError(t, err)
 					require.NotNil(t, profile)
 
+					buffer := new(bytes.Buffer)
+					terminal := term.NewTerminal(term.WithStdout(buffer))
+
 					ctx := &Context{
 						request: Request{
 							profile:   fixture.profileName,
@@ -170,18 +173,16 @@ func TestFromConfigFileToCommandLine(t *testing.T) {
 						profile:    profile,
 						command:    fixture.commandName,
 						legacyArgs: true,
+						terminal:   terminal,
 					}
 					wrapper := newResticWrapper(ctx)
-					buffer := &bytes.Buffer{}
-					// setting the output via the package global setter could lead to some issues
-					// when some tests are running in parallel. I should fix that at some point :-/
-					term.SetOutput(buffer)
+
 					err = wrapper.runCommand(fixture.commandName)
-					term.SetOutput(os.Stdout)
+					content := buffer.String()
 
 					require.NoError(t, err)
 
-					assert.Equal(t, fixture.legacy, strings.TrimSpace(buffer.String()))
+					assert.Equal(t, fixture.legacy, strings.TrimSpace(content))
 				})
 			}
 		})

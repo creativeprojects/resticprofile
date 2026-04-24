@@ -15,6 +15,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestHandlerCrond(t *testing.T) {
+	handler := NewHandler(SchedulerCrond{})
+	assert.IsType(t, &HandlerCrond{}, handler)
+}
+
 func TestCreateReadDeleteCrondSchedules(t *testing.T) {
 	hourly := calendar.NewEvent(func(e *calendar.Event) {
 		e.Minute.MustAddValue(0)
