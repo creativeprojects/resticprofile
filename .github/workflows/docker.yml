@@ -26,7 +26,11 @@ jobs:
 
       - name: Checkout latest tag
         run: |
-          export LATEST_TAG=`git describe --tags --abbrev=0`
+          export LATEST_TAG=$(git tag --list 'v*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No release tag found"
+            exit 1
+          fi
           git checkout $LATEST_TAG
 
       - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
