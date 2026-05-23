@@ -7,9 +7,8 @@ import (
 // wantsStructuredOutput reports whether args request a machine-readable
 // output format via --output=<format> (anything other than plain). Used to
 // route diagnostic logs to stderr so stdout stays parseable for tools like
-// jq. Format validation is left to parseOutputFormat; an unrecognised value
-// is still treated as "structured" here so logs do not leak before the
-// command errors out.
+// jq. An unrecognised value is still treated as structured so logs do not
+// leak before the command rejects the value.
 func wantsStructuredOutput(args []string) bool {
 	value, ok := findOutputValue(args)
 	if !ok {
@@ -18,6 +17,9 @@ func wantsStructuredOutput(args []string) bool {
 	return value != "" && value != "plain"
 }
 
+// parseOutputFormat returns the --output=<format> value from args, or
+// "plain" when the flag is absent. The flag accepts both --output=<value>
+// and --output <value> forms. Callers validate the returned format.
 func parseOutputFormat(args []string) string {
 	format, found := findOutputValue(args)
 	if !found {

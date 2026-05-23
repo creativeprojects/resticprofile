@@ -315,7 +315,7 @@ func displayProfilesCommand(ctx commandContext) error {
 		return displayProfilesJSON(ctx)
 
 	default:
-		return fmt.Errorf("unknown output format %q", format)
+		return fmt.Errorf("unknown output format %q: must be one of plain, json", format)
 	}
 }
 
