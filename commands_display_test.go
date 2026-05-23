@@ -180,6 +180,35 @@ func TestDisplayProfilesCommand_JSONSpaceSeparated(t *testing.T) {
 	assert.NotEmpty(t, got.Profiles)
 }
 
+func TestDisplayProfilesCommand_JSONEmptyConfig(t *testing.T) {
+	cfg, err := config.Load(bytes.NewBufferString("version: \"2\"\n"), config.FormatYAML)
+	require.NoError(t, err)
+
+	buffer := &bytes.Buffer{}
+	terminal := term.NewTerminal(term.WithStdout(buffer), term.WithColors(false))
+	ctx := commandContext{
+		Context: Context{
+			config:   cfg,
+			terminal: terminal,
+			request:  Request{arguments: []string{"profiles", "--output=json"}},
+		},
+	}
+
+	require.NoError(t, displayProfilesCommand(ctx))
+
+	// Empty slices must serialise as [] rather than null so scripts can
+	// rely on the keys always being arrays.
+	assert.Contains(t, buffer.String(), `"profiles": []`)
+	assert.Contains(t, buffer.String(), `"groups": []`)
+
+	var got profilesOutput
+	require.NoError(t, json.Unmarshal(buffer.Bytes(), &got))
+	assert.NotNil(t, got.Profiles)
+	assert.NotNil(t, got.Groups)
+	assert.Empty(t, got.Profiles)
+	assert.Empty(t, got.Groups)
+}
+
 func TestDisplayProfilesCommand_InvalidFormat(t *testing.T) {
 	ctx, buffer := newProfilesTestContext(t, []string{"profiles", "--output=xml"})
 
