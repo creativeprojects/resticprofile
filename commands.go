@@ -89,6 +89,9 @@ func getOwnCommands() []ownCommand {
 			longDescription:   "The \"profiles\" command prints brief information on all profiles and groups that are declared in the configuration file",
 			action:            displayProfilesCommand,
 			needConfiguration: true,
+			flags: map[string]string{
+				"--output=<format>": "output format: plain (default) or json",
+			},
 		},
 		{
 			name:              "show",
