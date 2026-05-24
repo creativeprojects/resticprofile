@@ -90,42 +90,6 @@ func TestDisplayVersionVerbose2(t *testing.T) {
 	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
 }
 
-const profilesTestConfig = `version: "2"
-
-groups:
-  full-backup:
-    description: All hosts
-    profiles:
-      - alpha
-      - beta
-
-profiles:
-  alpha:
-    description: First profile
-    backup:
-      source: /srv/alpha
-    check:
-      read-data: true
-  beta:
-    description: Second profile
-`
-
-func newProfilesTestContext(t *testing.T, args []string) (commandContext, *bytes.Buffer) {
-	t.Helper()
-	cfg, err := config.Load(bytes.NewBufferString(profilesTestConfig), config.FormatYAML)
-	require.NoError(t, err)
-
-	buffer := &bytes.Buffer{}
-	terminal := term.NewTerminal(term.WithStdout(buffer), term.WithColors(false))
-	return commandContext{
-		Context: Context{
-			config:   cfg,
-			terminal: terminal,
-			request:  Request{arguments: args},
-		},
-	}, buffer
-}
-
 func TestDisplayProfilesCommand_Plain(t *testing.T) {
 	ctx, buffer := newProfilesTestContext(t, []string{"profiles"})
 
@@ -196,7 +160,7 @@ func TestDisplayProfilesCommand_JSONEmptyConfig(t *testing.T) {
 
 	require.NoError(t, displayProfilesCommand(ctx))
 
-	// Empty slices must serialise as [] rather than null so scripts can
+	// Empty slices must serialize as [] rather than null so scripts can
 	// rely on the keys always being arrays.
 	assert.Contains(t, buffer.String(), `"profiles": []`)
 	assert.Contains(t, buffer.String(), `"groups": []`)
@@ -210,10 +174,47 @@ func TestDisplayProfilesCommand_JSONEmptyConfig(t *testing.T) {
 }
 
 func TestDisplayProfilesCommand_InvalidFormat(t *testing.T) {
-	ctx, buffer := newProfilesTestContext(t, []string{"profiles", "--output=xml"})
+	ctx, buffer := newProfilesTestContext(t, []string{"profiles", "--output=foo"})
 
 	err := displayProfilesCommand(ctx)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "xml")
+	assert.EqualError(t, err, `unknown output format "foo": must be one of plain, json`)
 	assert.Empty(t, buffer.String())
+}
+
+func newProfilesTestContext(t *testing.T, args []string) (commandContext, *bytes.Buffer) {
+	t.Helper()
+
+	conf := strings.NewReader(`version: "2"
+
+groups:
+  full-backup:
+    description: All hosts
+    profiles:
+      - alpha
+      - beta
+
+profiles:
+  alpha:
+    description: First profile
+    backup:
+      source: /srv/alpha
+    check:
+      read-data: true
+  beta:
+    description: Second profile
+`)
+
+	cfg, err := config.Load(conf, config.FormatYAML)
+	require.NoError(t, err)
+
+	buffer := &bytes.Buffer{}
+	terminal := term.NewTerminal(term.WithStdout(buffer), term.WithColors(false))
+	return commandContext{
+		Context: Context{
+			config:   cfg,
+			terminal: terminal,
+			request:  Request{arguments: args},
+		},
+	}, buffer
 }
