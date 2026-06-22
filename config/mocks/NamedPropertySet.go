@@ -330,7 +330,7 @@ type NamedPropertySet_PropertyInfo_Call struct {
 
 // PropertyInfo is a helper method to define mock.On call
 //   - name string
-func (_e *NamedPropertySet_Expecter) PropertyInfo(name interface{}) *NamedPropertySet_PropertyInfo_Call {
+func (_e *NamedPropertySet_Expecter) PropertyInfo(name any) *NamedPropertySet_PropertyInfo_Call {
 	return &NamedPropertySet_PropertyInfo_Call{Call: _e.mock.On("PropertyInfo", name)}
 }
 
