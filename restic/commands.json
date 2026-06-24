@@ -322,7 +322,7 @@
   },
   {
     "Name": "check",
-    "Description": "The \"check\" command tests the repository for errors and reports any errors it\nfinds. It can also be used to read all data and therefore simulate a restore.\n\nBy default, the \"check\" command will always load all data directly from the\nrepository and not use a local cache.",
+    "Description": "The \"check\" command tests the repository for errors and reports any errors it\nfinds.\n\nBy default, check verifies the structural consistency and integrity of\nsnapshots, trees and pack files. To also verify the integrity of the actual\nbacked-up data, use the --read-data or --read-data-subset flags.\n\nBy default, check creates a new temporary cache directory to verify data.\nTo reuse the existing cache, use the --with-cache flag.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -345,6 +345,24 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "host",
+        "Alias": "H",
+        "Default": "",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
+        "Once": false,
+        "FromVersion": "0.19.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "path",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths)",
+        "Once": false,
+        "FromVersion": "0.19.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "read-data",
         "Alias": "",
         "Default": "false",
@@ -360,6 +378,15 @@
         "Description": "read a subset of data packs, specified as 'n/t' for specific part, or either 'x%' or 'x.y%' or a size in bytes with suffixes k/K, m/M, g/G, t/T for a random subset",
         "Once": true,
         "FromVersion": "",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "tag",
+        "Alias": "",
+        "Default": "",
+        "Description": "only consider snapshots including tag[,tag,...] (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.19.0",
         "RemovedInVersion": ""
       },
       {
@@ -446,7 +473,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "0.10.0",
         "RemovedInVersion": ""
@@ -518,7 +545,7 @@
   },
   {
     "Name": "diff",
-    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n* `+` The item was added\n* `-` The item was removed\n* `U` The metadata (access mode, timestamps, ...) for the item was updated\n* `M` The file's content was modified\n* `T` The type was changed, e.g. a file was made a symlink\n* `?` Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
+    "Description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n* `+` The item was added\n* `-` The item was removed\n* `U` The metadata (access mode, timestamps, ...) for the item was updated\n* `M` The file's content was modified\n* `T` The type was changed, e.g. a file was made a symlink\n* `?` Bitrot detected: The file's content has changed but all metadata is the same\n\nMetadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot tree as shown by \"restic ls\".",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -544,7 +571,7 @@
   },
   {
     "Name": "dump",
-    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
+    "Description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot tree as shown by \"restic ls\".",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -570,7 +597,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -623,7 +650,7 @@
   },
   {
     "Name": "find",
-    "Description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
+    "Description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepository. It can also be used to search for restic blobs, trees or pack\nfiles for troubleshooting.\n\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -649,7 +676,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -810,7 +837,7 @@
         "Name": "host",
         "Alias": "",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -984,13 +1011,13 @@
         "Description": "repack pack files below 80% of target pack size",
         "Once": true,
         "FromVersion": "0.14.0",
-        "RemovedInVersion": ""
+        "RemovedInVersion": "0.19.0"
       },
       {
         "Name": "repack-smaller-than",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "pack below-limit packfiles (allowed suffixes: k/K, m/M)",
+        "Description": "pack below-limit packfiles (allowed suffixes: m/M)",
         "Once": true,
         "FromVersion": "0.18.0",
         "RemovedInVersion": ""
@@ -1026,7 +1053,7 @@
   },
   {
     "Name": "generate",
-    "Description": "The \"generate\" command writes automatically generated files (like the man pages\nand the auto-completion files for bash, fish and zsh).",
+    "Description": "The \"generate\" command writes automatically generated files (like the man pages\nand the auto-completion files for bash, fish, powershell and zsh).",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1336,7 +1363,7 @@
   },
   {
     "Name": "key-passwd",
-    "Description": "The \"passwd\" sub-command creates a new key, validates the key and remove the old key ID.\nReturns the new key ID.",
+    "Description": "The \"key passwd\" command creates a new key, validates the key and removes the old key ID.\nReturns the new key ID.",
     "FromVersion": "0.17.0",
     "RemovedInVersion": "",
     "Options": [
@@ -1440,7 +1467,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1582,7 +1609,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -1727,13 +1754,13 @@
         "Description": "repack pack files below 80% of target pack size",
         "Once": true,
         "FromVersion": "0.14.0",
-        "RemovedInVersion": ""
+        "RemovedInVersion": "0.19.0"
       },
       {
         "Name": "repack-smaller-than",
         "Alias": "",
         "Default": "\"\"",
-        "Description": "pack below-limit packfiles (allowed suffixes: k/K, m/M)",
+        "Description": "pack below-limit packfiles (allowed suffixes: m/M)",
         "Once": true,
         "FromVersion": "0.18.0",
         "RemovedInVersion": ""
@@ -1803,7 +1830,7 @@
   },
   {
     "Name": "repair",
-    "Description": "Repair the repository",
+    "Description": "The \"repair\" command repairs damaged repositories. It provides subcommands to\nrebuild the index, salvage damaged pack files, and repair broken snapshots.",
     "FromVersion": "0.16.0",
     "RemovedInVersion": "",
     "Options": [
@@ -1898,7 +1925,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "0.16.0",
         "RemovedInVersion": ""
@@ -1925,7 +1952,7 @@
   },
   {
     "Name": "restore",
-    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot.",
+    "Description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot tree as shown by\n\"restic ls\".\n\nPOSIX ACLs are always restored by their numeric value, while file ownership can optionally be restored by name instead of numeric value.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -1987,7 +2014,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2065,6 +2092,15 @@
         "RemovedInVersion": ""
       },
       {
+        "Name": "ownership-by-name",
+        "Alias": "",
+        "Default": "false",
+        "Description": "restore file ownership by user name and group name (except POSIX ACLs)",
+        "Once": true,
+        "FromVersion": "0.19.0",
+        "RemovedInVersion": ""
+      },
+      {
         "Name": "path",
         "Alias": "",
         "Default": "",
@@ -2113,7 +2149,7 @@
   },
   {
     "Name": "rewrite",
-    "Description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.\n\nWhen rewrite is used with the --snapshot-summary option, a new snapshot is\ncreated containing statistics summary data. Only two fields in the summary will\nbe non-zero: TotalFilesProcessed and TotalBytesProcessed.\n\nWhen rewrite is called with one of the --exclude options, TotalFilesProcessed\nand TotalBytesProcessed will be updated in the snapshot summary.",
+    "Description": "The \"rewrite\" command creates new snapshots from existing ones. You can use\nexclude or include filters to control which files are included in the new\nsnapshots. Unless --new-host or --new-time is specified, metadata (time, host,\ntags) is preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.\n\nWhen rewrite is used with the --snapshot-summary option, a new snapshot is\ncreated containing statistics summary data. Only two fields in the summary will\nbe non-zero: TotalFilesProcessed and TotalBytesProcessed.\n\nWhen rewrite is called with one of the --exclude or --include options,\nTotalFilesProcessed and TotalBytesProcessed will be updated in the snapshot summary.",
     "FromVersion": "0.15.0",
     "RemovedInVersion": "",
     "Options": [
@@ -2166,7 +2202,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "0.15.0",
         "RemovedInVersion": ""
@@ -2187,6 +2223,42 @@
         "Description": "same as --exclude-file but ignores casing of filenames in patterns",
         "Once": false,
         "FromVersion": "0.15.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iinclude",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --include pattern but ignores the casing of filenames",
+        "Once": false,
+        "FromVersion": "0.19.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "iinclude-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "same as --include-file but ignores casing of filenames in patterns",
+        "Once": false,
+        "FromVersion": "0.19.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "include",
+        "Alias": "i",
+        "Default": "",
+        "Description": "include a pattern (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.19.0",
+        "RemovedInVersion": ""
+      },
+      {
+        "Name": "include-file",
+        "Alias": "",
+        "Default": "",
+        "Description": "read include patterns from a file (can be specified multiple times)",
+        "Once": false,
+        "FromVersion": "0.19.0",
         "RemovedInVersion": ""
       },
       {
@@ -2299,7 +2371,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2361,7 +2433,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2423,7 +2495,7 @@
         "Name": "host",
         "Alias": "H",
         "Default": "",
-        "Description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST)",
+        "Description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST)",
         "Once": false,
         "FromVersion": "",
         "RemovedInVersion": ""
@@ -2468,7 +2540,7 @@
   },
   {
     "Name": "unlock",
-    "Description": "The \"unlock\" command removes stale locks that have been created by other restic processes.",
+    "Description": "The \"unlock\" command removes stale locks that have been created by other restic processes.\n\nRemoving locks works even with repositories served in append-only mode from restic's rest-server.",
     "FromVersion": "",
     "RemovedInVersion": "",
     "Options": [
@@ -2546,7 +2618,7 @@
         "Name": "compression",
         "Alias": "",
         "Default": "auto",
-        "Description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION)",
+        "Description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION)",
         "Once": true,
         "FromVersion": "0.14.0",
         "RemovedInVersion": ""
