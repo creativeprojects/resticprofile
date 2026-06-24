@@ -1,9 +1,8 @@
 // checklinks is a link-checking tool for the resticprofile documentation.
 //
 // It scans all files in the current directory tree (skipping common non-doc
-// directories such as .git, build, and dist) for URLs that begin with the
-// configured source base URL, then verifies that every discovered URL returns
-// a successful HTTP response.
+// directories) for URLs that begin with the configured source base URL,
+// then verifies that every discovered URL returns a successful HTTP response.
 //
 // When checking links, the tool can operate in two modes:
 //
@@ -107,6 +106,11 @@ func checklinks() error {
 			}
 			return nil
 		}
+		// avoid reading binary files by skipping files with execution bits set
+		if fileInfo, err := d.Info(); err == nil && fileInfo.Mode()&0111 != 0 {
+			return nil
+		}
+
 		links, err := findPatternInFile(linkPattern, path)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error reading %s: %v\n", path, err)

@@ -5,10 +5,9 @@ resticprofile source tree that starts with the documentation base URL.
 
 ## What it does
 
-1. **Discovery** – walks all files under the current directory (skipping `.git`,
-   `.github`, `.vscode`, `build`, `dist`, `public`, and `docs`) and extracts
-   every URL that begins with the configured source base URL using a regular
-   expression.
+1. **Discovery** – walks all files under the current directory (skipping directories
+   containing binaries) and extracts every URL that begins with the 
+   configured source base URL using a regular expression.
 2. **Deduplication** – each unique URL is checked only once, and a small
    built-in exclusion list (e.g. JSON-schema endpoints) is skipped.
 3. **Checking** – each URL is fetched with an HTTP GET request.  A response
