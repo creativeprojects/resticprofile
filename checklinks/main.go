@@ -1,3 +1,37 @@
+// checklinks is a link-checking tool for the resticprofile documentation.
+//
+// It scans all files in the current directory tree (skipping common non-doc
+// directories such as .git, build, and dist) for URLs that begin with the
+// configured source base URL, then verifies that every discovered URL returns
+// a successful HTTP response.
+//
+// When checking links, the tool can operate in two modes:
+//
+//  1. Local mode (default): starts an in-process HTTPS server that serves the
+//     compiled documentation from a local directory, then checks all links
+//     against that server.  Use -dir to point at the directory.
+//
+//  2. Remote mode: redirects all requests to an alternative base URL supplied
+//     via -target.  Useful for smoke-testing a staging deployment without
+//     rewriting every link in the source files.
+//
+// In addition to checking HTTP status codes, the tool validates URL fragments
+// (e.g. /page#section) by searching the response body for the corresponding
+// id="…" attribute, so broken anchors are caught as well.
+//
+// Usage:
+//
+//	checklinks [-v] [-source <url>] [-target <url>] [-dir <path>]
+//
+// Flags:
+//
+//	-v          Print each link as it is discovered (verbose output).
+//	-source     Base URL whose occurrences are searched for in files.
+//	            Defaults to https://creativeprojects.github.io/resticprofile.
+//	-target     Alternative base URL to send requests to.  When omitted, a
+//	            local server is started and -dir must be provided.
+//	-dir        Directory containing the compiled HTML documentation.
+//	            Required when -target is not specified.
 package main
 
 import (
@@ -8,10 +42,12 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"os/signal"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -37,10 +73,12 @@ func checklinks() error {
 		verboseFlag   bool
 		sourceURLFlag string
 		targetURLFlag string
+		dirFlag       string
 	)
 	flag.BoolVar(&verboseFlag, "v", false, "display more information")
 	flag.StringVar(&sourceURLFlag, "source", "https://creativeprojects.github.io/resticprofile", "base URL to find links from")
 	flag.StringVar(&targetURLFlag, "target", "", "base URL to check links against (leave empty to check against source URL)")
+	flag.StringVar(&dirFlag, "dir", "", "directory with HTML documentation")
 	flag.Parse()
 
 	if sourceURLFlag == "" {
@@ -64,7 +102,7 @@ func checklinks() error {
 			return nil
 		}
 		if d.IsDir() {
-			if contains(excludeDirs, d.Name()) {
+			if slices.Contains(excludeDirs, d.Name()) {
 				return fs.SkipDir
 			}
 			return nil
@@ -75,7 +113,7 @@ func checklinks() error {
 			return nil
 		}
 		for _, link := range links {
-			if !contains(allLinks, link) && !contains(excludeURLs, link) {
+			if !slices.Contains(allLinks, link) && !slices.Contains(excludeURLs, link) {
 				allLinks = append(allLinks, link)
 			}
 			if verboseFlag {
@@ -102,7 +140,25 @@ func checklinks() error {
 			return fmt.Errorf("parsing target URL: %w", err)
 		}
 	}
-	httpClient := newHTTPClient(source, target)
+
+	var transport *http.Transport
+	if target == "" {
+		// Start a local server to serve the documentation if no target URL is provided
+		if dirFlag == "" {
+			return fmt.Errorf("directory must be specified when no target URL is provided")
+		}
+		server := startServer(dirFlag)
+		defer server.Close()
+
+		targetURLFlag = server.URL
+		target, err = hostname(targetURLFlag)
+		if err != nil {
+			return fmt.Errorf("parsing local server URL: %w", err)
+		}
+		fmt.Printf("Started local server at %s serving directory %s\n", targetURLFlag, dirFlag)
+		transport = server.Client().Transport.(*http.Transport)
+	}
+	httpClient := newHTTPClient(source, target, transport)
 
 	hasErrors := false
 	fmt.Printf("Checking %d links\n", len(allLinks))
@@ -136,15 +192,6 @@ func findPatternInFile(pattern *regexp.Regexp, path string) ([]string, error) {
 	return pattern.FindAllString(string(rawBytes), -1), nil
 }
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
 func checkLink(ctx context.Context, client *http.Client, link string) error {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -172,8 +219,11 @@ func checkLink(ctx context.Context, client *http.Client, link string) error {
 	return nil
 }
 
-func newHTTPClient(source, target string) *http.Client {
-	transport := http.DefaultTransport.(*http.Transport).Clone()
+func newHTTPClient(source, target string, transport *http.Transport) *http.Client {
+	if transport == nil {
+		transport = http.DefaultTransport.(*http.Transport)
+	}
+	transport = transport.Clone()
 
 	if target != "" {
 		fmt.Printf("Redirecting requests from %s to %s\n", source, target)
@@ -208,4 +258,8 @@ func hostname(rawURL string) (string, error) {
 		}
 	}
 	return fmt.Sprintf("%s:%s", parts.Hostname(), port), nil
+}
+
+func startServer(root string) *httptest.Server {
+	return httptest.NewTLSServer(http.FileServer(http.Dir(root)))
 }
