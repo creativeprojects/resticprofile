@@ -6,34 +6,62 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var (
 	excludeDirs = []string{".git", ".github", ".vscode", "build", "dist", "public", "docs"}
-	linkPattern = regexp.MustCompile(`https?://creativeprojects\.github\.io/resticprofile[^\s"\)>]*`)
-	verbose     = false
-	sourceURL   = "https://creativeprojects.github.io/resticprofile"
-	targetURL   = ""
 	excludeURLs = []string{
-		"https://creativeprojects.github.io/resticprofile/jsonschema",
-		"https://creativeprojects.github.io/resticprofile/jsonschema/",
+		"%s/jsonschema",
+		"%s/jsonschema/",
 	}
 )
 
 func main() {
-	flag.BoolVar(&verbose, "v", false, "display more information")
-	flag.StringVar(&targetURL, "target", "http://127.0.0.1:1313/resticprofile", "base URL to check links against")
+	err := checklinks()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func checklinks() error {
+	var (
+		verboseFlag   bool
+		sourceURLFlag string
+		targetURLFlag string
+	)
+	flag.BoolVar(&verboseFlag, "v", false, "display more information")
+	flag.StringVar(&sourceURLFlag, "source", "https://creativeprojects.github.io/resticprofile", "base URL to find links from")
+	flag.StringVar(&targetURLFlag, "target", "", "base URL to check links against (leave empty to check against source URL)")
 	flag.Parse()
 
+	if sourceURLFlag == "" {
+		return fmt.Errorf("source URL must be specified")
+	}
+	linkPattern, err := regexp.Compile(regexp.QuoteMeta(sourceURLFlag) + `[^\s"\)>]*`)
+	if err != nil {
+		return fmt.Errorf("compiling regex: %w", err)
+	}
+	for i, url := range excludeURLs {
+		excludeURLs[i] = fmt.Sprintf(url, sourceURLFlag)
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	allLinks := make([]string, 0)
-	_ = fs.WalkDir(os.DirFS("."), ".", func(path string, d fs.DirEntry, err error) error {
+	err = fs.WalkDir(os.DirFS("."), ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error opening %s: %v\n", path, err)
-			return err
+			fmt.Fprintf(os.Stderr, "error opening %s: %v\n", path, err)
+			return nil
 		}
 		if d.IsDir() {
 			if contains(excludeDirs, d.Name()) {
@@ -41,27 +69,52 @@ func main() {
 			}
 			return nil
 		}
-		links, err := findLinks(path)
+		links, err := findPatternInFile(linkPattern, path)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading %s: %v\n", path, err)
+			fmt.Fprintf(os.Stderr, "error reading %s: %v\n", path, err)
 			return nil
 		}
 		for _, link := range links {
 			if !contains(allLinks, link) && !contains(excludeURLs, link) {
 				allLinks = append(allLinks, link)
 			}
-			if verbose {
+			if verboseFlag {
 				fmt.Printf("%s: %s\n", path, link)
 			}
 		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("walking directory: %w\n", err)
+	}
+
+	source, err := hostname(sourceURLFlag)
+	if err != nil {
+		return fmt.Errorf("parsing source URL: %w", err)
+	}
+	target := ""
+	if targetURLFlag != "" {
+		target, err = hostname(targetURLFlag)
+		if err != nil {
+			return fmt.Errorf("parsing target URL: %w", err)
+		}
+	}
+	httpClient := newHTTPClient(source, target)
 
 	hasErrors := false
 	fmt.Printf("Checking %d links\n", len(allLinks))
 	for _, link := range allLinks {
-		targetLink := strings.Replace(link, sourceURL, targetURL, 1)
-		err := checkLink(context.Background(), targetLink)
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		targetLink := link
+		if targetURLFlag != "" {
+			targetLink = strings.Replace(link, sourceURLFlag, targetURLFlag, 1)
+		}
+		err := checkLink(ctx, httpClient, targetLink)
 		if err != nil {
 			fmt.Printf("[ Error ] %s => %v\n", targetLink, err)
 			hasErrors = true
@@ -70,19 +123,17 @@ func main() {
 		fmt.Printf("[  OK   ] %s\n", targetLink)
 	}
 	if hasErrors {
-		os.Exit(1)
+		return fmt.Errorf("some links failed to check")
 	}
+	return nil
 }
 
-func findLinks(path string) ([]string, error) {
+func findPatternInFile(pattern *regexp.Regexp, path string) ([]string, error) {
 	rawBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-
-	links := linkPattern.FindAllString(string(rawBytes), -1)
-
-	return links, nil
+	return pattern.FindAllString(string(rawBytes), -1), nil
 }
 
 func contains(slice []string, item string) bool {
@@ -94,12 +145,12 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func checkLink(ctx context.Context, link string) error {
+func checkLink(ctx context.Context, client *http.Client, link string) error {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return err
 	}
-	response, err := http.DefaultClient.Do(request)
+	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}
@@ -119,4 +170,42 @@ func checkLink(ctx context.Context, link string) error {
 		}
 	}
 	return nil
+}
+
+func newHTTPClient(source, target string) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+
+	if target != "" {
+		fmt.Printf("Redirecting requests from %s to %s\n", source, target)
+		dialer := &net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}
+		transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			if addr == source {
+				addr = target
+			}
+			fmt.Printf("Dialing %s\n", addr)
+			return dialer.DialContext(ctx, network, addr)
+		}
+	}
+
+	httpClient := &http.Client{Transport: transport, Timeout: 30 * time.Second}
+	return httpClient
+}
+
+func hostname(rawURL string) (string, error) {
+	parts, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("parsing URL: %w", err)
+	}
+	port := parts.Port()
+	if port == "" {
+		if parts.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	return fmt.Sprintf("%s:%s", parts.Hostname(), port), nil
 }
