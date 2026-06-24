@@ -88,7 +88,7 @@ func checklinks() error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("walking directory: %w\n", err)
+		return fmt.Errorf("walking directory: %w", err)
 	}
 
 	source, err := hostname(sourceURLFlag)
