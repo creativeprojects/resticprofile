@@ -53,7 +53,7 @@ func resticprofileBinary(t *testing.T) string {
 			return
 		}
 		out := filepath.Join(dir, platform.Executable("resticprofile"))
-		cmd := exec.CommandContext(context.Background(), "go", "build", "-o", out, ".")
+		cmd := exec.CommandContext(t.Context(), "go", "build", "-o", out, ".")
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
 			errRPBuild = err
@@ -186,8 +186,10 @@ func requireBash4(t *testing.T) string {
 	bash := requireShell(t, "bash")
 	out, err := exec.CommandContext(t.Context(), bash, "-c", "echo ${BASH_VERSINFO[0]}").Output()
 	require.NoError(t, err)
-	if strings.TrimSpace(string(out)) < "4" {
-		t.Skipf("bash 4+ required, found %s", strings.TrimSpace(string(out)))
+
+	major := strings.TrimSpace(string(out))
+	if major == "0" || major == "1" || major == "2" || major == "3" {
+		t.Skipf("bash 4+ required, found %s", major)
 	}
 	return bash
 }

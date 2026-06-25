@@ -22,7 +22,7 @@ on:
 jobs:
   completion:
     name: bash / zsh / fish completion
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Check out code into the Go module directory
