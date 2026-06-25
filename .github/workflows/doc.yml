@@ -1,4 +1,4 @@
-name: Documentation Build
+name: Build Documentation
 
 on:
   workflow_dispatch:
@@ -23,10 +23,19 @@ jobs:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      - name: Set up Go
+      - name: Dotenv Action
+        id: dotenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: .github/workflows/env
+          log-variables: true
+
+      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
         uses: actions/setup-go@v6
         with:
-          go-version: ~1.26
+          go-version: ${{ steps.dotenv.outputs.go_version }}
+          check-latest: true
+          cache: true
 
       - name: Check configuration snippets in documentation
         run: go run ./config/checkdoc -r docs/content -i changelog.md

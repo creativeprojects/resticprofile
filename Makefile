@@ -27,12 +27,12 @@ BINARY_WINDOWS_AMD64=$(BINARY).exe
 BINARY_WINDOWS_ARM64=$(BINARY)_arm64.exe
 README=README.md
 
-TESTS=./...
+TESTS?=./...
 COVERAGE_FILE=coverage.out
 COVERAGE_SSH_FILE=coverage-ssh.out
 JUNIT_FILE=unit-tests.xml
 
-BUILD=$(realpath build)/
+BUILD?=$(realpath build)/
 
 RESTIC_GEN=$(BUILD)restic-generator
 RESTIC_DIR=$(BUILD)restic-

@@ -421,7 +421,7 @@ type SectionInfo_PropertyInfo_Call struct {
 
 // PropertyInfo is a helper method to define mock.On call
 //   - name string
-func (_e *SectionInfo_Expecter) PropertyInfo(name interface{}) *SectionInfo_PropertyInfo_Call {
+func (_e *SectionInfo_Expecter) PropertyInfo(name any) *SectionInfo_PropertyInfo_Call {
 	return &SectionInfo_PropertyInfo_Call{Call: _e.mock.On("PropertyInfo", name)}
 }
 

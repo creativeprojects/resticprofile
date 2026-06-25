@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"io/fs"
 	"maps"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/config/mocks"
+	"github.com/creativeprojects/resticprofile/examples"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/maybe"
@@ -25,6 +27,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+//go:embed *.conf *.yaml
+var invalidConfigurationFiles embed.FS
 
 func compileSchema(t *testing.T, version config.Version) *jsonschema.Schema {
 	t.Helper()
@@ -58,14 +63,14 @@ func TestJSONSchemaValidation(t *testing.T) {
 	schema1 := compileSchema(t, config.Version01)
 	schema2 := compileSchema(t, config.Version02)
 
-	rewriteToJson := func(t *testing.T, filename string) string {
+	rewriteToJson := func(t *testing.T, filename string, content []byte) string {
 		t.Helper()
 		v := viper.New()
 		v.SetConfigFile(filename)
 		if strings.HasSuffix(filename, ".conf") {
 			v.SetConfigType("toml")
 		}
-		require.NoError(t, v.ReadInConfig())
+		require.NoError(t, v.ReadConfig(bytes.NewReader(content)))
 
 		v.SetConfigType("json")
 		filename = filepath.Join(t.TempDir(), filepath.Base(filename)+".json")
@@ -79,15 +84,14 @@ func TestJSONSchemaValidation(t *testing.T) {
 	t.Run("examples", func(t *testing.T) {
 		t.Parallel()
 
-		exclusions := regexp.MustCompile(`[\\/](rsyslogd\.conf|utf.*\.conf|drop-in-example\.conf)$`)
+		exclusions := regexp.MustCompile(`^(utf.*\.conf|drop-in-example\.conf)$`)
 		testCount := 0
 
-		err := filepath.Walk("../../examples/", func(filename string, info fs.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
+		err := fs.WalkDir(examples.Files, ".", func(filename string, info fs.DirEntry, err error) error {
+			require.NoError(t, err)
+
 			if !info.IsDir() && extensionMatcher.MatchString(filename) && !exclusions.MatchString(filename) {
-				content, e := os.ReadFile(filename)
+				content, e := fs.ReadFile(examples.Files, filename)
 				require.NoError(t, e)
 				if bytes.Contains(content, []byte("{{ define")) || bytes.Contains(content, []byte("{{ template")) {
 					return nil // skip test for templates
@@ -96,12 +100,12 @@ func TestJSONSchemaValidation(t *testing.T) {
 
 				t.Run(path.Base(filename), func(t *testing.T) {
 					if !strings.HasSuffix(filename, ".json") {
-						filename = rewriteToJson(t, filename)
-					}
-					filename, _ = filepath.Abs(filename)
+						filename = rewriteToJson(t, filename, content)
+						filename, _ = filepath.Abs(filename)
 
-					content, e = os.ReadFile(filename)
-					assert.NoError(t, e)
+						content, e = os.ReadFile(filename)
+						assert.NoError(t, e)
+					}
 					schema := schema1
 					if version2Matcher.Find(content) != nil {
 						schema = schema2
@@ -129,19 +133,21 @@ func TestJSONSchemaValidation(t *testing.T) {
 	t.Run("invalid", func(t *testing.T) {
 		t.Parallel()
 
-		err := filepath.Walk("./", func(filename string, info fs.FileInfo, err error) error {
+		err := fs.WalkDir(invalidConfigurationFiles, ".", func(filename string, info fs.DirEntry, err error) error {
+			require.NoError(t, err)
+
 			if !info.IsDir() && extensionMatcher.MatchString(filename) {
-				content, e := os.ReadFile(filename)
-				require.NoError(t, e)
-
 				t.Run(path.Base(filename), func(t *testing.T) {
-					if !strings.HasSuffix(filename, ".json") {
-						filename = rewriteToJson(t, filename)
-					}
-					filename, _ = filepath.Abs(filename)
+					content, err := fs.ReadFile(invalidConfigurationFiles, filename)
+					require.NoError(t, err)
 
-					content, e = os.ReadFile(filename)
-					assert.NoError(t, e)
+					if !strings.HasSuffix(filename, ".json") {
+						filename = rewriteToJson(t, filename, content)
+						filename, _ = filepath.Abs(filename)
+
+						content, err = os.ReadFile(filename)
+						assert.NoError(t, err)
+					}
 					schema := schema1
 					if version2Matcher.Find(content) != nil {
 						schema = schema2

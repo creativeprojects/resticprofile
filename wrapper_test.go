@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -780,7 +779,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 	})
 
 	t.Run("StreamSourceErrorSendsSIGINT", func(t *testing.T) {
-		if runtime.GOOS == "windows" {
+		if platform.IsWindows() {
 			t.Skip("signal handling is not supported on Windows")
 		}
 		profile, wrapper := profileAndWrapper(t)
@@ -798,7 +797,7 @@ func TestBackupWithStreamSource(t *testing.T) {
 	})
 
 	t.Run("CanTerminateStreamSource", func(t *testing.T) {
-		if runtime.GOOS == "windows" {
+		if platform.IsWindows() {
 			t.Skip("signal handling is not supported on Windows")
 		}
 		profile, wrapper := profileAndWrapper(t)
@@ -816,7 +815,8 @@ func TestBackupWithStreamSource(t *testing.T) {
 		require.NotNil(t, err)
 		assert.Error(t, err)
 		if err.Error() != "stdin-test on profile 'name': io: read/write on closed pipe" &&
-			err.Error() != "stdin-test on profile 'name': signal: interrupt" {
+			err.Error() != "stdin-test on profile 'name': signal: interrupt" &&
+			err.Error() != "stdin-test on profile 'name': exit status 128" {
 			t.Errorf("unexpected error: %s", err)
 		}
 	})

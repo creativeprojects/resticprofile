@@ -47,8 +47,11 @@ func (e Entry) SkipUser() bool { return e.NeedsUser() || e.user == "-" }
 
 // String returns the crontab line representation of the entry (end of line included)
 func (e Entry) String() string {
+	// The day of a command's execution can be specified by two fields — day of month, and day of week.
+	// If both fields are restricted (ie, are not *), the command will be run when either field matches the current time.
+	// For example, "30 4 1,15 * 5" would cause a command to be run at 4:30 am on the 1st and 15th of each month, plus every Friday.
 	minute, hour, dayOfMonth, month, dayOfWeek := "*", "*", "*", "*", "*"
-	wd := ""
+	dayTest, wd := "", ""
 	if e.workDir != "" {
 		wd = fmt.Sprintf("cd %s && ", e.workDir)
 	}
@@ -65,13 +68,22 @@ func (e Entry) String() string {
 		month = formatRange(e.event.Month.GetRanges(), twoDecimals)
 	}
 	if e.event.WeekDay.HasValue() {
-		// don't make ranges for days of the week as it can fail with high sunday (7)
-		dayOfWeek = formatList(e.event.WeekDay.GetRangeValues(), formatWeekDay)
+		if !e.event.Day.HasValue() {
+			// don't make ranges for days of the week as it can fail with high sunday (7)
+			dayOfWeek = formatList(e.event.WeekDay.GetRangeValues(), formatWeekDay)
+		} else {
+			days := e.event.WeekDay.GetRangeValues()
+			dayTests := make([]string, len(days))
+			for i, day := range days {
+				dayTests[i] = fmt.Sprintf("test $(date '+\\%%w') -eq %s ", formatWeekDay(day))
+			}
+			dayTest = strings.Join(dayTests, "|| ") + "&& "
+		}
 	}
 	if e.HasUser() && !e.SkipUser() {
-		return fmt.Sprintf("%s %s %s %s %s\t%s\t%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, e.user, wd, e.commandLine)
+		return fmt.Sprintf("%s %s %s %s %s\t%s\t%s%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, e.user, dayTest, wd, e.commandLine)
 	}
-	return fmt.Sprintf("%s %s %s %s %s\t%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, wd, e.commandLine)
+	return fmt.Sprintf("%s %s %s %s %s\t%s%s%s\n", minute, hour, dayOfMonth, month, dayOfWeek, dayTest, wd, e.commandLine)
 }
 
 // Generate writes a cron line in the StringWriter (end of line included)

@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -35,36 +36,38 @@ func TestFileDefaultOption(t *testing.T) {
 }
 
 func TestFileCloseAfterWrite(t *testing.T) {
-	dir := t.TempDir()
-	filename := filepath.Join(dir, "testfile")
+	synctest.Test(t, func(t *testing.T) {
+		dir := t.TempDir()
+		filename := filepath.Join(dir, "testfile")
 
-	w, err := NewFile(filename, WithFileKeepOpen(false), WithFileKeepOpenTimeout(1*time.Millisecond))
-	require.NoError(t, err)
+		w, err := NewFile(filename, WithFileKeepOpen(false), WithFileKeepOpenTimeout(1*time.Millisecond))
+		require.NoError(t, err)
 
-	n, err := w.Write([]byte("hello"))
-	assert.NoError(t, err)
-	assert.Equal(t, 5, n)
-	time.Sleep(2 * time.Millisecond)
+		n, err := w.Write([]byte("hello"))
+		assert.NoError(t, err)
+		assert.Equal(t, 5, n)
+		time.Sleep(2 * time.Millisecond)
 
-	content, err := os.ReadFile(filename)
-	require.NoError(t, err)
-	assert.Equal(t, "hello", string(content))
+		content, err := os.ReadFile(filename)
+		require.NoError(t, err)
+		assert.Equal(t, "hello", string(content))
 
-	n, err = w.Write([]byte(" world"))
-	assert.NoError(t, err)
-	assert.Equal(t, 6, n)
-	time.Sleep(2 * time.Millisecond)
+		n, err = w.Write([]byte(" world"))
+		assert.NoError(t, err)
+		assert.Equal(t, 6, n)
+		time.Sleep(2 * time.Millisecond)
 
-	content, err = os.ReadFile(filename)
-	require.NoError(t, err)
-	assert.Equal(t, "hello world", string(content))
+		content, err = os.ReadFile(filename)
+		require.NoError(t, err)
+		assert.Equal(t, "hello world", string(content))
 
-	err = w.Close()
-	assert.NoError(t, err)
+		err = w.Close()
+		assert.NoError(t, err)
 
-	opened, closed := w.stats()
-	assert.Equal(t, int32(3), opened) // 1 during instantiation + 1 for each write
-	assert.Equal(t, int32(3), closed) // 1 during instantiation + 1 for each write
+		opened, closed := w.stats()
+		assert.Equal(t, int32(3), opened) // 1 during instantiation + 1 for each write
+		assert.Equal(t, int32(3), closed) // 1 during instantiation + 1 for each write
+	})
 }
 
 func TestFileNoTimeToCloseAfterWrite(t *testing.T) {

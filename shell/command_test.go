@@ -271,8 +271,23 @@ func TestVariablesRewrite(t *testing.T) {
 func TestRunLocalCommand(t *testing.T) {
 	t.Parallel()
 
-	cmd := NewCommand("command.go", nil)
-	expected := "." + string(os.PathSeparator) + "command.go"
+	// find a file in the current directory
+	entries, err := os.ReadDir("./")
+	require.NoError(t, err)
+
+	localFilename := ""
+	for _, entry := range entries {
+		if !entry.IsDir() && entry.Name()[0] != '.' {
+			localFilename = entry.Name()
+			break
+		}
+	}
+	require.NotEmpty(t, localFilename, "no file found in current directory")
+
+	t.Logf("using local file %q", localFilename)
+
+	cmd := NewCommand(localFilename, nil)
+	expected := "." + string(os.PathSeparator) + localFilename
 
 	for _, shell := range []string{defaultShell, bashShell, powershell, powershell6, windowsShell} {
 		args := getArgumentsComposer(shell)(cmd)

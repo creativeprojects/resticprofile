@@ -242,7 +242,7 @@ type ProfileInfo_PropertyInfo_Call struct {
 
 // PropertyInfo is a helper method to define mock.On call
 //   - name string
-func (_e *ProfileInfo_Expecter) PropertyInfo(name interface{}) *ProfileInfo_PropertyInfo_Call {
+func (_e *ProfileInfo_Expecter) PropertyInfo(name any) *ProfileInfo_PropertyInfo_Call {
 	return &ProfileInfo_PropertyInfo_Call{Call: _e.mock.On("PropertyInfo", name)}
 }
 
@@ -295,7 +295,7 @@ type ProfileInfo_SectionInfo_Call struct {
 
 // SectionInfo is a helper method to define mock.On call
 //   - name string
-func (_e *ProfileInfo_Expecter) SectionInfo(name interface{}) *ProfileInfo_SectionInfo_Call {
+func (_e *ProfileInfo_Expecter) SectionInfo(name any) *ProfileInfo_SectionInfo_Call {
 	return &ProfileInfo_SectionInfo_Call{Call: _e.mock.On("SectionInfo", name)}
 }
 

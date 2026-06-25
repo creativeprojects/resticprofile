@@ -63,7 +63,7 @@ type Handler_CheckPermission_Call struct {
 // CheckPermission is a helper method to define mock.On call
 //   - user1 user.User
 //   - p schedule.Permission
-func (_e *Handler_Expecter) CheckPermission(user1 interface{}, p interface{}) *Handler_CheckPermission_Call {
+func (_e *Handler_Expecter) CheckPermission(user1 any, p any) *Handler_CheckPermission_Call {
 	return &Handler_CheckPermission_Call{Call: _e.mock.On("CheckPermission", user1, p)}
 }
 
@@ -154,7 +154,7 @@ type Handler_CreateJob_Call struct {
 //   - job *schedule.Config
 //   - schedules []*calendar.Event
 //   - permission schedule.Permission
-func (_e *Handler_Expecter) CreateJob(job interface{}, schedules interface{}, permission interface{}) *Handler_CreateJob_Call {
+func (_e *Handler_Expecter) CreateJob(job any, schedules any, permission any) *Handler_CreateJob_Call {
 	return &Handler_CreateJob_Call{Call: _e.mock.On("CreateJob", job, schedules, permission)}
 }
 
@@ -224,7 +224,7 @@ type Handler_DetectSchedulePermission_Call struct {
 
 // DetectSchedulePermission is a helper method to define mock.On call
 //   - permission schedule.Permission
-func (_e *Handler_Expecter) DetectSchedulePermission(permission interface{}) *Handler_DetectSchedulePermission_Call {
+func (_e *Handler_Expecter) DetectSchedulePermission(permission any) *Handler_DetectSchedulePermission_Call {
 	return &Handler_DetectSchedulePermission_Call{Call: _e.mock.On("DetectSchedulePermission", permission)}
 }
 
@@ -275,7 +275,7 @@ type Handler_DisplayJobStatus_Call struct {
 
 // DisplayJobStatus is a helper method to define mock.On call
 //   - job *schedule.Config
-func (_e *Handler_Expecter) DisplayJobStatus(job interface{}) *Handler_DisplayJobStatus_Call {
+func (_e *Handler_Expecter) DisplayJobStatus(job any) *Handler_DisplayJobStatus_Call {
 	return &Handler_DisplayJobStatus_Call{Call: _e.mock.On("DisplayJobStatus", job)}
 }
 
@@ -328,7 +328,7 @@ type Handler_DisplaySchedules_Call struct {
 //   - profile string
 //   - command string
 //   - schedules []string
-func (_e *Handler_Expecter) DisplaySchedules(profile interface{}, command interface{}, schedules interface{}) *Handler_DisplaySchedules_Call {
+func (_e *Handler_Expecter) DisplaySchedules(profile any, command any, schedules any) *Handler_DisplaySchedules_Call {
 	return &Handler_DisplaySchedules_Call{Call: _e.mock.On("DisplaySchedules", profile, command, schedules)}
 }
 
@@ -389,7 +389,7 @@ type Handler_DisplayStatus_Call struct {
 
 // DisplayStatus is a helper method to define mock.On call
 //   - profileName string
-func (_e *Handler_Expecter) DisplayStatus(profileName interface{}) *Handler_DisplayStatus_Call {
+func (_e *Handler_Expecter) DisplayStatus(profileName any) *Handler_DisplayStatus_Call {
 	return &Handler_DisplayStatus_Call{Call: _e.mock.On("DisplayStatus", profileName)}
 }
 
@@ -495,7 +495,7 @@ type Handler_ParseSchedules_Call struct {
 
 // ParseSchedules is a helper method to define mock.On call
 //   - schedules []string
-func (_e *Handler_Expecter) ParseSchedules(schedules interface{}) *Handler_ParseSchedules_Call {
+func (_e *Handler_Expecter) ParseSchedules(schedules any) *Handler_ParseSchedules_Call {
 	return &Handler_ParseSchedules_Call{Call: _e.mock.On("ParseSchedules", schedules)}
 }
 
@@ -547,7 +547,7 @@ type Handler_RemoveJob_Call struct {
 // RemoveJob is a helper method to define mock.On call
 //   - job *schedule.Config
 //   - permission schedule.Permission
-func (_e *Handler_Expecter) RemoveJob(job interface{}, permission interface{}) *Handler_RemoveJob_Call {
+func (_e *Handler_Expecter) RemoveJob(job any, permission any) *Handler_RemoveJob_Call {
 	return &Handler_RemoveJob_Call{Call: _e.mock.On("RemoveJob", job, permission)}
 }
 
@@ -614,7 +614,7 @@ type Handler_Scheduled_Call struct {
 
 // Scheduled is a helper method to define mock.On call
 //   - profileName string
-func (_e *Handler_Expecter) Scheduled(profileName interface{}) *Handler_Scheduled_Call {
+func (_e *Handler_Expecter) Scheduled(profileName any) *Handler_Scheduled_Call {
 	return &Handler_Scheduled_Call{Call: _e.mock.On("Scheduled", profileName)}
 }
 
