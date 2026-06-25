@@ -39,7 +39,9 @@ function _resticprofile() {
         [[ "${last}" != "__complete_restic" ]] && profile_prefix="${last%.__complete_restic}"
         completions[-1]=()
 
-        # Add any other completions already collected
+        # Add resticprofile's own completions. These already carry the profile
+        # prefix (e.g. "default.show") and must be added before the compset below,
+        # while $PREFIX still holds the full "profile." prefixed word.
         (( ${#completions[@]} )) && compadd -- "${completions[@]}"
 
         # Build args for restic by stripping profile prefixes from the current words
@@ -67,55 +69,17 @@ function _resticprofile() {
             CURRENT=${#words[@]}
             service=restic
 
-            if [[ -n "${profile_prefix}" ]]; then
-                # Override compadd to prepend the profile prefix to each completion.
-                # Note: this shadows the compadd builtin for the duration of _restic's execution.
-                local _rp_pfx="${profile_prefix}."
+            # When a profile prefix is present (e.g. completing "default.backup"),
+            # strip the "profile." part from the word being completed and move it to
+            # $IPREFIX. zsh then matches restic's completions against the bare restic
+            # token and automatically re-inserts the "profile." prefix on every match.
+            # This works for completions added through _describe / _arguments without
+            # having to reimplement compadd's option parsing. ${(b)...} quotes the
+            # profile name so it is matched literally even if it contains pattern
+            # metacharacters.
+            [[ -n "${profile_prefix}" ]] && compset -P "${(b)profile_prefix}."
 
-                function compadd() {
-                    local -a _opts=() _items=()
-                    local -i _after_dash=0
-                    local _next_opt=""
-
-                    for _arg in "$@"; do
-                        if [[ -n "${_next_opt}" ]]; then
-                            if [[ "${_next_opt}" == "-a" ]]; then
-                                # Items come from a named array; expand it inline
-                                eval "_items+=(\"\${${_arg}[@]}\")"
-                                _opts[-1]=()  # Remove the -a option we already added
-                            else
-                                _opts+=("${_arg}")
-                            fi
-                            _next_opt=""
-                        elif (( _after_dash )); then
-                            _items+=("${_arg}")
-                        elif [[ "${_arg}" == "--" ]]; then
-                            _after_dash=1
-                        elif [[ "${_arg}" == "-a" ]]; then
-                            _opts+=("${_arg}")
-                            _next_opt="${_arg}"
-                        elif [[ "${_arg}" == -[PpSsdGWFXJVEo] ]]; then
-                            # Options that take a following value
-                            _opts+=("${_arg}")
-                            _next_opt="${_arg}"
-                        elif [[ "${_arg}" == -* || "${_arg}" == +* ]]; then
-                            _opts+=("${_arg}")
-                        else
-                            _items+=("${_arg}")
-                        fi
-                    done
-
-                    local -a _prefixed=()
-                    for _item in "${_items[@]}"; do
-                        _prefixed+=("${_rp_pfx}${_item}")
-                    done
-                    builtin compadd "${_opts[@]}" -- "${_prefixed[@]}"
-                }
-
-                { _restic; } always { unfunction compadd 2>/dev/null }
-            else
-                _restic
-            fi
+            _restic
 
             service="${saved_service}"
             words=("${saved_words[@]}")
