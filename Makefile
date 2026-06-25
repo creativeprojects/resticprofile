@@ -213,7 +213,7 @@ test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with r
 	@echo "[*] $@"
 	@$(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
 
-test-completion: ## Run shell completion integration tests (needs bash 4+, zsh, fish and restic; each is skipped when absent)
+test-completion: test-helpers ## Run shell completion integration tests (needs bash 4+, zsh, fish and restic; each is skipped when absent)
 	@echo "[*] $@"
 	@$(GOTEST) -count=1 -v -run 'ShellCompletion' ./
 
