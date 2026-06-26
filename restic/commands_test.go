@@ -584,4 +584,40 @@ func TestBuiltInCommandsTable(t *testing.T) {
 		assert.False(t, option.AvailableInOS("darwin"))
 		assert.True(t, option.AvailableInOS("windows"))
 	})
+
+	t.Run("options added in 0.19", func(t *testing.T) {
+		// each entry was introduced in restic 0.19 and must be absent in 0.18
+		added := map[string][]string{
+			"check":   {"host", "path", "tag"},
+			"restore": {"ownership-by-name"},
+			"rewrite": {"iinclude", "iinclude-file", "include", "include-file"},
+		}
+		for name, options := range added {
+			cmd18, _ := GetCommandForVersion(name, "0.18", false)
+			require.NotNil(t, cmd18)
+			cmd19, _ := GetCommandForVersion(name, "0.19", false)
+			require.NotNil(t, cmd19)
+
+			for _, option := range options {
+				_, found18 := cmd18.Lookup(option)
+				assert.Falsef(t, found18, "%s --%s should not exist in 0.18", name, option)
+				_, found19 := cmd19.Lookup(option)
+				assert.Truef(t, found19, "%s --%s should exist in 0.19", name, option)
+			}
+		}
+	})
+
+	t.Run("repack-small removed in 0.19", func(t *testing.T) {
+		for _, name := range []string{"forget", "prune"} {
+			cmd18, _ := GetCommandForVersion(name, "0.18", false)
+			require.NotNil(t, cmd18)
+			_, found18 := cmd18.Lookup("repack-small")
+			assert.Truef(t, found18, "%s --repack-small should exist in 0.18", name)
+
+			cmd19, _ := GetCommandForVersion(name, "0.19", false)
+			require.NotNil(t, cmd19)
+			_, found19 := cmd19.Lookup("repack-small")
+			assert.Falsef(t, found19, "%s --repack-small should be removed in 0.19", name)
+		}
+	})
 }
