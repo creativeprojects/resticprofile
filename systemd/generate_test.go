@@ -90,6 +90,79 @@ Environment="HOME=%s"
 	assert.Equal(t, fmt.Sprintf(expectedService, testSudoUser.UserHomeDir), string(service))
 }
 
+func TestGenerateUserUnitAfterLogin(t *testing.T) {
+	const expectedTimer = `[Unit]
+Description=timer description
+
+[Timer]
+OnCalendar=daily
+OnStartupSec=0
+Unit=resticprofile-backup@profile-name.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+`
+	t.Parallel()
+	fs := afero.NewMemMapFs()
+
+	systemdUserDir := filepath.Join(testStandardUser.UserHomeDir, ".config", "systemd", "user")
+	timerFile := filepath.Join(systemdUserDir, "resticprofile-backup@profile-name.timer")
+
+	err := Unit{fs: fs, user: testStandardUser}.Generate(Config{
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		Schedules:        []string{"daily"},
+		UnitType:         UserUnit,
+		AfterLogin:       true,
+	})
+	require.NoError(t, err)
+
+	timer, err := afero.ReadFile(fs, timerFile)
+	require.NoError(t, err)
+	assert.Equal(t, expectedTimer, string(timer))
+}
+
+func TestGenerateUserUnitAfterLoginOnly(t *testing.T) {
+	// a monotonic-only timer (OnStartupSec without OnCalendar) must be valid
+	const expectedTimer = `[Unit]
+Description=timer description
+
+[Timer]
+OnStartupSec=0
+Unit=resticprofile-backup@profile-name.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+`
+	t.Parallel()
+	fs := afero.NewMemMapFs()
+
+	systemdUserDir := filepath.Join(testStandardUser.UserHomeDir, ".config", "systemd", "user")
+	timerFile := filepath.Join(systemdUserDir, "resticprofile-backup@profile-name.timer")
+
+	err := Unit{fs: fs, user: testStandardUser}.Generate(Config{
+		CommandLine:      "commandLine",
+		WorkingDirectory: "workdir",
+		Title:            "name",
+		SubTitle:         "backup",
+		JobDescription:   "job description",
+		TimerDescription: "timer description",
+		UnitType:         UserUnit,
+		AfterLogin:       true,
+	})
+	require.NoError(t, err)
+
+	timer, err := afero.ReadFile(fs, timerFile)
+	require.NoError(t, err)
+	assert.Equal(t, expectedTimer, string(timer))
+}
+
 func TestGenerateUserUnit(t *testing.T) {
 	const expectedService = `[Unit]
 Description=job description

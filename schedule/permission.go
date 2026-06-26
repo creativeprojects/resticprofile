@@ -1,6 +1,8 @@
 package schedule
 
 import (
+	"fmt"
+
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
@@ -27,6 +29,18 @@ func PermissionFromConfig(permission string) Permission {
 	default:
 		return PermissionAuto
 	}
+}
+
+// checkAfterLoginPermission returns an error when the job requests an after-login
+// trigger with a permission that cannot be tied to an interactive login session.
+// after-login only makes sense for a logged-on user session, so it requires the
+// "user_logged_on" permission on every scheduler.
+func checkAfterLoginPermission(job *Config, permission Permission) error {
+	if job.AfterLogin && permission != PermissionUserLoggedOn {
+		return fmt.Errorf("after-login requires the %q permission, but the schedule resolves to %q",
+			constants.SchedulePermissionUserLoggedOn, permission.String())
+	}
+	return nil
 }
 
 func (p Permission) String() string {

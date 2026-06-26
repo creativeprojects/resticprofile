@@ -325,6 +325,7 @@ type ScheduleBaseSection struct {
 	ScheduleIgnoreOnBattery         maybe.Bool     `mapstructure:"schedule-ignore-on-battery" show:"noshow" default:"false" description:"Don't start this schedule when running on battery"`
 	ScheduleIgnoreOnBatteryLessThan int            `mapstructure:"schedule-ignore-on-battery-less-than" show:"noshow" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	ScheduleAfterNetworkOnline      maybe.Bool     `mapstructure:"schedule-after-network-online" show:"noshow" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
+	ScheduleAfterLogin              maybe.Bool     `mapstructure:"schedule-after-login" show:"noshow" description:"Start this schedule after the user logs in. Requires the \"user_logged_on\" permission (supported in \"systemd\", \"launchd\", Windows Task Scheduler and as \"@reboot\" in \"crond\")"`
 	ScheduleHideWindow              maybe.Bool     `mapstructure:"schedule-hide-window" show:"noshow" default:"false" description:"Hide schedule window when running in foreground (Windows only)"`
 	ScheduleStartWhenAvailable      maybe.Bool     `mapstructure:"schedule-start-when-available" show:"noshow" default:"false" description:"Start the task as soon as possible after a scheduled start is missed (Windows only)"`
 }
@@ -337,12 +338,12 @@ func (s *ScheduleBaseSection) resolve(profile *Profile) {
 	if s == nil || !profile.hasConfig() {
 		return
 	}
-	if config := newScheduleConfig(profile, s); config.HasSchedules() {
+	if config := newScheduleConfig(profile, s); config.HasTriggers() {
 		s.scheduleConfig = config
 	}
 }
 
-func (s *ScheduleBaseSection) HasSchedule() bool { return s.scheduleConfig.HasSchedules() }
+func (s *ScheduleBaseSection) HasSchedule() bool { return s.scheduleConfig.HasTriggers() }
 
 func (s *ScheduleBaseSection) getScheduleConfig(p *Profile, command string) *ScheduleConfig {
 	if s.scheduleConfig != nil && p != nil {

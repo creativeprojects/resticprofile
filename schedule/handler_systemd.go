@@ -129,6 +129,9 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 	if unitType == systemd.UserUnit && job.AfterNetworkOnline {
 		return fmt.Errorf("after-network-online is not available for \"user_logged_on\" permission schedules")
 	}
+	if err := checkAfterLoginPermission(job, permission); err != nil {
+		return err
+	}
 
 	timerFile := systemd.GetTimerFile(job.ProfileName, job.CommandName)
 
@@ -169,6 +172,7 @@ func (h *HandlerSystemd) CreateJob(job *Config, schedules []*calendar.Event, per
 		UnitFile:             h.config.UnitTemplate,
 		TimerFile:            h.config.TimerTemplate,
 		AfterNetworkOnline:   job.AfterNetworkOnline,
+		AfterLogin:           job.AfterLogin,
 		DropInFiles:          job.SystemdDropInFiles,
 		Nice:                 h.config.Nice,
 		IOSchedulingClass:    h.config.IONiceClass,
@@ -575,6 +579,7 @@ func toScheduleConfig(systemdConfig systemd.Config) Config {
 		Permission:       systemdConfigPermission(systemdConfig),
 		Schedules:        systemdConfig.Schedules,
 		Priority:         systemdConfig.Priority,
+		AfterLogin:       systemdConfig.AfterLogin,
 	}
 	return cfg
 }

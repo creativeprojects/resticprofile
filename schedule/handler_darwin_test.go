@@ -68,6 +68,30 @@ func TestLaunchdJobPreservesEnv(t *testing.T) {
 	}
 }
 
+func TestLaunchdJobAfterLogin(t *testing.T) {
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
+
+	t.Run("after-login sets RunAtLoad", func(t *testing.T) {
+		cfg := &Config{ProfileName: "t", CommandName: "backup", AfterLogin: true}
+		launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
+		assert.True(t, launchdJob.RunAtLoad)
+	})
+
+	t.Run("without after-login RunAtLoad is false", func(t *testing.T) {
+		cfg := &Config{ProfileName: "t", CommandName: "backup"}
+		launchdJob := handler.getLaunchdJob(cfg, []*calendar.Event{})
+		assert.False(t, launchdJob.RunAtLoad)
+	})
+}
+
+func TestCreateJobAfterLoginRejectsNonLoggedOn(t *testing.T) {
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
+	handler.fs = afero.NewMemMapFs()
+	job := &Config{ProfileName: "t", CommandName: "backup", AfterLogin: true}
+	err := handler.CreateJob(job, []*calendar.Event{}, PermissionSystem)
+	assert.ErrorContains(t, err, "after-login")
+}
+
 func TestCreateUserPlist(t *testing.T) {
 	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
 	handler.fs = afero.NewMemMapFs()

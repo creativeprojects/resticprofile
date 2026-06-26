@@ -59,6 +59,9 @@ type LaunchdJob struct {
 	// 	Month <integer>
 	// 	The month (1-12) on which this job will be run.
 	StartCalendarInterval []CalendarInterval `plist:"StartCalendarInterval,omitempty"`
+	// This optional key controls whether the job is launched once at the time the job is loaded.
+	// For a user LaunchAgent this happens when the user logs in, providing an "after login" trigger.
+	RunAtLoad bool `plist:"RunAtLoad,omitempty"`
 	// ProcessType
 	// This optional key describes, at a high level, the intended purpose of the job.  The system will apply resource limits based on what kind of job it is. If
 	// left unspecified, the system will apply light resource limits to the job, throttling its CPU usage and I/O bandwidth. This classification is preferable
