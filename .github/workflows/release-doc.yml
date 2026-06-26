@@ -60,6 +60,10 @@ jobs:
           pages_path: ./www/
           cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 --timeout=20 --header="User-Agent: Muffet/2.10.8" --skip-tls-verification'
 
+      - name: Check documentation links from code
+        run: go run ./checklinks -v -dir=./www/resticprofile/
+        shell: bash
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         # if: github.ref == 'refs/heads/main'
