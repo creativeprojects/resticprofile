@@ -470,6 +470,75 @@ host = %s
 	}
 }
 
+// TestCheckHostPathTagOptIn verifies that the host/path/tag flags added to the "check" command
+// in restic 0.19 can be opted into with a boolean true value and get resolved the same way as in
+// other sections: host -> hostname, path -> absolute backup sources, tag -> backup tags.
+// "check" must NOT auto-inherit these (unlike "retention"), so they only appear when set.
+func TestCheckHostPathTagOptIn(t *testing.T) {
+	examples := getExamplesDirectory(t)
+	sourcePattern := filepath.ToSlash(filepath.Join(examples, "[a-p]*"))
+	backupSource, err := filepath.Glob(sourcePattern)
+	require.NoError(t, err)
+	require.Greater(t, len(backupSource), 5)
+
+	expectedPaths := make([]string, len(backupSource))
+	for index, value := range backupSource {
+		expectedPaths[index] = shell.NewArg(value, shell.ArgConfigEscape).String()
+	}
+
+	config := `
+        version = 2
+
+        [profiles.profile]
+        [profiles.profile.backup]
+        tag = ["one", "two"]
+        source = ["` + sourcePattern + `"]
+
+        [profiles.profile.check]
+        host = true
+        path = true
+        tag = true
+        `
+
+	t.Run("ResolvesWhenOptedIn", func(t *testing.T) {
+		profile, err := getResolvedProfile("toml", config, "profile")
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+		profile.SetRootPath(examples)
+		profile.SetHost("rt-test-host")
+
+		flags := profile.GetCommandFlags(constants.CommandCheck).ToMap()
+		assert.Equal(t, []string{"rt-test-host"}, flags["host"])
+		assert.Equal(t, []string{"one,two"}, flags["tag"])
+		assert.Equal(t, expectedPaths, flags["path"])
+	})
+
+	t.Run("NotAutoInheritedWhenAbsent", func(t *testing.T) {
+		noOptIn := `
+        version = 2
+
+        [profiles.profile]
+        [profiles.profile.backup]
+        host = "backup-host"
+        tag = ["one", "two"]
+        source = ["` + sourcePattern + `"]
+
+        [profiles.profile.check]
+        read-data = true
+        `
+		profile, err := getResolvedProfile("toml", noOptIn, "profile")
+		require.NoError(t, err)
+		require.NotNil(t, profile)
+		profile.SetRootPath(examples)
+		profile.SetHost("rt-test-host")
+
+		flags := profile.GetCommandFlags(constants.CommandCheck).ToMap()
+		assert.NotContains(t, flags, "host")
+		assert.NotContains(t, flags, "path")
+		assert.NotContains(t, flags, "tag")
+	})
+}
+
 func TestFillGenericSections(t *testing.T) {
 	t.Run("FillAllSections", func(t *testing.T) {
 		profile, err := getProfile("toml", `[profile]`, "profile", "./examples")
