@@ -11,4 +11,5 @@ type Config struct {
 	JobDescription     string
 	RunLevel           string
 	StartWhenAvailable bool
+	AfterLogin         bool
 }

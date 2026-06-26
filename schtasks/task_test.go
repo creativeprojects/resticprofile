@@ -3,6 +3,7 @@
 package schtasks
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
@@ -10,6 +11,42 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestAddLogonTrigger(t *testing.T) {
+	t.Parallel()
+
+	t.Run("for a specific user", func(t *testing.T) {
+		task := NewTask()
+		task.addLogonTrigger("S-1-5-21-1234")
+		require.Len(t, task.Triggers.LogonTrigger, 1)
+		assert.Equal(t, "S-1-5-21-1234", task.Triggers.LogonTrigger[0].UserId)
+
+		buffer := &bytes.Buffer{}
+		require.NoError(t, createTaskFile(task, buffer))
+		assert.Contains(t, buffer.String(), "<LogonTrigger>")
+		assert.Contains(t, buffer.String(), "<UserId>S-1-5-21-1234</UserId>")
+	})
+
+	t.Run("for any user", func(t *testing.T) {
+		task := NewTask()
+		task.addLogonTrigger("")
+		require.Len(t, task.Triggers.LogonTrigger, 1)
+
+		buffer := &bytes.Buffer{}
+		require.NoError(t, createTaskFile(task, buffer))
+		assert.Contains(t, buffer.String(), "<LogonTrigger>")
+		// an empty UserId must be omitted so the trigger fires for any user logon
+		assert.NotContains(t, buffer.String(), "<UserId>")
+	})
+
+	t.Run("coexists with time triggers", func(t *testing.T) {
+		task := NewTask()
+		task.addTimeTrigger(time.Date(2020, 1, 2, 3, 4, 0, 0, time.UTC))
+		task.addLogonTrigger("user")
+		assert.Len(t, task.Triggers.TimeTrigger, 1)
+		assert.Len(t, task.Triggers.LogonTrigger, 1)
+	})
+}
 
 func TestCompileDifferences(t *testing.T) {
 	testData := []struct {

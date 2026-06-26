@@ -83,6 +83,23 @@ func TestEvents(t *testing.T) {
 	}
 }
 
+func TestRebootEntry(t *testing.T) {
+	entry := NewRebootEntry("config.yaml", "profile", "backup", "command line", "")
+	assert.True(t, entry.AtReboot())
+	assert.Equal(t, "@reboot\tcommand line\n", entry.String())
+}
+
+func TestRebootEntryWithWorkdirAndUser(t *testing.T) {
+	entry := NewRebootEntry("config.yaml", "profile", "backup", "command line", "/workdir")
+	assert.Equal(t, "@reboot\tcd /workdir && command line\n", entry.String())
+
+	entry = entry.WithUser("root")
+	assert.Equal(t, "@reboot\troot\tcd /workdir && command line\n", entry.String())
+
+	entry = entry.WithUser("-")
+	assert.Equal(t, "@reboot\tcd /workdir && command line\n", entry.String())
+}
+
 func makeCommandLine(extra, commandLine string) string {
 	if extra != "" {
 		return extra + " && " + commandLine
