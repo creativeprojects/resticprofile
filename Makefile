@@ -213,6 +213,10 @@ test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with r
 	@echo "[*] $@"
 	@$(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
 
+test-completion: test-helpers ## Run shell completion integration tests (needs bash 4+, zsh, fish and restic; each is skipped when absent)
+	@echo "[*] $@"
+	@$(GOTEST) -count=1 -v -run 'ShellCompletion' ./
+
 test-ci: export TEST_HELPERS=$(BUILD)
 test-ci: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
@@ -306,6 +310,7 @@ generate-restic: ## Generate the restic commands JSON file
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.16.4 --version=0.16.4 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.17.0 --version=0.17.0 --commands $(RESTIC_CMD)
 	$(RESTIC_GEN) --install $(RESTIC_DIR)0.18.0 --version=0.18.0 --commands $(RESTIC_CMD)
+	$(RESTIC_GEN) --install $(RESTIC_DIR)0.19.0 --version=0.19.0 --commands $(RESTIC_CMD)
 
 	cp $(RESTIC_CMD) restic/commands.json
 
@@ -318,7 +323,7 @@ generate-jsonschema: build ## Generate the JSON schema files
 
 	for config_version in 1 2 ; do \
 		$(abspath $(BINARY)) generate --json-schema v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version.json ; \
-		for restic_version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 ; do \
+		for restic_version in 0.9 0.10 0.11 0.12 0.13 0.14 0.15 0.16 0.17 0.18 0.19 ; do \
 			name=$$(echo $$restic_version | sed 's/\./-/g') ; \
 			$(abspath $(BINARY)) generate --json-schema --version $$restic_version v$$config_version > $(JSONSCHEMA_DIR)/config-$$config_version-restic-$$name.json ; \
 		done ; \

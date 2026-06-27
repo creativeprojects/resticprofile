@@ -17,17 +17,21 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Checkout latest tag
-        run: |
-          export LATEST_TAG=`git describe --tags --abbrev=0`
-          git checkout $LATEST_TAG
-
       - name: Dotenv Action
         id: dotenv
         uses: falti/dotenv-action@v1
         with:
           path: .github/workflows/env
           log-variables: true
+
+      - name: Checkout latest tag
+        run: |
+          export LATEST_TAG=$(git tag --list 'v*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No release tag found"
+            exit 1
+          fi
+          git checkout $LATEST_TAG
 
       - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
         uses: actions/setup-go@v6

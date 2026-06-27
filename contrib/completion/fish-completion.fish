@@ -4,9 +4,21 @@
 # Usage: see https://fishshell.com/docs/current/completions.html#where-to-put-completions
 
 function __resticprofile_completion
-    set --local full_cmdline (commandline -x)
+    set --local full_cmdline
+    set --local cmdline_to_cursor_unsplit
+
+    #handle deprecated option in fish v4
+    if test (string split -- "." "$FISH_VERSION")[1] -gt 3
+        set full_cmdline (commandline -x)
+        set cmdline_to_cursor_unsplit (commandline -cx; commandline -ct)
+    else 
+        set full_cmdline (commandline -o)
+        set cmdline_to_cursor_unsplit (commandline -co; commandline -ct)
+    end
+
     set --local cmdline_to_cursor \
-        (string split -- " " (string escape -- (commandline -cx; commandline -ct)))
+        (string split -- " " (string escape -- $cmdline_to_cursor_unsplit))
+
     set --local current_token_pos (math (count $cmdline_to_cursor) - 1)
 
     #send commandline to 'resticprofile complete' in the format it expects
@@ -82,3 +94,4 @@ function __resticprofile_completion
 end
 
 complete --command resticprofile --no-files --arguments "(__resticprofile_completion)"
+
