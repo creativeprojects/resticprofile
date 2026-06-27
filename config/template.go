@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/templates"
@@ -60,6 +61,16 @@ type TemplateInfoData struct {
 	KnownResticVersions []string
 }
 
+type propertyTableData struct {
+	SectionName string
+	Properties  []PropertyInfo
+}
+
+type propertyRowData struct {
+	SectionName string
+	Property    PropertyInfo
+}
+
 // ProfileSections is a helper method for templates to list SectionInfo in ProfileInfo
 func (t *TemplateInfoData) ProfileSections() []SectionInfo {
 	return collect.From(t.Profile.Sections(), t.Profile.SectionInfo)
@@ -111,7 +122,35 @@ func (t *TemplateInfoData) GetFuncs() map[string]any {
 		"properties": func(set PropertySet) []PropertyInfo { return collect.From(set.Properties(), set.PropertyInfo) },
 		"own":        func(p []PropertyInfo) []PropertyInfo { return collect.All(p, collect.Not(PropertyInfo.IsOption)) },
 		"restic":     func(p []PropertyInfo) []PropertyInfo { return collect.All(p, PropertyInfo.IsOption) },
+		"propertyTable": func(sectionName string, properties []PropertyInfo) propertyTableData {
+			return propertyTableData{SectionName: sectionName, Properties: properties}
+		},
+		"propertyRow": func(sectionName string, property PropertyInfo) propertyRowData {
+			return propertyRowData{SectionName: sectionName, Property: property}
+		},
+		"referenceDefaults": referenceDefaults,
 	}
+}
+
+func referenceDefaults(sectionName string, property PropertyInfo) []string {
+	switch sectionName {
+	case constants.CommandBackup:
+		if property.Name() == constants.ParameterHost {
+			return []string{"true (config version 2)"}
+		}
+	case constants.SectionConfigurationRetention:
+		switch property.Name() {
+		case constants.ParameterPath:
+			return []string{"true"}
+		case constants.ParameterHost, constants.ParameterTag:
+			return []string{"true (config version 2)"}
+		}
+	}
+
+	if defaults := property.DefaultValue(); len(defaults) > 0 {
+		return defaults
+	}
+	return nil
 }
 
 // NewTemplateInfoData returns template data to render references for the specified resticVersion
