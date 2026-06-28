@@ -8,35 +8,50 @@ function _resticprofile() {
   # Pass current cursor position as first argument
   COMP_WORDS[0]="__POS:${COMP_CWORD}"
 
-  # Get completions from resticprofile
-  COMPREPLY=($("$resticprofile" complete "bash:v1" "${COMP_WORDS[@]}"))
+  # Get completions from resticprofile. Read line by line (mapfile) instead of with
+  # word splitting: the restic delegation directive ("bash:v2") may contain tabs that
+  # must be preserved.
+  local lines=()
+  mapfile -t lines < <("$resticprofile" complete "bash:v2" "${COMP_WORDS[@]}")
 
-  # Handle completion requests (last item in result of prev command)
-  if ((${#COMPREPLY[@]})) ; then
-    case "${COMPREPLY[-1]}" in
+  # By default every line is a completion candidate
+  COMPREPLY=("${lines[@]}")
+
+  # Handle the directive (last line). For restic delegation it also carries the exact
+  # arguments to forward to restic, tab-separated:
+  #   "[profile.]__complete_restic<TAB>arg1<TAB>arg2..."
+  if ((${#lines[@]})) ; then
+    local last="${lines[-1]}"
+    local directive="${last%%$'\t'*}" # everything before the first tab
+
+    case "${directive}" in
       __complete_file)
-        unset COMPREPLY[-1]
+        unset 'COMPREPLY[-1]'
 
         local file="${COMP_WORDS[-1]}"
         [[ "${file:0:1}" == "-" ]] && file=""
         COMPREPLY+=($(compgen -f "$file"))
       ;;
 
-      **__complete_restic)
-        local prefix="${COMPREPLY[-1]%.*}"  # everything before last dot
-        local suffix="${COMPREPLY[-1]##*.}" # everything after last dot
-        unset COMPREPLY[-1]
+      *__complete_restic)
+        # Profile prefix to re-add to restic completions (empty unless completing a
+        # "profile.command" token)
+        local prefix=""
+        [[ "${directive}" != "__complete_restic" ]] && prefix="${directive%.__complete_restic}"
 
-        # Remove profile prefixes before passing args to restic (removes any [prefix.]value, keeps paths)
+        # Restic arguments to forward, as resolved by resticprofile (own flags removed,
+        # any "profile." prefix already stripped). Split on tabs, keeping empty fields
+        # (notably the current, not-yet-typed word). A plain "IFS=$'\t' read -a" can't
+        # be used: tab is IFS whitespace, so it would drop empty fields.
         local restic_words=()
-        for (( i=1 ; i<${#COMP_WORDS[@]} ; i++ )) ; do
-          local word="${COMP_WORDS[$i]}"
-          if [[ "${word}" =~ (.*/.*) ]] ; then
-            restic_words+=("${word}")
-          else
-            restic_words+=("${word##*.}")
-          fi
-        done
+        if [[ "${last}" == *$'\t'* ]] ; then
+          local field
+          while IFS= read -r -d $'\t' field || [[ -n "${field}" ]] ; do
+            restic_words+=("${field}")
+          done < <(printf '%s\t' "${last#*$'\t'}")
+        fi
+
+        unset 'COMPREPLY[-1]'
 
         # Get restic completions
         local restic_values=($(__resticprofile_get_other_completions restic "${restic_words[@]}"))
@@ -51,7 +66,7 @@ function _resticprofile() {
             fi
 
             # Add profile prefix if requested and append to completions
-            if [[ -n $prefix && "$prefix" != "$suffix" ]] ; then
+            if [[ -n $prefix ]] ; then
               COMPREPLY+=("${prefix}.${value}")
             else
               COMPREPLY+=("${value}")

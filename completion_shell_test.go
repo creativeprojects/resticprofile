@@ -177,6 +177,12 @@ func TestFishShellCompletion(t *testing.T) {
 		assert.Contains(t, got, "default.backup")
 		assert.Contains(t, got, "default.snapshots")
 	})
+	t.Run("restic command after a resticprofile flag", func(t *testing.T) {
+		// "-n default" must not be forwarded to restic, otherwise it proposes nothing.
+		dir, path := completionEnv(t, "fish", true)
+		got := fishComplete(t, dir, path, "resticprofile -n default ba", true)
+		assert.Contains(t, got, "backup")
+	})
 }
 
 // --- bash -------------------------------------------------------------------
@@ -252,6 +258,15 @@ func TestBashShellCompletion(t *testing.T) {
 		got := bashCompleteWithFramework(t, dir, path, []string{"resticprofile", "default."})
 		assert.Contains(t, got, "default.backup")
 		assert.Contains(t, got, "default.snapshots")
+	})
+	t.Run("restic command after a resticprofile flag", func(t *testing.T) {
+		if !bashCompletionFrameworkAvailable() {
+			t.Skip("bash-completion framework not installed")
+		}
+		// "-n default" must not be forwarded to restic, otherwise it proposes nothing.
+		dir, path := completionEnv(t, "bash", true)
+		got := bashCompleteWithFramework(t, dir, path, []string{"resticprofile", "-n", "default", "ba"})
+		assert.Contains(t, got, "backup")
 	})
 }
 

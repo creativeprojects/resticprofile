@@ -22,14 +22,23 @@ function __resticprofile_completion
     set --local current_token_pos (math (count $cmdline_to_cursor) - 1)
 
     #send commandline to 'resticprofile complete' in the format it expects
-    set --local completions ("$full_cmdline[1]" complete "fish:v1" "__POS:$current_token_pos" "$full_cmdline[2..]")
+    #("fish:v2" makes resticprofile resolve the restic arguments to forward).
+    #$full_cmdline[2..] is unquoted so each token is passed as a separate argument;
+    #quoting would join them into one (e.g. "-n default ba"), breaking the parsing.
+    set --local completions ("$full_cmdline[1]" complete "fish:v2" "__POS:$current_token_pos" $full_cmdline[2..])
 
     if test (count $completions) = 0
         return
     end
-    
+
+    #The last line is the directive. For restic delegation (fish:v2) it also carries
+    #the exact arguments to forward to restic, tab-separated:
+    #  "[profile.]__complete_restic<TAB>arg1<TAB>arg2..."
+    set --local directive_parts (string split \t -- $completions[-1])
+    set --local directive $directive_parts[1]
+
     #handle the directive returned from resticprofile
-    switch $completions[-1]
+    switch $directive
     case "__complete_file"
         set --erase completions[-1]
 
@@ -41,56 +50,44 @@ function __resticprofile_completion
         set --append completions (__fish_complete_path "$file")
 
     case "*__complete_restic"
-        #string match --regex returns list where first element is the whole string
-        #and the rest are capture group matches.
-        set --local prefix (string match --regex '^(.*)\.' -- "$completions[-1]")[2]
-        set --local suffix (string match --regex '\.([^.]+)$' -- "$completions[-1]")[2]
+        #profile prefix to re-add to restic completions (empty unless completing a
+        #"profile.command" token)
+        set --local prefix (string match --regex '^(.*)\.__complete_restic$' -- "$directive")[2]
+        #restic arguments to forward, as resolved by resticprofile (own flags removed,
+        #any "profile." prefix already stripped from the command)
+        set --local restic_words $directive_parts[2..]
         set --erase completions[-1]
 
-        #This removes profile prefixes before forwarding the completion to restic
-        set --local restic_words
-        for word in $cmdline_to_cursor[2..]
-            if test (string match --regex ".*\/.*" -- "$word")
-                set --append restic_words (string unescape -- "$word")
+        #build a "restic ..." command line and ask restic for its completions. An empty
+        #word (the current, not-yet-typed token) becomes a trailing space so restic
+        #proposes the next token; other words are escaped to survive re-parsing.
+        set --local restic_cmd restic
+        for word in $restic_words
+            if test -z "$word"
+                set restic_cmd "$restic_cmd "
             else
-                #take everything after last dot, if there is one
-                set --append restic_words (string match --regex '([^.]+)$' -- $word)[2] 
+                set restic_cmd "$restic_cmd "(string escape -- "$word")
             end
         end
-        
-        #Add a space if the cursor is past the last token so that 'complete' doesn't
-        #return a command that's already fully typed out
-        if test "$restic_words[-1]" = "''"
-            set restic_words[-1] " "
-        end
-
-        #get restic completions
-        set --local restic_values (complete --do-complete "restic $restic_words")
-
-        if test (count $restic_values) = 0
-            for x in $completions
-                echo $x
-            end       
-            return
-        end
+        set --local restic_values (complete --do-complete "$restic_cmd")
 
         for value in $restic_values
             #remove empty values
             string match --quiet --regex '^[\r\n\t ]+$' -- "$value"; and continue
 
             #add prefix back to completion if applicable
-            if test -n $prefix && test "$prefix" != "$suffix"
+            if test -n "$prefix"
                 set --append completions "$prefix.$value"
             else
                 set --append completions "$value"
             end
         end
     end
-    
+
     for x in $completions
         echo $x
     end
-   
+
 end
 
 complete --command resticprofile --no-files --arguments "(__resticprofile_completion)"
