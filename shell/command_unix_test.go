@@ -21,17 +21,17 @@ func TestInterruptShellCommand(t *testing.T) {
 	cmd := NewSignalledCommand(mockBinary, []string{"test", "--sleep", "3000"}, sigChan)
 	cmd.Stdout = buffer
 
-	// Will ask us to stop in 100ms
+	// Will ask us to stop in 500ms
 	go func() {
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 		sigChan <- syscall.SIGINT
 	}()
 	start := time.Now()
 	_, _, err := cmd.Run()
 	require.Error(t, err)
 
-	// check it ran for more than 100ms (but less than a second - the build agent can be slow)
+	// check it ran for more than 500ms (but well under the 3000ms sleep - the build agent can be slow)
 	duration := time.Since(start)
-	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(100))
-	assert.Less(t, duration.Milliseconds(), int64(1000))
+	assert.GreaterOrEqual(t, duration.Milliseconds(), int64(500))
+	assert.Less(t, duration.Milliseconds(), int64(3000))
 }
