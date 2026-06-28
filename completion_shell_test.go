@@ -419,6 +419,12 @@ func TestZshShellCompletion(t *testing.T) {
 		got := zshCompleteBuffer(t, dir, path, "resticprofile --comman", false)
 		assert.Equal(t, "resticprofile --command-output", got)
 	})
+	t.Run("flag of an own command", func(t *testing.T) {
+		// A flag following an own command must complete (the words slice has to be
+		// passed to resticprofile as separate arguments, not joined into one).
+		got := zshCompleteBuffer(t, dir, path, "resticprofile status --a", false)
+		assert.Equal(t, "resticprofile status --all", got)
+	})
 	t.Run("restic delegation re-prefixes the profile name", func(t *testing.T) {
 		dir, path := completionEnv(t, "zsh", true)
 		got := zshCompleteBuffer(t, dir, path, "resticprofile default.snap", true)
@@ -428,6 +434,12 @@ func TestZshShellCompletion(t *testing.T) {
 		dir, path := completionEnv(t, "zsh", true)
 		got := zshCompleteBuffer(t, dir, path, "resticprofile bac", true)
 		assert.Equal(t, "resticprofile backup", got)
+	})
+	t.Run("restic flag after a prefixed subcommand", func(t *testing.T) {
+		// Exercises a multi-word slice through the restic delegation path.
+		dir, path := completionEnv(t, "zsh", true)
+		got := zshCompleteBuffer(t, dir, path, "resticprofile default.snapshots --ho", true)
+		assert.Equal(t, "resticprofile default.snapshots --host", got)
 	})
 }
 

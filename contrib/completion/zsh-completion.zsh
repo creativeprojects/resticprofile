@@ -55,9 +55,12 @@ function _resticprofile() {
     # Convert zsh's 1-indexed CURRENT to 0-indexed position relative to arguments
     local cursor_pos=$(( CURRENT - 1 ))
 
-    # Get completions from resticprofile ("zsh:v2" enables tab-separated descriptions)
+    # Get completions from resticprofile ("zsh:v2" enables tab-separated descriptions).
+    # ${(@)words[2,-1]} keeps each word as a separate argument; without (@) zsh would
+    # join the slice into a single argument (e.g. "status --all"), which breaks the
+    # completion of flags that follow an own command.
     local -a completions
-    completions=("${(@f)$("${resticprofile}" complete "zsh:v2" "__POS:${cursor_pos}" "${words[2,-1]}" 2>/dev/null)}")
+    completions=("${(@f)$("${resticprofile}" complete "zsh:v2" "__POS:${cursor_pos}" "${(@)words[2,-1]}" 2>/dev/null)}")
 
     (( ${#completions[@]} == 0 )) && return
 
@@ -81,10 +84,11 @@ function _resticprofile() {
         # while $PREFIX still holds the full "profile." prefixed word.
         (( ${#completions[@]} )) && _resticprofile_add "${completions[@]}"
 
-        # Build args for restic by stripping profile prefixes from the current words
+        # Build args for restic by stripping profile prefixes from the current words.
+        # ${(@)words[2,-1]} keeps each word separate (see the completion call above).
         local -a restic_words=()
         local word
-        for word in "${words[2,-1]}"; do
+        for word in "${(@)words[2,-1]}"; do
             if [[ "${word}" == */* ]]; then
                 restic_words+=("${word}")
             else
