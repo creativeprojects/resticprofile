@@ -17,28 +17,36 @@
 # compadd -d is used (rather than _describe) because it adds matches at the same level
 # as the plain builtin, so they coexist with the matches added by restic's _restic.
 function _resticprofile_add() {
-    local -a values display
+    local -a values display prefixes
     local line value
     integer width=0
 
-    # First pass: collect values and the widest one (to align the description column)
+    # First pass: find the widest value carrying a description (to align the column)
     for line in "$@"; do
+        [[ "${line}" == *$'\t'* ]] || continue
         value="${line%%$'\t'*}"
-        values+=("${value}")
-        [[ "${line}" == *$'\t'* ]] && (( ${#value} > width )) && width=${#value}
+        (( ${#value} > width )) && width=${#value}
     done
 
-    # Second pass: build the display strings, padding values so descriptions line up
+    # Second pass: split out profile prefixes (values ending in ".") and build the
+    # display strings for the rest, padding values so descriptions line up.
     for line in "$@"; do
         value="${line%%$'\t'*}"
-        if [[ "${line}" == *$'\t'* ]]; then
+        if [[ "${value}" == *. ]]; then
+            prefixes+=("${value}")
+        elif [[ "${line}" == *$'\t'* ]]; then
+            values+=("${value}")
             display+=("${(r:width:)value}  -- ${line#*$'\t'}")
         else
+            values+=("${value}")
             display+=("${value}")
         fi
     done
 
-    compadd -d display -- "${values[@]}"
+    (( ${#values[@]} )) && compadd -d display -- "${values[@]}"
+    # Profile prefixes are added with an empty suffix so no space is inserted after
+    # the ".", letting "<profile>." be continued with a command (like bash does).
+    (( ${#prefixes[@]} )) && compadd -S '' -- "${prefixes[@]}"
 }
 
 function _resticprofile() {
