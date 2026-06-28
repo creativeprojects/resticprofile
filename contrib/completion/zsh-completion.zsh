@@ -12,15 +12,44 @@
 #   Option 2 - Source directly (add to ~/.zshrc AFTER compinit):
 #     source <(resticprofile generate --zsh-completion)
 
+# _resticprofile_add adds completions, turning an optional tab-separated description
+# (sent by "zsh:v2") into a zsh description shown next to each match, like fish does.
+# compadd -d is used (rather than _describe) because it adds matches at the same level
+# as the plain builtin, so they coexist with the matches added by restic's _restic.
+function _resticprofile_add() {
+    local -a values display
+    local line value
+    integer width=0
+
+    # First pass: collect values and the widest one (to align the description column)
+    for line in "$@"; do
+        value="${line%%$'\t'*}"
+        values+=("${value}")
+        [[ "${line}" == *$'\t'* ]] && (( ${#value} > width )) && width=${#value}
+    done
+
+    # Second pass: build the display strings, padding values so descriptions line up
+    for line in "$@"; do
+        value="${line%%$'\t'*}"
+        if [[ "${line}" == *$'\t'* ]]; then
+            display+=("${(r:width:)value}  -- ${line#*$'\t'}")
+        else
+            display+=("${value}")
+        fi
+    done
+
+    compadd -d display -- "${values[@]}"
+}
+
 function _resticprofile() {
     local resticprofile="${words[1]}"
 
     # Convert zsh's 1-indexed CURRENT to 0-indexed position relative to arguments
     local cursor_pos=$(( CURRENT - 1 ))
 
-    # Get completions from resticprofile
+    # Get completions from resticprofile ("zsh:v2" enables tab-separated descriptions)
     local -a completions
-    completions=("${(@f)$("${resticprofile}" complete "zsh:v1" "__POS:${cursor_pos}" "${words[2,-1]}" 2>/dev/null)}")
+    completions=("${(@f)$("${resticprofile}" complete "zsh:v2" "__POS:${cursor_pos}" "${words[2,-1]}" 2>/dev/null)}")
 
     (( ${#completions[@]} == 0 )) && return
 
@@ -28,7 +57,7 @@ function _resticprofile() {
 
     if [[ "${last}" == "__complete_file" ]]; then
         completions[-1]=()
-        (( ${#completions[@]} )) && compadd -- "${completions[@]}"
+        (( ${#completions[@]} )) && _resticprofile_add "${completions[@]}"
         _files
         return
     fi
@@ -42,7 +71,7 @@ function _resticprofile() {
         # Add resticprofile's own completions. These already carry the profile
         # prefix (e.g. "default.show") and must be added before the compset below,
         # while $PREFIX still holds the full "profile." prefixed word.
-        (( ${#completions[@]} )) && compadd -- "${completions[@]}"
+        (( ${#completions[@]} )) && _resticprofile_add "${completions[@]}"
 
         # Build args for restic by stripping profile prefixes from the current words
         local -a restic_words=()
@@ -88,7 +117,7 @@ function _resticprofile() {
         return
     fi
 
-    compadd -- "${completions[@]}"
+    _resticprofile_add "${completions[@]}"
 }
 
 # Register the completion function (works when sourced after compinit)

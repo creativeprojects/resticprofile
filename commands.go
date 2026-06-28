@@ -225,7 +225,10 @@ func completeCommand(ctx commandContext) error {
 		return nil
 	}
 
-	includeDescription := requester == "fish"
+	// fish has always shown descriptions; zsh gained them in v2 of the protocol.
+	// Gating zsh on the version keeps an older "zsh:v1" completion script (which
+	// cannot parse descriptions) working against a newer resticprofile.
+	includeDescription := requester == "fish" || (requester == "zsh" && requesterVersion >= 2)
 
 	completions := NewCompleter(ctx.ownCommands.All(), DefaultFlagsLoader, includeDescription).Complete(args)
 	if len(completions) > 0 {
