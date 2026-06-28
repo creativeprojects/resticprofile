@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
 	"github.com/fatih/color"
 	"github.com/stretchr/testify/assert"
@@ -86,4 +88,133 @@ func TestDisplayVersionVerbose2(t *testing.T) {
 	err := displayVersion(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer)), request: Request{arguments: []string{"-v"}}}})
 	require.NoError(t, err)
 	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
+}
+
+func TestDisplayProfilesCommand_Plain(t *testing.T) {
+	ctx, buffer := newProfilesTestContext(t, []string{"profiles"})
+
+	require.NoError(t, displayProfilesCommand(ctx))
+	out := buffer.String()
+
+	assert.Contains(t, out, "Profiles available")
+	assert.Contains(t, out, "alpha")
+	assert.Contains(t, out, "beta")
+	assert.Contains(t, out, "First profile")
+	assert.Contains(t, out, "Second profile")
+	assert.Contains(t, out, "backup, check")
+	assert.Contains(t, out, "Groups available")
+	assert.Contains(t, out, "full-backup")
+	assert.Contains(t, out, "All hosts")
+}
+
+func TestDisplayProfilesCommand_JSON(t *testing.T) {
+	ctx, buffer := newProfilesTestContext(t, []string{"profiles", "--output=json"})
+
+	require.NoError(t, displayProfilesCommand(ctx))
+
+	var got profilesOutput
+	require.NoError(t, json.Unmarshal(buffer.Bytes(), &got))
+
+	require.Len(t, got.Profiles, 2)
+	assert.Equal(t, profileEntry{
+		Name:        "alpha",
+		Description: "First profile",
+		Sections:    []string{"backup", "check"},
+	}, got.Profiles[0])
+	assert.Equal(t, profileEntry{
+		Name:        "beta",
+		Description: "Second profile",
+		Sections:    []string{},
+	}, got.Profiles[1])
+	require.Len(t, got.Groups, 1)
+	assert.Equal(t, groupEntry{
+		Name:        "full-backup",
+		Description: "All hosts",
+		Profiles:    []string{"alpha", "beta"},
+	}, got.Groups[0])
+}
+
+func TestDisplayProfilesCommand_JSONSpaceSeparated(t *testing.T) {
+	ctx, buffer := newProfilesTestContext(t, []string{"profiles", "--output", "json"})
+
+	require.NoError(t, displayProfilesCommand(ctx))
+
+	var got profilesOutput
+	require.NoError(t, json.Unmarshal(buffer.Bytes(), &got))
+	assert.NotEmpty(t, got.Profiles)
+}
+
+func TestDisplayProfilesCommand_JSONEmptyConfig(t *testing.T) {
+	cfg, err := config.Load(bytes.NewBufferString("version: \"2\"\n"), config.FormatYAML)
+	require.NoError(t, err)
+
+	buffer := &bytes.Buffer{}
+	terminal := term.NewTerminal(term.WithStdout(buffer), term.WithColors(false))
+	ctx := commandContext{
+		Context: Context{
+			config:   cfg,
+			terminal: terminal,
+			request:  Request{arguments: []string{"profiles", "--output=json"}},
+		},
+	}
+
+	require.NoError(t, displayProfilesCommand(ctx))
+
+	// Empty slices must serialize as [] rather than null so scripts can
+	// rely on the keys always being arrays.
+	assert.Contains(t, buffer.String(), `"profiles": []`)
+	assert.Contains(t, buffer.String(), `"groups": []`)
+
+	var got profilesOutput
+	require.NoError(t, json.Unmarshal(buffer.Bytes(), &got))
+	assert.NotNil(t, got.Profiles)
+	assert.NotNil(t, got.Groups)
+	assert.Empty(t, got.Profiles)
+	assert.Empty(t, got.Groups)
+}
+
+func TestDisplayProfilesCommand_InvalidFormat(t *testing.T) {
+	ctx, buffer := newProfilesTestContext(t, []string{"profiles", "--output=foo"})
+
+	err := displayProfilesCommand(ctx)
+	require.Error(t, err)
+	assert.EqualError(t, err, `unknown output format "foo": must be one of plain, json`)
+	assert.Empty(t, buffer.String())
+}
+
+func newProfilesTestContext(t *testing.T, args []string) (commandContext, *bytes.Buffer) {
+	t.Helper()
+
+	conf := strings.NewReader(`version: "2"
+
+groups:
+  full-backup:
+    description: All hosts
+    profiles:
+      - alpha
+      - beta
+
+profiles:
+  alpha:
+    description: First profile
+    backup:
+      source: /srv/alpha
+    check:
+      read-data: true
+  beta:
+    description: Second profile
+`)
+
+	cfg, err := config.Load(conf, config.FormatYAML)
+	require.NoError(t, err)
+
+	buffer := &bytes.Buffer{}
+	terminal := term.NewTerminal(term.WithStdout(buffer), term.WithColors(false))
+	return commandContext{
+		Context: Context{
+			config:   cfg,
+			terminal: terminal,
+			request:  Request{arguments: args},
+		},
+	}, buffer
 }
