@@ -30,6 +30,7 @@ type Completer struct {
 	profiles              []string
 	enableProfilePrefixes bool
 	includeDescription    bool
+	forwardResticArgs     bool
 }
 
 type FlagsLoader func(args []string) *pflag.FlagSet
@@ -328,8 +329,9 @@ func (c *Completer) Complete(args []string) (completions []string) {
 	inFlagSet := true
 	atCommand := false
 	word, commandName, profileName := "", "", ""
+	commandIndex := -1 // index in args where the (restic) command starts
 
-	for _, arg := range args {
+	for i, arg := range args {
 		currentFlag = nil
 		atCommand = false
 
@@ -355,6 +357,7 @@ func (c *Completer) Complete(args []string) (completions []string) {
 				if !inFlagSet {
 					atCommand = true
 					commandName = arg
+					commandIndex = i
 					if pos := strings.LastIndex(commandName, ProfileCommandDelimiter); pos > -1 {
 						profileName, commandName = commandName[0:pos], commandName[pos+1:]
 						word = commandName
@@ -402,6 +405,19 @@ func (c *Completer) Complete(args []string) (completions []string) {
 	// Add command profile prefix when a valid profile name is specified
 	if len(profileName) > 0 && atCommand {
 		completions = c.toCompletionsWithProfilePrefix(completions, profileName)
+	}
+
+	// When the requester supports it (e.g. zsh:v2), append the exact arguments that
+	// should be forwarded to restic to the delegation directive (tab-separated). This
+	// lets the shell forward only the restic command and its arguments, instead of
+	// resticprofile's own flags (e.g. "-n profile"), which restic would reject. The
+	// command keeps its parsed form, so any "profile." prefix is already stripped.
+	if c.forwardResticArgs && commandIndex >= 0 && len(completions) > 0 {
+		last := completions[len(completions)-1]
+		if last == RequestResticCompletion || strings.HasSuffix(last, ProfileCommandDelimiter+RequestResticCompletion) {
+			resticArgs := append([]string{commandName}, args[commandIndex+1:]...)
+			completions[len(completions)-1] = strings.Join(append([]string{last}, resticArgs...), "\t")
+		}
 	}
 
 	return

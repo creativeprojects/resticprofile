@@ -441,6 +441,13 @@ func TestZshShellCompletion(t *testing.T) {
 		got := zshCompleteBuffer(t, dir, path, "resticprofile default.snapshots --ho", true)
 		assert.Equal(t, "resticprofile default.snapshots --host", got)
 	})
+	t.Run("restic command after a resticprofile flag", func(t *testing.T) {
+		// resticprofile's own flags (here "-n default") must not be forwarded to
+		// restic, otherwise restic rejects them and proposes nothing.
+		dir, path := completionEnv(t, "zsh", true)
+		got := zshCompleteBuffer(t, dir, path, "resticprofile -n default ba", true)
+		assert.Equal(t, "resticprofile -n default backup", got)
+	})
 }
 
 // --- helpers ----------------------------------------------------------------
