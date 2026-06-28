@@ -306,8 +306,15 @@ func bashCompleteWithFramework(t *testing.T, dir, path string, words []string) [
 // zshCompleteBuffer drives a real interactive zsh through a pseudo-terminal (zpty),
 // types cmdline, presses TAB and then a bound widget that writes the resulting command
 // line buffer to a file. Asserting on the completed buffer (rather than scraping the
-// terminal listing) makes the result deterministic.
+// terminal listing) makes the result deterministic. The returned buffer is trimmed.
 func zshCompleteBuffer(t *testing.T, dir, path, cmdline string, withRestic bool) string {
+	t.Helper()
+	return strings.TrimSpace(zshCompleteBufferRaw(t, dir, path, cmdline, withRestic))
+}
+
+// zshCompleteBufferRaw is like zshCompleteBuffer but preserves surrounding whitespace,
+// so callers can assert on a trailing space (or its absence after a "profile." prefix).
+func zshCompleteBufferRaw(t *testing.T, dir, path, cmdline string, withRestic bool) string {
 	t.Helper()
 	capFile := filepath.Join(dir, "buffer.txt")
 	_ = os.Remove(capFile)
@@ -327,8 +334,12 @@ func zshCompleteBuffer(t *testing.T, dir, path, cmdline string, withRestic bool)
 
 	data, err := os.ReadFile(capFile)
 	require.NoError(t, err, "zsh did not produce a completion buffer (output: %s)", out)
-	line := strings.TrimSpace(string(data))
-	return strings.TrimPrefix(line, "BUF=")
+	// The buffer is captured as "BUF=[<buffer>]" so any trailing space is preserved.
+	line := strings.TrimSpace(string(data)) // drop the trailing newline only
+	line = strings.TrimPrefix(line, "BUF=")
+	line = strings.TrimPrefix(line, "[")
+	line = strings.TrimSuffix(line, "]")
+	return line
 }
 
 // zshHarnessScript builds a script (run by an *outer* zsh) that drives an *inner*
@@ -365,7 +376,7 @@ run ":"   # synchronise on the first prompt without matching its text
 run "cd ` + dir + `; fpath=(` + dir + ` \$fpath)"
 run "autoload -Uz compinit; compinit -u"
 ` + resticSource + `run "source ` + filepath.Join(dir, "_resticprofile_completion") + `"
-run "_dump() { print -r -- \"BUF=\$BUFFER\" >! ` + capFile + ` }; zle -N _dump; bindkey '^Xb' _dump"
+run "_dump() { print -r -- \"BUF=[\$BUFFER]\" >! ` + capFile + ` }; zle -N _dump; bindkey '^Xb' _dump"
 drain
 # Type the command line, complete it with TAB, then dump the buffer with the widget.
 # zsh reads input sequentially, so ^Xb is processed only after TAB completion returns.
@@ -397,6 +408,12 @@ func TestZshShellCompletion(t *testing.T) {
 	t.Run("profile prefix", func(t *testing.T) {
 		got := zshCompleteBuffer(t, dir, path, "resticprofile myg", false)
 		assert.Equal(t, "resticprofile mygroup.", got)
+	})
+	t.Run("profile prefix has no trailing space", func(t *testing.T) {
+		// "<profile>." must not get a trailing space so it can be continued with a
+		// command (e.g. "default.backup"), like the bash completion does.
+		got := zshCompleteBufferRaw(t, dir, path, "resticprofile def", false)
+		assert.Equal(t, "resticprofile default.", got)
 	})
 	t.Run("flag", func(t *testing.T) {
 		got := zshCompleteBuffer(t, dir, path, "resticprofile --comman", false)
