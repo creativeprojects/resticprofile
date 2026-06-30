@@ -33,7 +33,7 @@ type SendMonitoringSection struct {
 	URL          ConfidentialValue      `mapstructure:"url" format:"uri" description:"URL of the target to send to"`
 	Headers      []SendMonitoringHeader `mapstructure:"headers" description:"Additional HTTP headers to send with the request"`
 	Body         string                 `mapstructure:"body" description:"Request body, overrides \"body-template\""`
-	BodyTemplate string                 `mapstructure:"body-template" description:"Path to a file containing the request body (go template). See https://creativeprojects.github.io/resticprofile/configuration/http_hooks/#body-template"`
+	BodyTemplate string                 `mapstructure:"body-template" description:"Path to a file containing the request body (go template). See https://creativeprojects.github.io/resticprofile/configuration/hooks/http_hooks/#body-template"`
 	SkipTLS      bool                   `mapstructure:"skip-tls-verification" description:"Enables insecure TLS (without verification), see also \"global.ca-certificates\""`
 }
 
