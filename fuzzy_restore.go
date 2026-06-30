@@ -30,10 +30,16 @@ func fuzzyRestore(cmdCtx commandContext) error {
 	}()
 	time.Sleep(20 * time.Millisecond)
 	selected, err := fuzzyfinder.FindMulti(&files, func(i int) string {
+		if i < 0 {
+			return "error"
+		}
 		return files[i].path
 	},
 		fuzzyfinder.WithHeader("ENTER: select one, TAB: select multiple, ESC: cancel"),
 		fuzzyfinder.WithPreviewWindow(func(i, width, height int) string {
+			if i < 0 {
+				return "N/A"
+			}
 			return fmt.Sprintf("mode: %s\npath: %s", files[i].mode, files[i].path)
 		}),
 		fuzzyfinder.WithHotReloadLock(lock),
