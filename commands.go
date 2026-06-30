@@ -142,6 +142,18 @@ func getOwnCommands() []ownCommand {
 			hideInCompletion:  true,
 			noProfile:         true,
 		},
+		{
+			name:              "frestore",
+			description:       "restore files from a fuzzy list of files in a restic snapshot",
+			longDescription:   "The \"frestore\" command restores files from a fuzzy list of files in a restic snapshot. The command will display a list of files that you can select for restoration.",
+			action:            fuzzyRestore,
+			needConfiguration: true,
+			hide:              false,
+			flags: map[string]string{
+				"--target":  "the destination directory where the files will be restored (required)",
+				"--dry-run": "perform a dry run without actually restoring the files",
+			},
+		},
 		// hidden commands
 		{
 			name:              "complete",
