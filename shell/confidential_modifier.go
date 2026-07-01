@@ -15,7 +15,7 @@ func NewConfidentialArgModifier() *ConfidentialArgModifier {
 func (m ConfidentialArgModifier) Arg(name string, arg *Arg) (*Arg, bool) {
 	if arg.HasConfidentialFilter() {
 		newArg := arg.Clone()
-		newArg.value = arg.GetConfidentialValue()
+		newArg.value = arg.ConfidentialValue()
 		newArg.confidentialFilter = nil
 		return &newArg, true
 	}

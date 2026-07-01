@@ -97,7 +97,7 @@ func (a Arg) Type() ArgType {
 	return a.argType
 }
 
-func (a Arg) GetConfidentialValue() string {
+func (a Arg) ConfidentialValue() string {
 	if a.HasConfidentialFilter() {
 		return a.confidentialFilter(a.value)
 	}

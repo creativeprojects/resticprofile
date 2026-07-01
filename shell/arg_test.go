@@ -49,7 +49,7 @@ func TestArgClone(t *testing.T) {
 				assert.Equal(t, arg.Type(), clone.Type())
 				assert.True(t, arg.HasConfidentialFilter())
 				assert.True(t, clone.HasConfidentialFilter())
-				assert.Equal(t, arg.GetConfidentialValue(), clone.GetConfidentialValue())
+				assert.Equal(t, arg.ConfidentialValue(), clone.ConfidentialValue())
 			}
 		})
 	}
