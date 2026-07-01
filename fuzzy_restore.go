@@ -2,17 +2,12 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 
-	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/resticprofile/shell"
 	fzf "github.com/junegunn/fzf/src"
 )
 
@@ -42,37 +37,43 @@ func fuzzyRestore(cmdCtx commandContext) error {
 	// files := make([]RestorableFile, 0)
 	filesChan := make(chan string, 100)
 
-	command := "ls"
-	profile, cleanup, err := openProfile(cmdCtx.config, cmdCtx.request.profile)
-	defer cleanup()
+	// command := "ls"
+	// profile, cleanup, err := openProfile(cmdCtx.config, cmdCtx.request.profile)
+	// defer cleanup()
+	// if err != nil {
+	// 	return err
+	// }
+	// cmdCtx.profile = profile
+
+	// cmdCtx.request.arguments = append(cmdCtx.request.arguments, "latest", "--long")
+
+	// wrapper := newResticWrapper(&cmdCtx.Context)
+	// args := profile.GetCommandFlags(command)
+	// rCommand := wrapper.prepareCommand(command, args, true)
+	// shellCmd := shell.NewCommand(rCommand.command, rCommand.args)
+	// shellCmd.Shell = rCommand.shell
+	// shellCmd.Stderr = os.Stderr
+	// shellCmd.Dir = rCommand.dir
+
+	// reader, writer := io.Pipe()
+	// shellCmd.Stdout = writer
+
+	// shellCommand, shellArgs, err := shellCmd.GetShellCommand()
+	// if err != nil {
+	// 	return err
+	// }
+	// clog.Warning(shellCommand, shellArgs)
+	// cmd := exec.CommandContext(context.TODO(), shellCommand, shellArgs...)
+	// if err = cmd.Start(); err != nil {
+	// 	return err
+	// }
+	// defer cmd.Wait()
+
+	reader, err := os.Open("output.txt")
 	if err != nil {
 		return err
 	}
-	cmdCtx.profile = profile
-
-	cmdCtx.request.arguments = append(cmdCtx.request.arguments, "latest", "--long")
-
-	wrapper := newResticWrapper(&cmdCtx.Context)
-	args := profile.GetCommandFlags(command)
-	rCommand := wrapper.prepareCommand(command, args, true)
-	shellCmd := shell.NewCommand(rCommand.command, rCommand.args)
-	shellCmd.Shell = rCommand.shell
-	shellCmd.Stderr = os.Stderr
-	shellCmd.Dir = rCommand.dir
-
-	reader, writer := io.Pipe()
-	shellCmd.Stdout = writer
-
-	shellCommand, shellArgs, err := shellCmd.GetShellCommand()
-	if err != nil {
-		return err
-	}
-	clog.Warning(shellCommand, shellArgs)
-	cmd := exec.CommandContext(context.TODO(), shellCommand, shellArgs...)
-	if err = cmd.Start(); err != nil {
-		return err
-	}
-	defer cmd.Wait()
+	defer reader.Close()
 
 	scanner := bufio.NewScanner(reader)
 
@@ -102,6 +103,7 @@ func fuzzyRestore(cmdCtx commandContext) error {
 			fmt.Fprintln(os.Stderr, "reading file list:", err)
 		}
 		close(finished)
+		close(filesChan)
 	})
 	defer wg.Wait()
 
@@ -156,11 +158,11 @@ func fuzzyRestore(cmdCtx commandContext) error {
 		true, // whether to load defaults ($FZF_DEFAULT_OPTS_FILE and $FZF_DEFAULT_OPTS)
 		[]string{
 			"--multi",
-			"--scheme=path",
-			"--with-nth=-1",
-			"--accept-nth=-1",
-			"--preview=\"echo {1} {2} {3} {4} {5} {6}; dirname {-1}; basename {-1}\"",
-			"--preview-window=down,3",
+			"--scheme", "path",
+			"--with-nth", "-1",
+			"--accept-nth", "-1",
+			"--preview", "echo {1} {2} {3} {4} {5} {6}; dirname {-1}; basename {-1}",
+			"--preview-window", "down,3",
 		},
 	)
 	if err != nil {
