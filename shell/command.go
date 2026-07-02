@@ -189,7 +189,7 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 	}
 	defaultList := len(searchList) == 0
 	if defaultList {
-		searchList = c.getShellSearchList()
+		searchList = getShellSearchList()
 	}
 
 	for _, search := range searchList {

@@ -18,7 +18,7 @@ func (c *Command) propagateSignal(*os.Process) {
 }
 
 // getShellSearchList returns a priority sorted list of default shells to pick when none was specified
-func (c *Command) getShellSearchList() []string {
+func getShellSearchList() []string {
 	return []string{
 		// prefer "cmd.exe" over "powershell.exe"
 		windowsShell,

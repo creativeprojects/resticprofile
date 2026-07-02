@@ -50,24 +50,13 @@ func newShellCommand(command string, args, env, shell []string, dryRun bool, sig
 	}
 }
 
-var runner *shell.InternalRunner // EXPERIMENTAL
+var runner shell.Runner // EXPERIMENTAL
 
 // runShellCommand instantiates a shell.Command and sends the information to run the shell command
 func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, stderr string, err error) {
-	if command.dryRun {
-		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
-	}
-
 	// EXPERIMENTAL
 	if runner == nil {
-		runnerConfig := shell.RunnerConfig{
-			Env:    command.env,
-			Dir:    command.dir,
-			Stdin:  command.stdin,
-			Stdout: command.stdout,
-			Stderr: command.stderr,
-		}
-		runner, err = shell.NewInternalRunner(runnerConfig)
+		runner, err = findRunner(command)
 		if err != nil {
 			return
 		}
@@ -157,4 +146,18 @@ func setupStreamErrorHandlers(command *shellCommandDefinition, shellCmd *shell.C
 		}
 	}
 	return nil
+}
+
+func findRunner(command shellCommandDefinition) (shell.Runner, error) {
+	runnerConfig := shell.RunnerConfig{
+		Env:    command.env,
+		Dir:    command.dir,
+		Stdin:  command.stdin,
+		Stdout: command.stdout,
+		Stderr: command.stderr,
+		DryRun: command.dryRun,
+	}
+
+	runner, err := shell.NewRunner(runnerConfig, command.shell)
+	return runner, err
 }

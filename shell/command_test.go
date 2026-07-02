@@ -298,7 +298,7 @@ func TestRunLocalCommand(t *testing.T) {
 func TestShellSearchPath(t *testing.T) {
 	t.Parallel()
 
-	searchList := NewCommand("echo", []string{}).getShellSearchList()
+	searchList := getShellSearchList()
 	assert.NotEmpty(t, searchList)
 	for _, shell := range searchList {
 		assert.NotNil(t, shellArgumentsComposerRegistry[shell])

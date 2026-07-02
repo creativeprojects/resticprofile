@@ -19,7 +19,7 @@ func (c *Command) propagateSignal(process *os.Process) {
 }
 
 // getShellSearchList returns a priority sorted list of default shells to pick when none was specified
-func (c *Command) getShellSearchList() []string {
+func getShellSearchList() []string {
 	return []string{
 		// prefer "bash" if available as it has better signal propagation (sh may fail to forward signals)
 		bashShell,

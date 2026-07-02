@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/creativeprojects/clog"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )
@@ -19,6 +20,7 @@ func NewInternalRunner(config RunnerConfig) (*InternalRunner, error) {
 	if config.Shell == TypeInternalBash {
 		runnerType = syntax.LangBash
 	}
+	clog.Debugf("using internal shell with %s syntax", runnerType.String())
 	parser := syntax.NewParser(syntax.Variant(runnerType))
 
 	env := NewEnv().AddEnviron(config.Env)

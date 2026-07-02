@@ -11,6 +11,7 @@ global:
     group-continue-on-error: true
     restic-lock-retry-after: "1m"
     # log: "_global.txt"
+    shell: ["besh","internal:sh"]
 
 groups:
     full-backup:
