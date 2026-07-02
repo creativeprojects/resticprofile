@@ -10,4 +10,5 @@ type RunnerConfig struct {
 	Stdin  io.ReadCloser
 	Stdout io.Writer
 	Stderr io.Writer
+	SetPID SetPID
 }

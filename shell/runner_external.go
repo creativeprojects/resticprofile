@@ -4,13 +4,16 @@ import (
 	"context"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/creativeprojects/clog"
 )
 
 type ExternalRunner struct {
-	shell string
-	path  string
+	config   RunnerConfig
+	shell    string
+	path     string
+	composer externalShellArgumentsComposer
 }
 
 func NewExternalRunner(config RunnerConfig) (*ExternalRunner, error) {
@@ -19,13 +22,45 @@ func NewExternalRunner(config RunnerConfig) (*ExternalRunner, error) {
 	if err != nil {
 		return nil, err
 	}
-	clog.Debugf("running commands using %s at %q", filepath.Base(shell), path)
+	shell = shellName(shell)
+	clog.Debugf("running commands using %s at %q", shell, path)
 	return &ExternalRunner{
-		shell: shell,
-		path:  path,
+		config:   config,
+		shell:    shell,
+		path:     path,
+		composer: getExternalShellComposer(shell),
 	}, nil
 }
 
-func (r *ExternalRunner) Run(ctx context.Context, cmd CommandConfig) error {
+func (r *ExternalRunner) Run(ctx context.Context, cmdConfig CommandConfig) error {
+	arguments := r.composer(r.config, cmdConfig)
+	cmd := exec.CommandContext(ctx, r.path, arguments...)
+	cmd.Dir = r.config.Dir
+	cmd.Stdin = r.config.Stdin
+	cmd.Stdout = r.config.Stdout
+	cmd.Stderr = r.config.Stderr
+	cmd.Env = r.config.Env
+
+	// spawn the child process
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	if r.config.SetPID != nil {
+		// send the PID back (to write down in a lockfile)
+		r.config.SetPID(cmd.Process.Pid)
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
 	return nil
+}
+
+func shellName(shell string) string {
+	shell = strings.ToLower(filepath.Base(shell))
+
+	if ext := filepath.Ext(shell); len(ext) > 0 {
+		shell = shell[:len(shell)-len(ext)]
+	}
+	return shell
 }

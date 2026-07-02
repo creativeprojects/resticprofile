@@ -25,8 +25,8 @@ func TestProcessPID(t *testing.T) {
 	cmd := shell.NewCommand(lockBinary, []string{"lock", "-wait", "200", "-lock", filepath.Join(t.TempDir(), t.Name())})
 	cmd.Stdout = buffer
 	// SetPID method is called right after we forked and have a PID available
-	cmd.SetPID = func(pid int32) {
-		childPID = pid
+	cmd.SetPID = func(pid int) {
+		childPID = int32(pid)
 		running, err := process.PidExists(childPID)
 		assert.NoError(t, err)
 		assert.True(t, running)

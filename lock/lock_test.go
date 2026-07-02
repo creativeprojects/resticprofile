@@ -172,7 +172,7 @@ func TestForceLockWithRunningPID(t *testing.T) {
 
 	// user the lock helper binary (we only need to wait for some time, we don't need the locking part)
 	cmd := shell.NewCommand(lockBinary, []string{"lock", "-wait", "100", "-lock", filepath.Join(t.TempDir(), t.Name())})
-	cmd.SetPID = func(pid int32) {
+	cmd.SetPID = func(pid int) {
 		lock.SetPID(pid)
 		// make sure we cannot break the lock right now
 		other := NewLock(tempfile)

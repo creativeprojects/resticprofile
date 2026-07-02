@@ -385,7 +385,7 @@ func TestSetPIDCallback(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	cmd := NewCommand("echo", []string{t.Name()})
 	cmd.Stdout = buffer
-	cmd.SetPID = func(pid int32) {
+	cmd.SetPID = func(pid int) {
 		called++
 	}
 	_, _, err := cmd.Run()
@@ -406,7 +406,7 @@ func TestSetPIDCallbackWithSignalling(t *testing.T) {
 
 	cmd := NewSignalledCommand("echo", []string{t.Name()}, c)
 	cmd.Stdout = buffer
-	cmd.SetPID = func(pid int32) {
+	cmd.SetPID = func(pid int) {
 		called++
 	}
 	_, _, err := cmd.Run()

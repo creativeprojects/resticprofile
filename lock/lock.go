@@ -13,7 +13,7 @@ import (
 )
 
 // SetPID is a callback that writes the PID in the lockfile
-type SetPID func(pid int32)
+type SetPID func(pid int)
 
 // Lock prevents code to run at the same time by using a lockfile
 type Lock struct {
@@ -83,7 +83,7 @@ func (l *Lock) Who() (string, error) {
 
 // SetPID writes down the PID in the lock file.
 // You can run the method as many times as you want when the PID changes
-func (l *Lock) SetPID(pid int32) {
+func (l *Lock) SetPID(pid int) {
 	if !l.locked {
 		return
 	}
