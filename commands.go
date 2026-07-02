@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -98,6 +99,7 @@ func getOwnCommands() []ownCommand {
 			longDescription:   "The \"show\" command prints the effective configuration of the selected profile or group.\n\nThe effective profile or group configuration is built by loading all includes, applying inheritance, mixins, templates and variables and parsing the result.",
 			action:            showProfileOrGroup,
 			needConfiguration: true,
+			flags:             map[string]string{"--json": "output the configuration in JSON format"},
 		},
 		{
 			name:              "schedule",
@@ -258,6 +260,8 @@ func debugCompletion(line string) {
 func showProfileOrGroup(ctx commandContext) error {
 	c := ctx.config
 	flags := ctx.flags
+	args := ctx.request.arguments
+	jsonOutput := slices.Contains(args, "--json")
 
 	// Load global section
 	global, err := c.GetGlobalSection()
@@ -292,6 +296,10 @@ func showProfileOrGroup(ctx commandContext) error {
 		return fmt.Errorf("profile or group '%s': %w", flags.name, config.ErrNotFound)
 	}
 
+	if jsonOutput {
+		return showProfileOrGroupJSON(ctx, global, profileOrGroup)
+	}
+
 	// Show global
 	err = config.ShowStruct(ctx.terminal, global, constants.SectionConfigurationGlobal)
 	if err != nil {
@@ -318,6 +326,44 @@ func showProfileOrGroup(ctx commandContext) error {
 	c.DisplayConfigurationIssues()
 
 	return nil
+}
+
+func showProfileOrGroupJSON(ctx commandContext, global *config.Global, profileOrGroup config.Schedulable) error {
+	flags := ctx.flags
+
+	globalData, err := config.CollectStruct(global)
+	if err != nil {
+		return fmt.Errorf("cannot collect global section: %w", err)
+	}
+
+	profileData, err := config.CollectStruct(profileOrGroup)
+	if err != nil {
+		return fmt.Errorf("cannot collect %s '%s': %w", profileOrGroup.Kind(), flags.name, err)
+	}
+
+	schedules := slices.Collect(maps.Values(profileOrGroup.Schedules()))
+	slices.SortFunc(schedules, config.CompareSchedules)
+	var schedulesData []map[string]any
+	for _, schedule := range schedules {
+		data, err := config.CollectStruct(schedule.ScheduleConfig)
+		if err != nil {
+			continue
+		}
+		data["command"] = schedule.ScheduleOrigin().Command
+		schedulesData = append(schedulesData, data)
+	}
+
+	output := map[string]any{
+		"global":              globalData,
+		profileOrGroup.Kind(): profileData,
+	}
+	if len(schedulesData) > 0 {
+		output["schedules"] = schedulesData
+	}
+
+	encoder := json.NewEncoder(ctx.terminal)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(output)
 }
 
 func showSchedules(output io.Writer, schedules []*config.Schedule) {
