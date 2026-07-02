@@ -130,22 +130,22 @@ self:
             - "*:05,10,15,20,25,35"
         schedule-permission: user
         run-before:
-            - "echo Check started"
+            - "echo === Check started"
         run-after:
-            - "echo Check done"
+            - "echo === Check done"
         send-before:
-            - url: "https://httpbin.org/status/400"
+            - url: "https://httpbingo.org/status/200"
         send-after:
-            - url: "https://httpbin.org/status/400"
+            - url: "https://httpbingo.org/status/200"
     init:
         run-before:
             - "echo Init started"
         run-after:
             - "echo Init done"
         send-before:
-            - url: "https://httpbin.org/status/400"
+            - url: "https://httpbingo.org/status/400"
         send-after:
-            - url: "https://httpbin.org/status/400"
+            - url: "https://httpbingo.org/status/400"
     retention:
         after-backup: true
         keep-last: 30

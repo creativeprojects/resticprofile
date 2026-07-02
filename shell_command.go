@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -49,11 +50,35 @@ func newShellCommand(command string, args, env, shell []string, dryRun bool, sig
 	}
 }
 
+var runner *shell.InternalRunner // EXPERIMENTAL
+
 // runShellCommand instantiates a shell.Command and sends the information to run the shell command
 func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, stderr string, err error) {
 	if command.dryRun {
 		clog.Infof("dry-run: %s %s", command.command, strings.Join(command.publicArgs, " "))
 	}
+
+	// EXPERIMENTAL
+	if runner == nil {
+		runnerConfig := shell.RunnerConfig{
+			Env:    command.env,
+			Dir:    command.dir,
+			Stdin:  command.stdin,
+			Stdout: command.stdout,
+			Stderr: command.stderr,
+		}
+		runner, err = shell.NewInternalRunner(runnerConfig)
+		if err != nil {
+			return
+		}
+	}
+	cmdConfig := shell.CommandConfig{
+		Command:    command.command,
+		Args:       command.args,
+		PublicArgs: command.publicArgs,
+	}
+	err = runner.Run(context.Background(), cmdConfig)
+	return
 
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
 
