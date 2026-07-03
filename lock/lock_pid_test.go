@@ -4,8 +4,7 @@ package lock
 
 import (
 	"bytes"
-	"os"
-	"os/signal"
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -21,17 +20,21 @@ func TestProcessPID(t *testing.T) {
 	var childPID int32
 	buffer := &bytes.Buffer{}
 
-	// use the lock helper binary (we only need to wait for some time, we don't need the locking part)
-	cmd := shell.NewCommand(lockBinary, []string{"lock", "-wait", "200", "-lock", filepath.Join(t.TempDir(), t.Name())})
-	cmd.Stdout = buffer
 	// SetPID method is called right after we forked and have a PID available
-	cmd.SetPID = func(pid int) {
+	setPID := func(pid int) {
 		childPID = int32(pid)
 		running, err := process.PidExists(childPID)
 		assert.NoError(t, err)
 		assert.True(t, running)
 	}
-	_, _, err := cmd.Run()
+	// use the lock helper binary (we only need to wait for some time, we don't need the locking part)
+	commandRunner := shell.NewDirectRunner(shell.RunnerConfig{})
+	err := commandRunner.Run(context.Background(), shell.CommandConfig{
+		Command: lockBinary,
+		Args:    []string{"lock", "-wait", "200", "-lock", filepath.Join(t.TempDir(), t.Name())},
+		Stdout:  buffer,
+		SetPID:  setPID,
+	})
 	require.NoError(t, err)
 
 	// at that point, the child process should be finished
@@ -50,14 +53,9 @@ func TestForceLockWithExpiredPID(t *testing.T) {
 	assert.True(t, lock.TryAcquire())
 	assert.True(t, lock.HasLocked())
 
-	// run a child process
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	defer signal.Reset(os.Interrupt)
-
-	cmd := shell.NewSignalledCommand("echo", []string{"Hello World!"}, c)
-	cmd.SetPID = lock.SetPID
-	_, _, err := cmd.Run()
+	// run a child process to get a real PID
+	commandRunner := shell.NewDirectRunner(shell.RunnerConfig{})
+	err := commandRunner.Run(context.Background(), shell.CommandConfig{Command: "whoami", SetPID: lock.SetPID})
 	require.NoError(t, err)
 
 	// child process should be finished

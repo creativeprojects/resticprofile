@@ -170,9 +170,7 @@ func TestForceLockWithRunningPID(t *testing.T) {
 	assert.True(t, lock.TryAcquire())
 	assert.True(t, lock.HasLocked())
 
-	// user the lock helper binary (we only need to wait for some time, we don't need the locking part)
-	cmd := shell.NewCommand(lockBinary, []string{"lock", "-wait", "100", "-lock", filepath.Join(t.TempDir(), t.Name())})
-	cmd.SetPID = func(pid int) {
+	setPID := func(pid int) {
 		lock.SetPID(pid)
 		// make sure we cannot break the lock right now
 		other := NewLock(tempfile)
@@ -180,7 +178,13 @@ func TestForceLockWithRunningPID(t *testing.T) {
 		assert.False(t, other.ForceAcquire())
 		assert.False(t, other.HasLocked())
 	}
-	_, _, err := cmd.Run()
+	// user the lock helper binary (we only need to wait for some time, we don't need the locking part)
+	commandRunner := shell.NewDirectRunner(shell.RunnerConfig{})
+	err := commandRunner.Run(context.Background(), shell.CommandConfig{
+		Command: lockBinary,
+		Args:    []string{"lock", "-wait", "100", "-lock", filepath.Join(t.TempDir(), t.Name())},
+		SetPID:  setPID,
+	})
 	require.NoError(t, err)
 }
 
