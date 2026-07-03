@@ -18,6 +18,12 @@ func TestInterruptWindowsShellCommand(t *testing.T) {
 	clog.SetTestLog(t)
 
 	runnerConfigs := []RunnerConfig{
+		// {
+		// 	DryRun: false,
+		// 	Shell:  TypeNoShell,
+		// 	Env:    []string{},
+		// 	Dir:    "",
+		// },
 		{
 			DryRun: false,
 			Shell:  TypeInternalPOSIX,
@@ -55,7 +61,7 @@ func TestInterruptWindowsShellCommand(t *testing.T) {
 			output := new(bytes.Buffer)
 			cmdConfig := CommandConfig{
 				Command: binary,
-				Args:    []string{"test --sleep 1000"},
+				Args:    []string{"test", "--sleep 1000"},
 				Stdout:  output,
 				Stderr:  output,
 			}

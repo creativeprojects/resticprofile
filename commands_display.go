@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"regexp"
@@ -155,10 +156,9 @@ func displayResticHelp(ctx commandContext, command string) {
 	}
 
 	if restic, err := filesearch.NewFinder().FindResticBinary(resticBinary); err == nil {
-		buf := bytes.Buffer{}
-		cmd := shell.NewCommand(restic, []string{"help", command})
-		cmd.Stdout = &buf
-		_, _, err = cmd.Run()
+		buf := new(bytes.Buffer{})
+		commandRunner := shell.NewDirectRunner(shell.RunnerConfig{}) // maybe we could inject this?
+		err := commandRunner.Run(context.Background(), shell.CommandConfig{Command: restic, Args: []string{"help", command}, Stdout: buf})
 		if err != nil {
 			out("\nFailed requesting help from restic: %s\n", err.Error())
 			return

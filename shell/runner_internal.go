@@ -17,12 +17,12 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
-type InternalRunner struct {
+type InternalShellRunner struct {
 	parser *syntax.Parser
 	runner *interp.Runner
 }
 
-func NewInternalRunner(config RunnerConfig) (*InternalRunner, error) {
+func NewInternalShellRunner(config RunnerConfig) (*InternalShellRunner, error) {
 	runnerType := syntax.LangPOSIX
 	if config.Shell == TypeInternalBash {
 		runnerType = syntax.LangBash
@@ -39,13 +39,13 @@ func NewInternalRunner(config RunnerConfig) (*InternalRunner, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &InternalRunner{
+	return &InternalShellRunner{
 		parser: parser,
 		runner: runner,
 	}, nil
 }
 
-func (r *InternalRunner) Run(ctx context.Context, cmdConfig CommandConfig) error {
+func (r *InternalShellRunner) Run(ctx context.Context, cmdConfig CommandConfig) error {
 	script, err := r.parser.Parse(buildCommandBuffer(cmdConfig), "")
 	if err != nil {
 		return err

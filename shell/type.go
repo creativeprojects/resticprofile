@@ -3,6 +3,7 @@ package shell
 type Type string
 
 const (
+	TypeNoShell           Type = "no-shell"
 	TypeInternalPOSIX     Type = "internal:sh"
 	TypeInternalBash      Type = "internal:bash"
 	TypeInternalZsh       Type = "internal:zsh"

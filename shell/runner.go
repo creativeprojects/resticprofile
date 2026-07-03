@@ -38,15 +38,18 @@ func NewRunner(config RunnerConfig, shells []string) (Runner, error) {
 
 func getRunner(config RunnerConfig) (Runner, error) {
 	switch config.Shell {
+	case TypeNoShell:
+		return NewDirectRunner(config), nil
+
 	case TypeInternalPOSIX, TypeInternalBash:
-		runner, err := NewInternalRunner(config)
+		runner, err := NewInternalShellRunner(config)
 		if err != nil {
 			return nil, err
 		}
 		return runner, nil
 
 	default:
-		runner, err := NewExternalRunner(config)
+		runner, err := NewExternalShellRunner(config)
 		if err != nil {
 			return nil, err
 		}

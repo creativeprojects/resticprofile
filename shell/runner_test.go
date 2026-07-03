@@ -158,3 +158,83 @@ func TestRunnerEchoEnvCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestRunnerWhoAmICommand(t *testing.T) {
+	// whoami is one of the rare executable both available on unix & windows
+	env := os.Environ()
+	runnerConfigs := []RunnerConfig{
+		{
+			DryRun: false,
+			Shell:  TypeNoShell,
+			Env:    env,
+			Dir:    "",
+		},
+		{
+			DryRun: false,
+			Shell:  TypeInternalPOSIX,
+			Env:    env,
+			Dir:    "",
+		},
+		{
+			DryRun: false,
+			Shell:  TypeInternalBash,
+			Env:    env,
+			Dir:    "",
+		},
+	}
+	if platform.IsWindows() {
+		runnerConfigs = append(runnerConfigs,
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeWindowsCmd,
+				Env:    env,
+				Dir:    "",
+			},
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeWindowsPowershell,
+				Env:    env,
+				Dir:    "",
+			},
+		)
+	} else {
+		runnerConfigs = append(runnerConfigs,
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeExternalPOSIX,
+				Env:    env,
+				Dir:    "",
+			},
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeExternalBash,
+				Env:    env,
+				Dir:    "",
+			},
+		)
+	}
+
+	for _, runnerConfig := range runnerConfigs {
+		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
+			runner, err := getRunner(runnerConfig)
+			require.NoError(t, err)
+
+			stdout := new(bytes.Buffer)
+			stderr := new(bytes.Buffer)
+			cmdConfig := CommandConfig{
+				Command: platform.Executable("whoami"),
+				Args:    []string{},
+				Stdin:   os.Stdin,
+				Stdout:  stdout,
+				Stderr:  stderr,
+			}
+
+			for range 2 {
+				err = runner.Run(context.Background(), cmdConfig)
+				require.NoError(t, err)
+			}
+			assert.Empty(t, stderr.String())
+			assert.NotEmpty(t, strings.TrimSpace(stdout.String()))
+		})
+	}
+}

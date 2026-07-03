@@ -12,14 +12,14 @@ import (
 	"github.com/creativeprojects/resticprofile/platform"
 )
 
-type ExternalRunner struct {
+type ExternalShellRunner struct {
 	config   RunnerConfig
 	shell    string
 	path     string
 	composer externalShellArgumentsComposer
 }
 
-func NewExternalRunner(config RunnerConfig) (*ExternalRunner, error) {
+func NewExternalShellRunner(config RunnerConfig) (*ExternalShellRunner, error) {
 	shell := string(config.Shell)
 	path, err := exec.LookPath(shell)
 	if err != nil {
@@ -27,7 +27,7 @@ func NewExternalRunner(config RunnerConfig) (*ExternalRunner, error) {
 	}
 	shell = shellName(shell)
 	clog.Debugf("running commands using %s at %q", shell, path)
-	return &ExternalRunner{
+	return &ExternalShellRunner{
 		config:   config,
 		shell:    shell,
 		path:     path,
@@ -35,7 +35,7 @@ func NewExternalRunner(config RunnerConfig) (*ExternalRunner, error) {
 	}, nil
 }
 
-func (r *ExternalRunner) Run(ctx context.Context, cmdConfig CommandConfig) error {
+func (r *ExternalShellRunner) Run(ctx context.Context, cmdConfig CommandConfig) error {
 	arguments := r.composer(r.config, cmdConfig)
 	cmd := exec.CommandContext(ctx, r.path, arguments...)
 	cmd.Dir = r.config.Dir

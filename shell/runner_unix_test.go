@@ -16,6 +16,12 @@ func TestInterruptUnixShellCommand(t *testing.T) {
 	runnerConfigs := []RunnerConfig{
 		{
 			DryRun: false,
+			Shell:  TypeNoShell,
+			Env:    []string{},
+			Dir:    "",
+		},
+		{
+			DryRun: false,
 			Shell:  TypeInternalPOSIX,
 			Env:    []string{},
 			Dir:    "",
