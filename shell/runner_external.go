@@ -2,11 +2,14 @@ package shell
 
 import (
 	"context"
+	"errors"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/platform"
 )
 
 type ExternalRunner struct {
@@ -40,6 +43,17 @@ func (r *ExternalRunner) Run(ctx context.Context, cmdConfig CommandConfig) error
 	cmd.Stdout = cmdConfig.Stdout
 	cmd.Stderr = cmdConfig.Stderr
 	cmd.Env = r.config.Env
+	cmd.Cancel = nil
+
+	if !platform.IsWindows() {
+		// register a cascade cancellation from the context
+		cmd.Cancel = func() error {
+			if cmd.Process == nil {
+				return errors.New("nil process")
+			}
+			return cmd.Process.Signal(syscall.SIGINT)
+		}
+	}
 
 	// spawn the child process
 	if err := cmd.Start(); err != nil {

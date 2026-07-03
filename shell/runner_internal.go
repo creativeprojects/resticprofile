@@ -8,8 +8,10 @@ import (
 	"io"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/creativeprojects/clog"
+	"github.com/creativeprojects/resticprofile/platform"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
@@ -77,14 +79,22 @@ func execHandler(next interp.ExecHandlerFunc) interp.ExecHandlerFunc {
 			fmt.Fprintln(hc.Stderr, err)
 			return interp.ExitStatus(127)
 		}
-		cmd := exec.Cmd{
-			Path:   path,
-			Args:   args,
-			Env:    execEnv(hc.Env),
-			Dir:    hc.Dir,
-			Stdin:  hc.Stdin,
-			Stdout: hc.Stdout,
-			Stderr: hc.Stderr,
+		cmd := exec.CommandContext(ctx, path, args[1:]...)
+		cmd.Env = execEnv(hc.Env)
+		cmd.Dir = hc.Dir
+		cmd.Stdin = hc.Stdin
+		cmd.Stdout = hc.Stdout
+		cmd.Stderr = hc.Stderr
+		cmd.Cancel = nil
+
+		if !platform.IsWindows() {
+			// register a cascade cancellation from the context
+			cmd.Cancel = func() error {
+				if cmd.Process == nil {
+					return errors.New("nil process")
+				}
+				return cmd.Process.Signal(syscall.SIGINT)
+			}
 		}
 
 		err = cmd.Start()

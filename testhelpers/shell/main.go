@@ -51,7 +51,11 @@ func main() {
 		sigChan := make(chan os.Signal, 2)
 		signal.Ignore(syscall.SIGINT)
 		signal.Notify(sigChan, syscall.SIGINT)
-		go func() { <-sigChan; os.Exit(128) }()
+		go func() {
+			<-sigChan
+			fmt.Println("received SIGINT")
+			os.Exit(128)
+		}()
 	}
 
 	if len(stdoutFile) > 0 {

@@ -60,11 +60,7 @@ func TestRunnerEchoCommand(t *testing.T) {
 	}
 
 	for _, runnerConfig := range runnerConfigs {
-		name := string(runnerConfig.Shell)
-		if name == "" {
-			name = "default"
-		}
-		t.Run(name, func(t *testing.T) {
+		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
 			runner, err := getRunner(runnerConfig)
 			require.NoError(t, err)
 
@@ -138,11 +134,7 @@ func TestRunnerEchoEnvCommand(t *testing.T) {
 	}
 
 	for _, runnerConfig := range runnerConfigs {
-		name := string(runnerConfig.Shell)
-		if name == "" {
-			name = "default"
-		}
-		t.Run(name, func(t *testing.T) {
+		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
 			runner, err := getRunner(runnerConfig)
 			require.NoError(t, err)
 
