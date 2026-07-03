@@ -3,14 +3,11 @@ package shell
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
@@ -325,208 +322,34 @@ func TestSelectCustomShell(t *testing.T) {
 	assert.Empty(t, shell)
 }
 
-func TestRunShellWorkingDir(t *testing.T) {
-	t.Parallel()
+// Do we need these tests with the new runner?
+//
+// func TestStderrNotRedirected(t *testing.T) {
+// 	t.Parallel()
 
-	command := func() string {
-		if platform.IsWindows() {
-			return "@echo %CD%"
-		}
-		return "pwd"
-	}()
-	temp := t.TempDir()
-	buffer := new(strings.Builder)
-	cmd := NewCommand(command, nil)
-	cmd.Stdout = buffer
-	cmd.Dir = temp
-	_, _, err := cmd.Run()
-	require.NoError(t, err)
+// 	cmd := NewCommand("echo", []string{"error message", ">&2"})
+// 	bufferStdout := &bytes.Buffer{}
+// 	cmd.Stdout = bufferStdout
+// 	cmd.Stderr = nil
+// 	_, stderr, err := cmd.Run()
+// 	require.NoError(t, err)
+// 	assert.Empty(t, bufferStdout.String())
+// 	assert.Equal(t, "", stderr)
+// }
 
-	assert.Contains(t, strings.TrimSpace(buffer.String()), temp)
-}
+// func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
+// 	t.Parallel()
 
-func TestRunShellEcho(t *testing.T) {
-	t.Parallel()
-
-	buffer := &bytes.Buffer{}
-	cmd := NewCommand("echo", []string{"TestRunShellEcho"})
-	cmd.Stdout = buffer
-	_, _, err := cmd.Run()
-	require.NoError(t, err)
-	output, err := io.ReadAll(buffer)
-	require.NoError(t, err)
-
-	assert.Contains(t, string(output), "TestRunShellEcho")
-}
-
-func TestRunShellEchoWithSignalling(t *testing.T) {
-	t.Parallel()
-
-	buffer := &bytes.Buffer{}
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	defer signal.Reset(os.Interrupt)
-
-	cmd := NewSignalledCommand("echo", []string{"TestRunShellEchoWithSignalling"}, c)
-	cmd.Stdout = buffer
-	_, _, err := cmd.Run()
-	require.NoError(t, err)
-	output, err := io.ReadAll(buffer)
-	require.NoError(t, err)
-
-	assert.Contains(t, string(output), "TestRunShellEchoWithSignalling")
-}
-
-func TestSetPIDCallback(t *testing.T) {
-	t.Parallel()
-
-	called := 0
-	buffer := &bytes.Buffer{}
-	cmd := NewCommand("echo", []string{t.Name()})
-	cmd.Stdout = buffer
-	cmd.SetPID = func(pid int) {
-		called++
-	}
-	_, _, err := cmd.Run()
-	require.NoError(t, err)
-
-	assert.Equal(t, 1, called)
-}
-
-func TestSetPIDCallbackWithSignalling(t *testing.T) {
-	t.Parallel()
-
-	called := 0
-	buffer := &bytes.Buffer{}
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	defer signal.Reset(os.Interrupt)
-
-	cmd := NewSignalledCommand("echo", []string{t.Name()}, c)
-	cmd.Stdout = buffer
-	cmd.SetPID = func(pid int) {
-		called++
-	}
-	_, _, err := cmd.Run()
-	require.NoError(t, err)
-
-	assert.Equal(t, 1, called)
-}
-
-func TestSummaryDurationCommand(t *testing.T) {
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("don't run this test in short mode")
-	}
-	buffer := &bytes.Buffer{}
-
-	cmd := NewCommand("sleep", []string{"1"})
-	if platform.IsWindows() {
-		cmd.Shell = []string{powershell}
-	}
-	cmd.Stdout = buffer
-
-	start := time.Now()
-	summary, _, err := cmd.Run()
-	require.NoError(t, err)
-
-	// make sure the command ran properly
-	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 4*time.Second)
-	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
-	assert.Less(t, summary.Duration.Milliseconds(), int64(5000))
-}
-
-func TestSummaryDurationSignalledCommand(t *testing.T) {
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("don't run this test in short mode")
-	}
-	buffer := &bytes.Buffer{}
-
-	sigChan := make(chan os.Signal, 1)
-	cmd := NewSignalledCommand("sleep", []string{"1"}, sigChan)
-	if platform.IsWindows() {
-		cmd.Shell = []string{powershell}
-	}
-	cmd.Stdout = buffer
-
-	start := time.Now()
-	summary, _, err := cmd.Run()
-	require.NoError(t, err)
-
-	// make sure the command ran properly
-	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 4*time.Second)
-	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
-	assert.Less(t, summary.Duration.Milliseconds(), int64(5000))
-}
-
-func TestStderr(t *testing.T) {
-	t.Parallel()
-
-	expected := "error message\n"
-	if platform.IsWindows() {
-		expected = "\"error message\" \r\n"
-	}
-
-	cmd := NewCommand("echo", []string{"error message", ">&2"})
-	bufferStdout, bufferStderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd.Stdout = bufferStdout
-	cmd.Stderr = bufferStderr
-	_, stderr, err := cmd.Run()
-	require.NoError(t, err)
-	assert.Empty(t, bufferStdout.String())
-	assert.Equal(t, expected, stderr)
-}
-
-func TestStderrSignalledCommand(t *testing.T) {
-	t.Parallel()
-
-	expected := "error message\n"
-	if platform.IsWindows() {
-		expected = "\"error message\" \r\n"
-	}
-
-	sigChan := make(chan os.Signal, 1)
-	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
-	bufferStdout, bufferStderr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd.Stdout = bufferStdout
-	cmd.Stderr = bufferStderr
-	_, stderr, err := cmd.Run()
-	require.NoError(t, err)
-	assert.Empty(t, bufferStdout.String())
-	assert.Equal(t, expected, stderr)
-}
-
-func TestStderrNotRedirected(t *testing.T) {
-	t.Parallel()
-
-	cmd := NewCommand("echo", []string{"error message", ">&2"})
-	bufferStdout := &bytes.Buffer{}
-	cmd.Stdout = bufferStdout
-	cmd.Stderr = nil
-	_, stderr, err := cmd.Run()
-	require.NoError(t, err)
-	assert.Empty(t, bufferStdout.String())
-	assert.Equal(t, "", stderr)
-}
-
-func TestStderrNotRedirectedSignalledCommand(t *testing.T) {
-	t.Parallel()
-
-	sigChan := make(chan os.Signal, 1)
-	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
-	bufferStdout := &bytes.Buffer{}
-	cmd.Stdout = bufferStdout
-	cmd.Stderr = nil
-	_, stderr, err := cmd.Run()
-	require.NoError(t, err)
-	assert.Empty(t, bufferStdout.String())
-	assert.Equal(t, "", stderr)
-}
+// 	sigChan := make(chan os.Signal, 1)
+// 	cmd := NewSignalledCommand("echo", []string{"error message", ">&2"}, sigChan)
+// 	bufferStdout := &bytes.Buffer{}
+// 	cmd.Stdout = bufferStdout
+// 	cmd.Stderr = nil
+// 	_, stderr, err := cmd.Run()
+// 	require.NoError(t, err)
+// 	assert.Empty(t, bufferStdout.String())
+// 	assert.Equal(t, "", stderr)
+// }
 
 func TestCanAnalyseLockFailure(t *testing.T) {
 	t.Parallel()

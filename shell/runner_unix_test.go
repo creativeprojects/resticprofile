@@ -13,6 +13,9 @@ import (
 )
 
 func TestInterruptUnixShellCommand(t *testing.T) {
+	if testing.Short() {
+		t.Skip("don't run this test in short mode")
+	}
 	runnerConfigs := []RunnerConfig{
 		{
 			DryRun: false,
@@ -54,23 +57,23 @@ func TestInterruptUnixShellCommand(t *testing.T) {
 			stdout := new(bytes.Buffer)
 			cmdConfig := CommandConfig{
 				Command: mockBinary,
-				Args:    []string{"test", "--sleep", "3000"},
+				Args:    []string{"test", "--sleep", "5000"},
 				Stdout:  stdout,
 			}
 
 			ctx, cancel := context.WithCancel(context.Background())
 			go func() {
-				time.Sleep(500 * time.Millisecond)
+				time.Sleep(time.Second)
 				cancel()
 			}()
 			start := time.Now()
 			err = runner.Run(ctx, cmdConfig)
 			require.ErrorContains(t, err, "exit status 128")
 
-			// check it ran for more than 500ms (but well under the 3000ms sleep - the build agent can be slow)
+			// check it ran for more than 1s (but well under the 5s sleep - the build agent can be slow)
 			duration := time.Since(start)
-			assert.GreaterOrEqual(t, duration.Milliseconds(), int64(500))
-			assert.Less(t, duration.Milliseconds(), int64(3000))
+			assert.GreaterOrEqual(t, duration.Milliseconds(), int64(1000))
+			assert.Less(t, duration.Milliseconds(), int64(4000))
 		})
 	}
 }

@@ -17,6 +17,8 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
+type setPIDContextKey = struct{}
+
 type InternalShellRunner struct {
 	parser *syntax.Parser
 	runner *interp.Runner
@@ -53,6 +55,9 @@ func (r *InternalShellRunner) Run(ctx context.Context, cmdConfig CommandConfig) 
 	err = interp.StdIO(cmdConfig.Stdin, cmdConfig.Stdout, cmdConfig.Stderr)(r.runner)
 	if err != nil {
 		return err
+	}
+	if cmdConfig.SetPID != nil {
+		ctx = context.WithValue(ctx, setPIDContextKey{}, cmdConfig.SetPID)
 	}
 	err = r.runner.Run(ctx, script)
 	if err != nil {
@@ -99,6 +104,12 @@ func execHandler(next interp.ExecHandlerFunc) interp.ExecHandlerFunc {
 
 		err = cmd.Start()
 		if err == nil {
+			if value := ctx.Value(setPIDContextKey{}); value != nil {
+				if setPID, ok := value.(SetPID); ok && setPID != nil {
+					// send the PID back (to write down in a lockfile)
+					setPID(cmd.Process.Pid)
+				}
+			}
 			err = cmd.Wait()
 		}
 

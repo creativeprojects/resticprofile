@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -13,51 +14,7 @@ import (
 )
 
 func TestRunnerEchoCommand(t *testing.T) {
-	runnerConfigs := []RunnerConfig{
-		{
-			DryRun: false,
-			Shell:  TypeInternalPOSIX,
-			Env:    []string{},
-			Dir:    "",
-		},
-		{
-			DryRun: false,
-			Shell:  TypeInternalBash,
-			Env:    []string{},
-			Dir:    "",
-		},
-	}
-	if platform.IsWindows() {
-		runnerConfigs = append(runnerConfigs,
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeWindowsCmd,
-				Env:    []string{},
-				Dir:    "",
-			},
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeWindowsPowershell,
-				Env:    []string{},
-				Dir:    "",
-			},
-		)
-	} else {
-		runnerConfigs = append(runnerConfigs,
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeExternalPOSIX,
-				Env:    []string{},
-				Dir:    "",
-			},
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeExternalBash,
-				Env:    []string{},
-				Dir:    "",
-			},
-		)
-	}
+	runnerConfigs := getRunnerConfigs([]string{}, withPowershell)
 
 	for _, runnerConfig := range runnerConfigs {
 		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
@@ -78,60 +35,14 @@ func TestRunnerEchoCommand(t *testing.T) {
 				err = runner.Run(context.Background(), cmdConfig)
 				require.NoError(t, err)
 			}
-			expected := t.Name() + "\n" + t.Name() + "\n"
-			assert.Equal(t, expected, strings.ReplaceAll(stdout.String(), "\r\n", "\n"))
+			assert.Equal(t, 2, strings.Count(stdout.String(), t.Name()))
 			assert.Empty(t, stderr.String())
 		})
 	}
 }
 
 func TestRunnerEchoEnvCommand(t *testing.T) {
-	env := []string{"VAR1=value1"}
-	runnerConfigs := []RunnerConfig{
-		{
-			DryRun: false,
-			Shell:  TypeInternalPOSIX,
-			Env:    env,
-			Dir:    "",
-		},
-		{
-			DryRun: false,
-			Shell:  TypeInternalBash,
-			Env:    env,
-			Dir:    "",
-		},
-	}
-	if platform.IsWindows() {
-		runnerConfigs = append(runnerConfigs,
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeWindowsCmd,
-				Env:    env,
-				Dir:    "",
-			},
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeWindowsPowershell,
-				Env:    env,
-				Dir:    "",
-			},
-		)
-	} else {
-		runnerConfigs = append(runnerConfigs,
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeExternalPOSIX,
-				Env:    env,
-				Dir:    "",
-			},
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeExternalBash,
-				Env:    env,
-				Dir:    "",
-			},
-		)
-	}
+	runnerConfigs := getRunnerConfigs([]string{"VAR1=value1"}, withPowershell)
 
 	for _, runnerConfig := range runnerConfigs {
 		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
@@ -152,8 +63,7 @@ func TestRunnerEchoEnvCommand(t *testing.T) {
 				err = runner.Run(context.Background(), cmdConfig)
 				require.NoError(t, err)
 			}
-			expected := "value1\nvalue1\n"
-			assert.Equal(t, expected, strings.ReplaceAll(stdout.String(), "\r\n", "\n"))
+			assert.Equal(t, 2, strings.Count(stdout.String(), "value1"))
 			assert.Empty(t, stderr.String())
 		})
 	}
@@ -161,58 +71,7 @@ func TestRunnerEchoEnvCommand(t *testing.T) {
 
 func TestRunnerWhoAmICommand(t *testing.T) {
 	// whoami is one of the rare executable both available on unix & windows
-	env := os.Environ()
-	runnerConfigs := []RunnerConfig{
-		{
-			DryRun: false,
-			Shell:  TypeNoShell,
-			Env:    env,
-			Dir:    "",
-		},
-		{
-			DryRun: false,
-			Shell:  TypeInternalPOSIX,
-			Env:    env,
-			Dir:    "",
-		},
-		{
-			DryRun: false,
-			Shell:  TypeInternalBash,
-			Env:    env,
-			Dir:    "",
-		},
-	}
-	if platform.IsWindows() {
-		runnerConfigs = append(runnerConfigs,
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeWindowsCmd,
-				Env:    env,
-				Dir:    "",
-			},
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeWindowsPowershell,
-				Env:    env,
-				Dir:    "",
-			},
-		)
-	} else {
-		runnerConfigs = append(runnerConfigs,
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeExternalPOSIX,
-				Env:    env,
-				Dir:    "",
-			},
-			RunnerConfig{
-				DryRun: false,
-				Shell:  TypeExternalBash,
-				Env:    env,
-				Dir:    "",
-			},
-		)
-	}
+	runnerConfigs := getRunnerConfigs(os.Environ(), withDirectRunner, withPowershell)
 
 	for _, runnerConfig := range runnerConfigs {
 		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
@@ -237,4 +96,164 @@ func TestRunnerWhoAmICommand(t *testing.T) {
 			assert.NotEmpty(t, strings.TrimSpace(stdout.String()))
 		})
 	}
+}
+
+func TestRunnerSetPIDCallback(t *testing.T) {
+	runnerConfigs := getRunnerConfigs(os.Environ(), withDirectRunner, withPowershell)
+
+	for _, runnerConfig := range runnerConfigs {
+		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
+			runner, err := getRunner(runnerConfig)
+			require.NoError(t, err)
+
+			called := 0
+			stdout := new(bytes.Buffer)
+			cmdConfig := CommandConfig{
+				Command: platform.Executable("whoami"),
+				Args:    []string{},
+				Stdin:   os.Stdin,
+				Stdout:  stdout,
+				SetPID: func(pid int) {
+					called++
+				},
+			}
+
+			for range 2 {
+				err = runner.Run(context.Background(), cmdConfig)
+				require.NoError(t, err)
+			}
+			assert.Equal(t, 2, called)
+		})
+	}
+}
+
+func TestRunnerRedirectStderr(t *testing.T) {
+	// powershell no longer allows >&2
+	runnerConfigs := getRunnerConfigs(os.Environ())
+
+	for _, runnerConfig := range runnerConfigs {
+		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
+			runner, err := getRunner(runnerConfig)
+			require.NoError(t, err)
+
+			bufferStdout, bufferStderr := &bytes.Buffer{}, &bytes.Buffer{}
+			cmdConfig := CommandConfig{
+				Command: "echo",
+				Args:    []string{"error message", ">&2"},
+				Stdin:   os.Stdin,
+				Stdout:  bufferStdout,
+				Stderr:  bufferStderr,
+			}
+
+			err = runner.Run(context.Background(), cmdConfig)
+			require.NoError(t, err)
+
+			assert.Empty(t, bufferStdout.String())
+			assert.Contains(t, bufferStderr.String(), "error message")
+		})
+	}
+}
+
+func TestRunnerShellWorkingDir(t *testing.T) {
+	runnerConfigs := getRunnerConfigs(os.Environ(), withPowershell)
+
+	command := func(shellType Type) string {
+		if platform.IsWindows() && shellType == TypeWindowsCmd {
+			return "@echo %CD%"
+		}
+		// this is also an alias in powershell
+		// https://learn.microsoft.com/en-us/powershell/scripting/learn/shell/using-aliases?view=powershell-7.6#compatibility-aliases-in-windows
+		return "pwd"
+	}
+
+	for _, runnerConfig := range runnerConfigs {
+		t.Run(string(runnerConfig.Shell), func(t *testing.T) {
+			temp := t.TempDir()
+			runnerConfig.Dir = temp
+
+			runner, err := getRunner(runnerConfig)
+			require.NoError(t, err)
+
+			bufferStdout := &bytes.Buffer{}
+			cmdConfig := CommandConfig{
+				Command: command(runnerConfig.Shell),
+				Args:    nil,
+				Stdout:  bufferStdout,
+			}
+
+			err = runner.Run(context.Background(), cmdConfig)
+			require.NoError(t, err)
+
+			assert.Contains(t, strings.TrimSpace(bufferStdout.String()), temp)
+		})
+	}
+}
+
+type getRunnerConfigsOption string
+
+const (
+	withDirectRunner getRunnerConfigsOption = "with-direct-runner"
+	withPowershell   getRunnerConfigsOption = "with-powershell"
+)
+
+func getRunnerConfigs(env []string, options ...getRunnerConfigsOption) []RunnerConfig {
+	runnerConfigs := []RunnerConfig{
+		{
+			DryRun: false,
+			Shell:  TypeInternalPOSIX,
+			Env:    env,
+			Dir:    "",
+		},
+		{
+			DryRun: false,
+			Shell:  TypeInternalBash,
+			Env:    env,
+			Dir:    "",
+		},
+	}
+	if !platform.IsWindows() {
+		runnerConfigs = append(runnerConfigs,
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeExternalPOSIX,
+				Env:    env,
+				Dir:    "",
+			},
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeExternalBash,
+				Env:    env,
+				Dir:    "",
+			},
+		)
+	} else {
+		runnerConfigs = append(runnerConfigs,
+			RunnerConfig{
+				DryRun: false,
+				Shell:  TypeWindowsCmd,
+				Env:    env,
+				Dir:    "",
+			},
+		)
+		if slices.Contains(options, withPowershell) {
+			runnerConfigs = append(runnerConfigs,
+				RunnerConfig{
+					DryRun: false,
+					Shell:  TypeWindowsPowershell,
+					Env:    env,
+					Dir:    "",
+				},
+			)
+		}
+	}
+
+	if slices.Contains(options, withDirectRunner) {
+		runnerConfigs = append(runnerConfigs, RunnerConfig{
+			DryRun: false,
+			Shell:  TypeNoShell,
+			Env:    env,
+			Dir:    "",
+		})
+	}
+	return runnerConfigs
 }

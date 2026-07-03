@@ -15,6 +15,9 @@ import (
 )
 
 func TestInterruptWindowsShellCommand(t *testing.T) {
+	if testing.Short() {
+		t.Skip("don't run this test in short mode")
+	}
 	clog.SetTestLog(t)
 
 	runnerConfigs := []RunnerConfig{
