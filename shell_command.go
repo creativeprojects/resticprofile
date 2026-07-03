@@ -65,6 +65,10 @@ func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, s
 		Command:    command.command,
 		Args:       command.args,
 		PublicArgs: command.publicArgs,
+		Stdin:      command.stdin,
+		Stdout:     command.stdout,
+		Stderr:     command.stderr,
+		SetPID:     command.setPID,
 	}
 	err = runner.Run(context.Background(), cmdConfig)
 	return
@@ -152,9 +156,6 @@ func findRunner(command shellCommandDefinition) (shell.Runner, error) {
 	runnerConfig := shell.RunnerConfig{
 		Env:    command.env,
 		Dir:    command.dir,
-		Stdin:  command.stdin,
-		Stdout: command.stdout,
-		Stderr: command.stderr,
 		DryRun: command.dryRun,
 	}
 

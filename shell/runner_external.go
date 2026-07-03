@@ -36,18 +36,18 @@ func (r *ExternalRunner) Run(ctx context.Context, cmdConfig CommandConfig) error
 	arguments := r.composer(r.config, cmdConfig)
 	cmd := exec.CommandContext(ctx, r.path, arguments...)
 	cmd.Dir = r.config.Dir
-	cmd.Stdin = r.config.Stdin
-	cmd.Stdout = r.config.Stdout
-	cmd.Stderr = r.config.Stderr
+	cmd.Stdin = cmdConfig.Stdin
+	cmd.Stdout = cmdConfig.Stdout
+	cmd.Stderr = cmdConfig.Stderr
 	cmd.Env = r.config.Env
 
 	// spawn the child process
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	if r.config.SetPID != nil {
+	if cmdConfig.SetPID != nil {
 		// send the PID back (to write down in a lockfile)
-		r.config.SetPID(cmd.Process.Pid)
+		cmdConfig.SetPID(cmd.Process.Pid)
 	}
 
 	if err := cmd.Wait(); err != nil {

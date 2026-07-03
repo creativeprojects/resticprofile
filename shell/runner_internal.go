@@ -31,7 +31,6 @@ func NewInternalRunner(config RunnerConfig) (*InternalRunner, error) {
 	env := NewEnv().AddEnviron(config.Env)
 	runner, err := interp.New(
 		interp.Env(env),
-		interp.StdIO(config.Stdin, config.Stdout, config.Stderr),
 		interp.Dir(config.Dir),
 		interp.ExecHandlers(execHandler),
 	)
@@ -44,8 +43,12 @@ func NewInternalRunner(config RunnerConfig) (*InternalRunner, error) {
 	}, nil
 }
 
-func (r *InternalRunner) Run(ctx context.Context, cmd CommandConfig) error {
-	script, err := r.parser.Parse(buildCommandBuffer(cmd), "")
+func (r *InternalRunner) Run(ctx context.Context, cmdConfig CommandConfig) error {
+	script, err := r.parser.Parse(buildCommandBuffer(cmdConfig), "")
+	if err != nil {
+		return err
+	}
+	err = interp.StdIO(cmdConfig.Stdin, cmdConfig.Stdout, cmdConfig.Stderr)(r.runner)
 	if err != nil {
 		return err
 	}
