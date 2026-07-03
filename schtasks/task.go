@@ -128,7 +128,6 @@ func (t *Task) addTimeTrigger(triggerOnce time.Time) {
 }
 
 // addLogonTrigger adds a trigger that starts the task when the given user logs on.
-// An empty userID triggers the task for any user logon.
 func (t *Task) addLogonTrigger(userID string) {
 	logonTrigger := LogonTrigger{
 		UserId: userID,
