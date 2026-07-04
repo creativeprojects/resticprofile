@@ -57,6 +57,7 @@ var (
 		"%s/jsonschema",
 		"%s/jsonschema/",
 	}
+	verboseFlag bool
 )
 
 func main() {
@@ -69,7 +70,6 @@ func main() {
 
 func checklinks() error {
 	var (
-		verboseFlag   bool
 		sourceURLFlag string
 		targetURLFlag string
 		dirFlag       string
@@ -201,6 +201,8 @@ func checkLink(ctx context.Context, client *http.Client, link string) error {
 	if err != nil {
 		return err
 	}
+	request.Header.Add("Accept", "*/*")
+
 	response, err := client.Do(request)
 	if err != nil {
 		return err
@@ -217,6 +219,9 @@ func checkLink(ctx context.Context, client *http.Client, link string) error {
 	}
 	if _, id, found := strings.Cut(link, "#"); found {
 		if !strings.Contains(string(content), `id="`+id+`"`) {
+			if verboseFlag {
+				return fmt.Errorf("fragment %q not found in page: %s", id, string(content))
+			}
 			return fmt.Errorf("fragment %q not found in page", id)
 		}
 	}
