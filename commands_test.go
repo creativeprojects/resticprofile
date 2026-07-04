@@ -197,6 +197,7 @@ func TestCompleteCall(t *testing.T) {
 		{args: []string{"fish:v1", "--"}, expected: expectedFlagsWithDescriptions},
 		{args: []string{"bash:v10", "--"}, expected: ""},
 		{args: []string{"zsh:v1", "--"}, expected: expectedFlags},
+		{args: []string{"zsh:v2", "--"}, expected: expectedFlagsWithDescriptions},
 	}
 
 	for _, test := range testTable {

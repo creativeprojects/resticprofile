@@ -12,48 +12,85 @@
 #   Option 2 - Source directly (add to ~/.zshrc AFTER compinit):
 #     source <(resticprofile generate --zsh-completion)
 
+# _resticprofile_add adds completions, turning an optional tab-separated description
+# (sent by "zsh:v2") into a zsh description shown next to each match, like fish does.
+# compadd -d is used (rather than _describe) because it adds matches at the same level
+# as the plain builtin, so they coexist with the matches added by restic's _restic.
+function _resticprofile_add() {
+    local -a values display prefixes
+    local line value
+    integer width=0
+
+    # First pass: find the widest value carrying a description (to align the column)
+    for line in "$@"; do
+        [[ "${line}" == *$'\t'* ]] || continue
+        value="${line%%$'\t'*}"
+        (( ${#value} > width )) && width=${#value}
+    done
+
+    # Second pass: split out profile prefixes (values ending in ".") and build the
+    # display strings for the rest, padding values so descriptions line up.
+    for line in "$@"; do
+        value="${line%%$'\t'*}"
+        if [[ "${value}" == *. ]]; then
+            prefixes+=("${value}")
+        elif [[ "${line}" == *$'\t'* ]]; then
+            values+=("${value}")
+            display+=("${(r:width:)value}  -- ${line#*$'\t'}")
+        else
+            values+=("${value}")
+            display+=("${value}")
+        fi
+    done
+
+    (( ${#values[@]} )) && compadd -d display -- "${values[@]}"
+    # Profile prefixes are added with an empty suffix so no space is inserted after
+    # the ".", letting "<profile>." be continued with a command (like bash does).
+    (( ${#prefixes[@]} )) && compadd -S '' -- "${prefixes[@]}"
+}
+
 function _resticprofile() {
     local resticprofile="${words[1]}"
 
     # Convert zsh's 1-indexed CURRENT to 0-indexed position relative to arguments
     local cursor_pos=$(( CURRENT - 1 ))
 
-    # Get completions from resticprofile
+    # Get completions from resticprofile ("zsh:v2" enables tab-separated descriptions).
+    # ${(@)words[2,-1]} keeps each word as a separate argument; without (@) zsh would
+    # join the slice into a single argument (e.g. "status --all"), which breaks the
+    # completion of flags that follow an own command.
     local -a completions
-    completions=("${(@f)$("${resticprofile}" complete "zsh:v1" "__POS:${cursor_pos}" "${words[2,-1]}" 2>/dev/null)}")
+    completions=("${(@f)$("${resticprofile}" complete "zsh:v2" "__POS:${cursor_pos}" "${(@)words[2,-1]}" 2>/dev/null)}")
 
     (( ${#completions[@]} == 0 )) && return
 
-    local last="${completions[-1]}"
+    # The last line is the directive. For restic delegation (zsh:v2) it also carries the
+    # exact arguments to forward to restic, tab-separated:
+    #   "[profile.]__complete_restic<TAB>arg1<TAB>arg2..."
+    # (ps:\t:) splits on real tabs and keeps a trailing empty field (empty current word).
+    local -a last_parts=("${(@ps:\t:)completions[-1]}")
+    local directive="${last_parts[1]}"
 
-    if [[ "${last}" == "__complete_file" ]]; then
+    if [[ "${directive}" == "__complete_file" ]]; then
         completions[-1]=()
-        (( ${#completions[@]} )) && compadd -- "${completions[@]}"
+        (( ${#completions[@]} )) && _resticprofile_add "${completions[@]}"
         _files
         return
     fi
 
-    if [[ "${last}" == *__complete_restic ]]; then
+    if [[ "${directive}" == *__complete_restic ]]; then
         # Extract profile prefix (the part before .__complete_restic, if any)
         local profile_prefix=""
-        [[ "${last}" != "__complete_restic" ]] && profile_prefix="${last%.__complete_restic}"
+        [[ "${directive}" != "__complete_restic" ]] && profile_prefix="${directive%.__complete_restic}"
+        # restic arguments to forward, as resolved by resticprofile (own flags removed,
+        # any "profile." prefix already stripped from the command).
+        local -a restic_words=("${(@)last_parts[2,-1]}")
         completions[-1]=()
 
         # Add resticprofile's own completions. These already carry the profile
         # prefix (e.g. "default.show") and must be added before the compset below,
         # while $PREFIX still holds the full "profile." prefixed word.
-        (( ${#completions[@]} )) && compadd -- "${completions[@]}"
-
-        # Build args for restic by stripping profile prefixes from the current words
-        local -a restic_words=()
-        local word
-        for word in "${words[2,-1]}"; do
-            if [[ "${word}" == */* ]]; then
-                restic_words+=("${word}")
-            else
-                restic_words+=("${word##*.}")
-            fi
-        done
+        (( ${#completions[@]} )) && _resticprofile_add "${completions[@]}"
 
         # Load restic completion function if not already available
         (( $+functions[_restic] )) || {
@@ -88,7 +125,7 @@ function _resticprofile() {
         return
     fi
 
-    compadd -- "${completions[@]}"
+    _resticprofile_add "${completions[@]}"
 }
 
 # Register the completion function (works when sourced after compinit)

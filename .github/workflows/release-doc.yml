@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
@@ -33,17 +33,18 @@ jobs:
       - name: Check configuration snippets in documentation
         run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
-        
-      - name: Build JSON schema & config reference
-        run: make generate-jsonschema generate-config-reference
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: '0.150.1'
           extended: true
+        
+      - name: Build JSON schema & config reference for GH Pages
+        run: make generate-jsonschema generate-config-reference
+        env:
+          WEB_BASE_URL: "https://creativeprojects.github.io/resticprofile"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build for GitHub Pages
         run: cd docs && hugo --minify --baseURL https://creativeprojects.github.io/resticprofile/
@@ -52,6 +53,10 @@ jobs:
         run: |
           mkdir -p ./www
           cp -r ./public ./www/resticprofile
+
+      - name: Check documentation links from code
+        run: go run ./checklinks -v -dir=./www/resticprofile/
+        shell: bash
 
       - name: Check broken links
         uses: ruzickap/action-my-broken-link-checker@v3
@@ -67,6 +72,12 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-docs
           publish_dir: ./public
+        
+      - name: Build JSON schema & config reference for pages.dev
+        run: make generate-jsonschema generate-config-reference
+        env:
+          WEB_BASE_URL: "https://resticprofile.creativeprojects.tech"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build for pages.dev
         run: |
@@ -75,7 +86,7 @@ jobs:
           hugo --minify --baseURL https://resticprofile.creativeprojects.tech/
 
       - name: Publish to pages.dev
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}

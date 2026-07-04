@@ -13,6 +13,8 @@ ignore:
   - qemu/
   - "**/mocks/*.go"
   - testhelpers/
+  - config/checkdoc/
+  - checklinks/
 
 codecov:
   notify:

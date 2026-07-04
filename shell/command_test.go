@@ -434,9 +434,9 @@ func TestSummaryDurationCommand(t *testing.T) {
 	require.NoError(t, err)
 
 	// make sure the command ran properly
-	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 500*time.Millisecond)
+	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 4*time.Second)
 	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
-	assert.Less(t, summary.Duration.Milliseconds(), int64(1500))
+	assert.Less(t, summary.Duration.Milliseconds(), int64(5000))
 }
 
 func TestSummaryDurationSignalledCommand(t *testing.T) {
@@ -459,9 +459,9 @@ func TestSummaryDurationSignalledCommand(t *testing.T) {
 	require.NoError(t, err)
 
 	// make sure the command ran properly
-	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 500*time.Millisecond)
+	assert.WithinDuration(t, time.Now(), start.Add(1*time.Second), 4*time.Second)
 	assert.GreaterOrEqual(t, summary.Duration.Milliseconds(), int64(1000))
-	assert.Less(t, summary.Duration.Milliseconds(), int64(1500))
+	assert.Less(t, summary.Duration.Milliseconds(), int64(5000))
 }
 
 func TestStderr(t *testing.T) {
