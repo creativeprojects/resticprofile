@@ -218,9 +218,11 @@ func checkLink(ctx context.Context, client *http.Client, link string) error {
 		return err
 	}
 	if _, id, found := strings.Cut(link, "#"); found {
-		if !strings.Contains(string(content), `id="`+id+`"`) {
+		if !strings.Contains(string(content), `id="`+id+`"`) &&
+			!strings.Contains(string(content), `id=`+id+` `) &&
+			!strings.Contains(string(content), `id=`+id+`>`) {
 			if verboseFlag {
-				return fmt.Errorf("fragment %q not found in page: %s", id, string(content))
+				return fmt.Errorf("fragment %q not found in page\n::group::{page content}\n%s\n::endgroup::\n", id, string(content))
 			}
 			return fmt.Errorf("fragment %q not found in page", id)
 		}
