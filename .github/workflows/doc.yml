@@ -37,14 +37,22 @@ jobs:
           check-latest: true
           cache: true
 
-      - name: Check configuration snippets in documentation
-        run: go run ./config/checkdoc -r docs/content -i changelog.md
-        shell: bash
+      - name: Set branch name for pages.dev
+        id: branch_name
+        run: |
+          export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> "$GITHUB_ENV"
+          echo "branch_name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
         
       - name: Build JSON schema & config reference
         run: make generate-jsonschema generate-config-reference
         env:
+          WEB_BASE_URL: "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check configuration snippets in documentation
+        run: go run ./config/checkdoc -r docs/content -i changelog.md
+        shell: bash
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
@@ -53,19 +61,15 @@ jobs:
           extended: true
 
       - name: Build
-        id: build_hugo
         run: |
           cd docs
           sed -i "s/canonifyURLs = true/canonifyURLs = false/g" hugo.toml
-          export BRANCH_NAME=$(echo ${GITHUB_REF_NAME} | tr / -)
-          echo "BRANCH_NAME=${BRANCH_NAME}" >> "$GITHUB_ENV"
-          echo "branch_name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
-          hugo --minify --baseURL https://${BRANCH_NAME}.resticprofile.pages.dev/
+          hugo --minify --baseURL "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
 
       - name: Check broken links
         uses: ruzickap/action-my-broken-link-checker@v3
         with:
-          url: "https://${{ steps.build_hugo.outputs.branch_name }}.resticprofile.pages.dev/"
+          url: "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
           pages_path: ./public/
           cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 --color=always --skip-tls-verification --header="User-Agent: Muffet/2.10.8" --timeout=20'
 
