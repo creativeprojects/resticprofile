@@ -12,7 +12,7 @@ on:
   # END TEMPORARY
 
 jobs:
-  goreleaser:
+  nightly:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -72,6 +72,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
+          file: build/Dockerfile
+          context: .
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
