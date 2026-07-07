@@ -435,3 +435,23 @@ compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...
+
+.PHONY: docker-image
+docker-image: $(GOBIN)/eget ## Build the Docker image for resticprofile
+	@echo "[*] $@"
+	@$(GOGENERATE) ./...
+	@$(GOBIN)/eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
+	@$(GOBIN)/eget rclone/rclone --upgrade-only --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
+	@$(GOBIN)/eget restic/restic --upgrade-only --system=linux/amd64 --to=build/restic-amd64
+	@$(GOBIN)/eget restic/restic --upgrade-only --system=linux/arm64 --to=build/restic-arm64
+	@docker buildx build \
+		--builder resticprofile \
+		--platform linux/amd64,linux/arm64 \
+		-t creativeprojects/resticprofile:nightly \
+		-t ghcr.io/creativeprojects/resticprofile:nightly \
+		--file build/Dockerfile .
+
+.PHONY: docker-builder
+docker-builder: $(GOBIN)/eget ## Create a Docker builder for building multi-arch images
+	@echo "[*] $@"
+	@docker buildx create --bootstrap --name resticprofile --driver docker-container

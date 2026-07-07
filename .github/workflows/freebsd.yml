@@ -6,11 +6,15 @@ on:
     branches: [ master ]
     paths-ignore:
       - 'docs/**'
+      - 'github/**'
+      - '!github/workflows/freebsd.yml'
 
   pull_request:
     types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
+      - 'github/**'
+      - '!github/workflows/freebsd.yml'
 
 jobs:
   build:

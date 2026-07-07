@@ -6,6 +6,11 @@ on:
     branches:
       - master
 
+  # BEGIN TEMPORARY
+  pull_request:
+    types: [opened, synchronize, reopened]
+  # END TEMPORARY
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -33,6 +38,9 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Login to DockerHub
         uses: docker/login-action@v4
         with:
@@ -46,37 +54,29 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install eget
-        run: go install github.com/zyedidia/eget@latest
+      - name: Download rclone & restic binaries
+        shell: bash
+        run: |
+          go install github.com/zyedidia/eget@latest
+          eget rclone/rclone --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
+          eget rclone/rclone --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
+          eget restic/restic --system=linux/amd64 --to=build/restic-amd64
+          eget restic/restic --system=linux/arm64 --to=build/restic-arm64
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v7
+      - name: Build
+        shell: bash
+        run: make build
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
         with:
-          version: '~> v2'
-          args: release --clean --snapshot --config .goreleaser-snapshot.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to DockerHub
-        shell: bash
-        run: |
-          docker push creativeprojects/resticprofile:nightly-arm64v8
-          docker push creativeprojects/resticprofile:nightly-amd64
-          docker manifest create "creativeprojects/resticprofile:nightly" \
-            --amend "creativeprojects/resticprofile:nightly-amd64" \
-            --amend "creativeprojects/resticprofile:nightly-arm64v8"
-          docker manifest inspect "creativeprojects/resticprofile:nightly"
-          docker manifest push "creativeprojects/resticprofile:nightly"
-
-      - name: Publish to GitHub Container Registry
-        shell: bash
-        run: |
-          docker push ghcr.io/creativeprojects/resticprofile:nightly-arm64v8
-          docker push ghcr.io/creativeprojects/resticprofile:nightly-amd64
-          docker manifest create "ghcr.io/creativeprojects/resticprofile:nightly" \
-            --amend "ghcr.io/creativeprojects/resticprofile:nightly-amd64" \
-            --amend "ghcr.io/creativeprojects/resticprofile:nightly-arm64v8"
-          docker manifest inspect "ghcr.io/creativeprojects/resticprofile:nightly"
-          docker manifest push "ghcr.io/creativeprojects/resticprofile:nightly"
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            creativeprojects/resticprofile:nightly
+            ghcr.io/creativeprojects/resticprofile:nightly
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}

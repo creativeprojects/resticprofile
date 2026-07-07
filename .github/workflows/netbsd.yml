@@ -6,11 +6,15 @@ on:
     branches: [ master ]
     paths-ignore:
       - 'docs/**'
+      - 'github/**'
+      - '!github/workflows/netbsd.yml'
 
   pull_request:
     types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
+      - 'github/**'
+      - '!github/workflows/netbsd.yml'
 
 jobs:
   build:
