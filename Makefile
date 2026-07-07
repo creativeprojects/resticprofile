@@ -437,7 +437,7 @@ compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...
 
 .PHONY: docker-image
-docker-image: $(GOBIN)/eget ## Build the Docker image for resticprofile
+docker-image: build docker-builder $(GOBIN)/eget ## Build the Docker image for resticprofile
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@$(GOBIN)/eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
@@ -454,4 +454,4 @@ docker-image: $(GOBIN)/eget ## Build the Docker image for resticprofile
 .PHONY: docker-builder
 docker-builder: $(GOBIN)/eget ## Create a Docker builder for building multi-arch images
 	@echo "[*] $@"
-	@docker buildx create --bootstrap --name resticprofile --driver docker-container
+	@docker buildx inspect resticprofile >/dev/null 2>&1 || docker buildx create --bootstrap --name resticprofile --driver docker-container

@@ -6,11 +6,6 @@ on:
     branches:
       - master
 
-  # BEGIN TEMPORARY
-  pull_request:
-    types: [opened, synchronize, reopened]
-  # END TEMPORARY
-
 jobs:
   nightly:
     runs-on: ubuntu-latest
@@ -81,4 +76,3 @@ jobs:
             ghcr.io/creativeprojects/resticprofile:nightly
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
