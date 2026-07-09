@@ -45,6 +45,7 @@ type ScheduleBaseConfig struct {
 	IgnoreOnBattery         maybe.Bool     `mapstructure:"ignore-on-battery" default:"false" description:"Don't start this schedule when running on battery"`
 	IgnoreOnBatteryLessThan int            `mapstructure:"ignore-on-battery-less-than" default:"" examples:"20;33;50;75" description:"Don't start this schedule when running on battery and the state of charge is less than this percentage"`
 	AfterNetworkOnline      maybe.Bool     `mapstructure:"after-network-online" description:"Don't start this schedule when the network is offline (supported in \"systemd\")"`
+	AfterLogin              maybe.Bool     `mapstructure:"after-login" description:"Start this schedule after the user logs in. Requires the \"user_logged_on\" permission. Maps to systemd \"OnStartupSec\", launchd \"RunAtLoad\", Windows logon trigger and cron \"@reboot\" (which is at boot, not login)"`
 	SystemdDropInFiles      []string       `mapstructure:"systemd-drop-in-files" default:"" description:"Files containing systemd drop-in (override) files - see https://creativeprojects.github.io/resticprofile/schedules/systemd/"`
 	HideWindow              maybe.Bool     `mapstructure:"hide-window" default:"false" description:"Hide schedule window when running in foreground (Windows only)"`
 	StartWhenAvailable      maybe.Bool     `mapstructure:"start-when-available" default:"false" description:"Start the task as soon as possible after a scheduled start is missed (Windows only)"`
@@ -95,6 +96,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	if !s.AfterNetworkOnline.HasValue() {
 		s.AfterNetworkOnline = defaults.AfterNetworkOnline
 	}
+	if !s.AfterLogin.HasValue() {
+		s.AfterLogin = defaults.AfterLogin
+	}
 	if s.SystemdDropInFiles == nil {
 		s.SystemdDropInFiles = slices.Clone(defaults.SystemdDropInFiles)
 	}
@@ -119,6 +123,7 @@ func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	s.EnvCapture = slices.Clone(section.ScheduleEnvCapture)
 	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
 	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
+	s.AfterLogin = section.ScheduleAfterLogin
 	s.HideWindow = section.ScheduleHideWindow
 	s.StartWhenAvailable = section.ScheduleStartWhenAvailable
 	// re-init with defaults
@@ -230,7 +235,7 @@ func newScheduleConfig(profile *Profile, section *ScheduleBaseSection) (s *Sched
 	}
 
 	// init
-	if s.HasSchedules() {
+	if s.HasTriggers() {
 		s.applyOverrides(section)
 	} else {
 		s = nil
@@ -255,6 +260,16 @@ func (s *ScheduleConfig) HasSchedules() bool {
 		s.setSchedules(s.Schedules)
 	}
 	return len(s.Schedules) > 0
+}
+
+// HasTriggers returns true if the schedule has at least one trigger, either a
+// calendar time (see HasSchedules) or an event-based trigger such as after-login.
+// The func is nil tolerant and returns false for a nil ScheduleConfig.
+func (s *ScheduleConfig) HasTriggers() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasSchedules() || s.AfterLogin.IsTrue()
 }
 
 func (s *ScheduleConfig) ScheduleOrigin() ScheduleConfigOrigin {

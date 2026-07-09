@@ -19,6 +19,7 @@ type Entry struct {
 	commandLine string
 	workDir     string
 	user        string
+	atReboot    bool
 }
 
 // NewEntry creates a new crontab entry
@@ -32,6 +33,23 @@ func NewEntry(event *calendar.Event, configFile, profileName, commandName, comma
 		workDir:     workDir,
 	}
 }
+
+// NewRebootEntry creates a new crontab entry that runs at startup (the cron "@reboot" special string).
+// This is the best-effort equivalent of an "after login" trigger for cron, which has no login event.
+func NewRebootEntry(configFile, profileName, commandName, commandLine, workDir string) Entry {
+	return Entry{
+		event:       calendar.NewEvent(),
+		configFile:  configFile,
+		profileName: profileName,
+		commandName: commandName,
+		commandLine: commandLine,
+		workDir:     workDir,
+		atReboot:    true,
+	}
+}
+
+// AtReboot returns true if this entry uses the "@reboot" cron special string
+func (e Entry) AtReboot() bool { return e.atReboot }
 
 // WithUser creates a new entry that adds a user that should run the command
 func (e Entry) WithUser(user string) Entry {
@@ -50,11 +68,18 @@ func (e Entry) String() string {
 	// The day of a command's execution can be specified by two fields — day of month, and day of week.
 	// If both fields are restricted (ie, are not *), the command will be run when either field matches the current time.
 	// For example, "30 4 1,15 * 5" would cause a command to be run at 4:30 am on the 1st and 15th of each month, plus every Friday.
-	minute, hour, dayOfMonth, month, dayOfWeek := "*", "*", "*", "*", "*"
-	dayTest, wd := "", ""
+	wd := ""
 	if e.workDir != "" {
 		wd = fmt.Sprintf("cd %s && ", e.workDir)
 	}
+	if e.atReboot {
+		if e.HasUser() && !e.SkipUser() {
+			return fmt.Sprintf("@reboot\t%s\t%s%s\n", e.user, wd, e.commandLine)
+		}
+		return fmt.Sprintf("@reboot\t%s%s\n", wd, e.commandLine)
+	}
+	minute, hour, dayOfMonth, month, dayOfWeek := "*", "*", "*", "*", "*"
+	dayTest := ""
 	if e.event.Minute.HasValue() {
 		minute = formatRange(e.event.Minute.GetRanges(), twoDecimals)
 	}

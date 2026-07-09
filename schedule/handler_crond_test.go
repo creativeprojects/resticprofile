@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/creativeprojects/resticprofile/calendar"
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/crond"
 	"github.com/creativeprojects/resticprofile/user"
 	"github.com/spf13/afero"
@@ -91,6 +92,69 @@ func TestCreateReadDeleteCrondSchedules(t *testing.T) {
 	scheduled, err = handler.Scheduled("")
 	require.NoError(t, err)
 	assert.Empty(t, scheduled)
+}
+
+func TestCreateReadDeleteCrondAfterLogin(t *testing.T) {
+	hourly := calendar.NewEvent(func(e *calendar.Event) {
+		e.Minute.MustAddValue(0)
+		e.Second.MustAddValue(0)
+	})
+
+	tempFile := filepath.Join(t.TempDir(), "crontab")
+	handler := NewHandler(SchedulerCrond{
+		CrontabFile: tempFile,
+		Username:    "*",
+	}).(*HandlerCrond)
+	handler.fs = afero.NewMemMapFs()
+
+	// after-login only (no calendar schedule)
+	loginOnly := Config{
+		ProfileName:      "self",
+		CommandName:      "backup",
+		Command:          "/bin/resticprofile",
+		Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "run-schedule", "backup@self"}),
+		WorkingDirectory: "/resticprofile",
+		ConfigFile:       "examples/dev.yaml",
+		Permission:       constants.SchedulePermissionUserLoggedOn,
+		AfterLogin:       true,
+	}
+	require.NoError(t, handler.CreateJob(&loginOnly, nil, PermissionUserLoggedOn))
+
+	// after-login combined with a calendar schedule
+	both := Config{
+		ProfileName:      "other",
+		CommandName:      "check",
+		Command:          "/bin/resticprofile",
+		Arguments:        NewCommandArguments([]string{"--no-ansi", "--config", "examples/dev.yaml", "run-schedule", "check@other"}),
+		WorkingDirectory: "/resticprofile",
+		ConfigFile:       "examples/dev.yaml",
+		Schedules:        []string{"*-*-* *:00:00"},
+		Permission:       constants.SchedulePermissionUserLoggedOn,
+		AfterLogin:       true,
+	}
+	require.NoError(t, handler.CreateJob(&both, []*calendar.Event{hourly}, PermissionUserLoggedOn))
+
+	scheduled, err := handler.Scheduled("")
+	require.NoError(t, err)
+	require.Len(t, scheduled, 2)
+
+	byName := make(map[string]Config, len(scheduled))
+	for _, cfg := range scheduled {
+		byName[cfg.ProfileName] = cfg
+	}
+
+	require.Contains(t, byName, "self")
+	assert.True(t, byName["self"].AfterLogin)
+	assert.Empty(t, byName["self"].Schedules)
+
+	require.Contains(t, byName, "other")
+	assert.True(t, byName["other"].AfterLogin)
+	assert.Equal(t, []string{"*-*-* *:00:00"}, byName["other"].Schedules)
+
+	// after-login requires user_logged_on
+	require.ErrorContains(t,
+		handler.CreateJob(&loginOnly, nil, PermissionSystem),
+		"after-login")
 }
 
 func TestDetectPermissionCrond(t *testing.T) {

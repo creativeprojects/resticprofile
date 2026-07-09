@@ -50,6 +50,9 @@ func (h *HandlerWindows) DisplayStatus(profileName string) error {
 
 // CreateJob is creating the task scheduler job.
 func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
+	if err := checkAfterLoginPermission(job, permission); err != nil {
+		return err
+	}
 	// default permission will be system
 	perm := schtasks.SystemAccount
 	switch permission {
@@ -86,6 +89,7 @@ func (h *HandlerWindows) CreateJob(job *Config, schedules []*calendar.Event, per
 		JobDescription:     job.JobDescription,
 		RunLevel:           job.RunLevel,
 		StartWhenAvailable: job.StartWhenAvailable,
+		AfterLogin:         job.AfterLogin,
 	}
 	err := schtasks.Create(jobConfig, schedules, perm)
 	if err != nil {

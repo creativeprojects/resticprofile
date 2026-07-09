@@ -55,9 +55,39 @@ const (
 	indexCount
 )
 
+const rebootExp = `^(@reboot)`
+
+const (
+	rebootIndexWhole int = iota
+	rebootIndexReboot
+	rebootIndexUser
+	rebootIndexWorkdir
+	rebootIndexCommandLine
+	rebootIndexConfigFile
+	rebootIndexProfileName
+	rebootIndexOtherFlags
+	rebootIndexCommandName
+	rebootLegacyIndexCount
+)
+
+const (
+	rebootRSIndexWhole int = iota
+	rebootRSIndexReboot
+	rebootRSIndexUser
+	rebootRSIndexWorkdir
+	rebootRSIndexCommandLine
+	rebootRSIndexConfigFile
+	rebootRSIndexCommandName
+	rebootRSIndexProfileName
+	rebootRSIndexCount
+)
+
 var (
 	legacyPattern      = regexp.MustCompile(timeExp + userExp + workDirExp + legacyExp)
 	runSchedulePattern = regexp.MustCompile(timeExp + userExp + dayOfWeekExtra + workDirExp + runScheduleExp)
+
+	rebootLegacyPattern      = regexp.MustCompile(rebootExp + userExp + workDirExp + legacyExp)
+	rebootRunSchedulePattern = regexp.MustCompile(rebootExp + userExp + workDirExp + runScheduleExp)
 )
 
 var (
@@ -386,6 +416,37 @@ func parseEntry(line string) (*Entry, error) {
 	// should also be able to parse this newer format:
 	// 00,15,30,45 * * * *	test $(date '+\%w') -eq 2 || test $(date '+\%w') -eq 3 && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile
 	// 00,15,30,45 * * * *	test $(date '+\%w') -eq 1 && cd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile
+
+	// @reboot entries (the cron equivalent of an "after login" trigger) have no time fields
+	if strings.HasPrefix(line, "@reboot") {
+		matches := rebootLegacyPattern.FindStringSubmatch(line)
+		if len(matches) == rebootLegacyIndexCount {
+			return &Entry{
+				event:       calendar.NewEvent(),
+				atReboot:    true,
+				user:        getUserValue(matches[rebootIndexUser]),
+				workDir:     getWorkdirValue(matches[rebootIndexWorkdir]),
+				commandLine: matches[rebootIndexCommandLine],
+				configFile:  matches[rebootIndexConfigFile],
+				profileName: matches[rebootIndexProfileName],
+				commandName: matches[rebootIndexCommandName],
+			}, nil
+		}
+		matches = rebootRunSchedulePattern.FindStringSubmatch(line)
+		if len(matches) == rebootRSIndexCount {
+			return &Entry{
+				event:       calendar.NewEvent(),
+				atReboot:    true,
+				user:        getUserValue(matches[rebootRSIndexUser]),
+				workDir:     getWorkdirValue(matches[rebootRSIndexWorkdir]),
+				commandLine: matches[rebootRSIndexCommandLine],
+				configFile:  matches[rebootRSIndexConfigFile],
+				commandName: matches[rebootRSIndexCommandName],
+				profileName: matches[rebootRSIndexProfileName],
+			}, nil
+		}
+		return nil, ErrEntryNoMatch
+	}
 
 	// try legacy pattern first
 	matches := legacyPattern.FindStringSubmatch(line)

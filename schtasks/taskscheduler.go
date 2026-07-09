@@ -89,6 +89,11 @@ func Create(config *Config, schedules []*calendar.Event, permission Permission) 
 		}
 	}
 
+	if config.AfterLogin {
+		// add the logon trigger now that the principal (and its UserId) is resolved
+		task.addLogonTrigger(task.Principals.Principal.UserId)
+	}
+
 	file, err := os.CreateTemp("", "*.xml")
 	if err != nil {
 		return fmt.Errorf("cannot create XML task file: %w", err)

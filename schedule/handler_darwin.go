@@ -80,6 +80,9 @@ func (h *HandlerLaunchd) DisplayStatus(profileName string) error {
 
 // CreateJob creates a plist file and registers it with launchd
 func (h *HandlerLaunchd) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
+	if err := checkAfterLoginPermission(job, permission); err != nil {
+		return err
+	}
 	exists, err := isServiceRegistered(domainTarget(permission), getJobName(job.ProfileName, job.CommandName))
 	if err != nil {
 		return fmt.Errorf("error listing service: %w", err)
@@ -214,6 +217,7 @@ func (h *HandlerLaunchd) getLaunchdJob(job *Config, schedules []*calendar.Event)
 		StandardErrorPath:       logfile,
 		WorkingDirectory:        job.WorkingDirectory,
 		StartCalendarInterval:   darwin.GetCalendarIntervalsFromSchedules(schedules),
+		RunAtLoad:               job.AfterLogin,
 		EnvironmentVariables:    env.ValuesAsMap(),
 		Nice:                    nice,
 		ProcessType:             darwin.NewProcessType(job.GetPriority()),
@@ -324,6 +328,7 @@ func (h *HandlerLaunchd) getJobConfig(filename string) (*Config, error) {
 		WorkingDirectory: launchdJob.WorkingDirectory,
 		Schedules:        darwin.ParseCalendarIntervals(launchdJob.StartCalendarInterval),
 		Permission:       launchdJob.LimitLoadToSessionType.Permission(),
+		AfterLogin:       launchdJob.RunAtLoad,
 	}
 	return job, nil
 }

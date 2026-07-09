@@ -209,7 +209,26 @@ For example, if a backup is scheduled for 3:00 AM but the computer is off, enabl
 
 Note: This option only works on Windows.
 
+## schedule-after-login
+
+When set to `true`, the schedule runs after the user logs in, in addition to any `schedule` (`at`) times you may have configured. A schedule can have both calendar times and `after-login`, or `after-login` on its own.
+
+This option **requires** `schedule-permission` to be set to `user_logged_on`, as it only makes sense for an interactive user session.
+
+Each scheduler maps it to its native mechanism, and the fidelity of "after login" differs between platforms:
+
+| Scheduler              | Native mechanism                          | Behaviour                                                |
+|------------------------|-------------------------------------------|---------------------------------------------------------|
+| launchd (macOS)        | `RunAtLoad` on a user LaunchAgent         | At login (also runs once when the agent is first loaded) |
+| Task Scheduler (Win)   | logon trigger                             | At login                                                |
+| systemd                | `OnStartupSec=0` on the user timer        | When the user session (user manager) starts ≈ login     |
+| crond                  | `@reboot`                                 | **At boot, not at login** (cron has no login event)     |
+
+Note: because cron has no concept of a login, `crond` falls back to `@reboot`, which runs once when the cron daemon starts (typically at boot).
+
 ## Example 
+
+
 
 Here's an example of a scheduling configuration:
 

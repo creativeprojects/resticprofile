@@ -6,6 +6,10 @@ weight: 170
 
 On non-Windows OS, use a **crond**-compatible scheduler if specified in `global`/`scheduler`:
 
+{{% notice style="note" title="after-login on cron" %}}
+cron has no concept of a user login. When `schedule-after-login` is enabled, resticprofile adds a `@reboot` entry, which runs once when the cron daemon starts (typically at boot) rather than at login.
+{{% /notice %}}
+
 {{% notice style="warning" title="Windows No Longer Supported" %}}
 Crond support on Windows has been removed due to significant issues in previous versions.
 {{% /notice %}}

@@ -5,6 +5,10 @@ weight: 110
 
 `launchd` is the service manager on macOS. resticprofile can schedule a profile using the `launchctl` tool.
 
+## Run after login
+
+When `schedule-after-login` is enabled (with `schedule-permission: user_logged_on`), the generated user agent sets `RunAtLoad` to `true`, so the profile runs at login. Note that `RunAtLoad` also runs the job once when the agent is first loaded (when the schedule is created), not only on subsequent logins.
+
 ## User permission
 
 A user agent is generated when you set `schedule-permission` to `user` or `user_logged_on`. It consists of a `plist` file in `~/Library/LaunchAgents`.

@@ -54,6 +54,8 @@ Description={{ .TimerDescription }}
 {{ range .OnCalendar -}}
 OnCalendar={{ . }}
 {{ end -}}
+{{ if .AfterLogin }}OnStartupSec=0
+{{ end -}}
 Unit={{ .SystemdProfile }}
 Persistent=true
 
@@ -84,6 +86,7 @@ type templateInfo struct {
 	Nice                 int
 	Environment          []string
 	AfterNetworkOnline   bool
+	AfterLogin           bool
 	CPUSchedulingPolicy  string
 	IOSchedulingClass    int
 	IOSchedulingPriority int
@@ -106,6 +109,7 @@ type Config struct {
 	TimerFile            string
 	DropInFiles          []string
 	AfterNetworkOnline   bool
+	AfterLogin           bool
 	Nice                 int
 	CPUSchedulingPolicy  string
 	IOSchedulingClass    int
@@ -165,6 +169,7 @@ func (u Unit) Generate(config Config) error {
 		CommandLine:          config.CommandLine,
 		OnCalendar:           config.Schedules,
 		AfterNetworkOnline:   config.AfterNetworkOnline,
+		AfterLogin:           config.AfterLogin,
 		SystemdProfile:       systemdProfile,
 		Nice:                 config.Nice,
 		Environment:          environment,

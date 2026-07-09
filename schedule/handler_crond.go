@@ -75,17 +75,32 @@ func (h *HandlerCrond) DisplayStatus(profileName string) error {
 
 // CreateJob is creating the crontab
 func (h *HandlerCrond) CreateJob(job *Config, schedules []*calendar.Event, permission Permission) error {
-	entries := make([]crond.Entry, len(schedules))
-	for i, event := range schedules {
-		entries[i] = crond.NewEntry(
+	if err := checkAfterLoginPermission(job, permission); err != nil {
+		return err
+	}
+	commandLine := job.Command + " " + job.Arguments.String()
+	entries := make([]crond.Entry, 0, len(schedules)+1)
+	for _, event := range schedules {
+		entries = append(entries, crond.NewEntry(
 			event,
 			job.ConfigFile,
 			job.ProfileName,
 			job.CommandName,
-			job.Command+" "+job.Arguments.String(),
+			commandLine,
 			job.WorkingDirectory,
-		)
-
+		))
+	}
+	if job.AfterLogin {
+		// cron has no login event: @reboot (at boot) is the documented best-effort equivalent
+		entries = append(entries, crond.NewRebootEntry(
+			job.ConfigFile,
+			job.ProfileName,
+			job.CommandName,
+			commandLine,
+			job.WorkingDirectory,
+		))
+	}
+	for i := range entries {
 		switch h.config.Username {
 		case "", "-":
 			// empty or "-" => do not set a user; let crond keep entries without a user field
@@ -157,20 +172,29 @@ func (h *HandlerCrond) Scheduled(profileName string) ([]Config, error) {
 		if index := slices.IndexFunc(configs, func(cfg Config) bool {
 			return cfg.ProfileName == profileName && cfg.CommandName == commandName && cfg.ConfigFile == configFile
 		}); index >= 0 {
-			configs[index].Schedules = append(configs[index].Schedules, entry.Event().String())
+			if entry.AtReboot() {
+				configs[index].AfterLogin = true
+			} else {
+				configs[index].Schedules = append(configs[index].Schedules, entry.Event().String())
+			}
 		} else {
 			commandLine := entry.CommandLine()
 			args := shell.SplitArguments(commandLine)
-			configs = append(configs, Config{
+			cfg := Config{
 				ProfileName:      profileName,
 				CommandName:      commandName,
 				ConfigFile:       configFile,
-				Schedules:        []string{entry.Event().String()},
 				Command:          args[0],
 				Arguments:        NewCommandArguments(args[1:]),
 				WorkingDirectory: entry.WorkDir(),
 				Permission:       permission,
-			})
+			}
+			if entry.AtReboot() {
+				cfg.AfterLogin = true
+			} else {
+				cfg.Schedules = []string{entry.Event().String()}
+			}
+			configs = append(configs, cfg)
 		}
 	}
 	return configs, configsErr

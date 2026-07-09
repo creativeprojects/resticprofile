@@ -26,7 +26,7 @@ func NewGroup(c *Config, name string) (g *Group) {
 func (g *Group) ResolveConfiguration() {
 	global := g.config.mustGetGlobalSection()
 	for command, cfg := range g.CommandSchedules {
-		if cfg.HasSchedules() {
+		if cfg.HasTriggers() {
 			cfg.init(global.ScheduleDefaults)
 			cfg.origin = ScheduleOrigin(g.Name, command, ScheduleOriginGroup)
 		} else {
@@ -38,7 +38,7 @@ func (g *Group) ResolveConfiguration() {
 func (g *Group) Schedules() map[string]*Schedule {
 	schedules := make(map[string]*Schedule)
 	for command, cfg := range g.CommandSchedules {
-		if cfg.HasSchedules() {
+		if cfg.HasTriggers() {
 			schedules[command] = NewSchedule(g.config, cfg)
 		}
 	}
