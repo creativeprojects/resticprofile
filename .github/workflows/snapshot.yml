@@ -23,54 +23,12 @@ jobs:
           path: .github/workflows/env
           log-variables: true
 
-      - name: Set up Go ${{ steps.dotenv.outputs.go_version }}
-        uses: actions/setup-go@v6
+      - name: Build and push image
+        uses: ./.github/actions/docker-build
         with:
           go-version: ${{ steps.dotenv.outputs.go_version }}
-          check-latest: true
-          cache: true
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download rclone & restic binaries
-        shell: bash
-        run: |
-          go install github.com/zyedidia/eget@latest
-          eget rclone/rclone --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
-          eget rclone/rclone --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
-          eget restic/restic --system=linux/amd64 --to=build/restic-amd64
-          eget restic/restic --system=linux/arm64 --to=build/restic-arm64
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build
-        shell: bash
-        run: make build
-
-      - name: Build and push image
-        uses: docker/build-push-action@v7
-        with:
-          file: build/Dockerfile
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           tags: |
             creativeprojects/resticprofile:nightly
             ghcr.io/creativeprojects/resticprofile:nightly
