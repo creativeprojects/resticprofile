@@ -25,6 +25,12 @@ func TestEmptyArgValue(t *testing.T) {
 	}
 }
 
+func TestCommandLineEmptyArgValue(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, `""`, NewArg("", ArgCommandLineEscape).String())
+}
+
 func TestArgClone(t *testing.T) {
 	t.Parallel()
 
