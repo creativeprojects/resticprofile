@@ -33,6 +33,6 @@ alwaysopen: false
 {{ $layoutHeadings -}}## Nested profile sections
 
 Nested sections describe configuration structure that is assigned to flags within the
-configuration, see [HTTP Hooks]({{- $configWebUrl -}}/http_hooks/) as an example.
+configuration, see [HTTP Hooks]({{- $configWebUrl -}}/hooks/http_hooks/) as an example.
 
 {{ `{{% children sort="weight" %}}` }}
