@@ -8,7 +8,6 @@ weight: 11
 There's a [homebrew](https://brew.sh/) tap for resticprofile:
 
 ```shell
-brew tap creativeprojects/tap
 brew install resticprofile
 ```
 

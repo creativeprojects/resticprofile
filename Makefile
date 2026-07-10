@@ -73,12 +73,12 @@ help: ## Show the help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-26s\033[0m %s\n", $$1, $$2}'
 	@echo
 
-all: prepare_test test build
+all: mocks test build
 .PHONY: test test-ci coverage
 .PHONY: download download-restic-key
 .PHONY: build build-mac build-linux build-pi build-windows build-no-selfupdate build-all
 .PHONY: generate-config-reference generate-jsonschema generate-install generate-restic
-.PHONY: all verify prepare_test prepare_build install clean ramdisk rest-server nightly toc syslog checkdoc
+.PHONY: all verify mocks prepare install clean ramdisk rest-server nightly toc syslog checkdoc
 
 verify: ## Verify go installation
 ifeq ($(GOPATH),)
@@ -118,10 +118,10 @@ $(GOBIN)/gotestsum: verify $(GOBIN)/eget
 	@echo "[*] $@"
 	"$(GOBIN)/eget" gotestyourself/gotestsum --upgrade-only --to '$(GOBIN)'
 
-prepare_build: verify download
+prepare: verify download
 	@echo "[*] $@"
 
-prepare_test: verify download $(GOBIN)/mockery ## Generate mocks
+mocks: verify download $(GOBIN)/mockery ## Generate mocks
 	@echo "[*] $@"
 	@find . -path "*/mocks/*" -exec rm {} \;
 	@"$(GOBIN)/mockery" --config .mockery.yml
@@ -155,41 +155,49 @@ download-restic-key: ## Download restic GPG key
 	KEY_FILE=$(abspath restic/gpg-key.asc)
 	curl https://restic.net/gpg-key-alex.asc > $(KEY_FILE)
 
-install: prepare_build ## Install the binary (to $GOBIN)
+install: prepare ## Install the binary (to $GOBIN)
 	@echo "[*] $@"
 	GOBIN="$(GOBIN)" \
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build: prepare_build ## Build the binary
+build: prepare ## Build the binary
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-no-selfupdate: prepare_build ## Build the binary without self-update feature
+build-no-selfupdate: prepare ## Build the binary without self-update feature
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -tags no_self_update -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-mac: prepare_build ## Build the binary for macOS
+build-mac: prepare ## Build the binary for macOS
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="arm64" $(GOBUILD) -o $(BINARY_DARWIN_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-linux: prepare_build ## Build the binary for Linux
+build-linux: prepare ## Build the binary for Linux
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o $(BINARY_LINUX_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-pi: prepare_build ## Build the binary for Raspberry Pi (armv6)
+.PHONY: build-ci
+build-ci: prepare ## Cross-compile resticprofile for the Docker image (amd64 + arm64)
+	@echo "[*] $@"
+	GOPATH="$(GOPATH)" CGO_ENABLED=0 \
+	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o build/resticprofile-amd64 -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=CI'"
+	GOPATH="$(GOPATH)" CGO_ENABLED=0 \
+	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o build/resticprofile-arm64 -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=CI'"
+
+build-pi: prepare ## Build the binary for Raspberry Pi (armv6)
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-windows: prepare_build ## Build the binary for Windows
+build-windows: prepare ## Build the binary for Windows
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
@@ -199,17 +207,17 @@ build-windows: prepare_build ## Build the binary for Windows
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
 test: export TEST_HELPERS=$(BUILD)
-test: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests
+test: $(GOBIN)/gotestsum mocks test-helpers ## Run unit tests
 	@echo "[*] $@"
 	@$(GOBIN)/gotestsum -- -count=1 $(TESTS)
 
 test-short: export TEST_HELPERS=$(BUILD)
-test-short: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests in short mode
+test-short: $(GOBIN)/gotestsum mocks test-helpers ## Run unit tests in short mode
 	@echo "[*] $@"
 	@$(GOBIN)/gotestsum -- -short -count=1 $(TESTS)
 
 test-race: export TEST_HELPERS=$(BUILD)
-test-race: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with race detector
+test-race: $(GOBIN)/gotestsum mocks test-helpers ## Run unit tests with race detector
 	@echo "[*] $@"
 	@$(GOBIN)/gotestsum -- -short -race -count=1 $(TESTS)
 
@@ -218,7 +226,7 @@ test-completion: test-helpers ## Run shell completion integration tests (needs b
 	@$(GOTEST) -count=1 -v -run 'ShellCompletion' ./
 
 test-ci: export TEST_HELPERS=$(BUILD)
-test-ci: $(GOBIN)/gotestsum prepare_test test-helpers ## Run unit tests with coverage (for CI)
+test-ci: $(GOBIN)/gotestsum mocks test-helpers ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@$(GOBIN)/gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
@@ -437,7 +445,7 @@ compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...
 
 .PHONY: docker-image
-docker-image: build docker-builder $(GOBIN)/eget ## Build the Docker image for resticprofile
+docker-image: build-ci buildx $(GOBIN)/eget ## Build the Docker image for resticprofile
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@$(GOBIN)/eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
@@ -451,7 +459,7 @@ docker-image: build docker-builder $(GOBIN)/eget ## Build the Docker image for r
 		-t ghcr.io/creativeprojects/resticprofile:nightly \
 		--file build/Dockerfile .
 
-.PHONY: docker-builder
-docker-builder: $(GOBIN)/eget ## Create a Docker builder for building multi-arch images
+.PHONY: buildx
+buildx: $(GOBIN)/eget ## Create a Docker builder for building multi-arch images
 	@echo "[*] $@"
 	@docker buildx inspect resticprofile >/dev/null 2>&1 || docker buildx create --bootstrap --name resticprofile --driver docker-container
