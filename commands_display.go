@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"regexp"
@@ -20,6 +21,24 @@ import (
 	"github.com/creativeprojects/resticprofile/util/ansi"
 	"github.com/creativeprojects/resticprofile/util/collect"
 )
+
+// profilesOutput is the top-level JSON payload of `profiles --output=json`.
+type profilesOutput struct {
+	Profiles []profileEntry `json:"profiles"`
+	Groups   []groupEntry   `json:"groups"`
+}
+
+type profileEntry struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description,omitempty"`
+	Sections    []string `json:"sections"`
+}
+
+type groupEntry struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description,omitempty"`
+	Profiles    []string `json:"profiles"`
+}
 
 func displayWriter(terminal *term.Terminal) (out func(args ...any) io.Writer, closer func()) {
 	output := terminal.Stdout()
@@ -286,9 +305,18 @@ func displayVersion(ctx commandContext) error {
 }
 
 func displayProfilesCommand(ctx commandContext) error {
-	displayProfiles(ctx)
-	displayGroups(ctx)
-	return nil
+	switch format := parseOutputFormat(ctx.request.arguments); format {
+	case "plain":
+		displayProfiles(ctx)
+		displayGroups(ctx)
+		return nil
+
+	case "json":
+		return displayProfilesJSON(ctx)
+
+	default:
+		return fmt.Errorf("unknown output format %q: must be one of plain, json", format)
+	}
 }
 
 func displayProfiles(ctx commandContext) {
@@ -327,6 +355,50 @@ func displayGroups(ctx commandContext) {
 		out("\t%s:\t[%s]\t%s\n", name, ansi.Cyan(strings.Join(groupList.Profiles, ", ")), groupList.Description)
 	}
 	out("\n")
+}
+
+func displayProfilesJSON(ctx commandContext) error {
+	profiles := ctx.config.GetProfiles()
+	groups := ctx.config.GetProfileGroups()
+
+	out := profilesOutput{
+		Profiles: make([]profileEntry, len(profiles)),
+		Groups:   make([]groupEntry, len(groups)),
+	}
+
+	for i, name := range sortedProfileKeys(profiles) {
+		sections := profiles[name].DefinedCommands()
+		sort.Strings(sections)
+		if sections == nil {
+			sections = []string{}
+		}
+		out.Profiles[i] = profileEntry{
+			Name:        name,
+			Description: profiles[name].Description,
+			Sections:    sections,
+		}
+	}
+
+	groupKeys := make([]string, 0, len(groups))
+	for name := range groups {
+		groupKeys = append(groupKeys, name)
+	}
+	sort.Strings(groupKeys)
+	for i, name := range groupKeys {
+		profilesList := groups[name].Profiles
+		if profilesList == nil {
+			profilesList = []string{}
+		}
+		out.Groups[i] = groupEntry{
+			Name:        name,
+			Description: groups[name].Description,
+			Profiles:    profilesList,
+		}
+	}
+
+	encoder := json.NewEncoder(ctx.terminal.Stdout())
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(out)
 }
 
 func sortedProfileKeys(data map[string]*config.Profile) []string {

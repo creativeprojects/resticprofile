@@ -28,6 +28,12 @@ Groups available (name, profiles, description):
 
 ```
 
+For scripting, the same information is available as JSON via `--output=json`. Diagnostic log lines are routed to stderr in this mode, so stdout stays valid for parsers such as `jq`:
+
+```shell
+resticprofile profiles --output=json | jq '.profiles[].name'
+```
+
 Backup root & src profiles (using _full-backup_ group shown earlier)
 
 ```shell
