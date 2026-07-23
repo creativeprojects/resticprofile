@@ -189,6 +189,18 @@ func getOwnCommands() []ownCommand {
 			hide:              true,
 			experimental:      true,
 		},
+		{
+			name:              "serve-metrics",
+			description:       "serve the profile's prometheus-save-to-file (and Go runtime metrics) on /metrics",
+			action:            serveMetricsCommand,
+			needConfiguration: true,
+			noProfile:         false,
+			hide:              true,
+			experimental:      true,
+			flags: map[string]string{
+				"--metrics-port": "port to expose /metrics on (overrides RESTICPROFILE_METRICS_PORT)",
+			},
+		},
 	}
 }
 

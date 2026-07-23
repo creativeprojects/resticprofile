@@ -5,6 +5,29 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.34.0 (unreleased)
+
+## New Features
+
+### Prometheus metrics endpoint [EXPERIMENTAL]
+
+resticprofile can now expose the contents of a profile's `prometheus-save-to-file` on an HTTP endpoint, alongside the Go runtime metrics, so a sidecar Prometheus can scrape the last backup status from `schedule` and `serve-metrics` commands.
+
+Two ways to use it:
+
+- `resticprofile --metrics-port <port> schedule --all` — run `schedule` as usual; once the cron entries are installed the process blocks on SIGINT/SIGTERM, serving `/metrics` for every selected profile and group (textfile paths are de-duplicated).
+- `resticprofile --metrics-port <port> <profile> serve-metrics` — long-running sidecar serving a single profile's textfile. Useful when you can't or don't want to pass `--metrics-port` to the scheduler.
+
+Both honour `RESTICPROFILE_METRICS_PORT` and the `--metrics-port` flag is hidden from `--help` until the feature is stabilized.
+
+Response contract:
+
+- `200 OK` — runtime metrics + textfile body
+- `503 Service Unavailable` — textfile not yet created (e.g. first backup has not run). Prometheus treats this as `up == 0` rather than logging a 404 every scrape.
+- `500 Internal Server Error` — other I/O errors
+
+The `/metrics` endpoint binds on `0.0.0.0:<port>` for compatibility with container environments using `network_mode: host`.
+
 # v0.33.0 (2026-04-04)
 
 ## 🌸 Easter release 🥚

@@ -29,10 +29,8 @@ archives:
 
 dockers:
   - image_templates:
-      - "creativeprojects/resticprofile:latest-amd64"
-      - "creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
-      - "ghcr.io/creativeprojects/resticprofile:latest-amd64"
-      - "ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-amd64"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest-amd64"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .RawVersion }}-amd64"
     ids:
       - resticprofile_targz
     use: buildx
@@ -52,10 +50,8 @@ dockers:
       - "--build-arg=ARCH=amd64"
 
   - image_templates:
-      - "creativeprojects/resticprofile:latest-arm64v8"
-      - "creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
-      - "ghcr.io/creativeprojects/resticprofile:latest-arm64v8"
-      - "ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest-arm64v8"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .RawVersion }}-arm64v8"
     ids:
       - resticprofile_targz
     use: buildx
@@ -75,25 +71,15 @@ dockers:
       - "--build-arg=ARCH=arm64"
 
 docker_manifests:
-  - name_template: creativeprojects/resticprofile:{{ .RawVersion }}
+  - name_template: ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .RawVersion }}
     image_templates:
-      - creativeprojects/resticprofile:{{ .RawVersion }}-amd64
-      - creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .RawVersion }}-amd64
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .RawVersion }}-arm64v8
 
-  - name_template: creativeprojects/resticprofile:latest
+  - name_template: ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest
     image_templates:
-      - creativeprojects/resticprofile:latest-amd64
-      - creativeprojects/resticprofile:latest-arm64v8
-
-  - name_template: ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}
-    image_templates:
-      - ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-amd64
-      - ghcr.io/creativeprojects/resticprofile:{{ .RawVersion }}-arm64v8
-
-  - name_template: ghcr.io/creativeprojects/resticprofile:latest
-    image_templates:
-      - ghcr.io/creativeprojects/resticprofile:latest-amd64
-      - ghcr.io/creativeprojects/resticprofile:latest-arm64v8
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest-amd64
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest-arm64v8
 
 release:
   disable: true

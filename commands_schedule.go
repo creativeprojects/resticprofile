@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"os"
+	"os/signal"
 	"slices"
 	"strings"
+	"syscall"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
@@ -72,7 +75,90 @@ func createSchedule(ctx commandContext) error {
 		}
 	}
 
+	// Optional: if --metrics-port is set, keep the process alive and serve
+	// the profiles' prometheus-save-to-file on /metrics. This lets the schedule
+	// command double as a metrics sidecar when running under crond in a container.
+	if err := blockForMetricsServer(ctx); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// blockForMetricsServer starts a /metrics HTTP server for the prometheus-save-to-file
+// of the selected profiles, then blocks until SIGINT/SIGTERM. Returns nil immediately
+// (and the function returns) when --metrics-port is not set or no profile has a
+// prometheus-save-to-file configured. A warning is logged in the latter case so the
+// user knows metrics were requested but no file is available.
+func blockForMetricsServer(ctx commandContext) error {
+	if ctx.flags.metricsPort <= 0 {
+		return nil
+	}
+
+	metricFiles := collectPrometheusSaveToFiles(ctx)
+	if len(metricFiles) == 0 {
+		clog.Warningf("metrics server not started: no profile has prometheus-save-to-file set")
+		return nil
+	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(quit)
+
+	errCh := make(chan error, len(metricFiles))
+	for _, file := range metricFiles {
+		file := file
+		go func() {
+			if err := newMetricsServer(ctx.flags.metricsPort, file).run(quit); err != nil {
+				clog.Errorf("metrics server failed for %q: %v", file, err)
+				errCh <- err
+			}
+		}()
+	}
+
+	clog.Infof("schedule command will keep the process alive for the metrics server; send SIGINT/SIGTERM to stop")
+	select {
+	case <-quit:
+		clog.Info("shutting down metrics server (schedule)")
+		return nil
+	case err := <-errCh:
+		// best-effort: close quit so all running goroutines shut down
+		close(quit)
+		return err
+	}
+}
+
+// collectPrometheusSaveToFiles returns the unique non-empty prometheus-save-to-file
+// paths of all profiles selected by the schedule command (--all or a specific profile).
+// If a group is selected, the prometheus-save-to-file of each member profile is used.
+func collectPrometheusSaveToFiles(ctx commandContext) []string {
+	seen := make(map[string]struct{})
+	var files []string
+	args := ctx.request.arguments
+	add := func(name string) {
+		profile, err := ctx.config.GetProfile(name)
+		if err != nil || profile == nil || profile.PrometheusSaveToFile == "" {
+			return
+		}
+		if _, ok := seen[profile.PrometheusSaveToFile]; ok {
+			return
+		}
+		seen[profile.PrometheusSaveToFile] = struct{}{}
+		files = append(files, profile.PrometheusSaveToFile)
+	}
+
+	for _, name := range selectProfilesAndGroups(ctx.config, ctx.request.profile, args) {
+		if ctx.config.HasProfile(name) {
+			add(name)
+			continue
+		}
+		if group, err := ctx.config.GetProfileGroup(name); err == nil && group != nil {
+			for _, member := range group.Profiles {
+				add(member)
+			}
+		}
+	}
+	return files
 }
 
 func removeSchedule(ctx commandContext) error {

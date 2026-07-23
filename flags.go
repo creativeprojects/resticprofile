@@ -39,6 +39,7 @@ type commandLineFlags struct {
 	ignoreOnBattery int
 	usagesHelp      string
 	remote          string // url of the remote server to download configuration files from
+	metricsPort     int    // port to expose /metrics on (0 = disabled)
 }
 
 func envValueOverride[T any](defaultValue T, keys ...string) T {
@@ -94,6 +95,7 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 		wait:            envValueOverride(false, "RESTICPROFILE_WAIT"),
 		ignoreOnBattery: envValueOverride(0, "RESTICPROFILE_IGNORE_ON_BATTERY"),
 		remote:          envValueOverride("", "RESTICPROFILE_REMOTE"),
+		metricsPort:     envValueOverride(0, "RESTICPROFILE_METRICS_PORT"),
 	}
 
 	flagset.BoolVarP(&flags.help, "help", "h", flags.help, "display this help")
@@ -118,6 +120,9 @@ func loadFlags(args []string) (*pflag.FlagSet, commandLineFlags, error) {
 	flagset.StringVarP(&flags.remote, "remote", "r", flags.remote, "remote server to download configuration files from")
 	// keep the "remote" flag hidden for now
 	_ = flagset.MarkHidden("remote")
+
+	flagset.IntVar(&flags.metricsPort, "metrics-port", flags.metricsPort, "port to expose /metrics on (overrides RESTICPROFILE_METRICS_PORT; 0 disables)")
+	_ = flagset.MarkHidden("metrics-port")
 
 	flagset.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		switch name {

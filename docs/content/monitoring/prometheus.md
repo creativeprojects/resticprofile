@@ -230,3 +230,45 @@ root:
 
 
 This adds the `host` label to all your metrics.
+
+## Exposing metrics over HTTP [EXPERIMENTAL]
+
+In addition to the file-based and push-based options, resticprofile can serve the latest metrics on an HTTP endpoint. The endpoint combines the Go runtime collector with the profile's `prometheus-save-to-file` body so a single sidecar can be scraped by Prometheus, Node Exporter's `--collector.textfile.directory`, or anything else that understands the Prometheus text exposition format.
+
+The feature is opt-in and hidden from `--help` until it stabilises. Enable it via the `--metrics-port` flag (or the `RESTICPROFILE_METRICS_PORT` environment variable) and select one of the following integration points:
+
+### `schedule` keeps the process alive and serves `/metrics`
+
+When `resticprofile` is used as the scheduler under `crond` (e.g. inside a container), it can double as a metrics sidecar. The scheduler registers all cron jobs as usual, then blocks on SIGINT/SIGTERM while serving `/metrics` for each profile that has `prometheus-save-to-file` set. Textfile paths are de-duplicated across profiles and groups, so several profiles writing to the same file share a single scrape target.
+
+```sh
+resticprofile --metrics-port 19302 schedule --all &
+crond -f
+```
+
+### `serve-metrics` as a stand-alone sidecar
+
+If you don't use `schedule` (or already have a separate scheduler), run a dedicated process:
+
+```sh
+resticprofile --metrics-port 19302 default serve-metrics
+```
+
+### Response contract
+
+- `200 OK` — Go runtime metrics followed by the textfile body.
+- `503 Service Unavailable` — the textfile does not exist yet (e.g. the first backup has not run). Prometheus reports the target as `up == 0` without logging a 404 on every scrape.
+- `500 Internal Server Error` — other I/O errors.
+
+The server binds on `0.0.0.0:<port>` for `network_mode: host` containers.
+
+### Scrape configuration
+
+```yaml
+scrape_configs:
+  - job_name: resticprofile
+    static_configs:
+      - targets: ['<host>:19302']
+        labels:
+          host: backup-server
+```

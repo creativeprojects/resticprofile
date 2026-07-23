@@ -298,3 +298,98 @@ func TestCreateScheduleOverwriteExistingIntegrationUsingCrontab(t *testing.T) {
 	assert.NotContains(t, output.String(), "Original form: *-*-* *:10,40:00") // previous one
 	t.Log(output.String())
 }
+
+func TestCollectPrometheusSaveToFiles(t *testing.T) {
+	const configYAML = `
+version: "2"
+
+groups:
+  group-a:
+    profiles:
+      - alpha
+      - beta
+
+profiles:
+  alpha:
+    prometheus-save-to-file: /var/metrics/alpha.prom
+  beta:
+    prometheus-save-to-file: /var/metrics/beta.prom
+  gamma:
+    prometheus-save-to-file: /var/metrics/shared.prom
+  delta:
+    prometheus-save-to-file: /var/metrics/shared.prom
+  epsilon: {}
+`
+	testCases := []struct {
+		name      string
+		arguments []string
+		profile   string
+		expected  []string
+		matcher   func(t assert.TestingT, expected, actual interface{}, msgAndArgs ...interface{}) bool
+	}{
+		{
+			name:      "single profile",
+			arguments: []string{"schedule"},
+			profile:   "alpha",
+			expected:  []string{"/var/metrics/alpha.prom"},
+			matcher:   assert.Equal,
+		},
+		{
+			name:      "all profiles dedups shared file",
+			arguments: []string{"schedule", "--all"},
+			profile:   "",
+			// Order is non-deterministic (viper map iteration); assert set
+			// membership via ElementsMatch so the test isn't order-sensitive.
+			expected: []string{"/var/metrics/shared.prom", "/var/metrics/alpha.prom", "/var/metrics/beta.prom"},
+			matcher:  assert.ElementsMatch,
+		},
+		{
+			name:      "group aggregates member files",
+			arguments: []string{"schedule"},
+			profile:   "group-a",
+			expected:  []string{"/var/metrics/alpha.prom", "/var/metrics/beta.prom"},
+			matcher:   assert.ElementsMatch,
+		},
+		{
+			name:      "profile without prometheus-save-to-file yields nothing",
+			arguments: []string{"schedule"},
+			profile:   "epsilon",
+			expected:  nil,
+			matcher:   assert.Equal,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := config.Load(bytes.NewBufferString(configYAML), config.FormatYAML, config.WithConfigFile("config.yaml"))
+			require.NoError(t, err)
+
+			ctx := commandContext{
+				Context: Context{
+					config: cfg,
+					request: Request{
+						profile:   tc.profile,
+						arguments: tc.arguments,
+					},
+				},
+			}
+
+			got := collectPrometheusSaveToFiles(ctx)
+			tc.matcher(t, tc.expected, got)
+		})
+	}
+}
+
+func TestBlockForMetricsServerDisabledByDefault(t *testing.T) {
+	cfg, err := config.Load(bytes.NewBufferString("version: \"2\"\nprofiles:\n  alpha:\n    prometheus-save-to-file: /tmp/x.prom\n"), config.FormatYAML, config.WithConfigFile("config.yaml"))
+	require.NoError(t, err)
+
+	ctx := commandContext{
+		Context: Context{
+			config:  cfg,
+			request: Request{profile: "alpha"},
+			flags:   commandLineFlags{metricsPort: 0}, // explicitly disabled
+		},
+	}
+	assert.NoError(t, blockForMetricsServer(ctx))
+}
