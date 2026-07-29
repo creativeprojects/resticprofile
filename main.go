@@ -137,7 +137,8 @@ func main() {
 			}
 		}
 		if logTarget != "" && logTarget != "-" {
-			if closer, options, err := setupTargetLogger(flags, terminal, logTarget, commandOutput); err == nil {
+			closer, options, err := setupTargetLogger(flags, terminal, logTarget, commandOutput)
+			if err == nil {
 				logCloser = func() { _ = closer.Close() }
 				terminalOptions = append(terminalOptions, options...)
 				return
