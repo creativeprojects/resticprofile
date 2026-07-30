@@ -104,7 +104,7 @@ $(GOBIN)/mockery: verify $(GOBIN)/eget
 
 $(GOBIN)/golangci-lint-v2: verify $(GOBIN)/eget
 	@echo "[*] $@"
-	"$(GOBIN)/eget" golangci/golangci-lint --tag v2.12.2 --asset=tar.gz --upgrade-only --to '$(GOBIN)/golangci-lint-v2'
+	"$(GOBIN)/eget" golangci/golangci-lint --tag v2.12.2 --asset=tar.gz --asset=^sbom --upgrade-only --to '$(GOBIN)/golangci-lint-v2'
 
 $(GOBIN)/hugo: $(GOBIN)/eget
 	@echo "[*] $@"
