@@ -111,16 +111,7 @@ func TestReadingSystemdScheduled(t *testing.T) {
 	scheduled, err := handler.Scheduled("")
 	require.NoError(t, err)
 
-	testScheduled := make([]Config, 0, len(scheduled))
-	for _, s := range scheduled {
-		if s.ConfigFile != "config file.yaml" && s.ConfigFile != "examples/dev.yaml" {
-			t.Logf("Ignoring config file %s", s.ConfigFile)
-			continue
-		}
-		testScheduled = append(testScheduled, s)
-	}
-
-	assert.ElementsMatch(t, expectedJobs, testScheduled)
+	assert.ElementsMatch(t, expectedJobs, onlyTestSchedules(t, scheduled))
 
 	// now delete all schedules
 	for _, testCase := range testCases {
@@ -130,7 +121,23 @@ func TestReadingSystemdScheduled(t *testing.T) {
 
 	scheduled, err = handler.Scheduled("")
 	require.NoError(t, err)
-	assert.Empty(t, scheduled)
+	assert.Empty(t, onlyTestSchedules(t, scheduled))
+}
+
+// onlyTestSchedules keeps the schedules created by this test and drops everything else.
+// Scheduled() reads the real user unit directory, so on a machine that actually uses
+// resticprofile it also returns the developer's own schedules.
+func onlyTestSchedules(t *testing.T, scheduled []Config) []Config {
+	t.Helper()
+	filtered := make([]Config, 0, len(scheduled))
+	for _, s := range scheduled {
+		if s.ConfigFile != "config file.yaml" && s.ConfigFile != "examples/dev.yaml" {
+			t.Logf("Ignoring config file %s", s.ConfigFile)
+			continue
+		}
+		filtered = append(filtered, s)
+	}
+	return filtered
 }
 
 func TestDetectPermissionSystemd(t *testing.T) {
