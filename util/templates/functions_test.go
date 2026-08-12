@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/util"
@@ -62,7 +63,17 @@ func TestTemplateFuncs(t *testing.T) {
 		{template: `{{ "" | randInt 0 1 }}`, expected: `0`},
 		{template: `{{ "hello" | randInt 5 6 }}`, expected: `5`},
 		{template: `{{ "" | randInt -1000 1000 }}`, expected: `419`},
-		{template: `{{ "ABC" | randInt -1000 1000 }}`, expected: `-272`},
+		{template: `{{ 5 | addInt 1 }}`, expected: "6"},
+		{template: `{{ 5 | subInt 1 }}`, expected: "4"},
+		{template: `{{ 5.5 | addFloat 1.0 }}`, expected: "6.5"},
+		{template: `{{ 5.5 | subFloat 1.0 }}`, expected: "4.5"},
+		{template: `{{ 5 | modInt 4 }}`, expected: "1"},
+		{template: `{{ 5 | int }}`, expected: "5"},
+		{template: `{{ 5.0 | int }}`, expected: "5"},
+		{template: `{{ "5" | int }}`, expected: "5"},
+		{template: `{{ "-5" | int }}`, expected: "-5"},
+		{template: `{{ .Now.Weekday | int }}`, expected: "1"},
+		{template: `{{ .Now.Month | int }}`, expected: "6"},
 	}
 
 	extraFuncs := map[string]any{
@@ -78,7 +89,9 @@ func TestTemplateFuncs(t *testing.T) {
 			require.NotNil(t, tpl)
 
 			buffer.Reset()
-			err = tpl.Execute(buffer, nil)
+			err = tpl.Execute(buffer, DefaultData{
+				Now: time.Date(2020, 06, 01, 13, 37, 0, 0, time.UTC),
+			})
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, buffer.String())
 		})
