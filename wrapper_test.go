@@ -22,6 +22,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/monitor/mocks"
+	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/restic"
@@ -766,6 +767,22 @@ func TestBackupWithStreamSource(t *testing.T) {
 		_, err := run(t, wrapper)
 		require.NotNil(t, err)
 		assert.EqualError(t, err, "stdin-test on profile 'name': 'stdin-command' on profile 'name': exit status 2")
+	})
+
+	t.Run("StreamSourceFailureReportsMonitoring", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		wrapper.command = constants.CommandBackup
+		profile.PrometheusSaveToFile = filepath.Join(t.TempDir(), "metrics.prom")
+		profile.Backup.StdinCommand = []string{"exit 2"}
+		profile.ResolveConfiguration()
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, "", version, "", nil)))
+
+		err := wrapper.runCommand(constants.CommandBackup)
+
+		require.Error(t, err)
+		content, readErr := os.ReadFile(profile.PrometheusSaveToFile)
+		require.NoError(t, readErr, "prometheus metrics file should be written even if restic never started")
+		assert.Contains(t, string(content), "resticprofile_backup_status{profile=\"name\"} 0")
 	})
 
 	t.Run("StreamSourceWorksWithDryRun", func(t *testing.T) {

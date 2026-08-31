@@ -558,7 +558,11 @@ func (r *resticWrapper) runCommand(command string) error {
 					rCommand.stdin = streamSource
 				}
 			} else {
-				return newCommandError(rCommand, "", fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
+				// Report the failure so that a backup which never started does not leave the
+				// previous (successful) result in the status file and the prometheus metrics.
+				err = newCommandError(rCommand, "", fmt.Errorf("%s on profile '%s': %w", r.command, r.profile.Name, err))
+				r.summary(r.command, monitor.Summary{}, "", err)
+				return err
 			}
 		}
 
