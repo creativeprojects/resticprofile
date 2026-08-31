@@ -121,11 +121,14 @@ func (r *resticWrapper) summary(command string, summary monitor.Summary, stderr 
 func (r *resticWrapper) runnerWithBeforeAndAfter(commands config.RunShellCommandsSection, command string, action func() error) func() error {
 	return func() (err error) {
 		err = r.runBeforeCommands(commands, command)
-
-		if err == nil {
-			err = action()
+		if err != nil {
+			// Report the failure so that a run aborted by a failing "run-before" command does not
+			// leave the previous (successful) result in the status file and the prometheus metrics.
+			r.summary(r.command, monitor.Summary{}, "", err)
+			return
 		}
 
+		err = action()
 		if err == nil {
 			err = r.runAfterCommands(commands, command)
 		}

@@ -241,6 +241,56 @@ func TestPostProfileScriptFail(t *testing.T) {
 	assert.EqualError(t, err, "run-after on profile 'name': exit status 1")
 }
 
+func TestRunBeforeFailureReportsMonitoring(t *testing.T) {
+	t.Parallel()
+
+	newWrapper := func(t *testing.T, runBefore *config.RunShellCommandsSection) (string, *resticWrapper) {
+		t.Helper()
+		profile := config.NewProfile(nil, "name")
+		profile.Backup = &config.BackupSection{}
+		if runBefore != nil {
+			profile.Backup.RunBefore = runBefore.RunBefore
+		}
+		promFile := filepath.Join(t.TempDir(), "metrics.prom")
+		profile.PrometheusSaveToFile = promFile
+		ctx := &Context{
+			binary:   mockBinary,
+			profile:  profile,
+			command:  constants.CommandBackup,
+			terminal: term.NewTerminal(),
+		}
+		wrapper := newResticWrapper(ctx)
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, "", version, "", nil)))
+		return promFile, wrapper
+	}
+
+	readStatus := func(t *testing.T, file string) string {
+		t.Helper()
+		content, err := os.ReadFile(file)
+		require.NoError(t, err, "prometheus metrics file should be written")
+		return string(content)
+	}
+
+	t.Run("ProfileRunBefore", func(t *testing.T) {
+		promFile, wrapper := newWrapper(t, nil)
+		wrapper.profile.RunBefore = []string{"exit 2"}
+
+		err := wrapper.runProfile()
+
+		require.Error(t, err)
+		assert.Contains(t, readStatus(t, promFile), `resticprofile_backup_status{profile="name"} 0`)
+	})
+
+	t.Run("SectionRunBefore", func(t *testing.T) {
+		promFile, wrapper := newWrapper(t, &config.RunShellCommandsSection{RunBefore: []string{"exit 2"}})
+
+		err := wrapper.runProfile()
+
+		require.Error(t, err)
+		assert.Contains(t, readStatus(t, promFile), `resticprofile_backup_status{profile="name"} 0`)
+	})
+}
+
 func TestRunEchoProfile(t *testing.T) {
 	t.Parallel()
 

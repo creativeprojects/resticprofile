@@ -133,9 +133,10 @@ resticprofile_build_info{goversion="go1.24.3",profile="prom",version="0.31.0"} 1
 
 ## Failure behavior
 
-The metrics reflects the most recent `backup` run, whether it succeeded or failed. A failed run is reported with `resticprofile_backup_status` set to `0`
+The metrics reflects the most recent `backup` run, whether it succeeded or failed. A failed run is reported with `resticprofile_backup_status` set to `0`.
+This also applies to a backup that never started because a `run-before` command or a `stdin-command` exited with an error.
 
-The `*_bytes`, `*_files`, `*_dir` and `duration_seconds` gauges are derived from the summary that restic prints on completion. When a backup is aborted before restic prints that summary (for example when a `stdin-command` exits with an error), those gauges are written as `0`.
+The `*_bytes`, `*_files`, `*_dir` and `duration_seconds` gauges are derived from the summary that restic prints on completion. When a backup is aborted before restic prints that summary (for example when a `run-before` or `stdin-command` exits with an error), those gauges are written as `0`.
 
 ## Prometheus Pushgateway
 
