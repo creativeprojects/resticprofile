@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
 	"github.com/creativeprojects/resticprofile/util/collect"
 	"github.com/creativeprojects/resticprofile/util/templates"
@@ -105,13 +106,57 @@ func (t *TemplateInfoData) NestedSections() []SectionInfo {
 	})
 }
 
+type propertyTableData struct {
+	SectionName string
+	Properties  []PropertyInfo
+}
+
+type propertyRowData struct {
+	SectionName string
+	Property    PropertyInfo
+}
+
 // GetFuncs returns a map of helpers to be used as methods when rendering templates
 func (t *TemplateInfoData) GetFuncs() map[string]any {
 	return map[string]any{
 		"properties": func(set PropertySet) []PropertyInfo { return collect.From(set.Properties(), set.PropertyInfo) },
 		"own":        func(p []PropertyInfo) []PropertyInfo { return collect.All(p, collect.Not(PropertyInfo.IsOption)) },
 		"restic":     func(p []PropertyInfo) []PropertyInfo { return collect.All(p, PropertyInfo.IsOption) },
+		"propertyTable": func(sectionName string, properties []PropertyInfo) propertyTableData {
+			return propertyTableData{SectionName: sectionName, Properties: properties}
+		},
+		"propertyRow": func(sectionName string, property PropertyInfo) propertyRowData {
+			return propertyRowData{SectionName: sectionName, Property: property}
+		},
+		"referenceDefaults": referenceDefaults,
 	}
+}
+
+// referenceDefaults returns resticprofile-applied defaults for the config reference
+// Default column. These are not restic man-page defaults; they come from profile
+// resolution (see RetentionSection.resolve / BackupSection.resolve in profile.go).
+// Kept reference-only so JSON schema is not given version-dependent defaults.
+func referenceDefaults(sectionName string, property PropertyInfo) []string {
+	switch sectionName {
+	case constants.CommandBackup:
+		if property.Name() == constants.ParameterHost {
+			return []string{"true (config version 2)"}
+		}
+	case constants.SectionConfigurationRetention:
+		switch property.Name() {
+		case constants.ParameterPath:
+			// RetentionSection.resolve sets path=true whenever backup exists (all versions)
+			return []string{"true"}
+		case constants.ParameterTag, constants.ParameterHost:
+			// RetentionSection.resolve copies tag/host from backup only for config version >= 2
+			return []string{"true (config version 2)"}
+		}
+	}
+
+	if defaults := property.DefaultValue(); len(defaults) > 0 {
+		return defaults
+	}
+	return nil
 }
 
 // NewTemplateInfoData returns template data to render references for the specified resticVersion
