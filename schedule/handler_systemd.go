@@ -5,7 +5,6 @@ package schedule
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -483,11 +482,41 @@ func runSystemctlReload(unitType systemd.UnitType) error {
 }
 
 func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error) {
+	stdout, err := runSystemctlListUnits(profile, unitType, true)
+	if err != nil {
+		return nil, err
+	}
+	units, err := parseSystemctlUnits(stdout)
+	if err == nil {
+		return units, nil
+	}
+	jsonErr := err
+
+	// Older systemd (AlmaLinux 8, Amazon Linux 2, systemd < ~247) ignores
+	// --output=json for list-units. Re-run with plain, legend-free flags.
+	stdout, err = runSystemctlListUnits(profile, unitType, false)
+	if err != nil {
+		return nil, fmt.Errorf("%w; plain fallback failed: %v", jsonErr, err)
+	}
+	units, err = parseSystemctlUnitsPlain(stdout)
+	if err != nil {
+		return nil, fmt.Errorf("%w; plain fallback parse failed: %v\n%s", jsonErr, err, stdout)
+	}
+	return units, nil
+}
+
+func runSystemctlListUnits(profile string, unitType systemd.UnitType, asJSON bool) ([]byte, error) {
 	if profile == "" {
 		profile = "*"
 	}
 	pattern := fmt.Sprintf("resticprofile-*@profile-%s.service", profile)
-	args := []string{"list-units", "--all", flagNoPager, "--output", "json"}
+	args := []string{"list-units", "--all", flagNoPager}
+	if asJSON {
+		args = append(args, "--output", "json")
+	} else {
+		// --plain/--no-legend are widely available and produce whitespace-separated fields.
+		args = append(args, "--plain", "--no-legend")
+	}
 	if unitType == systemd.UserUnit {
 		args = append(args, getUserFlags()...)
 	}
@@ -505,13 +534,7 @@ func listUnits(profile string, unitType systemd.UnitType) ([]SystemdUnit, error)
 	if err != nil {
 		return nil, fmt.Errorf("error running command: %w\n%s", err, stderr.String())
 	}
-	var units []SystemdUnit
-	decoder := json.NewDecoder(stdout)
-	err = decoder.Decode(&units)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding JSON: %w\n%s", err, stdout.String())
-	}
-	return units, err
+	return stdout.Bytes(), nil
 }
 
 func getUserFlags() []string {
