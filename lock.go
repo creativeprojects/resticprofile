@@ -5,14 +5,26 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/lock"
 )
+
+// openTermChan returns a channel that receives process termination signals.
+// Tests replace this to inject signals without sending real OS signals (which
+// would terminate the go test process).
+var openTermChan = func() (<-chan os.Signal, func()) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	return ch, func() { signal.Stop(ch) }
+}
 
 // lockRun is making sure the function is only run once by putting a lockfile on the disk
 func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-chan os.Signal, run func(setPID lock.SetPID) error) error {
@@ -81,9 +93,41 @@ func lockRun(lockFile string, force bool, lockWait *time.Duration, sigChan <-cha
 		}
 	}
 
-	// Run locked
-	defer runLock.Release()
-	return run(runLock.SetPID)
+	// Run locked.
+	//
+	// Release the profile lock as soon as a termination signal arrives, not only
+	// when run() returns. After SIGINT/SIGTERM the process may still spend time in
+	// run-after-fail / finally hooks or waiting on a child; systemd (and similar
+	// managers) often follow up with SIGKILL after TimeoutStopSec. Releasing early
+	// keeps the lockfile from surviving a hard kill.
+	//
+	// Use a dedicated signal.Notify channel so we do not compete with the shared
+	// sigChan that shell commands use to forward signals to child processes.
+	var wg sync.WaitGroup
+	stopWatch := make(chan struct{})
+	release := func() { runLock.Release() }
+
+	if sigChan != nil {
+		termChan, stopTerm := openTermChan()
+		defer stopTerm()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			select {
+			case sig := <-termChan:
+				clog.Debugf("received %v while holding profile lock, releasing early", sig)
+				release()
+			case <-stopWatch:
+			}
+		}()
+	}
+
+	err := run(runLock.SetPID)
+	close(stopWatch)
+	wg.Wait()
+	release()
+	return err
 }
 
 const logLockWaitEvery = 5 * time.Minute
