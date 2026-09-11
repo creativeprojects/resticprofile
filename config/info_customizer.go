@@ -74,6 +74,7 @@ func init() {
 			info.examples = []string{"true", "false", fmt.Sprintf(`"%s"`, propertyName)}
 
 			suffixDefaultTrueV2 := fmt.Sprintf(` Defaults to true for config version 2 in "%s".`, sectionName)
+			const filtersDoc = `https://creativeprojects.github.io/resticprofile/configuration/snapshot_filters/`
 
 			if propertyName == constants.ParameterHost {
 				info.format = "hostname"
@@ -89,16 +90,18 @@ func init() {
 					note = `Boolean true is unsupported in section "backup".`
 				} else {
 					note += suffixDefaultTrueV2
+					note += ` See ` + filtersDoc
 				}
 			case constants.SectionConfigurationRetention:
 				if propertyName == constants.ParameterHost {
 					note = `Boolean true is replaced with the hostname that applies in section "backup".`
-				}
-				if propertyName == constants.ParameterPath {
-					note += ` Defaults to true in "retention".`
-				} else {
 					note += suffixDefaultTrueV2
+				} else if propertyName == constants.ParameterPath {
+					note += ` Defaults to true in "retention" when section "backup" is present.`
+				} else if propertyName == constants.ParameterTag {
+					note += ` Defaults to true for config version 2 in "retention" when "tag" is set in "backup".`
 				}
+				note += ` See ` + filtersDoc
 			}
 
 			if note != "" {

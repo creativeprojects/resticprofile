@@ -171,9 +171,9 @@ version = "1"
     keep-within = "3h"
     keep-tag = [ "forever" ]
     prune = false
-    # tag can be a boolean ('true' meaning to copy tag set from 'backup') 
-    # or a custom set of tags.
-    # Default is 'false', meaning that tags are NOT used.
+    # tag/path/host may be boolean true (copy from backup / hostname) or explicit values.
+    # Defaults depend on config version — see "Snapshot filters" in the docs.
+    # path defaults to true when backup is configured; tag defaults to true in v2 when backup.tag is set.
     tag = true
     # host can be a boolean ('true' meaning current hostname)
     # or a string to specify a different hostname
@@ -297,9 +297,9 @@ root:
     keep-tag:
       - forever
     prune: false
-    # tag can be a boolean ('true' meaning to copy tag set from 'backup') 
-    # or a custom set of tags.
-    # Default is 'false', meaning that tags are NOT used.
+    # tag/path/host may be boolean true (copy from backup / hostname) or explicit values.
+    # Defaults depend on config version — see "Snapshot filters" in the docs.
+    # path defaults to true when backup is configured; tag defaults to true in v2 when backup.tag is set.
     tag: true
     # host can be a boolean ('true' meaning current hostname)
     # or a string to specify a different hostname
@@ -617,4 +617,3 @@ mysql {
 
 {{% /tab %}}
 {{< /tabs >}}
-

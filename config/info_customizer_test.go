@@ -77,8 +77,10 @@ func TestHostTagPathProperty(t *testing.T) {
 	hostNote := `Boolean true is replaced with the hostname of the system.`
 	backupNote := `Boolean true is unsupported in section "backup".`
 	retentionHostNote := `Boolean true is replaced with the hostname that applies in section "backup".`
-	defaultSuffix := ` Defaults to true in "{{section}}".`
+	defaultSuffixPath := ` Defaults to true in "{{section}}" when section "backup" is present.`
+	defaultSuffixTagV2 := ` Defaults to true for config version 2 in "{{section}}" when "tag" is set in "backup".`
 	defaultSuffixV2 := ` Defaults to true for config version 2 in "{{section}}".`
+	filtersDoc := ` See https://creativeprojects.github.io/resticprofile/configuration/snapshot_filters/`
 
 	backup := constants.CommandBackup
 	retention := constants.SectionConfigurationRetention
@@ -91,11 +93,11 @@ func TestHostTagPathProperty(t *testing.T) {
 		{section: "any", property: constants.ParameterPath},
 		{section: "any", property: constants.ParameterTag},
 
-		{section: retention, property: constants.ParameterHost, note: retentionHostNote + defaultSuffixV2, format: "hostname"},
-		{section: retention, property: constants.ParameterPath, note: note + defaultSuffix},
-		{section: retention, property: constants.ParameterTag, note: note + defaultSuffixV2},
+		{section: retention, property: constants.ParameterHost, note: retentionHostNote + defaultSuffixV2 + filtersDoc, format: "hostname"},
+		{section: retention, property: constants.ParameterPath, note: note + defaultSuffixPath + filtersDoc},
+		{section: retention, property: constants.ParameterTag, note: note + defaultSuffixTagV2 + filtersDoc},
 
-		{section: backup, property: constants.ParameterHost, note: hostNote + defaultSuffixV2, format: "hostname"},
+		{section: backup, property: constants.ParameterHost, note: hostNote + defaultSuffixV2 + filtersDoc, format: "hostname"},
 		{section: backup, property: constants.ParameterPath, note: backupNote, examples: []string{"false", `"{{property}}"`}},
 		{section: backup, property: constants.ParameterTag, note: backupNote, examples: []string{"false", `"{{property}}"`}},
 	}
