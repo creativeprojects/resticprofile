@@ -240,7 +240,7 @@ func (c *Config) applyNonProfileMixins() error {
 }
 
 func (c *Config) applyMixinsToProfile(profileName string) error {
-	prefix := c.getProfilePath(profileName)
+	prefix := strings.ToLower(c.getProfilePath(profileName))
 	return c.applyMatchingMixinsOnce(func(useKey string) bool {
 		return strings.HasPrefix(useKey, prefix)
 	})

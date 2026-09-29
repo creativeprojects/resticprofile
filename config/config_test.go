@@ -20,6 +20,68 @@ type testTemplate struct {
 	config string
 }
 
+func TestProfileMixinsWithMixedCaseNames(t *testing.T) {
+	const source = `
+version: 2
+mixins:
+  profile-hooks:
+    run-before: echo ProfileHook
+  backup-hooks:
+    run-before: echo BackupHook
+profiles:
+  TestProfile:
+    use: profile-hooks
+    backup:
+      use: backup-hooks
+  ChildProfile:
+    inherit: TestProfile
+groups:
+  test:
+    profiles: [TestProfile]
+`
+	for _, name := range []string{"testprofile", "TestProfile", "TESTPROFILE", "ChildProfile", "test"} {
+		t.Run(name, func(t *testing.T) {
+			c, err := Load(strings.NewReader(source), FormatYAML)
+			require.NoError(t, err)
+
+			profileName := name
+			if c.HasProfileGroup(name) {
+				group, err := c.GetProfileGroup(name)
+				require.NoError(t, err)
+				require.Len(t, group.Profiles, 1)
+				profileName = group.Profiles[0]
+			}
+
+			profile, err := c.GetProfile(profileName)
+			require.NoError(t, err)
+			assert.Equal(t, profileName, profile.Name)
+			assert.Equal(t, []string{"echo ProfileHook"}, profile.RunBefore)
+			require.NotNil(t, profile.Backup)
+			assert.Equal(t, []string{"echo BackupHook"}, profile.Backup.RunBefore)
+		})
+	}
+}
+
+func TestUndefinedMixinWithMixedCaseProfileNames(t *testing.T) {
+	const source = `
+version: 2
+profiles:
+  TestProfile:
+    use: missing-mixin
+  ChildProfile:
+    inherit: TestProfile
+`
+	for _, name := range []string{"testprofile", "TestProfile", "TESTPROFILE", "ChildProfile"} {
+		t.Run(name, func(t *testing.T) {
+			c, err := Load(strings.NewReader(source), FormatYAML)
+			require.NoError(t, err)
+
+			_, err = c.GetProfile(name)
+			assert.ErrorContains(t, err, `failed applying profiles.testprofile.use: undefined mixin "missing-mixin"`)
+		})
+	}
+}
+
 func TestIsSet(t *testing.T) {
 	testData := []testTemplate{
 		{FormatTOML, `
