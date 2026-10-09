@@ -356,6 +356,12 @@ func newResticPropertyInfo(name string, option restic.Option) *resticPropertyInf
 		info.mayString = true
 	}
 
+	// restic accepts "unlimited" as an alternative to a count for all integer "keep-*" flags
+	if info.MustBeInteger() && strings.HasPrefix(option.Name, "keep-") {
+		info.mayString = true
+		info.enum = []string{"unlimited"}
+	}
+
 	return info
 }
 
