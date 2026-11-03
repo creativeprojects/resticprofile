@@ -1,7 +1,7 @@
 ---
 title: "HTTP Hooks"
 weight: 22
-tags: [ "monitoring", "healthchecks.io" ]
+tags: [ "monitoring", "healthchecks.io", "watchgoose.com" ]
 ---
 
 
@@ -308,7 +308,7 @@ Failures in any `send-*` are logged but do not influence environment or return c
 
 ### Example sending monitoring information to Watchgoose:
 
-[Watchgoose](https://watchgoose.com/docs/) uses the same ping URLs as healthchecks.io: `/start` when the job starts, the bare URL on success, and `/fail` on failure. Replace the UUID with the one of your check. The first 10,000 bytes of a POST body are stored as the ping log, so the `send-after-fail` hook below attaches the error message and the restic error output to the failure.
+[Watchgoose](https://watchgoose.com/docs/) gives each check a ping URL: send `/start` when the job starts, the bare URL on success, and `/fail` on failure. Replace the UUID with the one of your check. The first 10,000 bytes of a POST body are stored as the ping log, so the `send-after-fail` hook below attaches the error message and the restic error output to the failure.
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
