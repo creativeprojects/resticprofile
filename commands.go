@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io"
 	"maps"
-	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
@@ -245,14 +243,15 @@ func completeCommand(ctx commandContext) error {
 }
 
 func debugCompletion(line string) {
-	debugFile := filepath.Clean(os.Getenv("RESTICPROFILE_DEBUG_COMPLETION"))
-	if debugFile != "" && debugFile != "." {
-		f, err := os.OpenFile(debugFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err == nil {
-			defer f.Close()
-			fmt.Fprintln(f, line)
-		}
-	}
+	// Uncomment for debugging completion
+	// debugFile := filepath.Clean(os.Getenv("RESTICPROFILE_DEBUG_COMPLETION"))
+	// if debugFile != "" && debugFile != "." {
+	// 	f, err := os.OpenFile(debugFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// 	if err == nil {
+	// 		defer f.Close()
+	// 		fmt.Fprintln(f, line)
+	// 	}
+	// }
 }
 
 func showProfileOrGroup(ctx commandContext) error {

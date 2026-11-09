@@ -5,16 +5,17 @@ package preventsleep
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	systemd "github.com/coreos/go-systemd/v22/login1"
 	"github.com/creativeprojects/resticprofile/constants"
 )
 
 const (
-	inhibitWhat      = "idle:sleep"
-	inhibitWhy       = "Backup and/or restic repository maintenance"
-	inhibitMode      = "block"
-	permissionDenied = "Permission denied"
+	inhibitWhat = "idle:sleep"
+	inhibitWhy  = "Backup and/or restic repository maintenance"
+	inhibitMode = "block"
+	denied      = " denied"
 )
 
 type Caffeinate struct {
@@ -39,7 +40,7 @@ func (c *Caffeinate) Start() error {
 	}
 	c.file, err = c.conn.Inhibit(inhibitWhat, constants.ApplicationName, inhibitWhy, inhibitMode)
 	if err != nil {
-		if err.Error() == permissionDenied {
+		if strings.Contains(err.Error(), denied) {
 			return ErrPermissionDenied
 		}
 		return err

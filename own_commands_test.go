@@ -59,14 +59,14 @@ func pre(_ *Context) error {
 func TestDisplayOwnCommands(t *testing.T) {
 	buffer := &strings.Builder{}
 	terminal := term.NewTerminal(term.WithStdout(buffer))
-	displayOwnCommands(commandContext{ownCommands: fakeCommands(), Context: Context{terminal: terminal}})
+	displayOwnCommands(commandContext{ownCommands: fakeCommands(), terminal: terminal})
 	assert.Equal(t, "  first   first first\n  second  second second\n", buffer.String())
 }
 
 func TestDisplayOwnCommand(t *testing.T) {
 	buffer := &strings.Builder{}
 	terminal := term.NewTerminal(term.WithStdout(buffer))
-	displayOwnCommandHelp(commandContext{ownCommands: fakeCommands(), Context: Context{terminal: terminal}}, "second")
+	displayOwnCommandHelp(commandContext{ownCommands: fakeCommands(), terminal: terminal}, "second")
 	assert.Equal(t, `Purpose: second second
 
 Usage:

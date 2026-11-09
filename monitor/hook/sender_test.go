@@ -105,9 +105,9 @@ func TestSend(t *testing.T) {
 }
 
 func TestDryRun(t *testing.T) {
-	var calls uint32
+	var calls atomic.Uint32
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddUint32(&calls, 1)
+		calls.Add(1)
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
@@ -118,7 +118,7 @@ func TestDryRun(t *testing.T) {
 	}, Context{}, nil)
 	assert.NoError(t, err)
 
-	assert.Equal(t, uint32(0), atomic.LoadUint32(&calls))
+	assert.Equal(t, uint32(0), calls.Load())
 }
 
 func TestSenderTimeout(t *testing.T) {
@@ -254,15 +254,9 @@ func TestConfidentialURL(t *testing.T) {
 
 	profile := &config.Profile{
 		Backup: &config.BackupSection{
-			GenericSectionWithSchedule: config.GenericSectionWithSchedule{
-				GenericSection: config.GenericSection{
-					SendMonitoringSections: config.SendMonitoringSections{
-						SendBefore: []config.SendMonitoringSection{
-							{
-								URL: config.NewConfidentialValue(serverURL),
-							},
-						},
-					},
+			SendBefore: []config.SendMonitoringSection{
+				{
+					URL: config.NewConfidentialValue(serverURL),
 				},
 			},
 		},
@@ -341,17 +335,11 @@ func TestConfidentialHeader(t *testing.T) {
 
 	profile := &config.Profile{
 		Backup: &config.BackupSection{
-			GenericSectionWithSchedule: config.GenericSectionWithSchedule{
-				GenericSection: config.GenericSection{
-					SendMonitoringSections: config.SendMonitoringSections{
-						SendBefore: []config.SendMonitoringSection{
-							{
-								URL: config.NewConfidentialValue(server.URL),
-								Headers: []config.SendMonitoringHeader{
-									{Name: headerKey, Value: config.NewConfidentialValue(headerValue)},
-								},
-							},
-						},
+			SendBefore: []config.SendMonitoringSection{
+				{
+					URL: config.NewConfidentialValue(server.URL),
+					Headers: []config.SendMonitoringHeader{
+						{Name: headerKey, Value: config.NewConfidentialValue(headerValue)},
 					},
 				},
 			},

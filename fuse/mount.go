@@ -7,7 +7,6 @@ import (
 
 	"github.com/creativeprojects/clog"
 	"github.com/hanwen/go-fuse/v2/fs"
-	"github.com/hanwen/go-fuse/v2/fuse"
 )
 
 func MountFS(mountpoint string, files []File) (func(), error) {
@@ -16,12 +15,10 @@ func MountFS(mountpoint string, files []File) (func(), error) {
 	clog.Debugf("mounting filesystem at %s", mountpoint)
 
 	opts := &fs.Options{
-		MountOptions: fuse.MountOptions{
-			Debug:         false, // generates a LOT of logs
-			FsName:        "resticprofile",
-			DisableXAttrs: true,
-			EnableLocks:   false,
-		},
+		Debug:         false, // generates a LOT of logs
+		FsName:        "resticprofile",
+		DisableXAttrs: true,
+		EnableLocks:   false,
 	}
 	server, err := fs.Mount(mountpoint, memFS, opts)
 	if err != nil {

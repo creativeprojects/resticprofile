@@ -76,14 +76,14 @@ func TestDisplayWriterNoColors(t *testing.T) {
 
 func TestDisplayVersionVerbose1(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	err := displayVersion(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer)), flags: commandLineFlags{verbose: true}}})
+	err := displayVersion(commandContext{terminal: term.NewTerminal(term.WithStdout(buffer)), flags: commandLineFlags{verbose: true}})
 	require.NoError(t, err)
 	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
 }
 
 func TestDisplayVersionVerbose2(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	err := displayVersion(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer)), request: Request{arguments: []string{"-v"}}}})
+	err := displayVersion(commandContext{terminal: term.NewTerminal(term.WithStdout(buffer)), request: Request{arguments: []string{"-v"}}})
 	require.NoError(t, err)
 	assert.True(t, strings.Contains(buffer.String(), runtime.GOOS))
 }

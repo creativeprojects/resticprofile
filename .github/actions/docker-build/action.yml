@@ -1,0 +1,80 @@
+name: Build and push Docker image
+description: >-
+  Cross-compile resticprofile (amd64 + arm64), download restic & rclone, and
+  build the multi-arch Docker image with buildx, optionally pushing it to
+  Docker Hub and the GitHub Container Registry.
+
+inputs:
+  go-version:
+    description: Go version used to compile resticprofile
+    required: true
+  tags:
+    description: Newline-separated list of image tags to build (and push)
+    required: true
+  labels:
+    description: Newline-separated list of OCI image labels
+    required: false
+    default: ""
+  push:
+    description: Whether to push the image to the registries
+    required: false
+    default: "true"
+  dockerhub-username:
+    description: Docker Hub username
+    required: false
+  dockerhub-token:
+    description: Docker Hub token or password
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go ${{ inputs.go-version }}
+      uses: actions/setup-go@v6
+      with:
+        go-version: ${{ inputs.go-version }}
+        check-latest: true
+        cache: true
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Login to DockerHub
+      if: ${{ inputs.push == 'true' }}
+      uses: docker/login-action@v4
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: Login to GitHub Container Registry
+      if: ${{ inputs.push == 'true' }}
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    - name: Download rclone & restic binaries and build resticprofile
+      shell: bash
+      run: |
+        go install github.com/zyedidia/eget@latest
+        eget rclone/rclone --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
+        eget rclone/rclone --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
+        eget restic/restic --system=linux/amd64 --to=build/restic-amd64
+        eget restic/restic --system=linux/arm64 --to=build/restic-arm64
+        make build-ci
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Build and push image
+      uses: docker/build-push-action@v7
+      with:
+        file: build/Dockerfile
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.push }}
+        tags: ${{ inputs.tags }}
+        labels: ${{ inputs.labels }}
