@@ -1744,3 +1744,98 @@ func TestRunUnlockWithCommandLineFlags(t *testing.T) {
 	cmd := wrapper.prepareCommand(constants.CommandUnlock, args, false)
 	assert.Equal(t, []string{"unlock"}, cmd.args)
 }
+
+func TestRunnerWithBeforeAndAfter(t *testing.T) {
+	tests := []struct {
+		name                string
+		ctx                 *Context
+		commands            config.RunShellCommandsSection
+		command             string
+		action              func() error
+		returnErrorContains string
+	}{
+		{
+			name: "no before, no after, action succeded",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			action: func() error {
+				return nil
+			},
+		},
+		{
+			name: "before and after, action succeded",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"echo before"},
+				RunAfter:  []string{"echo after"},
+			},
+			action: func() error {
+				return nil
+			},
+		},
+		{
+			name: "before and action succeded, after failed",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"echo before"},
+				RunAfter:  []string{"exit 1"},
+			},
+			action: func() error {
+				return nil
+			},
+			returnErrorContains: "run-after",
+		},
+		{
+			name: "before succeded, action failed",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"echo before"},
+				RunAfter:  []string{"exit 1"},
+			},
+			action: func() error {
+				return errors.New("action failed")
+			},
+			returnErrorContains: "action failed",
+		},
+		{
+			name: "before failed",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"exit 1"},
+				RunAfter:  []string{"echo after"},
+			},
+			action: func() error {
+				t.Fatal("this action should not have been called")
+				return nil
+			},
+			returnErrorContains: "run-before",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := newResticWrapper(tt.ctx)
+			runner := r.runnerWithBeforeAndAfter(tt.commands, tt.command, tt.action)
+			err := runner()
+			if tt.returnErrorContains != "" {
+				t.Log(err)
+				assert.ErrorContains(t, err, tt.returnErrorContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
