@@ -86,12 +86,10 @@ func (s *InternalClient) Connect(_ context.Context) error {
 		Auth:              authMethods,
 		HostKeyCallback:   getHostKeyCallback(hostKeyCallback),
 		HostKeyAlgorithms: algorithms.HostKeys,
-		Config: ssh.Config{
-			KeyExchanges: algorithms.KeyExchanges,
-			Ciphers:      algorithms.Ciphers,
-			MACs:         algorithms.MACs,
-		},
-		Timeout: s.config.ConnectTimeout,
+		KeyExchanges:      algorithms.KeyExchanges,
+		Ciphers:           algorithms.Ciphers,
+		MACs:              algorithms.MACs,
+		Timeout:           s.config.ConnectTimeout,
 	}
 
 	host := s.config.Host

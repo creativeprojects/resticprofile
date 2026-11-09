@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -205,9 +206,9 @@ func collectAllMixinUses(config *viper.Viper, keyDelimiter string) (allUses map[
 
 func mergeConfigMap(config *viper.Viper, configKey, keyDelimiter string, content map[string]any) error {
 	path := strings.Split(configKey, keyDelimiter)
-	for i := len(path) - 1; i >= 0; i-- {
+	for _, p := range slices.Backward(path) {
 		container := make(map[string]any)
-		container[path[i]], content = content, container
+		container[p], content = content, container
 	}
 	return config.MergeConfigMap(content)
 }

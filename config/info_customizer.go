@@ -131,7 +131,7 @@ func init() {
 			if util.ElementType(field.Type).AssignableTo(confidentialType) {
 				basic := property.basic().resetTypeInfo()
 				if field.Type.Kind() == reflect.Map {
-					basic.nested = &namedPropertySet{name: propertyName, propertySet: propertySet{openSet: true}}
+					basic.nested = &namedPropertySet{name: propertyName, openSet: true}
 				} else {
 					basic.mayString = true
 				}

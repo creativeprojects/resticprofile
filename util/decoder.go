@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
@@ -28,8 +29,8 @@ func RegisterCharsetDecoder(fn DecoderFunc) {
 
 // NewUTF8Reader returns a reader that decodes the provided input to an UTF8 stream using registered DecoderFunc
 func NewUTF8Reader(reader io.ReadSeeker) io.Reader {
-	for i := len(decoders) - 1; i >= 0; i-- {
-		if transformer := decoders[i](reader); transformer != nil {
+	for _, decoder := range slices.Backward(decoders) {
+		if transformer := decoder(reader); transformer != nil {
 			return transform.NewReader(reader, transformer)
 		}
 	}

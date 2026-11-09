@@ -454,7 +454,7 @@ func TestZshShellCompletion(t *testing.T) {
 
 func firstColumn(out string) []string {
 	var result []string
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		line = strings.TrimRight(line, "\r")
 		if line == "" {
 			continue
@@ -466,7 +466,7 @@ func firstColumn(out string) []string {
 
 func nonEmptyLines(out string) []string {
 	var result []string
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		line = strings.TrimRight(line, "\r")
 		if line != "" {
 			result = append(result, line)
