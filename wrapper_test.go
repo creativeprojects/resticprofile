@@ -1821,7 +1821,7 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 				RunAfter:  []string{"echo after"},
 			},
 			action: func() error {
-				t.Fatal("this action should not have been called")
+				t.Error("this action should not have been called")
 				return nil
 			},
 			returnErrorContains: "run-before",
