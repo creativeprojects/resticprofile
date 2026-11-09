@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	sup "github.com/creativeprojects/go-selfupdate"
+	sup "github.com/creativeprojects/go-selfupdate/v2"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -10,7 +10,7 @@ import (
 	"runtime"
 
 	"github.com/creativeprojects/clog"
-	"github.com/creativeprojects/go-selfupdate"
+	"github.com/creativeprojects/go-selfupdate/v2"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/term"
 )

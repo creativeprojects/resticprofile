@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	sup "github.com/creativeprojects/go-selfupdate"
+	sup "github.com/creativeprojects/go-selfupdate/v2"
 )
 
 const (

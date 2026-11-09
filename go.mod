@@ -7,7 +7,7 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/creativeprojects/clog v0.14.0
-	github.com/creativeprojects/go-selfupdate v1.6.0
+	github.com/creativeprojects/go-selfupdate/v2 v2.0.0
 	github.com/distatus/battery v0.11.0
 	github.com/fatih/color v1.19.0
 	github.com/hanwen/go-fuse/v2 v2.10.1
