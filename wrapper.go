@@ -647,7 +647,7 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 	commands = append(commands, sectionCommands.RunFinally...)
 	commands = append(commands, profileCommands.RunFinally...)
 
-	for i := len(commands) - 1; i >= 0; i-- {
+	for i, commandLine := range slices.Backward(commands) {
 		// Using defer stack for "finally" to ensure every command is run even on panic
 		defer func(index int, cmd string) {
 			clog.Debugf("starting final command %d/%d", index+1, len(commands))
@@ -666,7 +666,7 @@ func (r *resticWrapper) runFinalShellCommands(command string, fail error) {
 				clog.Errorf("run-finally command %d/%d failed ('%s' on profile '%s'): %s",
 					index+1, len(commands), command, r.profile.Name, err.Error())
 			}
-		}(i, commands[i])
+		}(i, commandLine)
 	}
 }
 

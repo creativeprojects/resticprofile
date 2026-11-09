@@ -1746,6 +1746,8 @@ func TestRunUnlockWithCommandLineFlags(t *testing.T) {
 }
 
 func TestRunnerWithBeforeAndAfter(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name                string
 		ctx                 *Context
@@ -1755,7 +1757,7 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 		returnErrorContains string
 	}{
 		{
-			name: "no before, no after, action succeded",
+			name: "no before, no after, action succeeded",
 			ctx: &Context{
 				profile:  config.NewProfile(&config.Config{}, "name"),
 				terminal: term.NewTerminal(),
@@ -1765,7 +1767,7 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 			},
 		},
 		{
-			name: "before and after, action succeded",
+			name: "before and after, action succeeded",
 			ctx: &Context{
 				profile:  config.NewProfile(&config.Config{}, "name"),
 				terminal: term.NewTerminal(),
@@ -1779,7 +1781,7 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 			},
 		},
 		{
-			name: "before and action succeded, after failed",
+			name: "before and action succeeded, after failed",
 			ctx: &Context{
 				profile:  config.NewProfile(&config.Config{}, "name"),
 				terminal: term.NewTerminal(),
@@ -1794,7 +1796,7 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 			returnErrorContains: "run-after",
 		},
 		{
-			name: "before succeded, action failed",
+			name: "before succeeded, action failed",
 			ctx: &Context{
 				profile:  config.NewProfile(&config.Config{}, "name"),
 				terminal: term.NewTerminal(),
@@ -1827,6 +1829,8 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			r := newResticWrapper(tt.ctx)
 			runner := r.runnerWithBeforeAndAfter(tt.commands, tt.command, tt.action)
 			err := runner()
