@@ -14,9 +14,11 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"text/template"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/util"
 	"github.com/creativeprojects/resticprofile/util/collect"
@@ -47,6 +49,12 @@ import (
 //   - {{ tempDir }} => "/path/to/unique-tempdir"
 //   - {{ tempFile "filename" }} => "/path/to/unique-tempdir/filename"
 //   - {{ "seed" | randInt 123 456 }} => 166
+//   - {{ 5 | addInt 1 }} => 6
+//   - {{ 5 | subInt 1 }} => 4
+//   - {{ 5.5 | addFloat 1.0 }} => 6.5
+//   - {{ 5.5 | subFloat 1.0 }} => 4.5
+//   - {{ 5 | modInt 4 }} => 1
+//   - {{ "5" | int }} => 5
 func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 	templateFuncs = map[string]any{
 		"contains":   func(search any, src any) bool { return strings.Contains(toString(src), toString(search)) },
@@ -69,6 +77,25 @@ func TemplateFuncs(funcs ...map[string]any) (templateFuncs map[string]any) {
 		"tempFile":   TempFile,
 		"env":        func() string { return TempFile(".env.none") }, // satisfies the {{env}} interface w.o. functionality
 		"randInt":    randInt,
+		"addInt":     func(b int, a int) int { return a + b },
+		"subInt":     func(b int, a int) int { return a - b },
+		"addFloat":   func(b float64, a float64) float64 { return a + b },
+		"subFloat":   func(b float64, a float64) float64 { return a - b },
+		"modInt":     func(mod int, a int) int { return a % mod },
+		"int": func(v any) (int, error) {
+			switch v := v.(type) {
+			case int:
+				return v, nil
+			case float64:
+				return int(v), nil
+			case time.Weekday:
+				return int(v), nil
+			case time.Month:
+				return int(v), nil
+			default:
+				return strconv.Atoi(toString(v))
+			}
+		},
 	}
 
 	// aliases
