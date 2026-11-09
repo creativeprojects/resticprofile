@@ -36,7 +36,7 @@ make build
 ```
 
 This produces a `resticprofile` binary in the repository root. The target first
-runs `prepare_build` (verifies your Go installation and downloads module
+runs `prepare` (verifies your Go installation and downloads module
 dependencies), then compiles with version metadata embedded via `-ldflags`.
 
 Other build targets:
@@ -67,7 +67,7 @@ make test
 The `test` target automatically:
 
 1. Installs `gotestsum` (into `$GOBIN`) if needed.
-2. Runs `prepare_test`, which regenerates mocks with `mockery`.
+2. Runs `mocks`, which regenerates mocks with `mockery`.
 3. Builds the test helper binaries under `testhelpers/` (`test-args`,
    `test-echo`, `test-crontab`, `test-shell`) and exposes their location via the
    `TEST_HELPERS` environment variable.
@@ -135,7 +135,7 @@ and the configuration lives in [`.golangci.yml`](.golangci.yml).
 Some files are generated and should be regenerated when you change their
 sources:
 
-- **Mocks** are regenerated automatically by `make prepare_test` (used by the
+- **Mocks** are regenerated automatically by `make mocks` (used by the
   test targets), based on [`.mockery.yml`](.mockery.yml).
 - **`go generate`** is run as part of `make test-ci`; you can also run
   `go generate ./...` directly.

@@ -37,7 +37,6 @@ These packages are managed by a third party.
 There's a Linux [homebrew](https://brew.sh/) tap for resticprofile:
 
 ```shell
-brew tap creativeprojects/tap
 brew install resticprofile
 ```
 
