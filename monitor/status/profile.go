@@ -46,12 +46,10 @@ type BackupStatus struct {
 // BackupSuccess indicates the last backup was successful
 func (p *Profile) BackupSuccess(summary monitor.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
-		CommandStatus: CommandStatus{
-			Success:  true,
-			Time:     time.Now(),
-			Duration: int64(math.Ceil(summary.Duration.Seconds())),
-			Stderr:   stderr,
-		},
+		Success:          true,
+		Time:             time.Now(),
+		Duration:         int64(math.Ceil(summary.Duration.Seconds())),
+		Stderr:           stderr,
 		FilesNew:         summary.FilesNew,
 		FilesChanged:     summary.FilesChanged,
 		FilesUnmodified:  summary.FilesUnmodified,
@@ -69,13 +67,11 @@ func (p *Profile) BackupSuccess(summary monitor.Summary, stderr string) *Profile
 // BackupError sets the error of the last backup
 func (p *Profile) BackupError(err error, summary monitor.Summary, stderr string) *Profile {
 	p.Backup = &BackupStatus{
-		CommandStatus: CommandStatus{
-			Success:  false,
-			Time:     time.Now(),
-			Error:    err.Error(),
-			Duration: int64(math.Ceil(summary.Duration.Seconds())),
-			Stderr:   stderr,
-		},
+		Success:          false,
+		Time:             time.Now(),
+		Error:            err.Error(),
+		Duration:         int64(math.Ceil(summary.Duration.Seconds())),
+		Stderr:           stderr,
 		FilesNew:         0,
 		FilesChanged:     0,
 		FilesUnmodified:  0,

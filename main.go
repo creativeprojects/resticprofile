@@ -58,13 +58,11 @@ func main() {
 		terminal.Println(flagErr)
 		_ = displayHelpCommand(commandContext{
 			ownCommands: ownCommands,
-			Context: Context{
-				flags: flags,
-				request: Request{
-					arguments: args,
-				},
-				terminal: terminal,
+			flags:       flags,
+			request: Request{
+				arguments: args,
 			},
+			terminal: terminal,
 		})
 		exitCode = constants.ExitErrorInvalidFlags
 		return
@@ -96,13 +94,11 @@ func main() {
 	if flags.help || errors.Is(flagErr, pflag.ErrHelp) {
 		_ = displayHelpCommand(commandContext{
 			ownCommands: ownCommands,
-			Context: Context{
-				flags: flags,
-				request: Request{
-					arguments: args,
-				},
-				terminal: terminal,
+			flags:       flags,
+			request: Request{
+				arguments: args,
 			},
+			terminal: terminal,
 		})
 		return
 	}
@@ -213,8 +209,7 @@ func main() {
 			if err != nil {
 				clog.Error(err)
 				exitCode = constants.ExitGeneralError
-				var ownCommandError *ownCommandError
-				if errors.As(err, &ownCommandError) {
+				if ownCommandError, ok := errors.AsType[*ownCommandError](err); ok {
 					exitCode = ownCommandError.ExitCode()
 				}
 				return
@@ -302,8 +297,7 @@ func main() {
 		if err != nil {
 			clog.Error(err)
 			exitCode = constants.ExitGeneralError
-			var ownCommandError *ownCommandError
-			if errors.As(err, &ownCommandError) {
+			if ownCommandError, ok := errors.AsType[*ownCommandError](err); ok {
 				exitCode = ownCommandError.ExitCode()
 			}
 			return

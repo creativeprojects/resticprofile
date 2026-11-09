@@ -5,7 +5,7 @@ your environment, build the project, and run the tests.
 
 ## Prerequisites
 
-- **Go** — version `1.26` or later (see [`.github/workflows/env`](.github/workflows/env)
+- **Go** — version `1.27` or later (see [`.github/workflows/env`](.github/workflows/env)
   for the exact version used by CI).
 - **make** — all common tasks are wired through the [`Makefile`](Makefile).
 - **git** — the repository uses a submodule for the documentation theme. Clone with

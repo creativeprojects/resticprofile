@@ -96,11 +96,9 @@ func (t *TemplateInfoData) NestedSections() []SectionInfo {
 	return collect.From(typeNames, func(name string) SectionInfo {
 		section := sectionByType[name]
 		return &sectionInfo{
-			namedPropertySet: namedPropertySet{
-				name:        name,
-				description: section.Description(),
-				propertySet: section.propertySet,
-			},
+			name:        name,
+			description: section.Description(),
+			propertySet: section.propertySet,
 		}
 	})
 }
