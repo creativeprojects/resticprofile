@@ -457,7 +457,7 @@ func TestInfoData(t *testing.T) {
 
 	funcs := data.GetFuncs()
 	props := collect.From(data.Profile.Properties(), data.Profile.PropertyInfo)
-	assert.Len(t, funcs, 3)
+	assert.Len(t, funcs, 6)
 	assert.NotEmpty(t, props)
 
 	t.Run("properties", func(t *testing.T) {
@@ -492,5 +492,15 @@ func TestInfoData(t *testing.T) {
 			assert.Contains(t, props, prop)
 			assert.True(t, prop.IsOption())
 		}
+	})
+
+	t.Run("referenceDefaults", func(t *testing.T) {
+		fn, ok := funcs["referenceDefaults"].(func(sectionName string, property PropertyInfo) []string)
+		require.True(t, ok)
+
+		retention := data.Profile.SectionInfo(constants.SectionConfigurationRetention)
+		require.NotNil(t, retention)
+		assert.Equal(t, []string{"true"}, fn(retention.Name(), retention.PropertyInfo(constants.ParameterPath)))
+		assert.Equal(t, []string{"true (config version 2)"}, fn(retention.Name(), retention.PropertyInfo(constants.ParameterTag)))
 	})
 }
