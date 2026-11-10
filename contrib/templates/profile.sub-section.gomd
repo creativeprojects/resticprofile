@@ -44,14 +44,14 @@ manual pages.
     {{- if . -}}
         {{ $layoutHeadings -}}
         {{- "#### Flags used by **resticprofile** only:\n\n" -}}
-        {{- template "printPropertyTable" . -}}
+        {{- template "printSectionPropertyTable" (propertyTable $.Section.Name .) -}}
     {{- end -}}
 {{- end }}
 {{ with . | properties | restic -}}
     {{- if . -}}
         {{ $layoutHeadings -}}
         {{- "#### Flags passed to the **restic** command line:\n\n" -}}
-        {{- template "printPropertyTable" . -}}
+        {{- template "printSectionPropertyTable" (propertyTable $.Section.Name .) -}}
     {{- end -}}
 {{- end }}
 

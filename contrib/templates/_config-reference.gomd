@@ -87,6 +87,16 @@
     {{- "\n\n" -}}
 {{ end }}
 
+{{ define "printSectionPropertyTable" -}}
+    {{- "| Name              | Type                    | Default  | Notes |\n" -}}
+    {{- "|:------------------|:------------------------|:---------|:------|\n" -}}
+    {{- $sectionName := .SectionName -}}
+    {{ range .Properties -}}
+        {{ template "printSectionPropertyRow" (propertyRow $sectionName .) }}
+    {{- end -}}
+    {{- "\n\n" -}}
+{{ end }}
+
 {{ define "printPropertyRow" -}}
     {{- /*gotype: github.com/creativeprojects/resticprofile/config.PropertyInfo*/ -}}
     {{- if .IsDeprecated -}}
@@ -97,6 +107,20 @@
     {{- template "printPropertyType" . }} |
     {{- template "printRange" .DefaultValue }} |
     {{- template "printDescription" . }} |
+{{ end }}
+
+{{ define "printSectionPropertyRow" -}}
+    {{- /*gotype: github.com/creativeprojects/resticprofile/config.propertyRowData*/ -}}
+    {{- $sectionName := .SectionName -}}
+    {{- $property := .Property -}}
+    {{- if $property.IsDeprecated -}}
+      | ~~{{ template "printCell" $property.Name }}~~ |
+    {{- else -}}
+      | **{{ template "printCell" $property.Name }}** |
+    {{- end -}}
+    {{- template "printPropertyType" $property }} |
+    {{- template "printRange" (referenceDefaults $sectionName $property) }} |
+    {{- template "printDescription" $property }} |
 {{ end }}
 
 {{ define "printDescription" -}}
