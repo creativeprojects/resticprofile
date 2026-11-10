@@ -47,3 +47,18 @@ profile:
 ```
 
 This sets the "Start the task as soon as possible after a scheduled start is missed" option in Windows Task Scheduler.
+
+## Run after login
+
+Enable `schedule-after-login` (with `schedule-permission: user_logged_on`) to add an "At log on" trigger to the task, so it runs when you log in. It can be combined with `schedule` times.
+
+```yaml
+profile:
+  backup:
+    schedule-after-login: true
+    schedule-permission: user_logged_on
+```
+
+Note: when the task runs as the system account, the logon trigger applies to any user logging on.
+
+Note: the registered logon trigger is not reported back by `resticprofile status` because the underlying `schtasks /query` text output does not expose triggers; the task itself works normally.

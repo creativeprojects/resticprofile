@@ -23,6 +23,7 @@ type Config struct {
 	ConfigFile         string
 	Flags              map[string]string // flags added to the command line
 	AfterNetworkOnline bool
+	AfterLogin         bool
 	SystemdDropInFiles []string
 	Log                string
 	HideWindow         bool

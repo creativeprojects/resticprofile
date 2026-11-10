@@ -42,6 +42,34 @@ Persistent=true
 WantedBy=timers.target`
 )
 
+func TestReadUnitFileAfterLogin(t *testing.T) {
+	t.Parallel()
+
+	const timerWithStartup = `[Unit]
+Description=copy timer for profile self in examples/linux.yaml
+
+[Timer]
+OnStartupSec=0
+Unit=resticprofile-copy@profile-self.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target`
+
+	fs := afero.NewMemMapFs()
+	unitFile := "resticprofile-copy@profile-self.service"
+	timerFile := "resticprofile-copy@profile-self.timer"
+	require.NoError(t, afero.WriteFile(fs, path.Join(systemdSystemDir, unitFile), []byte(testServiceUnit), 0o600))
+	require.NoError(t, afero.WriteFile(fs, path.Join(systemdSystemDir, timerFile), []byte(timerWithStartup), 0o600))
+
+	unit := Unit{fs: fs, user: testSudoUser}
+	cfg, err := unit.Read(unitFile, SystemUnit)
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
+	assert.True(t, cfg.AfterLogin)
+	assert.Empty(t, cfg.Schedules)
+}
+
 func TestReadUnitFile(t *testing.T) {
 	t.Parallel()
 

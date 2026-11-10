@@ -217,8 +217,8 @@ func statusScheduledJobs(handler schedule.Handler, configFile, profileName strin
 
 func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 	origin := sched.ScheduleOrigin()
-	if !sched.HasSchedules() {
-		// there's no schedule defined, so this record is for removal only
+	if !sched.HasTriggers() {
+		// there's no schedule or trigger defined, so this record is for removal only
 		return schedule.NewRemoveOnlyConfig(origin.Name, origin.Command)
 	}
 	return &schedule.Config{
@@ -237,6 +237,7 @@ func scheduleToConfig(sched *config.Schedule) *schedule.Config {
 		ConfigFile:         sched.ConfigFile,
 		Flags:              sched.Flags,
 		AfterNetworkOnline: sched.AfterNetworkOnline.IsTrue(),
+		AfterLogin:         sched.AfterLogin.IsTrue(),
 		SystemdDropInFiles: sched.SystemdDropInFiles,
 		HideWindow:         sched.HideWindow.IsTrue(),
 		Log:                sched.Log,
