@@ -48,23 +48,23 @@ func TestValidResticArgumentsList(t *testing.T) {
 
 			arguments := wrapper.validResticArgumentsList(command)
 
+			// an option may be declared once per OS (e.g. with a different FromVersion)
+			available := make(map[string]bool)
 			for _, options := range [][]restic.Option{cmd.GetOptions(), defaultOptions} {
 				for _, option := range options {
-					if option.AvailableForOS() {
-						if option.Name != "" {
-							assert.Contains(t, arguments, fmt.Sprintf("--%s", option.Name))
-						}
-						if option.Alias != "" {
-							assert.Contains(t, arguments, fmt.Sprintf("-%s", option.Alias))
-						}
-					} else {
-						if option.Name != "" {
-							assert.NotContains(t, arguments, fmt.Sprintf("--%s", option.Name))
-						}
-						if option.Alias != "" {
-							assert.NotContains(t, arguments, fmt.Sprintf("-%s", option.Alias))
-						}
+					if option.Name != "" {
+						available["--"+option.Name] = available["--"+option.Name] || option.AvailableForOS()
 					}
+					if option.Alias != "" {
+						available["-"+option.Alias] = available["-"+option.Alias] || option.AvailableForOS()
+					}
+				}
+			}
+			for arg, isAvailable := range available {
+				if isAvailable {
+					assert.Contains(t, arguments, arg)
+				} else {
+					assert.NotContains(t, arguments, arg)
 				}
 			}
 		})

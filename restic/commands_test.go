@@ -585,6 +585,25 @@ func TestBuiltInCommandsTable(t *testing.T) {
 		assert.True(t, option.AvailableInOS("windows"))
 	})
 
+	t.Run("exclude-cloud-files available on darwin from 0.19", func(t *testing.T) {
+		availableIn := func(version, goos string) bool {
+			cmd, _ := GetCommandForVersion("backup", version, false)
+			require.NotNil(t, cmd)
+			for _, option := range cmd.GetOptions() {
+				if option.Name == "exclude-cloud-files" && option.AvailableInOS(goos) {
+					return true
+				}
+			}
+			return false
+		}
+
+		assert.False(t, availableIn("0.18", "darwin"))
+		assert.True(t, availableIn("0.18", "windows"))
+		assert.True(t, availableIn("0.19", "darwin"))
+		assert.True(t, availableIn("0.19", "windows"))
+		assert.False(t, availableIn("0.19", "linux"))
+	})
+
 	t.Run("options added in 0.19", func(t *testing.T) {
 		// each entry was introduced in restic 0.19 and must be absent in 0.18
 		added := map[string][]string{
