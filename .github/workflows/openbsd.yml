@@ -21,7 +21,7 @@ jobs:
     name: Run tests
     strategy:
       matrix:
-        openbsd_version: ['7.8']
+        openbsd_version: ['7.8', '7.9', '8.0']
     uses: ./.github/workflows/run-tests-vm.yml
     with:
       os: 'openbsd'
