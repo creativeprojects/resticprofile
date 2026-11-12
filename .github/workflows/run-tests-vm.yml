@@ -37,11 +37,14 @@ jobs:
         env:
           GOOS: ${{ inputs.os }}
 
-      - name: Run tests in VM
+      - name: Start VM
         uses: cross-platform-actions/action@v1
         with:
           operating_system: ${{ inputs.os }}
           version: '${{ inputs.os_version }}'
           memory: 8G
           cpu_count: 4
-          shell: cpa.sh ./scripts/run-tests.sh
+
+      - name: Run tests in VM
+        shell: cpa.sh {0}
+        run: ./scripts/run-tests.sh
