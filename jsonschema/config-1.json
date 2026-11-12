@@ -22,132 +22,6 @@
         }
       ]
     },
-    "id-040cdbfb985915c1376d7d7a1fa0d38a": {
-      "title": "host",
-      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-069c0c672104098e9e41d7ac3841fd0c": {
-      "title": "host",
-      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-06bbc4cdada9fbb2f0e5aff8aa18b8a5": {
       "title": "tag",
       "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". Defaults to true for config version 2 in \"retention\".",
@@ -449,6 +323,69 @@
         }
       ]
     },
+    "id-1d98d93a11abb2413a236e30afbc8e52": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.16.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-1e3e4f194a26f596cf3db367ea81cd15": {
       "title": "path",
       "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.10.0]",
@@ -586,69 +523,6 @@
         }
       ]
     },
-    "id-228c0688714ab2ef9eeccf2b322df2d8": {
-      "title": "host",
-      "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-23512646a37d89783d831f3f819a55f4": {
       "type": "object",
       "additionalProperties": false,
@@ -773,6 +647,26 @@
           "format": "uri"
         }
       }
+    },
+    "id-2531d9fa348e43faaf9b226b32ddf586": {
+      "title": "iinclude",
+      "description": "same as --include pattern but ignores the casing of filenames [restic \u003e= 0.19.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "iinclude...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
     },
     "id-259684dfd75be3116fd75f377c8f9866": {
       "title": "run-before",
@@ -1003,6 +897,26 @@
               "powershell",
               "cmd"
             ],
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-3f52ba5423cd6e60f3e2d5168f789e18": {
+      "title": "include",
+      "description": "include a pattern [restic \u003e= 0.19.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "include...",
+          "type": "array",
+          "items": {
+            "type": "string",
             "minLength": 0
           },
           "minItems": 0,
@@ -1269,6 +1183,67 @@
         }
       ]
     },
+    "id-487ae6defefe318c39f18a2d22b10a19": {
+      "title": "path",
+      "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.19.0]",
+      "anyOf": [
+        {
+          "title": "path",
+          "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.19.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "path"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "title": "path...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "path"
+          ],
+          "items": {
+            "title": "path",
+            "description": "only consider snapshots including this (absolute) path (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\". [restic \u003e= 0.19.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "path"
+                ],
+                "minLength": 0
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-4d5c283f98d0925082ab484d3bdd4d16": {
       "title": "path",
       "description": "only consider snapshots including this (absolute) path, when snapshot ID \"latest\" is given (can be specified multiple times, snapshots must include all specified paths).\nBoolean true is replaced with the paths from section \"backup\".",
@@ -1388,6 +1363,26 @@
         }
       ]
     },
+    "id-5a5f055dd527ffdc360fafd46d513c0c": {
+      "title": "iinclude-file",
+      "description": "same as --include-file but ignores casing of filenames in patterns [restic \u003e= 0.19.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "iinclude-file...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-5a6e7b23808067f4ea3cd8627e7434be": {
       "title": "tag",
       "description": "only consider snapshots including tag[,tag,...], when snapshot ID \"latest\" is given.\nBoolean true is replaced with the tags from section \"backup\".",
@@ -1449,13 +1444,13 @@
         }
       ]
     },
-    "id-5a7604cd62739bf6b90cc25decf3beb6": {
+    "id-5a7b4215cb191fc174619a1b5e204c08": {
       "title": "host",
-      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+      "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.19.0]",
       "anyOf": [
         {
           "title": "host",
-          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+          "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.19.0]",
           "anyOf": [
             {
               "type": "boolean",
@@ -1486,7 +1481,7 @@
           ],
           "items": {
             "title": "host",
-            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+            "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.19.0]",
             "anyOf": [
               {
                 "type": "boolean",
@@ -1524,6 +1519,69 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/id-23512646a37d89783d831f3f819a55f4"
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-605c17d0744610ff6c68e580f7141b4b": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -1765,6 +1823,69 @@
         }
       ]
     },
+    "id-780eef226ac76505eb7b6d5ecf2576eb": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-783b5260d9a5f4eba741f6448d3a73a0": {
       "title": "exclude",
       "description": "exclude a pattern [restic \u003e= 0.15.0]",
@@ -1795,6 +1916,26 @@
         },
         {
           "title": "keep-tag...",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-7e79f8503b725b0501538afe3bfbb890": {
+      "title": "include-file",
+      "description": "read include patterns from a file [restic \u003e= 0.19.0]",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 0
+        },
+        {
+          "title": "include-file...",
           "type": "array",
           "items": {
             "type": "string",
@@ -1843,6 +1984,132 @@
           "items": {
             "type": "string",
             "minLength": 0
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-862365144f64ade7d8ecfe1c096e9147": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
+    "id-88507c25ed5a5da1848bd9232f1d0852": {
+      "title": "host",
+      "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host, when snapshot ID \"latest\" is given (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system.",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -1988,69 +2255,6 @@
             "description": "glob patterns of configuration files to include",
             "type": "string",
             "minLength": 0
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
-    "id-9eb097550c08524117d0906abd0d2a05": {
-      "title": "host",
-      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname that applies in section \"backup\". Defaults to true for config version 2 in \"retention\".",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
           },
           "minItems": 0,
           "uniqueItems": false
@@ -2220,6 +2424,67 @@
         }
       ]
     },
+    "id-ae1d6a85ecdfdd98628c164b45d1e374": {
+      "title": "tag",
+      "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". [restic \u003e= 0.19.0]",
+      "anyOf": [
+        {
+          "title": "tag",
+          "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". [restic \u003e= 0.19.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "tag"
+              ],
+              "minLength": 0
+            }
+          ]
+        },
+        {
+          "title": "tag...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "tag"
+          ],
+          "items": {
+            "title": "tag",
+            "description": "only consider snapshots including tag[,tag,...].\nBoolean true is replaced with the tags from section \"backup\". [restic \u003e= 0.19.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "tag"
+                ],
+                "minLength": 0
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
+    },
     "id-af6c00e035cdb6af35a7de31dc26023d": {
       "title": "iexclude-file",
       "description": "same as --exclude-file but ignores casing of filenames in patterns [restic \u003e= 0.15.0]",
@@ -2308,69 +2573,6 @@
         }
       ]
     },
-    "id-bcda8b199ef5b0659a200468e2517a9f": {
-      "title": "host",
-      "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-      "anyOf": [
-        {
-          "title": "host",
-          "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-          "anyOf": [
-            {
-              "type": "boolean",
-              "examples": [
-                true,
-                false
-              ]
-            },
-            {
-              "type": "string",
-              "examples": [
-                true,
-                false,
-                "host"
-              ],
-              "minLength": 0,
-              "format": "hostname"
-            }
-          ]
-        },
-        {
-          "title": "host...",
-          "type": "array",
-          "examples": [
-            true,
-            false,
-            "host"
-          ],
-          "items": {
-            "title": "host",
-            "description": "only consider snapshots for this host (can be specified multiple times) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.15.0]",
-            "anyOf": [
-              {
-                "type": "boolean",
-                "examples": [
-                  true,
-                  false
-                ]
-              },
-              {
-                "type": "string",
-                "examples": [
-                  true,
-                  false,
-                  "host"
-                ],
-                "minLength": 0,
-                "format": "hostname"
-              }
-            ]
-          },
-          "minItems": 0,
-          "uniqueItems": false
-        }
-      ]
-    },
     "id-bdebeefb786b97126bbaf65dcffdb112": {
       "title": "cacert",
       "description": "file to load root certificates from (default: use system certificates or $RESTIC_CACERT)",
@@ -2435,6 +2637,69 @@
           "minLength": 0
         }
       }
+    },
+    "id-c807b66df494b9a904ef4f3df3ebe6cc": {
+      "title": "host",
+      "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+      "anyOf": [
+        {
+          "title": "host",
+          "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+          "anyOf": [
+            {
+              "type": "boolean",
+              "examples": [
+                true,
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "examples": [
+                true,
+                false,
+                "host"
+              ],
+              "minLength": 0,
+              "format": "hostname"
+            }
+          ]
+        },
+        {
+          "title": "host...",
+          "type": "array",
+          "examples": [
+            true,
+            false,
+            "host"
+          ],
+          "items": {
+            "title": "host",
+            "description": "only consider snapshots for this host (can be specified multiple times, use empty string to unset default value) (default: $RESTIC_HOST).\nBoolean true is replaced with the hostname of the system. [restic \u003e= 0.10.0]",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "examples": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "type": "string",
+                "examples": [
+                  true,
+                  false,
+                  "host"
+                ],
+                "minLength": 0,
+                "format": "hostname"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": false
+        }
+      ]
     },
     "id-d00dfc211f97db13bd5f14ea3a21e8e6": {
       "title": "path-template",
@@ -3071,7 +3336,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -3510,7 +3775,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -3689,9 +3954,14 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -3707,11 +3977,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -3831,7 +4096,7 @@
       },
       "check": {
         "title": "check",
-        "description": "The \"check\" command tests the repository for errors and reports any errors it\nfinds. It can also be used to read all data and therefore simulate a restore.\n\nBy default, the \"check\" command will always load all data directly from the\nrepository and not use a local cache.",
+        "description": "The \"check\" command tests the repository for errors and reports any errors it\nfinds.\n\nBy default, check verifies the structural consistency and integrity of\nsnapshots, trees and pack files. To also verify the integrity of the actual\nbacked-up data, use the --read-data or --read-data-subset flags.\n\nBy default, check creates a new temporary cache directory to verify data.\nTo reuse the existing cache, use the --with-cache flag.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -3857,9 +4122,12 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
+          },
+          "host": {
+            "$ref": "#/$defs/id-5a7b4215cb191fc174619a1b5e204c08"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -3932,6 +4200,9 @@
             "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
             "type": "string",
             "minLength": 0
+          },
+          "path": {
+            "$ref": "#/$defs/id-487ae6defefe318c39f18a2d22b10a19"
           },
           "quiet": {
             "title": "quiet",
@@ -4097,6 +4368,9 @@
             "type": "string",
             "minLength": 0
           },
+          "tag": {
+            "$ref": "#/$defs/id-ae1d6a85ecdfdd98628c164b45d1e374"
+          },
           "tls-client-cert": {
             "title": "tls-client-cert",
             "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
@@ -4121,7 +4395,7 @@
       "compression": {
         "title": "compression",
         "default": "auto",
-        "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+        "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
         "type": "string",
         "minLength": 0
       },
@@ -4147,7 +4421,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -4187,7 +4461,7 @@
             "minLength": 0
           },
           "host": {
-            "$ref": "#/$defs/id-040cdbfb985915c1376d7d7a1fa0d38a"
+            "$ref": "#/$defs/id-c807b66df494b9a904ef4f3df3ebe6cc"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -4494,7 +4768,7 @@
       },
       "diff": {
         "title": "diff",
-        "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n\n* `+` The item was added\n* `-` The item was removed\n* `U` The metadata (access mode, timestamps, ...) for the item was updated\n* `M` The file's content was modified\n* `T` The type was changed, e.g. a file was made a symlink\n* `?` Bitrot detected: The file's content has changed but all metadata is the same\n\n\nMetadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
+        "description": "The \"diff\" command shows differences from the first to the second snapshot. The\nfirst characters in each line display what has happened to a particular file or\ndirectory:\n* `+` The item was added\n* `-` The item was removed\n* `U` The metadata (access mode, timestamps, ...) for the item was updated\n* `M` The file's content was modified\n* `T` The type was changed, e.g. a file was made a symlink\n* `?` Bitrot detected: The file's content has changed but all metadata is the same\n\nMetadata comparison will likely not work if a backup was created using the\n'--ignore-inode' or '--ignore-ctime' option.\n\nTo only compare files in specific subfolders, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot tree as shown by \"restic ls\".",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -4514,7 +4788,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -4661,7 +4935,7 @@
       },
       "dump": {
         "title": "dump",
-        "description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot.",
+        "description": "The \"dump\" command extracts files from a snapshot from the repository. If a\nsingle file is selected, it prints its contents to stdout. Folders are output\nas a tar (default) or zip file containing the contents of the specified folder.\nPass \"/\" as file name to dump the whole snapshot as an archive file.\n\nThe special snapshotID \"latest\" can be used to use the latest snapshot in the\nrepository.\n\nTo include the folder content at the root of the archive, you can use the\n\"snapshotID:subfolder\" syntax, where \"subfolder\" is a path within the\nsnapshot tree as shown by \"restic ls\".",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -4688,12 +4962,17 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
-            "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+            "$ref": "#/$defs/id-88507c25ed5a5da1848bd9232f1d0852"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -4709,11 +4988,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4878,9 +5152,14 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -4896,11 +5175,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5020,7 +5294,7 @@
       },
       "find": {
         "title": "find",
-        "description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepo.\nIt can also be used to search for restic blobs or trees for troubleshooting.\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
+        "description": "The \"find\" command searches for files or directories in snapshots stored in the\nrepository. It can also be used to search for restic blobs, trees or pack\nfiles for troubleshooting.\n\nThe default sort option for the snapshots is youngest to oldest. To sort the\noutput from oldest to youngest specify --reverse.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -5045,12 +5319,12 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
           "host": {
-            "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -5276,13 +5550,18 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
           "dry-run": {
             "title": "dry-run",
             "description": "do not delete anything, just print what would be done",
+            "type": "boolean"
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "group-by": {
@@ -5293,7 +5572,7 @@
             "minLength": 0
           },
           "host": {
-            "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -5309,11 +5588,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -5469,12 +5743,13 @@
           },
           "repack-small": {
             "title": "repack-small",
-            "description": "repack pack files below 80% of target pack size [restic \u003e= 0.14.0]",
+            "deprecated": true,
+            "description": "repack pack files below 80% of target pack size [deprecated, removed in 0.19.0, restic \u003e= 0.14.0]",
             "type": "boolean"
           },
           "repack-smaller-than": {
             "title": "repack-smaller-than",
-            "description": "pack below-limit packfiles (allowed suffixes: k/K, m/M) [restic \u003e= 0.18.0]",
+            "description": "pack below-limit packfiles (allowed suffixes: m/M) [restic \u003e= 0.18.0]",
             "type": "string",
             "minLength": 0
           },
@@ -5684,13 +5959,18 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
           "copy-chunker-params": {
             "title": "copy-chunker-params",
             "description": "copy chunker parameters from the secondary repository (useful with the copy command) [restic \u003e= 0.10.0]",
+            "type": "boolean"
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "from-insecure-no-password": {
@@ -5742,11 +6022,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5943,7 +6218,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -6122,14 +6397,9 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
-          },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
           },
           "host": {
             "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
@@ -6148,6 +6418,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6310,7 +6585,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -6452,7 +6727,7 @@
       },
       "key-passwd": {
         "title": "key-passwd",
-        "description": "The \"passwd\" sub-command creates a new key, validates the key and remove the old key ID.\nReturns the new key ID.",
+        "description": "The \"key passwd\" command creates a new key, validates the key and removes the old key ID.\nReturns the new key ID.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -6472,7 +6747,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -6654,7 +6929,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -6826,7 +7101,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -6994,12 +7269,17 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
-            "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+            "$ref": "#/$defs/id-88507c25ed5a5da1848bd9232f1d0852"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -7020,11 +7300,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7197,7 +7472,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -7375,12 +7650,17 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
-            "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -7396,11 +7676,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7591,9 +7866,14 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -7609,11 +7889,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7810,13 +8085,18 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
           "dry-run": {
             "title": "dry-run",
             "description": "do not modify the repository, just print what would be done [restic \u003e= 0.12.0]",
+            "type": "boolean"
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "http-user-agent": {
@@ -7833,11 +8113,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7916,12 +8191,13 @@
           },
           "repack-small": {
             "title": "repack-small",
-            "description": "repack pack files below 80% of target pack size [restic \u003e= 0.14.0]",
+            "deprecated": true,
+            "description": "repack pack files below 80% of target pack size [deprecated, removed in 0.19.0, restic \u003e= 0.14.0]",
             "type": "boolean"
           },
           "repack-smaller-than": {
             "title": "repack-smaller-than",
-            "description": "pack below-limit packfiles (allowed suffixes: k/K, m/M) [restic \u003e= 0.18.0]",
+            "description": "pack below-limit packfiles (allowed suffixes: m/M) [restic \u003e= 0.18.0]",
             "type": "string",
             "minLength": 0
           },
@@ -8122,7 +8398,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -8289,7 +8565,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -8431,7 +8707,7 @@
       },
       "repair": {
         "title": "repair",
-        "description": "Repair the repository",
+        "description": "The \"repair\" command repairs damaged repositories. It provides subcommands to\nrebuild the index, salvage damaged pack files, and repair broken snapshots.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -8451,7 +8727,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -8613,9 +8889,14 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -8631,11 +8912,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8780,14 +9056,9 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
-          },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -8803,6 +9074,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8942,7 +9218,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -8951,13 +9227,18 @@
             "description": "do not do anything, just print what would be done [restic \u003e= 0.16.0]",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "forget": {
             "title": "forget",
             "description": "remove original snapshots after creating new ones [restic \u003e= 0.16.0]",
             "type": "boolean"
           },
           "host": {
-            "$ref": "#/$defs/id-069c0c672104098e9e41d7ac3841fd0c"
+            "$ref": "#/$defs/id-1d98d93a11abb2413a236e30afbc8e52"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -8973,11 +9254,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9115,7 +9391,7 @@
       },
       "restore": {
         "title": "restore",
-        "description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot.",
+        "description": "The \"restore\" command extracts the data from a snapshot from the repository to\na directory.\n\nThe special snapshotID \"latest\" can be used to restore the latest snapshot in the\nrepository.\n\nTo only restore a specific subfolder, you can use the \"snapshotID:subfolder\"\nsyntax, where \"subfolder\" is a path within the snapshot tree as shown by\n\"restic ls\".\n\nPOSIX ACLs are always restored by their numeric value, while file ownership can optionally be restored by name instead of numeric value.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -9135,7 +9411,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -9158,13 +9434,8 @@
           "exclude-xattr": {
             "$ref": "#/$defs/id-8f92d25a48bde1bd1b2cfa82b4b7e95b"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "host": {
-            "$ref": "#/$defs/id-228c0688714ab2ef9eeccf2b322df2d8"
+            "$ref": "#/$defs/id-88507c25ed5a5da1848bd9232f1d0852"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -9201,6 +9472,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9243,6 +9519,11 @@
             "description": "overwrite behavior, one of (always|if-changed|if-newer|never) [restic \u003e= 0.17.0]",
             "type": "string",
             "minLength": 0
+          },
+          "ownership-by-name": {
+            "title": "ownership-by-name",
+            "description": "restore file ownership by user name and group name (except POSIX ACLs) [restic \u003e= 0.19.0]",
+            "type": "boolean"
           },
           "pack-size": {
             "title": "pack-size",
@@ -9384,7 +9665,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -9401,7 +9682,7 @@
             "minLength": 0
           },
           "host": {
-            "$ref": "#/$defs/id-9eb097550c08524117d0906abd0d2a05"
+            "$ref": "#/$defs/id-605c17d0744610ff6c68e580f7141b4b"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -9577,12 +9858,13 @@
           },
           "repack-small": {
             "title": "repack-small",
-            "description": "repack pack files below 80% of target pack size [restic \u003e= 0.14.0]",
+            "deprecated": true,
+            "description": "repack pack files below 80% of target pack size [deprecated, removed in 0.19.0, restic \u003e= 0.14.0]",
             "type": "boolean"
           },
           "repack-smaller-than": {
             "title": "repack-smaller-than",
-            "description": "pack below-limit packfiles (allowed suffixes: k/K, m/M) [restic \u003e= 0.18.0]",
+            "description": "pack below-limit packfiles (allowed suffixes: m/M) [restic \u003e= 0.18.0]",
             "type": "string",
             "minLength": 0
           },
@@ -9749,7 +10031,7 @@
       },
       "rewrite": {
         "title": "rewrite",
-        "description": "The \"rewrite\" command excludes files from existing snapshots. It creates new\nsnapshots containing the same data as the original ones, but without the files\nyou specify to exclude. All metadata (time, host, tags) will be preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.\n\nWhen rewrite is used with the --snapshot-summary option, a new snapshot is\ncreated containing statistics summary data. Only two fields in the summary will\nbe non-zero: TotalFilesProcessed and TotalBytesProcessed.\n\nWhen rewrite is called with one of the --exclude options, TotalFilesProcessed\nand TotalBytesProcessed will be updated in the snapshot summary.",
+        "description": "The \"rewrite\" command creates new snapshots from existing ones. You can use\nexclude or include filters to control which files are included in the new\nsnapshots. Unless --new-host or --new-time is specified, metadata (time, host,\ntags) is preserved.\n\nThe snapshots to rewrite are specified using the --host, --tag and --path options,\nor by providing a list of snapshot IDs. Please note that specifying neither any of\nthese options nor a snapshot ID will cause the command to rewrite all snapshots.\n\nThe special tag 'rewrite' will be added to the new snapshots to distinguish\nthem from the original ones, unless --forget is used. If the --forget option is\nused, the original snapshots will instead be directly removed from the repository.\n\nPlease note that the --forget option only removes the snapshots and not the actual\ndata stored in the repository. In order to delete the no longer referenced data,\nuse the \"prune\" command.\n\nWhen rewrite is used with the --snapshot-summary option, a new snapshot is\ncreated containing statistics summary data. Only two fields in the summary will\nbe non-zero: TotalFilesProcessed and TotalBytesProcessed.\n\nWhen rewrite is called with one of the --exclude or --include options,\nTotalFilesProcessed and TotalBytesProcessed will be updated in the snapshot summary.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -9769,7 +10051,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -9784,18 +10066,13 @@
           "exclude-file": {
             "$ref": "#/$defs/id-17df0ca3125f1db72ebb01d0ff902111"
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "forget": {
             "title": "forget",
             "description": "remove original snapshots after creating new ones [restic \u003e= 0.15.0]",
             "type": "boolean"
           },
           "host": {
-            "$ref": "#/$defs/id-bcda8b199ef5b0659a200468e2517a9f"
+            "$ref": "#/$defs/id-862365144f64ade7d8ecfe1c096e9147"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -9809,6 +10086,18 @@
           "iexclude-file": {
             "$ref": "#/$defs/id-af6c00e035cdb6af35a7de31dc26023d"
           },
+          "iinclude": {
+            "$ref": "#/$defs/id-2531d9fa348e43faaf9b226b32ddf586"
+          },
+          "iinclude-file": {
+            "$ref": "#/$defs/id-5a5f055dd527ffdc360fafd46d513c0c"
+          },
+          "include": {
+            "$ref": "#/$defs/id-3f52ba5423cd6e60f3e2d5168f789e18"
+          },
+          "include-file": {
+            "$ref": "#/$defs/id-7e79f8503b725b0501538afe3bfbb890"
+          },
           "insecure-no-password": {
             "title": "insecure-no-password",
             "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
@@ -9817,6 +10106,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9996,7 +10290,7 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
@@ -10012,7 +10306,7 @@
             "minLength": 0
           },
           "host": {
-            "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -10184,12 +10478,17 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
-            "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -10205,11 +10504,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -10384,12 +10678,12 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
           },
           "host": {
-            "$ref": "#/$defs/id-5a7604cd62739bf6b90cc25decf3beb6"
+            "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -10547,7 +10841,7 @@
       },
       "unlock": {
         "title": "unlock",
-        "description": "The \"unlock\" command removes stale locks that have been created by other restic processes.",
+        "description": "The \"unlock\" command removes stale locks that have been created by other restic processes.\n\nRemoving locks works even with repositories served in append-only mode from restic's rest-server.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -10567,9 +10861,14 @@
           },
           "compression": {
             "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
             "type": "string",
             "minLength": 0
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
           },
           "http-user-agent": {
             "title": "http-user-agent",
@@ -10585,11 +10884,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
