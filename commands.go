@@ -24,7 +24,7 @@ import (
 	"github.com/creativeprojects/resticprofile/remote"
 	"github.com/creativeprojects/resticprofile/util/ansi"
 	"github.com/creativeprojects/resticprofile/win"
-	"github.com/distatus/battery"
+	"github.com/creativeprojects/battery"
 )
 
 var (

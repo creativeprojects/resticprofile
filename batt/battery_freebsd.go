@@ -3,7 +3,7 @@
 package batt
 
 import (
-	"github.com/distatus/battery"
+	"github.com/creativeprojects/battery"
 )
 
 // Batteries return all connected batteries information

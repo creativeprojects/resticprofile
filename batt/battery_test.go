@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/distatus/battery"
+	"github.com/creativeprojects/battery"
 	"github.com/stretchr/testify/assert"
 )
 
