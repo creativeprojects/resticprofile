@@ -6,8 +6,8 @@ import (
 	"errors"
 	"math"
 
+	"github.com/creativeprojects/battery"
 	"github.com/creativeprojects/clog"
-	"github.com/distatus/battery"
 )
 
 // Batteries return all connected batteries information
@@ -16,11 +16,6 @@ func Batteries() ([]battery.Battery, error) {
 	output := make([]battery.Battery, 0, len(batteries))
 	for _, battery := range batteries {
 		if battery == nil {
-			continue
-		}
-		if battery.Design == 0 && battery.Full == 0 && battery.Voltage == 0 {
-			// bug in recent mac OS hardware that returns ghost battery information
-			// https://github.com/distatus/battery/issues/34
 			continue
 		}
 		output = append(output, *battery)
