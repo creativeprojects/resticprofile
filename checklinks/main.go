@@ -25,15 +25,17 @@
 // Flags:
 //
 //	-v          Print each link as it is discovered (verbose output).
+//	-q          Suppress non-error output (quiet mode).
 //	-source     Base URL whose occurrences are searched for in files.
-//	            Defaults to https://creativeprojects.github.io/resticprofile.
+//		        Defaults to https://creativeprojects.github.io/resticprofile.
 //	-target     Alternative base URL to send requests to.  When omitted, a
-//	            local server is started and -dir must be provided.
+//		        local server is started and -dir must be provided.
 //	-dir        Directory containing the compiled HTML documentation.
-//	            Required when -target is not specified.
+//		        Required when -target is not specified.
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -58,6 +60,7 @@ var (
 		"%s/jsonschema/",
 	}
 	verboseFlag bool
+	quietFlag   bool
 )
 
 func main() {
@@ -75,6 +78,7 @@ func checklinks() error {
 		dirFlag       string
 	)
 	flag.BoolVar(&verboseFlag, "v", false, "display more information")
+	flag.BoolVar(&quietFlag, "q", false, "suppress non-error output")
 	flag.StringVar(&sourceURLFlag, "source", "https://creativeprojects.github.io/resticprofile", "base URL to find links from")
 	flag.StringVar(&targetURLFlag, "target", "", "base URL to check links against (leave empty to check against source URL)")
 	flag.StringVar(&dirFlag, "dir", "", "directory with HTML documentation")
@@ -83,7 +87,7 @@ func checklinks() error {
 	if sourceURLFlag == "" {
 		return fmt.Errorf("source URL must be specified")
 	}
-	linkPattern, err := regexp.Compile(regexp.QuoteMeta(sourceURLFlag) + `[^\s"\)>]*`)
+	linkPattern, err := regexp.Compile(regexp.QuoteMeta(sourceURLFlag) + `[^\s"\)><\\]*`)
 	if err != nil {
 		return fmt.Errorf("compiling regex: %w", err)
 	}
@@ -164,7 +168,7 @@ func checklinks() error {
 	}
 	httpClient := newHTTPClient(source, target, transport)
 
-	hasErrors := false
+	var successCount, failCount int
 	fmt.Printf("Checking %d links\n", len(allLinks))
 	for _, link := range allLinks {
 		if ctx.Err() != nil {
@@ -177,12 +181,16 @@ func checklinks() error {
 		err := checkLink(ctx, httpClient, targetLink)
 		if err != nil {
 			fmt.Printf("[ Error ] %s => %v\n", targetLink, err)
-			hasErrors = true
+			failCount++
 			continue
 		}
-		fmt.Printf("[  OK   ] %s\n", targetLink)
+		successCount++
+		if !quietFlag {
+			fmt.Printf("[  OK   ] %s\n", targetLink)
+		}
 	}
-	if hasErrors {
+	fmt.Printf("Results: total of %d links: %d success, %d failed\n", len(allLinks), successCount, failCount)
+	if failCount > 0 {
 		return fmt.Errorf("some links failed to check")
 	}
 	return nil
@@ -193,6 +201,7 @@ func findPatternInFile(pattern *regexp.Regexp, path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	rawBytes = cleanup(rawBytes)
 	return pattern.FindAllString(string(rawBytes), -1), nil
 }
 
@@ -273,4 +282,9 @@ func hostname(rawURL string) (string, error) {
 
 func startServer(root string) *httptest.Server {
 	return httptest.NewTLSServer(http.FileServer(http.Dir(root)))
+}
+
+func cleanup(rawBytes []byte) []byte {
+	rawBytes = bytes.ReplaceAll(rawBytes, []byte("&#34;"), []byte(`"`))
+	return rawBytes
 }
