@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/process"
@@ -17,9 +18,10 @@ type SetPID func(pid int32)
 
 // Lock prevents code to run at the same time by using a lockfile
 type Lock struct {
-	Lockfile string
-	file     *os.File
-	locked   bool
+	Lockfile    string
+	file        *os.File
+	locked      bool
+	releaseOnce sync.Once
 }
 
 // NewLock creates a new lock
@@ -62,12 +64,16 @@ func (l *Lock) ForceAcquire() bool {
 	return l.lock()
 }
 
-// Release the lockfile
+// Release the lockfile. Safe to call concurrently or multiple times; only the
+// first call does the work. This matters when a termination signal releases the
+// lock early while the normal exit path also calls Release.
 func (l *Lock) Release() {
-	if l.file != nil {
-		_ = l.file.Close()
-	}
-	l.unlock()
+	l.releaseOnce.Do(func() {
+		if l.file != nil {
+			_ = l.file.Close()
+		}
+		l.unlock()
+	})
 }
 
 // Who owns the lock?
