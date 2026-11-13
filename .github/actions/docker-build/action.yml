@@ -70,7 +70,6 @@ runs:
     - name: Download rclone & restic binaries and build resticprofile
       shell: bash
       run: |
-        go install github.com/zyedidia/eget@latest
         eget rclone/rclone --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
         eget rclone/rclone --system=linux/arm64 --to=build/rclone-arm64 --asset=zip
         eget restic/restic --system=linux/amd64 --to=build/restic-amd64
