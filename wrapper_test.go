@@ -1242,7 +1242,7 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.False(t, retry)
 
 	// No retry when disabled
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 500*time.Millisecond)
 	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
@@ -1254,12 +1254,12 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.Equal(t, time.Duration(0), sleep)
 
 	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryAfter)
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 500*time.Millisecond)
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
 	assert.Equal(t, constants.MinResticLockRetryDelay, sleep)
 
-	wrapper.maxWaitOnLock(constants.MaxResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MaxResticLockRetryDelay + 500*time.Millisecond)
 	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryDelay
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)

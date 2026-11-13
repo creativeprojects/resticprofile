@@ -39,10 +39,10 @@ runs:
         check-latest: true
         cache: true
 
-    - name: Aqua Installer ${{ inputs.aqua_version }}
+    - name: Aqua Installer ${{ inputs.aqua-version }}
       uses: aquaproj/aqua-installer@v4.1.1
       with:
-        aqua_version: ${{ inputs.aqua_version }}
+        aqua_version: ${{ inputs.aqua-version }}
         packages: |
           eget
 
