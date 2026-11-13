@@ -33,6 +33,7 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           go-version: ${{ steps.dotenv.outputs.go_version }}
+          aqua-version: ${{ steps.dotenv.outputs.aqua_version }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           tags: |

@@ -8,6 +8,9 @@ inputs:
   go-version:
     description: Go version used to compile resticprofile
     required: true
+  aqua-version:
+    description: Aqua version used to install dependencies
+    required: true
   tags:
     description: Newline-separated list of image tags to build (and push)
     required: true
@@ -35,6 +38,13 @@ runs:
         go-version: ${{ inputs.go-version }}
         check-latest: true
         cache: true
+
+    - name: Aqua Installer ${{ inputs.aqua_version }}
+      uses: aquaproj/aqua-installer@v4.1.1
+      with:
+        aqua_version: ${{ inputs.aqua_version }}
+        packages: |
+          eget
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v4
