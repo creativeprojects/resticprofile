@@ -687,6 +687,10 @@ func (c *Config) applyProfileInheritanceAndMixins(profileName string) (err error
 
 // getProfile from configuration. If the profile is not found, it returns errNotFound
 func (c *Config) getProfile(profileKey string) (profile *Profile, err error) {
+	if err = c.checkInheritanceLoop(profileKey); err != nil {
+		return
+	}
+
 	if c.GetVersion() <= Version01 {
 		return c.getProfileV1(profileKey)
 	}
@@ -701,6 +705,23 @@ func (c *Config) getProfile(profileKey string) (profile *Profile, err error) {
 		profile = nil
 	}
 	return
+}
+
+// checkInheritanceLoop returns an error if following the "inherit" chain of a profile leads back to a profile
+// already in the chain. Resolving such a chain would recurse forever.
+func (c *Config) checkInheritanceLoop(profileName string) error {
+	chain := []string{profileName}
+	for name := profileName; ; {
+		parent := c.viper.GetString(c.flatKey(c.getProfilePath(name), constants.SectionConfigurationInherit))
+		if parent == "" {
+			return nil
+		}
+		if slices.Contains(chain, parent) {
+			return fmt.Errorf("error in profile '%s': circular inheritance detected (%s -> %s)", profileName, strings.Join(chain, " -> "), parent)
+		}
+		chain = append(chain, parent)
+		name = parent
+	}
 }
 
 // getProfilePath returns the key prefixed with "profiles" if the configuration file version is >= 2

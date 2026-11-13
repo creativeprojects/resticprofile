@@ -191,6 +191,44 @@ quiet = false
 	})
 }
 
+func TestCircularInheritance(t *testing.T) {
+	runForVersions(t, func(t *testing.T, version, prefix string) {
+		t.Helper()
+		testConfig := version + `
+[` + prefix + `a]
+inherit = "b"
+repository = "a"
+
+[` + prefix + `b]
+inherit = "c"
+repository = "b"
+
+[` + prefix + `c]
+inherit = "a"
+repository = "c"
+
+[` + prefix + `self]
+inherit = "self"
+repository = "self"
+
+[` + prefix + `child]
+inherit = "a"
+repository = "child"
+`
+		_, err := getProfile("toml", testConfig, "a", "")
+		require.Error(t, err)
+		assert.Equal(t, "error in profile 'a': circular inheritance detected (a -> b -> c -> a)", err.Error())
+
+		_, err = getProfile("toml", testConfig, "self", "")
+		require.Error(t, err)
+		assert.Equal(t, "error in profile 'self': circular inheritance detected (self -> self)", err.Error())
+
+		_, err = getProfile("toml", testConfig, "child", "")
+		require.Error(t, err)
+		assert.Equal(t, "error in profile 'child': circular inheritance detected (child -> a -> b -> c -> a)", err.Error())
+	})
+}
+
 func TestInheritanceAppendToList(t *testing.T) {
 	testConfig := `
 version = 2
