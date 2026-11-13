@@ -11,6 +11,11 @@ jobs:
   build:
     name: ${{ inputs.os }}
     runs-on: ${{ inputs.os }}
+    permissions:
+      contents: read
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
 
     steps:
       - name: Check out code into the Go module directory
@@ -30,10 +35,19 @@ jobs:
           check-latest: true
           cache: true
 
+      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
+        uses: aquaproj/aqua-installer@v4.1.1
+        with:
+          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
+          packages: |
+            golangci-lint
+            mockery
+            gotestsum
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: ${{ steps.dotenv.outputs.lint_version }}
+          install-mode: "none"
           args: --timeout=30m
 
       - name: Build

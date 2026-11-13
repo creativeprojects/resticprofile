@@ -9,6 +9,12 @@ on:
 jobs:
   nightly:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -27,6 +33,7 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           go-version: ${{ steps.dotenv.outputs.go_version }}
+          aqua-version: ${{ steps.dotenv.outputs.aqua_version }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           tags: |
