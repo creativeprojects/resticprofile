@@ -31,7 +31,7 @@ jobs:
           cache: true
 
       - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
-        uses: aquaproj/aqua-installer@v4
+        uses: aquaproj/aqua-installer@v4.1.1
         with:
           aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
           packages: |
