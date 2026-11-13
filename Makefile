@@ -141,7 +141,7 @@ install: prepare ## Install the binary (to $GOBIN)
 	GOBIN="$(GOBIN)" \
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build: prepare ## Build the binary
+build: verify download ## Build the binary
 	@echo "[*] $@"
 	GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
