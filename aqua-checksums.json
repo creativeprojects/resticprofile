@@ -1,0 +1,179 @@
+{
+  "checksums": [
+    {
+      "id": "github_content/github.com/ekalinin/github-markdown-toc/0.11.0/gh-md-toc",
+      "checksum": "E9393A030C2116C1193898C370B93B359DD6E532C9CC647F70DD57B219C39E14",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_darwin-universal.tar.gz",
+      "checksum": "4E0AA012BB11D7ADACE1F4D920F118348A64569B7C2207818A2353AF10006F9E",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_linux-amd64.tar.gz",
+      "checksum": "E1248FA077D99232794E38DF5EC533494993AAFAFCA1AE3E331A4ED629079ED6",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_linux-arm64.tar.gz",
+      "checksum": "512C343F6FD051499FF2E9716BA1A9A678CB9B28602C155F25DB43DAB8DF2352",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_windows-amd64.zip",
+      "checksum": "008BEE8285FC260C8779AE9B87ED0587FE3F1608734EF1326EEE1803612C98D3",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/golangci/golangci-lint/v2.15.0/golangci-lint-2.15.0-darwin-amd64.tar.gz",
+      "checksum": "767B899A28285E88DED2823D5DCC4BC5EF681173EB2D80F029A7B17EE4ECE3B8",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/golangci/golangci-lint/v2.15.0/golangci-lint-2.15.0-darwin-arm64.tar.gz",
+      "checksum": "D1E409481A8CA846C4BC97E781EB5CB1BD5C23353A0B3977A1CBDA1B1B6447D5",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/golangci/golangci-lint/v2.15.0/golangci-lint-2.15.0-linux-amd64.tar.gz",
+      "checksum": "9B7FE6A6BF6334B98DECF8D86B11415EA7889AFDABDD1959FDCE23AF2A9EBCEA",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/golangci/golangci-lint/v2.15.0/golangci-lint-2.15.0-linux-arm64.tar.gz",
+      "checksum": "B4D8F17068B35EE6060CC2F69A16FB48740D706FBBA81661C318649C114A6998",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/golangci/golangci-lint/v2.15.0/golangci-lint-2.15.0-windows-amd64.zip",
+      "checksum": "CD7EA6063C95DE245E17E5246E42BDC14BB221792C429DBD239AB3A6ADE6CA6A",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/golangci/golangci-lint/v2.15.0/golangci-lint-2.15.0-windows-arm64.zip",
+      "checksum": "4FB8988ABF186158E30AF1B8A0FB3671CF2CB02BC91D7E6CE6996F4C1E922E9A",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.20.2/goreleaser_Darwin_all.tar.gz",
+      "checksum": "CFE608963D9B00656DA24BF356C0A067E2E92CE99710BE4AC19E418A3A695EC3",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.20.2/goreleaser_Linux_arm64.tar.gz",
+      "checksum": "F0FA989C3531348E8F975AAC647EB187A09046F8A34C54E0B79BED66C84B7F96",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.20.2/goreleaser_Linux_x86_64.tar.gz",
+      "checksum": "F3D24969A7389A46613875711D15A96D8F6EF1553D84C6ACE09D69AC1E7D44C0",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.20.2/goreleaser_Windows_arm64.zip",
+      "checksum": "CF152A7D59E3D7D9CF278C7463E3F2B26CC28555E8FDEA95C1DCFA773CB385F1",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.20.2/goreleaser_Windows_x86_64.zip",
+      "checksum": "D230D6DEF8B6059B277D472A2790501516B429FFE83B91469DAAD8B7736B8A5D",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gotestyourself/gotestsum/v1.13.0/gotestsum_1.13.0_darwin_amd64.tar.gz",
+      "checksum": "99529350F4C7B780B1EFC543CA0D9721B09F0A4228F0EFA9281261F58FEFA05A",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gotestyourself/gotestsum/v1.13.0/gotestsum_1.13.0_darwin_arm64.tar.gz",
+      "checksum": "509CB27AEF747F48FAF9BCE424F59DCF79572C905204B990EE935BBFCC7FA0E9",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gotestyourself/gotestsum/v1.13.0/gotestsum_1.13.0_linux_amd64.tar.gz",
+      "checksum": "11CCDDEAF708EF228889F9FE2F68291A75B27013DDFC3B18156E094F5F40E8EE",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gotestyourself/gotestsum/v1.13.0/gotestsum_1.13.0_linux_arm64.tar.gz",
+      "checksum": "7644A4C5CD1BB978D56245AEAB25A586AC5AC62ADEBED20A399548867C13499D",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gotestyourself/gotestsum/v1.13.0/gotestsum_1.13.0_windows_amd64.tar.gz",
+      "checksum": "FD5A6DC69E46A0970593E70D85A7E75F16714E9C61D6D72CCC324EB82DF5BB8A",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gotestyourself/gotestsum/v1.13.0/gotestsum_1.13.0_windows_arm64.tar.gz",
+      "checksum": "72A59200F83B3204CD59FD417E384DB0543C5511D7A9E38957E74A4035950943",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/raviqqe/muffet/v2.11.8/muffet_darwin_amd64.tar.gz",
+      "checksum": "A7C3E02EDB3DE54D98B049420EE34530515C6EA3AA2716A5BC561C51AE02CF88",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/raviqqe/muffet/v2.11.8/muffet_darwin_arm64.tar.gz",
+      "checksum": "2D3E0B7D2D32FB163BA7BE9345F87C7656A55C9401FA69B7C30A7202FD325046",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/raviqqe/muffet/v2.11.8/muffet_linux_amd64.tar.gz",
+      "checksum": "A8D84D11913C84F896380F6338B3104B3343095A94CD0C4FBC2DA2ACABC97FE7",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/raviqqe/muffet/v2.11.8/muffet_linux_arm64.tar.gz",
+      "checksum": "9654E437372A9E7C869949E509061F0582B16653EEE5984593362C343CF10801",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/raviqqe/muffet/v2.11.8/muffet_windows_amd64.zip",
+      "checksum": "364D6213D9D5341287833D65CD41BD228D19A58373B213851448217CA7B718E5",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/raviqqe/muffet/v2.11.8/muffet_windows_arm64.zip",
+      "checksum": "187B81C6E1F57673972537880D5BF6DE38E04B953A0DAF496D5C2B4790087044",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/vektra/mockery/v3.9.1/mockery_3.9.1_Darwin_arm64.tar.gz",
+      "checksum": "DB565BB673F7FE539710DA270DB04523A80C63D2273DC64DBB5D29227E467C5B",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/vektra/mockery/v3.9.1/mockery_3.9.1_Darwin_x86_64.tar.gz",
+      "checksum": "DF0CC34A1A2130C6BF8679FBB3880E94958F066BCDEC5CB1C52D2E3C94869630",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/vektra/mockery/v3.9.1/mockery_3.9.1_Linux_arm64.tar.gz",
+      "checksum": "0B7A9F1FE2C223B89D1EE3975A64E81C1EF3FC34DBC1FBD28F672F77C3681125",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/vektra/mockery/v3.9.1/mockery_3.9.1_Linux_x86_64.tar.gz",
+      "checksum": "498B459515C463080DF83735792B620C335F027C8B4C0E666D4DE98156F0EA68",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/vektra/mockery/v3.9.1/mockery_3.9.1_Windows_arm64.tar.gz",
+      "checksum": "6A8B88FF5D0F8FBD5A2941B66A94BDF21425BE2F939D71A5419C472DD88A061C",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/vektra/mockery/v3.9.1/mockery_3.9.1_Windows_x86_64.tar.gz",
+      "checksum": "6184316CA712EBC9F9657F6E33D0AC78B7A10F73EE0062414DE6A883F01AED6E",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.585.0/registry.yaml",
+      "checksum": "0FB3F31B7AF2CFF8BC0B7971133448060B47FA0DACF320EB4300B081917C4D35",
+      "algorithm": "sha256"
+    }
+  ]
+}
