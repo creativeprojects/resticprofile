@@ -171,6 +171,31 @@
       "algorithm": "sha256"
     },
     {
+      "id": "github_release/github.com/zyedidia/eget/v1.3.4/eget-1.3.4-darwin_amd64.tar.gz",
+      "checksum": "FBE88D010145F04ADA708D81C4CE264AE1BD89D17AE779B816E6DABFF787DF08",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/zyedidia/eget/v1.3.4/eget-1.3.4-darwin_arm64.tar.gz",
+      "checksum": "47398A317D75B0EAE103A9FF9BE86729295F659B3AB9BBE2CABC7C48EF35A0C6",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/zyedidia/eget/v1.3.4/eget-1.3.4-linux_amd64.tar.gz",
+      "checksum": "C6B3DA99E494E14A9F8C2877F9EB5891D573A95F436ECBA7013CFB7D0992ABF5",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/zyedidia/eget/v1.3.4/eget-1.3.4-linux_arm64.tar.gz",
+      "checksum": "2258D8E52A1906E5AC5C32D940B5FF2807AB93873827E4CBE9E959F5EBF16188",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/zyedidia/eget/v1.3.4/eget-1.3.4-windows_amd64.zip",
+      "checksum": "27FFB63D5E2E17A829653A4C65A9412FE45FAE2BE56478167E3B89AAA8FFE899",
+      "algorithm": "sha256"
+    },
+    {
       "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.585.0/registry.yaml",
       "checksum": "0FB3F31B7AF2CFF8BC0B7971133448060B47FA0DACF320EB4300B081917C4D35",
       "algorithm": "sha256"

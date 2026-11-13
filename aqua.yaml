@@ -16,3 +16,4 @@ packages:
 - name: gohugoio/hugo/hugo-extended@v0.150.1
 - name: golangci/golangci-lint@v2.15.0
 - name: ekalinin/github-markdown-toc@0.11.0
+- name: zyedidia/eget@v1.3.4

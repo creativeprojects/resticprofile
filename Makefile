@@ -60,6 +60,8 @@ endif
 TMPDIR ?= /tmp
 SSH_TESTS_TMPDIR=$(shell echo "$(TMPDIR)/resticprofile-ssh-tests" | tr -s /)
 
+TOOLS_BIN=$(shell aqua root-dir)/bin
+
 TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
@@ -78,7 +80,7 @@ all: mocks test build
 .PHONY: download download-restic-key
 .PHONY: build build-mac build-linux build-pi build-windows build-no-selfupdate build-all
 .PHONY: generate-config-reference generate-jsonschema generate-install generate-restic
-.PHONY: all verify mocks prepare install clean ramdisk rest-server nightly toc syslog checkdoc
+.PHONY: all verify mocks install clean ramdisk rest-server nightly toc syslog checkdoc
 
 verify: ## Verify go installation
 ifeq ($(GOPATH),)
@@ -91,23 +93,27 @@ download: verify ## Download project dependencies
 	@GOPATH="$(GOPATH)" \
 	$(GOMOD) download
 
+.PHONY: aqua
+aqua:
+	@command -v aqua >/dev/null || { echo "Please install aqua to manage tool dependencies: https://aquaproj.github.io/docs/install"; exit 1; }
+
 .PHONY: tools
-tools:
+tools: aqua ## Install required tools using aqua
 	@echo "[*] $@"
-	@command -v aqua || { echo "aqua not found"; exit 1; }
 	@aqua install
+	@aqua update-checksum -prune
 
 .PHONY: update-tools
-update-tools:
+update-tools: aqua ## Update required tools using aqua
 	@echo "[*] $@"
-	@command -v aqua || { echo "aqua not found"; exit 1; }
 	@aqua update
 	@aqua update-checksum -prune
 
-prepare: tools download
+$(TOOLS_BIN)/%:
 	@echo "[*] $@"
+	@aqua install $*
 
-mocks: download ## Generate mocks
+mocks: download aqua $(TOOLS_BIN)/mockery ## Generate mocks
 	@echo "[*] $@"
 	@find . -path "*/mocks/*" -exec rm {} \;
 	@mockery --config .mockery.yml
@@ -133,72 +139,72 @@ test-helpers: $(BUILD)test-args $(BUILD)test-echo $(BUILD)test-crontab  $(BUILD)
 
 download-restic-key: ## Download restic GPG key
 	@echo "[*] $@"
-	KEY_FILE=$(abspath restic/gpg-key.asc)
+	@KEY_FILE=$(abspath restic/gpg-key.asc) \
 	curl https://restic.net/gpg-key-alex.asc > $(KEY_FILE)
 
-install: prepare ## Install the binary (to $GOBIN)
+install: download ## Install the binary (to $GOBIN)
 	@echo "[*] $@"
-	GOBIN="$(GOBIN)" \
+	@GOBIN="$(GOBIN)" \
 	$(GOINSTALL) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build: verify download ## Build the binary
+build: download ## Build the binary
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-no-selfupdate: prepare ## Build the binary without self-update feature
+build-no-selfupdate: download ## Build the binary without self-update feature
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	$(GOBUILD) -o $(BINARY) -v -tags no_self_update -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-mac: prepare ## Build the binary for macOS
+build-mac: download ## Build the binaries for macOS
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="amd64" $(GOBUILD) -o $(BINARY_DARWIN_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="darwin" GOARCH="arm64" $(GOBUILD) -o $(BINARY_DARWIN_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-linux: prepare ## Build the binary for Linux
+build-linux: download ## Build the binaries for Linux
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o $(BINARY_LINUX_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o $(BINARY_LINUX_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 .PHONY: build-ci
-build-ci: prepare ## Cross-compile resticprofile for the Docker image (amd64 + arm64)
+build-ci: download ## Cross-compile resticprofile for the Docker image (amd64 + arm64)
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" CGO_ENABLED=0 \
+	@GOPATH="$(GOPATH)" CGO_ENABLED=0 \
 	GOOS="linux" GOARCH="amd64" $(GOBUILD) -o build/resticprofile-amd64 -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=CI'"
-	GOPATH="$(GOPATH)" CGO_ENABLED=0 \
+	@GOPATH="$(GOPATH)" CGO_ENABLED=0 \
 	GOOS="linux" GOARCH="arm64" $(GOBUILD) -o build/resticprofile-arm64 -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=CI'"
 
-build-pi: prepare ## Build the binary for Raspberry Pi (armv6)
+build-pi: download ## Build the binary for Raspberry Pi (armv6)
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="linux" GOARCH="arm" GOARM="6" $(GOBUILD) -o $(BINARY_PI) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
-build-windows: prepare ## Build the binary for Windows
+build-windows: download ## Build the binaries for Windows
 	@echo "[*] $@"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="windows" GOARCH="amd64" $(GOBUILD) -o $(BINARY_WINDOWS_AMD64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
-	GOPATH="$(GOPATH)" \
+	@GOPATH="$(GOPATH)" \
 	GOOS="windows" GOARCH="arm64" $(GOBUILD) -o $(BINARY_WINDOWS_ARM64) -v -ldflags "-X 'main.commit=${BUILD_COMMIT}' -X 'main.date=${BUILD_DATE}' -X 'main.builtBy=make'"
 
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
 test: export TEST_HELPERS=$(BUILD)
-test: mocks test-helpers ## Run unit tests
+test: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests
 	@echo "[*] $@"
 	@gotestsum -- -count=1 $(TESTS)
 
 test-short: export TEST_HELPERS=$(BUILD)
-test-short: mocks test-helpers ## Run unit tests in short mode
+test-short: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests in short mode
 	@echo "[*] $@"
 	@gotestsum -- -short -count=1 $(TESTS)
 
 test-race: export TEST_HELPERS=$(BUILD)
-test-race: mocks test-helpers ## Run unit tests with race detector
+test-race: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests with race detector
 	@echo "[*] $@"
 	@gotestsum -- -short -race -count=1 $(TESTS)
 
@@ -207,7 +213,7 @@ test-completion: test-helpers ## Run shell completion integration tests (needs b
 	@$(GOTEST) -count=1 -v -run 'ShellCompletion' ./
 
 test-ci: export TEST_HELPERS=$(BUILD)
-test-ci: mocks test-helpers ## Run unit tests with coverage (for CI)
+test-ci: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
@@ -263,15 +269,15 @@ rest-server: ## Run rest-server docker container for testing
 	REST_DATA=/tmp/restic
 	REST_OPTIONS=""
 
-	docker pull ${REST_IMAGE}
-	docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
+	@docker pull ${REST_IMAGE}
+	@docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
 
-nightly: tools ## Create a nightly release (for testing goreleaser setup)
+nightly: aqua $(TOOLS_BIN)/goreleaser ## Create a nightly release (for testing goreleaser setup)
 	@echo "[*] $@"
 	@GITLAB_TOKEN= \
 	goreleaser --snapshot --skip=publish --clean
 
-toc: tools
+toc: aqua $(TOOLS_BIN)/gh-md-toc
 	@echo "[*] $@"
 	cat ${README} | gh-md-toc --hide-footer > ${TOC_PATH}
 	sed -i ".1" "/${TOC_START}/,/${TOC_END}/{//!d;}" "${README}"
@@ -322,7 +328,7 @@ generate-jsonschema: build ## Generate the JSON schema files
 generate-config-reference: build ## Generate the configuration reference documentation
 	@echo "[*] $@"
 
-	META_TITLE="Resticprofile configuration reference" \
+	@META_TITLE="Resticprofile configuration reference" \
 	META_WEIGHT="6" \
 	LAYOUT_NO_HEADLINE="1" \
 	LAYOUT_HEADINGS_START="#" \
@@ -334,14 +340,14 @@ generate-config-reference: build ## Generate the configuration reference documen
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
 .PHONY: documentation
-documentation: tools generate-jsonschema generate-config-reference ## Generate the documentation site
+documentation: generate-jsonschema generate-config-reference aqua $(TOOLS_BIN)/hugo ## Generate the documentation site
 	@echo "[*] $@"
-	cd docs && hugo --minify
+	@cd docs && hugo --minify
 
 .PHONY: syslog-ng
 syslog-ng: ## Run syslog-ng docker container for testing
 	@echo "[*] $@"
-	docker run -d \
+	@docker run -d \
 		--name=syslog-ng \
 		--rm \
 		-e PUID=1000 \
@@ -358,22 +364,22 @@ checkdoc: ## Check documentation
 	$(GOCMD) run ./config/checkdoc -r docs/content -i changelog.md
 
 .PHONY: checklinks
-checklinks:  ## Check for broken links in the documentation site
+checklinks: aqua $(TOOLS_BIN)/muffet ## Check for broken links in the documentation site
 	@echo "[*] $@"
-	muffet --buffer-size=16384 --max-connections-per-host=8 --rate-limit=20 \
+	@muffet --buffer-size=16384 --max-connections-per-host=8 --rate-limit=20 \
 	  --exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" \
 	  --header="User-Agent: Muffet/$$(muffet --version)" \
 	  http://127.0.0.1:1313/resticprofile/
 
 .PHONY: lint
-lint: tools ## Run golangci-lint
+lint: aqua $(TOOLS_BIN)/golangci-lint ## Run golangci-lint
 	@echo "[*] $@"
 	GOOS=darwin golangci-lint run
 	GOOS=linux golangci-lint run
 	GOOS=windows golangci-lint run
 
 .PHONY: fix
-fix: tools ## Run golangci-lint with --fix
+fix: aqua $(TOOLS_BIN)/golangci-lint ## Run golangci-lint with --fix
 	@echo "[*] $@"
 	$(GOCMD) mod tidy
 	$(GOCMD) fix ./...
@@ -427,7 +433,7 @@ compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...
 
 .PHONY: docker-image
-docker-image: build-ci buildx ## Build the Docker image for resticprofile
+docker-image: build-ci buildx aqua $(TOOLS_BIN)/eget ## Build the Docker image for resticprofile
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip
