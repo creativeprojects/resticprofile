@@ -10,6 +10,12 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -41,6 +47,12 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v7

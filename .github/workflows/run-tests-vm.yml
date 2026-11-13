@@ -14,6 +14,11 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
       - uses: actions/checkout@v7
 

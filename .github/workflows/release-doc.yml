@@ -9,6 +9,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
 
       - uses: actions/checkout@v7

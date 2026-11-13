@@ -11,6 +11,11 @@ jobs:
   build:
     name: ${{ inputs.os }}
     runs-on: ${{ inputs.os }}
+    permissions:
+      contents: read
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
 
     steps:
       - name: Check out code into the Go module directory
