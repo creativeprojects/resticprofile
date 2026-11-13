@@ -360,7 +360,7 @@ checkdoc: ## Check documentation
 .PHONY: checklinks
 checklinks:  ## Check for broken links in the documentation site
 	@echo "[*] $@"
-	muffet --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 \
+	muffet --buffer-size=16384 --max-connections-per-host=8 --rate-limit=20 \
 	  --exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" \
 	  --header="User-Agent: Muffet/$$(muffet --version)" \
 	  http://127.0.0.1:1313/resticprofile/
