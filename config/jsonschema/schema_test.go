@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"bytes"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"maps"
@@ -661,7 +662,14 @@ func TestConfigureBasicInfo(t *testing.T) {
 		schemaType := newType()
 		configureBasicInfo(schemaType, nil, newMock("EnumValues", []string{"1", "abc", "true", "3"}))
 		each(schemaType, func(item SchemaType) {
-			assert.Equal(t, []any{int64(1), "abc", true, int64(3)}, item.base().Enum)
+			switch base := item.base(); base.Type {
+			case "string":
+				assert.Equal(t, []any{int64(1), "abc", true, int64(3)}, base.Enum)
+			case "boolean":
+				assert.Equal(t, []any{true}, base.Enum)
+			case "integer":
+				assert.Equal(t, []any{int64(1), int64(3)}, base.Enum)
+			}
 		})
 	})
 
@@ -750,5 +758,51 @@ func TestSchemaForConfigVersion(t *testing.T) {
 		assert.Equal(t, version2Pattern, s.Pattern)
 		assert.Equal(t, "2", s.Default)
 		assert.True(t, regexp.MustCompile(s.Pattern).MatchString(s.Default.(string)))
+	})
+}
+
+func TestSchemaForKeepFlags(t *testing.T) {
+	t.Parallel()
+
+	retention := config.NewProfileInfo(true).SectionInfo("retention")
+	require.NotNil(t, retention)
+
+	t.Run("keep-daily", func(t *testing.T) {
+		t.Parallel()
+
+		info := retention.PropertyInfo("keep-daily")
+		require.NotNil(t, info)
+
+		data, err := json.Marshal(schemaForPropertyInfo(info))
+		require.NoError(t, err)
+
+		var schemaType struct {
+			OneOf []struct {
+				Type    string `json:"type"`
+				Enum    []any  `json:"enum"`
+				Default any    `json:"default"`
+			} `json:"oneOf"`
+		}
+		require.NoError(t, json.Unmarshal(data, &schemaType))
+		require.Len(t, schemaType.OneOf, 2)
+
+		assert.Equal(t, "integer", schemaType.OneOf[0].Type)
+		assert.Nil(t, schemaType.OneOf[0].Default) // default 0 is skipped to avoid pre-filling
+		assert.Empty(t, schemaType.OneOf[0].Enum)
+
+		assert.Equal(t, "string", schemaType.OneOf[1].Type)
+		assert.Equal(t, []any{"unlimited"}, schemaType.OneOf[1].Enum)
+	})
+
+	t.Run("limit-download", func(t *testing.T) {
+		t.Parallel()
+
+		info := retention.PropertyInfo("limit-download")
+		require.NotNil(t, info)
+
+		data, err := json.Marshal(schemaForPropertyInfo(info))
+		require.NoError(t, err)
+		assert.Contains(t, string(data), `"type":"integer"`)
+		assert.NotContains(t, string(data), `"enum"`)
 	})
 }

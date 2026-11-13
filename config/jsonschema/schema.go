@@ -282,7 +282,7 @@ func configureBasicInfo(propertyType, nestedType SchemaType, info config.Propert
 				}
 			}
 
-			base.Enum = enumValues
+			base.Enum = collect.All(enumValues, func(value any) bool { return isCompatibleValue(base, value) })
 			base.Examples = collect.All(exampleValues, func(value any) bool { return isCompatibleValue(base, value) })
 		}
 		return item
