@@ -62,11 +62,12 @@ jobs:
         run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
+        uses: aquaproj/aqua-installer@v4.1.1
         with:
-          hugo-version: '0.150.1'
-          extended: true
+          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
+          packages: |
+            hugo
 
       - name: Build
         run: |
