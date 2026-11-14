@@ -119,9 +119,11 @@ If you set a filename with no extension instead, resticprofile will load the fir
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- ~/.config/resticprofile/
+- ~/Library/Application Support/resticprofile/
 - ~/Library/Preferences/resticprofile/
+- /Library/Application Support/resticprofile/
 - /Library/Preferences/resticprofile/
+- ~/.config/resticprofile/
 - /usr/local/etc/
 - /usr/local/etc/restic/
 - /usr/local/etc/resticprofile/
@@ -154,12 +156,13 @@ resticprofile will search for your configuration file in these folders:
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- %USERPROFILE%\AppData\Local\resticprofile
-- %USERPROFILE%\AppData\Roaming\resticprofile
-- c:\ProgramData\resticprofile
+- %LOCALAPPDATA%\resticprofile (usually %USERPROFILE%\AppData\Local\resticprofile)
+- %ProgramData%\resticprofile (usually c:\ProgramData\resticprofile)
+- %APPDATA%\resticprofile (usually %USERPROFILE%\AppData\Roaming\resticprofile)
 - c:\restic\
 - c:\resticprofile\
-- %USERPROFILE%\resticprofile
+- %USERPROFILE% (home directory)
+- the directory of resticprofile.exe
 
 These paths may be overridden by setting the `XDG_CONFIG_HOME` or `XDG_CONFIG_DIRS`
 environment variables.
