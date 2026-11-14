@@ -59,6 +59,12 @@ profile_name {
 {{% /tab %}}
 {{< /tabs >}}
 
+{{% notice style="info" %}}
+This page and most examples in this documentation use the configuration file format `v1`, which is the default.
+
+In the format `v2`, selected with `version: "2"`, the profiles are nested in a `profiles` section and groups are declared differently. See [Configuration v2]({{% relref "/configuration/v2" %}}) for the differences and how to migrate.
+{{% /notice %}}
+
 All the restic flags can be defined in a section. For most of them you just need to remove the two dashes in front.
 
 To set the flag `--password-file`, the name of the parameter is simply `password-file`.

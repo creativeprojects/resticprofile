@@ -334,3 +334,133 @@ self:
 {{% /tab %}}
 {{< /tabs >}}
 
+
+## Schedule of a group
+
+{{% notice style="info" %}}
+Scheduling a group requires the configuration file format `v2` and resticprofile `v0.29.0` or later.
+{{% /notice %}}
+
+A group of profiles can be scheduled as a whole: when the schedule triggers, the scheduled command runs on each profile of the group, one after the other.
+
+The schedules are declared in the `schedules` section of the group, with one entry per command (`backup`, `check`, `forget`, `prune` or `copy`). Each entry uses the parameters described on this page, without the `schedule-` prefix, and the `schedule` parameter is named `at`:
+
+{{< tabs groupid="config-v2" >}}
+{{% tab title="yaml" %}}
+
+```yaml
+version: "2"
+
+groups:
+  full-backup:
+    profiles:
+      - root
+      - documents
+    schedules:
+      backup:
+        at: "*:00,30"
+        permission: system
+        priority: background
+        log: group-backup.log
+        lock-mode: default
+        lock-wait: 15m30s
+
+profiles:
+  root:
+    repository: /backup/root
+    password-file: key
+    backup:
+      source: /
+
+  documents:
+    repository: /backup/documents
+    password-file: key
+    backup:
+      source: /home/user/Documents
+```
+
+{{% /tab %}}
+{{% tab title="toml" %}}
+
+```toml
+version = "2"
+
+[groups.full-backup]
+  profiles = ["root", "documents"]
+
+  [groups.full-backup.schedules.backup]
+    at = "*:00,30"
+    permission = "system"
+    priority = "background"
+    log = "group-backup.log"
+    lock-mode = "default"
+    lock-wait = "15m30s"
+
+[profiles.root]
+  repository = "/backup/root"
+  password-file = "key"
+
+  [profiles.root.backup]
+    source = "/"
+
+[profiles.documents]
+  repository = "/backup/documents"
+  password-file = "key"
+
+  [profiles.documents.backup]
+    source = "/home/user/Documents"
+```
+
+{{% /tab %}}
+{{% tab title="json" %}}
+
+```json
+{
+  "version": "2",
+  "groups": {
+    "full-backup": {
+      "profiles": [
+        "root",
+        "documents"
+      ],
+      "schedules": {
+        "backup": {
+          "at": "*:00,30",
+          "permission": "system",
+          "priority": "background",
+          "log": "group-backup.log",
+          "lock-mode": "default",
+          "lock-wait": "15m30s"
+        }
+      }
+    }
+  },
+  "profiles": {
+    "root": {
+      "repository": "/backup/root",
+      "password-file": "key",
+      "backup": {
+        "source": "/"
+      }
+    },
+    "documents": {
+      "repository": "/backup/documents",
+      "password-file": "key",
+      "backup": {
+        "source": "/home/user/Documents"
+      }
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+The schedule is installed with the name of the group:
+
+```shell
+resticprofile --name full-backup schedule
+```
+
+See [Configuration v2]({{% relref "/configuration/v2/index.html#scheduling-a-group" %}}) for the list of parameters and the details on how a scheduled group runs.
