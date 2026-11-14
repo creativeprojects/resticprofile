@@ -1,6 +1,6 @@
 ---
 title: "Upgrade"
-weight: 20
+weight: 70
 ---
 
 After installation, upgrade resticprofile to the latest release with this command:

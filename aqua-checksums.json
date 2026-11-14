@@ -6,23 +6,28 @@
       "algorithm": "sha256"
     },
     {
-      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_darwin-universal.tar.gz",
-      "checksum": "4E0AA012BB11D7ADACE1F4D920F118348A64569B7C2207818A2353AF10006F9E",
+      "id": "github_release/github.com/gohugoio/hugo/v0.170.0/hugo_0.170.0_darwin-universal.pkg",
+      "checksum": "B9DFC437DF19DFD44720CAF2E0BA7F9CA5C2E61164F2F4C53456F74D6FA28D22",
       "algorithm": "sha256"
     },
     {
-      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_linux-amd64.tar.gz",
-      "checksum": "E1248FA077D99232794E38DF5EC533494993AAFAFCA1AE3E331A4ED629079ED6",
+      "id": "github_release/github.com/gohugoio/hugo/v0.170.0/hugo_0.170.0_linux-amd64.tar.gz",
+      "checksum": "0930754EC22AD2DD1A252F8C31A5E57FACCC9D15F1C3D381DDAFCB96EEB8AEF0",
       "algorithm": "sha256"
     },
     {
-      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_linux-arm64.tar.gz",
-      "checksum": "512C343F6FD051499FF2E9716BA1A9A678CB9B28602C155F25DB43DAB8DF2352",
+      "id": "github_release/github.com/gohugoio/hugo/v0.170.0/hugo_0.170.0_linux-arm64.tar.gz",
+      "checksum": "4EC3ACD12AC17DBFFB34FA453D3630DC0926A2314C8CD4964A550CFA9A4DBC73",
       "algorithm": "sha256"
     },
     {
-      "id": "github_release/github.com/gohugoio/hugo/v0.150.1/hugo_extended_0.150.1_windows-amd64.zip",
-      "checksum": "008BEE8285FC260C8779AE9B87ED0587FE3F1608734EF1326EEE1803612C98D3",
+      "id": "github_release/github.com/gohugoio/hugo/v0.170.0/hugo_0.170.0_windows-amd64.zip",
+      "checksum": "56C2BC95F3FC0B6BE060F0A4A23A0287FB3954C6595F6F170B49330366083DF5",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/gohugoio/hugo/v0.170.0/hugo_0.170.0_windows-arm64.zip",
+      "checksum": "98DC85253CF260713A38121D4521AF5C3657291950F438906B386543C9040DEA",
       "algorithm": "sha256"
     },
     {
@@ -196,8 +201,8 @@
       "algorithm": "sha256"
     },
     {
-      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.585.0/registry.yaml",
-      "checksum": "0FB3F31B7AF2CFF8BC0B7971133448060B47FA0DACF320EB4300B081917C4D35",
+      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.586.0/registry.yaml",
+      "checksum": "4E75FD9CD08EB383B93374B52FE4A566B078C1AC87520AAAB409195C21D213A4",
       "algorithm": "sha256"
     }
   ]
