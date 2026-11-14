@@ -62,7 +62,7 @@ jobs:
           cp -r ./public ./www/resticprofile
 
       - name: Check documentation links from code
-        run: go run ./checklinks -v -dir=./www/resticprofile/
+        run: go run ./checklinks -dir=./www/resticprofile/
         shell: bash
 
       - name: Check broken links

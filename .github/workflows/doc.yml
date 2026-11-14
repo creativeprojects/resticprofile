@@ -81,7 +81,7 @@ jobs:
           hugo --minify --baseURL "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
 
       - name: Check documentation links from code
-        run: go run ./checklinks -v -dir=./public/
+        run: go run ./checklinks -dir=./public/
         shell: bash
 
       - name: Check broken links

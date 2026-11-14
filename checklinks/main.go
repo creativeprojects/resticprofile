@@ -54,7 +54,7 @@ import (
 )
 
 var (
-	excludeDirs = []string{".git", ".github", ".vscode", "build", "dist", "public", "docs", "checklinks"}
+	excludeDirs = []string{".git", ".github", ".vscode", "build", "dist", "public", "www", "docs", "checklinks"}
 	excludeURLs = []string{
 		"%s/jsonschema",
 		"%s/jsonschema/",
