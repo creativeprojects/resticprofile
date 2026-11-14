@@ -50,6 +50,13 @@ jobs:
           check-latest: true
           cache: true
 
+      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
+        uses: aquaproj/aqua-installer@v4.1.1
+        with:
+          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
+          packages: |
+            hugo
+
       - name: Set branch name for pages.dev
         id: branch_name
         run: |
@@ -66,13 +73,6 @@ jobs:
       - name: Check configuration snippets in documentation
         run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
-
-      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
-        uses: aquaproj/aqua-installer@v4.1.1
-        with:
-          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
-          packages: |
-            hugo
 
       - name: Build
         run: |

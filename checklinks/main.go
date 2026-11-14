@@ -286,5 +286,6 @@ func startServer(root string) *httptest.Server {
 
 func cleanup(rawBytes []byte) []byte {
 	rawBytes = bytes.ReplaceAll(rawBytes, []byte("&#34;"), []byte(`"`))
+	rawBytes = bytes.ReplaceAll(rawBytes, []byte("&#10;"), []byte("\n"))
 	return rawBytes
 }
