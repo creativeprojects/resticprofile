@@ -290,7 +290,9 @@ profile:
 {{< /tabs >}}
 
 
-A few environment variables will be available to construct the url and the body:
+The url, the body and the header values are expanded with the `${variable}` or `$variable` syntax at runtime, using the environment of the profile (including `env` and `env-file`). This lets a header carry a secret, for example `Basic ${HOOK_CREDENTIALS}`. Use `$$` for a literal `$`.
+
+A few environment variables will be available to construct the url, the body and the header values:
 - `PROFILE_NAME`
 - `PROFILE_COMMAND`: backup, check, forget, etc.
 
