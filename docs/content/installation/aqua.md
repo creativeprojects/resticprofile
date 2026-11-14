@@ -17,6 +17,8 @@ aqua install
 ```
 
 ### aqua.yaml
+
+<!-- checkdoc-ignore -->
 ```yaml
 registries:
 - type: standard
