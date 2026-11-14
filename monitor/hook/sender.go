@@ -108,11 +108,18 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context, env *util.E
 	if err != nil {
 		return err
 	}
+	// masked holds the public representation of the confidential header
+	// values, after expansion
+	masked := make(map[string]string)
 	for _, header := range cfg.Headers {
 		if header.Name == "" {
 			continue
 		}
-		req.Header.Add(header.Name, header.Value.Value())
+		value := resolveBody(header.Value.Value(), ctx, env)
+		if header.Value.IsConfidential() {
+			masked[value] = header.Value.String()
+		}
+		req.Header.Add(header.Name, value)
 	}
 	s.setUserAgent(req)
 
@@ -122,14 +129,14 @@ func (s *Sender) Send(cfg config.SendMonitoringSection, ctx Context, env *util.E
 	}
 
 	if s.dryRun {
-		clog.Infof("dry-run: webhook request method=%s url=%q headers:\n%s", method, publicUrl, s.stringifyHeaders(req.Header, cfg.Headers))
+		clog.Infof("dry-run: webhook request method=%s url=%q headers:\n%s", method, publicUrl, s.stringifyHeaders(req.Header, masked))
 		if len(body) > 0 {
 			clog.Infof("dry-run: webhook request body:\n%s", body)
 		}
 		return nil
 	}
 
-	clog.Debugf("calling: %s %q\n%s", method, publicUrl, s.stringifyHeaders(req.Header, cfg.Headers))
+	clog.Debugf("calling: %s %q\n%s", method, publicUrl, s.stringifyHeaders(req.Header, masked))
 	if len(body) > 0 {
 		clog.Debugf("request body:\n%s", body)
 	}
@@ -161,7 +168,7 @@ func (s *Sender) logResponse(url string, resp *http.Response) {
 	})
 }
 
-func (s *Sender) stringifyHeaders(headers http.Header, config []config.SendMonitoringHeader) string {
+func (s *Sender) stringifyHeaders(headers http.Header, masked map[string]string) string {
 	buf := &strings.Builder{}
 	w := tabwriter.NewWriter(buf, 0, 0, 2, ' ', 0)
 	for name, sendValues := range headers {
@@ -170,11 +177,8 @@ func (s *Sender) stringifyHeaders(headers http.Header, config []config.SendMonit
 		maskedValues := make([]string, len(sendValues))
 		for i, value := range sendValues {
 			maskedValues[i] = value
-			for _, ch := range config {
-				if ch.Value.IsConfidential() && ch.Value.Value() == value {
-					maskedValues[i] = ch.Value.String()
-					continue
-				}
+			if replacement, ok := masked[value]; ok {
+				maskedValues[i] = replacement
 			}
 		}
 		// Print header

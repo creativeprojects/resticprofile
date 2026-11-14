@@ -353,6 +353,56 @@ func TestConfidentialHeader(t *testing.T) {
 	assert.Equal(t, 1, calls)
 }
 
+func TestHeaderEnv(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "Basic dXNlcjpwYXNz", r.Header.Get("Authorization"))
+		assert.Equal(t, "my-profile", r.Header.Get("X-Profile"))
+		calls++
+	}))
+	defer server.Close()
+
+	env := util.NewDefaultEnvironment()
+	env.Put("TEST_SECRET", "dXNlcjpwYXNz")
+
+	profile := &config.Profile{
+		Backup: &config.BackupSection{
+			SendBefore: []config.SendMonitoringSection{
+				{
+					URL: config.NewConfidentialValue(server.URL),
+					Headers: []config.SendMonitoringHeader{
+						{Name: "Authorization", Value: config.NewConfidentialValue("Basic ${TEST_SECRET}")},
+						{Name: "X-Profile", Value: config.NewConfidentialValue("$PROFILE_NAME")},
+					},
+				},
+			},
+		},
+	}
+	config.ProcessConfidentialValues(profile)
+	ctx := Context{ProfileName: "my-profile"}
+
+	sender := NewSender(nil, "", 300*time.Millisecond, false)
+	err := sender.Send(profile.Backup.SendBefore[0], ctx, env)
+	require.NoError(t, err)
+	assert.Equal(t, 1, calls)
+
+	t.Run("dry-run does not show the expanded secret", func(t *testing.T) {
+		logger := clog.GetDefaultLogger()
+		defer clog.SetDefaultLogger(logger)
+		mem := clog.NewMemoryHandler()
+		clog.SetDefaultLogger(clog.NewLogger(mem))
+
+		sender := NewSender(nil, "", 300*time.Millisecond, true)
+		err := sender.Send(profile.Backup.SendBefore[0], ctx, env)
+		require.NoError(t, err)
+
+		logs := strings.Join(mem.Logs(), "\n")
+		assert.Contains(t, logs, "Authorization:")
+		assert.Contains(t, logs, "my-profile")
+		assert.NotContains(t, logs, "dXNlcjpwYXNz")
+	})
+}
+
 func TestParseTemplate(t *testing.T) {
 	ctx := Context{
 		ProfileName: "test_profile",
