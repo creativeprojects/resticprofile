@@ -13,7 +13,7 @@ These commands apply to the profile or group specified by `--name`, or to all pr
 {{% notice style="warning" %}}  
 In versions prior to `0.29.0`, the `--name` flag for a group scheduled all profiles in the group individually, as if the schedule command was run on each profile.  
 
-Starting with version `0.29.0`, group scheduling was introduced. This feature schedules at the group level, executing all profiles sequentially when triggered.  
+Starting with version `0.29.0`, group scheduling was introduced. This feature schedules at the group level, executing all profiles sequentially when triggered. The schedules are declared in the group, which requires the configuration file format `v2`: see [schedule of a group]({{% relref "/schedules/configuration/index.html#schedule-of-a-group" %}}).  
 {{% /notice %}}  
 
 Examples:
@@ -65,12 +65,13 @@ This command allows the scheduler to instruct resticprofile to run according to 
 
 If you're manually scheduling resticprofile, use this command. It runs the profile with all `schedule-*` parameters defined in the profile.
 
-The command requires one argument: the command name followed by the profile name, separated by an `@` symbol.
+The command requires one argument: the command name followed by the name of the profile or group, separated by an `@` symbol.
 
 ```shell
 resticprofile run-schedule backup@profile
+resticprofile run-schedule backup@group
 ```
 
 {{% notice info %}}
-The `--name` flag cannot be used to specify the profile name with the `run-schedule` command.
+The `--name` flag cannot be used to specify the profile or group name with the `run-schedule` command.
 {{% /notice %}}
