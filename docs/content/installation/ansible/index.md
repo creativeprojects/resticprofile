@@ -1,6 +1,6 @@
 ---
 title: "Ansible"
-weight: 15
+weight: 50
 ---
 
 ## Installation using Ansible
