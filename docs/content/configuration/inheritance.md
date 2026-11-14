@@ -188,7 +188,7 @@ In the examples above, the final value of `exclude` in `derived-profile` is `['.
 
 Mixins offer an easy way to share pieces of configuration between profiles without forcing a hierarchy of inheritance. Mixins can be used at every level within the profile configuration, support parametrisation (`vars`) and similar to hierarchic inheritance, they can prepend or append to list properties in addition to setting or replacing properties.
 
-Mixins are declared in section `mixins` as named objects. The contents of these objects are merged into the profile configuration wherever a `use` property references (uses) the mixin. 
+Mixins are declared in section `mixins` as named objects. The contents of these objects are merged into the profile configuration wherever a `use` property references (uses) the mixin. The `use` property is also accepted in a [group]({{% relref "/configuration/v2/index.html#groups" %}}) and in the `global` section.
 Configuration merging is following the same logic as used in [inheritance](#profile-inheritance) and [includes]({{% relref "/configuration/include/index.html#configuration-merging" %}}). When `use` references multiple mixins, the mixins apply in the order they are referenced and can override each other (mixins referenced later override what earlier mixins defined).
 
 Configuration values inside a mixin may be parametrized with variables following the syntax `${variable}` or `$variable`. Defaults for variables can be defined inside the mixin with `default-vars` and `use` can specify variables before merging the mixin. In difference to configuration [variables]({{% relref "/configuration/variables" %}}) that expand prior to parsing, mixin variables expand when the mixin is merged and for this reason the syntax differs.
@@ -297,6 +297,10 @@ Every use object within the `use` list has the following structure:
 | `vars`: `<variable-name>`      | Set mixin variable `$<variable-name>`                             |
 | `<variable-name>`              | Set mixin variable `$<variable-name>` (short syntax)              |
 
+The names of mixins and of mixin variables are not case-sensitive: `$what`, `$What` and `$WHAT` are the same variable. A variable that is not set by `use` and has no default in `default-vars` is left unchanged, so it can still be resolved as an environment variable where these are supported. Use `$$` for a literal `$` inside a mixin.
+
+Using a mixin that is not declared fails the loading of the profile with the error `undefined mixin "<name>"`.
+
 Mixins are applied to the configuration after processing all [includes]({{% relref "/configuration/include/index.html" %}}) but prior to [profile inheritance](#profile-inheritance) which means the `use` properties are not inherited but the result of applying `use` is inherited instead. What is defined by a mixin in a parent profile can still be overridden by a definition in a derived profile, but derived profiles can not change which mixins apply to their parent.
 
 List properties that have been inherited from a parent can be modified (append/prepend) and replaced by a mixin.
@@ -396,7 +400,7 @@ version = 2
   [profiles.select-some-and-retain-last-30]
   use = ["alternate-repository", "retain-last"]
   
-    [profiles.some-keep-last-30.backup]
+    [profiles.select-some-and-retain-last-30.backup]
     use = ["exclude-backup", "exclude-hidden"]
     exclude = "/tmp"
     source = "/"
