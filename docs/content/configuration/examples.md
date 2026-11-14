@@ -3,6 +3,10 @@ title: "Examples"
 weight: 5
 ---
 
+{{% notice style="tip" %}}
+For a complete setup with several local drives and a cloud repository, see the [3-2-1 backup strategy]({{% relref "/configuration/backup_3-2-1" %}}) example.
+{{% /notice %}}
+
 ## Simple configuration using Azure storage
 
 Here's a simple configuration file using a Microsoft Azure backend. You will notice that the `env` section lets you define environment variables:
