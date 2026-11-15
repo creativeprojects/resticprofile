@@ -111,6 +111,10 @@ The `schedule-run-level` parameter accepts three values:
 
 Sets the wait time for a resticprofile and restic lock to become available. Used only when `schedule-lock-mode` is unset or `default`.
 
+{{% notice style="note" %}}
+`schedule-lock-mode` and `schedule-lock-wait` have no effect when you run a profile manually from the command line. Use the `--lock-wait` flag instead: see [lock wait in interactive sessions]({{% relref "/usage/locks/index.html#interactive-sessions" %}}).
+{{% /notice %}}
+
 
 ## schedule-log
 
