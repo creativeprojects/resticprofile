@@ -209,7 +209,7 @@ resticprofile --lock-wait 15m profile.backup
 
 The same goes for `restic-lock-retry-after` in the `global` section: a restic command that failed on acquiring a lock is only retried every `restic-lock-retry-after` when a lock wait duration is set, either by `--lock-wait` or by `schedule-lock-wait` in a scheduled run.
 
-The [stale lock](#stale-locks) settings (`force-inactive-lock` and `restic-stale-lock-age`) apply to every run, scheduled or not: resticprofile removes a stale lock and retries the command, with or without a lock wait duration.
+The [stale lock](#stale-locks) settings (`force-inactive-lock` and `restic-stale-lock-age`) apply to every run, scheduled or not: when `force-inactive-lock` is enabled, resticprofile removes a stale lock and retries the command, with or without a lock wait duration.
 
 The `lock` file of the profile is also used in every run, unless you skip it with the `--no-lock` flag, or with `schedule-lock-mode` set to `ignore` in a scheduled run.
 
