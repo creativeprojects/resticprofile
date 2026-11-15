@@ -17,9 +17,10 @@ your environment, build the project, and run the tests.
   git submodule update --init --recursive
   ```
 
-- **aqua** — manages the development tools (see below). It is not needed for
-  `make build` or `make install`, but the test, lint, mocks and documentation
-  targets require it.
+- **aqua** — optional but recommended: manages the development tools (see
+  below). It is not needed for `make build` or `make install`. The test, lint,
+  mocks and documentation targets need the tools listed below, installed either
+  by aqua or by any other means.
 - [`restic`](https://restic.net/) — optional, only needed if you want to run
   resticprofile against a real repository.
 
@@ -49,6 +50,12 @@ the same binaries.
 
    Otherwise each make target installs the tool it needs on first use, so you
    don't install any of these by hand.
+
+Using aqua is not mandatory: the make targets use any tool already found in
+your `PATH`, and only call aqua for the ones that are missing. You can install
+the tools manually or with another tool manager (mise, Homebrew, `go install`,
+...), in which case aqua is not needed at all. Be aware that the versions are
+then no longer pinned, so the results may differ from CI.
 
 Tools managed by aqua:
 
@@ -107,7 +114,8 @@ make test
 
 The `test` target automatically:
 
-1. Installs `gotestsum` and `mockery` with aqua if needed.
+1. Installs `gotestsum` and `mockery` with aqua if they are not already in
+   your `PATH`.
 2. Runs `mocks`, which regenerates mocks with `mockery`.
 3. Builds the test helper binaries under `testhelpers/` (`test-args`,
    `test-echo`, `test-crontab`, `test-shell`) and exposes their location via the
