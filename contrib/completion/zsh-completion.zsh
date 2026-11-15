@@ -128,5 +128,11 @@ function _resticprofile() {
     _resticprofile_add "${completions[@]}"
 }
 
-# Register the completion function (works when sourced after compinit)
-compdef _resticprofile resticprofile
+if [[ "${funcstack[1]}" == "_resticprofile" ]]; then
+    # Autoloaded from $fpath: the first completion runs this file as the function
+    # body, so the function defined above has to be called to complete right away.
+    _resticprofile "$@"
+else
+    # Sourced: register the completion function (compinit must have run before)
+    compdef _resticprofile resticprofile
+fi
