@@ -103,6 +103,10 @@ Set `source-base` if you need a separate base path for backup sources.
 When you want to use relative source paths for backup, set the `source-relative` option. This will change the working directory of the `restic backup` command to `source-base` and will not expand `source` to an absolute path.
 {{% /notice %}}
 
+{{% notice style="note" %}}
+`base-dir` is applied when resticprofile loads the profile. It does not set the working directory of a scheduled job, which is the directory you were in when you ran the `schedule` command: see [working directory of a schedule]({{% relref "/schedules/commands/index.html#working-directory" %}}).
+{{% /notice %}}
+
 ## How the configuration file is resolved
 
 The default name for the configuration file is `profiles`, without an extension.
