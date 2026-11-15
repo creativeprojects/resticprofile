@@ -316,10 +316,28 @@ func zshCompleteBuffer(t *testing.T, dir, path, cmdline string, withRestic bool)
 // so callers can assert on a trailing space (or its absence after a "profile." prefix).
 func zshCompleteBufferRaw(t *testing.T, dir, path, cmdline string, withRestic bool) string {
 	t.Helper()
+	return zshRunHarness(t, dir, path, cmdline, zshSourceSetup(dir, withRestic))
+}
+
+// zshCompleteBufferAutoload is like zshCompleteBuffer but installs the completion script
+// as "_resticprofile" in an $fpath directory, so compinit autoloads it on the first TAB
+// instead of the script being sourced.
+func zshCompleteBufferAutoload(t *testing.T, dir, path, cmdline string) string {
+	t.Helper()
+	fpathDir := filepath.Join(dir, "fpath")
+	require.NoError(t, os.MkdirAll(fpathDir, 0o700))
+	require.NoError(t, copyFile(filepath.Join(dir, "_resticprofile_completion"), filepath.Join(fpathDir, "_resticprofile")))
+	return strings.TrimSpace(zshRunHarness(t, dir, path, cmdline, zshAutoloadSetup(fpathDir)))
+}
+
+// zshRunHarness runs the harness with the given setup commands and returns the command
+// line buffer captured after pressing TAB.
+func zshRunHarness(t *testing.T, dir, path, cmdline, setup string) string {
+	t.Helper()
 	capFile := filepath.Join(dir, "buffer.txt")
 	_ = os.Remove(capFile)
 
-	harness := zshHarnessScript(dir, cmdline, capFile, withRestic)
+	harness := zshHarnessScript(dir, cmdline, capFile, setup)
 	scriptPath := filepath.Join(dir, "harness.zsh")
 	require.NoError(t, os.WriteFile(scriptPath, []byte(harness), 0o600))
 
@@ -347,11 +365,8 @@ func zshCompleteBufferRaw(t *testing.T, dir, path, cmdline string, withRestic bo
 // synchronises on a readiness marker before typing the command line, and polls for the
 // captured buffer file afterwards - both make the harness robust on slow CI machines.
 // \$ escapes keep expansions for the inner zsh rather than the outer one.
-func zshHarnessScript(dir, cmdline, capFile string, withRestic bool) string {
-	resticSource := ""
-	if withRestic {
-		resticSource = `run "source ` + filepath.Join(dir, "_restic_completion") + `"` + "\n"
-	}
+// setup holds the commands loading the completion (see zshSourceSetup, zshAutoloadSetup).
+func zshHarnessScript(dir, cmdline, capFile, setup string) string {
 	return `
 zmodload zsh/zpty
 drain() { local o; while zpty -r -t ZSH o 2>/dev/null; do :; done; }
@@ -373,10 +388,8 @@ waitfor() {
 run() { zpty -w ZSH "$1"; zpty -w ZSH "print __RP_OK__"; waitfor "__RP_OK__"; }
 zpty ZSH "exec zsh -f -i"
 run ":"   # synchronise on the first prompt without matching its text
-run "cd ` + dir + `; fpath=(` + dir + ` \$fpath)"
-run "autoload -Uz compinit; compinit -u"
-` + resticSource + `run "source ` + filepath.Join(dir, "_resticprofile_completion") + `"
-run "_dump() { print -r -- \"BUF=[\$BUFFER]\" >! ` + capFile + ` }; zle -N _dump; bindkey '^Xb' _dump"
+run "cd ` + dir + `"
+` + setup + `run "_dump() { print -r -- \"BUF=[\$BUFFER]\" >! ` + capFile + ` }; zle -N _dump; bindkey '^Xb' _dump"
 drain
 # Type the command line, complete it with TAB, then dump the buffer with the widget.
 # zsh reads input sequentially, so ^Xb is processed only after TAB completion returns.
@@ -392,6 +405,23 @@ for (( i = 0; i < 300; i++ )); do
 done
 zpty -d ZSH
 `
+}
+
+// zshSourceSetup loads the completion scripts by sourcing them after compinit.
+func zshSourceSetup(dir string, withRestic bool) string {
+	setup := `run "fpath=(` + dir + ` \$fpath)"` + "\n" +
+		`run "autoload -Uz compinit; compinit -u"` + "\n"
+	if withRestic {
+		setup += `run "source ` + filepath.Join(dir, "_restic_completion") + `"` + "\n"
+	}
+	return setup + `run "source ` + filepath.Join(dir, "_resticprofile_completion") + `"` + "\n"
+}
+
+// zshAutoloadSetup adds fpathDir to $fpath before compinit, which then registers the
+// "_resticprofile" file found there. -D ignores any dump file left in the home directory.
+func zshAutoloadSetup(fpathDir string) string {
+	return `run "fpath=(` + fpathDir + ` \$fpath)"` + "\n" +
+		`run "autoload -Uz compinit; compinit -u -D"` + "\n"
 }
 
 func TestZshShellCompletion(t *testing.T) {
@@ -424,6 +454,12 @@ func TestZshShellCompletion(t *testing.T) {
 		// passed to resticprofile as separate arguments, not joined into one).
 		got := zshCompleteBuffer(t, dir, path, "resticprofile status --a", false)
 		assert.Equal(t, "resticprofile status --all", got)
+	})
+	t.Run("autoloaded from fpath completes on the first tab", func(t *testing.T) {
+		// When autoloaded, the first TAB runs the script file itself as the function
+		// body: it must complete right away, not only define the function.
+		got := zshCompleteBufferAutoload(t, dir, path, "resticprofile prof")
+		assert.Equal(t, "resticprofile profiles", got)
 	})
 	t.Run("restic delegation re-prefixes the profile name", func(t *testing.T) {
 		dir, path := completionEnv(t, "zsh", true)
