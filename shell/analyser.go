@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -77,8 +78,8 @@ func (a *OutputAnalyser) SetCallback(name, pattern string, minCount, maxCalls in
 	name = fmt.Sprintf("#%s", strings.TrimSpace(strings.Split(name, ",")[0]))
 
 	// Removing existing pattern
-	for i := len(a.patterns) - 1; i >= 0; i-- {
-		if a.patterns[i].name == name {
+	for i, v := range slices.Backward(a.patterns) {
+		if v.name == name {
 			a.patterns = append(a.patterns[0:i], a.patterns[i+1:]...)
 		}
 	}
@@ -205,7 +206,7 @@ func (a *OutputAnalyser) analyseLine(line string) (err error) {
 		if match != nil {
 			a.matches[pattern.name] = match
 
-			baseName := strings.Split(pattern.name, ",")[0]
+			baseName, _, _ := strings.Cut(pattern.name, ",")
 			a.counts[baseName]++
 
 			if err == nil {

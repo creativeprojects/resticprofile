@@ -1,6 +1,6 @@
 ---
 title: "From Source"
-weight: 13
+weight: 60
 ---
 
 ## Installation from source

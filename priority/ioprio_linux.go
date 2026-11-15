@@ -62,7 +62,6 @@ func GetIONice() (IOPrioClass, int, error) {
 }
 
 func getIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
-	//nolint:gosec
 	r1, _, errno := unix.Syscall(
 		unix.SYS_IOPRIO_GET,
 		uintptr(who),
@@ -78,7 +77,6 @@ func getIOPrio(who IOPrioWho) (IOPrioClass, int, error) {
 }
 
 func setIOPrio(who IOPrioWho, class IOPrioClass, value int) error {
-	//nolint:gosec
 	_, _, errno := unix.Syscall(
 		unix.SYS_IOPRIO_SET,
 		uintptr(who),

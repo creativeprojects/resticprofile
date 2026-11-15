@@ -26,25 +26,21 @@ func TestPanicCommand(t *testing.T) {
 
 func TestRandomKeyOfInvalidSize(t *testing.T) {
 	assert.Error(t, randomKey(commandContext{
-		Context: Context{
-			flags:    commandLineFlags{resticArgs: []string{"restic", "size"}},
-			terminal: term.NewTerminal(),
-		},
+		flags:    commandLineFlags{resticArgs: []string{"restic", "size"}},
+		terminal: term.NewTerminal(),
 	}))
 }
 
 func TestRandomKeyOfZeroSize(t *testing.T) {
 	assert.Error(t, randomKey(commandContext{
-		Context: Context{
-			flags:    commandLineFlags{resticArgs: []string{"restic", "0"}},
-			terminal: term.NewTerminal(),
-		},
+		flags:    commandLineFlags{resticArgs: []string{"restic", "0"}},
+		terminal: term.NewTerminal(),
 	}))
 }
 
 func TestRandomKey(t *testing.T) {
 	// doesn't look like much, but it's testing the random generator is not throwing an error
-	assert.NoError(t, randomKey(commandContext{Context: Context{terminal: term.NewTerminal()}}))
+	assert.NoError(t, randomKey(commandContext{terminal: term.NewTerminal()}))
 }
 
 func TestRemovableSchedules(t *testing.T) {
@@ -205,10 +201,8 @@ func TestCompleteCall(t *testing.T) {
 			buffer := &strings.Builder{}
 			assert.Nil(t, completeCommand(commandContext{
 				ownCommands: ownCommands,
-				Context: Context{
-					request:  Request{arguments: test.args},
-					terminal: term.NewTerminal(term.WithStdout(buffer)),
-				},
+				request:     Request{arguments: test.args},
+				terminal:    term.NewTerminal(term.WithStdout(buffer)),
 			}))
 			assert.Equal(t, test.expected, buffer.String())
 		})
@@ -221,10 +215,8 @@ func TestGenerateCommand(t *testing.T) {
 	contextWithArguments := func(args []string) commandContext {
 		t.Helper()
 		return commandContext{
-			Context: Context{
-				request:  Request{arguments: args},
-				terminal: term.NewTerminal(term.WithStdout(buffer)),
-			},
+			request:  Request{arguments: args},
+			terminal: term.NewTerminal(term.WithStdout(buffer)),
 		}
 	}
 
@@ -362,11 +354,9 @@ func TestCreateScheduleWhenNoneAvailable(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = createSchedule(commandContext{
-		Context: Context{
-			config: cfg,
-			flags: commandLineFlags{
-				name: "default",
-			},
+		config: cfg,
+		flags: commandLineFlags{
+			name: "default",
 		},
 	})
 	assert.Error(t, err)
@@ -380,12 +370,10 @@ func TestCreateScheduleAll(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = createSchedule(commandContext{
-		Context: Context{
-			config: cfg,
-			request: Request{
-				profile:   "default",
-				arguments: []string{"--all"},
-			},
+		config: cfg,
+		request: Request{
+			profile:   "default",
+			arguments: []string{"--all"},
 		},
 	})
 	assert.NoError(t, err)
@@ -440,11 +428,9 @@ func TestRunScheduleNoScheduleName(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = runSchedule(commandContext{
-		Context: Context{
-			config: cfg,
-			flags: commandLineFlags{
-				name: "default",
-			},
+		config: cfg,
+		flags: commandLineFlags{
+			name: "default",
 		},
 	})
 	assert.Error(t, err)
@@ -457,12 +443,10 @@ func TestRunScheduleWrongScheduleName(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = runSchedule(commandContext{
-		Context: Context{
-			request: Request{arguments: []string{"wrong"}},
-			config:  cfg,
-			flags: commandLineFlags{
-				name: "default",
-			},
+		request: Request{arguments: []string{"wrong"}},
+		config:  cfg,
+		flags: commandLineFlags{
+			name: "default",
 		},
 	})
 	assert.Error(t, err)
@@ -475,17 +459,15 @@ func TestRunScheduleProfileUnknown(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = runSchedule(commandContext{
-		Context: Context{
-			request: Request{arguments: []string{"backup@profile"}},
-			config:  cfg,
-		},
+		request: Request{arguments: []string{"backup@profile"}},
+		config:  cfg,
 	})
 	assert.ErrorIs(t, err, ErrProfileNotFound)
 }
 
 func TestBatteryCommand(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	err := batteryCommand(commandContext{Context: Context{terminal: term.NewTerminal(term.WithStdout(buffer))}})
+	err := batteryCommand(commandContext{terminal: term.NewTerminal(term.WithStdout(buffer))})
 	if err != nil {
 		require.ErrorIs(t, err, batt.ErrBatteryInfoNotSupported)
 		return

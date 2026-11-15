@@ -202,7 +202,7 @@ func isTerminal(file *os.File) bool {
 }
 
 func fdToInt(fd uintptr) int {
-	return int(fd) //nolint:gosec
+	return int(fd)
 }
 
 var _ io.Writer = (*Terminal)(nil)

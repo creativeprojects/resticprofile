@@ -103,6 +103,10 @@ Set `source-base` if you need a separate base path for backup sources.
 When you want to use relative source paths for backup, set the `source-relative` option. This will change the working directory of the `restic backup` command to `source-base` and will not expand `source` to an absolute path.
 {{% /notice %}}
 
+{{% notice style="note" %}}
+`base-dir` is applied when resticprofile loads the profile. It does not set the working directory of a scheduled job, which is the directory you were in when you ran the `schedule` command: see [working directory of a schedule]({{% relref "/configuration/schedules/commands/index.html#working-directory" %}}).
+{{% /notice %}}
+
 ## How the configuration file is resolved
 
 The default name for the configuration file is `profiles`, without an extension.
@@ -119,9 +123,11 @@ If you set a filename with no extension instead, resticprofile will load the fir
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- ~/.config/resticprofile/
+- ~/Library/Application Support/resticprofile/
 - ~/Library/Preferences/resticprofile/
+- /Library/Application Support/resticprofile/
 - /Library/Preferences/resticprofile/
+- ~/.config/resticprofile/
 - /usr/local/etc/
 - /usr/local/etc/restic/
 - /usr/local/etc/resticprofile/
@@ -154,12 +160,13 @@ resticprofile will search for your configuration file in these folders:
 
 resticprofile will search for your configuration file in these folders:
 - _current directory_
-- %USERPROFILE%\AppData\Local\resticprofile
-- %USERPROFILE%\AppData\Roaming\resticprofile
-- c:\ProgramData\resticprofile
+- %LOCALAPPDATA%\resticprofile (usually %USERPROFILE%\AppData\Local\resticprofile)
+- %ProgramData%\resticprofile (usually c:\ProgramData\resticprofile)
+- %APPDATA%\resticprofile (usually %USERPROFILE%\AppData\Roaming\resticprofile)
 - c:\restic\
 - c:\resticprofile\
-- %USERPROFILE%\resticprofile
+- %USERPROFILE% (home directory)
+- the directory of resticprofile.exe
 
 These paths may be overridden by setting the `XDG_CONFIG_HOME` or `XDG_CONFIG_DIRS`
 environment variables.

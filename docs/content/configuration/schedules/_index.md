@@ -26,6 +26,8 @@ Each profile can be scheduled independently. Within each profile, these sections
 - **prune**
 - **copy**
 
+A group of profiles can also be scheduled as a whole, see [schedule of a group]({{% relref "/configuration/schedules/configuration/index.html#schedule-of-a-group" %}}). This requires the configuration file format `v2`.
+
 ## Deprecation
 Scheduling the `retention` section directly is **deprecated**. Use the `forget` section instead.
 

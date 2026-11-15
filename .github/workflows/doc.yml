@@ -24,6 +24,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
 
       - uses: actions/checkout@v7
@@ -45,6 +50,13 @@ jobs:
           check-latest: true
           cache: true
 
+      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
+        uses: aquaproj/aqua-installer@v4.1.1
+        with:
+          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
+          packages: |
+            hugo
+
       - name: Set branch name for pages.dev
         id: branch_name
         run: |
@@ -62,12 +74,6 @@ jobs:
         run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          hugo-version: '0.150.1'
-          extended: true
-
       - name: Build
         run: |
           cd docs
@@ -75,7 +81,7 @@ jobs:
           hugo --minify --baseURL "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
 
       - name: Check documentation links from code
-        run: go run ./checklinks -v -dir=./public/
+        run: go run ./checklinks -dir=./public/
         shell: bash
 
       - name: Check broken links
@@ -83,7 +89,7 @@ jobs:
         with:
           url: "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
           pages_path: ./public/
-          cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" --buffer-size=8192 --max-connections-per-host=8 --rate-limit=20 --color=always --skip-tls-verification --header="User-Agent: Muffet/2.10.8" --timeout=20 --accepted-status-codes=200..300,403,418'
+          cmd_params: '--exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" --buffer-size=16384 --max-connections-per-host=8 --rate-limit=20 --color=always --skip-tls-verification --header="User-Agent: Muffet/2.10.8" --timeout=20 --accepted-status-codes=200..300,403,418'
 
       - name: Publish to pages.dev
         continue-on-error: true # secrets are not set for PRs from forks

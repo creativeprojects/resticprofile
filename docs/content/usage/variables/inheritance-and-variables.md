@@ -48,8 +48,7 @@ version = "1"
   
   [src.check]
     # Weekday is an integer from 0 to 6 (starting from Sunday)
-    # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
-    read-data-subset = "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
+    read-data-subset = "{{ int .Now.Weekday | addInt 1 }}/7"
 
 ```
 
@@ -106,8 +105,7 @@ src:
 
     check:
         # Weekday is an integer from 0 to 6 (starting from Sunday)
-        # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
-        read-data-subset: "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
+        read-data-subset: "{{ int .Now.Weekday | addInt 1 }}/7"
 
 ```
 
@@ -154,8 +152,7 @@ src:
 
   "check" = {
     # Weekday is an integer from 0 to 6 (starting from Sunday)
-    # Nice trick to add 1 to an integer: https://stackoverflow.com/a/72465098
-    "read-data-subset" = "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
+    "read-data-subset" = "{{ int .Now.Weekday | addInt 1 }}/7"
   }
 }
 ```
@@ -216,7 +213,7 @@ src:
       ]
     },
     "check": {
-      "read-data-subset": "{{ len (printf "a%*s" .Now.Weekday "") }}/7"
+      "read-data-subset": "{{ int .Now.Weekday | addInt 1 }}/7"
     }
   }
 }
@@ -277,6 +274,29 @@ profile src:
 As you can see, the `src` profile inherited from the `generic` profile. The tags `{{ .Profile.Name }}` got replaced by the name of the current profile `src`.
 Now you can reuse the same generic configuration in another profile.
 
-You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be checked over a week. You can find [more information about this trick](https://stackoverflow.com/a/72465098).
+You might have noticed the `read-data-subset` in the `check` section which will read a seventh of the data every day, meaning the whole repository data will be checked over a week.
+
+The same idea works with months if your `check` schedule runs monthly instead of daily. For example, this reads a quarter of the data on each run, cycling through 4 subsets so the whole repository gets checked every 4 months:
+
+`read-data-subset: "{{ int .Now.Month | subInt 1 | modInt 4 | addInt 1 }}/4"`
+
+This works by taking the current month (`1`–`12`), shifting it down to `0`–`11` with `subInt 1`, wrapping it into a `0`–`3` cycle with `modInt 4`, then shifting back up to `1`–`4` with `addInt 1`:
+
+```
+| Month | Subset |
+|-------|--------|
+| Jan   | 1/4    |
+| Feb   | 2/4    |
+| Mar   | 3/4    |
+| Apr   | 4/4    |
+| May   | 1/4    |
+| Jun   | 2/4    |
+| Jul   | 3/4    |
+| Aug   | 4/4    |
+| Sep   | 1/4    |
+| Oct   | 2/4    |
+| Nov   | 3/4    |
+| Dec   | 4/4    |
+```
 
 More examples can be found [here]({{% relref "/usage/variables/list-variables" %}}).

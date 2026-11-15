@@ -73,6 +73,8 @@ global {
 Included configuration files may use any supported format and settings are merged so that multiple files can extend the same profiles.
 The HCL format is special in that it cannot be mixed with other formats.
 
+All the files must use the same [configuration file version]({{% relref "/configuration/v2/index.html#includes" %}}): loading fails when the main file and an included file declare a different `version`. An included file that does not declare a `version` is read with the version of the main file.
+
 Within included files, the current [configuration path]({{% relref "/configuration/profiles/path/#how-paths-inside-the-configuration-are-resolved" %}}) is not changed. Path resolution remains relative to the path of the main configuration file.
 
 {{% notice style="note" %}}

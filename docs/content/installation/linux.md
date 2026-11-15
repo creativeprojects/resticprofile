@@ -32,7 +32,6 @@ Works for: MacOS, Linux
 There's a [homebrew](https://brew.sh/) tap for resticprofile:
 
 ```shell
-brew tap creativeprojects/tap
 brew install resticprofile
 # You can also install `restic` at the same time with `--with-restic` flag:
 brew install resticprofile --with-restic

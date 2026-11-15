@@ -5,16 +5,25 @@ on:
     branches: [ master ]
     paths-ignore:
       - 'docs/**'
+      - '.github/**'
+      - '!github/workflows/ssh.yml'
 
   pull_request:
     types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
+      - '.github/**'
+      - '!github/workflows/ssh.yml'
 
 jobs:
   test-ssh:
     name: Test SSH client
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_REQUIRE_CHECKSUM: "true"
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v7

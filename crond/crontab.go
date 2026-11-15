@@ -447,8 +447,8 @@ func addWeekDays(weekDaysExtra string, event *calendar.Event) error {
 	weekDaysExtra = strings.TrimSuffix(weekDaysExtra, "&&")
 	weekDaysExtra = strings.TrimSpace(weekDaysExtra)
 
-	parts := strings.Split(weekDaysExtra, "||")
-	for _, part := range parts {
+	parts := strings.SplitSeq(weekDaysExtra, "||")
+	for part := range parts {
 		part = strings.TrimSpace(part)
 		if len(part) < 1 {
 			continue

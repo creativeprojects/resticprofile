@@ -5,6 +5,103 @@ title: Release Notes
 weight: 8
 ---
 
+# v0.34.0 (2026-11-12)
+
+## 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Nessie release
+
+On this day in 1933, Hugh Gray was walking with his dog along the shore of Scotland’s Loch Ness, near the mouth of the River Foyers, when he saw _an object of considerable dimensions_. Luckily, Gray had a Kodak box camera with him and took several photos. Only one showed something: Gray had taken the first photo of the Loch Ness monster. Or had he?
+
+## resticprofile v0.34.0 (2026-11-12)
+
+This release adds support for restic 0.19, native zsh completion, basic math functions in configuration templates, and fixes for crond scheduling and battery detection on macOS 27.
+
+### New Features
+
+#### Restic 0.19
+- **Support for restic 0.19**: the new commands and flags from restic 0.19 are now recognised in the configuration.
+
+#### Math in templates
+- **New template functions**: `addInt`, `subInt`, `modInt`, `addFloat`, `subFloat` and `int` are available in configuration templates.
+- For example, checking one seventh of the repository each day is now simply `read-data-subset = "{{ int .Now.Weekday | addInt 1 }}/7"`.
+
+#### Shell completions
+- **Native zsh completion**: the zsh completion script is now a native zsh one, and shows a description next to each completion.
+- **bash**: completing a profile name no longer adds a space after the `.` separator.
+
+### Bug Fixes
+
+- **crond scheduling**: fixed schedules that combine a day of the month with a day of the week. Cron runs such an entry when *either* field matches, so the job ran more often than requested; the generated crontab line now tests the day of the week explicitly.
+- **Battery detection on macOS 27**: fixed battery detection, which was broken on macOS 27.
+- **zsh completion**: no trailing space is added after the profile prefix.
+- **fish completion**: fixed the completion script for fish v3.
+- **Docker**: the Docker rebuild workflow now selects the latest release tag.
+
+### Documentation
+
+- Added a Watchgoose example to the HTTP hooks page.
+- Added a `CONTRIBUTING.md` file.
+- Links in the documentation are now checked automatically.
+
+### Maintenance and Toolchain
+
+- Upgraded to **Go 1.27**
+- Upgraded `x/crypto` and other dependencies
+- Docker images are now built with Docker buildx instead of GoReleaser
+- Tests now run on FreeBSD, OpenBSD and NetBSD virtual machines
+- Internal refactoring of terminal access, and reorganised GitHub workflows
+
+## New contributors
+Thanks to @MarcWort, @myii, @alexycodes, @bartekrutkowski and other contributors for their help in this release 🎉
+
+**I'm sorry for all the other pull requests I haven't had the time to review yet 😔**
+
+## Changelog
+* [Build BSD tests outside QEMU VM (#625)](https://github.com/creativeprojects/resticprofile/commit/708ed65b775030d444489d0ead7e4a0d1cb2e4a3)
+* [Build snapshot images with buildx action instead of goreleaser (#664)](https://github.com/creativeprojects/resticprofile/commit/aafa89efa66a396771ce1692971fe0c224002389)
+* [Fix fish completions for fish v3 (#639)](https://github.com/creativeprojects/resticprofile/commit/2cf8e122fdc9f3035b8c92794b7de8b9a6165c0a)
+* [Native zsh completion (#653)](https://github.com/creativeprojects/resticprofile/commit/9b8fbfc57d04eb582e18a285c217869e4c9e744e)
+* [Refactor tests and add platform-specific test cases (#623)](https://github.com/creativeprojects/resticprofile/commit/cc83d5350fdde75fc7b5712f2fa445e0a32f9b81)
+* [add description to zsh completion (#656)](https://github.com/creativeprojects/resticprofile/commit/3aa18855aa9329e866df7228b1e0a4bcd480d3ce)
+* [chore: add support for restic 0.19 (#652)](https://github.com/creativeprojects/resticprofile/commit/d2dc5513c59c88c29b65f78d047c704e9c604b43)
+* [chore: add tests before refactoring (#697)](https://github.com/creativeprojects/resticprofile/commit/b866fe337a31fe70ace56d14fd8924490df880e1)
+* [chore: fix test on new build agent (#695)](https://github.com/creativeprojects/resticprofile/commit/286742a66de956e055afecf74b31840fa97c5d98)
+* [chore: refactor Docker workflows and remove GoReleaser configuration (#666)](https://github.com/creativeprojects/resticprofile/commit/01bc3a6b256fccb4355bcaa3827dcdb0ea404884)
+* [chore: refactoring access to the terminal (#620)](https://github.com/creativeprojects/resticprofile/commit/395db19725094c504f81c1145da6255d18755275)
+* [chore: upgrade x/crypto (and other packages) (#665)](https://github.com/creativeprojects/resticprofile/commit/65f413515e297b8df19404e8cf1d8223a90bea6e)
+* [dont build fuse on 32 bits linux](https://github.com/creativeprojects/resticprofile/commit/6d8f1e39e4971cfd11de1fe1cb94b82af4840c56)
+* [feat(bash-completion): prevent space after profile completion `.` (#405)](https://github.com/creativeprojects/resticprofile/commit/e0b36f05b616685641b26258128f65bc142c3fb8)
+* [feat: Add basic math in templates and use it for checks read-data (#675)](https://github.com/creativeprojects/resticprofile/commit/e455d0830b3d572acd84391986a34a2e8fe74867)
+* [feat: add dotenv action to load environment variables (#632)](https://github.com/creativeprojects/resticprofile/commit/1c34bd25112c4e8ecc2f9adf91bc64d22da0f184)
+* [feat: add embedded examples for configuration files (#626)](https://github.com/creativeprojects/resticprofile/commit/38e50b10a4f275497092fa07a5cc2238ce6f6aa6)
+* [feat: add link checking functionality to documentation workflows (#651)](https://github.com/creativeprojects/resticprofile/commit/ef12616c2d4cee5c0bf227290a9fc18e30589378)
+* [fix changelog after release](https://github.com/creativeprojects/resticprofile/commit/b71b27af741573536f3bd7d55f7e62a9222b9005)
+* [fix zsh completion (#659)](https://github.com/creativeprojects/resticprofile/commit/9eac2a80fb2533cf852bc624b6886ab97619c06d)
+* [fix(tests): improve signal handling and error reporting in lock tests (#622)](https://github.com/creativeprojects/resticprofile/commit/7a646539f103923bb80b23592be576fac0fec6b6)
+* [fix(zsh): prevent trailing space after profile prefix in completions (#658)](https://github.com/creativeprojects/resticprofile/commit/17f5c4369a8d3f27b414f4666cbcc70777ca4623)
+* [fix: BSD tests (#631)](https://github.com/creativeprojects/resticprofile/commit/d37d8e79e1af071258d879bc1ab5afd65ad6105c)
+* [fix: battery detection broken on Mac OS 27 (#699)](https://github.com/creativeprojects/resticprofile/commit/6868581cd61d64942defe2acc7886bbde6e4fcf2)
+* [fix: crontab dayofmonth with dayofweek (#630)](https://github.com/creativeprojects/resticprofile/commit/d58824b9f0be2cdb9958d044a158b2149e9e5119)
+* [fix: improve lock handling and output in tests and main function (#621)](https://github.com/creativeprojects/resticprofile/commit/6b42080cdf8499416dbb86394c8dd6f6c22629fb)
+* [fix: make TESTS and BUILD variables optional in Makefile](https://github.com/creativeprojects/resticprofile/commit/36d6a876c457b7b4a70156f4ba7dc53b0856befd)
+* [fix: reorder checkout of latest tag in Docker workflow](https://github.com/creativeprojects/resticprofile/commit/dcbd0962a5a77c8da77aa538ef36e382062cc73c)
+* [fix: select latest release tag for Docker rebuild workflow (#635)](https://github.com/creativeprojects/resticprofile/commit/8b7bca2dc4d8521cc2d8502fc0f28c7a83978495)
+* [update dependencies to use gopsutil v4 (#629)](https://github.com/creativeprojects/resticprofile/commit/a0406f0dd63f73793052d588ea3bd7d5ac6f5166)
+* [upgrade code to go 1.27 (#696)](https://github.com/creativeprojects/resticprofile/commit/5e8eba96ad28c291ac1050e6fedb3b484d7572f2)
+
+
+
+# v0.33.1 (2026-04-15)
+
+## Bug fix
+
+Fix crash on new Apple M5 Pro/Max hardware due to an old dependency #628 
+
+## Changelog
+* [fix changelog after release](https://github.com/creativeprojects/resticprofile/commit/b71b27af741573536f3bd7d55f7e62a9222b9005)
+* [update dependencies to use gopsutil v4](https://github.com/creativeprojects/resticprofile/commit/49102a5f476be6dcc15a9f0ac092ef23fc528075)
+
+
+
 # v0.33.0 (2026-04-04)
 
 ## 🌸 Easter release 🥚
@@ -15,7 +112,7 @@ This release delivers a preview of a new Client/Server mode, Fish shell completi
 
 ### New Features
 
-#### Client/Server Mode [PREVIEW]
+#### Client/Server Mode <kbd>PREVIEW</kbd>
 - **Remote configuration delivery**: resticprofile can now send a configuration profile to a remote server, enabling centralized management of backup profiles across multiple hosts.
 - A new `remote` section in the configuration allows specifying the server address and credentials for the client/server communication.
 

@@ -5,11 +5,15 @@ on:
     branches: [ master ]
     paths-ignore:
       - 'docs/**'
+      - '.github/**'
+      - '!github/workflows/ubuntu.yml'
 
   pull_request:
     types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
+      - '.github/**'
+      - '!github/workflows/ubuntu.yml'
 
 jobs:
   build:

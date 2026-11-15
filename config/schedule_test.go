@@ -359,8 +359,8 @@ func TestLockModes(t *testing.T) {
 		ScheduleLockModeIgnore:  {LockMode: constants.ScheduleLockModeOptionIgnore},
 	}
 	for mode, config := range tests {
-		s := Schedule{}
-		s.ScheduleBaseConfig = config
+		s := Schedule{
+			ScheduleBaseConfig: config}
 		assert.Equal(t, mode, s.GetLockMode())
 	}
 }
@@ -372,8 +372,8 @@ func TestLockWait(t *testing.T) {
 		120 * time.Hour: {LockWait: maybe.SetDuration(120 * time.Hour)},
 	}
 	for mode, config := range tests {
-		s := Schedule{}
-		s.ScheduleBaseConfig = config
+		s := Schedule{
+			ScheduleBaseConfig: config}
 		assert.Equal(t, mode, s.GetLockWait())
 	}
 }

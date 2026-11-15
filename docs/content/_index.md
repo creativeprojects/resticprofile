@@ -15,7 +15,7 @@ Here is a non-exhaustive list of what resticprofile offers:
     * Create groups of profiles to run sequentially
     * Easily [schedule]({{% relref "/configuration/schedules" %}}) backups, retentions, and checks (supports *systemd*, *crond*, *launchd*, and *Windows Task Scheduler*)
     * Use [template syntax]({{% relref "/configuration/variables/templates" %}}) in your configuration file
-    * **[new for v0.29.0]** Schedule a group of profiles (configuration `v2` only)
+    * **[new for v0.29.0]** Schedule a group of profiles ([configuration `v2`]({{% relref "/configuration/v2" %}}) only)
 * **Automation**
     * Run the forget command before or after a backup (in a section called *retention*)
     * Check a repository before or after a backup

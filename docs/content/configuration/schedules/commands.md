@@ -15,7 +15,7 @@ These commands apply to the profile or group specified by `--name`, or to all pr
 {{% notice style="warning" %}}  
 In versions prior to `0.29.0`, the `--name` flag for a group scheduled all profiles in the group individually, as if the schedule command was run on each profile.  
 
-Starting with version `0.29.0`, group scheduling was introduced. This feature schedules at the group level, executing all profiles sequentially when triggered.  
+Starting with version `0.29.0`, group scheduling was introduced. This feature schedules at the group level, executing all profiles sequentially when triggered. The schedules are declared in the group, which requires the configuration file format `v2`: see [schedule of a group]({{% relref "/configuration/schedules/configuration/index.html#schedule-of-a-group" %}}).  
 {{% /notice %}}  
 
 Examples:
@@ -43,6 +43,18 @@ Use the `--reload` flag to trigger a `systemctl daemon-reload` after setting up 
 Before version `v0.30.0`, resticprofile did not track the state of schedule and unschedule commands. If you needed to make significant changes to profiles (e.g., moving, renaming, deleting), it was recommended to unschedule everything using the `--all` flag first. This is no longer required as of version `v0.30.0`.
 {{% /notice %}}
 
+#### Working directory
+
+A scheduled job runs from the directory you were in when you ran the `schedule` command.
+
+The paths given on the command line (like a relative `--config` path) are saved as they are in the job, so they are resolved from this directory when the schedule triggers.
+
+To change the working directory of a scheduled job, run the `schedule` command again from the directory of your choice.
+
+{{% notice note %}}
+The `base-dir` option of a profile does not set the working directory of the scheduled job. resticprofile changes to `base-dir` only after the job has started, when it loads the profile.
+{{% /notice %}}
+
 ### unschedule command
 
 Remove all schedules from the selected profile or all profiles using the `--all` flag.
@@ -67,12 +79,13 @@ This command allows the scheduler to instruct resticprofile to run according to 
 
 If you're manually scheduling resticprofile, use this command. It runs the profile with all `schedule-*` parameters defined in the profile.
 
-The command requires one argument: the command name followed by the profile name, separated by an `@` symbol.
+The command requires one argument: the command name followed by the name of the profile or group, separated by an `@` symbol.
 
 ```shell
 resticprofile run-schedule backup@profile
+resticprofile run-schedule backup@group
 ```
 
 {{% notice info %}}
-The `--name` flag cannot be used to specify the profile name with the `run-schedule` command.
+The `--name` flag cannot be used to specify the profile or group name with the `run-schedule` command.
 {{% /notice %}}

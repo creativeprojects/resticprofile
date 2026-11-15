@@ -5,7 +5,7 @@ your environment, build the project, and run the tests.
 
 ## Prerequisites
 
-- **Go** — version `1.26` or later (see [`.github/workflows/env`](.github/workflows/env)
+- **Go** — version `1.27` or later (see [`.github/workflows/env`](.github/workflows/env)
   for the exact version used by CI).
 - **make** — all common tasks are wired through the [`Makefile`](Makefile).
 - **git** — the repository uses a submodule for the documentation theme. Clone with
@@ -17,15 +17,63 @@ your environment, build the project, and run the tests.
   git submodule update --init --recursive
   ```
 
-Optional tooling (downloaded automatically into `$GOBIN` by the relevant make
-targets, so you usually don't install these by hand):
-
-- [`gotestsum`](https://github.com/gotestyourself/gotestsum) — test runner used by the `test*` targets
-- [`mockery`](https://github.com/vektra/mockery) — regenerates mocks before tests
-- [`golangci-lint`](https://github.com/golangci/golangci-lint) — linter (pinned version, see `.github/workflows/env`)
-- [`restic`](https://restic.net/) — only needed if you want to run resticprofile against a real repository
+- **aqua** — optional but recommended: manages the development tools (see
+  below). It is not needed for `make build` or `make install`. The test, lint,
+  mocks and documentation targets need the tools listed below, installed either
+  by aqua or by any other means.
+- [`restic`](https://restic.net/) — optional, only needed if you want to run
+  resticprofile against a real repository.
 
 Run `make help` at any time to list all available targets.
+
+### Tool dependencies (aqua)
+
+The development tools are managed by [aqua](https://aquaproj.github.io/), a
+declarative CLI version manager. Their versions are pinned in
+[`aqua.yaml`](aqua.yaml) and their checksums are verified against
+[`aqua-checksums.json`](aqua-checksums.json), so everyone (including CI) runs
+the same binaries.
+
+1. [Install aqua](https://aquaproj.github.io/docs/install).
+2. Add aqua's `bin` directory to your `PATH`, as the make targets call the
+   tools by name:
+
+   ```shell
+   export PATH="$(aqua root-dir)/bin:$PATH"
+   ```
+
+3. Optionally, install all the tools up front:
+
+   ```shell
+   make tools
+   ```
+
+   Otherwise each make target installs the tool it needs on first use, so you
+   don't install any of these by hand.
+
+Using aqua is not mandatory: the make targets use any tool already found in
+your `PATH`, and only call aqua for the ones that are missing. You can install
+the tools manually or with another tool manager (mise, Homebrew, `go install`,
+...), in which case aqua is not needed at all. Be aware that the versions are
+then no longer pinned, so the results may differ from CI.
+
+Tools managed by aqua:
+
+| Tool | Used for |
+| ---- | -------- |
+| [`gotestsum`](https://github.com/gotestyourself/gotestsum) | Test runner used by the `test*` targets |
+| [`mockery`](https://github.com/vektra/mockery) | Regenerates mocks before tests |
+| [`golangci-lint`](https://github.com/golangci/golangci-lint) | Linter (`make lint`, `make fix`) |
+| [`hugo`](https://gohugo.io/) | Builds the documentation site (`make documentation`) |
+| [`muffet`](https://github.com/raviqqe/muffet) | Checks the documentation for broken links (`make checklinks`) |
+| [`goreleaser`](https://goreleaser.com/) | Builds release snapshots (`make nightly`) |
+| [`gh-md-toc`](https://github.com/ekalinin/github-markdown-toc) | Regenerates the README table of contents (`make toc`) |
+| [`eget`](https://github.com/zyedidia/eget) | Downloads restic and rclone for the Docker image (`make docker-image`) |
+
+To upgrade the tools to their latest versions, run `make update-tools`: it
+updates `aqua.yaml` and `aqua-checksums.json`, which should both be committed.
+The version of aqua itself used by CI is set in
+[`.github/workflows/env`](.github/workflows/env).
 
 ## Building
 
@@ -36,7 +84,7 @@ make build
 ```
 
 This produces a `resticprofile` binary in the repository root. The target first
-runs `prepare_build` (verifies your Go installation and downloads module
+runs `prepare` (verifies your Go installation and downloads module
 dependencies), then compiles with version metadata embedded via `-ldflags`.
 
 Other build targets:
@@ -66,8 +114,9 @@ make test
 
 The `test` target automatically:
 
-1. Installs `gotestsum` (into `$GOBIN`) if needed.
-2. Runs `prepare_test`, which regenerates mocks with `mockery`.
+1. Installs `gotestsum` and `mockery` with aqua if they are not already in
+   your `PATH`.
+2. Runs `mocks`, which regenerates mocks with `mockery`.
 3. Builds the test helper binaries under `testhelpers/` (`test-args`,
    `test-echo`, `test-crontab`, `test-shell`) and exposes their location via the
    `TEST_HELPERS` environment variable.
@@ -127,22 +176,22 @@ make lint        # lint for darwin, linux and windows build targets
 make fix         # run go mod tidy, go fix, and golangci-lint --fix
 ```
 
-The linter version is pinned in [`.github/workflows/env`](.github/workflows/env)
-and the configuration lives in [`.golangci.yml`](.golangci.yml).
+The linter version is pinned in [`aqua.yaml`](aqua.yaml) and the configuration
+lives in [`.golangci.yml`](.golangci.yml).
 
 ## Generated files
 
 Some files are generated and should be regenerated when you change their
 sources:
 
-- **Mocks** are regenerated automatically by `make prepare_test` (used by the
+- **Mocks** are regenerated automatically by `make mocks` (used by the
   test targets), based on [`.mockery.yml`](.mockery.yml).
 - **`go generate`** is run as part of `make test-ci`; you can also run
   `go generate ./...` directly.
 - **JSON schema** and the **configuration reference** are generated from the
   built binary with `make generate-jsonschema` and
   `make generate-config-reference`. The documentation site is built with
-  `make documentation` (requires Hugo and the docs submodule).
+  `make documentation` (Hugo is installed by aqua; requires the docs submodule).
 
 ## Continuous integration
 

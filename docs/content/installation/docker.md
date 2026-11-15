@@ -1,6 +1,6 @@
 ---
 title: "Docker"
-weight: 15
+weight: 80
 ---
 
 Docker images are available at `creativeprojects/resticprofile:latest` and `ghcr.io/creativeprojects/resticprofile:latest`
