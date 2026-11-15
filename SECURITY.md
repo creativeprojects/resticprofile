@@ -67,8 +67,30 @@ Each release publishes a `checksums.txt` file with the SHA-256 checksum of
 every archive. The self-update command verifies the downloaded archive against
 this file before replacing the binary.
 
-To verify a manual download:
+To verify a manual download, save `checksums.txt` in the same directory as the
+archive, without renaming the archive.
+
+On Linux and BSD:
 
 ```shell
 sha256sum --check --ignore-missing checksums.txt
 ```
+
+On macOS:
+
+```shell
+shasum -a 256 --check --ignore-missing checksums.txt
+```
+
+`--ignore-missing` skips the archives that are not in the directory, so the
+command only proves something for the files it lists. Check that the output
+contains the name of your archive followed by `OK`.
+
+On Windows (PowerShell), compare the two values printed by:
+
+```powershell
+(Get-FileHash resticprofile_X.Y.Z_windows_amd64.zip -Algorithm SHA256).Hash
+Select-String resticprofile_X.Y.Z_windows_amd64.zip checksums.txt
+```
+
+The comparison is not case sensitive.
