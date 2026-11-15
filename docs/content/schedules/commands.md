@@ -41,6 +41,18 @@ Use the `--reload` flag to trigger a `systemctl daemon-reload` after setting up 
 Before version `v0.30.0`, resticprofile did not track the state of schedule and unschedule commands. If you needed to make significant changes to profiles (e.g., moving, renaming, deleting), it was recommended to unschedule everything using the `--all` flag first. This is no longer required as of version `v0.30.0`.
 {{% /notice %}}
 
+#### Working directory
+
+A scheduled job runs from the directory you were in when you ran the `schedule` command.
+
+The paths given on the command line (like a relative `--config` path) are saved as they are in the job, so they are resolved from this directory when the schedule triggers.
+
+To change the working directory of a scheduled job, run the `schedule` command again from the directory of your choice.
+
+{{% notice note %}}
+The `base-dir` option of a profile does not set the working directory of the scheduled job. resticprofile changes to `base-dir` only after the job has started, when it loads the profile.
+{{% /notice %}}
+
 ### unschedule command
 
 Remove all schedules from the selected profile or all profiles using the `--all` flag.

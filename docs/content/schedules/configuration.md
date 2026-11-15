@@ -120,6 +120,10 @@ Sets the wait time for a resticprofile and restic lock to become available. Used
 
 If no server responds on the specified port, resticprofile will send the logs to the default output instead.
 
+A relative file path is resolved from the directory of the configuration file, not from the [working directory]({{% relref "/schedules/commands/index.html#working-directory" %}}) of the scheduled job. Use a full path to save the log file anywhere else.
+
+On macOS, see also the [log files created by launchd]({{% relref "/schedules/launchd/index.html#log-files" %}}).
+
 
 ## schedule-priority
 
