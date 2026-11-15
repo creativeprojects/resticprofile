@@ -3,7 +3,7 @@ title: "Windows"
 weight: 40
 ---
 
-
+{{< toc >}}
 
 ## Installation using bash
 
