@@ -21,6 +21,14 @@ Once you grant permission, the profile will run normally until you update restic
 
 ![access files popup window]({{< absolute "schedules/removable_volume.png" nohtml >}})
 
+{{% notice style="note" title="Local network access on macOS 15 (Sequoia) and later" %}}
+Since macOS 15 (Sequoia), an application needs your permission to connect to devices on your local network. A scheduled profile that uses a repository or a Prometheus Pushgateway on your local network can fail with a `no route to host` error, even though the same command works from your terminal.
+
+After scheduling the profile, start it manually with `launchctl start` (as shown above) and wait for the popup window asking for permission to access the local network.
+
+You can review this permission later in **System Settings > Privacy & Security > Local Network**.
+{{% /notice %}}
+
 ## System permission
 
 A launchd daemon is generated when you set `schedule-permission` to `system`. It consists of a `plist` file in `/Library/LaunchDaemons`.
