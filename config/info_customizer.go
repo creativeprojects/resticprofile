@@ -151,6 +151,15 @@ func init() {
 		}
 	})
 
+	// Profile: restic accepts "unlimited" for the keep-* retention options (detection catches integer only)
+	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
+		if option := property.option(); option != nil && strings.Contains(option.Description, "use 'unlimited'") {
+			info := property.basic()
+			info.mayString = true
+			info.pattern = `^unlimited$`
+		}
+	})
+
 	// Profile or Group: special handling for maybe.Duration
 	maybeDurationType := reflect.TypeFor[maybe.Duration]()
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {

@@ -71,6 +71,25 @@ func TestResticVerboseProperty(t *testing.T) {
 	assert.True(t, orig.MustBeInteger())
 }
 
+func TestResticKeepUnlimitedProperty(t *testing.T) {
+	orig := newResticPropertyInfo("keep-last", restic.Option{
+		Default:     "0",
+		Description: "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
+	})
+	assert.False(t, orig.CanBeString())
+	assert.True(t, orig.CanBeNumeric())
+
+	customizeProperty("", orig)
+	assert.True(t, orig.CanBeString())
+	assert.True(t, orig.CanBeNumeric())
+	assert.True(t, orig.MustBeInteger())
+	assert.Equal(t, "^unlimited$", orig.ValidationPattern())
+
+	other := newResticPropertyInfo("max-unused", restic.Option{Default: "5%", Description: "tolerate given limit of unused data"})
+	customizeProperty("", other)
+	assert.Empty(t, other.ValidationPattern())
+}
+
 func TestHostTagPathProperty(t *testing.T) {
 	examples := []string{"true", "false", `"{{property}}"`}
 	note := `Boolean true is replaced with the {{property}}s from section "backup".`
