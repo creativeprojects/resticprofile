@@ -380,7 +380,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	// Special case for backup command
 	var dir string
 	if command == constants.CommandBackup {
-		args.AddArgs(shell.NewArgsSlice(r.profile.GetBackupSource(), shell.ArgConfigBackupSource))
+		args.AddArgs(r.profile.GetBackupSourceArgs())
 		if r.profile.Backup != nil && r.profile.Backup.SourceRelative {
 			dir = r.profile.Backup.SourceBase
 		}
@@ -413,7 +413,7 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	}
 
 	// Build arguments and publicArguments (for logging)
-	arguments, publicArguments := args.GetAll(), config.GetNonConfidentialArgs(r.profile, args).GetAll()
+	arguments, publicArguments := args.GetAllForCommand(), config.GetNonConfidentialArgs(r.profile, args).GetAll()
 	if filter != nil {
 		clog.Tracef("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
 		arguments, publicArguments = filter(arguments, true), filter(publicArguments, true)

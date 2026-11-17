@@ -122,21 +122,14 @@ func evaluateSymlinks(value string) string {
 	return value
 }
 
-// resolveGlob evaluates glob expressions in a slice of paths and returns a resolved slice
-func resolveGlob(sources []string) (resolved []string) {
-	if len(sources) > 0 {
-		resolved = make([]string, 0, len(sources))
-		for _, source := range sources {
-			if strings.ContainsAny(source, "?*[") {
-				if matches, err := filepath.Glob(source); err == nil {
-					resolved = append(resolved, matches...)
-				} else {
-					clog.Warningf("cannot evaluate glob expression '%s' : %v", source, err)
-				}
-			} else {
-				resolved = append(resolved, source)
-			}
-		}
+// resolveGlob evaluates a glob expression: isGlob is true when the resolved paths are matches found on disk
+func resolveGlob(source string) (resolved []string, isGlob bool) {
+	if !strings.ContainsAny(source, "?*[") {
+		return []string{source}, false
 	}
-	return
+	matches, err := filepath.Glob(source)
+	if err != nil {
+		clog.Warningf("cannot evaluate glob expression '%s' : %v", source, err)
+	}
+	return matches, true
 }

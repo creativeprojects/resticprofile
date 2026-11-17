@@ -521,7 +521,7 @@ func TestCheckHostPathTagOptIn(t *testing.T) {
 
 	expectedPaths := make([]string, len(backupSource))
 	for index, value := range backupSource {
-		expectedPaths[index] = shell.NewArg(value, shell.ArgConfigEscape).String()
+		expectedPaths[index] = shell.NewArg(value, shell.ArgLiteral).String()
 	}
 
 	config := `
@@ -750,7 +750,7 @@ func TestPathAndTagInRetention(t *testing.T) {
 
 	expectedBackupSource := make([]string, len(backupSource))
 	for index, value := range backupSource {
-		expectedBackupSource[index] = shell.NewArg(value, shell.ArgConfigEscape).String()
+		expectedBackupSource[index] = shell.NewArg(value, shell.ArgLiteral).String()
 	}
 
 	backupHost := ""

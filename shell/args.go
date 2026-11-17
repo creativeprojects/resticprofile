@@ -137,6 +137,21 @@ func (a *Args) Rename(oldName, newName string) bool {
 
 // GetAll return a clean list of arguments to send on the command line
 func (a *Args) GetAll() []string {
+	return a.getAll(Arg.String)
+}
+
+// GetAllForCommand returns the arguments to run with Command: literal values are marked
+// so that the shell composer passes them to the command unchanged.
+func (a *Args) GetAllForCommand() []string {
+	return a.getAll(func(arg Arg) string {
+		if arg.isLiteral() && arg.Value() != "" {
+			return markLiteral(arg.Value())
+		}
+		return arg.String()
+	})
+}
+
+func (a *Args) getAll(toString func(Arg) string) []string {
 	args := make([]string, 0, len(a.args)+len(a.more)+10)
 
 	if len(a.args) == 0 && len(a.more) == 0 {
@@ -163,7 +178,7 @@ func (a *Args) GetAll() []string {
 		}
 		for _, value := range values {
 			if value.HasValue() {
-				args = append(args, fmt.Sprintf("--%s=%s", key, value.String())) // must use "=" as some values (e.g. verbose) need this to work correctly
+				args = append(args, fmt.Sprintf("--%s=%s", key, toString(value))) // must use "=" as some values (e.g. verbose) need this to work correctly
 			} else {
 				args = append(args, fmt.Sprintf("--%s", key))
 			}
@@ -172,7 +187,7 @@ func (a *Args) GetAll() []string {
 
 	// and the list of flat arguments
 	for _, arg := range a.more {
-		args = append(args, arg.String())
+		args = append(args, toString(arg))
 	}
 	return args
 }

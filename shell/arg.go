@@ -26,6 +26,7 @@ const (
 	ArgLegacyKeepGlobQuote
 	ArgLegacyCommandLineEscape
 	ArgLegacyConfigBackupSource
+	ArgLiteral // value found on disk (e.g. glob match): passed to the command verbatim, with no shell expansion
 )
 
 type filterFunc func(string) string
@@ -93,6 +94,11 @@ func (a Arg) Value() string {
 	return a.value
 }
 
+// isLiteral returns true if the value must reach the command unchanged (no shell expansion)
+func (a Arg) isLiteral() bool {
+	return a.argType == ArgLiteral
+}
+
 func (a Arg) Type() ArgType {
 	return a.argType
 }
@@ -134,6 +140,9 @@ func (a Arg) String() string {
 
 		case ArgLegacyConfigBackupSource:
 			return escapeString(value, []byte{' '})
+
+		case ArgLiteral:
+			return quotePosixLiteral(value)
 		}
 	}
 

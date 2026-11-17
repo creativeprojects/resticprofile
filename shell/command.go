@@ -85,7 +85,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 
 	summary := monitor.Summary{OutputAnalysis: c.analyser.Reset()}
 
-	command, args, err := c.GetShellCommand()
+	command, args, literalEnv, err := c.getShellCommand()
 	if err != nil {
 		return summary, "", err
 	}
@@ -114,6 +114,7 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 	if len(c.Environ) > 0 {
 		cmd.Env = append(cmd.Env, c.Environ...)
 	}
+	cmd.Env = append(cmd.Env, literalEnv...)
 
 	cmd.Dir = c.Dir
 
@@ -181,6 +182,12 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 // GetShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe).
 // This method doesn't escape any argument containing spaces, it should have been dealt with before.
 func (c *Command) GetShellCommand() (shell string, arguments []string, err error) {
+	shell, arguments, _, err = c.getShellCommand()
+	return
+}
+
+// getShellCommand also returns the environment variables holding literal values referenced by the arguments
+func (c *Command) getShellCommand() (shell string, arguments, literalEnv []string, err error) {
 	var searchList []string
 	for _, sh := range c.Shell {
 		if sh = strings.TrimSpace(sh); sh != "" {
@@ -204,7 +211,7 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 	}
 
 	composer := getArgumentsComposer(shell)
-	arguments = composer(c)
+	arguments, literalEnv = composer(c)
 
 	clog.Trace(func() string {
 		listKind := ""
@@ -218,7 +225,8 @@ func (c *Command) GetShellCommand() (shell string, arguments []string, err error
 	return
 }
 
-type shellArgumentsComposer func(*Command) []string
+// shellArgumentsComposer returns the shell arguments, and the environment variables holding literal values
+type shellArgumentsComposer func(*Command) (arguments, literalEnv []string)
 
 var shellArgumentsComposerRegistry map[string]shellArgumentsComposer
 
@@ -246,15 +254,18 @@ func getArgumentsComposer(shell string) (composer shellArgumentsComposer) {
 	return
 }
 
-func composeShellArguments(c *Command) []string {
+func composeShellArguments(c *Command) ([]string, []string) {
 	// Flatten all arguments into one string, sh and bash expects one big string
 	command := resolveCommand(c.Command)
-	flatCommand := strings.Join(append([]string{command}, c.Arguments...), " ")
+	arguments := collect.From(c.Arguments, func(arg string) string {
+		return resolveLiterals(arg, quotePosixLiteral)
+	})
+	flatCommand := strings.Join(append([]string{command}, arguments...), " ")
 
 	return []string{
 		"-c",
 		flatCommand,
-	}
+	}, nil
 }
 
 var powershellBuiltins = regexp.MustCompile("(?i)^(\\$|\\?|^|_|args|ConsoleFileName|Error|ErrorView|" +
@@ -264,7 +275,15 @@ var powershellBuiltins = regexp.MustCompile("(?i)^(\\$|\\?|^|_|args|ConsoleFileN
 	"PSNativeCommandArgumentPassing|PSScriptRoot|PSSenderInfo|PSStyle|PSUICulture|PSVersionTable|" +
 	"PWD|Sender|ShellId|StackTrace|switch|this|True)$")
 
-func composePowershellArguments(c *Command) []string {
+func composePowershellArguments(c *Command) ([]string, []string) {
+	// Literal values are referenced as ${Env:NAME}, which the variables rewrite below leaves alone
+	literals := &literalEnviron{}
+	arguments := collect.From(c.Arguments, func(arg string) string {
+		return resolveLiterals(arg, func(value string) string {
+			return fmt.Sprintf("${Env:%s}", literals.add(value))
+		})
+	})
+
 	commandEnvNames := collect.From(c.Environ, func(env string) string {
 		return strings.ToLower(strings.SplitN(env, "=", 2)[0])
 	})
@@ -292,7 +311,7 @@ func composePowershellArguments(c *Command) []string {
 		mapper = func(name string) string { return "" }
 	}
 
-	arguments := rewriteVariables(c.Arguments, mapper)
+	arguments = rewriteVariables(arguments, mapper)
 	command := resolveCommand(rewriteVariables([]string{c.Command}, mapper)[0])
 
 	// Absolute path to an executable must be escaped in PWSH:
@@ -313,20 +332,29 @@ func composePowershellArguments(c *Command) []string {
 	return append(
 		[]string{"-Command", command},
 		arguments...,
-	)
+	), literals.environ
 }
 
-func composeWindowsCmdArguments(c *Command) []string {
+func composeWindowsCmdArguments(c *Command) ([]string, []string) {
+	// Literal values are referenced as !NAME!: cmd.exe doesn't parse the result of a delayed expansion,
+	// so the value only needs quoting for the command line parser of the program
+	literals := &literalEnviron{}
+	arguments := collect.From(c.Arguments, func(arg string) string {
+		return resolveLiterals(arg, func(value string) string {
+			return "!" + literals.add(escapeWindowsArg(value)) + "!"
+		})
+	})
+
 	// Rewrite unix style env variables ($var) to delayed cmd style (!var!)
 	mapper := func(name string) string { return fmt.Sprintf("!%s!", name) }
-	arguments := rewriteVariables(c.Arguments, mapper)
+	arguments = rewriteVariables(arguments, mapper)
 	command := resolveCommand(rewriteVariables([]string{c.Command}, mapper)[0])
 
 	// Enable delayed variable expansion "/V:ON" to support !variable! syntax
 	return append(
 		[]string{"/V:ON", "/C", command},
 		removeQuotes(arguments)...,
-	)
+	), literals.environ
 }
 
 // resolveCommand adds a "./" prefix to a command that only exists in the current working directory

@@ -70,6 +70,7 @@ type Profile struct {
 
 	config               *Config
 	resticVersion        *semver.Version
+	globMatches          map[string]struct{} // paths found on disk by a glob pattern: passed to restic verbatim
 	Name                 string
 	Description          string                       `mapstructure:"description" description:"Describes the profile"`
 	BaseDir              string                       `mapstructure:"base-dir" description:"Sets the working directory for this profile. The profile will fail when the working directory cannot be changed. Leave empty to use the current directory instead"`
@@ -709,9 +710,39 @@ func (p *Profile) resolveSourcePath(sourceBase string, relativePaths bool, sourc
 	}
 
 	sourcePaths = fixPaths(sourcePaths, expandEnv, expandUserHome, applySourceBase, applyBaseDir)
-	sourcePaths = resolveGlob(sourcePaths)
-	sourcePaths = fixPaths(sourcePaths, maskPathsWithFlagPrefix, filepath.ToSlash, filepath.FromSlash)
-	return sourcePaths
+	resolved := make([]string, 0, len(sourcePaths))
+	for _, source := range sourcePaths {
+		matches, isGlob := resolveGlob(source)
+		for _, path := range matches {
+			path = fixPath(path, maskPathsWithFlagPrefix, filepath.ToSlash, filepath.FromSlash)
+			if isGlob {
+				p.addGlobMatch(path)
+			}
+			resolved = append(resolved, path)
+		}
+	}
+	return resolved
+}
+
+func (p *Profile) addGlobMatch(path string) {
+	if p.globMatches == nil {
+		p.globMatches = make(map[string]struct{})
+	}
+	p.globMatches[path] = struct{}{}
+}
+
+func (p *Profile) isGlobMatch(path string) bool {
+	_, found := p.globMatches[path]
+	return found
+}
+
+// sourceArgType returns the argument type for a resolved source path: file names found on disk are
+// passed verbatim, as they could contain anything; paths written in the configuration keep the shell escaping
+func (p *Profile) sourceArgType(path string, configType shell.ArgType) shell.ArgType {
+	if p.isGlobMatch(path) {
+		return shell.ArgLiteral
+	}
+	return configType
 }
 
 // SetHost will replace any host value from a boolean to the hostname
@@ -759,7 +790,14 @@ func (p *Profile) SetPath(basePath string, sourcePaths ...string) {
 			// Replace bool-true with absolute sourcePaths
 			if !sourcePathsResolved {
 				sourcePaths = resolvePath("path (from source)", sourcePaths, func(path string) []string {
-					return fixPaths(p.resolveSourcePath(basePath, false, path), absolutePath)
+					resolved := p.resolveSourcePath(basePath, false, path)
+					for i, rp := range resolved {
+						resolved[i] = fixPath(rp, absolutePath)
+						if p.isGlobMatch(rp) {
+							p.addGlobMatch(resolved[i])
+						}
+					}
+					return resolved
 				})
 				sourcePathsResolved = true
 			}
@@ -891,6 +929,16 @@ func (p *Profile) GetBackupSource() []string {
 		return nil
 	}
 	return p.Backup.Source
+}
+
+// GetBackupSourceArgs returns the directories to back up as command line arguments
+func (p *Profile) GetBackupSourceArgs() []shell.Arg {
+	sources := p.GetBackupSource()
+	args := make([]shell.Arg, len(sources))
+	for i, source := range sources {
+		args[i] = shell.NewArg(source, p.sourceArgType(source, shell.ArgConfigBackupSource))
+	}
+	return args
 }
 
 // GetCopySnapshotIDs returns the snapshot IDs to copy
@@ -1051,6 +1099,15 @@ func addArgsFromOtherFlags(args *shell.Args, profile *Profile, section OtherFlag
 	aliases := argAliasesFromStruct(profile)
 	maps.Copy(aliases, argAliasesFromStruct(section))
 	addArgsFromMap(args, aliases, section.GetOtherFlags())
+
+	// "path" can be copied from the backup source
+	if paths, found := args.Get(constants.ParameterPath); found {
+		for i, path := range paths {
+			if argType := profile.sourceArgType(path.Value(), path.Type()); argType != path.Type() {
+				paths[i] = shell.NewArg(path.Value(), argType)
+			}
+		}
+	}
 }
 
 // Implements Schedulable
