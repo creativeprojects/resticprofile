@@ -19,6 +19,7 @@ import (
 
 var (
 	mockBinary string
+	echoBinary string
 )
 
 func TestMain(m *testing.M) {
@@ -36,6 +37,15 @@ func TestMain(m *testing.M) {
 		}
 		if _, err := os.Stat(mockBinary); err != nil {
 			fmt.Fprintf(os.Stderr, "test-shell binary is not available at expected path: %s\n", mockBinary)
+			return 1
+		}
+		echoBinary, err = filepath.Abs(filepath.Join(helpersPath, platform.Executable("test-echo")))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to get absolute path of test-echo binary: %v\n", err)
+			return 1
+		}
+		if _, err := os.Stat(echoBinary); err != nil {
+			fmt.Fprintf(os.Stderr, "test-echo binary is not available at expected path: %s\n", echoBinary)
 			return 1
 		}
 

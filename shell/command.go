@@ -40,6 +40,7 @@ type Command struct {
 	Arguments  []string
 	Environ    []string
 	Shell      []string
+	NoShell    bool // runs Command with Arguments directly, without a shell
 	Dir        string
 	Stdin      io.Reader
 	Stdout     io.Writer
@@ -180,7 +181,11 @@ func (c *Command) Run() (monitor.Summary, string, error) {
 
 // GetShellCommand transforms the command line and arguments to be launched via a shell (sh or cmd.exe).
 // This method doesn't escape any argument containing spaces, it should have been dealt with before.
+// When NoShell is set, the command and its arguments are returned unchanged.
 func (c *Command) GetShellCommand() (shell string, arguments []string, err error) {
+	if c.NoShell {
+		return c.Command, c.Arguments, nil
+	}
 	var searchList []string
 	for _, sh := range c.Shell {
 		if sh = strings.TrimSpace(sh); sh != "" {

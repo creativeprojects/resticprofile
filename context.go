@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/config"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/term"
@@ -67,6 +68,9 @@ func CreateContext(flags commandLineFlags, global *config.Global, cfg *config.Co
 		logTarget:     global.Log, // default to global (which can be empty)
 		commandOutput: global.CommandOutput,
 		legacyArgs:    global.LegacyArguments, // use the broken arguments escaping (before v0.15.0)
+	}
+	if global.ResticWithoutShell && global.LegacyArguments {
+		clog.Warning(`"legacy-arguments" has no effect when "restic-without-shell" is enabled`)
 	}
 	// own commands can check the context before running
 	if ownCommands.Exists(command, true) {

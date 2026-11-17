@@ -332,6 +332,11 @@ func (r *resticWrapper) validArgumentsFilter(validArgs []string) argumentsFilter
 	}
 }
 
+// resticWithoutShell returns true when restic must run directly, without a shell
+func (r *resticWrapper) resticWithoutShell() bool {
+	return r.global != nil && r.global.ResticWithoutShell
+}
+
 func (r *resticWrapper) getShell() (shell []string) {
 	if r.global != nil {
 		shell = collect.All(r.global.ShellBinary, collect.Not(collect.In("auto")))
@@ -393,9 +398,14 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	env := r.getEnvironment(true)
 	env = append(env, r.getProfileEnvironment()...)
 
+	noShell := r.resticWithoutShell()
 	modifiers := []shell.ArgModifier{
 		shell.NewLegacyArgModifier(r.ctx.legacyArgs),
 		shell.NewExpandEnvModifier(env),
+	}
+	if noShell {
+		// no shell escaping (legacy or not) applies when values are sent as they are
+		modifiers = []shell.ArgModifier{shell.NewNoShellExpandEnvModifier(env)}
 	}
 	for _, modifier := range modifiers {
 		args = args.Modify(modifier)
@@ -413,7 +423,11 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 	}
 
 	// Build arguments and publicArguments (for logging)
-	arguments, publicArguments := args.GetAll(), config.GetNonConfidentialArgs(r.profile, args).GetAll()
+	getAll := (*shell.Args).GetAll
+	if noShell {
+		getAll = (*shell.Args).GetAllUnescaped
+	}
+	arguments, publicArguments := getAll(args), getAll(config.GetNonConfidentialArgs(r.profile, args))
 	if filter != nil {
 		clog.Tracef("unfiltered command: %s %s", command, strings.Join(publicArguments, " "))
 		arguments, publicArguments = filter(arguments, true), filter(publicArguments, true)
@@ -431,10 +445,14 @@ func (r *resticWrapper) prepareCommand(command string, args *shell.Args, allowEx
 		return fmt.Sprintf("starting command: %s %s%s", r.ctx.binary, strings.Join(publicArguments, " "), wd)
 	})
 
-	// creates an argument to escape the path properly
-	binary := shell.NewArg(r.ctx.binary, shell.ArgConfigEscape).String()
+	binary := r.ctx.binary
+	if !noShell {
+		// creates an argument to escape the path properly
+		binary = shell.NewArg(r.ctx.binary, shell.ArgConfigEscape).String()
+	}
 
 	rCommand := newShellCommand(binary, arguments, env, r.getShell(), r.dryRun, r.sigChan, r.setPID)
+	rCommand.noShell = noShell
 	rCommand.publicArgs = publicArguments
 	// stdout are stderr are coming from the default terminal (in case they're redirected)
 	rCommand.stdout = r.ctx.terminal.Stdout()

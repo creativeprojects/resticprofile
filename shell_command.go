@@ -18,6 +18,7 @@ type shellCommandDefinition struct {
 	publicArgs  []string
 	env         []string
 	shell       []string
+	noShell     bool // runs the command directly, without a shell
 	dir         string
 	stdin       io.ReadCloser
 	stdout      io.Writer
@@ -58,6 +59,7 @@ func runShellCommand(command shellCommandDefinition) (summary monitor.Summary, s
 	shellCmd := shell.NewSignalledCommand(command.command, command.args, command.sigChan)
 
 	shellCmd.Shell = command.shell
+	shellCmd.NoShell = command.noShell
 	shellCmd.Stdout = command.stdout
 	shellCmd.Stderr = command.stderr
 

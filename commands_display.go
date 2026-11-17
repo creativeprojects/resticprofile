@@ -148,15 +148,18 @@ func displayResticHelp(ctx commandContext, command string) {
 	defer closer()
 
 	resticBinary := ""
+	noShell := false
 	if ctx.config != nil {
 		if section, err := ctx.config.GetGlobalSection(); err == nil {
 			resticBinary = section.ResticBinary
+			noShell = section.ResticWithoutShell
 		}
 	}
 
 	if restic, err := filesearch.NewFinder().FindResticBinary(resticBinary); err == nil {
 		buf := bytes.Buffer{}
 		cmd := shell.NewCommand(restic, []string{"help", command})
+		cmd.NoShell = noShell
 		cmd.Stdout = &buf
 		_, _, err = cmd.Run()
 		if err != nil {
