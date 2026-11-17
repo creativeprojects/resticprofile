@@ -11,6 +11,16 @@ import (
 type Triggers struct {
 	CalendarTrigger []CalendarTrigger `xml:"CalendarTrigger,omitempty"`
 	TimeTrigger     []TimeTrigger     `xml:"TimeTrigger,omitempty"`
+	LogonTrigger    []LogonTrigger    `xml:"LogonTrigger,omitempty"`
+}
+
+// LogonTrigger starts the task when a user logs on.
+// When UserId is empty the task triggers for any user logon, otherwise only for the specified user.
+type LogonTrigger struct {
+	Enabled       *bool          `xml:"Enabled"`
+	UserId        string         `xml:"UserId,omitempty"`
+	Delay         *period.Period `xml:"Delay,omitempty"`
+	StartBoundary *time.Time     `xml:"StartBoundary,omitempty"`
 }
 
 type TimeTrigger struct {

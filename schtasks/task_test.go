@@ -3,6 +3,7 @@
 package schtasks
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
@@ -101,4 +102,26 @@ func TestConvertDaysOfMonth(t *testing.T) {
 			assert.Equal(t, testItem.expected, result)
 		})
 	}
+}
+
+func TestAddLogonTrigger(t *testing.T) {
+	t.Run("for a specific user", func(t *testing.T) {
+		task := NewTask()
+		task.addLogonTrigger("S-1-5-21-1234")
+		require.Len(t, task.Triggers.LogonTrigger, 1)
+		assert.Equal(t, "S-1-5-21-1234", task.Triggers.LogonTrigger[0].UserId)
+
+		buffer := &bytes.Buffer{}
+		require.NoError(t, createTaskFile(task, buffer))
+		assert.Contains(t, buffer.String(), "<LogonTrigger>")
+		assert.Contains(t, buffer.String(), "<UserId>S-1-5-21-1234</UserId>")
+	})
+
+	t.Run("coexists with time triggers", func(t *testing.T) {
+		task := NewTask()
+		task.addTimeTrigger(time.Date(2020, 1, 2, 3, 4, 0, 0, time.UTC))
+		task.addLogonTrigger("user")
+		assert.Len(t, task.Triggers.TimeTrigger, 1)
+		assert.Len(t, task.Triggers.LogonTrigger, 1)
+	})
 }

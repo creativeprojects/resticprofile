@@ -82,6 +82,13 @@ loginctl enable-linger $USER
 Setting the profile option `schedule-after-network-online: true` ensures scheduled services wait for a network connection before running. This is achieved with an [After=network-online.target](https://systemd.io/NETWORK_ONLINE/) entry in the service.
 
 
+## Run after login
+
+Setting the profile option `schedule-after-login: true` (which requires `schedule-permission: user_logged_on`) adds an `OnStartupSec=0` entry to the user timer. Because the timer runs in the per-user systemd manager, it starts when the user session starts, i.e. at login. This can be combined with `schedule` (`OnCalendar`) times.
+
+Note: if you use a [custom timer template](#how-to-change-the-default-systemd-unit-and-timer-file-using-a-template), add `{{ if .AfterLogin }}OnStartupSec=0{{ end }}` to keep this feature working.
+
+
 ## systemd drop-in files
 
 You can automatically populate `*.conf.d` [drop-in files](https://www.freedesktop.org/software/systemd/man/latest/systemd-system.conf.html#main-conf) for profiles, allowing easy overrides of generated services without [modifying service templates]({{% relref "/schedules/systemd/#how-to-change-the-default-systemd-unit-and-timer-file-using-a-template" %}}). For example:
@@ -275,6 +282,8 @@ Description={{ .TimerDescription }}
 {{ range .OnCalendar -}}
 OnCalendar={{ . }}
 {{ end -}}
+{{ if .AfterLogin }}OnStartupSec=0
+{{ end -}}
 Unit={{ .SystemdProfile }}
 Persistent=true
 
@@ -294,3 +303,5 @@ These are available for both the unit and timer templates:
 * SystemdProfile   *string*
 * Nice             *integer*
 * Environment      *array of strings*
+* AfterNetworkOnline *boolean*
+* AfterLogin       *boolean*

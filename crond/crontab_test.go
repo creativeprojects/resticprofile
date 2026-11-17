@@ -473,6 +473,48 @@ func TestParseEntry(t *testing.T) {
 	}
 }
 
+func TestParseRebootEntry(t *testing.T) {
+	testData := []struct {
+		source      string
+		expectEntry *Entry
+	}{
+		{
+			source:      "@reboot\t/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", atReboot: true, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+		},
+		{
+			source:      "@reboot\tuser\t/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", user: "user", atReboot: true, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+		},
+		{
+			source:      "@reboot\tcd /workdir && /home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile",
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", workDir: "/workdir", atReboot: true, commandLine: "/home/resticprofile --no-ansi --config config.yaml run-schedule backup@profile"},
+		},
+		{
+			source:      "@reboot\t/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup",
+			expectEntry: &Entry{configFile: "config.yaml", profileName: "profile", commandName: "backup", atReboot: true, commandLine: "/home/resticprofile --no-ansi --config config.yaml --name profile --log backup.log backup"},
+		},
+	}
+
+	for _, testRun := range testData {
+		t.Run("", func(t *testing.T) {
+			entry, err := parseEntry(testRun.source)
+			require.NoError(t, err)
+			require.NotNil(t, entry)
+			assert.True(t, entry.AtReboot())
+			assert.Equal(t, testRun.expectEntry.CommandLine(), entry.CommandLine())
+			assert.Equal(t, testRun.expectEntry.CommandName(), entry.CommandName())
+			assert.Equal(t, testRun.expectEntry.ConfigFile(), entry.ConfigFile())
+			assert.Equal(t, testRun.expectEntry.ProfileName(), entry.ProfileName())
+			assert.Equal(t, testRun.expectEntry.User(), entry.User())
+			assert.Equal(t, testRun.expectEntry.WorkDir(), entry.WorkDir())
+
+			// round-trip: the parsed entry must regenerate the same line
+			assert.Equal(t, testRun.source+"\n", entry.String())
+		})
+	}
+}
+
 func TestGetEntries(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	file := "/var/spool/cron/crontabs/user"

@@ -54,6 +54,7 @@ func (u Unit) Read(unit string, unitType UnitType) (*Config, error) {
 		Schedules:            getValues(timerSections, "Timer", "OnCalendar"),
 		Priority:             getPriority(getSingleValue(serviceSections, "Service", "CPUSchedulingPolicy")),
 		User:                 getSingleValue(serviceSections, "Service", "User"),
+		AfterLogin:           hasValue(timerSections, "Timer", "OnStartupSec"),
 	}
 	return cfg, nil
 }
@@ -113,6 +114,11 @@ func getSingleValue(from map[string]map[string][]string, section, key string) st
 		}
 	}
 	return ""
+}
+
+// hasValue returns true if the given key exists in the section with at least one value.
+func hasValue(from map[string]map[string][]string, section, key string) bool {
+	return len(getValues(from, section, key)) > 0
 }
 
 func getValues(from map[string]map[string][]string, section, key string) []string {
