@@ -4,6 +4,7 @@ package systemd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -21,8 +22,10 @@ import (
 )
 
 const (
-	defaultPermission = 0o644
-	systemdSystemDir  = "/etc/systemd/system/"
+	defaultPermission         = 0o644
+	environmentFilePermission = 0o600 // the captured environment can contain secrets
+	environmentFileName       = "resticprofile.env"
+	systemdSystemDir          = "/etc/systemd/system/"
 
 	systemdUnitDefaultTmpl = `[Unit]
 Description={{ .JobDescription }}
@@ -44,6 +47,8 @@ ExecStart={{ .CommandLine }}
 {{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"
+{{ end -}}
+{{ if .EnvironmentFile }}EnvironmentFile={{ .EnvironmentFile }}
 {{ end -}}
 `
 
@@ -83,6 +88,7 @@ type templateInfo struct {
 	SystemdProfile       string
 	Nice                 int
 	Environment          []string
+	EnvironmentFile      string
 	AfterNetworkOnline   bool
 	CPUSchedulingPolicy  string
 	IOSchedulingClass    int
@@ -139,8 +145,7 @@ func (u Unit) Generate(config Config) error {
 		}
 	}
 
-	environment := slices.Clone(config.Environment)
-
+	var environment []string
 	if config.UnitType == SystemUnit && config.User == "" {
 		// permission = system
 		environment = append(environment, fmt.Sprintf("HOME=%s", u.user.SudoHomeDir))
@@ -150,6 +155,17 @@ func (u Unit) Generate(config Config) error {
 	} else if u.user.UserHomeDir != "" {
 		// permission = user or user_logged_on
 		environment = append(environment, fmt.Sprintf("HOME=%s", u.user.UserHomeDir))
+	}
+
+	// Any user can read Environment= ("systemctl show"): the captured environment, which can contain secrets,
+	// goes to a file only readable by the owner of the unit. Generated variables keep precedence.
+	capturedEnvironment := collect.All(config.Environment, func(env string) bool {
+		return !slices.ContainsFunc(environment, func(generated string) bool { return envName(generated) == envName(env) })
+	})
+	environmentFilePath := filepath.Join(systemdUserDir, GetServiceFileDropInDir(config.Title, config.SubTitle), environmentFileName)
+	environmentFile := ""
+	if len(capturedEnvironment) > 0 {
+		environmentFile = environmentFilePath
 	}
 
 	policy := ""
@@ -168,6 +184,7 @@ func (u Unit) Generate(config Config) error {
 		SystemdProfile:       systemdProfile,
 		Nice:                 config.Nice,
 		Environment:          environment,
+		EnvironmentFile:      environmentFile,
 		CPUSchedulingPolicy:  policy,
 		IOSchedulingClass:    config.IOSchedulingClass,
 		IOSchedulingPriority: config.IOSchedulingPriority,
@@ -179,6 +196,9 @@ func (u Unit) Generate(config Config) error {
 	systemdUnitTmpl, err := u.loadTemplate(config.UnitFile, systemdUnitDefaultTmpl)
 	if err != nil {
 		return err
+	}
+	if environmentFile != "" && !strings.Contains(systemdUnitTmpl, ".EnvironmentFile") {
+		clog.Warningf("unit template %q doesn't use {{ .EnvironmentFile }}: the service won't get the captured environment", config.UnitFile)
 	}
 	unitTmpl, err := templates.New("systemd.unit").Parse(systemdUnitTmpl)
 	if err != nil {
@@ -219,6 +239,11 @@ func (u Unit) Generate(config Config) error {
 	if config.UnitType == UserUnit && u.user.Sudo {
 		// we need to change the owner to the original account
 		_ = u.fs.Chown(filePathName, u.user.Uid, u.user.Gid)
+	}
+
+	// written before the drop-ins, which change the owner of the folder content for user units
+	if err = u.writeEnvironmentFile(environmentFilePath, capturedEnvironment); err != nil {
+		return err
 	}
 
 	existingFiles := collect.All(config.DropInFiles, u.DropInFileExists)
@@ -300,4 +325,45 @@ func (u Unit) loadTemplate(filename, defaultTmpl string) (string, error) {
 		return "", err
 	}
 	return output.String(), nil
+}
+
+// writeEnvironmentFile saves the environment in a file only readable by its owner, or removes the file when there's no environment
+func (u Unit) writeEnvironmentFile(filename string, environment []string) error {
+	// a new file gets the right permission, and O_EXCL doesn't follow a symlink
+	if err := u.fs.Remove(filename); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	if len(environment) == 0 {
+		return nil
+	}
+	if err := u.fs.MkdirAll(filepath.Dir(filename), 0o755); err != nil {
+		return err
+	}
+	content := strings.Builder{}
+	for _, env := range environment {
+		name, value, _ := strings.Cut(env, "=")
+		content.WriteString(name + "=" + quoteEnvironmentValue(value) + "\n")
+	}
+	clog.Debugf("writing %v", filename)
+	file, err := u.fs.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, environmentFilePermission)
+	if err != nil {
+		return err
+	}
+	_, err = file.WriteString(content.String())
+	if closeErr := file.Close(); err == nil {
+		err = closeErr
+	}
+	return err
+}
+
+// environmentValueEscaper escapes the only sequences systemd interprets in a double-quoted environment file value
+var environmentValueEscaper = strings.NewReplacer(`\`, `\\`, `"`, `\"`, "`", "\\`", `$`, `\$`)
+
+func quoteEnvironmentValue(value string) string {
+	return `"` + environmentValueEscaper.Replace(value) + `"`
+}
+
+func envName(env string) string {
+	name, _, _ := strings.Cut(env, "=")
+	return name
 }
