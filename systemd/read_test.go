@@ -176,7 +176,7 @@ func TestReadSystemUnit(t *testing.T) {
 				WorkingDirectory: tc.config.WorkingDirectory,
 				CommandLine:      tc.config.CommandLine,
 				UnitType:         tc.config.UnitType,
-				Environment:      append(tc.config.Environment, "HOME="+homedir),
+				Environment:      append([]string{"HOME=" + homedir}, tc.config.Environment...),
 				Schedules:        tc.config.Schedules,
 				Priority:         tc.config.Priority,
 				User:             tc.config.User,

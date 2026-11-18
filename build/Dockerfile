@@ -9,7 +9,7 @@ ENV TZ=Etc/UTC
 
 COPY build/restic-${TARGETARCH} /usr/bin/restic
 COPY build/rclone-${TARGETARCH} /usr/bin/rclone
-COPY resticprofile /usr/bin/resticprofile
+COPY build/resticprofile-${TARGETARCH} /usr/bin/resticprofile
 
 RUN apk add --no-cache ca-certificates curl logrotate openssh-client-default tzdata
 

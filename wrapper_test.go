@@ -48,23 +48,23 @@ func TestValidResticArgumentsList(t *testing.T) {
 
 			arguments := wrapper.validResticArgumentsList(command)
 
+			// an option may be declared once per OS (e.g. with a different FromVersion)
+			available := make(map[string]bool)
 			for _, options := range [][]restic.Option{cmd.GetOptions(), defaultOptions} {
 				for _, option := range options {
-					if option.AvailableForOS() {
-						if option.Name != "" {
-							assert.Contains(t, arguments, fmt.Sprintf("--%s", option.Name))
-						}
-						if option.Alias != "" {
-							assert.Contains(t, arguments, fmt.Sprintf("-%s", option.Alias))
-						}
-					} else {
-						if option.Name != "" {
-							assert.NotContains(t, arguments, fmt.Sprintf("--%s", option.Name))
-						}
-						if option.Alias != "" {
-							assert.NotContains(t, arguments, fmt.Sprintf("-%s", option.Alias))
-						}
+					if option.Name != "" {
+						available["--"+option.Name] = available["--"+option.Name] || option.AvailableForOS()
 					}
+					if option.Alias != "" {
+						available["-"+option.Alias] = available["-"+option.Alias] || option.AvailableForOS()
+					}
+				}
+			}
+			for arg, isAvailable := range available {
+				if isAvailable {
+					assert.Contains(t, arguments, arg)
+				} else {
+					assert.NotContains(t, arguments, arg)
 				}
 			}
 		})
@@ -1242,7 +1242,7 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.False(t, retry)
 
 	// No retry when disabled
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 500*time.Millisecond)
 	retry, _ = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.False(t, retry)
 
@@ -1254,12 +1254,12 @@ func TestCanRetryAfterRemoteLockFailure(t *testing.T) {
 	assert.Equal(t, time.Duration(0), sleep)
 
 	// Retry is acceptable when there is enough remaining time for the delay (ResticLockRetryAfter)
-	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MinResticLockRetryDelay + 500*time.Millisecond)
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
 	assert.Equal(t, constants.MinResticLockRetryDelay, sleep)
 
-	wrapper.maxWaitOnLock(constants.MaxResticLockRetryDelay + 50*time.Millisecond)
+	wrapper.maxWaitOnLock(constants.MaxResticLockRetryDelay + 500*time.Millisecond)
 	wrapper.global.ResticLockRetryAfter = 2 * constants.MaxResticLockRetryDelay
 	retry, sleep = wrapper.canRetryAfterRemoteLockFailure(mockOutput)
 	assert.True(t, retry)
@@ -1743,4 +1743,103 @@ func TestRunUnlockWithCommandLineFlags(t *testing.T) {
 	args := profile.GetCommandFlags(constants.CommandUnlock)
 	cmd := wrapper.prepareCommand(constants.CommandUnlock, args, false)
 	assert.Equal(t, []string{"unlock"}, cmd.args)
+}
+
+func TestRunnerWithBeforeAndAfter(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                string
+		ctx                 *Context
+		commands            config.RunShellCommandsSection
+		command             string
+		action              func() error
+		returnErrorContains string
+	}{
+		{
+			name: "no before, no after, action succeeded",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			action: func() error {
+				return nil
+			},
+		},
+		{
+			name: "before and after, action succeeded",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"echo before"},
+				RunAfter:  []string{"echo after"},
+			},
+			action: func() error {
+				return nil
+			},
+		},
+		{
+			name: "before and action succeeded, after failed",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"echo before"},
+				RunAfter:  []string{"exit 1"},
+			},
+			action: func() error {
+				return nil
+			},
+			returnErrorContains: "run-after",
+		},
+		{
+			name: "before succeeded, action failed",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"echo before"},
+				RunAfter:  []string{"exit 1"},
+			},
+			action: func() error {
+				return errors.New("action failed")
+			},
+			returnErrorContains: "action failed",
+		},
+		{
+			name: "before failed",
+			ctx: &Context{
+				profile:  config.NewProfile(&config.Config{}, "name"),
+				terminal: term.NewTerminal(),
+			},
+			commands: config.RunShellCommandsSection{
+				RunBefore: []string{"exit 1"},
+				RunAfter:  []string{"echo after"},
+			},
+			action: func() error {
+				t.Error("this action should not have been called")
+				return nil
+			},
+			returnErrorContains: "run-before",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			r := newResticWrapper(tt.ctx)
+			runner := r.runnerWithBeforeAndAfter(tt.commands, tt.command, tt.action)
+			err := runner()
+			if tt.returnErrorContains != "" {
+				t.Log(err)
+				assert.ErrorContains(t, err, tt.returnErrorContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

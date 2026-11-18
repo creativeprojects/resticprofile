@@ -113,14 +113,12 @@ func TestStatusScheduleIntegrationUsingCrontab(t *testing.T) {
 			defer term.Set(nil)
 
 			ctx := commandContext{
-				Context: Context{
-					config: cfg,
-					global: global,
-					request: Request{
-						profile: tc.profileName,
-					},
-					terminal: terminal,
+				config: cfg,
+				global: global,
+				request: Request{
+					profile: tc.profileName,
 				},
+				terminal: terminal,
 			}
 
 			err = statusSchedule(ctx)
@@ -164,14 +162,12 @@ func TestRemoveScheduleIntegrationUsingCrontab(t *testing.T) {
 	defer term.Set(nil)
 
 	ctx := commandContext{
-		Context: Context{
-			config: cfg,
-			global: global,
-			request: Request{
-				profile: "profile",
-			},
-			terminal: terminal,
+		config: cfg,
+		global: global,
+		request: Request{
+			profile: "profile",
 		},
+		terminal: terminal,
 	}
 
 	// this should remove the 2 lines that resemble a resticprofile schedule
@@ -211,14 +207,12 @@ func TestCreateScheduleIntegrationUsingCrontab(t *testing.T) {
 	defer term.Set(nil)
 
 	ctx := commandContext{
-		Context: Context{
-			config: cfg,
-			global: global,
-			request: Request{
-				profile: "profile-schedule-struct",
-			},
-			terminal: terminal,
+		config: cfg,
+		global: global,
+		request: Request{
+			profile: "profile-schedule-struct",
 		},
+		terminal: terminal,
 	}
 
 	// create one schedule
@@ -269,14 +263,12 @@ func TestCreateScheduleOverwriteExistingIntegrationUsingCrontab(t *testing.T) {
 	defer term.Set(nil)
 
 	ctx := commandContext{
-		Context: Context{
-			config: cfg,
-			global: global,
-			request: Request{
-				arguments: []string{"--all", "--reload", "--no-start"},
-			},
-			terminal: terminal,
+		config: cfg,
+		global: global,
+		request: Request{
+			arguments: []string{"--all", "--reload", "--no-start"},
 		},
+		terminal: terminal,
 	}
 
 	// create (or update) two schedules

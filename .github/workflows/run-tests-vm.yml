@@ -14,6 +14,12 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AQUA_LOG_COLOR: always
+      AQUA_ENFORCE_CHECKSUM: "true"
+      AQUA_ENFORCE_REQUIRE_CHECKSUM: "true"
     steps:
       - uses: actions/checkout@v7
 
@@ -37,12 +43,14 @@ jobs:
         env:
           GOOS: ${{ inputs.os }}
 
-      - name: Run tests in VM
+      - name: Start VM
         uses: cross-platform-actions/action@v1
         with:
           operating_system: ${{ inputs.os }}
           version: '${{ inputs.os_version }}'
           memory: 8G
           cpu_count: 4
-          run: |
-            ./scripts/run-tests.sh
+
+      - name: Run tests in VM
+        shell: cpa.sh {0}
+        run: ./scripts/run-tests.sh

@@ -111,6 +111,10 @@ The `schedule-run-level` parameter accepts three values:
 
 Sets the wait time for a resticprofile and restic lock to become available. Used only when `schedule-lock-mode` is unset or `default`.
 
+{{% notice style="note" %}}
+`schedule-lock-mode` and `schedule-lock-wait` have no effect when you run a profile manually from the command line. Use the `--lock-wait` flag instead: see [lock wait in interactive sessions]({{% relref "/usage/locks/index.html#interactive-sessions" %}}).
+{{% /notice %}}
+
 
 ## schedule-log
 
@@ -119,6 +123,10 @@ Sets the wait time for a resticprofile and restic lock to become available. Used
 - Redirect all resticprofile log entries to the syslog server. In this case, the parameter is a URL like `udp://server:514` or `tcp://127.0.0.1:514`.
 
 If no server responds on the specified port, resticprofile will send the logs to the default output instead.
+
+A relative file path is resolved from the directory of the configuration file, not from the [working directory]({{% relref "/schedules/commands/index.html#working-directory" %}}) of the scheduled job. Use a full path to save the log file anywhere else.
+
+On macOS, see also the [log files created by launchd]({{% relref "/schedules/launchd/index.html#log-files" %}}).
 
 
 ## schedule-priority
@@ -334,3 +342,133 @@ self:
 {{% /tab %}}
 {{< /tabs >}}
 
+
+## Schedule of a group
+
+{{% notice style="info" %}}
+Scheduling a group requires the configuration file format `v2` and resticprofile `v0.29.0` or later.
+{{% /notice %}}
+
+A group of profiles can be scheduled as a whole: when the schedule triggers, the scheduled command runs on each profile of the group, one after the other.
+
+The schedules are declared in the `schedules` section of the group, with one entry per command (`backup`, `check`, `forget`, `prune` or `copy`). Each entry uses the parameters described on this page, without the `schedule-` prefix, and the `schedule` parameter is named `at`:
+
+{{< tabs groupid="config-v2" >}}
+{{% tab title="yaml" %}}
+
+```yaml
+version: "2"
+
+groups:
+  full-backup:
+    profiles:
+      - root
+      - documents
+    schedules:
+      backup:
+        at: "*:00,30"
+        permission: system
+        priority: background
+        log: group-backup.log
+        lock-mode: default
+        lock-wait: 15m30s
+
+profiles:
+  root:
+    repository: /backup/root
+    password-file: key
+    backup:
+      source: /
+
+  documents:
+    repository: /backup/documents
+    password-file: key
+    backup:
+      source: /home/user/Documents
+```
+
+{{% /tab %}}
+{{% tab title="toml" %}}
+
+```toml
+version = "2"
+
+[groups.full-backup]
+  profiles = ["root", "documents"]
+
+  [groups.full-backup.schedules.backup]
+    at = "*:00,30"
+    permission = "system"
+    priority = "background"
+    log = "group-backup.log"
+    lock-mode = "default"
+    lock-wait = "15m30s"
+
+[profiles.root]
+  repository = "/backup/root"
+  password-file = "key"
+
+  [profiles.root.backup]
+    source = "/"
+
+[profiles.documents]
+  repository = "/backup/documents"
+  password-file = "key"
+
+  [profiles.documents.backup]
+    source = "/home/user/Documents"
+```
+
+{{% /tab %}}
+{{% tab title="json" %}}
+
+```json
+{
+  "version": "2",
+  "groups": {
+    "full-backup": {
+      "profiles": [
+        "root",
+        "documents"
+      ],
+      "schedules": {
+        "backup": {
+          "at": "*:00,30",
+          "permission": "system",
+          "priority": "background",
+          "log": "group-backup.log",
+          "lock-mode": "default",
+          "lock-wait": "15m30s"
+        }
+      }
+    }
+  },
+  "profiles": {
+    "root": {
+      "repository": "/backup/root",
+      "password-file": "key",
+      "backup": {
+        "source": "/"
+      }
+    },
+    "documents": {
+      "repository": "/backup/documents",
+      "password-file": "key",
+      "backup": {
+        "source": "/home/user/Documents"
+      }
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+The schedule is installed with the name of the group:
+
+```shell
+resticprofile --name full-backup schedule
+```
+
+See [Configuration v2]({{% relref "/configuration/v2/index.html#scheduling-a-group" %}}) for the list of parameters and the details on how a scheduled group runs.

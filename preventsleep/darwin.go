@@ -31,11 +31,10 @@ func New() *Caffeinate {
 
 // Start caffeinate in the background and returns.
 func (c *Caffeinate) Start() error {
-	cmd, ok := c.cmd.Load().(*exec.Cmd)
-	if ok {
+	if _, ok := c.cmd.Load().(*exec.Cmd); ok {
 		return ErrAlreadyStarted
 	}
-	cmd = exec.CommandContext(context.TODO(), command, flag)
+	cmd := exec.CommandContext(context.TODO(), command, flag)
 	c.cmd.Store(cmd)
 	if err := cmd.Start(); err != nil {
 		return err

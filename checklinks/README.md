@@ -43,7 +43,7 @@ checklinks -source https://creativeprojects.github.io/resticprofile \
 ## Usage
 
 ```
-checklinks [-v] [-source <url>] [-target <url>] [-dir <path>]
+checklinks [-v] [-q] [-source <url>] [-target <url>] [-dir <path>]
 ```
 
 | Flag | Default | Description |

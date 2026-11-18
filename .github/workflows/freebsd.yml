@@ -21,7 +21,7 @@ jobs:
     name: Run tests
     strategy:
       matrix:
-        freebsd_version: ['14.3', '15.0']
+        freebsd_version: ['14.3', '15.0', '15.1']
     uses: ./.github/workflows/run-tests-vm.yml
     with:
       os: 'freebsd'

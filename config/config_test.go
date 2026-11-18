@@ -267,33 +267,28 @@ func TestBoolPointer(t *testing.T) {
 		continueOnError maybe.Bool
 	}{
 		{
-			testTemplate: testTemplate{
-				format: FormatTOML,
-				config: `
+			format: FormatTOML,
+			config: `
 version = 2
 [groups]
 [groups.groupname]
 profiles = []
 `,
-			},
 			continueOnError: maybe.Bool{},
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatYAML,
-				config: `
+			format: FormatYAML,
+			config: `
 version: 2
 groups:
   groupname:
     profiles: []
 `,
-			},
 			continueOnError: maybe.Bool{},
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatJSON,
-				config: `
+			format: FormatJSON,
+			config: `
 {
 	"version": 2,
 	"groups": {
@@ -303,39 +298,33 @@ groups:
 	}
 }
 `,
-			},
 			continueOnError: maybe.Bool{},
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatTOML,
-				config: `
+			format: FormatTOML,
+			config: `
 version = 2
 [groups]
 [groups.groupname]
 profiles = []
 continue-on-error = true
 `,
-			},
 			continueOnError: maybe.True(),
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatYAML,
-				config: `
+			format: FormatYAML,
+			config: `
 version: 2
 groups:
  groupname:
   profiles: []
   continue-on-error: true
 `,
-			},
 			continueOnError: maybe.True(),
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatJSON,
-				config: `
+			format: FormatJSON,
+			config: `
 {
 	"version": 2,
 	"groups": {
@@ -346,39 +335,33 @@ groups:
 	}
 }
 `,
-			},
 			continueOnError: maybe.True(),
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatTOML,
-				config: `
+			format: FormatTOML,
+			config: `
 version = 2
 [groups]
 [groups.groupname]
 profiles = []
 continue-on-error = false
 `,
-			},
 			continueOnError: maybe.False(),
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatYAML,
-				config: `
+			format: FormatYAML,
+			config: `
 version: 2
 groups:
   groupname:
     profiles: []
     continue-on-error: false
 `,
-			},
 			continueOnError: maybe.False(),
 		},
 		{
-			testTemplate: testTemplate{
-				format: FormatJSON,
-				config: `
+			format: FormatJSON,
+			config: `
 {
 	"version": 2,
 	"groups": {
@@ -389,7 +372,6 @@ groups:
 	}
 }
 `,
-			},
 			continueOnError: maybe.False(),
 		},
 	}
