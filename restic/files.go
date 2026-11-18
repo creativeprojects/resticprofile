@@ -45,7 +45,7 @@ func LoadEmbeddedCommands() {
 			commands = cmds
 		}
 
-		for _, goos := range []string{"windows"} {
+		for _, goos := range []string{"windows", "darwin"} {
 			if err == nil {
 				err = loadEmbeddedOSExtensions(goos, cmds)
 			}

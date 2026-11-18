@@ -1,4 +1,4 @@
-//go:build !windows && !netbsd && !openbsd && !solaris
+//go:build !windows && !netbsd && !openbsd && !solaris && !(linux && 386) && !(linux && arm) && !(linux && mips) && !(linux && mipsle)
 
 package fuse
 

@@ -195,6 +195,28 @@ For that matter, if you add the commandline flag `--lock-wait` or configure sche
 
 Note: The lock wait duration is cumulative. If various locks in one profile-run require lock wait, the total wait time may not exceed the duration that was specified. 
 
+### Interactive sessions
+
+`schedule-lock-mode` and `schedule-lock-wait` only apply when resticprofile is started by a schedule (through the [run-schedule]({{% relref "/schedules/commands/index.html#run-schedule-command" %}}) command). They are ignored when you run a profile yourself from the command line: without a lock wait duration, resticprofile fails immediately when another process is holding a lock.
+
+This is usually what you want in an interactive session, since you are in front of the console to inspect the lock and remove it manually.
+
+To wait for a lock in an interactive session, add the `--lock-wait` flag to the command line (or set the `RESTICPROFILE_LOCK_WAIT` environment variable):
+
+```shell
+resticprofile --lock-wait 15m profile.backup
+```
+
+The same goes for `restic-lock-retry-after` in the `global` section: a restic command that failed on acquiring a lock is only retried every `restic-lock-retry-after` when a lock wait duration is set, either by `--lock-wait` or by `schedule-lock-wait` in a scheduled run.
+
+The [stale lock](#stale-locks) settings (`force-inactive-lock` and `restic-stale-lock-age`) apply to every run, scheduled or not: when `force-inactive-lock` is enabled, resticprofile removes a stale lock and retries the command, with or without a lock wait duration.
+
+The `lock` file of the profile is also used in every run, unless you skip it with the `--no-lock` flag, or with `schedule-lock-mode` set to `ignore` in a scheduled run.
+
+{{% notice style="tip" %}}
+To test the lock settings of a schedule from the command line, run it the same way the scheduler does: `resticprofile run-schedule backup@profile`
+{{% /notice %}}
+
 ## restic lock management
 
 resticprofile can retry restic commands that fail on acquiring a lock and can also ask restic to unlock stale locks. The behaviour is controlled by 2 settings inside the `global` section:

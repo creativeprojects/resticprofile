@@ -338,13 +338,11 @@ var (
 
 func newResticPropertyInfo(name string, option restic.Option) *resticPropertyInfo {
 	info := &resticPropertyInfo{
-		basicPropertyInfo: basicPropertyInfo{
-			name:       name,
-			required:   false,
-			single:     option.Once,
-			deprecated: len(option.RemovedInVersion) > 0,
-			mustInt:    intValuePattern.MatchString(option.Default),
-		},
+		name:       name,
+		required:   false,
+		single:     option.Once,
+		deprecated: len(option.RemovedInVersion) > 0,
+		mustInt:    intValuePattern.MatchString(option.Default),
 		optionFlag: option,
 	}
 
@@ -437,8 +435,8 @@ func configurePropertyFromType(p *basicPropertyInfo, valueType reflect.Type) {
 		}
 	case reflect.Map:
 		set := &namedPropertySet{
-			propertySet: propertySet{openSet: true},
-			name:        p.Name(),
+			openSet: true,
+			name:    p.Name(),
 		}
 		setValues := &propertyInfo{}
 		configurePropertyFromType(setValues.basic(), util.ElementType(valueType))
@@ -703,12 +701,10 @@ func NewProfileInfoForRestic(resticVersion string, withDefaultOptions bool) Prof
 		// add section
 		if len(properties) > 0 && !isExcluded(sectionName, "*") {
 			section := &sectionInfo{
-				command: command,
-				namedPropertySet: namedPropertySet{
-					propertySet: propertySet{properties: properties},
-					name:        sectionName,
-					description: command.GetDescription(),
-				},
+				command:     command,
+				properties:  properties,
+				name:        sectionName,
+				description: command.GetDescription(),
 			}
 
 			sections[sectionName] = section

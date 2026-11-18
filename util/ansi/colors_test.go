@@ -11,7 +11,7 @@ import (
 func Test256Colors(t *testing.T) {
 	test := func(color *color.Color, expected string) {
 		color.EnableColor()
-		seq := strings.Split(color.Sprint("||"), "||")[0]
+		seq, _, _ := strings.Cut(color.Sprint("||"), "||")
 		assert.Equal(t, expected, seq)
 	}
 	test(New256FgColor(10), Sequence('m', 38, 5, 10))

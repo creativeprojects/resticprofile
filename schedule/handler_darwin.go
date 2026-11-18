@@ -5,7 +5,9 @@ package schedule
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path"
@@ -343,7 +345,12 @@ func (h *HandlerLaunchd) createPlistFile(launchdJob *darwin.LaunchdJob, permissi
 			_ = h.fs.Chown(dir, user.Uid, user.Gid)
 		}
 	}
-	file, err := h.fs.Create(filename)
+	// the plist can contain the captured environment (secrets): only its owner can read it.
+	// A new file gets the right permission, and O_EXCL doesn't follow a symlink
+	if err = h.fs.Remove(filename); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
+	file, err := h.fs.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return "", err
 	}
