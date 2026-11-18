@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -48,7 +49,7 @@ func (u Unit) Read(unit string, unitType UnitType) (*Config, error) {
 		WorkingDirectory:     getSingleValue(serviceSections, "Service", "WorkingDirectory"),
 		CommandLine:          getSingleValue(serviceSections, "Service", "ExecStart"),
 		UnitType:             unitType,
-		Environment:          append(u.readEnvironmentFiles(serviceSections), getValues(serviceSections, "Service", "Environment")...),
+		Environment:          slices.Concat(getValues(serviceSections, "Service", "Environment"), u.readEnvironmentFiles(serviceSections)),
 		Nice:                 getIntegerValue(serviceSections, "Service", "Nice"),
 		IOSchedulingClass:    getIntegerValue(serviceSections, "Service", "IOSchedulingClass"),
 		IOSchedulingPriority: getIntegerValue(serviceSections, "Service", "IOSchedulingPriority"),

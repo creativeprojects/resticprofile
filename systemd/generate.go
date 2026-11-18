@@ -22,10 +22,9 @@ import (
 )
 
 const (
-	defaultPermission         = 0o644
-	environmentFilePermission = 0o600 // the captured environment can contain secrets
-	environmentFileName       = "resticprofile.env"
-	systemdSystemDir          = "/etc/systemd/system/"
+	defaultPermission   = 0o644
+	environmentFileName = "resticprofile.env"
+	systemdSystemDir    = "/etc/systemd/system/"
 
 	systemdUnitDefaultTmpl = `[Unit]
 Description={{ .JobDescription }}
@@ -329,14 +328,14 @@ func (u Unit) loadTemplate(filename, defaultTmpl string) (string, error) {
 
 // writeEnvironmentFile saves the environment in a file only readable by its owner, or removes the file when there's no environment
 func (u Unit) writeEnvironmentFile(filename string, environment []string) error {
-	// a new file gets the right permission, and O_EXCL doesn't follow a symlink
-	if err := u.fs.Remove(filename); err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return err
-	}
 	if len(environment) == 0 {
+		if err := u.fs.Remove(filename); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
 		return nil
 	}
-	if err := u.fs.MkdirAll(filepath.Dir(filename), 0o755); err != nil {
+	dir := filepath.Dir(filename)
+	if err := u.fs.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 	content := strings.Builder{}
@@ -345,13 +344,21 @@ func (u Unit) writeEnvironmentFile(filename string, environment []string) error 
 		content.WriteString(name + "=" + quoteEnvironmentValue(value) + "\n")
 	}
 	clog.Debugf("writing %v", filename)
-	file, err := u.fs.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, environmentFilePermission)
+	// the temporary file is created with 0600 permission, and the rename replaces a symlink instead of following it.
+	// the previous file stays in place until the new one is complete.
+	file, err := afero.TempFile(u.fs, dir, "."+filepath.Base(filename)+"-*")
 	if err != nil {
 		return err
 	}
 	_, err = file.WriteString(content.String())
 	if closeErr := file.Close(); err == nil {
 		err = closeErr
+	}
+	if err == nil {
+		err = u.fs.Rename(file.Name(), filename)
+	}
+	if err != nil {
+		_ = u.fs.Remove(file.Name())
 	}
 	return err
 }

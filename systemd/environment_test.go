@@ -3,6 +3,7 @@
 package systemd
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -65,7 +66,7 @@ func TestGenerateEnvironmentFile(t *testing.T) {
 	// the generated HOME keeps precedence over the captured one
 	read, err := unit.Read(testServiceFile, SystemUnit)
 	require.NoError(t, err)
-	assert.Equal(t, []string{config.Environment[0], config.Environment[1], "HOME=/root"}, read.Environment)
+	assert.Equal(t, []string{"HOME=/root", config.Environment[0], config.Environment[1]}, read.Environment)
 
 	// nothing captured: no file
 	require.NoError(t, unit.Generate(testEnvironmentConfig()))
@@ -96,6 +97,30 @@ func TestEnvironmentFileDoesNotFollowSymlink(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, info.Mode().IsRegular())
 	assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+}
+
+type failingRenameFs struct{ afero.Fs }
+
+func (failingRenameFs) Rename(string, string) error { return errors.New("rename failed") }
+
+func TestEnvironmentFileKeptOnFailure(t *testing.T) {
+	t.Parallel()
+
+	fs := afero.NewMemMapFs()
+	environmentFile := filepath.Join(GetSystemDir(), testEnvironmentFile)
+	require.NoError(t, afero.WriteFile(fs, environmentFile, []byte("old"), 0o600))
+
+	unit := Unit{fs: failingRenameFs{fs}, user: testSudoUser}
+	require.Error(t, unit.writeEnvironmentFile(environmentFile, []string{"RESTIC_PASSWORD=secret"}))
+
+	content, err := afero.ReadFile(fs, environmentFile)
+	require.NoError(t, err)
+	assert.Equal(t, "old", string(content))
+
+	// no temporary file left behind
+	entries, err := afero.ReadDir(fs, filepath.Dir(environmentFile))
+	require.NoError(t, err)
+	assert.Len(t, entries, 1)
 }
 
 func TestParseEnvironmentFile(t *testing.T) {
