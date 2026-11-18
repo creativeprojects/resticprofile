@@ -94,6 +94,27 @@ func TestResticPropertyInfo(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("KeepUnlimited", func(t *testing.T) {
+		info := newResticPropertyInfo("keep-daily", restic.Option{Name: "keep-daily", Default: "0", Once: true})
+		assert.True(t, info.CanBeNumeric())
+		assert.True(t, info.MustBeInteger())
+		assert.True(t, info.CanBeString())
+		assert.True(t, info.IsMultiType())
+		assert.Equal(t, []string{"unlimited"}, info.EnumValues())
+
+		// other integer flags don't accept "unlimited"
+		info = newResticPropertyInfo("limit-download", restic.Option{Name: "limit-download", Default: "0", Once: true})
+		assert.True(t, info.CanBeNumeric())
+		assert.False(t, info.CanBeString())
+		assert.Empty(t, info.EnumValues())
+
+		// non-integer "keep-*" flags are unchanged
+		info = newResticPropertyInfo("keep-within", restic.Option{Name: "keep-within", Default: "1y12m30d", Once: true})
+		assert.False(t, info.CanBeNumeric())
+		assert.True(t, info.CanBeString())
+		assert.Empty(t, info.EnumValues())
+	})
 }
 
 func TestJoinByEmpty(t *testing.T) {

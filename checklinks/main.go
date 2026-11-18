@@ -54,7 +54,7 @@ import (
 )
 
 var (
-	excludeDirs = []string{".git", ".github", ".vscode", "build", "dist", "public", "docs", "checklinks"}
+	excludeDirs = []string{".git", ".github", ".vscode", "build", "dist", "public", "www", "docs", "checklinks"}
 	excludeURLs = []string{
 		"%s/jsonschema",
 		"%s/jsonschema/",
@@ -286,5 +286,6 @@ func startServer(root string) *httptest.Server {
 
 func cleanup(rawBytes []byte) []byte {
 	rawBytes = bytes.ReplaceAll(rawBytes, []byte("&#34;"), []byte(`"`))
+	rawBytes = bytes.ReplaceAll(rawBytes, []byte("&#10;"), []byte("\n"))
 	return rawBytes
 }

@@ -28,7 +28,8 @@ jobs:
       contents: read
     env:
       AQUA_LOG_COLOR: always
-      AQUA_REQUIRE_CHECKSUM: "true"
+      AQUA_ENFORCE_CHECKSUM: "true"
+      AQUA_ENFORCE_REQUIRE_CHECKSUM: "true"
     steps:
 
       - uses: actions/checkout@v7
@@ -50,6 +51,13 @@ jobs:
           check-latest: true
           cache: true
 
+      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
+        uses: aquaproj/aqua-installer@v4.1.1
+        with:
+          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
+          packages: |
+            hugo
+
       - name: Set branch name for pages.dev
         id: branch_name
         run: |
@@ -67,13 +75,6 @@ jobs:
         run: go run ./config/checkdoc -r docs/content -i changelog.md
         shell: bash
 
-      - name: Aqua Installer ${{ steps.dotenv.outputs.aqua_version }}
-        uses: aquaproj/aqua-installer@v4.1.1
-        with:
-          aqua_version: ${{ steps.dotenv.outputs.aqua_version }}
-          packages: |
-            hugo
-
       - name: Build
         run: |
           cd docs
@@ -81,7 +82,7 @@ jobs:
           hugo --minify --baseURL "https://${{ steps.branch_name.outputs.branch_name }}.resticprofile.pages.dev/"
 
       - name: Check documentation links from code
-        run: go run ./checklinks -v -dir=./public/
+        run: go run ./checklinks -dir=./public/
         shell: bash
 
       - name: Check broken links

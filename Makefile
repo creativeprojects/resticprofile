@@ -60,8 +60,6 @@ endif
 TMPDIR ?= /tmp
 SSH_TESTS_TMPDIR=$(shell echo "$(TMPDIR)/resticprofile-ssh-tests" | tr -s /)
 
-TOOLS_BIN=$(shell aqua root-dir)/bin
-
 TOC_START=<\!--ts-->
 TOC_END=<\!--te-->
 TOC_PATH=toc.md
@@ -109,11 +107,16 @@ update-tools: aqua ## Update required tools using aqua
 	@aqua update
 	@aqua update-checksum -prune
 
-$(TOOLS_BIN)/%:
-	@echo "[*] $@"
-	@aqua install $*
+# Use the tool found in PATH (installed manually or by another tool), otherwise install it with aqua
+tool-%:
+	@command -v $* >/dev/null 2>&1 || { \
+		command -v aqua >/dev/null 2>&1 || { echo "$* not found: install it manually, or install aqua to manage tool dependencies: https://aquaproj.github.io/docs/install"; exit 1; }; \
+		echo "[*] installing $* with aqua"; \
+		aqua install $* || exit 1; \
+		command -v $* >/dev/null 2>&1 || { echo "$* was installed by aqua but is not in your PATH: add $$(aqua root-dir)/bin to your PATH"; exit 1; }; \
+	}
 
-mocks: download aqua $(TOOLS_BIN)/mockery ## Generate mocks
+mocks: download tool-mockery ## Generate mocks
 	@echo "[*] $@"
 	@find . -path "*/mocks/*" -exec rm {} \;
 	@mockery --config .mockery.yml
@@ -194,17 +197,17 @@ build-windows: download ## Build the binaries for Windows
 build-all: build-mac build-linux build-pi build-windows ## Build the binary for all platforms
 
 test: export TEST_HELPERS=$(BUILD)
-test: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests
+test: mocks test-helpers tool-gotestsum ## Run unit tests
 	@echo "[*] $@"
 	@gotestsum -- -count=1 $(TESTS)
 
 test-short: export TEST_HELPERS=$(BUILD)
-test-short: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests in short mode
+test-short: mocks test-helpers tool-gotestsum ## Run unit tests in short mode
 	@echo "[*] $@"
 	@gotestsum -- -short -count=1 $(TESTS)
 
 test-race: export TEST_HELPERS=$(BUILD)
-test-race: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests with race detector
+test-race: mocks test-helpers tool-gotestsum ## Run unit tests with race detector
 	@echo "[*] $@"
 	@gotestsum -- -short -race -count=1 $(TESTS)
 
@@ -213,7 +216,7 @@ test-completion: test-helpers ## Run shell completion integration tests (needs b
 	@$(GOTEST) -count=1 -v -run 'ShellCompletion' ./
 
 test-ci: export TEST_HELPERS=$(BUILD)
-test-ci: mocks test-helpers $(TOOLS_BIN)/gotestsum ## Run unit tests with coverage (for CI)
+test-ci: mocks test-helpers tool-gotestsum ## Run unit tests with coverage (for CI)
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@gotestsum --junitfile $(JUNIT_FILE) -- -race -short -count=1 -tags=fuse -coverprofile='$(COVERAGE_FILE)' ./...
@@ -272,12 +275,12 @@ rest-server: ## Run rest-server docker container for testing
 	@docker pull ${REST_IMAGE}
 	@docker run -d -p 8000:8000 -v ${REST_DATA}:/data --name ${REST_CONTAINER} --restart always -e "OPTIONS=${REST_OPTIONS}" ${REST_IMAGE}
 
-nightly: aqua $(TOOLS_BIN)/goreleaser ## Create a nightly release (for testing goreleaser setup)
+nightly: tool-goreleaser ## Create a nightly release (for testing goreleaser setup)
 	@echo "[*] $@"
 	@GITLAB_TOKEN= \
 	goreleaser --snapshot --skip=publish --clean
 
-toc: aqua $(TOOLS_BIN)/gh-md-toc
+toc: tool-gh-md-toc
 	@echo "[*] $@"
 	cat ${README} | gh-md-toc --hide-footer > ${TOC_PATH}
 	sed -i ".1" "/${TOC_START}/,/${TOC_END}/{//!d;}" "${README}"
@@ -340,7 +343,7 @@ generate-config-reference: build ## Generate the configuration reference documen
 	$(abspath $(BINARY)) generate --config-reference --to $(CONFIG_REFERENCE_DIR)
 
 .PHONY: documentation
-documentation: generate-jsonschema generate-config-reference aqua $(TOOLS_BIN)/hugo ## Generate the documentation site
+documentation: generate-jsonschema generate-config-reference tool-hugo ## Generate the documentation site
 	@echo "[*] $@"
 	@cd docs && hugo --minify
 
@@ -364,7 +367,7 @@ checkdoc: ## Check documentation
 	$(GOCMD) run ./config/checkdoc -r docs/content -i changelog.md
 
 .PHONY: checklinks
-checklinks: aqua $(TOOLS_BIN)/muffet ## Check for broken links in the documentation site
+checklinks: tool-muffet ## Check for broken links in the documentation site
 	@echo "[*] $@"
 	@muffet --buffer-size=16384 --max-connections-per-host=8 --rate-limit=20 \
 	  --exclude="(linux\.die\.net|scoop\.sh|stackoverflow\.com|commit)" \
@@ -372,14 +375,14 @@ checklinks: aqua $(TOOLS_BIN)/muffet ## Check for broken links in the documentat
 	  http://127.0.0.1:1313/resticprofile/
 
 .PHONY: lint
-lint: aqua $(TOOLS_BIN)/golangci-lint ## Run golangci-lint
+lint: tool-golangci-lint ## Run golangci-lint
 	@echo "[*] $@"
 	GOOS=darwin golangci-lint run
 	GOOS=linux golangci-lint run
 	GOOS=windows golangci-lint run
 
 .PHONY: fix
-fix: aqua $(TOOLS_BIN)/golangci-lint ## Run golangci-lint with --fix
+fix: tool-golangci-lint ## Run golangci-lint with --fix
 	@echo "[*] $@"
 	$(GOCMD) mod tidy
 	$(GOCMD) fix ./...
@@ -433,7 +436,7 @@ compile-tests: test-helpers ## Pre-compile all tests for running on BSD VMs
 	@$(GOTEST) -c . ./batt ./calendar ./config/... ./crond ./dial ./filesearch ./lock ./monitor ./priority ./remote ./restic ./schedule ./shell ./ssh ./term ./user ./util/...
 
 .PHONY: docker-image
-docker-image: build-ci buildx aqua $(TOOLS_BIN)/eget ## Build the Docker image for resticprofile
+docker-image: build-ci buildx tool-eget ## Build the Docker image for resticprofile
 	@echo "[*] $@"
 	@$(GOGENERATE) ./...
 	@eget rclone/rclone --upgrade-only --system=linux/amd64 --to=build/rclone-amd64 --asset=zip

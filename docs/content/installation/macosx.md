@@ -1,6 +1,6 @@
 ---
 title: "mac OS"
-weight: 11
+weight: 20
 ---
 
 ## Installation with Homebrew

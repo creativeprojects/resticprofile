@@ -260,10 +260,19 @@ ExecStart={{ .CommandLine }}
 {{ end -}}
 {{ if .IOSchedulingPriority }}IOSchedulingPriority={{ .IOSchedulingPriority }}
 {{ end -}}
+{{ if .User }}User={{ .User }}
+{{ end -}}
 {{ range .Environment -}}
 Environment="{{ . }}"
 {{ end -}}
+{{ if .EnvironmentFile }}EnvironmentFile={{ .EnvironmentFile }}
+{{ end -}}
 ```
+
+{{% notice style="warning" %}}
+The environment captured with `capture-environment` can contain secrets, so it is not written in the unit file: any user can read `Environment=` values with `systemctl show`. It is saved in a file only readable by the owner of the unit, in the service drop-in folder.
+If you use your own unit template, add the `EnvironmentFile=` line above, otherwise the service doesn't get the captured environment.
+{{% /notice %}}
 
 ### Default timer file
 
@@ -293,4 +302,5 @@ These are available for both the unit and timer templates:
 * OnCalendar       *array of strings*
 * SystemdProfile   *string*
 * Nice             *integer*
-* Environment      *array of strings*
+* Environment      *array of strings* (generated variables only, e.g. `HOME`)
+* EnvironmentFile  *string* (file holding the captured environment, empty when nothing is captured)
