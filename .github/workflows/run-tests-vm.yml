@@ -18,7 +18,8 @@ jobs:
       contents: read
     env:
       AQUA_LOG_COLOR: always
-      AQUA_REQUIRE_CHECKSUM: "true"
+      AQUA_ENFORCE_CHECKSUM: "true"
+      AQUA_ENFORCE_REQUIRE_CHECKSUM: "true"
     steps:
       - uses: actions/checkout@v7
 
