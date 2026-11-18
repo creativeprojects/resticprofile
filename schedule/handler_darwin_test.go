@@ -96,6 +96,29 @@ func TestCreateSystemPlist(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCreatePlistOnlyReadableByOwner(t *testing.T) {
+	handler := NewHandler(SchedulerLaunchd{}).(*HandlerLaunchd)
+	handler.fs = afero.NewMemMapFs()
+
+	launchdJob := &darwin.LaunchdJob{
+		Label:                "TestCreatePlistOnlyReadableByOwner",
+		EnvironmentVariables: map[string]string{"RESTIC_PASSWORD": "secret"},
+	}
+	for _, permission := range []Permission{PermissionSystem, PermissionUserBackground} {
+		filename, err := getFilename(launchdJob.Label, permission)
+		require.NoError(t, err)
+		// a file from a previous version is replaced
+		require.NoError(t, afero.WriteFile(handler.fs, filename, []byte("old"), 0o644))
+
+		_, err = handler.createPlistFile(launchdJob, permission)
+		require.NoError(t, err)
+
+		info, err := handler.fs.Stat(filename)
+		require.NoError(t, err)
+		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	}
+}
+
 func TestReadingLaunchdScheduled(t *testing.T) {
 	calendarEvent := calendar.NewEvent(func(e *calendar.Event) {
 		_ = e.Second.AddValue(0)

@@ -6,9 +6,11 @@ import (
 	"bytes"
 	"fmt"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/creativeprojects/clog"
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/spf13/afero"
 )
@@ -47,7 +49,7 @@ func (u Unit) Read(unit string, unitType UnitType) (*Config, error) {
 		WorkingDirectory:     getSingleValue(serviceSections, "Service", "WorkingDirectory"),
 		CommandLine:          getSingleValue(serviceSections, "Service", "ExecStart"),
 		UnitType:             unitType,
-		Environment:          getValues(serviceSections, "Service", "Environment"),
+		Environment:          slices.Concat(getValues(serviceSections, "Service", "Environment"), u.readEnvironmentFiles(serviceSections)),
 		Nice:                 getIntegerValue(serviceSections, "Service", "Nice"),
 		IOSchedulingClass:    getIntegerValue(serviceSections, "Service", "IOSchedulingClass"),
 		IOSchedulingPriority: getIntegerValue(serviceSections, "Service", "IOSchedulingPriority"),
@@ -113,6 +115,43 @@ func getSingleValue(from map[string]map[string][]string, section, key string) st
 		}
 	}
 	return ""
+}
+
+// readEnvironmentFiles returns the environment from the files written by writeEnvironmentFile.
+// A file that cannot be read (only readable by root) is skipped.
+func (u Unit) readEnvironmentFiles(serviceSections map[string]map[string][]string) (environment []string) {
+	for _, filename := range getValues(serviceSections, "Service", "EnvironmentFile") {
+		content, err := afero.ReadFile(u.fs, strings.TrimPrefix(filename, "-"))
+		if err != nil {
+			clog.Debugf("cannot read environment file: %s", err)
+			continue
+		}
+		environment = append(environment, parseEnvironmentFile(string(content))...)
+	}
+	return
+}
+
+// parseEnvironmentFile parses lines of NAME="value", where the value is escaped by quoteEnvironmentValue
+func parseEnvironmentFile(content string) (environment []string) {
+	for {
+		name, quoted, found := strings.Cut(strings.TrimLeft(content, "\n"), `="`)
+		if !found {
+			return
+		}
+		value := strings.Builder{}
+		i := 0
+		for ; i < len(quoted) && quoted[i] != '"'; i++ {
+			if quoted[i] == '\\' && i+1 < len(quoted) {
+				i++
+			}
+			value.WriteByte(quoted[i])
+		}
+		environment = append(environment, name+"="+value.String())
+		if i >= len(quoted) {
+			return
+		}
+		content = quoted[i+1:]
+	}
 }
 
 func getValues(from map[string]map[string][]string, section, key string) []string {
