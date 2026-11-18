@@ -80,6 +80,7 @@ remotes:
   web1:
     connection: ssh
     host: web1.example.com
+    port: 22
     username: backup
     private-keys:
       - keys/id_ed25519
@@ -99,6 +100,7 @@ version = "2"
 [remotes.web1]
   connection = "ssh"
   host = "web1.example.com"
+  port = 22
   username = "backup"
   private-keys = ["keys/id_ed25519"]
   configuration-file = "clients/web1.yaml"
@@ -116,6 +118,7 @@ version = "2"
     "web1": {
       "connection": "ssh",
       "host": "web1.example.com",
+      "port": 22,
       "username": "backup",
       "private-keys": ["keys/id_ed25519"],
       "configuration-file": "clients/web1.yaml",
@@ -133,7 +136,7 @@ version = "2"
 |----------------------|----------------------|---------------------------------------------------------------------------------------------------------------------|
 | `connection`         | yes                  | [Connection type](#connection-types): `ssh` or `openssh`                                                            |
 | `host`               | yes                  | Address of the client, without the port                                                                             |
-| `port`               | no                   | SSH port of the client. Default is `22`                                                                             |
+| `port`               | with `ssh`           | SSH port of the client                                                                                              |
 | `username`           | with `ssh`           | User of the SSH connection                                                                                          |
 | `private-keys`       | no                   | List of private key files used to authenticate                                                                      |
 | `known-hosts`        | no                   | File containing the public key of the client                                                                        |
@@ -146,7 +149,7 @@ version = "2"
 Some details to keep in mind:
 
 - `connection` has no default value: a remote without it fails with the error `unsupported connection type ""`.
-- A relative path is relative to the directory of the configuration file where the remote is declared.
+- A relative path is relative to the directory of the main configuration file: the one selected with `--config`. This is also the case for a remote declared in an [included]({{% relref "/configuration/include" %}}) file.
 - Environment variables are expanded in paths (`$HOME/.ssh/id_ed25519`). The `~` prefix is not expanded.
 - The [JSON schema]({{% relref "/configuration/jsonschema" %}}) does not describe the `remotes` section yet. An editor that validates the file reports the section as not allowed.
 
@@ -159,6 +162,7 @@ Use the [configuration `v2`]({{% relref "/configuration/v2" %}}) for the file th
 | | `ssh` | `openssh` |
 |---|---|---|
 | Implementation | SSH client built in resticprofile | The `ssh` command installed on the server |
+| `port` | Required | Optional: default is the port of your OpenSSH configuration, or `22` |
 | `username` | Required | Optional |
 | `private-keys` | Default is all the `id_*` private keys in `~/.ssh` | Optional: each file is passed with `-i` |
 | Private key protected by a passphrase, SSH agent | Not supported | Supported |
@@ -166,13 +170,28 @@ Use the [configuration `v2`]({{% relref "/configuration/v2" %}}) for the file th
 | `ssh-config` | Ignored | Passed with `-F` |
 | OpenSSH configuration (`~/.ssh/config`, `ProxyJump`, ...) | Not used | Used |
 
-With the type `ssh`, the client must already be a known host: resticprofile never adds a host key. Connect once with the `ssh` command, or add the key yourself:
+With the type `ssh`, the client must already be a known host: resticprofile never adds a host key. Connect once with the `ssh` command, or add the key yourself.
+
+`ssh-keyscan` returns the key it receives from the network without authenticating it. Display the fingerprints of the scanned keys first:
 
 ```shell
-ssh-keyscan -H web1.example.com >> ~/.ssh/known_hosts
+ssh-keyscan -H web1.example.com > web1.keys
+ssh-keygen -lf web1.keys
 ```
 
-Still with the type `ssh`, the value `none` for `known-hosts` disables the verification of the host key. Anyone able to intercept the connection can then receive your configuration files, so keep it for tests.
+Compare them with the fingerprints displayed on the client itself, from its console or any other channel you trust:
+
+```shell
+for key in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf "$key"; done
+```
+
+Only add the keys when the fingerprints are the same:
+
+```shell
+cat web1.keys >> ~/.ssh/known_hosts
+```
+
+Still with the type `ssh`, on a Unix server, the value `/dev/null` for `known-hosts` disables the verification of the host key. Anyone able to intercept the connection can then receive your configuration files, so keep it for tests.
 
 ### Files sent to the client
 
@@ -294,7 +313,7 @@ This mode is different from `send`:
 - The files are transferred inside the SSH connection.
 - The forwarded port is open on the loopback interface of the client while `send` is running, without authentication. Any user logged on the client can download the files during that time, including the password files. Do not send secrets to a client shared with users you do not trust.
 - On the client, the files only exist in memory. They are erased from memory when the command ends, and they are never written to the disk.
-- The host key of the client is verified. With the type `ssh`, setting `known-hosts` to `none` disables this verification.
+- The host key of the client is verified. With the type `ssh`, setting `known-hosts` to `/dev/null` disables this verification.
 - The `serve` command has no authentication and no encryption.
 
 ## Troubleshooting
@@ -304,6 +323,7 @@ This mode is different from `send`:
 | `remote not found` | The name is not declared in the `remotes` section of the configuration file of the server. Check the `--config` flag. |
 | `unsupported connection type ""` | `connection` is missing from the remote. |
 | `ssh: tcpip-forward request denied by peer` (type `ssh`), `error while starting SSH tunnel` (type `openssh`) | The SSH server of the client refuses the port forwarding. Set `AllowTcpForwarding` to `yes` or `remote`. |
+| `missing port in address` | `port` is missing from the remote. The type `ssh` has no default port. |
 | `host key verification failed: knownhosts: key is unknown` | The client is not in the `known-hosts` file. |
 | `unable to parse private key: ssh: this private key is passphrase protected` | The type `ssh` cannot use this key. Use a key without a passphrase, or the type `openssh`. |
 | `no ssh key found` | None of the `private-keys` could be loaded. With the type `ssh` and no `private-keys`, no usable `id_*` key was found in `~/.ssh`. |
