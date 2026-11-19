@@ -129,7 +129,7 @@ func main() {
 				flags.stderr = true
 			}
 			if flags.stderr {
-				terminalOptions = append(terminalOptions, term.WithStdout(os.Stderr))
+				terminalOptions = append(terminalOptions, term.WithPrintToStderr())
 			}
 		}
 		if logTarget != "" && logTarget != "-" {
