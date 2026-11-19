@@ -1,7 +1,7 @@
 ---
 title: "HTTP Hooks"
 weight: 22
-tags: [ "monitoring", "healthchecks.io", "watchgoose.com" ]
+tags: [ "monitoring", "healthchecks.io", "watchgoose.com", "spookyparticles.com" ]
 ---
 
 
@@ -447,6 +447,148 @@ profile:
 {{< /tabs >}}
 
 To record the restic exit code on the check instead of a plain failure, use `https://watchgoose.com/ping/addffa72-da17-40ae-be9c-ff591afb942a/${ERROR_EXIT_CODE}` as the `send-after-fail` URL.
+
+### Example sending monitoring information to Spooky Particles:
+
+[Spooky Particles](https://spookyparticles.com/docs/check-ins) gives each job a ping link: send `/start` when the job starts, the bare link on success, and `/fail` on failure. Replace `YOUR_TOKEN` with the token from your job's ping link. The first 2,000 characters of a POST body are kept as the run's note, so the `send-after-fail` hook below attaches the error message and the restic error output to the failure.
+
+{{< tabs groupid="config-with-json" >}}
+{{% tab title="toml" %}}
+
+```toml
+version = "1"
+
+[profile]
+
+  [profile.backup]
+  source = "/source"
+  schedule = [ "*:00,30" ]
+  schedule-permission = "user"
+
+    [profile.backup.send-before]
+    method = "HEAD"
+    url = "https://spookyparticles.com/api/ping/YOUR_TOKEN/start"
+
+    [profile.backup.send-after]
+    method = "HEAD"
+    url = "https://spookyparticles.com/api/ping/YOUR_TOKEN"
+
+    [profile.backup.send-after-fail]
+    method = "POST"
+    url = "https://spookyparticles.com/api/ping/YOUR_TOKEN/fail"
+    body = "${ERROR}\n\n${ERROR_STDERR}"
+
+      [[profile.backup.send-after-fail.headers]]
+      name = "Content-Type"
+      value = "text/plain; charset=UTF-8"
+```
+
+{{% /tab %}}
+{{% tab title="yaml" %}}
+
+```yaml
+version: "1"
+
+profile:
+
+    backup:
+        source: "/source"
+        schedule:
+          - "*:00,30"
+        schedule-permission: user
+
+        send-before:
+            method: HEAD
+            url: https://spookyparticles.com/api/ping/YOUR_TOKEN/start
+
+        send-after:
+            method: HEAD
+            url: https://spookyparticles.com/api/ping/YOUR_TOKEN
+
+        send-after-fail:
+            method: POST
+            url: https://spookyparticles.com/api/ping/YOUR_TOKEN/fail
+            body: "${ERROR}\n\n${ERROR_STDERR}"
+            headers:
+              - name: Content-Type
+                value: "text/plain; charset=UTF-8"
+```
+
+{{% /tab %}}
+{{% tab title="hcl" %}}
+
+```hcl
+"profile" {
+
+  "backup" = {
+    "source" = "/source"
+    "schedule" = ["*:00,30"]
+    "schedule-permission" = "user"
+
+    "send-before" = {
+      "method" = "HEAD"
+      "url" = "https://spookyparticles.com/api/ping/YOUR_TOKEN/start"
+    }
+
+    "send-after" = {
+      "method" = "HEAD"
+      "url" = "https://spookyparticles.com/api/ping/YOUR_TOKEN"
+    }
+
+    "send-after-fail" = {
+      "method" = "POST"
+      "url" = "https://spookyparticles.com/api/ping/YOUR_TOKEN/fail"
+      "body" = "${ERROR}\n\n${ERROR_STDERR}"
+      "headers" = {
+        "name" = "Content-Type"
+        "value" = "text/plain; charset=UTF-8"
+      }
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab title="json" %}}
+
+```json
+{
+  "version": "1",
+  "profile": {
+    "backup": {
+      "source": "/source",
+      "schedule": [
+        "*:00,30"
+      ],
+      "schedule-permission": "user",
+      "send-before": {
+        "method": "HEAD",
+        "url": "https://spookyparticles.com/api/ping/YOUR_TOKEN/start"
+      },
+      "send-after": {
+        "method": "HEAD",
+        "url": "https://spookyparticles.com/api/ping/YOUR_TOKEN"
+      },
+      "send-after-fail": {
+        "method": "POST",
+        "url": "https://spookyparticles.com/api/ping/YOUR_TOKEN/fail",
+        "body": "${ERROR}\n\n${ERROR_STDERR}",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "text/plain; charset=UTF-8"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+To record the restic exit code on the check instead of a plain failure, use `https://spookyparticles.com/api/ping/YOUR_TOKEN/${ERROR_EXIT_CODE}` as the `send-after-fail` URL.
 
 ### order of `send-*`
 
