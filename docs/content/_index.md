@@ -35,6 +35,7 @@ With resticprofile:
 * View help for both restic and resticprofile via the `help` command or `-h` flag
 * Avoid scheduling a job when the system is on battery
 * **[new for v0.29.0]** Schedule a group of profiles ([configuration `v2`]({{% relref "/configuration/v2" %}}) only)
+* **[new for v0.33.0]** Send a configuration to another machine over SSH and run it there: [client/server mode]({{% relref "/usage/client-server" %}}) (preview)
 
 The configuration file supports various formats:
 * [TOML](https://github.com/toml-lang/toml): files with extensions *.toml* and *.conf* (for compatibility with versions before 0.6.0)
