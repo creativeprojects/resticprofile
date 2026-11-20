@@ -22,6 +22,7 @@ import (
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/monitor"
 	"github.com/creativeprojects/resticprofile/monitor/mocks"
+	"github.com/creativeprojects/resticprofile/monitor/prom"
 	"github.com/creativeprojects/resticprofile/monitor/status"
 	"github.com/creativeprojects/resticprofile/platform"
 	"github.com/creativeprojects/resticprofile/restic"
@@ -238,6 +239,56 @@ func TestPostProfileScriptFail(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runProfile()
 	assert.EqualError(t, err, "run-after on profile 'name': exit status 1")
+}
+
+func TestRunBeforeFailureReportsMonitoring(t *testing.T) {
+	t.Parallel()
+
+	newWrapper := func(t *testing.T, runBefore *config.RunShellCommandsSection) (string, *resticWrapper) {
+		t.Helper()
+		profile := config.NewProfile(nil, "name")
+		profile.Backup = &config.BackupSection{}
+		if runBefore != nil {
+			profile.Backup.RunBefore = runBefore.RunBefore
+		}
+		promFile := filepath.Join(t.TempDir(), "metrics.prom")
+		profile.PrometheusSaveToFile = promFile
+		ctx := &Context{
+			binary:   mockBinary,
+			profile:  profile,
+			command:  constants.CommandBackup,
+			terminal: term.NewTerminal(),
+		}
+		wrapper := newResticWrapper(ctx)
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, "", version, "", nil)))
+		return promFile, wrapper
+	}
+
+	readStatus := func(t *testing.T, file string) string {
+		t.Helper()
+		content, err := os.ReadFile(file)
+		require.NoError(t, err, "prometheus metrics file should be written")
+		return string(content)
+	}
+
+	t.Run("ProfileRunBefore", func(t *testing.T) {
+		promFile, wrapper := newWrapper(t, nil)
+		wrapper.profile.RunBefore = []string{"exit 2"}
+
+		err := wrapper.runProfile()
+
+		require.Error(t, err)
+		assert.Contains(t, readStatus(t, promFile), `resticprofile_backup_status{profile="name"} 0`)
+	})
+
+	t.Run("SectionRunBefore", func(t *testing.T) {
+		promFile, wrapper := newWrapper(t, &config.RunShellCommandsSection{RunBefore: []string{"exit 2"}})
+
+		err := wrapper.runProfile()
+
+		require.Error(t, err)
+		assert.Contains(t, readStatus(t, promFile), `resticprofile_backup_status{profile="name"} 0`)
+	})
 }
 
 func TestRunEchoProfile(t *testing.T) {
@@ -766,6 +817,22 @@ func TestBackupWithStreamSource(t *testing.T) {
 		_, err := run(t, wrapper)
 		require.NotNil(t, err)
 		assert.EqualError(t, err, "stdin-test on profile 'name': 'stdin-command' on profile 'name': exit status 2")
+	})
+
+	t.Run("StreamSourceFailureReportsMonitoring", func(t *testing.T) {
+		profile, wrapper := profileAndWrapper(t)
+		wrapper.command = constants.CommandBackup
+		profile.PrometheusSaveToFile = filepath.Join(t.TempDir(), "metrics.prom")
+		profile.Backup.StdinCommand = []string{"exit 2"}
+		profile.ResolveConfiguration()
+		wrapper.addProgress(prom.NewProgress(profile, prom.NewMetrics(profile.Name, "", version, "", nil)))
+
+		err := wrapper.runCommand(constants.CommandBackup)
+
+		require.Error(t, err)
+		content, readErr := os.ReadFile(profile.PrometheusSaveToFile)
+		require.NoError(t, readErr, "prometheus metrics file should be written even if restic never started")
+		assert.Contains(t, string(content), "resticprofile_backup_status{profile=\"name\"} 0")
 	})
 
 	t.Run("StreamSourceWorksWithDryRun", func(t *testing.T) {
