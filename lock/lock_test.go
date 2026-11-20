@@ -61,6 +61,23 @@ func TestLockIsAvailable(t *testing.T) {
 	assert.True(t, lock.TryAcquire())
 }
 
+
+func TestReleaseIsIdempotent(t *testing.T) {
+	t.Parallel()
+
+	tempfile := getTempfile(t)
+	lock := NewLock(tempfile)
+	require.True(t, lock.TryAcquire())
+	require.FileExists(t, tempfile)
+
+	lock.Release()
+	assert.NoFileExists(t, tempfile)
+
+	// Second release must not panic or recreate the file
+	lock.Release()
+	assert.NoFileExists(t, tempfile)
+}
+
 func TestLockIsNotAvailable(t *testing.T) {
 	t.Parallel()
 
