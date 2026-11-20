@@ -41,7 +41,7 @@ func NewArg(value string, argType ArgType, options ...ArgOption) Arg {
 	arg := Arg{
 		value:              value,
 		argType:            argType,
-		empty:              false,
+		empty:              value == "" && argType == ArgCommandLineEscape,
 		confidentialFilter: nil,
 	}
 	for _, option := range options {
