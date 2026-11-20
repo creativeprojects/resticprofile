@@ -61,6 +61,14 @@ func WithStderr(stderr io.Writer) TerminalOption {
 	}
 }
 
+// WithPrintToStderr sends the terminal's own output (Print*, Write and Stdout) to stderr.
+// CommandStdout still writes to stdout.
+func WithPrintToStderr() TerminalOption {
+	return func(t *Terminal) {
+		t.printToStderr = true
+	}
+}
+
 func WithColors(enable bool) TerminalOption {
 	return func(t *Terminal) {
 		t.enableColors = maybe.SetBool(enable)

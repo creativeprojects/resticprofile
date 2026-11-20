@@ -1843,3 +1843,28 @@ func TestRunnerWithBeforeAndAfter(t *testing.T) {
 		})
 	}
 }
+
+func TestDumpBinaryOutputToStdout(t *testing.T) {
+	// dump output mimicking a gzip stream: escape bytes must not be mistaken for ANSI sequences
+	data := []byte{0x1f, 0x8b, 0x08, 0x1b, '[', '3', '1', 'm', 0x00, 0x1b, 0xff, 0x1b}
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
+	// same terminal options as main() for the dump command
+	terminal := term.NewTerminal(term.WithStdout(stdout), term.WithStderr(stderr), term.WithPrintToStderr())
+	wrapper := newResticWrapper(&Context{
+		binary:   mockBinary,
+		profile:  config.NewProfile(nil, "name"),
+		command:  constants.CommandDump,
+		terminal: terminal,
+	})
+
+	args := shell.NewArgs()
+	args.AddArg(shell.NewArg("--stdin", shell.ArgConfigEscape))
+	rCommand := wrapper.prepareCommand(constants.CommandDump, args, false)
+	rCommand.stdin = io.NopCloser(bytes.NewReader(data))
+	_, _, err := runShellCommand(rCommand)
+	require.NoError(t, err, stderr.String())
+
+	assert.Equal(t, data, stdout.Bytes())
+	assert.Empty(t, stderr.Bytes())
+}

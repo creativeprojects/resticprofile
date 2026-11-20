@@ -188,3 +188,45 @@ func TestGetColorableWriterWithColorsEnabledOnNonTerminalFileReturnsColorable(t 
 	// Colorable preserves ANSI escape codes.
 	assert.Equal(t, ansiText, string(out))
 }
+
+// binaryData mimics a gzip stream: escape bytes must not be mistaken for ANSI sequences
+var binaryData = []byte{0x1f, 0x8b, 0x08, 0x1b, '[', '3', '1', 'm', 0x00, 0x1b, 0xff, 0x1b}
+
+func TestCommandStdoutKeepsBinaryData(t *testing.T) {
+	t.Parallel()
+	stdout := new(bytes.Buffer)
+	terminal := NewTerminal(WithStdout(stdout))
+
+	_, err := terminal.CommandStdout().Write(binaryData)
+	require.NoError(t, err)
+	assert.Equal(t, binaryData, stdout.Bytes())
+}
+
+func TestPrintToStderr(t *testing.T) {
+	t.Parallel()
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
+	terminal := NewTerminal(WithStdout(stdout), WithStderr(stderr), WithPrintToStderr())
+
+	_, err := terminal.Print("message")
+	require.NoError(t, err)
+	_, err = terminal.CommandStdout().Write(binaryData)
+	require.NoError(t, err)
+
+	assert.Equal(t, "message", stderr.String())
+	assert.Equal(t, binaryData, stdout.Bytes())
+}
+
+func TestCommandStdoutWithCopy(t *testing.T) {
+	t.Parallel()
+	stdout := new(bytes.Buffer)
+	copyBuffer := new(bytes.Buffer)
+	terminal := NewTerminal(WithStdout(stdout), WithStdoutCopy(copyBuffer))
+
+	_, err := terminal.CommandStdout().Write([]byte(ansiText))
+	require.NoError(t, err)
+
+	assert.Equal(t, ansiText, stdout.String())
+	// the copy is not a terminal: ANSI sequences are stripped
+	assert.Equal(t, plainText, copyBuffer.String())
+}

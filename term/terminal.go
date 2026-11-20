@@ -18,6 +18,8 @@ import (
 // 2. data is sent to colorableStdout/colorableStderr
 // 3. a copy of the data is also sent to copyStdout/Stderr if enabled (final writer for the copy)
 // 4. the data is finally written to the stdin/stdout writers (coming from colorable writers)
+//
+// The stdout of a child process (CommandStdout) skips the colorable writer: binary data must pass through unchanged.
 
 // Terminal gives access to the standard terminal input/output
 type Terminal struct {
@@ -25,12 +27,14 @@ type Terminal struct {
 	stdout          io.Writer // final writer
 	stderr          io.Writer // final writer
 	enableColors    maybe.Bool
+	printToStderr   bool
 	colorableStdout io.Writer // colorable writer
 	colorableStderr io.Writer // colorable writer
 	copyStdout      io.Writer // stdout duplicate
 	copyStderr      io.Writer // stderr duplicate
 	inputStdout     io.Writer // entry for stdout
 	inputStderr     io.Writer // entry for stderr
+	commandStdout   io.Writer // entry for the stdout of a child process
 }
 
 func NewTerminal(options ...TerminalOption) *Terminal {
@@ -49,9 +53,12 @@ func NewTerminal(options ...TerminalOption) *Terminal {
 	if t.copyStdout == nil {
 		// no copy, we send to colorable directly
 		t.inputStdout = t.colorableStdout
+		t.commandStdout = t.stdout
 	} else {
 		// send to both the output and the copy
-		t.inputStdout = io.MultiWriter(t.colorableStdout, t.getColorableWriter(t.copyStdout))
+		colorableCopy := t.getColorableWriter(t.copyStdout)
+		t.inputStdout = io.MultiWriter(t.colorableStdout, colorableCopy)
+		t.commandStdout = io.MultiWriter(t.stdout, colorableCopy)
 	}
 	if t.copyStderr == nil {
 		// no copy, we send to colorable directly
@@ -59,6 +66,9 @@ func NewTerminal(options ...TerminalOption) *Terminal {
 	} else {
 		// send to both the output and the copy
 		t.inputStderr = io.MultiWriter(t.colorableStderr, t.getColorableWriter(t.copyStderr))
+	}
+	if t.printToStderr {
+		t.inputStdout = t.inputStderr
 	}
 
 	return t
@@ -179,6 +189,12 @@ func (t *Terminal) Write(p []byte) (n int, err error) {
 
 func (t *Terminal) Stdout() io.Writer {
 	return t.inputStdout
+}
+
+// CommandStdout returns the writer to use as the stdout of a child process.
+// Unlike Stdout, it doesn't strip ANSI sequences and ignores WithPrintToStderr.
+func (t *Terminal) CommandStdout() io.Writer {
+	return t.commandStdout
 }
 
 func (t *Terminal) Stderr() io.Writer {
