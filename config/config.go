@@ -517,7 +517,7 @@ func (c *Config) HasProfileGroup(groupKey string) bool {
 	if err := c.loadGroups(); err != nil {
 		return false
 	}
-	_, ok := c.cached.groups[groupKey]
+	_, ok := c.lookupGroup(groupKey)
 	return ok
 }
 
@@ -527,11 +527,22 @@ func (c *Config) GetProfileGroup(groupKey string) (*Group, error) {
 		return nil, err
 	}
 
-	group, ok := c.cached.groups[groupKey]
+	group, ok := c.lookupGroup(groupKey)
 	if !ok {
 		return nil, ErrNotFound
 	}
 	return group, nil
+}
+
+// lookupGroup finds a loaded group by name. The configuration keys are
+// stored in lower case, so a group declared as "W1" is found with "W1" too,
+// like profiles are.
+func (c *Config) lookupGroup(groupKey string) (*Group, bool) {
+	if group, ok := c.cached.groups[groupKey]; ok {
+		return group, true
+	}
+	group, ok := c.cached.groups[strings.ToLower(groupKey)]
+	return group, ok
 }
 
 // GetProfileGroups returns all groups from the configuration

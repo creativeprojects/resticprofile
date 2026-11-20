@@ -223,3 +223,40 @@ groups:
 		})
 	}
 }
+
+func TestGetProfileGroupMixedCase(t *testing.T) {
+	testData := []testGroupData{
+		{
+			FormatTOML,
+			`
+[groups]
+W1 = ["Dom", "Ha"]
+`,
+		},
+		{
+			FormatYAML,
+			`
+version: 2
+groups:
+  W1:
+    profiles: [Dom, Ha]
+`,
+		},
+	}
+
+	for _, testItem := range testData {
+		t.Run(testItem.format, func(t *testing.T) {
+			c, err := Load(bytes.NewBufferString(testItem.config), testItem.format)
+			require.NoError(t, err)
+
+			for _, name := range []string{"W1", "w1"} {
+				assert.True(t, c.HasProfileGroup(name), name)
+
+				group, err := c.GetProfileGroup(name)
+				require.NoError(t, err, name)
+				assert.Equal(t, []string{"Dom", "Ha"}, group.Profiles)
+			}
+			assert.False(t, c.HasProfileGroup("W2"))
+		})
+	}
+}
