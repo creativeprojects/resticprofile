@@ -891,6 +891,22 @@
         }
       ]
     },
+    "id-3324800eeb013e134b3b3928da4b9c6c": {
+      "title": "keep-weekly",
+      "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "unlimited"
+          ],
+          "minLength": 0
+        }
+      ]
+    },
     "id-3680b978edcaeed00fffff21f6470093": {
       "title": "schedule-capture-environment...",
       "default": "RESTIC_*",
@@ -1249,6 +1265,22 @@
       },
       "minItems": 0,
       "uniqueItems": false
+    },
+    "id-6f8fbb03e312f80b2918b68ea5cc04ec": {
+      "title": "keep-monthly",
+      "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "unlimited"
+          ],
+          "minLength": 0
+        }
+      ]
     },
     "id-706538b3dde98053943288636466d603": {
       "title": "host",
@@ -1714,6 +1746,22 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-9b8bc14cb3a3925d8085f4269f516376": {
+      "title": "keep-yearly",
+      "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "unlimited"
+          ],
+          "minLength": 0
         }
       ]
     },
@@ -2704,6 +2752,22 @@
         }
       ]
     },
+    "id-baf210ee941542f998e747a245335689": {
+      "title": "keep-last",
+      "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "unlimited"
+          ],
+          "minLength": 0
+        }
+      ]
+    },
     "id-bc7a8ba8f54f45b25490b5dae9d7d3e2": {
       "title": "send-after-fail...",
       "type": "array",
@@ -3190,6 +3254,22 @@
       "minItems": 0,
       "uniqueItems": false
     },
+    "id-c308ec8f7c63c66766474432e3fedd9c": {
+      "title": "keep-daily",
+      "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "unlimited"
+          ],
+          "minLength": 0
+        }
+      ]
+    },
     "id-c8d667380ef1029cc5ac39ff9d9ea5ba": {
       "title": "host...",
       "type": "array",
@@ -3601,6 +3681,22 @@
           },
           "minItems": 0,
           "uniqueItems": false
+        }
+      ]
+    },
+    "id-e90edf0817e2e39518f272970d8d17e1": {
+      "title": "keep-hourly",
+      "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "unlimited"
+          ],
+          "minLength": 0
         }
       ]
     },
@@ -5566,14 +5662,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -5832,14 +5928,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -6720,14 +6816,14 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7347,11 +7443,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-506328a8b0772a1213b94799b9f18b3e"
                 },
@@ -7377,6 +7468,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -7760,24 +7856,16 @@
                   "type": "boolean"
                 },
                 "keep-daily": {
-                  "title": "keep-daily",
-                  "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-c308ec8f7c63c66766474432e3fedd9c"
                 },
                 "keep-hourly": {
-                  "title": "keep-hourly",
-                  "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-e90edf0817e2e39518f272970d8d17e1"
                 },
                 "keep-last": {
-                  "title": "keep-last",
-                  "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-baf210ee941542f998e747a245335689"
                 },
                 "keep-monthly": {
-                  "title": "keep-monthly",
-                  "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-6f8fbb03e312f80b2918b68ea5cc04ec"
                 },
                 "keep-tag": {
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
@@ -7792,9 +7880,7 @@
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
                 },
                 "keep-weekly": {
-                  "title": "keep-weekly",
-                  "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-3324800eeb013e134b3b3928da4b9c6c"
                 },
                 "keep-within": {
                   "title": "keep-within",
@@ -7833,9 +7919,7 @@
                   "minLength": 0
                 },
                 "keep-yearly": {
-                  "title": "keep-yearly",
-                  "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-9b8bc14cb3a3925d8085f4269f516376"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -8578,17 +8662,17 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "host": {
                   "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
                 },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -9466,6 +9550,11 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "force": {
                   "title": "force",
                   "description": "apply a migration a second time",
@@ -9474,11 +9563,6 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -10846,14 +10930,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -11391,11 +11475,6 @@
                   "description": "do not do anything, just print what would be done [restic \u003e= 0.16.0]",
                   "type": "boolean"
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "forget": {
                   "title": "forget",
                   "description": "remove original snapshots after creating new ones [restic \u003e= 0.16.0]",
@@ -11416,6 +11495,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -12132,24 +12216,16 @@
                   "type": "boolean"
                 },
                 "keep-daily": {
-                  "title": "keep-daily",
-                  "description": "keep the last n daily snapshots (use 'unlimited' to keep all daily snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-c308ec8f7c63c66766474432e3fedd9c"
                 },
                 "keep-hourly": {
-                  "title": "keep-hourly",
-                  "description": "keep the last n hourly snapshots (use 'unlimited' to keep all hourly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-e90edf0817e2e39518f272970d8d17e1"
                 },
                 "keep-last": {
-                  "title": "keep-last",
-                  "description": "keep the last n snapshots (use 'unlimited' to keep all snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-baf210ee941542f998e747a245335689"
                 },
                 "keep-monthly": {
-                  "title": "keep-monthly",
-                  "description": "keep the last n monthly snapshots (use 'unlimited' to keep all monthly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-6f8fbb03e312f80b2918b68ea5cc04ec"
                 },
                 "keep-tag": {
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
@@ -12164,9 +12240,7 @@
                   "$ref": "#/$defs/id-7d3654de0d890ce874dc332214970cad"
                 },
                 "keep-weekly": {
-                  "title": "keep-weekly",
-                  "description": "keep the last n weekly snapshots (use 'unlimited' to keep all weekly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-3324800eeb013e134b3b3928da4b9c6c"
                 },
                 "keep-within": {
                   "title": "keep-within",
@@ -12205,9 +12279,7 @@
                   "minLength": 0
                 },
                 "keep-yearly": {
-                  "title": "keep-yearly",
-                  "description": "keep the last n yearly snapshots (use 'unlimited' to keep all yearly snapshots)",
-                  "type": "integer"
+                  "$ref": "#/$defs/id-9b8bc14cb3a3925d8085f4269f516376"
                 },
                 "key-hint": {
                   "title": "key-hint",
@@ -13671,11 +13743,6 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "extended-status": {
-                  "title": "extended-status",
-                  "description": "set output mode to JSON for commands that support it",
-                  "type": "boolean"
-                },
                 "host": {
                   "$ref": "#/$defs/id-506328a8b0772a1213b94799b9f18b3e"
                 },
@@ -13691,6 +13758,11 @@
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+                  "type": "boolean"
+                },
+                "json": {
+                  "title": "json",
+                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
@@ -14000,14 +14072,14 @@
                   "type": "string",
                   "minLength": 0
                 },
+                "extended-status": {
+                  "title": "extended-status",
+                  "description": "set output mode to JSON for commands that support it",
+                  "type": "boolean"
+                },
                 "insecure-tls": {
                   "title": "insecure-tls",
                   "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-                  "type": "boolean"
-                },
-                "json": {
-                  "title": "json",
-                  "description": "set output mode to JSON for commands that support it",
                   "type": "boolean"
                 },
                 "key-hint": {
