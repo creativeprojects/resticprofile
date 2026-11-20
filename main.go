@@ -74,6 +74,12 @@ func main() {
 		terminal = term.Set(term.NewTerminal(terminalOptions...))
 	}
 
+	// Route diagnostic logs to stderr when a command requests a structured
+	// stdout format (e.g. --output=json), so the data stream stays parseable.
+	if wantsStructuredOutput(flags.resticArgs) {
+		routeLogsToStderr()
+	}
+
 	if flags.wait {
 		// keep the console running at the end of the program
 		// so we can see what's going on

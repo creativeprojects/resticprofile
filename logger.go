@@ -26,6 +26,14 @@ type LogCloser interface {
 	Close() error
 }
 
+// routeLogsToStderr redirects subsequently-constructed log handlers to
+// stderr. Used when the active command produces structured output on stdout
+// (e.g. --output=json) so log lines do not contaminate the data stream.
+// Must be called before any clog console handler is constructed.
+func routeLogsToStderr() {
+	color.Output = color.Error
+}
+
 func setupConsoleLogger(flags commandLineFlags) {
 	if flags.stderr {
 		out := color.Output
