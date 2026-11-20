@@ -3875,6 +3875,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -3889,11 +3894,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -4888,6 +4888,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -4902,11 +4907,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5062,6 +5062,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-88507c25ed5a5da1848bd9232f1d0852"
           },
@@ -5079,11 +5084,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5252,6 +5252,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -5266,11 +5271,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5419,6 +5419,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
@@ -5446,11 +5451,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -5655,6 +5655,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -5679,11 +5684,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -6052,6 +6052,11 @@
             "description": "copy chunker parameters from the secondary repository (useful with the copy command) [restic \u003e= 0.10.0]",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "from-insecure-no-password": {
             "title": "from-insecure-no-password",
             "description": "use an empty password for the source repository (insecure) [restic \u003e= 0.17.0]",
@@ -6101,11 +6106,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6306,6 +6306,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-ff0dfd3fabc9eefcc415fbef01071197"
           },
@@ -6323,11 +6328,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -6462,6 +6462,356 @@
       "key-add": {
         "title": "key-add",
         "description": "The \"add\" sub-command creates a new key and validates the key. Returns the new key ID.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cacert": {
+            "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+          },
+          "cache-dir": {
+            "title": "cache-dir",
+            "description": "set the cache directory. (default: use system default cache directory)",
+            "type": "string",
+            "minLength": 0
+          },
+          "cleanup-cache": {
+            "title": "cleanup-cache",
+            "description": "auto remove old cache directories",
+            "type": "boolean"
+          },
+          "compression": {
+            "title": "compression",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "host": {
+            "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
+          },
+          "http-user-agent": {
+            "title": "http-user-agent",
+            "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "insecure-no-password": {
+            "title": "insecure-no-password",
+            "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+            "type": "boolean"
+          },
+          "insecure-tls": {
+            "title": "insecure-tls",
+            "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
+          "key-hint": {
+            "title": "key-hint",
+            "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+            "type": "string",
+            "minLength": 0
+          },
+          "limit-download": {
+            "title": "limit-download",
+            "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+            "type": "integer"
+          },
+          "limit-upload": {
+            "title": "limit-upload",
+            "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+            "type": "integer"
+          },
+          "new-insecure-no-password": {
+            "title": "new-insecure-no-password",
+            "description": "add an empty password for the repository (insecure) [restic \u003e= 0.17.0]",
+            "type": "boolean"
+          },
+          "new-password-file": {
+            "title": "new-password-file",
+            "description": "file from which to read the new password [restic \u003e= 0.17.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "no-cache": {
+            "title": "no-cache",
+            "description": "do not use a local cache",
+            "type": "boolean"
+          },
+          "no-extra-verify": {
+            "title": "no-extra-verify",
+            "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+            "type": "boolean"
+          },
+          "no-lock": {
+            "title": "no-lock",
+            "description": "do not lock the repository, this allows some operations on read-only repositories",
+            "type": "boolean"
+          },
+          "option": {
+            "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+          },
+          "pack-size": {
+            "title": "pack-size",
+            "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+            "type": "integer"
+          },
+          "password-command": {
+            "title": "password-command",
+            "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+            "type": "string",
+            "minLength": 0
+          },
+          "password-file": {
+            "title": "password-file",
+            "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+            "type": "string",
+            "minLength": 0
+          },
+          "quiet": {
+            "title": "quiet",
+            "description": "do not output comprehensive progress report",
+            "type": "boolean"
+          },
+          "repo": {
+            "title": "repo",
+            "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+            "type": "string",
+            "minLength": 0
+          },
+          "repository-file": {
+            "title": "repository-file",
+            "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "retry-lock": {
+            "title": "retry-lock",
+            "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
+          "stuck-request-timeout": {
+            "title": "stuck-request-timeout",
+            "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "tls-client-cert": {
+            "title": "tls-client-cert",
+            "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+            "type": "string",
+            "minLength": 0
+          },
+          "user": {
+            "title": "user",
+            "description": "the username for new key [restic \u003e= 0.17.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "verbose": {
+            "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+          }
+        }
+      },
+      "key-hint": {
+        "title": "key-hint",
+        "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+        "type": "string",
+        "minLength": 0
+      },
+      "key-list": {
+        "title": "key-list",
+        "description": "The \"list\" sub-command lists all the keys (passwords) associated with the repository.\nReturns the key ID, username, hostname, created time and if it's the current key being\nused to access the repository.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cacert": {
+            "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
+          },
+          "cache-dir": {
+            "title": "cache-dir",
+            "description": "set the cache directory. (default: use system default cache directory)",
+            "type": "string",
+            "minLength": 0
+          },
+          "cleanup-cache": {
+            "title": "cleanup-cache",
+            "description": "auto remove old cache directories",
+            "type": "boolean"
+          },
+          "compression": {
+            "title": "compression",
+            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
+          "http-user-agent": {
+            "title": "http-user-agent",
+            "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "insecure-no-password": {
+            "title": "insecure-no-password",
+            "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
+            "type": "boolean"
+          },
+          "insecure-tls": {
+            "title": "insecure-tls",
+            "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "key-hint": {
+            "title": "key-hint",
+            "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
+            "type": "string",
+            "minLength": 0
+          },
+          "limit-download": {
+            "title": "limit-download",
+            "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
+            "type": "integer"
+          },
+          "limit-upload": {
+            "title": "limit-upload",
+            "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
+            "type": "integer"
+          },
+          "no-cache": {
+            "title": "no-cache",
+            "description": "do not use a local cache",
+            "type": "boolean"
+          },
+          "no-extra-verify": {
+            "title": "no-extra-verify",
+            "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
+            "type": "boolean"
+          },
+          "no-lock": {
+            "title": "no-lock",
+            "description": "do not lock the repository, this allows some operations on read-only repositories",
+            "type": "boolean"
+          },
+          "option": {
+            "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
+          },
+          "pack-size": {
+            "title": "pack-size",
+            "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
+            "type": "integer"
+          },
+          "password-command": {
+            "title": "password-command",
+            "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
+            "type": "string",
+            "minLength": 0
+          },
+          "password-file": {
+            "title": "password-file",
+            "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
+            "type": "string",
+            "minLength": 0
+          },
+          "quiet": {
+            "title": "quiet",
+            "description": "do not output comprehensive progress report",
+            "type": "boolean"
+          },
+          "repo": {
+            "title": "repo",
+            "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
+            "type": "string",
+            "minLength": 0
+          },
+          "repository-file": {
+            "title": "repository-file",
+            "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "retry-lock": {
+            "title": "retry-lock",
+            "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "run-after": {
+            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
+          },
+          "run-after-fail": {
+            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
+          },
+          "run-before": {
+            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
+          },
+          "run-finally": {
+            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
+          },
+          "send-after": {
+            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
+          },
+          "send-after-fail": {
+            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
+          },
+          "send-before": {
+            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
+          },
+          "send-finally": {
+            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
+          },
+          "stuck-request-timeout": {
+            "title": "stuck-request-timeout",
+            "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
+            "type": "string",
+            "minLength": 0
+          },
+          "tls-client-cert": {
+            "title": "tls-client-cert",
+            "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
+            "type": "string",
+            "minLength": 0
+          },
+          "verbose": {
+            "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
+          }
+        }
+      },
+      "key-passwd": {
+        "title": "key-passwd",
+        "description": "The \"key passwd\" command creates a new key, validates the key and removes the old key ID.\nReturns the new key ID.",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -6641,356 +6991,6 @@
           }
         }
       },
-      "key-hint": {
-        "title": "key-hint",
-        "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
-        "type": "string",
-        "minLength": 0
-      },
-      "key-list": {
-        "title": "key-list",
-        "description": "The \"list\" sub-command lists all the keys (passwords) associated with the repository.\nReturns the key ID, username, hostname, created time and if it's the current key being\nused to access the repository.",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "cacert": {
-            "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
-          },
-          "cache-dir": {
-            "title": "cache-dir",
-            "description": "set the cache directory. (default: use system default cache directory)",
-            "type": "string",
-            "minLength": 0
-          },
-          "cleanup-cache": {
-            "title": "cleanup-cache",
-            "description": "auto remove old cache directories",
-            "type": "boolean"
-          },
-          "compression": {
-            "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "http-user-agent": {
-            "title": "http-user-agent",
-            "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "insecure-no-password": {
-            "title": "insecure-no-password",
-            "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
-            "type": "boolean"
-          },
-          "insecure-tls": {
-            "title": "insecure-tls",
-            "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
-          "key-hint": {
-            "title": "key-hint",
-            "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
-            "type": "string",
-            "minLength": 0
-          },
-          "limit-download": {
-            "title": "limit-download",
-            "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
-            "type": "integer"
-          },
-          "limit-upload": {
-            "title": "limit-upload",
-            "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
-            "type": "integer"
-          },
-          "no-cache": {
-            "title": "no-cache",
-            "description": "do not use a local cache",
-            "type": "boolean"
-          },
-          "no-extra-verify": {
-            "title": "no-extra-verify",
-            "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
-            "type": "boolean"
-          },
-          "no-lock": {
-            "title": "no-lock",
-            "description": "do not lock the repository, this allows some operations on read-only repositories",
-            "type": "boolean"
-          },
-          "option": {
-            "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-          },
-          "pack-size": {
-            "title": "pack-size",
-            "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
-            "type": "integer"
-          },
-          "password-command": {
-            "title": "password-command",
-            "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
-            "type": "string",
-            "minLength": 0
-          },
-          "password-file": {
-            "title": "password-file",
-            "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
-            "type": "string",
-            "minLength": 0
-          },
-          "quiet": {
-            "title": "quiet",
-            "description": "do not output comprehensive progress report",
-            "type": "boolean"
-          },
-          "repo": {
-            "title": "repo",
-            "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
-            "type": "string",
-            "minLength": 0
-          },
-          "repository-file": {
-            "title": "repository-file",
-            "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "retry-lock": {
-            "title": "retry-lock",
-            "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "run-after": {
-            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-          },
-          "run-after-fail": {
-            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-          },
-          "run-before": {
-            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-          },
-          "run-finally": {
-            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-          },
-          "send-after": {
-            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
-          },
-          "send-after-fail": {
-            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
-          },
-          "send-before": {
-            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
-          },
-          "send-finally": {
-            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
-          },
-          "stuck-request-timeout": {
-            "title": "stuck-request-timeout",
-            "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "tls-client-cert": {
-            "title": "tls-client-cert",
-            "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
-            "type": "string",
-            "minLength": 0
-          },
-          "verbose": {
-            "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
-          }
-        }
-      },
-      "key-passwd": {
-        "title": "key-passwd",
-        "description": "The \"key passwd\" command creates a new key, validates the key and removes the old key ID.\nReturns the new key ID.",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "cacert": {
-            "$ref": "#/$defs/id-bdebeefb786b97126bbaf65dcffdb112"
-          },
-          "cache-dir": {
-            "title": "cache-dir",
-            "description": "set the cache directory. (default: use system default cache directory)",
-            "type": "string",
-            "minLength": 0
-          },
-          "cleanup-cache": {
-            "title": "cleanup-cache",
-            "description": "auto remove old cache directories",
-            "type": "boolean"
-          },
-          "compression": {
-            "title": "compression",
-            "description": "compression mode (only available for repository format version 2), one of (auto|off|fastest|better|max) (default: $RESTIC_COMPRESSION) [restic \u003e= 0.14.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "host": {
-            "$ref": "#/$defs/id-9cfa481f3803a7b12fe7275be73cfc24"
-          },
-          "http-user-agent": {
-            "title": "http-user-agent",
-            "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "insecure-no-password": {
-            "title": "insecure-no-password",
-            "description": "use an empty password for the repository, must be passed to every restic command (insecure) [restic \u003e= 0.17.0]",
-            "type": "boolean"
-          },
-          "insecure-tls": {
-            "title": "insecure-tls",
-            "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
-          "key-hint": {
-            "title": "key-hint",
-            "description": "key ID of key to try decrypting first (default: $RESTIC_KEY_HINT)",
-            "type": "string",
-            "minLength": 0
-          },
-          "limit-download": {
-            "title": "limit-download",
-            "description": "limits downloads to a maximum rate in KiB/s. (default: unlimited)",
-            "type": "integer"
-          },
-          "limit-upload": {
-            "title": "limit-upload",
-            "description": "limits uploads to a maximum rate in KiB/s. (default: unlimited)",
-            "type": "integer"
-          },
-          "new-insecure-no-password": {
-            "title": "new-insecure-no-password",
-            "description": "add an empty password for the repository (insecure) [restic \u003e= 0.17.0]",
-            "type": "boolean"
-          },
-          "new-password-file": {
-            "title": "new-password-file",
-            "description": "file from which to read the new password [restic \u003e= 0.17.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "no-cache": {
-            "title": "no-cache",
-            "description": "do not use a local cache",
-            "type": "boolean"
-          },
-          "no-extra-verify": {
-            "title": "no-extra-verify",
-            "description": "skip additional verification of data before upload (see documentation) [restic \u003e= 0.16.4]",
-            "type": "boolean"
-          },
-          "no-lock": {
-            "title": "no-lock",
-            "description": "do not lock the repository, this allows some operations on read-only repositories",
-            "type": "boolean"
-          },
-          "option": {
-            "$ref": "#/$defs/id-e53da3b88d470edbc47a4cdd4160ff3f"
-          },
-          "pack-size": {
-            "title": "pack-size",
-            "description": "set target pack size in MiB, created pack files may be larger (default: $RESTIC_PACK_SIZE) [restic \u003e= 0.14.0]",
-            "type": "integer"
-          },
-          "password-command": {
-            "title": "password-command",
-            "description": "shell command to obtain the repository password from (default: $RESTIC_PASSWORD_COMMAND)",
-            "type": "string",
-            "minLength": 0
-          },
-          "password-file": {
-            "title": "password-file",
-            "description": "file to read the repository password from (default: $RESTIC_PASSWORD_FILE)",
-            "type": "string",
-            "minLength": 0
-          },
-          "quiet": {
-            "title": "quiet",
-            "description": "do not output comprehensive progress report",
-            "type": "boolean"
-          },
-          "repo": {
-            "title": "repo",
-            "description": "repository to backup to or restore from (default: $RESTIC_REPOSITORY)",
-            "type": "string",
-            "minLength": 0
-          },
-          "repository-file": {
-            "title": "repository-file",
-            "description": "file to read the repository location from (default: $RESTIC_REPOSITORY_FILE) [restic \u003e= 0.11.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "retry-lock": {
-            "title": "retry-lock",
-            "description": "retry to lock the repository if it is already locked, takes a value like 5m or 2h (default: no retries) [restic \u003e= 0.16.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "run-after": {
-            "$ref": "#/$defs/id-d0cb8938e8c33723a0a629c3376aecc5"
-          },
-          "run-after-fail": {
-            "$ref": "#/$defs/id-2cf445a83219358bee3423eaa7242c4d"
-          },
-          "run-before": {
-            "$ref": "#/$defs/id-259684dfd75be3116fd75f377c8f9866"
-          },
-          "run-finally": {
-            "$ref": "#/$defs/id-ef4cd05741e7f69941250f6f7121853f"
-          },
-          "send-after": {
-            "$ref": "#/$defs/id-5ad549b9f26107194acb0d599b5435a0"
-          },
-          "send-after-fail": {
-            "$ref": "#/$defs/id-16c9eb2748710a28f337f217f2e337da"
-          },
-          "send-before": {
-            "$ref": "#/$defs/id-2abe3a6ae2ea65720f26903b318892d6"
-          },
-          "send-finally": {
-            "$ref": "#/$defs/id-b0a6986d36a1bde1ef46f576cf24783c"
-          },
-          "stuck-request-timeout": {
-            "title": "stuck-request-timeout",
-            "description": "duration after which to retry stuck requests [restic \u003e= 0.18.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "tls-client-cert": {
-            "title": "tls-client-cert",
-            "description": "path to a file containing PEM encoded TLS client certificate and private key (default: $RESTIC_TLS_CLIENT_CERT)",
-            "type": "string",
-            "minLength": 0
-          },
-          "user": {
-            "title": "user",
-            "description": "the username for new key [restic \u003e= 0.17.0]",
-            "type": "string",
-            "minLength": 0
-          },
-          "verbose": {
-            "$ref": "#/$defs/id-6b767374afe44ab7caa0ae97e251c4ed"
-          }
-        }
-      },
       "key-remove": {
         "title": "key-remove",
         "description": "The \"remove\" sub-command removes the selected key ID. The \"remove\" command does not allow\nremoving the current key being used to access the repository.",
@@ -7017,6 +7017,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7031,11 +7036,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7189,6 +7189,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -7203,11 +7208,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -7738,6 +7738,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
@@ -7755,11 +7760,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8178,6 +8178,11 @@
             "description": "do not modify the repository, just print what would be done [restic \u003e= 0.12.0]",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -8192,11 +8197,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8653,6 +8653,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -8667,11 +8672,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -8815,11 +8815,6 @@
             "type": "string",
             "minLength": 0
           },
-          "extended-status": {
-            "title": "extended-status",
-            "description": "set output mode to JSON for commands that support it",
-            "type": "boolean"
-          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -8834,6 +8829,11 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
+            "type": "boolean"
+          },
+          "json": {
+            "title": "json",
+            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9144,6 +9144,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "http-user-agent": {
             "title": "http-user-agent",
             "description": "set a http user agent for outgoing http requests [restic \u003e= 0.17.0]",
@@ -9158,11 +9163,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -9758,6 +9758,11 @@
             "description": "do not delete anything, just print what would be done",
             "type": "boolean"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "default": "host,paths",
@@ -9782,11 +9787,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "keep-daily": {
@@ -10138,6 +10138,11 @@
           "exclude-file": {
             "$ref": "#/$defs/id-17df0ca3125f1db72ebb01d0ff902111"
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "forget": {
             "title": "forget",
             "description": "remove original snapshots after creating new ones [restic \u003e= 0.15.0]",
@@ -10178,11 +10183,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -10366,6 +10366,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "group-by": {
             "title": "group-by",
             "description": "group snapshots by host, paths and/or tags, separated by comma [restic \u003e= 0.10.0]",
@@ -10389,11 +10394,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
@@ -10554,6 +10554,11 @@
             "type": "string",
             "minLength": 0
           },
+          "extended-status": {
+            "title": "extended-status",
+            "description": "set output mode to JSON for commands that support it",
+            "type": "boolean"
+          },
           "host": {
             "$ref": "#/$defs/id-780eef226ac76505eb7b6d5ecf2576eb"
           },
@@ -10571,11 +10576,6 @@
           "insecure-tls": {
             "title": "insecure-tls",
             "description": "skip TLS certificate verification when connecting to the repository (insecure) [restic \u003e= 0.13.0]",
-            "type": "boolean"
-          },
-          "json": {
-            "title": "json",
-            "description": "set output mode to JSON for commands that support it",
             "type": "boolean"
           },
           "key-hint": {
