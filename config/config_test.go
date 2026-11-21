@@ -433,6 +433,45 @@ use = "another-run-before2"`)
 		assert.Equal(t, []string{"default-before", "another-run-before", "another-run-before2"}, profile.RunBefore)
 	})
 
+	t.Run("group-profiles-append", func(t *testing.T) {
+		configFile := createFile(t, "profiles.yaml", `
+version: "2"
+includes: "*`+testID+`.inc.yaml"
+groups:
+  all:
+    profiles: [profile1]
+profiles:
+  profile1: {backup: {source: .}}`)
+
+		createFile(t, "group-append-"+testID+".inc.yaml", `
+version: "2"
+groups:
+  all:
+    profiles__APPEND: [profile2]
+  first:
+    profiles...: [profile2]
+profiles:
+  profile2: {backup: {source: .}}`)
+
+		createFile(t, "group-prepend-"+testID+".inc.yaml", `
+version: "2"
+groups:
+  all:
+    profiles__PREPEND: [profile0]
+profiles:
+  profile0: {backup: {source: .}}`)
+
+		config := mustLoadConfig(t, configFile)
+
+		group, err := config.GetProfileGroup("all")
+		require.NoError(t, err)
+		assert.Equal(t, []string{"profile0", "profile1", "profile2"}, group.Profiles)
+
+		group, err = config.GetProfileGroup("first")
+		require.NoError(t, err)
+		assert.Equal(t, []string{"profile2"}, group.Profiles)
+	})
+
 	t.Run("hcl-includes-only-hcl", func(t *testing.T) {
 		configFile := createFile(t, "profiles.hcl", `includes = "*`+testID+`.inc.*"`)
 		createFile(t, "pass-"+testID+".inc.hcl", `one { }`)
