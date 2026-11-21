@@ -213,7 +213,11 @@ func (c *Config) load(input io.Reader, format string, replace bool) (err error) 
 	err = vp.ReadConfig(input)
 
 	if err == nil && vp != c.viper {
-		err = c.viper.MergeConfigMap(vp.AllSettings())
+		settings := vp.AllSettings()
+		if previousVersion >= Version02 {
+			c.resolveAppendToGroups(settings)
+		}
+		err = c.viper.MergeConfigMap(settings)
 	}
 
 	if err == nil && c.GetVersion() >= Version02 {
@@ -231,6 +235,17 @@ func (c *Config) load(input io.Reader, format string, replace bool) (err error) 
 		err = errors.New("cannot include different versions of the configuration file, all files must use the same version")
 	}
 	return
+}
+
+// resolveAppendToGroups resolves "profiles__APPEND" and "profiles__PREPEND" in the groups
+// of an included file against the groups already loaded, so that an include can add
+// profiles to a group declared in another file.
+func (c *Config) resolveAppendToGroups(settings map[string]any) {
+	groups, ok := settings[constants.SectionConfigurationGroups].(map[string]any)
+	if !ok {
+		return
+	}
+	revolveAppendToListKeys(c.viper.Sub(constants.SectionConfigurationGroups), groups)
 }
 
 func (c *Config) applyNonProfileMixins() error {
