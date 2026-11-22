@@ -1023,7 +1023,8 @@ func TestSchedules(t *testing.T) {
 		if scheduled {
 			schedule = `
 				schedule = "@hourly"
-				schedule-log = "` + logFile + `"`
+				schedule-log = "` + logFile + `"
+				schedule-ignore-on-battery-less-than = 40`
 		}
 
 		config := `
@@ -1067,6 +1068,7 @@ func TestSchedules(t *testing.T) {
 			assert.Equal(t, command, schedule.ScheduleOrigin().Command)
 			assert.Equal(t, []string{"@hourly"}, schedule.Schedules)
 			assert.Equal(t, path.Join(constants.TemporaryDirMarker, "rp.log"), schedule.Log)
+			assert.Equal(t, 40, schedule.IgnoreOnBatteryLessThan)
 			assert.Equal(t, map[string]string{
 				"RESTICPROFILE_SCHEDULE_ID": fmt.Sprintf(":%s@profile", command),
 				"RESTIC_VAR":                "profile-only-value",

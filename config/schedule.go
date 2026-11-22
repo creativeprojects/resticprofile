@@ -118,6 +118,7 @@ func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	s.LockWait = section.ScheduleLockWait
 	s.EnvCapture = slices.Clone(section.ScheduleEnvCapture)
 	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
+	s.IgnoreOnBatteryLessThan = section.ScheduleIgnoreOnBatteryLessThan
 	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
 	s.HideWindow = section.ScheduleHideWindow
 	s.StartWhenAvailable = section.ScheduleStartWhenAvailable
