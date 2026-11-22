@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cast"
@@ -235,6 +236,53 @@ func TestRevolveAppendToListKeys(t *testing.T) {
 			v := load(t, test.config)
 			revolveAppendToListKeys(v, test.mixin)
 			assert.Equal(t, test.expected, test.mixin)
+		})
+	}
+}
+
+func TestProfileMixinsWithCommonNamePrefix(t *testing.T) {
+	const content = `
+version: 2
+mixins:
+  hooks:
+    run-before...: [mixin]
+    backup:
+      ...run-before: [mixin]
+profiles:
+  base:
+    run-before: [base]
+    backup:
+      run-before: [base]
+  stations:
+    inherit: base
+  stationsa:
+    inherit: base
+    use: hooks
+  stationsb:
+    inherit: stations
+    use: hooks
+`
+	for _, names := range [][]string{
+		{"stationsb", "stationsa", "stations"},
+		{"stations", "stationsa", "stationsb"},
+	} {
+		t.Run(strings.Join(names, "/"), func(t *testing.T) {
+			config, err := Load(bytes.NewBufferString(content), FormatYAML)
+			require.NoError(t, err)
+			// Resolve twice without reloading so mixins must only be applied once.
+			for range 2 {
+				for _, name := range names {
+					profile, err := config.getProfile(name)
+					require.NoError(t, err)
+					if name == "stations" {
+						assert.Equal(t, []string{"base"}, profile.RunBefore)
+						assert.Equal(t, []string{"base"}, profile.Backup.RunBefore)
+					} else {
+						assert.Equal(t, []string{"base", "mixin"}, profile.RunBefore)
+						assert.Equal(t, []string{"mixin", "base"}, profile.Backup.RunBefore)
+					}
+				}
+			}
 		})
 	}
 }
