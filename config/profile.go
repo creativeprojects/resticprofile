@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/creativeprojects/clog"
@@ -36,6 +37,11 @@ type Monitoring interface {
 // RunShellCommands provides access to shell command hooks inside a section
 type RunShellCommands interface {
 	GetRunShellCommands() *RunShellCommandsSection
+}
+
+// Retry provides access to the retry settings inside a section
+type Retry interface {
+	GetRetry() *RetrySection
 }
 
 // OtherFlags provides access to dynamic commandline flags
@@ -302,6 +308,7 @@ func (r *RetentionSection) resolve(profile *Profile) {
 type GenericSectionWithSchedule struct {
 	GenericSection      `mapstructure:",squash"`
 	ScheduleBaseSection `mapstructure:",squash"`
+	RetrySection        `mapstructure:",squash"`
 }
 
 func (s *GenericSectionWithSchedule) setRootPath(p *Profile, rootPath string) {
@@ -526,6 +533,22 @@ type RunShellCommandsSection struct {
 }
 
 func (r *RunShellCommandsSection) GetRunShellCommands() *RunShellCommandsSection { return r }
+
+// RetrySection is used to run a restic command again after it failed
+type RetrySection struct {
+	Retry     int            `mapstructure:"retry" range:"[0:]" default:"0" description:"Number of times to run the restic command again when it fails with a fatal error (restic exit code 1), for example on a network error. Other failures are not retried - see https://creativeprojects.github.io/resticprofile/configuration/retry/"`
+	RetryWait maybe.Duration `mapstructure:"retry-wait" default:"1m" examples:"30s;1m;5m;15m" description:"Time to wait before running the restic command again after a failure"`
+}
+
+func (r *RetrySection) GetRetry() *RetrySection { return r }
+
+// GetRetryWait returns the time to wait before running the command again
+func (r *RetrySection) GetRetryWait() time.Duration {
+	if r.RetryWait.HasValue() {
+		return r.RetryWait.Value()
+	}
+	return constants.DefaultRetryWait
+}
 
 // OtherFlagsSection contains additional restic command line flags
 type OtherFlagsSection struct {
@@ -981,6 +1004,14 @@ func (p *Profile) GetRunShellCommandsSections(command string) (profileCommands R
 		if c := section.GetRunShellCommands(); c != nil {
 			sectionCommands = *c
 		}
+	}
+	return
+}
+
+// GetRetrySection returns the retry settings of the section for this command
+func (p *Profile) GetRetrySection(command string) (retry RetrySection) {
+	if section, ok := GetSectionWith[Retry](p, command); ok {
+		retry = *section.GetRetry()
 	}
 	return
 }

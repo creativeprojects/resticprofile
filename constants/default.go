@@ -10,6 +10,7 @@ const (
 	DefaultFilterResticFlags    = true
 	DefaultResticLockRetryAfter = 60 * time.Second
 	DefaultResticStaleLockAge   = 1 * time.Hour
+	DefaultRetryWait            = 1 * time.Minute
 	DefaultTheme                = "light"
 	DefaultIONiceFlag           = false
 	DefaultIONiceClass          = 2

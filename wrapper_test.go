@@ -8,10 +8,12 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"testing/synctest"
@@ -1001,6 +1003,157 @@ func TestBackupWithSupressedWarnings(t *testing.T) {
 	wrapper := newResticWrapper(ctx)
 	err := wrapper.runCommand("backup")
 	require.NoError(t, err)
+}
+
+// summaryCounter counts the restic commands that ran
+type summaryCounter struct {
+	count int
+}
+
+func (c *summaryCounter) Start(_ string)                                         {}
+func (c *summaryCounter) Status(_ monitor.Status)                                {}
+func (c *summaryCounter) Summary(_ string, _ monitor.Summary, _ string, _ error) { c.count++ }
+
+func TestRunCommandRetryAfterFailure(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name             string
+		command          string
+		exitCode         int
+		retry            int
+		noErrorOnWarning bool
+		expectedRuns     int
+		expectError      bool
+	}{
+		{name: "success", command: constants.CommandBackup, exitCode: constants.ResticExitCodeSuccess, retry: 2, expectedRuns: 1},
+		{name: "no retry by default", command: constants.CommandBackup, exitCode: constants.ResticExitCodeError, retry: 0, expectedRuns: 1, expectError: true},
+		{name: "fatal error is retried", command: constants.CommandBackup, exitCode: constants.ResticExitCodeError, retry: 2, expectedRuns: 3, expectError: true},
+		{name: "fatal error is retried in check", command: constants.CommandCheck, exitCode: constants.ResticExitCodeError, retry: 1, expectedRuns: 2, expectError: true},
+		{name: "fatal error is retried in copy", command: constants.CommandCopy, exitCode: constants.ResticExitCodeError, retry: 1, expectedRuns: 2, expectError: true},
+		{name: "go runtime error", command: constants.CommandBackup, exitCode: constants.ResticExitCodeGoRuntimeError, retry: 2, expectedRuns: 1, expectError: true},
+		{name: "snapshot with unreadable files", command: constants.CommandBackup, exitCode: constants.ResticExitCodeWarning, retry: 2, expectedRuns: 1, expectError: true},
+		{name: "snapshot with unreadable files and no-error-on-warning", command: constants.CommandBackup, exitCode: constants.ResticExitCodeWarning, retry: 2, noErrorOnWarning: true, expectedRuns: 1},
+		{name: "repository does not exist", command: constants.CommandBackup, exitCode: constants.ResticExitCodeNoRepository, retry: 2, expectedRuns: 1, expectError: true},
+		{name: "repository is locked", command: constants.CommandBackup, exitCode: constants.ResticExitCodeFailLockRepository, retry: 2, expectedRuns: 1, expectError: true},
+		{name: "wrong password", command: constants.CommandBackup, exitCode: constants.ResticExitCodeWrongPassword, retry: 2, expectedRuns: 1, expectError: true},
+		{name: "interrupted", command: constants.CommandBackup, exitCode: constants.ResticExitCodeInterrupted, retry: 2, expectedRuns: 1, expectError: true},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				profile := config.NewProfile(nil, "name")
+				profile.Backup = &config.BackupSection{NoErrorOnWarning: testCase.noErrorOnWarning}
+				profile.Backup.Retry = testCase.retry
+				profile.Check = &config.GenericSectionWithSchedule{}
+				profile.Check.Retry = testCase.retry
+				profile.Copy = &config.CopySection{}
+				profile.Copy.Retry = testCase.retry
+
+				ctx := &Context{
+					binary:   mockBinary,
+					profile:  profile,
+					command:  testCase.command,
+					request:  Request{arguments: []string{"--exit", strconv.Itoa(testCase.exitCode)}},
+					sigChan:  make(chan os.Signal, 1),
+					terminal: term.NewTerminal(),
+				}
+				counter := &summaryCounter{}
+				wrapper := newResticWrapper(ctx)
+				wrapper.addProgress(counter)
+
+				err := wrapper.runCommand(testCase.command)
+				if testCase.expectError {
+					require.Error(t, err)
+				} else {
+					require.NoError(t, err)
+				}
+				assert.Equal(t, testCase.expectedRuns, counter.count)
+			})
+		})
+	}
+}
+
+func TestRunCommandRetryAfterFailureWaits(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		profile := config.NewProfile(nil, "name")
+		profile.Backup = &config.BackupSection{}
+		profile.Backup.Retry = 2
+		profile.Backup.RetryWait = maybe.SetDuration(30 * time.Second)
+
+		ctx := &Context{
+			binary:   mockBinary,
+			profile:  profile,
+			command:  constants.CommandBackup,
+			request:  Request{arguments: []string{"--exit", "1"}},
+			sigChan:  make(chan os.Signal, 1),
+			terminal: term.NewTerminal(),
+		}
+		wrapper := newResticWrapper(ctx)
+
+		start := time.Now()
+		err := wrapper.runCommand(constants.CommandBackup)
+		require.Error(t, err)
+		assert.Equal(t, 60*time.Second, time.Since(start).Truncate(time.Second))
+	})
+}
+
+func TestRunCommandRetryAfterFailureCancelled(t *testing.T) {
+	t.Parallel()
+
+	sigChan := make(chan os.Signal, 1)
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	profile.Backup.Retry = 2
+
+	ctx := &Context{
+		binary:   mockBinary,
+		profile:  profile,
+		command:  constants.CommandBackup,
+		request:  Request{arguments: []string{"--exit", "1"}},
+		sigChan:  sigChan,
+		terminal: term.NewTerminal(),
+	}
+	wrapper := newResticWrapper(ctx)
+
+	timer := time.AfterFunc(1*time.Second, func() {
+		sigChan <- os.Interrupt
+	})
+	defer timer.Stop()
+
+	err := wrapper.runCommand(constants.CommandBackup)
+	assert.ErrorIs(t, err, errInterrupt)
+}
+
+func TestRunCommandNoRetryAfterLockFailure(t *testing.T) {
+	t.Parallel()
+
+	profile := config.NewProfile(nil, "name")
+	profile.Backup = &config.BackupSection{}
+	profile.Backup.Retry = 2
+
+	wrapper := newResticWrapper(&Context{
+		binary:   mockBinary,
+		profile:  profile,
+		command:  constants.CommandBackup,
+		terminal: term.NewTerminal(),
+	})
+
+	mockOutput := mocks.NewOutputAnalysis(t)
+	mockOutput.EXPECT().ContainsRemoteLockFailure().Return(true)
+
+	exitErr := exec.CommandContext(t.Context(), mockBinary, "backup", "--exit", "1").Run()
+	require.Error(t, exitErr)
+
+	// a lock failure is left to "retry-lock" and "lock-wait"
+	retry, err := wrapper.canRetryAfterFailure(constants.CommandBackup, exitErr, monitor.Summary{OutputAnalysis: mockOutput}, 0)
+	assert.False(t, retry)
+	assert.NoError(t, err)
 }
 
 func TestRunShellCommands(t *testing.T) {
