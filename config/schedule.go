@@ -92,6 +92,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	if !s.IgnoreOnBattery.HasValue() {
 		s.IgnoreOnBattery = defaults.IgnoreOnBattery
 	}
+	if s.IgnoreOnBatteryLessThan == 0 {
+		s.IgnoreOnBatteryLessThan = defaults.IgnoreOnBatteryLessThan
+	}
 	if !s.AfterNetworkOnline.HasValue() {
 		s.AfterNetworkOnline = defaults.AfterNetworkOnline
 	}
