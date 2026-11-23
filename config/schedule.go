@@ -92,6 +92,9 @@ func (s *ScheduleBaseConfig) init(defaults *ScheduleBaseConfig) {
 	if !s.IgnoreOnBattery.HasValue() {
 		s.IgnoreOnBattery = defaults.IgnoreOnBattery
 	}
+	if s.IgnoreOnBatteryLessThan == 0 {
+		s.IgnoreOnBatteryLessThan = defaults.IgnoreOnBatteryLessThan
+	}
 	if !s.AfterNetworkOnline.HasValue() {
 		s.AfterNetworkOnline = defaults.AfterNetworkOnline
 	}
@@ -118,6 +121,7 @@ func (s *ScheduleBaseConfig) applyOverrides(section *ScheduleBaseSection) {
 	s.LockWait = section.ScheduleLockWait
 	s.EnvCapture = slices.Clone(section.ScheduleEnvCapture)
 	s.IgnoreOnBattery = section.ScheduleIgnoreOnBattery
+	s.IgnoreOnBatteryLessThan = section.ScheduleIgnoreOnBatteryLessThan
 	s.AfterNetworkOnline = section.ScheduleAfterNetworkOnline
 	s.HideWindow = section.ScheduleHideWindow
 	s.StartWhenAvailable = section.ScheduleStartWhenAvailable
