@@ -532,6 +532,7 @@ func (r *resticWrapper) runCommand(command string) error {
 	streamSource := io.NopCloser(strings.NewReader(""))
 	defer func() { streamSource.Close() }()
 
+	retries := 0
 	for {
 		if err := streamSource.Close(); err != nil {
 			return fmt.Errorf("%s on profile '%s'. Failed closing stream source: %w", r.command, r.profile.Name, err)
@@ -570,6 +571,13 @@ func (r *resticWrapper) runCommand(command string) error {
 			retry, interruptedError := r.canRetryAfterError(command, summary)
 			if retry {
 				continue
+			}
+			if interruptedError == nil {
+				retry, interruptedError = r.canRetryAfterFailure(command, err, summary, retries)
+				if retry {
+					retries++
+					continue
+				}
 			}
 			if interruptedError != nil {
 				// we keep the restic stderr, but we set the final error to interrupted
@@ -849,6 +857,32 @@ func (r *resticWrapper) canRetryAfterError(command string, summary monitor.Summa
 	}
 
 	return retry, nil
+}
+
+// canRetryAfterFailure returns true if a failed restic command can run again, after waiting for "retry-wait".
+// Only a fatal error (restic exit code 1) is retried, as it may come from a temporary problem such as a network error.
+// Any other exit code means that running the same command again cannot help:
+// a snapshot with unreadable files (3), a missing repository (10), a locked repository (11, see "retry-lock"),
+// a wrong password (12) or an interruption (130).
+func (r *resticWrapper) canRetryAfterFailure(command string, err error, summary monitor.Summary, retries int) (bool, error) {
+	retry := r.profile.GetRetrySection(command)
+	if retries >= retry.Retry {
+		return false, nil
+	}
+	if output := summary.OutputAnalysis; output != nil && output.ContainsRemoteLockFailure() {
+		// lock failures are handled by canRetryAfterError
+		return false, nil
+	}
+	if exitErr, ok := asExitError(err); !ok || exitErr.ExitCode() != constants.ResticExitCodeError {
+		return false, nil
+	}
+
+	wait := retry.GetRetryWait()
+	clog.Warningf("profile '%s': '%s' failed, running it again in %s (retry %d/%d)", r.profile.Name, command, wait, retries+1, retry.Retry)
+	if err := interruptibleSleep(wait, r.sigChan); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *resticWrapper) canRetryAfterRemoteLockFailure(output monitor.OutputAnalysis) (bool, time.Duration) {

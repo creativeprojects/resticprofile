@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/creativeprojects/resticprofile/constants"
 	"github.com/creativeprojects/resticprofile/restic"
@@ -1766,6 +1767,47 @@ url = "http://example.com"
 			assert.NotEmpty(t, monitoring)
 			assert.Equal(t, 1, len(monitoring.SendBefore))
 			assert.Empty(t, monitoring.SendAfter)
+		})
+	}
+}
+
+func TestGetRetrySection(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		config  string
+		command string
+		retry   int
+		wait    time.Duration
+	}{
+		{config: "", command: constants.CommandBackup, retry: 0, wait: constants.DefaultRetryWait},
+		{config: "[profile.backup]\nretry = 3", command: constants.CommandBackup, retry: 3, wait: constants.DefaultRetryWait},
+		{config: "[profile.backup]\nretry = 3\nretry-wait = \"30s\"", command: constants.CommandBackup, retry: 3, wait: 30 * time.Second},
+		{config: "[profile.backup]\nretry = 1\nretry-wait = \"0s\"", command: constants.CommandBackup, retry: 1, wait: 0},
+		{config: "[profile.check]\nretry = 2\nretry-wait = \"5m\"", command: constants.CommandCheck, retry: 2, wait: 5 * time.Minute},
+		{config: "[profile.copy]\nretry = 2", command: constants.CommandCopy, retry: 2, wait: constants.DefaultRetryWait},
+		{config: "[profile.forget]\nretry = 2", command: constants.CommandForget, retry: 2, wait: constants.DefaultRetryWait},
+		{config: "[profile.prune]\nretry = 2", command: constants.CommandPrune, retry: 2, wait: constants.DefaultRetryWait},
+		// the setting belongs to the section of the command
+		{config: "[profile.backup]\nretry = 3", command: constants.CommandCheck, retry: 0, wait: constants.DefaultRetryWait},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.config, func(t *testing.T) {
+			t.Parallel()
+
+			profile, err := getResolvedProfile("toml", "[profile]\n"+testCase.config, "profile")
+			require.NoError(t, err)
+			require.NotNil(t, profile)
+
+			retry := profile.GetRetrySection(testCase.command)
+			assert.Equal(t, testCase.retry, retry.Retry)
+			assert.Equal(t, testCase.wait, retry.GetRetryWait())
+
+			// the retry settings are not restic flags
+			flags := profile.GetCommandFlags(testCase.command).ToMap()
+			assert.NotContains(t, flags, "retry")
+			assert.NotContains(t, flags, "retry-wait")
 		})
 	}
 }
