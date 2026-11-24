@@ -5,7 +5,7 @@ weight: 10
 tags: [ "monitoring" ]
 ---
 
-Resticprofile can generate a Prometheus file or send the report to a Pushgateway. Currently, only the `backup` command generates a report. Below is a configuration example for generating a file and sending it to a Pushgateway:
+Resticprofile can generate a Prometheus file or send the report to a Pushgateway. The `backup` command generates a detailed report, and the `check`, `copy`, `forget` and `prune` commands generate a short one (see [other commands](#other-commands)). Below is a configuration example for generating a file and sending it to a Pushgateway:
 
 {{< tabs groupid="config-with-json" >}}
 {{% tab title="toml" %}}
@@ -131,11 +131,68 @@ resticprofile_build_info{goversion="go1.24.3",profile="prom",version="0.31.0"} 1
 
 ```
 
+## Other commands
+
+The `check`, `copy`, `forget` and `prune` commands report these metrics, where `<command>` is the name of the command:
+
+| Metric | Description |
+| ------ | ----------- |
+| `resticprofile_<command>_duration_seconds` | Duration of the command (in seconds) |
+| `resticprofile_<command>_exit_code` | Exit code of restic (`-1` when restic did not exit normally) |
+| `resticprofile_<command>_status` | `0`=fail, `1`=warning, `2`=success |
+| `resticprofile_<command>_time_seconds` | Last run of the command (unixtime) |
+
+The exit code tells apart failures such as `11` (restic could not lock the repository) and `1` (fatal error, e.g. `check` found errors in the repository).
+
+The `forget` metrics are also reported when the `retention` section runs before or after a backup, and the `check` metrics when `check-before` or `check-after` is set.
+
+Example of the metrics added to the file after a `check` run:
+
+```
+# HELP resticprofile_check_duration_seconds The check duration (in seconds).
+# TYPE resticprofile_check_duration_seconds gauge
+resticprofile_check_duration_seconds{profile="prom"} 12.437316709
+# HELP resticprofile_check_exit_code Exit code of restic check (-1 when restic did not exit normally).
+# TYPE resticprofile_check_exit_code gauge
+resticprofile_check_exit_code{profile="prom"} 0
+# HELP resticprofile_check_status The check status: 0=fail, 1=warning, 2=success.
+# TYPE resticprofile_check_status gauge
+resticprofile_check_status{profile="prom"} 2
+# HELP resticprofile_check_time_seconds Last check run (unixtime).
+# TYPE resticprofile_check_time_seconds gauge
+resticprofile_check_time_seconds{profile="prom"} 1.795479011e+09
+```
+
+### Several commands writing to the same file
+
+When `prometheus-save-to-file` already exists, resticprofile updates it instead of replacing it, so running `copy` and then `check` on the same profile keeps the metrics of both commands:
+
+- the metrics of the command that just ran replace its previous metrics,
+- the metrics of the other commands stay in the file,
+- the backup metrics and the build information are replaced as a whole, like before.
+
+For `check`, `copy`, `forget` and `prune`, only the series with the same labels are replaced. This way, two kinds of checks of the same profile can be told apart with a label, for example a quick check and a check reading the data, using an environment variable set by the scheduler:
+
+```yaml
+version: "1"
+
+root:
+  prometheus-save-to-file: "root.prom"
+  prometheus-labels:
+    - check: '{{ or .Env.CHECK_KIND "quick" }}'
+```
+
+`CHECK_KIND=full resticprofile root.check --read-data` then reports `resticprofile_check_status{check="full",profile="root"}` next to the series of the quick check.
+
+{{% notice style="note" %}}
+A series stays in the file until a run with the same labels replaces it. Delete the file after changing `prometheus-labels` to remove the old series.
+{{% /notice %}}
+
 ## Prometheus Pushgateway
 
 Prometheus Pushgateway uses the job label as a grouping key. Metrics with the same grouping key are replaced when pushed. To prevent overwriting metrics from different profiles, the default job label is set to `<profile_name>.<command>` (e.g., `root.backup`).
 
-For more control over the job label, use the `prometheus-push-job` property. This property supports the `$command` placeholder, which is replaced with the executed command's name.
+For more control over the job label, use the `prometheus-push-job` property. This property supports the `$command` placeholder, which is replaced with the executed command's name. Each push only contains the metrics of the command that ran (plus the build information). The metrics of a `retention` section are pushed as the `forget` command (e.g. `root.forget`).
 
 You can specify the request format using `prometheus-push-format`. The default is `text`, but it can also be set to `protobuf` (see [compatibility with Prometheus](https://prometheus.io/docs/instrumenting/exposition_formats/)).
 

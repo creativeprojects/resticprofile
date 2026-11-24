@@ -1,8 +1,10 @@
 package prom
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/creativeprojects/clog"
@@ -35,7 +37,10 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 	if p.profile.PrometheusPush == "" && p.profile.PrometheusSaveToFile == "" {
 		return
 	}
-	if command != constants.CommandBackup {
+	if command == constants.SectionConfigurationRetention {
+		command = constants.CommandForget
+	}
+	if command != constants.CommandBackup && !p.metrics.HasCommand(command) {
 		return
 	}
 	var status Status
@@ -49,7 +54,11 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 	case monitor.IsError(result):
 		status = StatusFailed
 	}
-	p.metrics.BackupResults(status, summary)
+	if command == constants.CommandBackup {
+		p.metrics.BackupResults(status, summary)
+	} else {
+		p.metrics.CommandResults(command, status, exitCode(result), summary)
+	}
 
 	if p.profile.PrometheusSaveToFile != "" {
 		err := p.metrics.SaveTo(p.profile.PrometheusSaveToFile)
@@ -71,12 +80,28 @@ func (p *Progress) Summary(command string, summary monitor.Summary, stderr strin
 			}
 			return ""
 		})
-		err := p.metrics.Push(p.profile.PrometheusPush, p.profile.PrometheusPushFormat, jobName)
+		err := p.metrics.Push(p.profile.PrometheusPush, p.profile.PrometheusPushFormat, jobName, command)
 		if err != nil {
 			// not important enough to throw an error here
 			clog.Warningf("pushing prometheus metrics to %q: %v", p.profile.PrometheusPush, err)
 		}
 	}
+}
+
+// exitCode returns the exit code of restic from the result of the command
+func exitCode(result error) int {
+	if result == nil {
+		return 0
+	}
+	exitErr := &exec.ExitError{}
+	if errors.As(result, &exitErr) {
+		return exitErr.ExitCode()
+	}
+	warn := &monitor.InternalWarningError{}
+	if errors.As(result, &warn) {
+		return constants.ResticExitCodeWarning
+	}
+	return -1
 }
 
 // Verify interface
