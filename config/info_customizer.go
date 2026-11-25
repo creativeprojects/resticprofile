@@ -65,6 +65,19 @@ func init() {
 		}
 	})
 
+	// Profile: clarify default 0 for integer keep-* flags in forget/retention
+	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
+		if property.option() != nil && property.basic().MustBeInteger() && strings.HasPrefix(propertyName, "keep-") {
+			note := `When unset or 0, no flag is passed to restic (if no policy is specified at all, restic refuses to remove any snapshots).`
+			property.basic().addDescriptionFilter(func(desc string) string {
+				if desc = strings.TrimSuffix(strings.TrimSpace(desc), "."); desc == "" {
+					return note
+				}
+				return fmt.Sprintf("%s.\n%s", desc, note)
+			})
+		}
+	})
+
 	// Profile: special handling for host, path and tag
 	registerPropertyInfoCustomizer(func(sectionName, propertyName string, property accessibleProperty) {
 		if propertyName == constants.ParameterHost || propertyName == constants.ParameterPath || propertyName == constants.ParameterTag {

@@ -71,6 +71,34 @@ func TestResticVerboseProperty(t *testing.T) {
 	assert.True(t, orig.MustBeInteger())
 }
 
+func TestResticKeepFlagsDescription(t *testing.T) {
+	const expectedNote = `When unset or 0, no flag is passed to restic (if no policy is specified at all, restic refuses to remove any snapshots).`
+
+	profileInfo := NewProfileInfo(true)
+	for _, sectionName := range []string{constants.CommandForget, constants.SectionConfigurationRetention} {
+		section := profileInfo.SectionInfo(sectionName)
+		require.NotNil(t, section, "section %s", sectionName)
+
+		for _, flagName := range []string{"keep-last", "keep-hourly", "keep-daily", "keep-weekly", "keep-monthly", "keep-yearly"} {
+			info := section.PropertyInfo(flagName)
+			require.NotNil(t, info, "%s.%s", sectionName, flagName)
+			assert.True(t, strings.HasSuffix(info.Description(), ".\n"+expectedNote),
+				"%s.%s description: %q", sectionName, flagName, info.Description())
+		}
+
+		for _, flagName := range []string{"keep-tag", "keep-within", "limit-download"} {
+			info := section.PropertyInfo(flagName)
+			if info != nil {
+				assert.NotContains(t, info.Description(), expectedNote, "%s.%s", sectionName, flagName)
+			}
+		}
+	}
+
+	emptyDesc := customizeProperty(constants.CommandForget,
+		newResticPropertyInfo("keep-last", restic.Option{Name: "keep-last", Default: "0", Once: true}))
+	assert.Equal(t, expectedNote, emptyDesc.Description())
+}
+
 func TestHostTagPathProperty(t *testing.T) {
 	examples := []string{"true", "false", `"{{property}}"`}
 	note := `Boolean true is replaced with the {{property}}s from section "backup".`
